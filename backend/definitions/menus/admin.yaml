@@ -639,7 +639,7 @@ menu:
           - name: "Depreciation Books"
             page_id: 5611
           - name: "Depreciation Tables"
-            page_id: 5659
+            page_id: 5663
           - separator: true
           - name: "FA Journal Templates"
             page_id: 5630

@@ -1,0 +1,55 @@
+page:
+  id: 5659
+  type: Card
+  name: Depreciation Table Card
+  source_table: Depreciation_Table_Header
+  caption: Depreciation Table Card
+  list_page_id: 5663
+  enable_navigation: true
+  editable: true
+  focus_field: code
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: code
+            importance: Promoted
+          - source: description
+          - source: period_length
+          - source: total_no_of_units
+
+      # The table's periods (Depreciation Table Line), in period order
+      - name: Lines
+        caption: Lines
+        subpage:
+          page_id: 5660
+          link:
+            depreciation_table_code: code
+
+  actions:
+    - name: Back to List
+      caption: Back to List
+      image: Back
+      shortcut: Esc
+      promoted: true
+      run_page: 5663
+
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

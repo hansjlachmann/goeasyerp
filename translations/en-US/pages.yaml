@@ -733,3 +733,9 @@ pages:
       total_balance: "Total Balance"
   fa_allocations:
     caption: "FA Allocations"
+  depreciation_table_list:
+    caption: "Depreciation Table List"
+  depreciation_table_card:
+    caption: "Depreciation Table Card"
+  depreciation_table_lines:
+    caption: "Lines"

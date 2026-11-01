@@ -733,3 +733,9 @@ pages:
       total_balance: "Total saldo"
   fa_allocations:
     caption: "Anlægsfordelinger"
+  depreciation_table_list:
+    caption: "Afskrivningstabeloversigt"
+  depreciation_table_card:
+    caption: "Afskrivningstabelkort"
+  depreciation_table_lines:
+    caption: "Linjer"

@@ -439,3 +439,23 @@ reports:
       RECEIPT: "VAREMODTAGELSE"
       RECEIPT_NO: "Modtagelsesnr."
       RECEIPT_DATE: "Modtagelsesdato"
+  "5692":
+    caption: "Beregn afskrivninger"
+    options:
+      depreciation_book: "Afskrivningsprofil"
+      fa_posting_date: "Anlægsbogføringsdato"
+      use_force_no_of_days: "Brug fast antal dage"
+      force_no_of_days: "Fast antal dage"
+      posting_date: "Bogføringsdato"
+      document_no: "Bilagsnr."
+      posting_description: "Bogføringsbeskrivelse"
+      insert_bal_account: "Indsæt modkonto"
+    texts:
+      OPTIONS: "Indstillinger"
+      ENTER_FA_POSTING_DATE: "Du skal angive anlægsbogføringsdatoen."
+      USE_FORCE_NO_OF_DAYS: "Brug fast antal dage skal være aktiveret."
+      FORCE_NO_OF_DAYS_ACTIVATED: "Fast antal dage skal angives."
+      SAME_DATES: "Anlægsbogføringsdatoen og bogføringsdatoen skal være ens: Brug samme anlægs- og finansbogføringsdato er slået til i afskrivningsprofil %1."
+      ENTER_DOCUMENT_NO: "Du skal angive bilagsnummeret."
+      WINDOW: "Afskriver anlæg               #1##########\nAfskriver ikke anlæg          #2##########\nIndsætter kladdelinjer        #3##########"
+      LINES_CREATED: "Der blev oprettet %1 kladdelinjer."

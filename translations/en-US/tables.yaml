@@ -2038,6 +2038,26 @@ tables:
       reason_code: "Reason Code"
       no_series: "No. Series"
       posting_no_series: "Posting No. Series"
+  depreciation_table_header:
+    caption: "Depreciation Table Header"
+    fields:
+      code: "Code"
+      description: "Description"
+      period_length: "Period Length"
+      total_no_of_units: "Total No. of Units"
+    options:
+      period_length:
+        month: "Month"
+        period: "Period"
+        quarter: "Quarter"
+        year: "Year"
+  depreciation_table_line:
+    caption: "Depreciation Table Line"
+    fields:
+      depreciation_table_code: "Depreciation Table Code"
+      period_no: "Period No."
+      period_depreciation_percent: "Period Depreciation %"
+      no_of_units_in_period: "No. of Units in Period"
   fa_allocation:
     caption: "FA Allocation"
     fields:

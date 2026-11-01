@@ -5870,6 +5870,10 @@ func (t *FADepreciationBook) ValidateField(fieldName string, value interface{}) 
 		} else {
 			return fmt.Errorf("invalid type for field depreciation_table_code")
 		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "depreciation_table_code"); err != nil {
+			return err
+		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
 			if trg, ok := l.(FADepreciationBookOnValidate_Depreciation_table_code); ok {
@@ -8958,6 +8962,16 @@ func (t *FADepreciationBook) GetTableRelationFields() map[string]tables.TableRel
 		},
 		"depreciation_book_code": {
 			Table:        "Depreciation_Book",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"depreciation_table_code": {
+			Table:        "Depreciation_Table_Header",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

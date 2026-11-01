@@ -1,0 +1,40 @@
+page:
+  id: 5660
+  type: List
+  name: Depreciation Table Lines
+  source_table: Depreciation_Table_Line   # the periods of the Depreciation Table Card (5659), linked by its code
+  caption: Lines
+  editable: true
+  delayed_insert: true      # a line is inserted when the user leaves it
+
+  layout:
+    repeater:
+      fields:
+        - source: depreciation_table_code
+          width: 100
+          visible: false
+        - source: period_no
+          width: 90
+        - source: period_depreciation_percent
+          width: 150
+        - source: no_of_units_in_period
+          width: 150
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

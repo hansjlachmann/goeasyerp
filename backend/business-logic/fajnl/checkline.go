@@ -16,8 +16,7 @@ import (
 // journal; the fields the posting type does not use are blank; a cancelling line (FA Error Entry
 // No.) uses none of the extras.
 //
-// Not migrated yet: disposal (FA4), Depr. until FA Posting Date / Depr. Acquisition Cost
-// (depreciation, FA3), duplication in other books (FA5), budgeted assets.
+// Not migrated yet: disposal (FA4), duplication in other books (FA5), budgeted assets.
 type FAJnlCheckLine struct {
 	allowPostingFrom types.Date
 	allowPostingTo   types.Date
@@ -209,10 +208,6 @@ func checkNotYet(l *faCheck) error {
 	switch {
 	case l.postingType == gtables.FAJournalLine_Fa_posting_type.Disposal:
 		return apperrors.FANotYet(l.table, "fa_posting_type", l.postingTypeValue)
-	case l.deprUntilFAPostDate:
-		return apperrors.FANotYet(l.table, "depr_until_fa_posting_date", true)
-	case l.deprAcquisitionCost:
-		return apperrors.FANotYet(l.table, "depr_acquisition_cost", true)
 	case l.useDuplicationList:
 		return apperrors.FANotYet(l.table, "use_duplication_list", true)
 	case l.duplicateInDeprBook != "":

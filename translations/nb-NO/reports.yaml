@@ -439,3 +439,23 @@ reports:
       RECEIPT: "VAREMOTTAK"
       RECEIPT_NO: "Mottaksnr."
       RECEIPT_DATE: "Mottaksdato"
+  "5692":
+    caption: "Beregn avskrivning"
+    options:
+      depreciation_book: "Avskrivningsprofil"
+      fa_posting_date: "Anleggsbokføringsdato"
+      use_force_no_of_days: "Bruk tvunget antall dager"
+      force_no_of_days: "Tvunget antall dager"
+      posting_date: "Bokføringsdato"
+      document_no: "Bilagsnr."
+      posting_description: "Bokføringsbeskrivelse"
+      insert_bal_account: "Sett inn motkonto"
+    texts:
+      OPTIONS: "Alternativer"
+      ENTER_FA_POSTING_DATE: "Du må angi anleggsbokføringsdatoen."
+      USE_FORCE_NO_OF_DAYS: "Bruk tvunget antall dager må være aktivert."
+      FORCE_NO_OF_DAYS_ACTIVATED: "Tvunget antall dager må angis."
+      SAME_DATES: "Anleggsbokføringsdatoen og bokføringsdatoen må være like: Bruk samme anleggs- og finansbokføringsdato er på i avskrivningsprofil %1."
+      ENTER_DOCUMENT_NO: "Du må angi bilagsnummeret."
+      WINDOW: "Avskriver anleggsmiddel       #1##########\nAvskriver ikke anleggsmiddel  #2##########\nSetter inn kladdelinjer       #3##########"
+      LINES_CREATED: "%1 kladdelinjer ble opprettet."

@@ -124,3 +124,81 @@ const ErrFANoSpaceForBalAccounts ErrorCode = "ERR_FA_NO_SPACE_FOR_BAL_ACCOUNTS"
 func FANoSpaceForBalAccounts() *AppError {
 	return &AppError{Code: ErrFANoSpaceForBalAccounts}
 }
+
+// Depreciation errors (codeunits 5611–5618, report 5692)
+const (
+	ErrFAForceDaysLastEntry      ErrorCode = "ERR_FA_FORCE_DAYS_LAST_ENTRY"
+	ErrFADBPercent100            ErrorCode = "ERR_FA_DB_PERCENT_100"
+	ErrFAMethodStraightLine      ErrorCode = "ERR_FA_METHOD_STRAIGHT_LINE"
+	ErrFADateNotLater            ErrorCode = "ERR_FA_DATE_NOT_LATER"
+	ErrFANewFiscalYearLater      ErrorCode = "ERR_FA_NEW_FISCAL_YEAR_LATER"
+	ErrFANoFiscalYear            ErrorCode = "ERR_FA_NO_FISCAL_YEAR"
+	ErrFADeprTableNoLines        ErrorCode = "ERR_FA_DEPR_TABLE_NO_LINES"
+	ErrFADeprTableFirstDate      ErrorCode = "ERR_FA_DEPR_TABLE_FIRST_DATE"
+	ErrFADeprTablePeriodMissing  ErrorCode = "ERR_FA_DEPR_TABLE_PERIOD_MISSING"
+	ErrFADeprTablePeriodTooShort ErrorCode = "ERR_FA_DEPR_TABLE_PERIOD_TOO_SHORT"
+	ErrFACustom1EntryOnDate      ErrorCode = "ERR_FA_CUSTOM1_ENTRY_ON_DATE"
+	ErrFACustom1BookValuePos     ErrorCode = "ERR_FA_CUSTOM1_BOOK_VALUE_POSITIVE"
+)
+
+// FAForceDaysLastEntry: Force No. of Days only with the book's Periodic Depr. Date Calc. = Last
+// Entry (value)
+func FAForceDaysLastEntry(table, field string, value any) *AppError {
+	return &AppError{Code: ErrFAForceDaysLastEntry, Table: table, Field: field, Value: value}
+}
+
+// FADBPercent100: the Declining-Balance % must be less than 100
+func FADBPercent100(faNo, deprBookCode string) *AppError {
+	return &AppError{Code: ErrFADBPercent100, Params: []string{faNo, deprBookCode}}
+}
+
+// FAMethodStraightLine: with the book's Periodic Depr. Date Calc. = Last Depr. Entry only
+// straight-line
+func FAMethodStraightLine(faNo, deprBookCode string) *AppError {
+	return &AppError{Code: ErrFAMethodStraightLine, Params: []string{faNo, deprBookCode}}
+}
+
+// FADateNotLater: a date of the FA depreciation book must not be later than another
+func FADateNotLater(table, field, field2, faNo, deprBookCode string) *AppError {
+	return &AppError{Code: ErrFADateNotLater, Table: table, Field: field, Field2: field2, Params: []string{faNo, deprBookCode}}
+}
+
+// FANewFiscalYearLater: the book's New Fiscal Year Starting Date is later than the FA posting date
+func FANewFiscalYearLater(table, field string) *AppError {
+	return &AppError{Code: ErrFANewFiscalYearLater, Table: table, Field: field}
+}
+
+// FANoFiscalYear: no accounting period starts a fiscal year before the date
+func FANoFiscalYear() *AppError {
+	return &AppError{Code: ErrFANoFiscalYear}
+}
+
+// FADeprTableNoLines: the depreciation table has no lines
+func FADeprTableNoLines(code string) *AppError {
+	return &AppError{Code: ErrFADeprTableNoLines, Params: []string{code}}
+}
+
+// FADeprTableFirstDate: the First User-Defined Depr. Date must start an accounting period
+func FADeprTableFirstDate(date, periodDate string) *AppError {
+	return &AppError{Code: ErrFADeprTableFirstDate, Params: []string{date, periodDate}}
+}
+
+// FADeprTablePeriodMissing / FADeprTablePeriodTooShort: the accounting periods of a table by
+// periods
+func FADeprTablePeriodMissing() *AppError {
+	return &AppError{Code: ErrFADeprTablePeriodMissing}
+}
+
+func FADeprTablePeriodTooShort() *AppError {
+	return &AppError{Code: ErrFADeprTablePeriodTooShort}
+}
+
+// FACustom1EntryOnDate: a depreciation must be posted on the Depr. Ending Date (Custom 1) first
+func FACustom1EntryOnDate(faNo, deprBookCode, date string) *AppError {
+	return &AppError{Code: ErrFACustom1EntryOnDate, Params: []string{faNo, deprBookCode, date}}
+}
+
+// FACustom1BookValuePositive: the book value is positive on the Depr. Ending Date (Custom 1)
+func FACustom1BookValuePositive(faNo, deprBookCode, date string) *AppError {
+	return &AppError{Code: ErrFACustom1BookValuePos, Params: []string{faNo, deprBookCode, date}}
+}

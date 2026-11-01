@@ -3,6 +3,7 @@ package fajnl
 import (
 	"strconv"
 
+	"github.com/hansjlachmann/openerp/backend/business-logic/fadepr"
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
 	"github.com/hansjlachmann/openerp/backend/foundation/system"
@@ -22,8 +23,10 @@ import (
 // A general journal line with a fixed asset posts through GenJnlPostLine: its FA or maintenance
 // entry, and the G/L amounts (codeunit 5601, GLBuffer) codeunit 12 posts as G/L entries.
 //
-// Not migrated yet: automatic depreciation (Depr. until FA Posting Date, Depr. Acquisition Cost — FA3),
-// disposal (FA4), duplication in other books (FA5), budgeted assets.
+// A line with Depr. until FA Posting Date first posts the depreciation up to its date, with Depr.
+// Acquisition Cost after an acquisition the depreciation it adds (package fadepr).
+//
+// Not migrated yet: disposal (FA4), duplication in other books (FA5), budgeted assets.
 type FAJnlPostLine struct {
 	src                    ftables.Source
 	faJnlCheckLine         FAJnlCheckLine
@@ -58,7 +61,8 @@ func (p *FAJnlPostLine) FAJnlPostLine(faJnlLine *gtables.FAJournalLine, checkLin
 		return p.maintenanceCode(maintenanceLedgEntry)
 	}
 	faLedgEntry := makeFALedgEntry(p.src, faJnlLine)
-	return p.code(faLedgEntry, faJnlLine.Salvage_value)
+	return p.code(faLedgEntry, lineValues{salvageValue: faJnlLine.Salvage_value, amount: faJnlLine.Amount, faPostingDate: faJnlLine.Fa_posting_date,
+		deprUntilDate: faJnlLine.Depr_until_fa_posting_date, deprAcqCost: faJnlLine.Depr_acquisition_cost})
 }
 
 // GenJnlPostLine posts a general journal line's fixed asset (codeunit 12's PostFixedAsset): the
@@ -85,7 +89,8 @@ func (p *FAJnlPostLine) GenJnlPostLine(genJnlLine *gtables.GenJournalLine, faAmo
 	faLedgEntry.Tax_amount = taxAmount
 	faLedgEntry.Transaction_no = nextTransactionNo
 	faLedgEntry.G_l_entry_no = nextGLEntryNo
-	return p.code(faLedgEntry, genJnlLine.Salvage_value)
+	return p.code(faLedgEntry, lineValues{salvageValue: genJnlLine.Salvage_value, amount: faAmount, faPostingDate: genJnlLine.Fa_posting_date,
+		deprUntilDate: genJnlLine.Depr_until_fa_posting_date, deprAcqCost: genJnlLine.Depr_acquisition_cost})
 }
 
 // GLBuffer is the G/L amounts of the last general journal line (FindFirstGLAcc/GetNextGLAcc)
@@ -99,7 +104,16 @@ func (p *FAJnlPostLine) FARegister() *gtables.FARegister {
 }
 
 // code (Code): the asset may be posted to; the entry (and its salvage value) inserted
-func (p *FAJnlPostLine) code(faLedgEntry *gtables.FALedgerEntry, salvageValue types.Decimal) error {
+// lineValues: what Code needs of the journal line (FANo … ErrorEntryNo of the classic codeunit)
+type lineValues struct {
+	salvageValue  types.Decimal
+	amount        types.Decimal // Amount2: the line's FA amount
+	faPostingDate types.Date
+	deprUntilDate bool // Depr. until FA Posting Date
+	deprAcqCost   bool // Depr. Acquisition Cost
+}
+
+func (p *FAJnlPostLine) code(faLedgEntry *gtables.FALedgerEntry, v lineValues) error {
 	fa, faDeprBook, err := p.getFA(faLedgEntry.Fa_no, faLedgEntry.Depreciation_book_code)
 	if err != nil {
 		return err
@@ -112,21 +126,90 @@ func (p *FAJnlPostLine) code(faLedgEntry *gtables.FALedgerEntry, salvageValue ty
 		}
 		faLedgEntry.Fa_posting_group = faDeprBook.Fa_posting_group
 	}
-	p.glAcc.orgGenJnlLine = true
-	err = p.insertFALedgEntry(faLedgEntry, fa)
-	p.glAcc.orgGenJnlLine = false
-	if err != nil {
-		return err
+	if v.deprUntilDate {
+		err = p.postDeprUntilDate(faLedgEntry, fa, v, false)
+		if err != nil {
+			return err
+		}
+	}
+	// DeprLine: a depreciation line without amount only depreciates until its date
+	deprLine := v.amount.IsZero() && faLedgEntry.Fa_posting_type == gtables.FALedgerEntry_Fa_posting_type.Depreciation && v.deprUntilDate
+	if !deprLine {
+		p.glAcc.orgGenJnlLine = true
+		err = p.insertFALedgEntry(faLedgEntry, fa)
+		p.glAcc.orgGenJnlLine = false
+		if err != nil {
+			return err
+		}
 	}
 	// PostSalvageValue: an acquisition's salvage value
-	if salvageValue.IsZero() || faLedgEntry.Fa_posting_type != gtables.FALedgerEntry_Fa_posting_type.AcquisitionCost {
+	if !v.salvageValue.IsZero() && faLedgEntry.Fa_posting_type == gtables.FALedgerEntry_Fa_posting_type.AcquisitionCost {
+		salvage := gtables.NewFALedgerEntry(p.src)
+		salvage.Copy(faLedgEntry)
+		salvage.Entry_no = 0
+		salvage.Automatic_entry = true
+		salvage.Amount = v.salvageValue
+		salvage.Fa_posting_type = gtables.FALedgerEntry_Fa_posting_type.SalvageValue
+		err = p.insertFALedgEntry(salvage, fa)
+		if err != nil {
+			return err
+		}
+	}
+	if v.deprAcqCost {
+		return p.postDeprUntilDate(faLedgEntry, fa, v, true)
+	}
+	return nil
+}
+
+// postDeprUntilDate (PostDeprUntilDate): the automatic custom 1 and depreciation entries of a
+// line — the depreciation until its FA posting date (codeunit 5610), or the depreciation an
+// acquisition adds (Depr. Acquisition Cost, codeunit 5613); with G/L integration their balancing
+// amounts (InsertBalAcc)
+func (p *FAJnlPostLine) postDeprUntilDate(entry *gtables.FALedgerEntry, fa *gtables.FixedAsset, v lineValues, acqCost bool) error {
+	var deprAmount, custom1Amount types.Decimal
+	var numberOfDays, custom1NumberOfDays int
+	if acqCost {
+		var err error
+		deprAmount, custom1Amount, err = fadepr.AcqCostDepr(p.src, fa.No, entry.Depreciation_book_code, v.amount.Add(v.salvageValue), v.amount)
+		if err != nil {
+			return err
+		}
+	} else {
+		result, err := fadepr.Calculate(p.src, fa.No, entry.Depreciation_book_code, v.faPostingDate, fadepr.EntryAmounts{}, types.Date{}, 0)
+		if err != nil {
+			return err
+		}
+		deprAmount, custom1Amount = result.DeprAmount, result.Custom1Amount
+		numberOfDays, custom1NumberOfDays = result.NumberOfDays, result.Custom1NumberOfDays
+	}
+	post := func(postingType gtables.FALedgerEntryFa_posting_type, amount types.Decimal, days int) error {
+		auto := gtables.NewFALedgerEntry(p.src)
+		auto.Copy(entry)
+		auto.Automatic_entry = true
+		auto.Fa_no_budgeted_fa_no = ""
+		auto.Fa_posting_category = gtables.FALedgerEntry_Fa_posting_category.Blank
+		auto.Fa_posting_type = postingType
+		auto.Amount = amount
+		auto.No_of_depreciation_days = days
+		err := p.insertFALedgEntry(auto, fa)
+		if err != nil {
+			return err
+		}
+		if auto.G_l_entry_no > 0 {
+			return p.glAcc.insertBalAcc(p.src, auto)
+		}
 		return nil
 	}
-	faLedgEntry.Entry_no = 0
-	faLedgEntry.Automatic_entry = true
-	faLedgEntry.Amount = salvageValue
-	faLedgEntry.Fa_posting_type = gtables.FALedgerEntry_Fa_posting_type.SalvageValue
-	return p.insertFALedgEntry(faLedgEntry, fa)
+	if !custom1Amount.IsZero() {
+		err := post(gtables.FALedgerEntry_Fa_posting_type.Custom1, custom1Amount, custom1NumberOfDays)
+		if err != nil {
+			return err
+		}
+	}
+	if !deprAmount.IsZero() {
+		return post(gtables.FALedgerEntry_Fa_posting_type.Depreciation, deprAmount, numberOfDays)
+	}
+	return nil
 }
 
 // maintenanceCode (MaintenanceCode): the maintenance entry inserted

@@ -439,3 +439,23 @@ reports:
       RECEIPT: "RECEIPT"
       RECEIPT_NO: "Receipt No."
       RECEIPT_DATE: "Receipt Date"
+  "5692":
+    caption: "Calculate Depreciation"
+    options:
+      depreciation_book: "Depreciation Book"
+      fa_posting_date: "FA Posting Date"
+      use_force_no_of_days: "Use Force No. of Days"
+      force_no_of_days: "Force No. of Days"
+      posting_date: "Posting Date"
+      document_no: "Document No."
+      posting_description: "Posting Description"
+      insert_bal_account: "Insert Bal. Account"
+    texts:
+      OPTIONS: "Options"
+      ENTER_FA_POSTING_DATE: "You must specify the FA posting date."
+      USE_FORCE_NO_OF_DAYS: "Use Force No. of Days must be activated."
+      FORCE_NO_OF_DAYS_ACTIVATED: "Force No. of Days must be specified."
+      SAME_DATES: "The FA posting date and the posting date must be identical: Use Same FA+G/L Posting Dates is on in depreciation book %1."
+      ENTER_DOCUMENT_NO: "You must specify the document no."
+      WINDOW: "Depreciating fixed asset      #1##########\nNot depreciating fixed asset  #2##########\nInserting journal lines       #3##########"
+      LINES_CREATED: "%1 journal lines were created."

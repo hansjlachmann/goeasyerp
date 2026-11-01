@@ -26,6 +26,10 @@ func init() {
 	pages.OnOpenPage(5611, func(rec *gtables.DepreciationBook, page *pages.Open) error {
 		return ensureAllFAPostingTypeSetups(rec)
 	})
+	// Page 5660 Depreciation Table Lines: a new line's period no. follows the last (NewRecord)
+	pages.OnNewRecord(5660, func(rec, xRec *gtables.DepreciationTableLine, belowXRec bool) {
+		tables.NewDeprTableLine(rec)
+	})
 	pages.OnNewRecord(faJournalPageID, func(rec, xRec *gtables.FAJournalLine, belowXRec bool) {
 		_ = tables.SetUpNewFAJnlLine(rec, xRec)
 	})

@@ -2038,6 +2038,26 @@ tables:
       reason_code: "Årsakskode"
       no_series: "Nummerserie"
       posting_no_series: "Bokføringsnummerserie"
+  depreciation_table_header:
+    caption: "Avskrivningstabellhode"
+    fields:
+      code: "Kode"
+      description: "Beskrivelse"
+      period_length: "Periodelengde"
+      total_no_of_units: "Totalt antall enheter"
+    options:
+      period_length:
+        month: "Måned"
+        period: "Periode"
+        quarter: "Kvartal"
+        year: "År"
+  depreciation_table_line:
+    caption: "Avskrivningstabellinje"
+    fields:
+      depreciation_table_code: "Avskrivningstabellkode"
+      period_no: "Periodenr."
+      period_depreciation_percent: "Periodeavskrivning %"
+      no_of_units_in_period: "Antall enheter i periode"
   fa_allocation:
     caption: "Anleggsfordeling"
     fields:

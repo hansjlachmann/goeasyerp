@@ -3,6 +3,7 @@ package fajnl
 import (
 	"strconv"
 
+	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
 	"github.com/hansjlachmann/openerp/backend/foundation/functions"
@@ -25,25 +26,36 @@ func InsertFABalAccount(rec *gtables.GenJournalLine) (fcodeunits.Result, error) 
 	if err != nil {
 		return fcodeunits.Result{}, err
 	}
-	err = genJnlLine.TestField("bal_account_no", types.Code(""))
+	err = GetBalAcc(genJnlLine)
 	if err != nil {
 		return fcodeunits.Result{}, err
 	}
+	return fcodeunits.Result{Success: true, Refresh: true}, nil
+}
+
+// GetBalAcc (GetBalAcc) inserts the balancing G/L lines of a saved fixed asset journal line
+// below it
+func GetBalAcc(genJnlLine *gtables.GenJournalLine) error {
+	rec := genJnlLine
+	err := genJnlLine.TestField("bal_account_no", types.Code(""))
+	if err != nil {
+		return err
+	}
 	err = genJnlLine.TestField("account_type", gtables.GenJournalLine_Account_type.FixedAsset)
 	if err != nil {
-		return fcodeunits.Result{}, err
+		return err
 	}
 	for _, field := range []string{"account_no", "depreciation_book_code", "posting_group", "fa_posting_type"} {
 		err = genJnlLine.TestField(field)
 		if err != nil {
-			return fcodeunits.Result{}, err
+			return err
 		}
 	}
 	var g faInsertGLAcc
 	err = g.insertBufferBalAcc(rec, allocationType(genJnlLine.Fa_posting_type-1), genJnlLine.Amount.Neg(), genJnlLine.Depreciation_book_code,
 		genJnlLine.Posting_group, genJnlLine.Department_code, genJnlLine.Project_code, false, false)
 	if err != nil {
-		return fcodeunits.Result{}, err
+		return err
 	}
 	// the free line numbers below the line: one step per new line
 	next := gtables.NewGenJournalLine(rec)
@@ -55,12 +67,8 @@ func InsertFABalAccount(rec *gtables.GenJournalLine) (fcodeunits.Result, error) 
 		noOfEmptyLines = (next.Line_no - genJnlLine.Line_no) / (len(g.buffer) + 1)
 	}
 	if noOfEmptyLines < 1 {
-		return fcodeunits.Result{}, apperrors.FANoSpaceForBalAccounts()
+		return apperrors.FANoSpaceForBalAccounts()
 	}
-	genJnlTemplate := gtables.NewGenJournalTemplate(rec)
-	genJnlTemplate.Get(genJnlLine.Journal_template_name)
-	genJnlBatch := gtables.NewGenJournalBatch(rec)
-	genJnlBatch.Get(map[string]interface{}{"journal_template_name": genJnlLine.Journal_template_name, "name": genJnlLine.Journal_batch_name})
 	lineNo := genJnlLine.Line_no
 	for _, b := range g.buffer {
 		lineNo += noOfEmptyLines
@@ -72,27 +80,27 @@ func InsertFABalAccount(rec *gtables.GenJournalLine) (fcodeunits.Result, error) 
 		balLine.Posting_group = ""
 		err = balLine.Validate("fa_posting_type", gtables.GenJournalLine_Fa_posting_type.Blank)
 		if err != nil {
-			return fcodeunits.Result{}, err
+			return err
 		}
 		err = balLine.Validate("account_no", b.AccountNo)
 		if err != nil {
-			return fcodeunits.Result{}, err
+			return err
 		}
 		err = balLine.Validate("amount", b.Amount)
 		if err != nil {
-			return fcodeunits.Result{}, err
+			return err
 		}
 		balLine.Department_code = b.DepartmentCode
 		balLine.Project_code = b.ProjectCode
 		balLine.Description = genJnlLine.Description
-		// SetGenJnlTrailCodes: the journal's source code, reason code and posting no. series
-		balLine.Source_code = genJnlTemplate.Source_code
-		balLine.Reason_code = genJnlBatch.Reason_code
-		balLine.Posting_no_series = genJnlBatch.Posting_no_series
+		err = tables.SetGenJnlTrailCodes(balLine)
+		if err != nil {
+			return err
+		}
 		err = balLine.InsertOrError(true)
 		if err != nil {
-			return fcodeunits.Result{}, err
+			return err
 		}
 	}
-	return fcodeunits.Result{Success: true, Refresh: true}, nil
+	return nil
 }
