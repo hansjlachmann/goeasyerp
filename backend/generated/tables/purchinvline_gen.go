@@ -60,6 +60,16 @@
 //	OnValidate_Qty_per_unit_of_measure(rec *gtables.PurchInvLine) error
 //	OnValidate_Unit_of_measure_code(rec *gtables.PurchInvLine) error
 //	OnValidate_Quantity_base(rec *gtables.PurchInvLine) error
+//	OnValidate_Fa_posting_date(rec *gtables.PurchInvLine) error
+//	OnValidate_Fa_posting_type(rec *gtables.PurchInvLine) error
+//	OnValidate_Depreciation_book_code(rec *gtables.PurchInvLine) error
+//	OnValidate_Salvage_value(rec *gtables.PurchInvLine) error
+//	OnValidate_Depr_until_fa_posting_date(rec *gtables.PurchInvLine) error
+//	OnValidate_Depr_acquisition_cost(rec *gtables.PurchInvLine) error
+//	OnValidate_Maintenance_code(rec *gtables.PurchInvLine) error
+//	OnValidate_Insurance_no(rec *gtables.PurchInvLine) error
+//	OnValidate_Duplicate_in_depreciation_book(rec *gtables.PurchInvLine) error
+//	OnValidate_Use_duplication_list(rec *gtables.PurchInvLine) error
 
 package tables
 
@@ -88,7 +98,7 @@ type PurchInvLineType int
 
 // String returns the text representation of PurchInvLineType
 func (o PurchInvLineType) String() string {
-	options := []string{" ", "G/L Account", "Item"}
+	options := []string{" ", "G/L Account", "Item", "", "Fixed Asset"}
 	if o >= 0 && int(o) < len(options) {
 		return options[o]
 	}
@@ -97,7 +107,7 @@ func (o PurchInvLineType) String() string {
 
 // IsValid checks if the PurchInvLineType value is within valid range
 func (o PurchInvLineType) IsValid() bool {
-	return o >= 0 && o < 3
+	return o >= 0 && o < 5
 }
 
 // PurchInvLineTax_calculation_type represents the tax_calculation_type option field
@@ -117,60 +127,87 @@ func (o PurchInvLineTax_calculation_type) IsValid() bool {
 	return o >= 0 && o < 4
 }
 
+// PurchInvLineFa_posting_type represents the fa_posting_type option field
+type PurchInvLineFa_posting_type int
+
+// String returns the text representation of PurchInvLineFa_posting_type
+func (o PurchInvLineFa_posting_type) String() string {
+	options := []string{" ", "Acquisition Cost", "Maintenance"}
+	if o >= 0 && int(o) < len(options) {
+		return options[o]
+	}
+	return ""
+}
+
+// IsValid checks if the PurchInvLineFa_posting_type value is within valid range
+func (o PurchInvLineFa_posting_type) IsValid() bool {
+	return o >= 0 && o < 3
+}
+
 // PurchInvLine represents Table 123: Purch_Inv_Line
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterPurchInvLineLogic.
 type PurchInvLine struct {
-	Buy_from_vendor_no      types.Code                       `db:"buy_from_vendor_no"`
-	Document_no             types.Code                       `db:"document_no,pk"`
-	Line_no                 int                              `db:"line_no,pk"`
-	Type                    PurchInvLineType                 `db:"type"`
-	No                      types.Code                       `db:"no"`
-	Location_code           types.Code                       `db:"location_code"`
-	Posting_group           types.Code                       `db:"posting_group"`
-	Expected_receipt_date   types.Date                       `db:"expected_receipt_date"`
-	Description             types.Text                       `db:"description"`
-	Description_2           types.Text                       `db:"description_2"`
-	Unit_of_measure         types.Text                       `db:"unit_of_measure"`
-	Quantity                types.Decimal                    `db:"quantity"`
-	Direct_unit_cost        types.Decimal                    `db:"direct_unit_cost"`
-	Unit_cost_lcy           types.Decimal                    `db:"unit_cost_lcy"`
-	Tax_percent             types.Decimal                    `db:"tax_percent"`
-	Quantity_disc_percent   types.Decimal                    `db:"quantity_disc_percent"`
-	Line_discount_percent   types.Decimal                    `db:"line_discount_percent"`
-	Line_discount_amount    types.Decimal                    `db:"line_discount_amount"`
-	Amount                  types.Decimal                    `db:"amount"`
-	Amount_including_tax    types.Decimal                    `db:"amount_including_tax"`
-	Unit_price_lcy          types.Decimal                    `db:"unit_price_lcy"`
-	Allow_invoice_disc      bool                             `db:"allow_invoice_disc"`
-	Gross_weight            types.Decimal                    `db:"gross_weight"`
-	Net_weight              types.Decimal                    `db:"net_weight"`
-	Units_per_parcel        types.Decimal                    `db:"units_per_parcel"`
-	Unit_volume             types.Decimal                    `db:"unit_volume"`
-	Department_code         types.Code                       `db:"department_code"`
-	Project_code            types.Code                       `db:"project_code"`
-	Indirect_cost_percent   types.Decimal                    `db:"indirect_cost_percent"`
-	Receipt_no              types.Code                       `db:"receipt_no"`
-	Receipt_line_no         int                              `db:"receipt_line_no"`
-	Pay_to_vendor_no        types.Code                       `db:"pay_to_vendor_no"`
-	Inv_discount_amount     types.Decimal                    `db:"inv_discount_amount"`
-	Vendor_item_no          types.Text                       `db:"vendor_item_no"`
-	Gen_bus_posting_group   types.Code                       `db:"gen_bus_posting_group"`
-	Gen_prod_posting_group  types.Code                       `db:"gen_prod_posting_group"`
-	Tax_calculation_type    PurchInvLineTax_calculation_type `db:"tax_calculation_type"`
-	Tax_area_code           types.Code                       `db:"tax_area_code"`
-	Tax_liable              bool                             `db:"tax_liable"`
-	Tax_group_code          types.Code                       `db:"tax_group_code"`
-	Use_tax                 bool                             `db:"use_tax"`
-	Tax_bus_posting_group   types.Code                       `db:"tax_bus_posting_group"`
-	Tax_prod_posting_group  types.Code                       `db:"tax_prod_posting_group"`
-	Currency_code           types.Code                       `db:"currency_code"`
-	Tax_base_amount         types.Decimal                    `db:"tax_base_amount"`
-	Unit_cost               types.Decimal                    `db:"unit_cost"`
-	Variant_code            types.Code                       `db:"variant_code"`
-	Qty_per_unit_of_measure types.Decimal                    `db:"qty_per_unit_of_measure"`
-	Unit_of_measure_code    types.Code                       `db:"unit_of_measure_code"`
-	Quantity_base           types.Decimal                    `db:"quantity_base"`
+	Buy_from_vendor_no             types.Code                       `db:"buy_from_vendor_no"`
+	Document_no                    types.Code                       `db:"document_no,pk"`
+	Line_no                        int                              `db:"line_no,pk"`
+	Type                           PurchInvLineType                 `db:"type"`
+	No                             types.Code                       `db:"no"`
+	Location_code                  types.Code                       `db:"location_code"`
+	Posting_group                  types.Code                       `db:"posting_group"`
+	Expected_receipt_date          types.Date                       `db:"expected_receipt_date"`
+	Description                    types.Text                       `db:"description"`
+	Description_2                  types.Text                       `db:"description_2"`
+	Unit_of_measure                types.Text                       `db:"unit_of_measure"`
+	Quantity                       types.Decimal                    `db:"quantity"`
+	Direct_unit_cost               types.Decimal                    `db:"direct_unit_cost"`
+	Unit_cost_lcy                  types.Decimal                    `db:"unit_cost_lcy"`
+	Tax_percent                    types.Decimal                    `db:"tax_percent"`
+	Quantity_disc_percent          types.Decimal                    `db:"quantity_disc_percent"`
+	Line_discount_percent          types.Decimal                    `db:"line_discount_percent"`
+	Line_discount_amount           types.Decimal                    `db:"line_discount_amount"`
+	Amount                         types.Decimal                    `db:"amount"`
+	Amount_including_tax           types.Decimal                    `db:"amount_including_tax"`
+	Unit_price_lcy                 types.Decimal                    `db:"unit_price_lcy"`
+	Allow_invoice_disc             bool                             `db:"allow_invoice_disc"`
+	Gross_weight                   types.Decimal                    `db:"gross_weight"`
+	Net_weight                     types.Decimal                    `db:"net_weight"`
+	Units_per_parcel               types.Decimal                    `db:"units_per_parcel"`
+	Unit_volume                    types.Decimal                    `db:"unit_volume"`
+	Department_code                types.Code                       `db:"department_code"`
+	Project_code                   types.Code                       `db:"project_code"`
+	Indirect_cost_percent          types.Decimal                    `db:"indirect_cost_percent"`
+	Receipt_no                     types.Code                       `db:"receipt_no"`
+	Receipt_line_no                int                              `db:"receipt_line_no"`
+	Pay_to_vendor_no               types.Code                       `db:"pay_to_vendor_no"`
+	Inv_discount_amount            types.Decimal                    `db:"inv_discount_amount"`
+	Vendor_item_no                 types.Text                       `db:"vendor_item_no"`
+	Gen_bus_posting_group          types.Code                       `db:"gen_bus_posting_group"`
+	Gen_prod_posting_group         types.Code                       `db:"gen_prod_posting_group"`
+	Tax_calculation_type           PurchInvLineTax_calculation_type `db:"tax_calculation_type"`
+	Tax_area_code                  types.Code                       `db:"tax_area_code"`
+	Tax_liable                     bool                             `db:"tax_liable"`
+	Tax_group_code                 types.Code                       `db:"tax_group_code"`
+	Use_tax                        bool                             `db:"use_tax"`
+	Tax_bus_posting_group          types.Code                       `db:"tax_bus_posting_group"`
+	Tax_prod_posting_group         types.Code                       `db:"tax_prod_posting_group"`
+	Currency_code                  types.Code                       `db:"currency_code"`
+	Tax_base_amount                types.Decimal                    `db:"tax_base_amount"`
+	Unit_cost                      types.Decimal                    `db:"unit_cost"`
+	Variant_code                   types.Code                       `db:"variant_code"`
+	Qty_per_unit_of_measure        types.Decimal                    `db:"qty_per_unit_of_measure"`
+	Unit_of_measure_code           types.Code                       `db:"unit_of_measure_code"`
+	Quantity_base                  types.Decimal                    `db:"quantity_base"`
+	Fa_posting_date                types.Date                       `db:"fa_posting_date"`
+	Fa_posting_type                PurchInvLineFa_posting_type      `db:"fa_posting_type"`
+	Depreciation_book_code         types.Code                       `db:"depreciation_book_code"`
+	Salvage_value                  types.Decimal                    `db:"salvage_value"`
+	Depr_until_fa_posting_date     bool                             `db:"depr_until_fa_posting_date"`
+	Depr_acquisition_cost          bool                             `db:"depr_acquisition_cost"`
+	Maintenance_code               types.Code                       `db:"maintenance_code"`
+	Insurance_no                   types.Code                       `db:"insurance_no"`
+	Duplicate_in_depreciation_book types.Code                       `db:"duplicate_in_depreciation_book"`
+	Use_duplication_list           bool                             `db:"use_duplication_list"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -236,13 +273,17 @@ const PurchInvLineTableName = "Purch_Inv_Line"
 
 // PurchInvLine_Type provides named constants for the type option field (FieldName.OptionValue syntax)
 var PurchInvLine_Type = struct {
-	Blank     PurchInvLineType
-	GLAccount PurchInvLineType
-	Item      PurchInvLineType
+	Blank      PurchInvLineType
+	GLAccount  PurchInvLineType
+	Item       PurchInvLineType
+	Blank3     PurchInvLineType
+	FixedAsset PurchInvLineType
 }{
-	Blank:     0,
-	GLAccount: 1,
-	Item:      2,
+	Blank:      0,
+	GLAccount:  1,
+	Item:       2,
+	Blank3:     3,
+	FixedAsset: 4,
 }
 
 // PurchInvLine_Tax_calculation_type provides named constants for the tax_calculation_type option field (FieldName.OptionValue syntax)
@@ -258,6 +299,17 @@ var PurchInvLine_Tax_calculation_type = struct {
 	SalesTax:         3,
 }
 
+// PurchInvLine_Fa_posting_type provides named constants for the fa_posting_type option field (FieldName.OptionValue syntax)
+var PurchInvLine_Fa_posting_type = struct {
+	Blank           PurchInvLineFa_posting_type
+	AcquisitionCost PurchInvLineFa_posting_type
+	Maintenance     PurchInvLineFa_posting_type
+}{
+	Blank:           0,
+	AcquisitionCost: 1,
+	Maintenance:     2,
+}
+
 // ========================================
 // Field numbers (field IDs)
 // ========================================
@@ -265,107 +317,127 @@ var PurchInvLine_Tax_calculation_type = struct {
 // PurchInvLine_FieldNo holds the field numbers of Purch_Inv_Line (FieldNo):
 // PurchInvLine_FieldNo.Buy_from_vendor_no is 2
 var PurchInvLine_FieldNo = struct {
-	Buy_from_vendor_no      int
-	Document_no             int
-	Line_no                 int
-	Type                    int
-	No                      int
-	Location_code           int
-	Posting_group           int
-	Expected_receipt_date   int
-	Description             int
-	Description_2           int
-	Unit_of_measure         int
-	Quantity                int
-	Direct_unit_cost        int
-	Unit_cost_lcy           int
-	Tax_percent             int
-	Quantity_disc_percent   int
-	Line_discount_percent   int
-	Line_discount_amount    int
-	Amount                  int
-	Amount_including_tax    int
-	Unit_price_lcy          int
-	Allow_invoice_disc      int
-	Gross_weight            int
-	Net_weight              int
-	Units_per_parcel        int
-	Unit_volume             int
-	Department_code         int
-	Project_code            int
-	Indirect_cost_percent   int
-	Receipt_no              int
-	Receipt_line_no         int
-	Pay_to_vendor_no        int
-	Inv_discount_amount     int
-	Vendor_item_no          int
-	Gen_bus_posting_group   int
-	Gen_prod_posting_group  int
-	Tax_calculation_type    int
-	Tax_area_code           int
-	Tax_liable              int
-	Tax_group_code          int
-	Use_tax                 int
-	Tax_bus_posting_group   int
-	Tax_prod_posting_group  int
-	Currency_code           int
-	Tax_base_amount         int
-	Unit_cost               int
-	Variant_code            int
-	Qty_per_unit_of_measure int
-	Unit_of_measure_code    int
-	Quantity_base           int
+	Buy_from_vendor_no             int
+	Document_no                    int
+	Line_no                        int
+	Type                           int
+	No                             int
+	Location_code                  int
+	Posting_group                  int
+	Expected_receipt_date          int
+	Description                    int
+	Description_2                  int
+	Unit_of_measure                int
+	Quantity                       int
+	Direct_unit_cost               int
+	Unit_cost_lcy                  int
+	Tax_percent                    int
+	Quantity_disc_percent          int
+	Line_discount_percent          int
+	Line_discount_amount           int
+	Amount                         int
+	Amount_including_tax           int
+	Unit_price_lcy                 int
+	Allow_invoice_disc             int
+	Gross_weight                   int
+	Net_weight                     int
+	Units_per_parcel               int
+	Unit_volume                    int
+	Department_code                int
+	Project_code                   int
+	Indirect_cost_percent          int
+	Receipt_no                     int
+	Receipt_line_no                int
+	Pay_to_vendor_no               int
+	Inv_discount_amount            int
+	Vendor_item_no                 int
+	Gen_bus_posting_group          int
+	Gen_prod_posting_group         int
+	Tax_calculation_type           int
+	Tax_area_code                  int
+	Tax_liable                     int
+	Tax_group_code                 int
+	Use_tax                        int
+	Tax_bus_posting_group          int
+	Tax_prod_posting_group         int
+	Currency_code                  int
+	Tax_base_amount                int
+	Unit_cost                      int
+	Variant_code                   int
+	Qty_per_unit_of_measure        int
+	Unit_of_measure_code           int
+	Quantity_base                  int
+	Fa_posting_date                int
+	Fa_posting_type                int
+	Depreciation_book_code         int
+	Salvage_value                  int
+	Depr_until_fa_posting_date     int
+	Depr_acquisition_cost          int
+	Maintenance_code               int
+	Insurance_no                   int
+	Duplicate_in_depreciation_book int
+	Use_duplication_list           int
 }{
-	Buy_from_vendor_no:      2,
-	Document_no:             3,
-	Line_no:                 4,
-	Type:                    5,
-	No:                      6,
-	Location_code:           7,
-	Posting_group:           8,
-	Expected_receipt_date:   10,
-	Description:             11,
-	Description_2:           12,
-	Unit_of_measure:         13,
-	Quantity:                15,
-	Direct_unit_cost:        22,
-	Unit_cost_lcy:           23,
-	Tax_percent:             25,
-	Quantity_disc_percent:   26,
-	Line_discount_percent:   27,
-	Line_discount_amount:    28,
-	Amount:                  29,
-	Amount_including_tax:    30,
-	Unit_price_lcy:          31,
-	Allow_invoice_disc:      32,
-	Gross_weight:            34,
-	Net_weight:              35,
-	Units_per_parcel:        36,
-	Unit_volume:             37,
-	Department_code:         40,
-	Project_code:            41,
-	Indirect_cost_percent:   54,
-	Receipt_no:              63,
-	Receipt_line_no:         64,
-	Pay_to_vendor_no:        68,
-	Inv_discount_amount:     69,
-	Vendor_item_no:          70,
-	Gen_bus_posting_group:   74,
-	Gen_prod_posting_group:  75,
-	Tax_calculation_type:    77,
-	Tax_area_code:           85,
-	Tax_liable:              86,
-	Tax_group_code:          87,
-	Use_tax:                 88,
-	Tax_bus_posting_group:   89,
-	Tax_prod_posting_group:  90,
-	Currency_code:           91,
-	Tax_base_amount:         99,
-	Unit_cost:               100,
-	Variant_code:            5402,
-	Qty_per_unit_of_measure: 5404,
-	Unit_of_measure_code:    5407,
-	Quantity_base:           5415,
+	Buy_from_vendor_no:             2,
+	Document_no:                    3,
+	Line_no:                        4,
+	Type:                           5,
+	No:                             6,
+	Location_code:                  7,
+	Posting_group:                  8,
+	Expected_receipt_date:          10,
+	Description:                    11,
+	Description_2:                  12,
+	Unit_of_measure:                13,
+	Quantity:                       15,
+	Direct_unit_cost:               22,
+	Unit_cost_lcy:                  23,
+	Tax_percent:                    25,
+	Quantity_disc_percent:          26,
+	Line_discount_percent:          27,
+	Line_discount_amount:           28,
+	Amount:                         29,
+	Amount_including_tax:           30,
+	Unit_price_lcy:                 31,
+	Allow_invoice_disc:             32,
+	Gross_weight:                   34,
+	Net_weight:                     35,
+	Units_per_parcel:               36,
+	Unit_volume:                    37,
+	Department_code:                40,
+	Project_code:                   41,
+	Indirect_cost_percent:          54,
+	Receipt_no:                     63,
+	Receipt_line_no:                64,
+	Pay_to_vendor_no:               68,
+	Inv_discount_amount:            69,
+	Vendor_item_no:                 70,
+	Gen_bus_posting_group:          74,
+	Gen_prod_posting_group:         75,
+	Tax_calculation_type:           77,
+	Tax_area_code:                  85,
+	Tax_liable:                     86,
+	Tax_group_code:                 87,
+	Use_tax:                        88,
+	Tax_bus_posting_group:          89,
+	Tax_prod_posting_group:         90,
+	Currency_code:                  91,
+	Tax_base_amount:                99,
+	Unit_cost:                      100,
+	Variant_code:                   5402,
+	Qty_per_unit_of_measure:        5404,
+	Unit_of_measure_code:           5407,
+	Quantity_base:                  5415,
+	Fa_posting_date:                5600,
+	Fa_posting_type:                5601,
+	Depreciation_book_code:         5602,
+	Salvage_value:                  5603,
+	Depr_until_fa_posting_date:     5605,
+	Depr_acquisition_cost:          5606,
+	Maintenance_code:               5609,
+	Insurance_no:                   5610,
+	Duplicate_in_depreciation_book: 5612,
+	Use_duplication_list:           5613,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -471,6 +543,26 @@ func (t *PurchInvLine) FieldNo(fieldName string) int {
 		return 5407
 	case "quantity_base":
 		return 5415
+	case "fa_posting_date":
+		return 5600
+	case "fa_posting_type":
+		return 5601
+	case "depreciation_book_code":
+		return 5602
+	case "salvage_value":
+		return 5603
+	case "depr_until_fa_posting_date":
+		return 5605
+	case "depr_acquisition_cost":
+		return 5606
+	case "maintenance_code":
+		return 5609
+	case "insurance_no":
+		return 5610
+	case "duplicate_in_depreciation_book":
+		return 5612
+	case "use_duplication_list":
+		return 5613
 	}
 	return 0
 }
@@ -578,6 +670,26 @@ func (t *PurchInvLine) FieldName(fieldNo int) string {
 		return "unit_of_measure_code"
 	case 5415:
 		return "quantity_base"
+	case 5600:
+		return "fa_posting_date"
+	case 5601:
+		return "fa_posting_type"
+	case 5602:
+		return "depreciation_book_code"
+	case 5603:
+		return "salvage_value"
+	case 5605:
+		return "depr_until_fa_posting_date"
+	case 5606:
+		return "depr_acquisition_cost"
+	case 5609:
+		return "maintenance_code"
+	case 5610:
+		return "insurance_no"
+	case 5612:
+		return "duplicate_in_depreciation_book"
+	case 5613:
+		return "use_duplication_list"
 	}
 	return ""
 }
@@ -667,60 +779,70 @@ func (t *PurchInvLine) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Purch_Inv_Line: a business logic type implements the ones it needs
 type (
-	PurchInvLineOnInsert                           interface{ OnInsert(rec *PurchInvLine) error }
-	PurchInvLineOnModify                           interface{ OnModify(rec *PurchInvLine) error }
-	PurchInvLineOnDelete                           interface{ OnDelete(rec *PurchInvLine) error }
-	PurchInvLineOnRename                           interface{ OnRename(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Buy_from_vendor_no      interface{ OnValidate_Buy_from_vendor_no(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Document_no             interface{ OnValidate_Document_no(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Line_no                 interface{ OnValidate_Line_no(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Type                    interface{ OnValidate_Type(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_No                      interface{ OnValidate_No(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Location_code           interface{ OnValidate_Location_code(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Posting_group           interface{ OnValidate_Posting_group(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Expected_receipt_date   interface{ OnValidate_Expected_receipt_date(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Description             interface{ OnValidate_Description(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Description_2           interface{ OnValidate_Description_2(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Unit_of_measure         interface{ OnValidate_Unit_of_measure(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Quantity                interface{ OnValidate_Quantity(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Direct_unit_cost        interface{ OnValidate_Direct_unit_cost(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Unit_cost_lcy           interface{ OnValidate_Unit_cost_lcy(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Tax_percent             interface{ OnValidate_Tax_percent(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Quantity_disc_percent   interface{ OnValidate_Quantity_disc_percent(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Line_discount_percent   interface{ OnValidate_Line_discount_percent(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Line_discount_amount    interface{ OnValidate_Line_discount_amount(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Amount                  interface{ OnValidate_Amount(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Amount_including_tax    interface{ OnValidate_Amount_including_tax(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Unit_price_lcy          interface{ OnValidate_Unit_price_lcy(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Allow_invoice_disc      interface{ OnValidate_Allow_invoice_disc(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Gross_weight            interface{ OnValidate_Gross_weight(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Net_weight              interface{ OnValidate_Net_weight(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Units_per_parcel        interface{ OnValidate_Units_per_parcel(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Unit_volume             interface{ OnValidate_Unit_volume(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Department_code         interface{ OnValidate_Department_code(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Project_code            interface{ OnValidate_Project_code(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Indirect_cost_percent   interface{ OnValidate_Indirect_cost_percent(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Receipt_no              interface{ OnValidate_Receipt_no(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Receipt_line_no         interface{ OnValidate_Receipt_line_no(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Pay_to_vendor_no        interface{ OnValidate_Pay_to_vendor_no(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Inv_discount_amount     interface{ OnValidate_Inv_discount_amount(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Vendor_item_no          interface{ OnValidate_Vendor_item_no(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Gen_bus_posting_group   interface{ OnValidate_Gen_bus_posting_group(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Gen_prod_posting_group  interface{ OnValidate_Gen_prod_posting_group(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Tax_calculation_type    interface{ OnValidate_Tax_calculation_type(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Tax_area_code           interface{ OnValidate_Tax_area_code(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Tax_liable              interface{ OnValidate_Tax_liable(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Tax_group_code          interface{ OnValidate_Tax_group_code(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Use_tax                 interface{ OnValidate_Use_tax(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Tax_bus_posting_group   interface{ OnValidate_Tax_bus_posting_group(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Tax_prod_posting_group  interface{ OnValidate_Tax_prod_posting_group(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Currency_code           interface{ OnValidate_Currency_code(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Tax_base_amount         interface{ OnValidate_Tax_base_amount(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Unit_cost               interface{ OnValidate_Unit_cost(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Variant_code            interface{ OnValidate_Variant_code(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Qty_per_unit_of_measure interface{ OnValidate_Qty_per_unit_of_measure(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Unit_of_measure_code    interface{ OnValidate_Unit_of_measure_code(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Quantity_base           interface{ OnValidate_Quantity_base(rec *PurchInvLine) error }
+	PurchInvLineOnInsert                                  interface{ OnInsert(rec *PurchInvLine) error }
+	PurchInvLineOnModify                                  interface{ OnModify(rec *PurchInvLine) error }
+	PurchInvLineOnDelete                                  interface{ OnDelete(rec *PurchInvLine) error }
+	PurchInvLineOnRename                                  interface{ OnRename(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Buy_from_vendor_no             interface{ OnValidate_Buy_from_vendor_no(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Document_no                    interface{ OnValidate_Document_no(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Line_no                        interface{ OnValidate_Line_no(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Type                           interface{ OnValidate_Type(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_No                             interface{ OnValidate_No(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Location_code                  interface{ OnValidate_Location_code(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Posting_group                  interface{ OnValidate_Posting_group(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Expected_receipt_date          interface{ OnValidate_Expected_receipt_date(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Description                    interface{ OnValidate_Description(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Description_2                  interface{ OnValidate_Description_2(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Unit_of_measure                interface{ OnValidate_Unit_of_measure(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Quantity                       interface{ OnValidate_Quantity(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Direct_unit_cost               interface{ OnValidate_Direct_unit_cost(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Unit_cost_lcy                  interface{ OnValidate_Unit_cost_lcy(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Tax_percent                    interface{ OnValidate_Tax_percent(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Quantity_disc_percent          interface{ OnValidate_Quantity_disc_percent(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Line_discount_percent          interface{ OnValidate_Line_discount_percent(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Line_discount_amount           interface{ OnValidate_Line_discount_amount(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Amount                         interface{ OnValidate_Amount(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Amount_including_tax           interface{ OnValidate_Amount_including_tax(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Unit_price_lcy                 interface{ OnValidate_Unit_price_lcy(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Allow_invoice_disc             interface{ OnValidate_Allow_invoice_disc(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Gross_weight                   interface{ OnValidate_Gross_weight(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Net_weight                     interface{ OnValidate_Net_weight(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Units_per_parcel               interface{ OnValidate_Units_per_parcel(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Unit_volume                    interface{ OnValidate_Unit_volume(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Department_code                interface{ OnValidate_Department_code(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Project_code                   interface{ OnValidate_Project_code(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Indirect_cost_percent          interface{ OnValidate_Indirect_cost_percent(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Receipt_no                     interface{ OnValidate_Receipt_no(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Receipt_line_no                interface{ OnValidate_Receipt_line_no(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Pay_to_vendor_no               interface{ OnValidate_Pay_to_vendor_no(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Inv_discount_amount            interface{ OnValidate_Inv_discount_amount(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Vendor_item_no                 interface{ OnValidate_Vendor_item_no(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Gen_bus_posting_group          interface{ OnValidate_Gen_bus_posting_group(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Gen_prod_posting_group         interface{ OnValidate_Gen_prod_posting_group(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Tax_calculation_type           interface{ OnValidate_Tax_calculation_type(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Tax_area_code                  interface{ OnValidate_Tax_area_code(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Tax_liable                     interface{ OnValidate_Tax_liable(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Tax_group_code                 interface{ OnValidate_Tax_group_code(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Use_tax                        interface{ OnValidate_Use_tax(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Tax_bus_posting_group          interface{ OnValidate_Tax_bus_posting_group(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Tax_prod_posting_group         interface{ OnValidate_Tax_prod_posting_group(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Currency_code                  interface{ OnValidate_Currency_code(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Tax_base_amount                interface{ OnValidate_Tax_base_amount(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Unit_cost                      interface{ OnValidate_Unit_cost(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Variant_code                   interface{ OnValidate_Variant_code(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Qty_per_unit_of_measure        interface{ OnValidate_Qty_per_unit_of_measure(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Unit_of_measure_code           interface{ OnValidate_Unit_of_measure_code(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Quantity_base                  interface{ OnValidate_Quantity_base(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Fa_posting_date                interface{ OnValidate_Fa_posting_date(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Fa_posting_type                interface{ OnValidate_Fa_posting_type(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Depreciation_book_code         interface{ OnValidate_Depreciation_book_code(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Salvage_value                  interface{ OnValidate_Salvage_value(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Depr_until_fa_posting_date     interface{ OnValidate_Depr_until_fa_posting_date(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Depr_acquisition_cost          interface{ OnValidate_Depr_acquisition_cost(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Maintenance_code               interface{ OnValidate_Maintenance_code(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Insurance_no                   interface{ OnValidate_Insurance_no(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Duplicate_in_depreciation_book interface{ OnValidate_Duplicate_in_depreciation_book(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Use_duplication_list           interface{ OnValidate_Use_duplication_list(rec *PurchInvLine) error }
 )
 
 // purchInvLineLogic is the registered business logic of Purch_Inv_Line, in
@@ -850,6 +972,26 @@ func purchInvLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PurchInvLineOnValidate_Unit_of_measure_code)
 	case "OnValidate_Quantity_base":
 		_, ok = logic.(PurchInvLineOnValidate_Quantity_base)
+	case "OnValidate_Fa_posting_date":
+		_, ok = logic.(PurchInvLineOnValidate_Fa_posting_date)
+	case "OnValidate_Fa_posting_type":
+		_, ok = logic.(PurchInvLineOnValidate_Fa_posting_type)
+	case "OnValidate_Depreciation_book_code":
+		_, ok = logic.(PurchInvLineOnValidate_Depreciation_book_code)
+	case "OnValidate_Salvage_value":
+		_, ok = logic.(PurchInvLineOnValidate_Salvage_value)
+	case "OnValidate_Depr_until_fa_posting_date":
+		_, ok = logic.(PurchInvLineOnValidate_Depr_until_fa_posting_date)
+	case "OnValidate_Depr_acquisition_cost":
+		_, ok = logic.(PurchInvLineOnValidate_Depr_acquisition_cost)
+	case "OnValidate_Maintenance_code":
+		_, ok = logic.(PurchInvLineOnValidate_Maintenance_code)
+	case "OnValidate_Insurance_no":
+		_, ok = logic.(PurchInvLineOnValidate_Insurance_no)
+	case "OnValidate_Duplicate_in_depreciation_book":
+		_, ok = logic.(PurchInvLineOnValidate_Duplicate_in_depreciation_book)
+	case "OnValidate_Use_duplication_list":
+		_, ok = logic.(PurchInvLineOnValidate_Use_duplication_list)
 	default:
 		return false, false
 	}
@@ -996,6 +1138,18 @@ func (t *PurchInvLine) CheckFields() error {
 	if err := tables.CheckMaxLength(PurchInvLineTableName, "unit_of_measure_code", string(t.Unit_of_measure_code), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(PurchInvLineTableName, "depreciation_book_code", string(t.Depreciation_book_code), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(PurchInvLineTableName, "maintenance_code", string(t.Maintenance_code), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(PurchInvLineTableName, "insurance_no", string(t.Insurance_no), 20); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(PurchInvLineTableName, "duplicate_in_depreciation_book", string(t.Duplicate_in_depreciation_book), 10); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -1026,7 +1180,7 @@ func GetPurchInvLineTableSchema() string {
 		buy_from_vendor_no TEXT(20),
 		document_no TEXT(20),
 		line_no INTEGER,
-		type INTEGER CHECK (type >= 0 AND type <= 2),
+		type INTEGER CHECK (type >= 0 AND type <= 4),
 		no TEXT(20),
 		location_code TEXT(10),
 		posting_group TEXT(10),
@@ -1073,6 +1227,16 @@ func GetPurchInvLineTableSchema() string {
 		qty_per_unit_of_measure TEXT DEFAULT 1,
 		unit_of_measure_code TEXT(10),
 		quantity_base TEXT,
+		fa_posting_date TEXT,
+		fa_posting_type INTEGER CHECK (fa_posting_type >= 0 AND fa_posting_type <= 2),
+		depreciation_book_code TEXT(10),
+		salvage_value TEXT,
+		depr_until_fa_posting_date INTEGER,
+		depr_acquisition_cost INTEGER,
+		maintenance_code TEXT(10),
+		insurance_no TEXT(20),
+		duplicate_in_depreciation_book TEXT(10),
+		use_duplication_list INTEGER,
 		PRIMARY KEY (document_no, line_no)
 	`
 }
@@ -1083,7 +1247,7 @@ func GetPurchInvLinePostgresTableSchema() string {
 		buy_from_vendor_no VARCHAR(20),
 		document_no VARCHAR(20),
 		line_no INTEGER,
-		type INTEGER CHECK (type >= 0 AND type <= 2),
+		type INTEGER CHECK (type >= 0 AND type <= 4),
 		no VARCHAR(20),
 		location_code VARCHAR(10),
 		posting_group VARCHAR(10),
@@ -1130,6 +1294,16 @@ func GetPurchInvLinePostgresTableSchema() string {
 		qty_per_unit_of_measure NUMERIC DEFAULT 1,
 		unit_of_measure_code VARCHAR(10),
 		quantity_base NUMERIC,
+		fa_posting_date DATE,
+		fa_posting_type INTEGER CHECK (fa_posting_type >= 0 AND fa_posting_type <= 2),
+		depreciation_book_code VARCHAR(10),
+		salvage_value NUMERIC,
+		depr_until_fa_posting_date BOOLEAN,
+		depr_acquisition_cost BOOLEAN,
+		maintenance_code VARCHAR(10),
+		insurance_no VARCHAR(20),
+		duplicate_in_depreciation_book VARCHAR(10),
+		use_duplication_list BOOLEAN,
 		PRIMARY KEY (document_no, line_no)
 	`
 }
@@ -1317,6 +1491,16 @@ func (t *PurchInvLine) StoreOldValues() {
 	t.oldValues["qty_per_unit_of_measure"] = t.Qty_per_unit_of_measure
 	t.oldValues["unit_of_measure_code"] = t.Unit_of_measure_code
 	t.oldValues["quantity_base"] = t.Quantity_base
+	t.oldValues["fa_posting_date"] = t.Fa_posting_date
+	t.oldValues["fa_posting_type"] = t.Fa_posting_type
+	t.oldValues["depreciation_book_code"] = t.Depreciation_book_code
+	t.oldValues["salvage_value"] = t.Salvage_value
+	t.oldValues["depr_until_fa_posting_date"] = t.Depr_until_fa_posting_date
+	t.oldValues["depr_acquisition_cost"] = t.Depr_acquisition_cost
+	t.oldValues["maintenance_code"] = t.Maintenance_code
+	t.oldValues["insurance_no"] = t.Insurance_no
+	t.oldValues["duplicate_in_depreciation_book"] = t.Duplicate_in_depreciation_book
+	t.oldValues["use_duplication_list"] = t.Use_duplication_list
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1481,6 +1665,36 @@ func (t *PurchInvLine) XRec() *PurchInvLine {
 	if v, ok := t.oldValues["quantity_base"].(types.Decimal); ok {
 		x.Quantity_base = v
 	}
+	if v, ok := t.oldValues["fa_posting_date"].(types.Date); ok {
+		x.Fa_posting_date = v
+	}
+	if v, ok := t.oldValues["fa_posting_type"].(PurchInvLineFa_posting_type); ok {
+		x.Fa_posting_type = v
+	}
+	if v, ok := t.oldValues["depreciation_book_code"].(types.Code); ok {
+		x.Depreciation_book_code = v
+	}
+	if v, ok := t.oldValues["salvage_value"].(types.Decimal); ok {
+		x.Salvage_value = v
+	}
+	if v, ok := t.oldValues["depr_until_fa_posting_date"].(bool); ok {
+		x.Depr_until_fa_posting_date = v
+	}
+	if v, ok := t.oldValues["depr_acquisition_cost"].(bool); ok {
+		x.Depr_acquisition_cost = v
+	}
+	if v, ok := t.oldValues["maintenance_code"].(types.Code); ok {
+		x.Maintenance_code = v
+	}
+	if v, ok := t.oldValues["insurance_no"].(types.Code); ok {
+		x.Insurance_no = v
+	}
+	if v, ok := t.oldValues["duplicate_in_depreciation_book"].(types.Code); ok {
+		x.Duplicate_in_depreciation_book = v
+	}
+	if v, ok := t.oldValues["use_duplication_list"].(bool); ok {
+		x.Use_duplication_list = v
+	}
 	return x
 }
 
@@ -1601,6 +1815,16 @@ func (t *PurchInvLine) GetByPK(document_no types.Code, line_no int) bool {
 	var qty_per_unit_of_measureNull sql.NullString
 	var unit_of_measure_codeNull sql.NullString
 	var quantity_baseNull sql.NullString
+	var fa_posting_dateNull sql.NullString
+	var fa_posting_typeInt int
+	var depreciation_book_codeNull sql.NullString
+	var salvage_valueNull sql.NullString
+	var depr_until_fa_posting_dateBool sql.NullBool
+	var depr_acquisition_costBool sql.NullBool
+	var maintenance_codeNull sql.NullString
+	var insurance_noNull sql.NullString
+	var duplicate_in_depreciation_bookNull sql.NullString
+	var use_duplication_listBool sql.NullBool
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1609,7 +1833,7 @@ func (t *PurchInvLine) GetByPK(document_no types.Code, line_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base FROM "%s" WHERE 1=1 AND document_no = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE 1=1 AND document_no = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1666,6 +1890,16 @@ func (t *PurchInvLine) GetByPK(document_no types.Code, line_no int) bool {
 		&qty_per_unit_of_measureNull,
 		&unit_of_measure_codeNull,
 		&quantity_baseNull,
+		&fa_posting_dateNull,
+		&fa_posting_typeInt,
+		&depreciation_book_codeNull,
+		&salvage_valueNull,
+		&depr_until_fa_posting_dateBool,
+		&depr_acquisition_costBool,
+		&maintenance_codeNull,
+		&insurance_noNull,
+		&duplicate_in_depreciation_bookNull,
+		&use_duplication_listBool,
 	)
 
 	if err != nil {
@@ -1729,6 +1963,16 @@ func (t *PurchInvLine) GetByPK(document_no types.Code, line_no int) bool {
 	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 	t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
+	t.Fa_posting_date, _ = types.NewDateFromString(fa_posting_dateNull.String)
+	t.Fa_posting_type = PurchInvLineFa_posting_type(fa_posting_typeInt)
+	t.Depreciation_book_code = types.NewCode(depreciation_book_codeNull.String)
+	t.Salvage_value, _ = types.NewDecimalFromString(salvage_valueNull.String)
+	t.Depr_until_fa_posting_date = depr_until_fa_posting_dateBool.Bool
+	t.Depr_acquisition_cost = depr_acquisition_costBool.Bool
+	t.Maintenance_code = types.NewCode(maintenance_codeNull.String)
+	t.Insurance_no = types.NewCode(insurance_noNull.String)
+	t.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
+	t.Use_duplication_list = use_duplication_listBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1801,11 +2045,21 @@ func (t *PurchInvLine) Insert(runTrigger bool) bool {
 		t.Qty_per_unit_of_measure,
 		t.Unit_of_measure_code,
 		t.Quantity_base,
+		t.Fa_posting_date,
+		t.Fa_posting_type,
+		t.Depreciation_book_code,
+		t.Salvage_value,
+		t.Depr_until_fa_posting_date,
+		t.Depr_acquisition_cost,
+		t.Maintenance_code,
+		t.Insurance_no,
+		t.Duplicate_in_depreciation_book,
+		t.Use_duplication_list,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_no, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_no, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1893,10 +2147,20 @@ func (t *PurchInvLine) InsertAll(records []*PurchInvLine, runTrigger bool) error
 			r.Qty_per_unit_of_measure,
 			r.Unit_of_measure_code,
 			r.Quantity_base,
+			r.Fa_posting_date,
+			r.Fa_posting_type,
+			r.Depreciation_book_code,
+			r.Salvage_value,
+			r.Depr_until_fa_posting_date,
+			r.Depr_acquisition_cost,
+			r.Maintenance_code,
+			r.Insurance_no,
+			r.Duplicate_in_depreciation_book,
+			r.Use_duplication_list,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, PurchInvLineTableName)
-	columns := []string{"buy_from_vendor_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "expected_receipt_date", "description", "description_2", "unit_of_measure", "quantity", "direct_unit_cost", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "unit_price_lcy", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "department_code", "project_code", "indirect_cost_percent", "receipt_no", "receipt_line_no", "pay_to_vendor_no", "inv_discount_amount", "vendor_item_no", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "tax_base_amount", "unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base"}
+	columns := []string{"buy_from_vendor_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "expected_receipt_date", "description", "description_2", "unit_of_measure", "quantity", "direct_unit_cost", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "unit_price_lcy", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "department_code", "project_code", "indirect_cost_percent", "receipt_no", "receipt_line_no", "pay_to_vendor_no", "inv_discount_amount", "vendor_item_no", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "tax_base_amount", "unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "fa_posting_date", "fa_posting_type", "depreciation_book_code", "salvage_value", "depr_until_fa_posting_date", "depr_acquisition_cost", "maintenance_code", "insurance_no", "duplicate_in_depreciation_book", "use_duplication_list"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2139,6 +2403,46 @@ func (t *PurchInvLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "quantity_base = ?")
 			values = append(values, t.Quantity_base)
 		}
+		if t.hasFieldChanged("fa_posting_date") {
+			setClauses = append(setClauses, "fa_posting_date = ?")
+			values = append(values, t.Fa_posting_date)
+		}
+		if t.hasFieldChanged("fa_posting_type") {
+			setClauses = append(setClauses, "fa_posting_type = ?")
+			values = append(values, t.Fa_posting_type)
+		}
+		if t.hasFieldChanged("depreciation_book_code") {
+			setClauses = append(setClauses, "depreciation_book_code = ?")
+			values = append(values, t.Depreciation_book_code)
+		}
+		if t.hasFieldChanged("salvage_value") {
+			setClauses = append(setClauses, "salvage_value = ?")
+			values = append(values, t.Salvage_value)
+		}
+		if t.hasFieldChanged("depr_until_fa_posting_date") {
+			setClauses = append(setClauses, "depr_until_fa_posting_date = ?")
+			values = append(values, t.Depr_until_fa_posting_date)
+		}
+		if t.hasFieldChanged("depr_acquisition_cost") {
+			setClauses = append(setClauses, "depr_acquisition_cost = ?")
+			values = append(values, t.Depr_acquisition_cost)
+		}
+		if t.hasFieldChanged("maintenance_code") {
+			setClauses = append(setClauses, "maintenance_code = ?")
+			values = append(values, t.Maintenance_code)
+		}
+		if t.hasFieldChanged("insurance_no") {
+			setClauses = append(setClauses, "insurance_no = ?")
+			values = append(values, t.Insurance_no)
+		}
+		if t.hasFieldChanged("duplicate_in_depreciation_book") {
+			setClauses = append(setClauses, "duplicate_in_depreciation_book = ?")
+			values = append(values, t.Duplicate_in_depreciation_book)
+		}
+		if t.hasFieldChanged("use_duplication_list") {
+			setClauses = append(setClauses, "use_duplication_list = ?")
+			values = append(values, t.Use_duplication_list)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -2242,6 +2546,26 @@ func (t *PurchInvLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Unit_of_measure_code)
 		setClauses = append(setClauses, "quantity_base = ?")
 		values = append(values, t.Quantity_base)
+		setClauses = append(setClauses, "fa_posting_date = ?")
+		values = append(values, t.Fa_posting_date)
+		setClauses = append(setClauses, "fa_posting_type = ?")
+		values = append(values, t.Fa_posting_type)
+		setClauses = append(setClauses, "depreciation_book_code = ?")
+		values = append(values, t.Depreciation_book_code)
+		setClauses = append(setClauses, "salvage_value = ?")
+		values = append(values, t.Salvage_value)
+		setClauses = append(setClauses, "depr_until_fa_posting_date = ?")
+		values = append(values, t.Depr_until_fa_posting_date)
+		setClauses = append(setClauses, "depr_acquisition_cost = ?")
+		values = append(values, t.Depr_acquisition_cost)
+		setClauses = append(setClauses, "maintenance_code = ?")
+		values = append(values, t.Maintenance_code)
+		setClauses = append(setClauses, "insurance_no = ?")
+		values = append(values, t.Insurance_no)
+		setClauses = append(setClauses, "duplicate_in_depreciation_book = ?")
+		values = append(values, t.Duplicate_in_depreciation_book)
+		setClauses = append(setClauses, "use_duplication_list = ?")
+		values = append(values, t.Use_duplication_list)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -2496,6 +2820,49 @@ func (t *PurchInvLine) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Decimal); ok {
 			return !t.Quantity_base.Equal(old)
 		}
+	case "fa_posting_date":
+		if old, ok := oldValue.(types.Date); ok {
+			return !t.Fa_posting_date.Equal(old)
+		}
+	case "fa_posting_type":
+		if old, ok := oldValue.(PurchInvLineFa_posting_type); ok {
+			return t.Fa_posting_type != old
+		}
+	case "depreciation_book_code":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Depreciation_book_code.Equal(old)
+		}
+	case "salvage_value":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Salvage_value.Equal(old)
+		}
+	case "depr_until_fa_posting_date":
+		if old, ok := oldValue.(bool); ok {
+			return t.Depr_until_fa_posting_date != old
+		}
+		return true // Type mismatch, assume changed
+	case "depr_acquisition_cost":
+		if old, ok := oldValue.(bool); ok {
+			return t.Depr_acquisition_cost != old
+		}
+		return true // Type mismatch, assume changed
+	case "maintenance_code":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Maintenance_code.Equal(old)
+		}
+	case "insurance_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Insurance_no.Equal(old)
+		}
+	case "duplicate_in_depreciation_book":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Duplicate_in_depreciation_book.Equal(old)
+		}
+	case "use_duplication_list":
+		if old, ok := oldValue.(bool); ok {
+			return t.Use_duplication_list != old
+		}
+		return true // Type mismatch, assume changed
 	}
 
 	return false
@@ -2801,6 +3168,26 @@ func (t *PurchInvLine) columnName(fieldName string) (string, bool) {
 		return "unit_of_measure_code", true
 	case strings.ToLower("quantity_base"):
 		return "quantity_base", true
+	case strings.ToLower("fa_posting_date"):
+		return "fa_posting_date", true
+	case strings.ToLower("fa_posting_type"):
+		return "fa_posting_type", true
+	case strings.ToLower("depreciation_book_code"):
+		return "depreciation_book_code", true
+	case strings.ToLower("salvage_value"):
+		return "salvage_value", true
+	case strings.ToLower("depr_until_fa_posting_date"):
+		return "depr_until_fa_posting_date", true
+	case strings.ToLower("depr_acquisition_cost"):
+		return "depr_acquisition_cost", true
+	case strings.ToLower("maintenance_code"):
+		return "maintenance_code", true
+	case strings.ToLower("insurance_no"):
+		return "insurance_no", true
+	case strings.ToLower("duplicate_in_depreciation_book"):
+		return "duplicate_in_depreciation_book", true
+	case strings.ToLower("use_duplication_list"):
+		return "use_duplication_list", true
 	}
 	return "", false
 }
@@ -2960,6 +3347,12 @@ func (t *PurchInvLine) isBoolColumn(column string) bool {
 		return true
 	case "use_tax":
 		return true
+	case "depr_until_fa_posting_date":
+		return true
+	case "depr_acquisition_cost":
+		return true
+	case "use_duplication_list":
+		return true
 	}
 	return false
 }
@@ -2968,6 +3361,8 @@ func (t *PurchInvLine) isBoolColumn(column string) bool {
 func (t *PurchInvLine) isDateColumn(column string) bool {
 	switch column {
 	case "expected_receipt_date":
+		return true
+	case "fa_posting_date":
 		return true
 	}
 	return false
@@ -3015,6 +3410,8 @@ func (t *PurchInvLine) isDecimalColumn(column string) bool {
 	case "qty_per_unit_of_measure":
 		return true
 	case "quantity_base":
+		return true
+	case "salvage_value":
 		return true
 	}
 	return false
@@ -3196,7 +3593,7 @@ func (t *PurchInvLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3249,6 +3646,16 @@ func (t *PurchInvLine) FindFirst() bool {
 	var qty_per_unit_of_measureNull sql.NullString
 	var unit_of_measure_codeNull sql.NullString
 	var quantity_baseNull sql.NullString
+	var fa_posting_dateNull sql.NullString
+	var fa_posting_typeInt int
+	var depreciation_book_codeNull sql.NullString
+	var salvage_valueNull sql.NullString
+	var depr_until_fa_posting_dateBool sql.NullBool
+	var depr_acquisition_costBool sql.NullBool
+	var maintenance_codeNull sql.NullString
+	var insurance_noNull sql.NullString
+	var duplicate_in_depreciation_bookNull sql.NullString
+	var use_duplication_listBool sql.NullBool
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&buy_from_vendor_noNull,
@@ -3301,6 +3708,16 @@ func (t *PurchInvLine) FindFirst() bool {
 		&qty_per_unit_of_measureNull,
 		&unit_of_measure_codeNull,
 		&quantity_baseNull,
+		&fa_posting_dateNull,
+		&fa_posting_typeInt,
+		&depreciation_book_codeNull,
+		&salvage_valueNull,
+		&depr_until_fa_posting_dateBool,
+		&depr_acquisition_costBool,
+		&maintenance_codeNull,
+		&insurance_noNull,
+		&duplicate_in_depreciation_bookNull,
+		&use_duplication_listBool,
 	)
 
 	if err != nil {
@@ -3360,6 +3777,16 @@ func (t *PurchInvLine) FindFirst() bool {
 	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 	t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
+	t.Fa_posting_date, _ = types.NewDateFromString(fa_posting_dateNull.String)
+	t.Fa_posting_type = PurchInvLineFa_posting_type(fa_posting_typeInt)
+	t.Depreciation_book_code = types.NewCode(depreciation_book_codeNull.String)
+	t.Salvage_value, _ = types.NewDecimalFromString(salvage_valueNull.String)
+	t.Depr_until_fa_posting_date = depr_until_fa_posting_dateBool.Bool
+	t.Depr_acquisition_cost = depr_acquisition_costBool.Bool
+	t.Maintenance_code = types.NewCode(maintenance_codeNull.String)
+	t.Insurance_no = types.NewCode(insurance_noNull.String)
+	t.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
+	t.Use_duplication_list = use_duplication_listBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -3380,7 +3807,7 @@ func (t *PurchInvLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3433,6 +3860,16 @@ func (t *PurchInvLine) FindLast() bool {
 	var qty_per_unit_of_measureNull sql.NullString
 	var unit_of_measure_codeNull sql.NullString
 	var quantity_baseNull sql.NullString
+	var fa_posting_dateNull sql.NullString
+	var fa_posting_typeInt int
+	var depreciation_book_codeNull sql.NullString
+	var salvage_valueNull sql.NullString
+	var depr_until_fa_posting_dateBool sql.NullBool
+	var depr_acquisition_costBool sql.NullBool
+	var maintenance_codeNull sql.NullString
+	var insurance_noNull sql.NullString
+	var duplicate_in_depreciation_bookNull sql.NullString
+	var use_duplication_listBool sql.NullBool
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&buy_from_vendor_noNull,
@@ -3485,6 +3922,16 @@ func (t *PurchInvLine) FindLast() bool {
 		&qty_per_unit_of_measureNull,
 		&unit_of_measure_codeNull,
 		&quantity_baseNull,
+		&fa_posting_dateNull,
+		&fa_posting_typeInt,
+		&depreciation_book_codeNull,
+		&salvage_valueNull,
+		&depr_until_fa_posting_dateBool,
+		&depr_acquisition_costBool,
+		&maintenance_codeNull,
+		&insurance_noNull,
+		&duplicate_in_depreciation_bookNull,
+		&use_duplication_listBool,
 	)
 
 	if err != nil {
@@ -3544,6 +3991,16 @@ func (t *PurchInvLine) FindLast() bool {
 	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 	t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
+	t.Fa_posting_date, _ = types.NewDateFromString(fa_posting_dateNull.String)
+	t.Fa_posting_type = PurchInvLineFa_posting_type(fa_posting_typeInt)
+	t.Depreciation_book_code = types.NewCode(depreciation_book_codeNull.String)
+	t.Salvage_value, _ = types.NewDecimalFromString(salvage_valueNull.String)
+	t.Depr_until_fa_posting_date = depr_until_fa_posting_dateBool.Bool
+	t.Depr_acquisition_cost = depr_acquisition_costBool.Bool
+	t.Maintenance_code = types.NewCode(maintenance_codeNull.String)
+	t.Insurance_no = types.NewCode(insurance_noNull.String)
+	t.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
+	t.Use_duplication_list = use_duplication_listBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -3594,7 +4051,7 @@ func (t *PurchInvLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3711,6 +4168,16 @@ func (t *PurchInvLine) Next(steps ...int) bool {
 		var qty_per_unit_of_measureNull sql.NullString
 		var unit_of_measure_codeNull sql.NullString
 		var quantity_baseNull sql.NullString
+		var fa_posting_dateNull sql.NullString
+		var fa_posting_typeInt int
+		var depreciation_book_codeNull sql.NullString
+		var salvage_valueNull sql.NullString
+		var depr_until_fa_posting_dateBool sql.NullBool
+		var depr_acquisition_costBool sql.NullBool
+		var maintenance_codeNull sql.NullString
+		var insurance_noNull sql.NullString
+		var duplicate_in_depreciation_bookNull sql.NullString
+		var use_duplication_listBool sql.NullBool
 
 		err := t.currentRows.Scan(
 			&buy_from_vendor_noNull,
@@ -3763,6 +4230,16 @@ func (t *PurchInvLine) Next(steps ...int) bool {
 			&qty_per_unit_of_measureNull,
 			&unit_of_measure_codeNull,
 			&quantity_baseNull,
+			&fa_posting_dateNull,
+			&fa_posting_typeInt,
+			&depreciation_book_codeNull,
+			&salvage_valueNull,
+			&depr_until_fa_posting_dateBool,
+			&depr_acquisition_costBool,
+			&maintenance_codeNull,
+			&insurance_noNull,
+			&duplicate_in_depreciation_bookNull,
+			&use_duplication_listBool,
 		)
 
 		if err != nil {
@@ -3821,6 +4298,16 @@ func (t *PurchInvLine) Next(steps ...int) bool {
 		t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 		t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 		t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
+		t.Fa_posting_date, _ = types.NewDateFromString(fa_posting_dateNull.String)
+		t.Fa_posting_type = PurchInvLineFa_posting_type(fa_posting_typeInt)
+		t.Depreciation_book_code = types.NewCode(depreciation_book_codeNull.String)
+		t.Salvage_value, _ = types.NewDecimalFromString(salvage_valueNull.String)
+		t.Depr_until_fa_posting_date = depr_until_fa_posting_dateBool.Bool
+		t.Depr_acquisition_cost = depr_acquisition_costBool.Bool
+		t.Maintenance_code = types.NewCode(maintenance_codeNull.String)
+		t.Insurance_no = types.NewCode(insurance_noNull.String)
+		t.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
+		t.Use_duplication_list = use_duplication_listBool.Bool
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -3870,7 +4357,7 @@ func (t *PurchInvLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3940,6 +4427,16 @@ func (t *PurchInvLine) FindSetBuffered() bool {
 		var qty_per_unit_of_measureNull sql.NullString
 		var unit_of_measure_codeNull sql.NullString
 		var quantity_baseNull sql.NullString
+		var fa_posting_dateNull sql.NullString
+		var fa_posting_typeInt int
+		var depreciation_book_codeNull sql.NullString
+		var salvage_valueNull sql.NullString
+		var depr_until_fa_posting_dateBool sql.NullBool
+		var depr_acquisition_costBool sql.NullBool
+		var maintenance_codeNull sql.NullString
+		var insurance_noNull sql.NullString
+		var duplicate_in_depreciation_bookNull sql.NullString
+		var use_duplication_listBool sql.NullBool
 
 		err := rows.Scan(
 			&buy_from_vendor_noNull,
@@ -3992,6 +4489,16 @@ func (t *PurchInvLine) FindSetBuffered() bool {
 			&qty_per_unit_of_measureNull,
 			&unit_of_measure_codeNull,
 			&quantity_baseNull,
+			&fa_posting_dateNull,
+			&fa_posting_typeInt,
+			&depreciation_book_codeNull,
+			&salvage_valueNull,
+			&depr_until_fa_posting_dateBool,
+			&depr_acquisition_costBool,
+			&maintenance_codeNull,
+			&insurance_noNull,
+			&duplicate_in_depreciation_bookNull,
+			&use_duplication_listBool,
 		)
 
 		if err != nil {
@@ -4048,6 +4555,16 @@ func (t *PurchInvLine) FindSetBuffered() bool {
 		record.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 		record.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 		record.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
+		record.Fa_posting_date, _ = types.NewDateFromString(fa_posting_dateNull.String)
+		record.Fa_posting_type = PurchInvLineFa_posting_type(fa_posting_typeInt)
+		record.Depreciation_book_code = types.NewCode(depreciation_book_codeNull.String)
+		record.Salvage_value, _ = types.NewDecimalFromString(salvage_valueNull.String)
+		record.Depr_until_fa_posting_date = depr_until_fa_posting_dateBool.Bool
+		record.Depr_acquisition_cost = depr_acquisition_costBool.Bool
+		record.Maintenance_code = types.NewCode(maintenance_codeNull.String)
+		record.Insurance_no = types.NewCode(insurance_noNull.String)
+		record.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
+		record.Use_duplication_list = use_duplication_listBool.Bool
 
 		// Store old values
 		record.StoreOldValues()
@@ -4126,6 +4643,16 @@ func (t *PurchInvLine) copyFromBuffered(record *PurchInvLine) {
 	t.Qty_per_unit_of_measure = record.Qty_per_unit_of_measure
 	t.Unit_of_measure_code = record.Unit_of_measure_code
 	t.Quantity_base = record.Quantity_base
+	t.Fa_posting_date = record.Fa_posting_date
+	t.Fa_posting_type = record.Fa_posting_type
+	t.Depreciation_book_code = record.Depreciation_book_code
+	t.Salvage_value = record.Salvage_value
+	t.Depr_until_fa_posting_date = record.Depr_until_fa_posting_date
+	t.Depr_acquisition_cost = record.Depr_acquisition_cost
+	t.Maintenance_code = record.Maintenance_code
+	t.Insurance_no = record.Insurance_no
+	t.Duplicate_in_depreciation_book = record.Duplicate_in_depreciation_book
+	t.Use_duplication_list = record.Use_duplication_list
 	t.StoreOldValues()
 }
 
@@ -4334,15 +4861,15 @@ func (t *PurchInvLine) ValidateField(fieldName string, value interface{}) error 
 			t.Type = v
 			// Accept int (convert to enum)
 		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 3-1)
+			if v < 0 || v >= 5 {
+				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 5-1)
 			}
 			t.Type = PurchInvLineType(v)
 			// Accept float64 (JSON numbers decode as float64)
 		} else if v, ok := value.(float64); ok {
 			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 3-1)
+			if intVal < 0 || intVal >= 5 {
+				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 5-1)
 			}
 			t.Type = PurchInvLineType(intVal)
 			// Accept string (lookup in options and convert)
@@ -4351,7 +4878,7 @@ func (t *PurchInvLine) ValidateField(fieldName string, value interface{}) error 
 				// Empty string defaults to first option (behavior)
 				t.Type = 0
 			} else {
-				options := []string{" ", "G/L Account", "Item"}
+				options := []string{" ", "G/L Account", "Item", "", "Fixed Asset"}
 				found := false
 				for i, opt := range options {
 					if opt == v {
@@ -5513,6 +6040,252 @@ func (t *PurchInvLine) ValidateField(fieldName string, value interface{}) error 
 			}
 		}
 		return nil
+	case "fa_posting_date":
+		// Set field value
+		if v, ok := value.(types.Date); ok {
+			t.Fa_posting_date = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Fa_posting_date, err = types.NewDateFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid date value for field fa_posting_date: %w", err)
+			}
+		} else if v, ok := value.(time.Time); ok {
+			t.Fa_posting_date = types.NewDateFromTime(v)
+		} else {
+			return fmt.Errorf("invalid type for field fa_posting_date (expected Date, string, or time.Time)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchInvLineOnValidate_Fa_posting_date); ok {
+				if err := trg.OnValidate_Fa_posting_date(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "fa_posting_type":
+		// Set field value
+		// Accept enum type directly
+		if v, ok := value.(PurchInvLineFa_posting_type); ok {
+			t.Fa_posting_type = v
+			// Accept int (convert to enum)
+		} else if v, ok := value.(int); ok {
+			if v < 0 || v >= 3 {
+				return fmt.Errorf("invalid option value %d for field fa_posting_type (valid range: 0-%d)", v, 3-1)
+			}
+			t.Fa_posting_type = PurchInvLineFa_posting_type(v)
+			// Accept float64 (JSON numbers decode as float64)
+		} else if v, ok := value.(float64); ok {
+			intVal := int(v)
+			if intVal < 0 || intVal >= 3 {
+				return fmt.Errorf("invalid option value %d for field fa_posting_type (valid range: 0-%d)", intVal, 3-1)
+			}
+			t.Fa_posting_type = PurchInvLineFa_posting_type(intVal)
+			// Accept string (lookup in options and convert)
+		} else if v, ok := value.(string); ok {
+			if v == "" {
+				// Empty string defaults to first option (behavior)
+				t.Fa_posting_type = 0
+			} else {
+				options := []string{" ", "Acquisition Cost", "Maintenance"}
+				found := false
+				for i, opt := range options {
+					if opt == v {
+						t.Fa_posting_type = PurchInvLineFa_posting_type(i)
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("invalid option '%s' for field fa_posting_type (valid options: %v)", v, options)
+				}
+			}
+		} else {
+			return fmt.Errorf("invalid type for field fa_posting_type (expected PurchInvLineFa_posting_type, int, or string)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchInvLineOnValidate_Fa_posting_type); ok {
+				if err := trg.OnValidate_Fa_posting_type(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "depreciation_book_code":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Depreciation_book_code = v
+		} else if v, ok := value.(string); ok {
+			t.Depreciation_book_code = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field depreciation_book_code")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "depreciation_book_code"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchInvLineOnValidate_Depreciation_book_code); ok {
+				if err := trg.OnValidate_Depreciation_book_code(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "salvage_value":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Salvage_value = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Salvage_value, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field salvage_value: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Salvage_value = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Salvage_value = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Salvage_value = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field salvage_value (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchInvLineOnValidate_Salvage_value); ok {
+				if err := trg.OnValidate_Salvage_value(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "depr_until_fa_posting_date":
+		// Set field value
+		if v, ok := value.(bool); ok {
+			t.Depr_until_fa_posting_date = v
+		} else if v, ok := value.(string); ok {
+			// Handle string boolean values from JSON/frontend
+			t.Depr_until_fa_posting_date = v == "true" || v == "1"
+		} else {
+			return fmt.Errorf("invalid type for field depr_until_fa_posting_date")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchInvLineOnValidate_Depr_until_fa_posting_date); ok {
+				if err := trg.OnValidate_Depr_until_fa_posting_date(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "depr_acquisition_cost":
+		// Set field value
+		if v, ok := value.(bool); ok {
+			t.Depr_acquisition_cost = v
+		} else if v, ok := value.(string); ok {
+			// Handle string boolean values from JSON/frontend
+			t.Depr_acquisition_cost = v == "true" || v == "1"
+		} else {
+			return fmt.Errorf("invalid type for field depr_acquisition_cost")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchInvLineOnValidate_Depr_acquisition_cost); ok {
+				if err := trg.OnValidate_Depr_acquisition_cost(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "maintenance_code":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Maintenance_code = v
+		} else if v, ok := value.(string); ok {
+			t.Maintenance_code = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field maintenance_code")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "maintenance_code"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchInvLineOnValidate_Maintenance_code); ok {
+				if err := trg.OnValidate_Maintenance_code(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "insurance_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Insurance_no = v
+		} else if v, ok := value.(string); ok {
+			t.Insurance_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field insurance_no")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "insurance_no"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchInvLineOnValidate_Insurance_no); ok {
+				if err := trg.OnValidate_Insurance_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "duplicate_in_depreciation_book":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Duplicate_in_depreciation_book = v
+		} else if v, ok := value.(string); ok {
+			t.Duplicate_in_depreciation_book = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field duplicate_in_depreciation_book")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "duplicate_in_depreciation_book"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchInvLineOnValidate_Duplicate_in_depreciation_book); ok {
+				if err := trg.OnValidate_Duplicate_in_depreciation_book(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "use_duplication_list":
+		// Set field value
+		if v, ok := value.(bool); ok {
+			t.Use_duplication_list = v
+		} else if v, ok := value.(string); ok {
+			// Handle string boolean values from JSON/frontend
+			t.Use_duplication_list = v == "true" || v == "1"
+		} else {
+			return fmt.Errorf("invalid type for field use_duplication_list")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchInvLineOnValidate_Use_duplication_list); ok {
+				if err := trg.OnValidate_Use_duplication_list(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -5625,6 +6398,26 @@ func (t *PurchInvLine) FieldValue(no int) (any, bool) {
 		return t.Unit_of_measure_code, true
 	case 5415:
 		return t.Quantity_base, true
+	case 5600:
+		return t.Fa_posting_date, true
+	case 5601:
+		return t.Fa_posting_type, true
+	case 5602:
+		return t.Depreciation_book_code, true
+	case 5603:
+		return t.Salvage_value, true
+	case 5605:
+		return t.Depr_until_fa_posting_date, true
+	case 5606:
+		return t.Depr_acquisition_cost, true
+	case 5609:
+		return t.Maintenance_code, true
+	case 5610:
+		return t.Insurance_no, true
+	case 5612:
+		return t.Duplicate_in_depreciation_book, true
+	case 5613:
+		return t.Use_duplication_list, true
 	}
 	return nil, false
 }
@@ -5664,7 +6457,7 @@ func (t *PurchInvLine) SetFieldValue(no int, value any) bool {
 			return true
 		}
 	case 5:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
+		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 5 {
 			t.Type = PurchInvLineType(i)
 			return true
 		}
@@ -5978,6 +6771,72 @@ func (t *PurchInvLine) SetFieldValue(no int, value any) bool {
 			t.Quantity_base = v
 			return true
 		}
+	case 5600:
+		if v, ok := value.(types.Date); ok {
+			t.Fa_posting_date = v
+			return true
+		}
+	case 5601:
+		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
+			t.Fa_posting_type = PurchInvLineFa_posting_type(i)
+			return true
+		}
+	case 5602:
+		if v, ok := value.(types.Code); ok {
+			t.Depreciation_book_code = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Depreciation_book_code = types.NewCode(v)
+			return true
+		}
+	case 5603:
+		if v, ok := value.(types.Decimal); ok {
+			t.Salvage_value = v
+			return true
+		}
+	case 5605:
+		if v, ok := value.(bool); ok {
+			t.Depr_until_fa_posting_date = v
+			return true
+		}
+	case 5606:
+		if v, ok := value.(bool); ok {
+			t.Depr_acquisition_cost = v
+			return true
+		}
+	case 5609:
+		if v, ok := value.(types.Code); ok {
+			t.Maintenance_code = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Maintenance_code = types.NewCode(v)
+			return true
+		}
+	case 5610:
+		if v, ok := value.(types.Code); ok {
+			t.Insurance_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Insurance_no = types.NewCode(v)
+			return true
+		}
+	case 5612:
+		if v, ok := value.(types.Code); ok {
+			t.Duplicate_in_depreciation_book = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Duplicate_in_depreciation_book = types.NewCode(v)
+			return true
+		}
+	case 5613:
+		if v, ok := value.(bool); ok {
+			t.Use_duplication_list = v
+			return true
+		}
 	}
 	return false
 }
@@ -6095,6 +6954,8 @@ func (t *PurchInvLine) CalcSums(fieldNames ...string) error {
 			column = "qty_per_unit_of_measure"
 		case "quantity_base":
 			column = "quantity_base"
+		case "salvage_value":
+			column = "salvage_value"
 		default:
 			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Purch_Inv_Line", name)
 		}
@@ -6236,6 +7097,12 @@ func (t *PurchInvLine) CalcSums(fieldNames ...string) error {
 				return fmt.Errorf("CalcSums Purch_Inv_Line.%s: %w", column, err)
 			}
 			t.Quantity_base = d
+		case "salvage_value":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Purch_Inv_Line.%s: %w", column, err)
+			}
+			t.Salvage_value = d
 		}
 	}
 	return nil
@@ -6688,6 +7555,26 @@ func (t *PurchInvLine) columnValue(column string) (interface{}, bool) {
 		return t.Unit_of_measure_code, true
 	case "quantity_base":
 		return t.Quantity_base, true
+	case "fa_posting_date":
+		return t.Fa_posting_date, true
+	case "fa_posting_type":
+		return int(t.Fa_posting_type), true
+	case "depreciation_book_code":
+		return t.Depreciation_book_code, true
+	case "salvage_value":
+		return t.Salvage_value, true
+	case "depr_until_fa_posting_date":
+		return t.Depr_until_fa_posting_date, true
+	case "depr_acquisition_cost":
+		return t.Depr_acquisition_cost, true
+	case "maintenance_code":
+		return t.Maintenance_code, true
+	case "insurance_no":
+		return t.Insurance_no, true
+	case "duplicate_in_depreciation_book":
+		return t.Duplicate_in_depreciation_book, true
+	case "use_duplication_list":
+		return t.Use_duplication_list, true
 	}
 	return nil, false
 }
@@ -6794,6 +7681,16 @@ func (t *PurchInvLine) Init() {
 	t.Qty_per_unit_of_measure = *new(types.Decimal)
 	t.Unit_of_measure_code = *new(types.Code)
 	t.Quantity_base = *new(types.Decimal)
+	t.Fa_posting_date = *new(types.Date)
+	t.Fa_posting_type = 0
+	t.Depreciation_book_code = *new(types.Code)
+	t.Salvage_value = *new(types.Decimal)
+	t.Depr_until_fa_posting_date = *new(bool)
+	t.Depr_acquisition_cost = *new(bool)
+	t.Maintenance_code = *new(types.Code)
+	t.Insurance_no = *new(types.Code)
+	t.Duplicate_in_depreciation_book = *new(types.Code)
+	t.Use_duplication_list = *new(bool)
 	t.applyDefaults()
 }
 
@@ -6828,56 +7725,66 @@ func (t *PurchInvLine) ClearFilters() {
 // ToMap converts the current record to a map for JSON serialization
 func (t *PurchInvLine) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"buy_from_vendor_no":      t.Buy_from_vendor_no.String(),
-		"document_no":             t.Document_no.String(),
-		"line_no":                 t.Line_no,
-		"type":                    int(t.Type),
-		"no":                      t.No.String(),
-		"location_code":           t.Location_code.String(),
-		"posting_group":           t.Posting_group.String(),
-		"expected_receipt_date":   t.Expected_receipt_date.String(),
-		"description":             t.Description.String(),
-		"description_2":           t.Description_2.String(),
-		"unit_of_measure":         t.Unit_of_measure.String(),
-		"quantity":                t.Quantity.String(),
-		"direct_unit_cost":        t.Direct_unit_cost.String(),
-		"unit_cost_lcy":           t.Unit_cost_lcy.String(),
-		"tax_percent":             t.Tax_percent.String(),
-		"quantity_disc_percent":   t.Quantity_disc_percent.String(),
-		"line_discount_percent":   t.Line_discount_percent.String(),
-		"line_discount_amount":    t.Line_discount_amount.String(),
-		"amount":                  t.Amount.String(),
-		"amount_including_tax":    t.Amount_including_tax.String(),
-		"unit_price_lcy":          t.Unit_price_lcy.String(),
-		"allow_invoice_disc":      t.Allow_invoice_disc,
-		"gross_weight":            t.Gross_weight.String(),
-		"net_weight":              t.Net_weight.String(),
-		"units_per_parcel":        t.Units_per_parcel.String(),
-		"unit_volume":             t.Unit_volume.String(),
-		"department_code":         t.Department_code.String(),
-		"project_code":            t.Project_code.String(),
-		"indirect_cost_percent":   t.Indirect_cost_percent.String(),
-		"receipt_no":              t.Receipt_no.String(),
-		"receipt_line_no":         t.Receipt_line_no,
-		"pay_to_vendor_no":        t.Pay_to_vendor_no.String(),
-		"inv_discount_amount":     t.Inv_discount_amount.String(),
-		"vendor_item_no":          t.Vendor_item_no.String(),
-		"gen_bus_posting_group":   t.Gen_bus_posting_group.String(),
-		"gen_prod_posting_group":  t.Gen_prod_posting_group.String(),
-		"tax_calculation_type":    int(t.Tax_calculation_type),
-		"tax_area_code":           t.Tax_area_code.String(),
-		"tax_liable":              t.Tax_liable,
-		"tax_group_code":          t.Tax_group_code.String(),
-		"use_tax":                 t.Use_tax,
-		"tax_bus_posting_group":   t.Tax_bus_posting_group.String(),
-		"tax_prod_posting_group":  t.Tax_prod_posting_group.String(),
-		"currency_code":           t.Currency_code.String(),
-		"tax_base_amount":         t.Tax_base_amount.String(),
-		"unit_cost":               t.Unit_cost.String(),
-		"variant_code":            t.Variant_code.String(),
-		"qty_per_unit_of_measure": t.Qty_per_unit_of_measure.String(),
-		"unit_of_measure_code":    t.Unit_of_measure_code.String(),
-		"quantity_base":           t.Quantity_base.String(),
+		"buy_from_vendor_no":             t.Buy_from_vendor_no.String(),
+		"document_no":                    t.Document_no.String(),
+		"line_no":                        t.Line_no,
+		"type":                           int(t.Type),
+		"no":                             t.No.String(),
+		"location_code":                  t.Location_code.String(),
+		"posting_group":                  t.Posting_group.String(),
+		"expected_receipt_date":          t.Expected_receipt_date.String(),
+		"description":                    t.Description.String(),
+		"description_2":                  t.Description_2.String(),
+		"unit_of_measure":                t.Unit_of_measure.String(),
+		"quantity":                       t.Quantity.String(),
+		"direct_unit_cost":               t.Direct_unit_cost.String(),
+		"unit_cost_lcy":                  t.Unit_cost_lcy.String(),
+		"tax_percent":                    t.Tax_percent.String(),
+		"quantity_disc_percent":          t.Quantity_disc_percent.String(),
+		"line_discount_percent":          t.Line_discount_percent.String(),
+		"line_discount_amount":           t.Line_discount_amount.String(),
+		"amount":                         t.Amount.String(),
+		"amount_including_tax":           t.Amount_including_tax.String(),
+		"unit_price_lcy":                 t.Unit_price_lcy.String(),
+		"allow_invoice_disc":             t.Allow_invoice_disc,
+		"gross_weight":                   t.Gross_weight.String(),
+		"net_weight":                     t.Net_weight.String(),
+		"units_per_parcel":               t.Units_per_parcel.String(),
+		"unit_volume":                    t.Unit_volume.String(),
+		"department_code":                t.Department_code.String(),
+		"project_code":                   t.Project_code.String(),
+		"indirect_cost_percent":          t.Indirect_cost_percent.String(),
+		"receipt_no":                     t.Receipt_no.String(),
+		"receipt_line_no":                t.Receipt_line_no,
+		"pay_to_vendor_no":               t.Pay_to_vendor_no.String(),
+		"inv_discount_amount":            t.Inv_discount_amount.String(),
+		"vendor_item_no":                 t.Vendor_item_no.String(),
+		"gen_bus_posting_group":          t.Gen_bus_posting_group.String(),
+		"gen_prod_posting_group":         t.Gen_prod_posting_group.String(),
+		"tax_calculation_type":           int(t.Tax_calculation_type),
+		"tax_area_code":                  t.Tax_area_code.String(),
+		"tax_liable":                     t.Tax_liable,
+		"tax_group_code":                 t.Tax_group_code.String(),
+		"use_tax":                        t.Use_tax,
+		"tax_bus_posting_group":          t.Tax_bus_posting_group.String(),
+		"tax_prod_posting_group":         t.Tax_prod_posting_group.String(),
+		"currency_code":                  t.Currency_code.String(),
+		"tax_base_amount":                t.Tax_base_amount.String(),
+		"unit_cost":                      t.Unit_cost.String(),
+		"variant_code":                   t.Variant_code.String(),
+		"qty_per_unit_of_measure":        t.Qty_per_unit_of_measure.String(),
+		"unit_of_measure_code":           t.Unit_of_measure_code.String(),
+		"quantity_base":                  t.Quantity_base.String(),
+		"fa_posting_date":                t.Fa_posting_date.String(),
+		"fa_posting_type":                int(t.Fa_posting_type),
+		"depreciation_book_code":         t.Depreciation_book_code.String(),
+		"salvage_value":                  t.Salvage_value.String(),
+		"depr_until_fa_posting_date":     t.Depr_until_fa_posting_date,
+		"depr_acquisition_cost":          t.Depr_acquisition_cost,
+		"maintenance_code":               t.Maintenance_code.String(),
+		"insurance_no":                   t.Insurance_no.String(),
+		"duplicate_in_depreciation_book": t.Duplicate_in_depreciation_book.String(),
+		"use_duplication_list":           t.Use_duplication_list,
 	}
 }
 
@@ -6914,7 +7821,7 @@ func (t *PurchInvLine) FromMap(data map[string]interface{}) {
 			t.Type = PurchInvLineType(val)
 		case string:
 			// Lookup string value in options
-			options := []string{" ", "G/L Account", "Item"}
+			options := []string{" ", "G/L Account", "Item", "", "Fixed Asset"}
 			for i, opt := range options {
 				if opt == val {
 					t.Type = PurchInvLineType(i)
@@ -7311,6 +8218,75 @@ func (t *PurchInvLine) FromMap(data map[string]interface{}) {
 			t.Quantity_base = types.NewDecimalFromInt(int64(val))
 		case int64:
 			t.Quantity_base = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["fa_posting_date"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Fa_posting_date, _ = types.NewDateFromString(s)
+		}
+	}
+	if v, ok := data["fa_posting_type"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Fa_posting_type = PurchInvLineFa_posting_type(int(val))
+		case int:
+			t.Fa_posting_type = PurchInvLineFa_posting_type(val)
+		case string:
+			// Lookup string value in options
+			options := []string{" ", "Acquisition Cost", "Maintenance"}
+			for i, opt := range options {
+				if opt == val {
+					t.Fa_posting_type = PurchInvLineFa_posting_type(i)
+					break
+				}
+			}
+		}
+	}
+	if v, ok := data["depreciation_book_code"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Depreciation_book_code = types.NewCode(s)
+		}
+	}
+	if v, ok := data["salvage_value"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Salvage_value, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Salvage_value = types.NewDecimal(val)
+		case int:
+			t.Salvage_value = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Salvage_value = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["depr_until_fa_posting_date"]; ok && v != nil {
+		if b, ok := v.(bool); ok {
+			t.Depr_until_fa_posting_date = b
+		}
+	}
+	if v, ok := data["depr_acquisition_cost"]; ok && v != nil {
+		if b, ok := v.(bool); ok {
+			t.Depr_acquisition_cost = b
+		}
+	}
+	if v, ok := data["maintenance_code"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Maintenance_code = types.NewCode(s)
+		}
+	}
+	if v, ok := data["insurance_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Insurance_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["duplicate_in_depreciation_book"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Duplicate_in_depreciation_book = types.NewCode(s)
+		}
+	}
+	if v, ok := data["use_duplication_list"]; ok && v != nil {
+		if b, ok := v.(bool); ok {
+			t.Use_duplication_list = b
 		}
 	}
 }
@@ -7870,6 +8846,107 @@ func (t *PurchInvLine) GetFields() []tables.FieldInfo {
 			FlowField:     false,
 			DecimalPlaces: "0:5",
 		},
+		{
+			No:         5600,
+			Name:       "fa_posting_date",
+			Type:       tables.FieldTypeDate,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5601,
+			Name:       "fa_posting_type",
+			Type:       tables.FieldTypeOption,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5602,
+			Name:       "depreciation_book_code",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:            5603,
+			Name:          "salvage_value",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     false,
+			DecimalPlaces: "2:2",
+		},
+		{
+			No:         5605,
+			Name:       "depr_until_fa_posting_date",
+			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5606,
+			Name:       "depr_acquisition_cost",
+			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5609,
+			Name:       "maintenance_code",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5610,
+			Name:       "insurance_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5612,
+			Name:       "duplicate_in_depreciation_book",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5613,
+			Name:       "use_duplication_list",
+			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
 	}
 }
 
@@ -7894,8 +8971,9 @@ func (t *PurchInvLine) GetFlowFields() []string {
 // GetOptionFields returns Option field names mapped to their option values
 func (t *PurchInvLine) GetOptionFields() map[string][]string {
 	return map[string][]string{
-		"type":                 {" ", "G/L Account", "Item"},
+		"type":                 {" ", "G/L Account", "Item", "", "Fixed Asset"},
 		"tax_calculation_type": {"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"},
+		"fa_posting_type":      {" ", "Acquisition Cost", "Maintenance"},
 	}
 }
 
@@ -7930,6 +9008,11 @@ func (t *PurchInvLine) GetTableRelationFields() map[string]tables.TableRelationI
 				}},
 				{Field: "type", Value: 2, Relation: tables.TableRelationInfo{
 					Table: "Item", Field: "no", DisplayField: "",
+					LookupColumns: []tables.LookupColumnInfo{{Source: "no", Width: 100}, {Source: "description", Width: 250}},
+					SearchTimeout: 0,
+				}},
+				{Field: "type", Value: 4, Relation: tables.TableRelationInfo{
+					Table: "Fixed_Asset", Field: "no", DisplayField: "",
 					LookupColumns: []tables.LookupColumnInfo{{Source: "no", Width: 100}, {Source: "description", Width: 250}},
 					SearchTimeout: 0,
 				}},
@@ -8078,6 +9161,46 @@ func (t *PurchInvLine) GetTableRelationFields() map[string]tables.TableRelationI
 					},
 				}},
 			},
+		},
+		"depreciation_book_code": {
+			Table:        "Depreciation_Book",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"maintenance_code": {
+			Table:        "Maintenance",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"insurance_no": {
+			Table:        "Insurance",
+			Field:        "no",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "no", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"duplicate_in_depreciation_book": {
+			Table:        "Depreciation_Book",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
 		},
 	}
 }

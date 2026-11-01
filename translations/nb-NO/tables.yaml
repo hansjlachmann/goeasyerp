@@ -4227,6 +4227,16 @@ tables:
   purchase_line:
     caption: "Kjøpslinje"
     fields:
+      fa_posting_date: "Anleggsbokføringsdato"
+      fa_posting_type: "Anleggsbokføringstype"
+      depreciation_book_code: "Avskrivningsprofilkode"
+      salvage_value: "Utrangeringsverdi"
+      depr_until_fa_posting_date: "Avskriv til anleggsbokføringsdato"
+      depr_acquisition_cost: "Avskriv anskaffelseskost"
+      maintenance_code: "Vedlikeholdskode"
+      insurance_no: "Forsikringsnr."
+      duplicate_in_depreciation_book: "Dupliser i avskrivningsprofil"
+      use_duplication_list: "Bruk dupliseringsliste"
       receipt_no: "Mottaksnr."
       receipt_line_no: "Mottakslinjenr."
       document_type: "Dokumenttype"
@@ -4295,6 +4305,9 @@ tables:
       qty_received_base: "Antall mottatt (basis)"
       qty_invoiced_base: "Antall fakturert (basis)"
     options:
+      fa_posting_type:
+        acquisition_cost: "Anskaffelseskost"
+        maintenance: "Vedlikehold"
       document_type:
         quote: "Tilbud"
         order: "Ordre"
@@ -4302,6 +4315,7 @@ tables:
         credit_memo: "Kreditnota"
         blanket_order: "Rammeordre"
       type:
+        fixed_asset: "Anleggsmiddel"
         g_l_account: "Finanskonto"
         item: "Vare"
       tax_calculation_type:
@@ -4625,6 +4639,7 @@ tables:
       item_rcpt_entry_no: "Varemottakslø.nr."
     options:
       type:
+        fixed_asset: "Anleggsmiddel"
         g_l_account: "Finanskonto"
         item: "Vare"
       tax_calculation_type:
@@ -4635,6 +4650,16 @@ tables:
   purch_inv_line:
     caption: "Kjøpsfakturalinje"
     fields:
+      fa_posting_date: "Anleggsbokføringsdato"
+      fa_posting_type: "Anleggsbokføringstype"
+      depreciation_book_code: "Avskrivningsprofilkode"
+      salvage_value: "Utrangeringsverdi"
+      depr_until_fa_posting_date: "Avskriv til anleggsbokføringsdato"
+      depr_acquisition_cost: "Avskriv anskaffelseskost"
+      maintenance_code: "Vedlikeholdskode"
+      insurance_no: "Forsikringsnr."
+      duplicate_in_depreciation_book: "Dupliser i avskrivningsprofil"
+      use_duplication_list: "Bruk dupliseringsliste"
       receipt_no: "Mottaksnr."
       receipt_line_no: "Mottakslinjenr."
       buy_from_vendor_no: "Kjøp fra-leverandørnr."
@@ -4686,7 +4711,11 @@ tables:
       unit_of_measure_code: "Enhetskode"
       quantity_base: "Antall (basis)"
     options:
+      fa_posting_type:
+        acquisition_cost: "Anskaffelseskost"
+        maintenance: "Vedlikehold"
       type:
+        fixed_asset: "Anleggsmiddel"
         g_l_account: "Finanskonto"
         item: "Vare"
       tax_calculation_type:
@@ -4697,6 +4726,16 @@ tables:
   purch_cr_memo_line:
     caption: "Kjøpskreditnotalinje"
     fields:
+      fa_posting_date: "Anleggsbokføringsdato"
+      fa_posting_type: "Anleggsbokføringstype"
+      depreciation_book_code: "Avskrivningsprofilkode"
+      salvage_value: "Utrangeringsverdi"
+      depr_until_fa_posting_date: "Avskriv til anleggsbokføringsdato"
+      depr_acquisition_cost: "Avskriv anskaffelseskost"
+      maintenance_code: "Vedlikeholdskode"
+      insurance_no: "Forsikringsnr."
+      duplicate_in_depreciation_book: "Dupliser i avskrivningsprofil"
+      use_duplication_list: "Bruk dupliseringsliste"
       buy_from_vendor_no: "Kjøp fra-leverandørnr."
       document_no: "Dokumentnr."
       line_no: "Linjenr."
@@ -4746,7 +4785,11 @@ tables:
       unit_of_measure_code: "Enhetskode"
       quantity_base: "Antall (basis)"
     options:
+      fa_posting_type:
+        acquisition_cost: "Anskaffelseskost"
+        maintenance: "Vedlikehold"
       type:
+        fixed_asset: "Anleggsmiddel"
         g_l_account: "Finanskonto"
         item: "Vare"
       tax_calculation_type:

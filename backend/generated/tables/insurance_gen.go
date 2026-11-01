@@ -1420,7 +1420,7 @@ func (t *Insurance) renameReferences(field string, oldValue, newValue interface{
 		condValue  int
 	}
 	references := map[string][]reference{
-		"no": {{"Comment_Line", false, "no", "table_name", 11}, {"FA_Journal_Line", false, "insurance_no", "", 0}, {"Gen_Journal_Line", false, "insurance_no", "", 0}, {"Ins_Coverage_Ledger_Entry", false, "insurance_no", "", 0}},
+		"no": {{"Comment_Line", false, "no", "table_name", 11}, {"FA_Journal_Line", false, "insurance_no", "", 0}, {"Gen_Journal_Line", false, "insurance_no", "", 0}, {"Ins_Coverage_Ledger_Entry", false, "insurance_no", "", 0}, {"Purch_Cr_Memo_Line", false, "insurance_no", "", 0}, {"Purch_Inv_Line", false, "insurance_no", "", 0}, {"Purchase_Line", false, "insurance_no", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

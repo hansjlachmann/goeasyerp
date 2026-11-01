@@ -4227,6 +4227,16 @@ tables:
   purchase_line:
     caption: "Purchase Line"
     fields:
+      fa_posting_date: "FA Posting Date"
+      fa_posting_type: "FA Posting Type"
+      depreciation_book_code: "Depreciation Book Code"
+      salvage_value: "Salvage Value"
+      depr_until_fa_posting_date: "Depr. until FA Posting Date"
+      depr_acquisition_cost: "Depr. Acquisition Cost"
+      maintenance_code: "Maintenance Code"
+      insurance_no: "Insurance No."
+      duplicate_in_depreciation_book: "Duplicate in Depreciation Book"
+      use_duplication_list: "Use Duplication List"
       receipt_no: "Receipt No."
       receipt_line_no: "Receipt Line No."
       document_type: "Document Type"
@@ -4295,6 +4305,9 @@ tables:
       qty_received_base: "Qty. Received (Base)"
       qty_invoiced_base: "Qty. Invoiced (Base)"
     options:
+      fa_posting_type:
+        acquisition_cost: "Acquisition Cost"
+        maintenance: "Maintenance"
       document_type:
         quote: "Quote"
         order: "Order"
@@ -4302,6 +4315,7 @@ tables:
         credit_memo: "Credit Memo"
         blanket_order: "Blanket Order"
       type:
+        fixed_asset: "Fixed Asset"
         g_l_account: "G/L Account"
         item: "Item"
       tax_calculation_type:
@@ -4625,6 +4639,7 @@ tables:
       item_rcpt_entry_no: "Item Rcpt. Entry No."
     options:
       type:
+        fixed_asset: "Fixed Asset"
         g_l_account: "G/L Account"
         item: "Item"
       tax_calculation_type:
@@ -4635,6 +4650,16 @@ tables:
   purch_inv_line:
     caption: "Purch. Inv. Line"
     fields:
+      fa_posting_date: "FA Posting Date"
+      fa_posting_type: "FA Posting Type"
+      depreciation_book_code: "Depreciation Book Code"
+      salvage_value: "Salvage Value"
+      depr_until_fa_posting_date: "Depr. until FA Posting Date"
+      depr_acquisition_cost: "Depr. Acquisition Cost"
+      maintenance_code: "Maintenance Code"
+      insurance_no: "Insurance No."
+      duplicate_in_depreciation_book: "Duplicate in Depreciation Book"
+      use_duplication_list: "Use Duplication List"
       receipt_no: "Receipt No."
       receipt_line_no: "Receipt Line No."
       buy_from_vendor_no: "Buy-from Vendor No."
@@ -4686,7 +4711,11 @@ tables:
       unit_of_measure_code: "Unit of Measure Code"
       quantity_base: "Quantity (Base)"
     options:
+      fa_posting_type:
+        acquisition_cost: "Acquisition Cost"
+        maintenance: "Maintenance"
       type:
+        fixed_asset: "Fixed Asset"
         g_l_account: "G/L Account"
         item: "Item"
       tax_calculation_type:
@@ -4697,6 +4726,16 @@ tables:
   purch_cr_memo_line:
     caption: "Purch. Cr. Memo Line"
     fields:
+      fa_posting_date: "FA Posting Date"
+      fa_posting_type: "FA Posting Type"
+      depreciation_book_code: "Depreciation Book Code"
+      salvage_value: "Salvage Value"
+      depr_until_fa_posting_date: "Depr. until FA Posting Date"
+      depr_acquisition_cost: "Depr. Acquisition Cost"
+      maintenance_code: "Maintenance Code"
+      insurance_no: "Insurance No."
+      duplicate_in_depreciation_book: "Duplicate in Depreciation Book"
+      use_duplication_list: "Use Duplication List"
       buy_from_vendor_no: "Buy-from Vendor No."
       document_no: "Document No."
       line_no: "Line No."
@@ -4746,7 +4785,11 @@ tables:
       unit_of_measure_code: "Unit of Measure Code"
       quantity_base: "Quantity (Base)"
     options:
+      fa_posting_type:
+        acquisition_cost: "Acquisition Cost"
+        maintenance: "Maintenance"
       type:
+        fixed_asset: "Fixed Asset"
         g_l_account: "G/L Account"
         item: "Item"
       tax_calculation_type:

@@ -4227,6 +4227,16 @@ tables:
   purchase_line:
     caption: "Købslinje"
     fields:
+      fa_posting_date: "Anlægsbogføringsdato"
+      fa_posting_type: "Anlægsbogføringstype"
+      depreciation_book_code: "Afskrivningsprofilkode"
+      salvage_value: "Scrapværdi"
+      depr_until_fa_posting_date: "Afskriv til anlægsbogføringsdato"
+      depr_acquisition_cost: "Afskriv anskaffelsespris"
+      maintenance_code: "Vedligeholdelseskode"
+      insurance_no: "Forsikringsnr."
+      duplicate_in_depreciation_book: "Kopier til afskrivningsprofil"
+      use_duplication_list: "Brug kopiliste"
       receipt_no: "Modtagelsesnr."
       receipt_line_no: "Modtagelseslinjenr."
       document_type: "Dokumenttype"
@@ -4295,6 +4305,9 @@ tables:
       qty_received_base: "Modtaget antal (basis)"
       qty_invoiced_base: "Faktureret antal (basis)"
     options:
+      fa_posting_type:
+        acquisition_cost: "Anskaffelsespris"
+        maintenance: "Vedligeholdelse"
       document_type:
         quote: "Tilbud"
         order: "Ordre"
@@ -4302,6 +4315,7 @@ tables:
         credit_memo: "Kreditnota"
         blanket_order: "Rammeordre"
       type:
+        fixed_asset: "Anlæg"
         g_l_account: "Finanskonto"
         item: "Vare"
       tax_calculation_type:
@@ -4625,6 +4639,7 @@ tables:
       item_rcpt_entry_no: "Varemodtagelseslø.nr."
     options:
       type:
+        fixed_asset: "Anlæg"
         g_l_account: "Finanskonto"
         item: "Vare"
       tax_calculation_type:
@@ -4635,6 +4650,16 @@ tables:
   purch_inv_line:
     caption: "Købsfakturalinje"
     fields:
+      fa_posting_date: "Anlægsbogføringsdato"
+      fa_posting_type: "Anlægsbogføringstype"
+      depreciation_book_code: "Afskrivningsprofilkode"
+      salvage_value: "Scrapværdi"
+      depr_until_fa_posting_date: "Afskriv til anlægsbogføringsdato"
+      depr_acquisition_cost: "Afskriv anskaffelsespris"
+      maintenance_code: "Vedligeholdelseskode"
+      insurance_no: "Forsikringsnr."
+      duplicate_in_depreciation_book: "Kopier til afskrivningsprofil"
+      use_duplication_list: "Brug kopiliste"
       receipt_no: "Modtagelsesnr."
       receipt_line_no: "Modtagelseslinjenr."
       buy_from_vendor_no: "Leverandørnr."
@@ -4686,7 +4711,11 @@ tables:
       unit_of_measure_code: "Enhedskode"
       quantity_base: "Antal (basis)"
     options:
+      fa_posting_type:
+        acquisition_cost: "Anskaffelsespris"
+        maintenance: "Vedligeholdelse"
       type:
+        fixed_asset: "Anlæg"
         g_l_account: "Finanskonto"
         item: "Vare"
       tax_calculation_type:
@@ -4697,6 +4726,16 @@ tables:
   purch_cr_memo_line:
     caption: "Købskreditnotalinje"
     fields:
+      fa_posting_date: "Anlægsbogføringsdato"
+      fa_posting_type: "Anlægsbogføringstype"
+      depreciation_book_code: "Afskrivningsprofilkode"
+      salvage_value: "Scrapværdi"
+      depr_until_fa_posting_date: "Afskriv til anlægsbogføringsdato"
+      depr_acquisition_cost: "Afskriv anskaffelsespris"
+      maintenance_code: "Vedligeholdelseskode"
+      insurance_no: "Forsikringsnr."
+      duplicate_in_depreciation_book: "Kopier til afskrivningsprofil"
+      use_duplication_list: "Brug kopiliste"
       buy_from_vendor_no: "Leverandørnr."
       document_no: "Bilagsnr."
       line_no: "Linjenr."
@@ -4746,7 +4785,11 @@ tables:
       unit_of_measure_code: "Enhedskode"
       quantity_base: "Antal (basis)"
     options:
+      fa_posting_type:
+        acquisition_cost: "Anskaffelsespris"
+        maintenance: "Vedligeholdelse"
       type:
+        fixed_asset: "Anlæg"
         g_l_account: "Finanskonto"
         item: "Vare"
       tax_calculation_type:

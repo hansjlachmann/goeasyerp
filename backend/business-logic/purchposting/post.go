@@ -46,6 +46,7 @@ type PurchPost struct {
 
 	totals           *purchpost.Totals // the invoiced amounts in the document's currency and in LCY
 	invPostingBuffer []*invPostingBuffer
+	faLineNo         int
 
 	// What was posted: the posted documents' numbers, and whether the document is gone
 	ReceiptNo types.Code
@@ -77,6 +78,18 @@ type invPostingBuffer struct {
 	taxBaseAmount      types.Decimal // LCY
 	taxBaseAmountFCY   types.Decimal
 	quantity           types.Decimal
+	// a fixed asset line: its own buffer line, posted to the asset (Fixed Asset Line No.)
+	faLineNo      int
+	faPostingDate types.Date
+	faPostingType gtables.PurchaseLineFa_posting_type
+	deprBookCode  types.Code
+	salvageValue  types.Decimal
+	deprUntil     bool
+	deprAcqCost   bool
+	maintenance   types.Code
+	insuranceNo   types.Code
+	duplicateIn   types.Code
+	useDupList    bool
 }
 
 // NewPurchPost makes codeunit 90 for a database and company
@@ -187,6 +200,10 @@ func (p *PurchPost) checkAndUpdate() error {
 	somethingToPost := false
 	somethingToReceive := false
 	for found := purchLine.FindSet(); found; found = purchLine.Next() {
+		err := checkFALine(purchLine)
+		if err != nil {
+			return err
+		}
 		qtyToReceive, _, qtyToInvoice, _ := p.qtysToPost(purchLine)
 		if !qtyToReceive.IsZero() || !qtyToInvoice.IsZero() {
 			somethingToPost = true
@@ -601,7 +618,7 @@ func (p *PurchPost) postItemJnlLine(purchLine *gtables.PurchaseLine, qtyToReceiv
 func (p *PurchPost) fillInvPostingBuffer(purchLine, lineFCY, lineLCY *gtables.PurchaseLine) error {
 	var glAccount types.Code
 	genPostingSetup := gtables.NewGeneralPostingSetup(purchLine)
-	if purchLine.Type == gtables.PurchaseLine_Type.GLAccount {
+	if purchLine.Type == gtables.PurchaseLine_Type.GLAccount || purchLine.Type == gtables.PurchaseLine_Type.FixedAsset {
 		glAccount = purchLine.No
 		genPostingSetup.Get(map[string]interface{}{"gen_bus_posting_group": purchLine.Gen_bus_posting_group, "gen_prod_posting_group": purchLine.Gen_prod_posting_group})
 	} else {
@@ -625,7 +642,7 @@ func (p *PurchPost) fillInvPostingBuffer(purchLine, lineFCY, lineLCY *gtables.Pu
 	discountPosting := p.purchSetup.Discount_posting
 	postInvDisc := discountPosting == gtables.PurchasesPayablesSetup_Discount_posting.InvoiceDiscounts || discountPosting == gtables.PurchasesPayablesSetup_Discount_posting.AllDiscounts
 	postLineDisc := discountPosting == gtables.PurchasesPayablesSetup_Discount_posting.LineDiscounts || discountPosting == gtables.PurchasesPayablesSetup_Discount_posting.AllDiscounts
-	if postInvDisc && !lineLCY.Inv_discount_amount.IsZero() && purchLine.Type != gtables.PurchaseLine_Type.GLAccount {
+	if postInvDisc && !lineLCY.Inv_discount_amount.IsZero() && purchLine.Type != gtables.PurchaseLine_Type.GLAccount && purchLine.Type != gtables.PurchaseLine_Type.FixedAsset {
 		err := genPostingSetup.TestField("purch_inv_disc_account")
 		if err != nil {
 			return err
@@ -635,7 +652,7 @@ func (p *PurchPost) fillInvPostingBuffer(purchLine, lineFCY, lineLCY *gtables.Pu
 		amount = amount.Add(lineLCY.Inv_discount_amount)
 		amountFCY = amountFCY.Add(lineFCY.Inv_discount_amount)
 	}
-	if postLineDisc && !lineLCY.Line_discount_amount.IsZero() && purchLine.Type != gtables.PurchaseLine_Type.GLAccount {
+	if postLineDisc && !lineLCY.Line_discount_amount.IsZero() && purchLine.Type != gtables.PurchaseLine_Type.GLAccount && purchLine.Type != gtables.PurchaseLine_Type.FixedAsset {
 		err := genPostingSetup.TestField("purch_line_disc_account")
 		if err != nil {
 			return err
@@ -662,7 +679,7 @@ func (p *PurchPost) fillInvPostingBuffer(purchLine, lineFCY, lineLCY *gtables.Pu
 			return err
 		}
 	}
-	p.addToBuffer(&invPostingBuffer{
+	buffer := &invPostingBuffer{
 		glAccount: glAccount, genPostingType: true,
 		genBusPostingGrp: purchLine.Gen_bus_posting_group, genProdPostingGrp: purchLine.Gen_prod_posting_group,
 		taxBusPostingGrp: purchLine.Tax_bus_posting_group, taxProdPostingGrp: purchLine.Tax_prod_posting_group,
@@ -673,14 +690,29 @@ func (p *PurchPost) fillInvPostingBuffer(purchLine, lineFCY, lineLCY *gtables.Pu
 		taxAmount: taxAmount, taxAmountFCY: taxAmountFCY,
 		taxBaseAmount: lineLCY.Amount, taxBaseAmountFCY: lineFCY.Amount,
 		quantity: lineLCY.Quantity,
-	})
+	}
+	if purchLine.Type == gtables.PurchaseLine_Type.FixedAsset {
+		p.faLineNo++
+		buffer.faLineNo = p.faLineNo
+		buffer.faPostingDate = purchLine.Fa_posting_date
+		buffer.faPostingType = purchLine.Fa_posting_type
+		buffer.deprBookCode = purchLine.Depreciation_book_code
+		buffer.salvageValue = purchLine.Salvage_value
+		buffer.deprUntil = purchLine.Depr_until_fa_posting_date
+		buffer.deprAcqCost = purchLine.Depr_acquisition_cost
+		buffer.maintenance = purchLine.Maintenance_code
+		buffer.insuranceNo = purchLine.Insurance_no
+		buffer.duplicateIn = purchLine.Duplicate_in_depreciation_book
+		buffer.useDupList = purchLine.Use_duplication_list
+	}
+	p.addToBuffer(buffer)
 	return nil
 }
 
 // addToBuffer adds an amount to the buffer line of its account and groups
 func (p *PurchPost) addToBuffer(add *invPostingBuffer) {
 	for _, b := range p.invPostingBuffer {
-		if b.glAccount == add.glAccount && b.genPostingType == add.genPostingType &&
+		if b.glAccount == add.glAccount && b.genPostingType == add.genPostingType && b.faLineNo == add.faLineNo &&
 			b.genBusPostingGrp == add.genBusPostingGrp && b.genProdPostingGrp == add.genProdPostingGrp &&
 			b.taxBusPostingGrp == add.taxBusPostingGrp && b.taxProdPostingGrp == add.taxProdPostingGrp &&
 			b.taxAreaCode == add.taxAreaCode && b.taxLiable == add.taxLiable && b.taxGroupCode == add.taxGroupCode && b.useTax == add.useTax &&
@@ -810,6 +842,27 @@ func (p *PurchPost) postInvPostingBuffer() error {
 		genJnlLine.Department_code = b.departmentCode
 		genJnlLine.Project_code = b.projectCode
 		genJnlLine.Quantity = b.quantity.Mul(p.sign)
+		if b.faLineNo > 0 {
+			// a fixed asset line: an acquisition cost or maintenance of the asset (codeunit 5632)
+			genJnlLine.Account_type = gtables.GenJournalLine_Account_type.FixedAsset
+			genJnlLine.Fa_posting_type = gtables.GenJournalLine_Fa_posting_type.AcquisitionCost
+			if b.faPostingType == gtables.PurchaseLine_Fa_posting_type.Maintenance {
+				genJnlLine.Fa_posting_type = gtables.GenJournalLine_Fa_posting_type.Maintenance
+			}
+			genJnlLine.Fa_posting_date = b.faPostingDate
+			genJnlLine.Depreciation_book_code = b.deprBookCode
+			genJnlLine.Salvage_value = b.salvageValue.Mul(p.sign)
+			genJnlLine.Depr_until_fa_posting_date = b.deprUntil
+			genJnlLine.Depr_acquisition_cost = b.deprAcqCost
+			genJnlLine.Maintenance_code = b.maintenance
+			genJnlLine.Insurance_no = b.insuranceNo
+			genJnlLine.Duplicate_in_depreciation_book = b.duplicateIn
+			genJnlLine.Use_duplication_list = b.useDupList
+			faDeprBook := gtables.NewFADepreciationBook(p.src)
+			if faDeprBook.Get(map[string]interface{}{"fa_no": b.glAccount, "depreciation_book_code": b.deprBookCode}) {
+				genJnlLine.Posting_group = faDeprBook.Fa_posting_group
+			}
+		}
 		if b.genPostingType {
 			genJnlLine.Gen_posting_type = gtables.GenJournalLine_Gen_posting_type.Purchase
 			genJnlLine.Gen_bus_posting_group = b.genBusPostingGrp
@@ -1030,4 +1083,50 @@ func (p *PurchPost) finalize() error {
 	purchHeader.Receive = false
 	purchHeader.Invoice = false
 	return purchHeader.ModifyOrError(false)
+}
+
+// checkFALine: a fixed asset line has a depreciation book and an FA posting type, an asset that
+// is not budgeted; a maintenance has no insurance or automatic depreciation, an acquisition no
+// maintenance code; an insurance only in the FA Setup's insurance book
+func checkFALine(purchLine *gtables.PurchaseLine) error {
+	if purchLine.Type != gtables.PurchaseLine_Type.FixedAsset {
+		return nil
+	}
+	err := purchLine.TestField("depreciation_book_code")
+	if err == nil {
+		err = purchLine.TestField("fa_posting_type")
+	}
+	if err != nil {
+		return err
+	}
+	fa := gtables.NewFixedAsset(purchLine)
+	err = fa.GetOrError(purchLine.No)
+	if err == nil {
+		err = fa.TestField("budgeted_asset", false)
+	}
+	if err != nil {
+		return err
+	}
+	if purchLine.Fa_posting_type == gtables.PurchaseLine_Fa_posting_type.Maintenance {
+		err = purchLine.TestField("insurance_no", types.Code(""))
+		if err == nil {
+			err = purchLine.TestField("depr_until_fa_posting_date", false)
+		}
+		if err == nil {
+			err = purchLine.TestField("depr_acquisition_cost", false)
+		}
+		if err != nil {
+			return err
+		}
+	} else {
+		err = purchLine.TestField("maintenance_code", types.Code(""))
+		if err != nil {
+			return err
+		}
+	}
+	if purchLine.Insurance_no != "" {
+		faSetup := gtables.GetFASetup(purchLine)
+		return faSetup.TestField("insurance_depr_book", purchLine.Depreciation_book_code)
+	}
+	return nil
 }

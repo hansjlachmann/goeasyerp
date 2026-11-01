@@ -97,6 +97,10 @@ func (purchaseLineLogic) OnValidate_Type(rec *gtables.PurchaseLine) error {
 		return err
 	}
 	lineType := rec.Type
+	if lineType == 3 {
+		// the classic option 3 (resources) cannot be purchased
+		return apperrors.JnlOptionNotAllowed(gtables.PurchaseLineTableName, "type", rec.Type)
+	}
 	rec.Init()
 	rec.Type = lineType
 	return nil
@@ -214,6 +218,26 @@ func (purchaseLineLogic) OnValidate_No(rec *gtables.PurchaseLine) error {
 		if err != nil {
 			return err
 		}
+	case gtables.PurchaseLine_Type.FixedAsset:
+		fa := gtables.NewFixedAsset(rec)
+		err = fa.GetOrError(rec.No)
+		if err != nil {
+			return err
+		}
+		err = fa.TestField("inactive", false)
+		if err != nil {
+			return err
+		}
+		err = fa.TestField("blocked", false)
+		if err != nil {
+			return err
+		}
+		err = getPurchLineFAPostingGroup(rec)
+		if err != nil {
+			return err
+		}
+		rec.Description = fa.Description
+		rec.Allow_invoice_disc = false
 	}
 	if rec.Type != gtables.PurchaseLine_Type.Blank {
 		err = rec.Validate("tax_prod_posting_group", rec.Tax_prod_posting_group)
@@ -892,4 +916,108 @@ func InitPurchLineOutstanding(rec *gtables.PurchaseLine) error {
 // outstanding is to be received, all that can be invoiced to be invoiced
 func InitPurchLineQtyToReceive(rec *gtables.PurchaseLine) {
 	initPurchLineQtyToReceive(rec)
+}
+
+// getPurchLineFAPostingGroup (GetFAPostingGroup): a fixed asset line takes the FA Setup's default
+// book (when the asset has it) and Acquisition Cost; the asset's FA posting group, and the
+// general and tax product posting groups of its acquisition cost (or maintenance expense) account
+func getPurchLineFAPostingGroup(rec *gtables.PurchaseLine) error {
+	if rec.Type != gtables.PurchaseLine_Type.FixedAsset || rec.No == "" {
+		return nil
+	}
+	faDeprBook := gtables.NewFADepreciationBook(rec)
+	if rec.Depreciation_book_code == "" {
+		faSetup := gtables.GetFASetup(rec)
+		rec.Depreciation_book_code = faSetup.Default_depr_book
+		if !faDeprBook.Get(map[string]interface{}{"fa_no": rec.No, "depreciation_book_code": rec.Depreciation_book_code}) {
+			rec.Depreciation_book_code = ""
+		}
+		if rec.Depreciation_book_code == "" {
+			return nil
+		}
+	}
+	if rec.Fa_posting_type == gtables.PurchaseLine_Fa_posting_type.Blank {
+		rec.Fa_posting_type = gtables.PurchaseLine_Fa_posting_type.AcquisitionCost
+	}
+	err := faDeprBook.GetOrError(map[string]interface{}{"fa_no": rec.No, "depreciation_book_code": rec.Depreciation_book_code})
+	if err != nil {
+		return err
+	}
+	err = faDeprBook.TestField("fa_posting_group")
+	if err != nil {
+		return err
+	}
+	faPostingGr := gtables.NewFAPostingGroup(rec)
+	err = faPostingGr.GetOrError(faDeprBook.Fa_posting_group)
+	if err != nil {
+		return err
+	}
+	field, accountNo := "acquisition_cost_account", faPostingGr.Acquisition_cost_account
+	if rec.Fa_posting_type != gtables.PurchaseLine_Fa_posting_type.AcquisitionCost {
+		field, accountNo = "maintenance_expense_account", faPostingGr.Maintenance_expense_account
+	}
+	err = faPostingGr.TestField(field)
+	if err != nil {
+		return err
+	}
+	glAcc := gtables.NewGLAccount(rec)
+	err = glAcc.GetOrError(accountNo)
+	if err != nil {
+		return err
+	}
+	err = glAcc.TestField("blocked", false)
+	if err == nil {
+		err = glAcc.TestField("account_type", gtables.GLAccount_Account_type.Posting)
+	}
+	if err == nil {
+		err = glAcc.TestField("gen_prod_posting_group")
+	}
+	if err != nil {
+		return err
+	}
+	rec.Posting_group = faDeprBook.Fa_posting_group
+	err = rec.Validate("gen_prod_posting_group", glAcc.Gen_prod_posting_group)
+	if err != nil {
+		return err
+	}
+	rec.Tax_group_code = glAcc.Tax_group_code
+	return rec.Validate("tax_prod_posting_group", glAcc.Tax_prod_posting_group)
+}
+
+// OnValidate_Fa_posting_type: a fixed asset line posts an acquisition cost or a maintenance (its
+// accounts' posting groups); other lines have none of the FA fields
+func (purchaseLineLogic) OnValidate_Fa_posting_type(rec *gtables.PurchaseLine) error {
+	if rec.Type == gtables.PurchaseLine_Type.FixedAsset {
+		if rec.Fa_posting_type == gtables.PurchaseLine_Fa_posting_type.Blank {
+			rec.Fa_posting_type = gtables.PurchaseLine_Fa_posting_type.AcquisitionCost
+		}
+		return getPurchLineFAPostingGroup(rec)
+	}
+	rec.Depreciation_book_code = ""
+	rec.Fa_posting_date = types.Date{}
+	rec.Salvage_value = types.Decimal{}
+	rec.Depr_until_fa_posting_date = false
+	rec.Depr_acquisition_cost = false
+	rec.Maintenance_code = ""
+	rec.Insurance_no = ""
+	rec.Duplicate_in_depreciation_book = ""
+	rec.Use_duplication_list = false
+	return nil
+}
+
+// OnValidate_Depreciation_book_code: the asset's posting group in the book
+func (purchaseLineLogic) OnValidate_Depreciation_book_code(rec *gtables.PurchaseLine) error {
+	return getPurchLineFAPostingGroup(rec)
+}
+
+// OnValidate_Duplicate_in_depreciation_book: not with the duplication list
+func (purchaseLineLogic) OnValidate_Duplicate_in_depreciation_book(rec *gtables.PurchaseLine) error {
+	rec.Use_duplication_list = false
+	return nil
+}
+
+// OnValidate_Use_duplication_list: not with a book to duplicate in
+func (purchaseLineLogic) OnValidate_Use_duplication_list(rec *gtables.PurchaseLine) error {
+	rec.Duplicate_in_depreciation_book = ""
+	return nil
 }
