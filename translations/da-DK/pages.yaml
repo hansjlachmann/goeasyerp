@@ -707,3 +707,19 @@ pages:
     caption: "Ressourcedisponering"
   res_group_availability:
     caption: "Ressourcegruppedisponering"
+  fixed_asset_journal:
+    caption: "Anlægskladde"
+    fields:
+      fa_description: "Anlægsbeskrivelse"
+  fa_journal_templates:
+    caption: "Anlægskladdetyper"
+  fa_journal_template_list:
+    caption: "Anlægskladdetypeoversigt"
+  fa_journal_batches:
+    caption: "Anlægskladdenavne"
+  fa_registers:
+    caption: "Anlægsjournaler"
+  fa_posting_type_setup:
+    caption: "Opsætning af anlægsbogføringstyper"
+  fa_journal_setup:
+    caption: "Opsætning af anlægskladde"

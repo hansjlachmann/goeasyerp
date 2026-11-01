@@ -1,0 +1,76 @@
+table:
+  id: 5604
+  name: "FA_Posting_Type_Setup"
+  description: "FA posting type setup (table 5604): how write-downs, appreciations and custom 1/2 count in a depreciation book"
+  lookup_page_id: 5608
+  fields:
+    - name: fa_posting_type
+      no: 1
+      type: Option
+      db_name: fa_posting_type
+      primary_key: true
+      options: ["Write-Down", "Appreciation", "Custom 1", "Custom 2"]
+      editable: false
+
+    - name: depreciation_book_code
+      no: 2
+      type: types.Code
+      db_name: depreciation_book_code
+      length: 10
+      primary_key: true
+      required: true
+      editable: false
+      table_relation:
+        table: Depreciation_Book
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: part_of_book_value
+      no: 3
+      type: bool
+      db_name: part_of_book_value
+
+    - name: part_of_depreciable_basis
+      no: 4
+      type: bool
+      db_name: part_of_depreciable_basis
+
+    - name: include_in_depr_calculation
+      no: 5
+      type: bool
+      db_name: include_in_depr_calculation
+
+    - name: include_in_gain_loss_calc
+      no: 6
+      type: bool
+      db_name: include_in_gain_loss_calc
+
+    - name: reverse_before_disposal
+      no: 7
+      type: bool
+      db_name: reverse_before_disposal
+
+    - name: sign
+      no: 8
+      type: Option
+      db_name: sign
+      options: [" ", "Debit", "Credit"]
+
+    - name: depreciation_type
+      no: 9
+      type: bool
+      db_name: depreciation_type
+
+    - name: acquisition_type
+      no: 10
+      type: bool
+      db_name: acquisition_type
+
+  keys:
+    - name: Primary
+      fields: [depreciation_book_code, fa_posting_type]
+      clustered: true

@@ -1,0 +1,64 @@
+page:
+  id: 5630
+  type: List
+  name: FA Journal Templates
+  source_table: FA_Journal_Template
+  caption: FA Journal Templates
+  editable: true
+
+  layout:
+    repeater:
+      fields:
+        - source: name
+          width: 110
+        - source: description
+          width: 250
+        - source: recurring
+          width: 80
+        - source: no_series
+          width: 110
+        - source: posting_no_series
+          width: 110
+        - source: source_code
+          width: 110
+        - source: reason_code
+          width: 110
+        - source: page_id
+          width: 90
+          visible: false
+        - source: test_report_id
+          width: 90
+          visible: false
+        - source: posting_report_id
+          width: 90
+          visible: false
+        - source: force_posting_report
+          width: 80
+          visible: false
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    - name: Batches
+      caption: Batches
+      image: Lines
+      promoted: true
+      run_page: 5633
+      run_page_filter_field: journal_template_name
+      run_page_filter_value: name

@@ -1,0 +1,52 @@
+page:
+  id: 5627
+  type: List
+  name: FA Registers
+  source_table: FA_Register
+  caption: FA Registers
+  editable: false
+
+  layout:
+    repeater:
+      fields:
+        - source: "no"
+          width: 90
+        - source: journal_type
+          width: 100
+        - source: g_l_register_no
+          width: 100
+          visible: false
+        - source: creation_date
+          width: 100
+        - source: user_id
+          width: 110
+        - source: source_code
+          width: 110
+        - source: journal_batch_name
+          width: 110
+        - source: from_entry_no
+          width: 90
+        - source: to_entry_no
+          width: 90
+        - source: from_maintenance_entry_no
+          width: 110
+        - source: to_maintenance_entry_no
+          width: 110
+
+  actions:
+    # The entries the posting wrote (codeunits 5620 FA Reg.-FALedger, 5650 FA Reg.-MaintLedger)
+    - name: Register
+      caption: Register
+      image: Entries
+      promoted: true
+      items:
+        - name: Fixed Asset Ledger
+          caption: Fixed Asset Ledger
+          run_page: 5604
+          run_page_filters:
+            - {field: entry_no, from: from_entry_no, to: to_entry_no}
+        - name: Maintenance Ledger
+          caption: Maintenance Ledger
+          run_page: 5641
+          run_page_filters:
+            - {field: entry_no, from: from_maintenance_entry_no, to: to_maintenance_entry_no}

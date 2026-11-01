@@ -707,3 +707,19 @@ pages:
     caption: "Resource Availability"
   res_group_availability:
     caption: "Res. Group Availability"
+  fixed_asset_journal:
+    caption: "Fixed Asset Journal"
+    fields:
+      fa_description: "FA Description"
+  fa_journal_templates:
+    caption: "FA Journal Templates"
+  fa_journal_template_list:
+    caption: "FA Journal Template List"
+  fa_journal_batches:
+    caption: "FA Journal Batches"
+  fa_registers:
+    caption: "FA Registers"
+  fa_posting_type_setup:
+    caption: "FA Posting Type Setup"
+  fa_journal_setup:
+    caption: "FA Journal Setup"

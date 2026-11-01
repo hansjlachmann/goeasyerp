@@ -1,0 +1,43 @@
+page:
+  id: 5633
+  type: List
+  name: FA Journal Batches
+  source_table: FA_Journal_Batch
+  caption: FA Journal Batches
+  editable: true   # opened from a template (filtered on it); a new batch takes the template's settings (OnNewRecord)
+
+  layout:
+    repeater:
+      fields:
+        - source: journal_template_name
+          width: 110
+          visible: false
+        - source: name
+          width: 110
+        - source: description
+          width: 250
+        - source: no_series
+          width: 110
+        - source: posting_no_series
+          width: 110
+        - source: reason_code
+          width: 110
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

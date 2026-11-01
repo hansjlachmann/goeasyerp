@@ -32,6 +32,8 @@
 //	OnValidate_Resource_journal(rec *gtables.SourceCodeSetup) error
 //	OnValidate_Item_transfer_journal(rec *gtables.SourceCodeSetup) error
 //	OnValidate_Phys_inventory_journal(rec *gtables.SourceCodeSetup) error
+//	OnValidate_Fixed_asset_journal(rec *gtables.SourceCodeSetup) error
+//	OnValidate_Fixed_asset_g_l_journal(rec *gtables.SourceCodeSetup) error
 
 package tables
 
@@ -75,6 +77,8 @@ type SourceCodeSetup struct {
 	Resource_journal           types.Code `db:"resource_journal"`
 	Item_transfer_journal      types.Code `db:"item_transfer_journal"`
 	Phys_inventory_journal     types.Code `db:"phys_inventory_journal"`
+	Fixed_asset_journal        types.Code `db:"fixed_asset_journal"`
+	Fixed_asset_g_l_journal    types.Code `db:"fixed_asset_g_l_journal"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -163,6 +167,8 @@ var SourceCodeSetup_FieldNo = struct {
 	Resource_journal           int
 	Item_transfer_journal      int
 	Phys_inventory_journal     int
+	Fixed_asset_journal        int
+	Fixed_asset_g_l_journal    int
 }{
 	Primary_key:                1,
 	Sales:                      2,
@@ -186,6 +192,8 @@ var SourceCodeSetup_FieldNo = struct {
 	Resource_journal:           19,
 	Item_transfer_journal:      33,
 	Phys_inventory_journal:     34,
+	Fixed_asset_journal:        5600,
+	Fixed_asset_g_l_journal:    5601,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -235,6 +243,10 @@ func (t *SourceCodeSetup) FieldNo(fieldName string) int {
 		return 33
 	case "phys_inventory_journal":
 		return 34
+	case "fixed_asset_journal":
+		return 5600
+	case "fixed_asset_g_l_journal":
+		return 5601
 	}
 	return 0
 }
@@ -286,6 +298,10 @@ func (t *SourceCodeSetup) FieldName(fieldNo int) string {
 		return "item_transfer_journal"
 	case 34:
 		return "phys_inventory_journal"
+	case 5600:
+		return "fixed_asset_journal"
+	case 5601:
+		return "fixed_asset_g_l_journal"
 	}
 	return ""
 }
@@ -453,6 +469,12 @@ type (
 	SourceCodeSetupOnValidate_Phys_inventory_journal interface {
 		OnValidate_Phys_inventory_journal(rec *SourceCodeSetup) error
 	}
+	SourceCodeSetupOnValidate_Fixed_asset_journal interface {
+		OnValidate_Fixed_asset_journal(rec *SourceCodeSetup) error
+	}
+	SourceCodeSetupOnValidate_Fixed_asset_g_l_journal interface {
+		OnValidate_Fixed_asset_g_l_journal(rec *SourceCodeSetup) error
+	}
 )
 
 // sourceCodeSetupLogic is the registered business logic of Source_Code_Setup, in
@@ -526,6 +548,10 @@ func sourceCodeSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SourceCodeSetupOnValidate_Item_transfer_journal)
 	case "OnValidate_Phys_inventory_journal":
 		_, ok = logic.(SourceCodeSetupOnValidate_Phys_inventory_journal)
+	case "OnValidate_Fixed_asset_journal":
+		_, ok = logic.(SourceCodeSetupOnValidate_Fixed_asset_journal)
+	case "OnValidate_Fixed_asset_g_l_journal":
+		_, ok = logic.(SourceCodeSetupOnValidate_Fixed_asset_g_l_journal)
 	default:
 		return false, false
 	}
@@ -666,6 +692,12 @@ func (t *SourceCodeSetup) CheckFields() error {
 	if err := tables.CheckMaxLength(SourceCodeSetupTableName, "phys_inventory_journal", string(t.Phys_inventory_journal), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(SourceCodeSetupTableName, "fixed_asset_journal", string(t.Fixed_asset_journal), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(SourceCodeSetupTableName, "fixed_asset_g_l_journal", string(t.Fixed_asset_g_l_journal), 10); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -726,7 +758,9 @@ func GetSourceCodeSetupTableSchema() string {
 		bom_journal TEXT(10),
 		resource_journal TEXT(10),
 		item_transfer_journal TEXT(10),
-		phys_inventory_journal TEXT(10)
+		phys_inventory_journal TEXT(10),
+		fixed_asset_journal TEXT(10),
+		fixed_asset_g_l_journal TEXT(10)
 	`
 }
 
@@ -754,7 +788,9 @@ func GetSourceCodeSetupPostgresTableSchema() string {
 		bom_journal VARCHAR(10),
 		resource_journal VARCHAR(10),
 		item_transfer_journal VARCHAR(10),
-		phys_inventory_journal VARCHAR(10)
+		phys_inventory_journal VARCHAR(10),
+		fixed_asset_journal VARCHAR(10),
+		fixed_asset_g_l_journal VARCHAR(10)
 	`
 }
 
@@ -899,6 +935,8 @@ func (t *SourceCodeSetup) StoreOldValues() {
 	t.oldValues["resource_journal"] = t.Resource_journal
 	t.oldValues["item_transfer_journal"] = t.Item_transfer_journal
 	t.oldValues["phys_inventory_journal"] = t.Phys_inventory_journal
+	t.oldValues["fixed_asset_journal"] = t.Fixed_asset_journal
+	t.oldValues["fixed_asset_g_l_journal"] = t.Fixed_asset_g_l_journal
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -978,6 +1016,12 @@ func (t *SourceCodeSetup) XRec() *SourceCodeSetup {
 	}
 	if v, ok := t.oldValues["phys_inventory_journal"].(types.Code); ok {
 		x.Phys_inventory_journal = v
+	}
+	if v, ok := t.oldValues["fixed_asset_journal"].(types.Code); ok {
+		x.Fixed_asset_journal = v
+	}
+	if v, ok := t.oldValues["fixed_asset_g_l_journal"].(types.Code); ok {
+		x.Fixed_asset_g_l_journal = v
 	}
 	return x
 }
@@ -1062,6 +1106,8 @@ func (t *SourceCodeSetup) GetByPK(primary_key types.Code) bool {
 	var resource_journalNull sql.NullString
 	var item_transfer_journalNull sql.NullString
 	var phys_inventory_journalNull sql.NullString
+	var fixed_asset_journalNull sql.NullString
+	var fixed_asset_g_l_journalNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1069,7 +1115,7 @@ func (t *SourceCodeSetup) GetByPK(primary_key types.Code) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal FROM "%s" WHERE 1=1 AND primary_key = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal FROM "%s" WHERE 1=1 AND primary_key = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1098,6 +1144,8 @@ func (t *SourceCodeSetup) GetByPK(primary_key types.Code) bool {
 		&resource_journalNull,
 		&item_transfer_journalNull,
 		&phys_inventory_journalNull,
+		&fixed_asset_journalNull,
+		&fixed_asset_g_l_journalNull,
 	)
 
 	if err != nil {
@@ -1133,6 +1181,8 @@ func (t *SourceCodeSetup) GetByPK(primary_key types.Code) bool {
 	t.Resource_journal = types.NewCode(resource_journalNull.String)
 	t.Item_transfer_journal = types.NewCode(item_transfer_journalNull.String)
 	t.Phys_inventory_journal = types.NewCode(phys_inventory_journalNull.String)
+	t.Fixed_asset_journal = types.NewCode(fixed_asset_journalNull.String)
+	t.Fixed_asset_g_l_journal = types.NewCode(fixed_asset_g_l_journalNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1177,11 +1227,13 @@ func (t *SourceCodeSetup) Insert(runTrigger bool) bool {
 		t.Resource_journal,
 		t.Item_transfer_journal,
 		t.Phys_inventory_journal,
+		t.Fixed_asset_journal,
+		t.Fixed_asset_g_l_journal,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (primary_key) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (primary_key) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1241,10 +1293,12 @@ func (t *SourceCodeSetup) InsertAll(records []*SourceCodeSetup, runTrigger bool)
 			r.Resource_journal,
 			r.Item_transfer_journal,
 			r.Phys_inventory_journal,
+			r.Fixed_asset_journal,
+			r.Fixed_asset_g_l_journal,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, SourceCodeSetupTableName)
-	columns := []string{"primary_key", "sales", "purchases", "exchange_rate_adjmt", "close_income_statement", "general_journal", "sales_journal", "purchase_journal", "cash_receipt_journal", "payment_journal", "sales_entry_application", "purchase_entry_application", "tax_settlement", "financially_voided_check", "finance_charge_memo", "reminder", "inventory_post_cost", "item_journal", "bom_journal", "resource_journal", "item_transfer_journal", "phys_inventory_journal"}
+	columns := []string{"primary_key", "sales", "purchases", "exchange_rate_adjmt", "close_income_statement", "general_journal", "sales_journal", "purchase_journal", "cash_receipt_journal", "payment_journal", "sales_entry_application", "purchase_entry_application", "tax_settlement", "financially_voided_check", "finance_charge_memo", "reminder", "inventory_post_cost", "item_journal", "bom_journal", "resource_journal", "item_transfer_journal", "phys_inventory_journal", "fixed_asset_journal", "fixed_asset_g_l_journal"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1372,6 +1426,14 @@ func (t *SourceCodeSetup) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "phys_inventory_journal = ?")
 			values = append(values, t.Phys_inventory_journal)
 		}
+		if t.hasFieldChanged("fixed_asset_journal") {
+			setClauses = append(setClauses, "fixed_asset_journal = ?")
+			values = append(values, t.Fixed_asset_journal)
+		}
+		if t.hasFieldChanged("fixed_asset_g_l_journal") {
+			setClauses = append(setClauses, "fixed_asset_g_l_journal = ?")
+			values = append(values, t.Fixed_asset_g_l_journal)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -1421,6 +1483,10 @@ func (t *SourceCodeSetup) Modify(runTrigger bool) bool {
 		values = append(values, t.Item_transfer_journal)
 		setClauses = append(setClauses, "phys_inventory_journal = ?")
 		values = append(values, t.Phys_inventory_journal)
+		setClauses = append(setClauses, "fixed_asset_journal = ?")
+		values = append(values, t.Fixed_asset_journal)
+		setClauses = append(setClauses, "fixed_asset_g_l_journal = ?")
+		values = append(values, t.Fixed_asset_g_l_journal)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -1552,6 +1618,14 @@ func (t *SourceCodeSetup) hasFieldChanged(fieldName string) bool {
 	case "phys_inventory_journal":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Phys_inventory_journal.Equal(old)
+		}
+	case "fixed_asset_journal":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Fixed_asset_journal.Equal(old)
+		}
+	case "fixed_asset_g_l_journal":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Fixed_asset_g_l_journal.Equal(old)
 		}
 	}
 
@@ -1801,6 +1875,10 @@ func (t *SourceCodeSetup) columnName(fieldName string) (string, bool) {
 		return "item_transfer_journal", true
 	case strings.ToLower("phys_inventory_journal"):
 		return "phys_inventory_journal", true
+	case strings.ToLower("fixed_asset_journal"):
+		return "fixed_asset_journal", true
+	case strings.ToLower("fixed_asset_g_l_journal"):
+		return "fixed_asset_g_l_journal", true
 	}
 	return "", false
 }
@@ -2148,7 +2226,7 @@ func (t *SourceCodeSetup) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2175,6 +2253,8 @@ func (t *SourceCodeSetup) FindFirst() bool {
 	var resource_journalNull sql.NullString
 	var item_transfer_journalNull sql.NullString
 	var phys_inventory_journalNull sql.NullString
+	var fixed_asset_journalNull sql.NullString
+	var fixed_asset_g_l_journalNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&primary_keyNull,
@@ -2199,6 +2279,8 @@ func (t *SourceCodeSetup) FindFirst() bool {
 		&resource_journalNull,
 		&item_transfer_journalNull,
 		&phys_inventory_journalNull,
+		&fixed_asset_journalNull,
+		&fixed_asset_g_l_journalNull,
 	)
 
 	if err != nil {
@@ -2232,6 +2314,8 @@ func (t *SourceCodeSetup) FindFirst() bool {
 	t.Resource_journal = types.NewCode(resource_journalNull.String)
 	t.Item_transfer_journal = types.NewCode(item_transfer_journalNull.String)
 	t.Phys_inventory_journal = types.NewCode(phys_inventory_journalNull.String)
+	t.Fixed_asset_journal = types.NewCode(fixed_asset_journalNull.String)
+	t.Fixed_asset_g_l_journal = types.NewCode(fixed_asset_g_l_journalNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2252,7 +2336,7 @@ func (t *SourceCodeSetup) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2279,6 +2363,8 @@ func (t *SourceCodeSetup) FindLast() bool {
 	var resource_journalNull sql.NullString
 	var item_transfer_journalNull sql.NullString
 	var phys_inventory_journalNull sql.NullString
+	var fixed_asset_journalNull sql.NullString
+	var fixed_asset_g_l_journalNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&primary_keyNull,
@@ -2303,6 +2389,8 @@ func (t *SourceCodeSetup) FindLast() bool {
 		&resource_journalNull,
 		&item_transfer_journalNull,
 		&phys_inventory_journalNull,
+		&fixed_asset_journalNull,
+		&fixed_asset_g_l_journalNull,
 	)
 
 	if err != nil {
@@ -2336,6 +2424,8 @@ func (t *SourceCodeSetup) FindLast() bool {
 	t.Resource_journal = types.NewCode(resource_journalNull.String)
 	t.Item_transfer_journal = types.NewCode(item_transfer_journalNull.String)
 	t.Phys_inventory_journal = types.NewCode(phys_inventory_journalNull.String)
+	t.Fixed_asset_journal = types.NewCode(fixed_asset_journalNull.String)
+	t.Fixed_asset_g_l_journal = types.NewCode(fixed_asset_g_l_journalNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2386,7 +2476,7 @@ func (t *SourceCodeSetup) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2477,6 +2567,8 @@ func (t *SourceCodeSetup) Next(steps ...int) bool {
 		var resource_journalNull sql.NullString
 		var item_transfer_journalNull sql.NullString
 		var phys_inventory_journalNull sql.NullString
+		var fixed_asset_journalNull sql.NullString
+		var fixed_asset_g_l_journalNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&primary_keyNull,
@@ -2501,6 +2593,8 @@ func (t *SourceCodeSetup) Next(steps ...int) bool {
 			&resource_journalNull,
 			&item_transfer_journalNull,
 			&phys_inventory_journalNull,
+			&fixed_asset_journalNull,
+			&fixed_asset_g_l_journalNull,
 		)
 
 		if err != nil {
@@ -2533,6 +2627,8 @@ func (t *SourceCodeSetup) Next(steps ...int) bool {
 		t.Resource_journal = types.NewCode(resource_journalNull.String)
 		t.Item_transfer_journal = types.NewCode(item_transfer_journalNull.String)
 		t.Phys_inventory_journal = types.NewCode(phys_inventory_journalNull.String)
+		t.Fixed_asset_journal = types.NewCode(fixed_asset_journalNull.String)
+		t.Fixed_asset_g_l_journal = types.NewCode(fixed_asset_g_l_journalNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -2582,7 +2678,7 @@ func (t *SourceCodeSetup) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2626,6 +2722,8 @@ func (t *SourceCodeSetup) FindSetBuffered() bool {
 		var resource_journalNull sql.NullString
 		var item_transfer_journalNull sql.NullString
 		var phys_inventory_journalNull sql.NullString
+		var fixed_asset_journalNull sql.NullString
+		var fixed_asset_g_l_journalNull sql.NullString
 
 		err := rows.Scan(
 			&primary_keyNull,
@@ -2650,6 +2748,8 @@ func (t *SourceCodeSetup) FindSetBuffered() bool {
 			&resource_journalNull,
 			&item_transfer_journalNull,
 			&phys_inventory_journalNull,
+			&fixed_asset_journalNull,
+			&fixed_asset_g_l_journalNull,
 		)
 
 		if err != nil {
@@ -2680,6 +2780,8 @@ func (t *SourceCodeSetup) FindSetBuffered() bool {
 		record.Resource_journal = types.NewCode(resource_journalNull.String)
 		record.Item_transfer_journal = types.NewCode(item_transfer_journalNull.String)
 		record.Phys_inventory_journal = types.NewCode(phys_inventory_journalNull.String)
+		record.Fixed_asset_journal = types.NewCode(fixed_asset_journalNull.String)
+		record.Fixed_asset_g_l_journal = types.NewCode(fixed_asset_g_l_journalNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -2730,6 +2832,8 @@ func (t *SourceCodeSetup) copyFromBuffered(record *SourceCodeSetup) {
 	t.Resource_journal = record.Resource_journal
 	t.Item_transfer_journal = record.Item_transfer_journal
 	t.Phys_inventory_journal = record.Phys_inventory_journal
+	t.Fixed_asset_journal = record.Fixed_asset_journal
+	t.Fixed_asset_g_l_journal = record.Fixed_asset_g_l_journal
 	t.StoreOldValues()
 }
 
@@ -3344,6 +3448,50 @@ func (t *SourceCodeSetup) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
+	case "fixed_asset_journal":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Fixed_asset_journal = v
+		} else if v, ok := value.(string); ok {
+			t.Fixed_asset_journal = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field fixed_asset_journal")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fixed_asset_journal"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SourceCodeSetupOnValidate_Fixed_asset_journal); ok {
+				if err := trg.OnValidate_Fixed_asset_journal(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "fixed_asset_g_l_journal":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Fixed_asset_g_l_journal = v
+		} else if v, ok := value.(string); ok {
+			t.Fixed_asset_g_l_journal = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field fixed_asset_g_l_journal")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fixed_asset_g_l_journal"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SourceCodeSetupOnValidate_Fixed_asset_g_l_journal); ok {
+				if err := trg.OnValidate_Fixed_asset_g_l_journal(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -3400,6 +3548,10 @@ func (t *SourceCodeSetup) FieldValue(no int) (any, bool) {
 		return t.Item_transfer_journal, true
 	case 34:
 		return t.Phys_inventory_journal, true
+	case 5600:
+		return t.Fixed_asset_journal, true
+	case 5601:
+		return t.Fixed_asset_g_l_journal, true
 	}
 	return nil, false
 }
@@ -3611,6 +3763,24 @@ func (t *SourceCodeSetup) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.Phys_inventory_journal = types.NewCode(v)
+			return true
+		}
+	case 5600:
+		if v, ok := value.(types.Code); ok {
+			t.Fixed_asset_journal = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Fixed_asset_journal = types.NewCode(v)
+			return true
+		}
+	case 5601:
+		if v, ok := value.(types.Code); ok {
+			t.Fixed_asset_g_l_journal = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Fixed_asset_g_l_journal = types.NewCode(v)
 			return true
 		}
 	}
@@ -4077,6 +4247,10 @@ func (t *SourceCodeSetup) columnValue(column string) (interface{}, bool) {
 		return t.Item_transfer_journal, true
 	case "phys_inventory_journal":
 		return t.Phys_inventory_journal, true
+	case "fixed_asset_journal":
+		return t.Fixed_asset_journal, true
+	case "fixed_asset_g_l_journal":
+		return t.Fixed_asset_g_l_journal, true
 	}
 	return nil, false
 }
@@ -4152,6 +4326,8 @@ func (t *SourceCodeSetup) Init() {
 	t.Resource_journal = *new(types.Code)
 	t.Item_transfer_journal = *new(types.Code)
 	t.Phys_inventory_journal = *new(types.Code)
+	t.Fixed_asset_journal = *new(types.Code)
+	t.Fixed_asset_g_l_journal = *new(types.Code)
 	t.applyDefaults()
 }
 
@@ -4208,6 +4384,8 @@ func (t *SourceCodeSetup) ToMap() map[string]interface{} {
 		"resource_journal":           t.Resource_journal.String(),
 		"item_transfer_journal":      t.Item_transfer_journal.String(),
 		"phys_inventory_journal":     t.Phys_inventory_journal.String(),
+		"fixed_asset_journal":        t.Fixed_asset_journal.String(),
+		"fixed_asset_g_l_journal":    t.Fixed_asset_g_l_journal.String(),
 	}
 }
 
@@ -4321,6 +4499,16 @@ func (t *SourceCodeSetup) FromMap(data map[string]interface{}) {
 	if v, ok := data["phys_inventory_journal"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Phys_inventory_journal = types.NewCode(s)
+		}
+	}
+	if v, ok := data["fixed_asset_journal"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Fixed_asset_journal = types.NewCode(s)
+		}
+	}
+	if v, ok := data["fixed_asset_g_l_journal"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Fixed_asset_g_l_journal = types.NewCode(s)
 		}
 	}
 }
@@ -4564,6 +4752,26 @@ func (t *SourceCodeSetup) GetFields() []tables.FieldInfo {
 			PrimaryKey: false,
 			FlowField:  false,
 		},
+		{
+			No:         5600,
+			Name:       "fixed_asset_journal",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5601,
+			Name:       "fixed_asset_g_l_journal",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
 	}
 }
 
@@ -4794,6 +5002,26 @@ func (t *SourceCodeSetup) GetTableRelationFields() map[string]tables.TableRelati
 			SearchTimeout: 0,
 		},
 		"phys_inventory_journal": {
+			Table:        "Source_Code",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"fixed_asset_journal": {
+			Table:        "Source_Code",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"fixed_asset_g_l_journal": {
 			Table:        "Source_Code",
 			Field:        "code",
 			DisplayField: "",

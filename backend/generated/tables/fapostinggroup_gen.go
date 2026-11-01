@@ -1886,7 +1886,7 @@ func (t *FAPostingGroup) renameReferences(field string, oldValue, newValue inter
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"FA_Depreciation_Book", false, "fa_posting_group", "", 0}, {"FA_Ledger_Entry", false, "fa_posting_group", "", 0}, {"Maintenance_Ledger_Entry", false, "fa_posting_group", "", 0}},
+		"code": {{"FA_Depreciation_Book", false, "fa_posting_group", "", 0}, {"FA_Journal_Line", false, "fa_posting_group", "", 0}, {"FA_Ledger_Entry", false, "fa_posting_group", "", 0}, {"Maintenance_Ledger_Entry", false, "fa_posting_group", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

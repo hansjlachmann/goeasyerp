@@ -8,6 +8,12 @@ common:
 
   # Common actions
   actions:
+    fixed_asset: "Fixed Asset"
+    depr_book: "Depr. Book"
+    fa_posting_type_setup: "FA Posting Type Setup"
+    fa_journal_setup: "FA Journal Setup"
+    fixed_asset_ledger: "Fixed Asset Ledger"
+    maintenance_ledger: "Maintenance Ledger"
     permissions: "Permissions"
     log_entries: "Log Entries"
     item_availability_by: "Item Availability by"

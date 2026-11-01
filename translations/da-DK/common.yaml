@@ -8,6 +8,12 @@ common:
 
   # Common actions
   actions:
+    fixed_asset: "Anlæg"
+    depr_book: "Afskr.profil"
+    fa_posting_type_setup: "Opsætning af anlægsbogføringstyper"
+    fa_journal_setup: "Opsætning af anlægskladde"
+    fixed_asset_ledger: "Anlægsposter"
+    maintenance_ledger: "Vedligeholdelsesposter"
     permissions: "Tilladelser"
     log_entries: "Logposter"
     item_availability_by: "Varedisponering pr."

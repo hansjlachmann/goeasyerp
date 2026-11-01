@@ -1,0 +1,103 @@
+table:
+  id: 5605
+  name: "FA_Journal_Setup"
+  description: "FA journal setup (table 5605): the journals a depreciation book's batch functions fill, per user"
+  # Left out until the insurance journal exists: 7/8 Insurance Jnl. Template/Batch Name
+  lookup_page_id: 5609
+  fields:
+    - name: depreciation_book_code
+      no: 1
+      type: types.Code
+      db_name: depreciation_book_code
+      length: 10
+      primary_key: true
+      required: true
+      table_relation:
+        table: Depreciation_Book
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: user_id
+      no: 2
+      type: types.Code
+      db_name: user_id
+      length: 50
+      primary_key: true
+      table_relation:
+        table: User
+        field: user_id
+        validate: false
+        lookup_columns:
+          - source: user_id
+            width: 120
+          - source: user_name
+            width: 200
+
+    - name: fa_jnl_template_name
+      no: 3
+      type: types.Code
+      db_name: fa_jnl_template_name
+      length: 10
+      table_relation:
+        table: FA_Journal_Template
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: fa_jnl_batch_name
+      no: 4
+      type: types.Code
+      db_name: fa_jnl_batch_name
+      length: 10
+      table_relation:
+        table: FA_Journal_Batch
+        field: name
+        filters:
+          journal_template_name: {field: fa_jnl_template_name}
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: gen_jnl_template_name
+      no: 5
+      type: types.Code
+      db_name: gen_jnl_template_name
+      length: 10
+      table_relation:
+        table: Gen_Journal_Template
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: gen_jnl_batch_name
+      no: 6
+      type: types.Code
+      db_name: gen_jnl_batch_name
+      length: 10
+      table_relation:
+        table: Gen_Journal_Batch
+        field: name
+        filters:
+          journal_template_name: {field: gen_jnl_template_name}
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+  keys:
+    - name: Primary
+      fields: [depreciation_book_code, user_id]
+      clustered: true

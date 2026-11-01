@@ -707,3 +707,19 @@ pages:
     caption: "Ressurstilgjengelighet"
   res_group_availability:
     caption: "Ressursgruppetilgjengelighet"
+  fixed_asset_journal:
+    caption: "Anleggskladd"
+    fields:
+      fa_description: "Anleggsbeskrivelse"
+  fa_journal_templates:
+    caption: "Anleggskladdemaler"
+  fa_journal_template_list:
+    caption: "Anleggskladdemalliste"
+  fa_journal_batches:
+    caption: "Anleggskladdenavn"
+  fa_registers:
+    caption: "Anleggsjournaler"
+  fa_posting_type_setup:
+    caption: "Oppsett av anleggsbokføringstyper"
+  fa_journal_setup:
+    caption: "Oppsett av anleggskladd"
