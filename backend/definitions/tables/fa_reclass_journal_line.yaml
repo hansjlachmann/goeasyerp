@@ -1,0 +1,167 @@
+table:
+  id: 5624
+  name: "FA_Reclass_Journal_Line"
+  description: "FA reclass. journal lines (table 5624): a share of one fixed asset's amounts in a depreciation book moved to another asset"
+  fields:
+    - name: journal_template_name
+      no: 1
+      type: types.Code
+      db_name: journal_template_name
+      length: 10
+      primary_key: true
+      table_relation:
+        table: FA_Reclass_Journal_Template
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: journal_batch_name
+      no: 2
+      type: types.Code
+      db_name: journal_batch_name
+      length: 10
+      primary_key: true
+      table_relation:
+        table: FA_Reclass_Journal_Batch
+        field: name
+        filters:
+          journal_template_name: {field: journal_template_name}
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: line_no
+      no: 3
+      type: int
+      db_name: line_no
+      primary_key: true
+
+    - name: fa_no
+      no: 4
+      type: types.Code
+      db_name: fa_no
+      length: 20
+      table_relation:
+        table: Fixed_Asset
+        field: "no"
+        lookup_columns:
+          - source: "no"
+            width: 100
+          - source: description
+            width: 250
+
+    - name: new_fa_no
+      no: 5
+      type: types.Code
+      db_name: new_fa_no
+      length: 20
+      table_relation:
+        table: Fixed_Asset
+        field: "no"
+        lookup_columns:
+          - source: "no"
+            width: 100
+          - source: description
+            width: 250
+
+    - name: fa_posting_date
+      no: 6
+      type: types.Date
+      db_name: fa_posting_date
+
+    - name: posting_date
+      no: 7
+      type: types.Date
+      db_name: posting_date
+
+    - name: depreciation_book_code
+      no: 8
+      type: types.Code
+      db_name: depreciation_book_code
+      length: 10
+      table_relation:
+        table: Depreciation_Book
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: reclassify_acq_cost_amount
+      no: 9
+      type: types.Decimal
+      db_name: reclassify_acq_cost_amount
+      decimal_places: "2:2"
+      validation: {min: 0}
+
+    - name: reclassify_acq_cost_percent
+      no: 10
+      type: types.Decimal
+      db_name: reclassify_acq_cost_percent
+      decimal_places: "0:8"
+      validation: {min: 0, max: 100}
+
+    - name: reclassify_acquisition_cost
+      no: 11
+      type: bool
+      db_name: reclassify_acquisition_cost
+
+    - name: reclassify_depreciation
+      no: 12
+      type: bool
+      db_name: reclassify_depreciation
+
+    - name: reclassify_write_down
+      no: 13
+      type: bool
+      db_name: reclassify_write_down
+
+    - name: reclassify_appreciation
+      no: 14
+      type: bool
+      db_name: reclassify_appreciation
+
+    - name: reclassify_custom_1
+      no: 15
+      type: bool
+      db_name: reclassify_custom_1
+
+    - name: reclassify_custom_2
+      no: 16
+      type: bool
+      db_name: reclassify_custom_2
+
+    - name: reclassify_salvage_value
+      no: 17
+      type: bool
+      db_name: reclassify_salvage_value
+
+    - name: insert_bal_account
+      no: 18
+      type: bool
+      db_name: insert_bal_account
+
+    - name: description
+      no: 19
+      type: types.Text
+      db_name: description
+      length: 50
+
+    - name: document_no
+      no: 20
+      type: types.Code
+      db_name: document_no
+      length: 20
+
+  keys:
+    - name: Primary
+      fields: [journal_template_name, journal_batch_name, line_no]
+      clustered: true
+    - name: FAPostingDate
+      fields: [journal_template_name, journal_batch_name, fa_posting_date]

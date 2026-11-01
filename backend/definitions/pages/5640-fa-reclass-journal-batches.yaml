@@ -1,0 +1,45 @@
+page:
+  id: 5640
+  type: List
+  name: FA Reclass. Journal Batches
+  source_table: FA_Reclass_Journal_Batch
+  caption: FA Reclass. Journal Batches
+  editable: true   # opened from a template (filtered on it)
+
+  layout:
+    repeater:
+      fields:
+        - source: journal_template_name
+          width: 110
+          visible: false
+        - source: name
+          width: 110
+        - source: description
+          width: 250
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    # Every batch in the list (codeunit 5645 FA Reclass. Jnl.-B.Transfer, after asking)
+    - name: Reclassify
+      caption: Reclassify
+      image: Post
+      shortcut: F11
+      promoted: true
+      run_object: codeunit:5645

@@ -694,6 +694,12 @@ master_data:
   - table: FA_Journal_Batch
     records:
       - {journal_template_name: ASSETS, name: DEFAULT, description: Default Journal}
+  - table: FA_Reclass_Journal_Template
+    records:
+      - {name: RECLASSIFY, description: FA Reclass. Journal, page_id: 5636}
+  - table: FA_Reclass_Journal_Batch
+    records:
+      - {journal_template_name: RECLASSIFY, name: DEFAULT, description: Default Journal}
   - table: Work_Type
     records:
       - {code: NORMAL, description: Normal hours, unit_of_measure_code: HOUR}

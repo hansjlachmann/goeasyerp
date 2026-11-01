@@ -248,3 +248,43 @@ func FAAlreadyCanceled(entryNo string) *AppError {
 func FACannotBeCanceled(table, entryNo string, value any) *AppError {
 	return &AppError{Code: ErrFACannotBeCanceled, Table: table, Field: "fa_posting_type", Params: []string{entryNo}, Value: value}
 }
+
+// FA reclassification errors (codeunits 5641, 5642)
+const (
+	ErrFAReclassSameBook       ErrorCode = "ERR_FA_RECLASS_SAME_BOOK"
+	ErrFAReclassBudgeted       ErrorCode = "ERR_FA_RECLASS_BUDGETED"
+	ErrFAReclassSameAsset      ErrorCode = "ERR_FA_RECLASS_SAME_ASSET"
+	ErrFAReclassDisposed       ErrorCode = "ERR_FA_RECLASS_DISPOSED"
+	ErrFAReclassNoAcqCost      ErrorCode = "ERR_FA_RECLASS_NO_ACQ_COST"
+	ErrFAReclassAmountTooLarge ErrorCode = "ERR_FA_RECLASS_AMOUNT_TOO_LARGE"
+)
+
+// FAReclassSameBook: the lines of a reclassification are all in one depreciation book
+func FAReclassSameBook(table string) *AppError {
+	return &AppError{Code: ErrFAReclassSameBook, Table: table, Field: "depreciation_book_code"}
+}
+
+// FAReclassBudgeted: one asset is budgeted and the other is not (the budgeted one's field first)
+func FAReclassBudgeted(table, field, field2 string) *AppError {
+	return &AppError{Code: ErrFAReclassBudgeted, Table: table, Field: field, Field2: field2}
+}
+
+// FAReclassSameAsset: FA No. and New FA No. are the same asset
+func FAReclassSameAsset(table string) *AppError {
+	return &AppError{Code: ErrFAReclassSameAsset, Table: table, Field: "fa_no", Field2: "new_fa_no"}
+}
+
+// FAReclassDisposed: the asset is disposed in the book
+func FAReclassDisposed(faNo, deprBookCode string) *AppError {
+	return &AppError{Code: ErrFAReclassDisposed, Params: []string{faNo, deprBookCode}}
+}
+
+// FAReclassNoAcqCost: the asset has no acquisition cost in the book
+func FAReclassNoAcqCost(faNo, deprBookCode string) *AppError {
+	return &AppError{Code: ErrFAReclassNoAcqCost, Params: []string{faNo, deprBookCode}}
+}
+
+// FAReclassAmountTooLarge: Reclassify Acq. Cost Amount is above the asset's acquisition cost
+func FAReclassAmountTooLarge(table, faNo, deprBookCode string) *AppError {
+	return &AppError{Code: ErrFAReclassAmountTooLarge, Table: table, Field: "reclassify_acq_cost_amount", Params: []string{faNo, deprBookCode}}
+}

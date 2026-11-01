@@ -2038,6 +2038,41 @@ tables:
       reason_code: "Årsagskode"
       no_series: "Nummerserie"
       posting_no_series: "Bogføringsnummerserie"
+  fa_reclass_journal_template:
+    caption: "Anlægsomposteringskladdetype"
+    fields:
+      name: "Navn"
+      description: "Beskrivelse"
+      page_id: "Side-id"
+  fa_reclass_journal_batch:
+    caption: "Anlægsomposteringskladdenavn"
+    fields:
+      journal_template_name: "Kladdetypenavn"
+      name: "Navn"
+      description: "Beskrivelse"
+  fa_reclass_journal_line:
+    caption: "Anlægsomposteringskladdelinje"
+    fields:
+      journal_template_name: "Kladdetypenavn"
+      journal_batch_name: "Kladdenavn"
+      line_no: "Linjenr."
+      fa_no: "Anlægsnr."
+      new_fa_no: "Nyt anlægsnr."
+      fa_posting_date: "Anlægsbogføringsdato"
+      posting_date: "Bogføringsdato"
+      depreciation_book_code: "Afskrivningsprofilkode"
+      reclassify_acq_cost_amount: "Ompostér anskaffelsesbeløb"
+      reclassify_acq_cost_percent: "Ompostér anskaffelsespris %"
+      reclassify_acquisition_cost: "Ompostér anskaffelsespris"
+      reclassify_depreciation: "Ompostér afskrivning"
+      reclassify_write_down: "Ompostér nedskrivning"
+      reclassify_appreciation: "Ompostér opskrivning"
+      reclassify_custom_1: "Ompostér bruger 1"
+      reclassify_custom_2: "Ompostér bruger 2"
+      reclassify_salvage_value: "Ompostér scrapværdi"
+      insert_bal_account: "Indsæt modkonto"
+      description: "Beskrivelse"
+      document_no: "Bilagsnr."
   depreciation_table_header:
     caption: "Afskrivningstabelhoved"
     fields:
