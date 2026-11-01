@@ -207,7 +207,9 @@ func (r *faBookValue) calcFAPostedAmount(run *Run, faNo types.Code, postingType 
 	case 1:
 		faLedgEntry.SetRange("fa_posting_date", r.startingDate, r.endingDate)
 	}
-	faLedgEntry.CalcSums("amount")
+	if faLedgEntry.CalcSums("amount") != nil {
+		return types.Decimal{}
+	}
 	return faLedgEntry.Amount
 }
 

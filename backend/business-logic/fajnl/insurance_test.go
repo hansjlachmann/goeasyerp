@@ -30,7 +30,9 @@ func insuranceLine(t *testing.T, src ftables.Source, lineNo int, faNo, amount st
 func coverageEntries(src ftables.Source, faNo string) (int, types.Decimal) {
 	entries := gtables.NewInsCoverageLedgerEntry(src)
 	entries.SetRange("fa_no", types.Code(faNo))
-	entries.CalcSums("amount")
+	if entries.CalcSums("amount") != nil {
+		return 0, types.Decimal{}
+	}
 	return entries.Count(), entries.Amount
 }
 

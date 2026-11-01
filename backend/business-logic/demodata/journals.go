@@ -472,7 +472,10 @@ func (j *demoJournals) itemJournals() error {
 		itemLedgEntry := gtables.NewItemLedgerEntry(j.src)
 		itemLedgEntry.SetRange("item_no", itemNo)
 		itemLedgEntry.SetRange("location_code", types.Code("MAIN"))
-		itemLedgEntry.CalcSums("quantity")
+		err := itemLedgEntry.CalcSums("quantity")
+		if err != nil {
+			return err
+		}
 		l, err := j.itemJnlLine("PHYS. INV.", (i+1)*10000, last)
 		if err != nil {
 			return err
