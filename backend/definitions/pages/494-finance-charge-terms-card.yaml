@@ -59,3 +59,11 @@ page:
       shortcut: Ctrl+D
       promoted: true
       enabled: true
+
+    - name: Texts
+      caption: Texts
+      image: Document
+      promoted: true
+      run_page: 445
+      run_page_filter_field: fin_charge_terms_code
+      run_page_filter_value: code

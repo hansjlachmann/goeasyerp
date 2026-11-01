@@ -1,0 +1,40 @@
+page:
+  id: 444
+  type: List
+  name: Reminder/Fin. Charge Entries
+  source_table: Reminder_Fin_Charge_Entry
+  caption: Reminder/Fin. Charge Entries
+
+  layout:
+    repeater:
+      fields:
+        - source: entry_no
+          width: 90
+        - source: type
+          width: 140
+        - source: "no"
+          width: 120
+        - source: reminder_level
+          width: 90
+        - source: posting_date
+          width: 110
+        - source: document_date
+          width: 110
+          visible: false
+        - source: customer_no
+          width: 110
+        - source: customer_entry_no
+          width: 110
+        - source: document_type
+          width: 120
+        - source: document_no
+          width: 120
+        - source: remaining_amount
+          width: 130
+        - source: interest_amount
+          width: 120
+        - source: interest_posted
+          width: 90
+        - source: user_id
+          width: 110
+          visible: false

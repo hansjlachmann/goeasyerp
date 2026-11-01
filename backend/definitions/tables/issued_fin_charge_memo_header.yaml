@@ -1,0 +1,436 @@
+table:
+  id: 304
+  name: "Issued_Fin_Charge_Memo_Header"
+  posted: true               # written by posting only: the table API does not insert, delete or rename
+  description: "Issued finance charge memos (table 304): a finance charge memo as issued (its interest and fee posted)"
+  lookup_page_id: 452
+  data_caption_fields: [no, name]
+  fields:
+    - name: no
+      no: 1
+      type: types.Code
+      db_name: no
+      length: 20
+      primary_key: true
+      required: true
+
+    - name: customer_no
+      no: 2
+      type: types.Code
+      db_name: customer_no
+      length: 20
+      table_relation:
+        table: Customer
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+          - source: city
+            width: 250
+
+    - name: name
+      no: 3
+      type: types.Text
+      db_name: name
+      length: 50
+
+    - name: name_2
+      no: 4
+      type: types.Text
+      db_name: name_2
+      length: 50
+
+    - name: address
+      no: 5
+      type: types.Text
+      db_name: address
+      length: 50
+
+    - name: address_2
+      no: 6
+      type: types.Text
+      db_name: address_2
+      length: 50
+
+    - name: post_code
+      no: 7
+      type: types.Code
+      db_name: post_code
+      length: 20
+      table_relation:
+        table: Post_Code
+        field: code
+        validate: false
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: city
+            width: 250
+
+    - name: city
+      no: 8
+      type: types.Text
+      db_name: city
+      length: 30
+
+    - name: state
+      no: 9
+      type: types.Text
+      db_name: state
+      length: 30
+
+    - name: country_code
+      no: 10
+      type: types.Code
+      db_name: country_code
+      length: 10
+      table_relation:
+        table: Country_Region
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: language_code
+      no: 11
+      type: types.Code
+      db_name: language_code
+      length: 10
+      table_relation:
+        table: Language
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: currency_code
+      no: 12
+      type: types.Code
+      db_name: currency_code
+      length: 10
+      table_relation:
+        table: Currency
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: contact
+      no: 13
+      type: types.Text
+      db_name: contact
+      length: 50
+
+    - name: your_reference
+      no: 14
+      type: types.Text
+      db_name: your_reference
+      length: 30
+
+    - name: department_code
+      no: 15
+      type: types.Code
+      db_name: department_code
+      length: 10
+      table_relation:
+        table: Department
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: project_code
+      no: 16
+      type: types.Code
+      db_name: project_code
+      length: 10
+      table_relation:
+        table: Project
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: customer_posting_group
+      no: 17
+      type: types.Code
+      db_name: customer_posting_group
+      length: 10
+      table_relation:
+        table: Customer_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+
+    - name: gen_bus_posting_group
+      no: 18
+      type: types.Code
+      db_name: gen_bus_posting_group
+      length: 10
+      table_relation:
+        table: Gen_Business_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: vat_registration_no
+      no: 19
+      type: types.Text
+      db_name: vat_registration_no
+      length: 20
+
+    - name: reason_code
+      no: 20
+      type: types.Code
+      db_name: reason_code
+      length: 10
+      table_relation:
+        table: Reason_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: posting_date
+      no: 21
+      type: types.Date
+      db_name: posting_date
+
+    - name: document_date
+      no: 22
+      type: types.Date
+      db_name: document_date
+
+    - name: due_date
+      no: 23
+      type: types.Date
+      db_name: due_date
+
+    - name: fin_charge_terms_code
+      no: 25
+      type: types.Code
+      db_name: fin_charge_terms_code
+      length: 10
+      table_relation:
+        table: Finance_Charge_Terms
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: interest_posted
+      no: 26
+      type: bool
+      db_name: interest_posted
+
+    - name: additional_fee_posted
+      no: 27
+      type: bool
+      db_name: additional_fee_posted
+
+    - name: posting_description
+      no: 29
+      type: types.Text
+      db_name: posting_description
+      length: 50
+
+    - name: comment
+      no: 30
+      type: bool
+      flow_field: true
+      calc_formula: Exist
+      source_table: FinChargeCommentLine
+      source_field: line_no
+      flow_filters:
+        - field: type
+          type: const
+          value: 1
+        - field: no
+          type: field
+          value: no
+
+    - name: remaining_amount
+      no: 31
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: IssuedFinChargeMemoLine
+      source_field: remaining_amount
+      flow_filters:
+        - field: finance_charge_memo_no
+          type: field
+          value: no
+
+    - name: interest_amount
+      no: 32
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: IssuedFinChargeMemoLine
+      source_field: amount
+      flow_filters:
+        - field: finance_charge_memo_no
+          type: field
+          value: no
+        - field: type
+          type: const
+          value: 2
+
+    - name: additional_fee
+      no: 33
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: IssuedFinChargeMemoLine
+      source_field: amount
+      flow_filters:
+        - field: finance_charge_memo_no
+          type: field
+          value: no
+        - field: type
+          type: const
+          value: 1
+
+    - name: tax_amount
+      no: 34
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: IssuedFinChargeMemoLine
+      source_field: tax_amount
+      flow_filters:
+        - field: finance_charge_memo_no
+          type: field
+          value: no
+
+    - name: no_printed
+      no: 35
+      type: int
+      db_name: no_printed
+
+    - name: user_id
+      no: 36
+      type: types.Code
+      db_name: user_id
+      length: 50
+      table_relation:
+        table: User
+        field: user_id
+        validate: false
+        lookup_columns:
+          - source: user_id
+            width: 120
+          - source: user_name
+            width: 200
+
+    - name: no_series
+      no: 37
+      type: types.Code
+      db_name: no_series
+      length: 10
+      table_relation:
+        table: No_Series
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: pre_assigned_no_series
+      no: 38
+      type: types.Code
+      db_name: pre_assigned_no_series
+      length: 10
+      table_relation:
+        table: No_Series
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: pre_assigned_no
+      no: 39
+      type: types.Code
+      db_name: pre_assigned_no
+      length: 20
+
+    - name: source_code
+      no: 40
+      type: types.Code
+      db_name: source_code
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: tax_area_code
+      no: 41
+      type: types.Code
+      db_name: tax_area_code
+      length: 20
+      table_relation:
+        table: Tax_Area
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: tax_liable
+      no: 42
+      type: bool
+      db_name: tax_liable
+
+    - name: tax_bus_posting_group
+      no: 43
+      type: types.Code
+      db_name: tax_bus_posting_group
+      length: 10
+      table_relation:
+        table: Tax_Business_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+  keys:
+    - name: Primary
+      fields: [no]
+      clustered: true
+    - name: customer_posting_date
+      fields: [customer_no, posting_date]

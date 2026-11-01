@@ -1,0 +1,124 @@
+table:
+  id: 300
+  name: "Reminder_Fin_Charge_Entry"
+  posted: true               # written by posting only: the table API does not insert, delete or rename
+  description: "Reminder/finance charge entries (table 300): per customer entry each issued reminder or finance charge memo"
+  lookup_page_id: 444
+  fields:
+    - name: entry_no
+      no: 1
+      type: int
+      db_name: entry_no
+      primary_key: true
+      required: true
+
+    - name: type
+      no: 2
+      type: Option
+      db_name: type
+      options: ["Reminder", "Finance Charge Memo"]
+
+    - name: no
+      no: 3
+      type: types.Code
+      db_name: no
+      length: 20
+
+    - name: reminder_level
+      no: 4
+      type: int
+      db_name: reminder_level
+
+    - name: posting_date
+      no: 5
+      type: types.Date
+      db_name: posting_date
+
+    - name: document_date
+      no: 6
+      type: types.Date
+      db_name: document_date
+
+    - name: interest_posted
+      no: 7
+      type: bool
+      db_name: interest_posted
+
+    - name: interest_amount
+      no: 8
+      type: types.Decimal
+      db_name: interest_amount
+      decimal_places: "2:2"
+
+    - name: customer_entry_no
+      no: 9
+      type: int
+      db_name: customer_entry_no
+      table_relation:
+        table: Customer_ledger_entry
+        field: entry_no
+        lookup_columns:
+          - source: entry_no
+            width: 90
+          - source: document_no
+            width: 110
+          - source: description
+            width: 250
+
+    - name: document_type
+      no: 10
+      type: Option
+      db_name: document_type
+      options: [" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"]
+
+    - name: document_no
+      no: 11
+      type: types.Code
+      db_name: document_no
+      length: 20
+
+    - name: remaining_amount
+      no: 12
+      type: types.Decimal
+      db_name: remaining_amount
+      decimal_places: "2:2"
+
+    - name: customer_no
+      no: 13
+      type: types.Code
+      db_name: customer_no
+      length: 20
+      table_relation:
+        table: Customer
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+          - source: city
+            width: 250
+
+    - name: user_id
+      no: 14
+      type: types.Code
+      db_name: user_id
+      length: 50
+      table_relation:
+        table: User
+        field: user_id
+        validate: false
+        lookup_columns:
+          - source: user_id
+            width: 120
+          - source: user_name
+            width: 200
+
+  keys:
+    - name: Primary
+      fields: [entry_no]
+      clustered: true
+    - name: customer_entry
+      fields: [customer_entry_no, type]
+    - name: type_no
+      fields: [type, no]

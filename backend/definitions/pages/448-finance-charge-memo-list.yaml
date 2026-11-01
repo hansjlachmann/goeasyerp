@@ -1,0 +1,64 @@
+page:
+  id: 448
+  type: List
+  name: Finance Charge Memo List
+  source_table: Finance_Charge_Memo_Header
+  caption: Finance Charge Memos
+  card_page_id: 446
+
+  layout:
+    repeater:
+      fields:
+        - source: "no"
+          width: 120
+        - source: customer_no
+          width: 120
+        - source: name
+          width: 250
+        - source: currency_code
+          width: 90
+        - source: posting_date
+          width: 110
+          visible: false
+        - source: document_date
+          width: 110
+        - source: due_date
+          width: 110
+        - source: remaining_amount
+          width: 130
+        - source: interest_amount
+          width: 120
+        - source: additional_fee
+          width: 120
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    - name: Create Finance Charge Memos
+      caption: Create Finance Charge Memos
+      image: Calculate
+      promoted: true
+      run_object: report:191
+
+    - name: Issue
+      caption: Issue
+      image: Post
+      shortcut: F9
+      promoted: true
+      run_object: report:193

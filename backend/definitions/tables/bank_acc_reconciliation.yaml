@@ -1,0 +1,52 @@
+table:
+  id: 273
+  name: "Bank_Acc_Reconciliation"
+  description: "Bank account reconciliations (table 273): a bank statement being reconciled — its lines are applied to the bank account's and check ledger entries, posting closes them"
+  lookup_page_id: 388
+  data_caption_fields: [bank_account_no, statement_no]
+  fields:
+    - name: bank_account_no
+      no: 1
+      type: types.Code
+      db_name: bank_account_no
+      length: 20
+      primary_key: true
+      required: true
+      table_relation:
+        table: Bank_Account
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: statement_no
+      no: 2
+      type: types.Code
+      db_name: statement_no
+      length: 20
+      primary_key: true
+      required: true
+
+    - name: statement_ending_balance
+      no: 3
+      type: types.Decimal
+      db_name: statement_ending_balance
+      decimal_places: "2:2"
+
+    - name: statement_date
+      no: 4
+      type: types.Date
+      db_name: statement_date
+
+    - name: balance_last_statement
+      no: 5
+      type: types.Decimal
+      db_name: balance_last_statement
+      decimal_places: "2:2"
+
+  keys:
+    - name: Primary
+      fields: [bank_account_no, statement_no]
+      clustered: true

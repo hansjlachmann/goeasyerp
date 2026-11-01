@@ -1,0 +1,52 @@
+page:
+  id: 447
+  type: List
+  name: Finance Charge Memo Lines
+  source_table: Finance_Charge_Memo_Line   # the lines of the Finance Charge Memo card (446), linked by its No.
+  caption: Lines
+  editable: true
+  delayed_insert: true
+  auto_split_key: true
+
+  layout:
+    repeater:
+      fields:
+        - source: finance_charge_memo_no
+          width: 100
+          visible: false
+        - source: line_no
+          width: 90
+          visible: false
+        - source: type
+          width: 150
+        - source: entry_no
+          width: 90
+          visible: false
+        - source: posting_date
+          width: 100
+          visible: false
+        - source: document_date
+          width: 100
+          visible: false
+        - source: due_date
+          width: 100
+        - source: document_type
+          width: 120
+        - source: document_no
+          width: 120
+        - source: "no"
+          width: 110
+        - source: description
+          width: 300
+        - source: original_amount
+          width: 120
+        - source: remaining_amount
+          width: 120
+        - source: interest_rate
+          width: 100
+          visible: false
+        - source: amount
+          width: 120
+        - source: tax_amount
+          width: 110
+          visible: false

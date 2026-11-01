@@ -1,0 +1,114 @@
+table:
+  id: 274
+  name: "Bank_Acc_Reconciliation_Line"
+  description: "Bank account reconciliation lines (table 274): the transactions of a bank statement and the ledger entries applied to them"
+  fields:
+    - name: bank_account_no
+      no: 1
+      type: types.Code
+      db_name: bank_account_no
+      length: 20
+      primary_key: true
+      required: true
+      table_relation:
+        table: Bank_Account
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: statement_no
+      no: 2
+      type: types.Code
+      db_name: statement_no
+      length: 20
+      primary_key: true
+      required: true
+      table_relation:
+        table: Bank_Acc_Reconciliation
+        field: statement_no
+        filters:
+          bank_account_no: {field: bank_account_no}
+        lookup_columns:
+          - source: statement_no
+            width: 100
+          - source: statement_date
+            width: 100
+
+    - name: statement_line_no
+      no: 3
+      type: int
+      db_name: statement_line_no
+      primary_key: true
+
+    - name: document_no
+      no: 4
+      type: types.Code
+      db_name: document_no
+      length: 20
+
+    - name: transaction_date
+      no: 5
+      type: types.Date
+      db_name: transaction_date
+
+    - name: description
+      no: 6
+      type: types.Text
+      db_name: description
+      length: 50
+
+    - name: statement_amount
+      no: 7
+      type: types.Decimal
+      db_name: statement_amount
+      decimal_places: "2:2"
+
+    - name: difference
+      no: 8
+      type: types.Decimal
+      db_name: difference
+      decimal_places: "2:2"
+
+    - name: applied_amount
+      no: 9
+      type: types.Decimal
+      db_name: applied_amount
+      decimal_places: "2:2"
+      editable: false
+
+    - name: type
+      no: 10
+      type: Option
+      db_name: type
+      options: ["Bank Account Ledger Entry", "Check Ledger Entry", "Difference"]
+
+    - name: applied_entries
+      no: 11
+      type: int
+      db_name: applied_entries
+      editable: false
+
+    - name: value_date
+      no: 12
+      type: types.Date
+      db_name: value_date
+
+    - name: ready_for_application
+      no: 13
+      type: bool
+      db_name: ready_for_application
+
+    - name: check_no
+      no: 14
+      type: types.Code
+      db_name: check_no
+      length: 20
+
+  keys:
+    - name: Primary
+      fields: [bank_account_no, statement_no, statement_line_no]
+      clustered: true
+      sum_index_fields: [statement_amount, difference]

@@ -48,7 +48,7 @@ func menuPages(t *testing.T) map[int]string {
 		t.Fatal(err)
 	}
 	var menu struct {
-		Items []menuEntry `yaml:"items"`
+		Items []menuEntry `yaml:"menu"`
 	}
 	if err := yaml.Unmarshal(data, &menu); err != nil {
 		t.Fatal(err)
@@ -108,12 +108,20 @@ func TestDemoDataFillsTheMainMenu(t *testing.T) {
 	}
 	counts, err := demodata.Create(db, "demo", database.DBTypeSQLite, demodata.Options{Today: time.Date(2026, 10, 6, 0, 0, 0, 0, time.Local),
 		ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost,
-		GenJnlPostLine: openGenJnlPostLine, Journals: true})
+		GenJnlPostLine: openGenJnlPostLine, Journals: true,
+		ReminderIssue: openReminderIssue, FinChrgMemoIssue: openFinChrgMemoIssue, AdjustExchRates: adjustExchRates})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if counts.JournalLines < 15 {
 		t.Errorf("%d journal lines", counts.JournalLines)
+	}
+	if counts.ExchRateAdjmtRegs == 0 {
+		t.Error("no exchange rate adjustment registers")
+	}
+	if counts.Reminders != 2 || counts.IssuedReminders != 1 || counts.FinChrgMemos != 1 || counts.IssuedFinChrgMemos != 1 {
+		t.Errorf("reminders %d (issued %d), finance charge memos %d (issued %d), want 2 (1), 1 (1)",
+			counts.Reminders, counts.IssuedReminders, counts.FinChrgMemos, counts.IssuedFinChrgMemos)
 	}
 	sources := pageSourceTables(t)
 	var empty []string

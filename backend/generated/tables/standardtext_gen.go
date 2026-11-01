@@ -838,7 +838,7 @@ func (t *StandardText) renameReferences(field string, oldValue, newValue interfa
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Purch_Cr_Memo_Line", false, "no", "type", 0}, {"Purch_Inv_Line", false, "no", "type", 0}, {"Purch_Rcpt_Line", false, "no", "type", 0}, {"Purchase_Line", false, "no", "type", 0}, {"Sales_Cr_Memo_Line", false, "no", "type", 0}, {"Sales_Invoice_Line", false, "no", "type", 0}, {"Sales_Line", false, "no", "type", 0}, {"Sales_Shipment_Line", false, "no", "type", 0}},
+		"code": {{"Finance_Charge_Memo_Line", false, "no", "type", 0}, {"Issued_Fin_Charge_Memo_Line", false, "no", "type", 0}, {"Issued_Reminder_Line", false, "no", "type", 0}, {"Purch_Cr_Memo_Line", false, "no", "type", 0}, {"Purch_Inv_Line", false, "no", "type", 0}, {"Purch_Rcpt_Line", false, "no", "type", 0}, {"Purchase_Line", false, "no", "type", 0}, {"Reminder_Line", false, "no", "type", 0}, {"Sales_Cr_Memo_Line", false, "no", "type", 0}, {"Sales_Invoice_Line", false, "no", "type", 0}, {"Sales_Line", false, "no", "type", 0}, {"Sales_Shipment_Line", false, "no", "type", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

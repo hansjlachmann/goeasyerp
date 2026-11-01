@@ -8,6 +8,11 @@ common:
 
   # Common actions
   actions:
+    suggest_lines: "Suggest Lines"
+    transfer_to_general_journal: "Transfer to General Journal"
+    apply: "Apply"
+    statements: "Statements"
+    bank_account_card: "Bank Account Card"
     allocations: "Allocations"
     insert_fa_bal_account: "Insert FA Bal. Account"
     copy_depreciation_book: "Copy Depreciation Book"
@@ -16,6 +21,16 @@ common:
     cancel_entries: "Cancel Entries"
     reclassify: "Reclassify"
     insurance: "Insurance"
+    reminder_fin_charge_entries: "Reminder/Fin. Charge Entries"
+    customer_ledger_entries: "Customer Ledger Entries"
+    issue: "Issue"
+    suggest_reminder_lines: "Suggest Reminder Lines"
+    update_reminder_text: "Update Reminder Text"
+    create_reminders: "Create Reminders"
+    suggest_finance_charge_memo_lines: "Suggest Finance Charge Memo Lines"
+    update_finance_charge_text: "Update Finance Charge Text"
+    create_finance_charge_memos: "Create Finance Charge Memos"
+    texts: "Texts"
     coverage_ledger: "Coverage Ledger"
     acquisition: "Acquisition"
     depreciation: "Depreciation"

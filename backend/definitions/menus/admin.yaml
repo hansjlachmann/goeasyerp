@@ -143,9 +143,10 @@ menu:
       - name: "Activities"
         items:
           - name: "Recurring Journals"
+            page_id: 283
           - separator: true
           - name: "Bank Account Reconciliations"
-            page_id: 379
+            page_id: 388
           - name: "Tax"
             items:
               - name: "Calc. and Post Tax Settlement"
@@ -272,6 +273,7 @@ menu:
       - name: "Activities"
         items:
           - name: "Recurring Journals"
+            page_id: 283
           - separator: true
           - name: "Combine Shipments"
             run_object: "report:295"
@@ -281,14 +283,14 @@ menu:
             run_object: "report:291"
           - separator: true
           - name: "Reminders"
-            page_id: 434
+            page_id: 436
           - name: "Issued Reminders"
-            page_id: 438
+            page_id: 440
           - separator: true
           - name: "Finance Charge Memos"
-            page_id: 446
+            page_id: 448
           - name: "Issued Finance Charge Memos"
-            page_id: 450
+            page_id: 452
           - separator: true
           - name: "Date Compression"
             items:
@@ -359,6 +361,7 @@ menu:
       - name: "Activities"
         items:
           - name: "Recurring Journals"
+            page_id: 283
           - name: "Recurring Req. Worksheets"
           - separator: true
           - name: "Delete Invoiced Purch. Orders"
@@ -661,6 +664,7 @@ menu:
       - name: "Activities"
         items:
           - name: "Recurring General Journals"
+            page_id: 283
           - name: "Recurring Fixed Asset Journals"
           - separator: true
           - name: "Calculate Depreciation"

@@ -8,6 +8,11 @@ common:
 
   # Common actions
   actions:
+    suggest_lines: "Foreslå linjer"
+    transfer_to_general_journal: "Overfør til finanskladd"
+    apply: "Utlign"
+    statements: "Kontoutskrifter"
+    bank_account_card: "Bankkontokort"
     allocations: "Fordelinger"
     insert_fa_bal_account: "Sett inn anleggsmotkonto"
     copy_depreciation_book: "Kopier avskrivningsprofil"
@@ -16,6 +21,16 @@ common:
     cancel_entries: "Annuller poster"
     reclassify: "Omklassifiser"
     insurance: "Forsikring"
+    reminder_fin_charge_entries: "Purre-/rentenotaposter"
+    customer_ledger_entries: "Kundeposter"
+    issue: "Utsted"
+    suggest_reminder_lines: "Foreslå purrelinjer"
+    update_reminder_text: "Oppdater purretekst"
+    create_reminders: "Opprett purringer"
+    suggest_finance_charge_memo_lines: "Foreslå rentenotalinjer"
+    update_finance_charge_text: "Oppdater rentenotatekst"
+    create_finance_charge_memos: "Opprett rentenotaer"
+    texts: "Tekster"
     coverage_ledger: "Dekningsposter"
     acquisition: "Anskaffelse"
     depreciation: "Avskrivning"

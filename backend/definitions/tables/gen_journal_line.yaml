@@ -437,6 +437,45 @@ table:
           - source: description
             width: 250
 
+    # Recurring journals (a template with Recurring): how the line recurs and when it expires
+    - name: recurring_method
+      no: 53
+      type: Option
+      db_name: recurring_method
+      options: [" ", "F Fixed", "V Variable", "B Balance", "RF Reversing Fixed", "RV Reversing Variable", "RB Reversing Balance"]
+
+    - name: expiration_date
+      no: 54
+      type: types.Date
+      db_name: expiration_date
+
+    - name: recurring_frequency
+      no: 55
+      type: types.Code
+      db_name: recurring_frequency
+      length: 20
+      date_formula: true
+
+    - name: allocated_amt_lcy
+      no: 56
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      editable: false
+      calc_formula: Sum
+      source_table: GenJnlAllocation
+      source_field: amount
+      flow_filters:
+        - field: journal_template_name
+          type: field
+          value: journal_template_name
+        - field: journal_batch_name
+          type: field
+          value: journal_batch_name
+        - field: journal_line_no
+          type: field
+          value: line_no
+
     - name: gen_posting_type
       no: 57
       type: Option

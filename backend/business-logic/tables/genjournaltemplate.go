@@ -19,6 +19,9 @@ func init() { gtables.RegisterGenJournalTemplateLogic(genJournalTemplateLogic{})
 // The journal page of each template type (Form ID): General Journal 39, Sales Journal 253,
 // Purchase Journal 254, Cash Receipt Journal 255, Payment Journal 256, Fixed Asset G/L Journal
 // 5628
+// RecurringGenJnlPageID is page 283 Recurring General Journal, the page of every recurring template
+const RecurringGenJnlPageID = 283
+
 var genJnlTemplatePages = map[gtables.GenJournalTemplateType]int{
 	gtables.GenJournalTemplate_Type.General:      39,
 	gtables.GenJournalTemplate_Type.Sales:        253,
@@ -67,7 +70,8 @@ func (genJournalTemplateLogic) OnValidate_Page_id(rec *gtables.GenJournalTemplat
 	return nil
 }
 
-// OnValidate_Type: the type's source code (Source Code Setup) and page
+// OnValidate_Type: the type's source code (Source Code Setup) and page (a recurring template:
+// the Recurring General Journal)
 func (genJournalTemplateLogic) OnValidate_Type(rec *gtables.GenJournalTemplate) error {
 	sourceCodeSetup := gtables.GetSourceCodeSetup(rec)
 	switch rec.Type {
@@ -85,6 +89,9 @@ func (genJournalTemplateLogic) OnValidate_Type(rec *gtables.GenJournalTemplate) 
 		rec.Source_code = sourceCodeSetup.Fixed_asset_g_l_journal
 	}
 	rec.Page_id = genJnlTemplatePages[rec.Type]
+	if rec.Recurring {
+		rec.Page_id = RecurringGenJnlPageID
+	}
 	return nil
 }
 

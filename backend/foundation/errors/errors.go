@@ -151,6 +151,8 @@ type AppError struct {
 	// Value (optional) is the last parameter, shown in the message's language: a boolean as
 	// Yes/No, an option of the table field as its caption
 	Value any
+	// Values (optional) follow Value, each shown like it (several option values of Field)
+	Values []any
 	// Details (optional): what lies behind the error, shown on request (Show Entries)
 	Details *Details
 }
@@ -180,6 +182,9 @@ func (e *AppError) Message(language string) string {
 	params = append(captions, e.Params...)
 	if e.Value != nil {
 		params = append(params, e.formatValue(language))
+	}
+	for _, v := range e.Values {
+		params = append(params, (&AppError{Table: e.Table, Field: e.Field, Value: v}).formatValue(language))
 	}
 
 	// Replace placeholders %1, %2, %3, etc. with params

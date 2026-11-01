@@ -1,0 +1,110 @@
+page:
+  id: 284
+  type: List
+  name: Allocations
+  source_table: Gen_Jnl_Allocation
+  caption: Allocations
+  editable: true
+  auto_split_key: true
+  # classic form 284: opened from a recurring journal line (Allocations) — the G/L accounts its
+  # amount is allocated to, by quantity, percentage or amount (the opposite sign of the line)
+
+  # Under the list (OnAfterGetRecord, business-logic/pages/allocations.go): the allocated amount
+  # up to the line and in total
+  footer:
+    - source: allocation_amount
+      calculated: true
+      type: types.Decimal
+      decimal_places: "2:2"
+    - source: total_allocation_amount
+      calculated: true
+      type: types.Decimal
+      decimal_places: "2:2"
+
+  layout:
+    repeater:
+      fields:
+        - source: journal_template_name
+          width: 100
+          visible: false
+        - source: journal_batch_name
+          width: 100
+          visible: false
+        - source: journal_line_no
+          width: 90
+          visible: false
+        - source: account_no
+          width: 120
+        - source: account_name
+          width: 250
+        - source: department_code
+          width: 110
+        - source: project_code
+          width: 110
+        - source: gen_posting_type
+          width: 120
+        - source: gen_bus_posting_group
+          width: 110
+        - source: gen_prod_posting_group
+          width: 110
+        - source: tax_bus_posting_group
+          width: 110
+          visible: false
+        - source: tax_prod_posting_group
+          width: 110
+          visible: false
+        - source: tax_area_code
+          width: 110
+          visible: false
+        - source: tax_liable
+          width: 80
+          visible: false
+        - source: tax_group_code
+          width: 110
+          visible: false
+        - source: allocation_quantity
+          width: 110
+        - source: allocation_percent
+          width: 110
+        - source: amount
+          width: 120
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    # The allocation's G/L account: its card (page 17) and its ledger entries (page 20)
+    - name: Account
+      caption: Account
+      image: Card
+      promoted: true
+      items:
+        - name: Card
+          caption: Card
+          shortcut: Shift+F5
+          run_page: 17
+          run_page_filters:
+            - field: no
+              value: account_no
+        - name: Ledger Entries
+          caption: Ledger Entries
+          shortcut: Ctrl+F5
+          run_page: 20
+          run_page_filters:
+            - field: gl_account_no
+              value: account_no

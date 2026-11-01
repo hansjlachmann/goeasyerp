@@ -850,7 +850,7 @@ func (t *BankAccountPostingGroup) renameReferences(field string, oldValue, newVa
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Bank_Account", false, "bank_acc_posting_group", "", 0}, {"Bank_Account_Ledger_Entry", false, "bank_acc_posting_group", "", 0}},
+		"code": {{"Bank_Account", false, "bank_acc_posting_group", "", 0}, {"Bank_Account_Ledger_Entry", false, "bank_acc_posting_group", "", 0}, {"Exch_Rate_Adjmt_Reg", false, "posting_group", "account_type", 3}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

@@ -189,14 +189,14 @@ func TestOpenJournalPage(t *testing.T) {
 	line := newJnlLine(src, "", "", 0)
 
 	page := pages.NewOpen(nil)
-	must(t, OpenJournalPage(line, page, gtables.GenJournalTemplate_Type.General))
+	must(t, OpenJournalPage(line, page, gtables.GenJournalTemplate_Type.General, false))
 	if page.Param("template") != "GENERAL" || page.Param("batch") != "DEFAULT" || len(page.Filters()) != 2 {
 		t.Errorf("one General template: params %v filters %v", page.Params(), page.Filters())
 	}
 
 	// an unknown batch: the template's first batch
 	page = pages.NewOpen(map[string]string{"template": "GENERAL", "batch": "NOPE"})
-	must(t, OpenJournalPage(line, page, gtables.GenJournalTemplate_Type.General))
+	must(t, OpenJournalPage(line, page, gtables.GenJournalTemplate_Type.General, false))
 	if page.Param("batch") != "DEFAULT" {
 		t.Errorf("unknown batch: %v", page.Params())
 	}
@@ -206,14 +206,14 @@ func TestOpenJournalPage(t *testing.T) {
 	must(t, second.Validate("type", gtables.GenJournalTemplate_Type.General))
 	must(t, second.InsertOrError(true))
 	page = pages.NewOpen(nil)
-	must(t, OpenJournalPage(line, page, gtables.GenJournalTemplate_Type.General))
+	must(t, OpenJournalPage(line, page, gtables.GenJournalTemplate_Type.General, false))
 	if page.Selection() == nil || page.Selection().PageID != TemplateListPageID || len(page.Filters()) != 0 {
 		t.Errorf("two General templates: the user picks one (%+v)", page.Selection())
 	}
 
 	// no template of the type: one is created, with a DEFAULT batch
 	page = pages.NewOpen(nil)
-	must(t, OpenJournalPage(line, page, gtables.GenJournalTemplate_Type.PayrollAccrual))
+	must(t, OpenJournalPage(line, page, gtables.GenJournalTemplate_Type.PayrollAccrual, false))
 	template := gtables.NewGenJournalTemplate(src)
 	if !template.Get(types.Code(page.Param("template"))) || template.Type != gtables.GenJournalTemplate_Type.PayrollAccrual {
 		t.Fatalf("created template %q", page.Param("template"))
@@ -224,7 +224,7 @@ func TestOpenJournalPage(t *testing.T) {
 	}
 
 	page = pages.NewOpen(map[string]string{"template": "NOPE"})
-	if err := OpenJournalPage(line, page, gtables.GenJournalTemplate_Type.General); err == nil {
+	if err := OpenJournalPage(line, page, gtables.GenJournalTemplate_Type.General, false); err == nil {
 		t.Error("an unknown template must be refused")
 	}
 }

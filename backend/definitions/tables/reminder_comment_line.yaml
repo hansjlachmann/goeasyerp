@@ -1,0 +1,46 @@
+table:
+  id: 299
+  name: "Reminder_Comment_Line"
+  description: "Reminder comments (table 299): comments of reminders and issued reminders"
+  fields:
+    - name: type
+      no: 1
+      type: Option
+      db_name: type
+      primary_key: true
+      options: ["Reminder", "Issued Reminder"]
+
+    - name: no
+      no: 2
+      type: types.Code
+      db_name: no
+      length: 20
+      primary_key: true
+
+    - name: line_no
+      no: 3
+      type: int
+      db_name: line_no
+      primary_key: true
+
+    - name: date
+      no: 4
+      type: types.Date
+      db_name: date
+
+    - name: code
+      no: 5
+      type: types.Code
+      db_name: code
+      length: 10
+
+    - name: comment
+      no: 6
+      type: types.Text
+      db_name: comment
+      length: 80
+
+  keys:
+    - name: Primary
+      fields: [type, no, line_no]
+      clustered: true

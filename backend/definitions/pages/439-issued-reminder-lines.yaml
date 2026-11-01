@@ -1,0 +1,53 @@
+page:
+  id: 439
+  type: List
+  name: Issued Reminder Lines
+  source_table: Issued_Reminder_Line   # the lines of the issued document (438)
+  caption: Lines
+  editable: false
+
+  layout:
+    repeater:
+      fields:
+        - source: reminder_no
+          width: 100
+          visible: false
+        - source: line_no
+          width: 90
+          visible: false
+        - source: type
+          width: 150
+        - source: entry_no
+          width: 90
+          visible: false
+        - source: posting_date
+          width: 100
+          visible: false
+        - source: document_date
+          width: 100
+          visible: false
+        - source: due_date
+          width: 100
+        - source: document_type
+          width: 120
+        - source: document_no
+          width: 120
+        - source: "no"
+          width: 110
+        - source: description
+          width: 300
+        - source: reminder_level
+          width: 90
+          visible: false
+        - source: original_amount
+          width: 120
+        - source: remaining_amount
+          width: 120
+        - source: interest_rate
+          width: 100
+          visible: false
+        - source: amount
+          width: 120
+        - source: tax_amount
+          width: 110
+          visible: false

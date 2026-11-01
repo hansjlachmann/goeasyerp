@@ -359,6 +359,49 @@ pages:
       bal_account_name: "Modkontonavn"
       balance: "Saldo"
       total_balance: "Total saldo"
+  recurring_general_journal:
+    caption: "Gentagelseskladde"
+    fields:  # the batch above the lines and the footer (calculated)
+      journal_batch_name: "Kladdenavn"
+      account_name: "Kontonavn"
+      balance: "Saldo"
+      total_balance: "Total saldo"
+  allocations:
+    caption: "Fordelinger"
+    fields:  # the footer (calculated)
+      allocation_amount: "Beløb"
+      total_allocation_amount: "Totalbeløb"
+  bank_acc_reconciliation:
+    caption: "Bankkontoafstemning"
+    fields:
+      total_balance: "Total saldo"
+      total_difference: "Total difference"
+  bank_acc_reconciliation_lines:
+    caption: "Linjer"
+  apply_bank_acc_ledger_entries:
+    caption: "Udlign bankkontoposter"
+    fields:
+      applied: "Udlignet"
+      statement_amount: "Kontoudtogsbeløb"
+      applied_amount: "Udlignet beløb"
+      difference: "Difference"
+  apply_check_ledger_entries:
+    caption: "Udlign checkposter"
+    fields:
+      applied: "Udlignet"
+      statement_amount: "Kontoudtogsbeløb"
+      applied_amount: "Udlignet beløb"
+      difference: "Difference"
+  bank_account_statement:
+    caption: "Bankkontoudtog"
+  bank_account_statement_lines:
+    caption: "Linjer"
+  bank_acc_reconciliation_list:
+    caption: "Bankkontoafstemninger"
+  bank_account_statement_list:
+    caption: "Bankkontoudtog"
+  exch_rate_adjmt_registers:
+    caption: "Valutareguleringsjournaler"
   sales_journal:
     caption: "Salgskladde"
     fields:  # the batch above the lines and the footer (calculated)
@@ -730,6 +773,38 @@ pages:
     caption: "Forsikringskladdenavne"
   insurance_registers:
     caption: "Forsikringsjournaler"
+  reminder:
+    caption: "Rykker"
+  reminder_lines:
+    caption: "Rykkerlinjer"
+  reminder_list:
+    caption: "Rykkere"
+  issued_reminder:
+    caption: "Udstedt rykker"
+  issued_reminder_lines:
+    caption: "Udstedte rykkerlinjer"
+  issued_reminder_list:
+    caption: "Udstedte rykkere"
+  reminder_comment_sheet:
+    caption: "Rykkerbemærkninger"
+  reminder_fin_charge_entries:
+    caption: "Rykker-/rentenotaposter"
+  finance_charge_text:
+    caption: "Rentenotatekst"
+  finance_charge_memo:
+    caption: "Rentenota"
+  finance_charge_memo_lines:
+    caption: "Rentenotalinjer"
+  finance_charge_memo_list:
+    caption: "Rentenotaer"
+  issued_finance_charge_memo:
+    caption: "Udstedt rentenota"
+  issued_fin_charge_memo_lines:
+    caption: "Udstedte rentenotalinjer"
+  issued_fin_charge_memo_list:
+    caption: "Udstedte rentenotaer"
+  fin_charge_comment_sheet:
+    caption: "Rentenotabemærkninger"
   fa_reclass_journal:
     caption: "Anlægsomposteringskladde"
     fields:

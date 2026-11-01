@@ -1,0 +1,28 @@
+page:
+  id: 389
+  type: List
+  name: Bank Account Statement List
+  source_table: Bank_Account_Statement
+  caption: Bank Account Statements
+  card_page_id: 383
+
+  layout:
+    repeater:
+      fields:
+        - source: bank_account_no
+          width: 120
+        - source: statement_no
+          width: 120
+        - source: statement_date
+          width: 110
+        - source: balance_last_statement
+          width: 140
+        - source: statement_ending_balance
+          width: 140
+
+  actions:
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true

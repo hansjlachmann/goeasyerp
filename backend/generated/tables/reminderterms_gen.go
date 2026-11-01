@@ -959,7 +959,7 @@ func (t *ReminderTerms) renameReferences(field string, oldValue, newValue interf
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Customer", false, "reminder_terms_code", "", 0}, {"Reminder_Level", false, "reminder_terms_code", "", 0}, {"Reminder_Text", false, "reminder_terms_code", "", 0}},
+		"code": {{"Customer", false, "reminder_terms_code", "", 0}, {"Issued_Reminder_Header", false, "reminder_terms_code", "", 0}, {"Reminder_Header", false, "reminder_terms_code", "", 0}, {"Reminder_Level", false, "reminder_terms_code", "", 0}, {"Reminder_Text", false, "reminder_terms_code", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

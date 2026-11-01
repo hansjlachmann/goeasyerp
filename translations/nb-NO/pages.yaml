@@ -359,6 +359,49 @@ pages:
       bal_account_name: "Motkontonavn"
       balance: "Saldo"
       total_balance: "Total saldo"
+  recurring_general_journal:
+    caption: "Gjentakelseskladd"
+    fields:  # the batch above the lines and the footer (calculated)
+      journal_batch_name: "Kladdenavn"
+      account_name: "Kontonavn"
+      balance: "Saldo"
+      total_balance: "Total saldo"
+  allocations:
+    caption: "Fordelinger"
+    fields:  # the footer (calculated)
+      allocation_amount: "Beløp"
+      total_allocation_amount: "Totalbeløp"
+  bank_acc_reconciliation:
+    caption: "Bankkontoavstemming"
+    fields:
+      total_balance: "Total saldo"
+      total_difference: "Total differanse"
+  bank_acc_reconciliation_lines:
+    caption: "Linjer"
+  apply_bank_acc_ledger_entries:
+    caption: "Utlign bankkontoposter"
+    fields:
+      applied: "Utlignet"
+      statement_amount: "Kontoutskriftsbeløp"
+      applied_amount: "Utlignet beløp"
+      difference: "Differanse"
+  apply_check_ledger_entries:
+    caption: "Utlign sjekkposter"
+    fields:
+      applied: "Utlignet"
+      statement_amount: "Kontoutskriftsbeløp"
+      applied_amount: "Utlignet beløp"
+      difference: "Differanse"
+  bank_account_statement:
+    caption: "Bankkontoutskrift"
+  bank_account_statement_lines:
+    caption: "Linjer"
+  bank_acc_reconciliation_list:
+    caption: "Bankkontoavstemminger"
+  bank_account_statement_list:
+    caption: "Bankkontoutskrifter"
+  exch_rate_adjmt_registers:
+    caption: "Valutareguleringsjournaler"
   sales_journal:
     caption: "Salgskladd"
     fields:  # the batch above the lines and the footer (calculated)
@@ -730,6 +773,38 @@ pages:
     caption: "Forsikringskladdenavn"
   insurance_registers:
     caption: "Forsikringsjournaler"
+  reminder:
+    caption: "Purring"
+  reminder_lines:
+    caption: "Purrelinjer"
+  reminder_list:
+    caption: "Purringer"
+  issued_reminder:
+    caption: "Utstedt purring"
+  issued_reminder_lines:
+    caption: "Utstedte purrelinjer"
+  issued_reminder_list:
+    caption: "Utstedte purringer"
+  reminder_comment_sheet:
+    caption: "Purremerknader"
+  reminder_fin_charge_entries:
+    caption: "Purre-/rentenotaposter"
+  finance_charge_text:
+    caption: "Rentenotatekst"
+  finance_charge_memo:
+    caption: "Rentenota"
+  finance_charge_memo_lines:
+    caption: "Rentenotalinjer"
+  finance_charge_memo_list:
+    caption: "Rentenotaer"
+  issued_finance_charge_memo:
+    caption: "Utstedt rentenota"
+  issued_fin_charge_memo_lines:
+    caption: "Utstedte rentenotalinjer"
+  issued_fin_charge_memo_list:
+    caption: "Utstedte rentenotaer"
+  fin_charge_comment_sheet:
+    caption: "Rentenotamerknader"
   fa_reclass_journal:
     caption: "Anleggsomklassifiseringskladd"
     fields:

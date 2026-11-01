@@ -1,0 +1,50 @@
+page:
+  id: 452
+  type: List
+  name: Issued Fin. Charge Memo List
+  source_table: Issued_Fin_Charge_Memo_Header
+  caption: Issued Finance Charge Memos
+  card_page_id: 450
+
+  layout:
+    repeater:
+      fields:
+        - source: "no"
+          width: 120
+        - source: customer_no
+          width: 120
+        - source: name
+          width: 250
+        - source: currency_code
+          width: 90
+        - source: posting_date
+          width: 110
+        - source: document_date
+          width: 110
+          visible: false
+        - source: due_date
+          width: 110
+        - source: interest_amount
+          width: 120
+        - source: additional_fee
+          width: 120
+        - source: no_printed
+          width: 90
+          visible: false
+
+  actions:
+    - name: Print
+      caption: Print
+      image: Print
+      promoted: true
+      run_object: report:118
+
+    - name: Navigate
+      caption: Navigate
+      image: Navigate
+      shortcut: Ctrl+Alt+Q
+      promoted: true
+      run_page: 344
+      run_page_params:
+        document_no: "no"
+        posting_date: posting_date

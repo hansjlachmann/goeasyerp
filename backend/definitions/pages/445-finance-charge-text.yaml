@@ -1,0 +1,41 @@
+page:
+  id: 445
+  type: List
+  name: Finance Charge Text
+  source_table: Finance_Charge_Text   # opened from the Finance Charge Terms (Beginning / Ending texts)
+  caption: Finance Charge Text
+  editable: true
+  auto_split_key: true
+
+  layout:
+    repeater:
+      fields:
+        - source: fin_charge_terms_code
+          width: 100
+          visible: false
+        - source: position
+          width: 110
+        - source: line_no
+          width: 90
+          visible: false
+        - source: text
+          width: 500
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

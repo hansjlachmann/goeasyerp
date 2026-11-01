@@ -50,6 +50,9 @@
 //	OnValidate_Payment_terms_code(rec *gtables.GenJournalLine) error
 //	OnValidate_Applies_to_id(rec *gtables.GenJournalLine) error
 //	OnValidate_Reason_code(rec *gtables.GenJournalLine) error
+//	OnValidate_Recurring_method(rec *gtables.GenJournalLine) error
+//	OnValidate_Expiration_date(rec *gtables.GenJournalLine) error
+//	OnValidate_Recurring_frequency(rec *gtables.GenJournalLine) error
 //	OnValidate_Gen_posting_type(rec *gtables.GenJournalLine) error
 //	OnValidate_Gen_bus_posting_group(rec *gtables.GenJournalLine) error
 //	OnValidate_Gen_prod_posting_group(rec *gtables.GenJournalLine) error
@@ -120,6 +123,7 @@ import (
 
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
+	"github.com/hansjlachmann/openerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/openerp/backend/foundation/sift"
 	"github.com/hansjlachmann/openerp/backend/foundation/tables"
@@ -196,6 +200,23 @@ func (o GenJournalLineVat_posting) String() string {
 // IsValid checks if the GenJournalLineVat_posting value is within valid range
 func (o GenJournalLineVat_posting) IsValid() bool {
 	return o >= 0 && o < 2
+}
+
+// GenJournalLineRecurring_method represents the recurring_method option field
+type GenJournalLineRecurring_method int
+
+// String returns the text representation of GenJournalLineRecurring_method
+func (o GenJournalLineRecurring_method) String() string {
+	options := []string{" ", "F Fixed", "V Variable", "B Balance", "RF Reversing Fixed", "RV Reversing Variable", "RB Reversing Balance"}
+	if o >= 0 && int(o) < len(options) {
+		return options[o]
+	}
+	return ""
+}
+
+// IsValid checks if the GenJournalLineRecurring_method value is within valid range
+func (o GenJournalLineRecurring_method) IsValid() bool {
+	return o >= 0 && o < 7
 }
 
 // GenJournalLineGen_posting_type represents the gen_posting_type option field
@@ -338,46 +359,51 @@ func (o GenJournalLineFa_posting_type) IsValid() bool {
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterGenJournalLineLogic.
 type GenJournalLine struct {
-	Journal_template_name          types.Code                             `db:"journal_template_name,pk"`
-	Journal_batch_name             types.Code                             `db:"journal_batch_name,pk"`
-	Line_no                        int                                    `db:"line_no,pk"`
-	Account_type                   GenJournalLineAccount_type             `db:"account_type"`
-	Account_no                     types.Code                             `db:"account_no"`
-	Posting_date                   types.Date                             `db:"posting_date"`
-	Document_type                  GenJournalLineDocument_type            `db:"document_type"`
-	Document_no                    types.Code                             `db:"document_no"`
-	Description                    types.Text                             `db:"description"`
-	Tax_percent                    types.Decimal                          `db:"tax_percent"`
-	Bal_account_no                 types.Code                             `db:"bal_account_no"`
-	Currency_code                  types.Code                             `db:"currency_code"`
-	Amount                         types.Decimal                          `db:"amount"`
-	Debit_amount                   types.Decimal                          `db:"debit_amount"`
-	Credit_amount                  types.Decimal                          `db:"credit_amount"`
-	Amount_lcy                     types.Decimal                          `db:"amount_lcy"`
-	Balance_lcy                    types.Decimal                          `db:"balance_lcy"`
-	Currency_factor                types.Decimal                          `db:"currency_factor"`
-	Sales_purch_lcy                types.Decimal                          `db:"sales_purch_lcy"`
-	Profit_lcy                     types.Decimal                          `db:"profit_lcy"`
-	Inv_discount_lcy               types.Decimal                          `db:"inv_discount_lcy"`
-	Sell_to_buy_from_no            types.Code                             `db:"sell_to_buy_from_no"`
-	Posting_group                  types.Code                             `db:"posting_group"`
-	Department_code                types.Code                             `db:"department_code"`
-	Project_code                   types.Code                             `db:"project_code"`
-	Salespers_purch_code           types.Code                             `db:"salespers_purch_code"`
-	Source_code                    types.Code                             `db:"source_code"`
-	System_created_entry           bool                                   `db:"system_created_entry"`
-	On_hold                        types.Code                             `db:"on_hold"`
-	Applies_to_doc_type            GenJournalLineApplies_to_doc_type      `db:"applies_to_doc_type"`
-	Applies_to_doc_no              types.Code                             `db:"applies_to_doc_no"`
-	Due_date                       types.Date                             `db:"due_date"`
-	Pmt_discount_date              types.Date                             `db:"pmt_discount_date"`
-	Payment_discount_percent       types.Decimal                          `db:"payment_discount_percent"`
-	Quantity                       types.Decimal                          `db:"quantity"`
-	Tax_amount                     types.Decimal                          `db:"tax_amount"`
-	Vat_posting                    GenJournalLineVat_posting              `db:"vat_posting"`
-	Payment_terms_code             types.Code                             `db:"payment_terms_code"`
-	Applies_to_id                  types.Code                             `db:"applies_to_id"`
-	Reason_code                    types.Code                             `db:"reason_code"`
+	Journal_template_name    types.Code                        `db:"journal_template_name,pk"`
+	Journal_batch_name       types.Code                        `db:"journal_batch_name,pk"`
+	Line_no                  int                               `db:"line_no,pk"`
+	Account_type             GenJournalLineAccount_type        `db:"account_type"`
+	Account_no               types.Code                        `db:"account_no"`
+	Posting_date             types.Date                        `db:"posting_date"`
+	Document_type            GenJournalLineDocument_type       `db:"document_type"`
+	Document_no              types.Code                        `db:"document_no"`
+	Description              types.Text                        `db:"description"`
+	Tax_percent              types.Decimal                     `db:"tax_percent"`
+	Bal_account_no           types.Code                        `db:"bal_account_no"`
+	Currency_code            types.Code                        `db:"currency_code"`
+	Amount                   types.Decimal                     `db:"amount"`
+	Debit_amount             types.Decimal                     `db:"debit_amount"`
+	Credit_amount            types.Decimal                     `db:"credit_amount"`
+	Amount_lcy               types.Decimal                     `db:"amount_lcy"`
+	Balance_lcy              types.Decimal                     `db:"balance_lcy"`
+	Currency_factor          types.Decimal                     `db:"currency_factor"`
+	Sales_purch_lcy          types.Decimal                     `db:"sales_purch_lcy"`
+	Profit_lcy               types.Decimal                     `db:"profit_lcy"`
+	Inv_discount_lcy         types.Decimal                     `db:"inv_discount_lcy"`
+	Sell_to_buy_from_no      types.Code                        `db:"sell_to_buy_from_no"`
+	Posting_group            types.Code                        `db:"posting_group"`
+	Department_code          types.Code                        `db:"department_code"`
+	Project_code             types.Code                        `db:"project_code"`
+	Salespers_purch_code     types.Code                        `db:"salespers_purch_code"`
+	Source_code              types.Code                        `db:"source_code"`
+	System_created_entry     bool                              `db:"system_created_entry"`
+	On_hold                  types.Code                        `db:"on_hold"`
+	Applies_to_doc_type      GenJournalLineApplies_to_doc_type `db:"applies_to_doc_type"`
+	Applies_to_doc_no        types.Code                        `db:"applies_to_doc_no"`
+	Due_date                 types.Date                        `db:"due_date"`
+	Pmt_discount_date        types.Date                        `db:"pmt_discount_date"`
+	Payment_discount_percent types.Decimal                     `db:"payment_discount_percent"`
+	Quantity                 types.Decimal                     `db:"quantity"`
+	Tax_amount               types.Decimal                     `db:"tax_amount"`
+	Vat_posting              GenJournalLineVat_posting         `db:"vat_posting"`
+	Payment_terms_code       types.Code                        `db:"payment_terms_code"`
+	Applies_to_id            types.Code                        `db:"applies_to_id"`
+	Reason_code              types.Code                        `db:"reason_code"`
+	Recurring_method         GenJournalLineRecurring_method    `db:"recurring_method"`
+	Expiration_date          types.Date                        `db:"expiration_date"`
+	Recurring_frequency      types.Code                        `db:"recurring_frequency"`
+	// FlowField: Sum(GenJnlAllocation.amount)
+	Allocated_amt_lcy              types.Decimal
 	Gen_posting_type               GenJournalLineGen_posting_type         `db:"gen_posting_type"`
 	Gen_bus_posting_group          types.Code                             `db:"gen_bus_posting_group"`
 	Gen_prod_posting_group         types.Code                             `db:"gen_prod_posting_group"`
@@ -556,6 +582,25 @@ var GenJournalLine_Vat_posting = struct {
 	ManualVATEntry:    1,
 }
 
+// GenJournalLine_Recurring_method provides named constants for the recurring_method option field (FieldName.OptionValue syntax)
+var GenJournalLine_Recurring_method = struct {
+	Blank               GenJournalLineRecurring_method
+	FFixed              GenJournalLineRecurring_method
+	VVariable           GenJournalLineRecurring_method
+	BBalance            GenJournalLineRecurring_method
+	RFReversingFixed    GenJournalLineRecurring_method
+	RVReversingVariable GenJournalLineRecurring_method
+	RBReversingBalance  GenJournalLineRecurring_method
+}{
+	Blank:               0,
+	FFixed:              1,
+	VVariable:           2,
+	BBalance:            3,
+	RFReversingFixed:    4,
+	RVReversingVariable: 5,
+	RBReversingBalance:  6,
+}
+
 // GenJournalLine_Gen_posting_type provides named constants for the gen_posting_type option field (FieldName.OptionValue syntax)
 var GenJournalLine_Gen_posting_type = struct {
 	Blank      GenJournalLineGen_posting_type
@@ -725,6 +770,10 @@ var GenJournalLine_FieldNo = struct {
 	Payment_terms_code             int
 	Applies_to_id                  int
 	Reason_code                    int
+	Recurring_method               int
+	Expiration_date                int
+	Recurring_frequency            int
+	Allocated_amt_lcy              int
 	Gen_posting_type               int
 	Gen_bus_posting_group          int
 	Gen_prod_posting_group         int
@@ -823,6 +872,10 @@ var GenJournalLine_FieldNo = struct {
 	Payment_terms_code:             47,
 	Applies_to_id:                  48,
 	Reason_code:                    52,
+	Recurring_method:               53,
+	Expiration_date:                54,
+	Recurring_frequency:            55,
+	Allocated_amt_lcy:              56,
 	Gen_posting_type:               57,
 	Gen_bus_posting_group:          58,
 	Gen_prod_posting_group:         59,
@@ -965,6 +1018,14 @@ func (t *GenJournalLine) FieldNo(fieldName string) int {
 		return 48
 	case "reason_code":
 		return 52
+	case "recurring_method":
+		return 53
+	case "expiration_date":
+		return 54
+	case "recurring_frequency":
+		return 55
+	case "allocated_amt_lcy":
+		return 56
 	case "gen_posting_type":
 		return 57
 	case "gen_bus_posting_group":
@@ -1166,6 +1227,14 @@ func (t *GenJournalLine) FieldName(fieldNo int) string {
 		return "applies_to_id"
 	case 52:
 		return "reason_code"
+	case 53:
+		return "recurring_method"
+	case 54:
+		return "expiration_date"
+	case 55:
+		return "recurring_frequency"
+	case 56:
+		return "allocated_amt_lcy"
 	case 57:
 		return "gen_posting_type"
 	case 58:
@@ -1501,6 +1570,15 @@ type (
 	GenJournalLineOnValidate_Reason_code interface {
 		OnValidate_Reason_code(rec *GenJournalLine) error
 	}
+	GenJournalLineOnValidate_Recurring_method interface {
+		OnValidate_Recurring_method(rec *GenJournalLine) error
+	}
+	GenJournalLineOnValidate_Expiration_date interface {
+		OnValidate_Expiration_date(rec *GenJournalLine) error
+	}
+	GenJournalLineOnValidate_Recurring_frequency interface {
+		OnValidate_Recurring_frequency(rec *GenJournalLine) error
+	}
 	GenJournalLineOnValidate_Gen_posting_type interface {
 		OnValidate_Gen_posting_type(rec *GenJournalLine) error
 	}
@@ -1781,6 +1859,12 @@ func genJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GenJournalLineOnValidate_Applies_to_id)
 	case "OnValidate_Reason_code":
 		_, ok = logic.(GenJournalLineOnValidate_Reason_code)
+	case "OnValidate_Recurring_method":
+		_, ok = logic.(GenJournalLineOnValidate_Recurring_method)
+	case "OnValidate_Expiration_date":
+		_, ok = logic.(GenJournalLineOnValidate_Expiration_date)
+	case "OnValidate_Recurring_frequency":
+		_, ok = logic.(GenJournalLineOnValidate_Recurring_frequency)
 	case "OnValidate_Gen_posting_type":
 		_, ok = logic.(GenJournalLineOnValidate_Gen_posting_type)
 	case "OnValidate_Gen_bus_posting_group":
@@ -2038,6 +2122,12 @@ func (t *GenJournalLine) CheckFields() error {
 	if err := tables.CheckMaxLength(GenJournalLineTableName, "reason_code", string(t.Reason_code), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(GenJournalLineTableName, "recurring_frequency", string(t.Recurring_frequency), 20); err != nil {
+		return err
+	}
+	if err := tables.CheckDateFormula(GenJournalLineTableName, "recurring_frequency", string(t.Recurring_frequency)); err != nil {
+		return err
+	}
 	if err := tables.CheckMaxLength(GenJournalLineTableName, "gen_bus_posting_group", string(t.Gen_bus_posting_group), 10); err != nil {
 		return err
 	}
@@ -2168,6 +2258,10 @@ func GetGenJournalLineTableSchema() string {
 		payment_terms_code TEXT(10),
 		applies_to_id TEXT(20),
 		reason_code TEXT(10),
+		recurring_method INTEGER CHECK (recurring_method >= 0 AND recurring_method <= 6),
+		expiration_date TEXT,
+		recurring_frequency TEXT(20),
+		allocated_amt_lcy TEXT,
 		gen_posting_type INTEGER CHECK (gen_posting_type >= 0 AND gen_posting_type <= 3),
 		gen_bus_posting_group TEXT(10),
 		gen_prod_posting_group TEXT(10),
@@ -2272,6 +2366,10 @@ func GetGenJournalLinePostgresTableSchema() string {
 		payment_terms_code VARCHAR(10),
 		applies_to_id VARCHAR(20),
 		reason_code VARCHAR(10),
+		recurring_method INTEGER CHECK (recurring_method >= 0 AND recurring_method <= 6),
+		expiration_date DATE,
+		recurring_frequency VARCHAR(20),
+		allocated_amt_lcy NUMERIC,
 		gen_posting_type INTEGER CHECK (gen_posting_type >= 0 AND gen_posting_type <= 3),
 		gen_bus_posting_group VARCHAR(10),
 		gen_prod_posting_group VARCHAR(10),
@@ -2511,6 +2609,9 @@ func (t *GenJournalLine) StoreOldValues() {
 	t.oldValues["payment_terms_code"] = t.Payment_terms_code
 	t.oldValues["applies_to_id"] = t.Applies_to_id
 	t.oldValues["reason_code"] = t.Reason_code
+	t.oldValues["recurring_method"] = t.Recurring_method
+	t.oldValues["expiration_date"] = t.Expiration_date
+	t.oldValues["recurring_frequency"] = t.Recurring_frequency
 	t.oldValues["gen_posting_type"] = t.Gen_posting_type
 	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
 	t.oldValues["gen_prod_posting_group"] = t.Gen_prod_posting_group
@@ -2701,6 +2802,15 @@ func (t *GenJournalLine) XRec() *GenJournalLine {
 	}
 	if v, ok := t.oldValues["reason_code"].(types.Code); ok {
 		x.Reason_code = v
+	}
+	if v, ok := t.oldValues["recurring_method"].(GenJournalLineRecurring_method); ok {
+		x.Recurring_method = v
+	}
+	if v, ok := t.oldValues["expiration_date"].(types.Date); ok {
+		x.Expiration_date = v
+	}
+	if v, ok := t.oldValues["recurring_frequency"].(types.Code); ok {
+		x.Recurring_frequency = v
 	}
 	if v, ok := t.oldValues["gen_posting_type"].(GenJournalLineGen_posting_type); ok {
 		x.Gen_posting_type = v
@@ -2992,6 +3102,9 @@ func (t *GenJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	var payment_terms_codeNull sql.NullString
 	var applies_to_idNull sql.NullString
 	var reason_codeNull sql.NullString
+	var recurring_methodInt int
+	var expiration_dateNull sql.NullString
+	var recurring_frequencyNull sql.NullString
 	var gen_posting_typeInt int
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
@@ -3058,7 +3171,7 @@ func (t *GenJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -3105,6 +3218,9 @@ func (t *GenJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 		&payment_terms_codeNull,
 		&applies_to_idNull,
 		&reason_codeNull,
+		&recurring_methodInt,
+		&expiration_dateNull,
+		&recurring_frequencyNull,
 		&gen_posting_typeInt,
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
@@ -3215,6 +3331,9 @@ func (t *GenJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	t.Payment_terms_code = types.NewCode(payment_terms_codeNull.String)
 	t.Applies_to_id = types.NewCode(applies_to_idNull.String)
 	t.Reason_code = types.NewCode(reason_codeNull.String)
+	t.Recurring_method = GenJournalLineRecurring_method(recurring_methodInt)
+	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
+	t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
 	t.Gen_posting_type = GenJournalLineGen_posting_type(gen_posting_typeInt)
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
@@ -3334,6 +3453,9 @@ func (t *GenJournalLine) Insert(runTrigger bool) bool {
 		t.Payment_terms_code,
 		t.Applies_to_id,
 		t.Reason_code,
+		t.Recurring_method,
+		t.Expiration_date,
+		t.Recurring_frequency,
 		t.Gen_posting_type,
 		t.Gen_bus_posting_group,
 		t.Gen_prod_posting_group,
@@ -3395,7 +3517,7 @@ func (t *GenJournalLine) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -3473,6 +3595,9 @@ func (t *GenJournalLine) InsertAll(records []*GenJournalLine, runTrigger bool) e
 			r.Payment_terms_code,
 			r.Applies_to_id,
 			r.Reason_code,
+			r.Recurring_method,
+			r.Expiration_date,
+			r.Recurring_frequency,
 			r.Gen_posting_type,
 			r.Gen_bus_posting_group,
 			r.Gen_prod_posting_group,
@@ -3533,7 +3658,7 @@ func (t *GenJournalLine) InsertAll(records []*GenJournalLine, runTrigger bool) e
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, GenJournalLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "account_type", "account_no", "posting_date", "document_type", "document_no", "description", "tax_percent", "bal_account_no", "currency_code", "amount", "debit_amount", "credit_amount", "amount_lcy", "balance_lcy", "currency_factor", "sales_purch_lcy", "profit_lcy", "inv_discount_lcy", "sell_to_buy_from_no", "posting_group", "department_code", "project_code", "salespers_purch_code", "source_code", "system_created_entry", "on_hold", "applies_to_doc_type", "applies_to_doc_no", "due_date", "pmt_discount_date", "payment_discount_percent", "quantity", "tax_amount", "vat_posting", "payment_terms_code", "applies_to_id", "reason_code", "gen_posting_type", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "allow_application", "bal_account_type", "bal_gen_posting_type", "bal_gen_bus_posting_group", "bal_gen_prod_posting_group", "bal_tax_calculation_type", "bal_tax_percent", "bal_tax_amount", "bank_payment_type", "tax_base_amount", "bal_tax_base_amount", "correction", "check_printed", "document_date", "external_document_no", "source_type", "source_no", "posting_no_series", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "bal_tax_area_code", "bal_tax_liable", "bal_tax_group_code", "bal_use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "bal_tax_bus_posting_group", "bal_tax_prod_posting_group", "source_currency_code", "source_currency_amount", "source_curr_tax_base_amount", "source_curr_tax_amount", "tax_amount_lcy", "tax_base_amount_lcy", "bal_tax_amount_lcy", "bal_tax_base_amount_lcy", "reversing_entry", "fa_posting_date", "fa_posting_type", "depreciation_book_code", "salvage_value", "no_of_depreciation_days", "depr_until_fa_posting_date", "depr_acquisition_cost", "maintenance_code", "insurance_no", "duplicate_in_depreciation_book", "use_duplication_list", "fa_reclassification_entry", "fa_error_entry_no", "index_entry"}
+	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "account_type", "account_no", "posting_date", "document_type", "document_no", "description", "tax_percent", "bal_account_no", "currency_code", "amount", "debit_amount", "credit_amount", "amount_lcy", "balance_lcy", "currency_factor", "sales_purch_lcy", "profit_lcy", "inv_discount_lcy", "sell_to_buy_from_no", "posting_group", "department_code", "project_code", "salespers_purch_code", "source_code", "system_created_entry", "on_hold", "applies_to_doc_type", "applies_to_doc_no", "due_date", "pmt_discount_date", "payment_discount_percent", "quantity", "tax_amount", "vat_posting", "payment_terms_code", "applies_to_id", "reason_code", "recurring_method", "expiration_date", "recurring_frequency", "gen_posting_type", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "allow_application", "bal_account_type", "bal_gen_posting_type", "bal_gen_bus_posting_group", "bal_gen_prod_posting_group", "bal_tax_calculation_type", "bal_tax_percent", "bal_tax_amount", "bank_payment_type", "tax_base_amount", "bal_tax_base_amount", "correction", "check_printed", "document_date", "external_document_no", "source_type", "source_no", "posting_no_series", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "bal_tax_area_code", "bal_tax_liable", "bal_tax_group_code", "bal_use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "bal_tax_bus_posting_group", "bal_tax_prod_posting_group", "source_currency_code", "source_currency_amount", "source_curr_tax_base_amount", "source_curr_tax_amount", "tax_amount_lcy", "tax_base_amount_lcy", "bal_tax_amount_lcy", "bal_tax_base_amount_lcy", "reversing_entry", "fa_posting_date", "fa_posting_type", "depreciation_book_code", "salvage_value", "no_of_depreciation_days", "depr_until_fa_posting_date", "depr_acquisition_cost", "maintenance_code", "insurance_no", "duplicate_in_depreciation_book", "use_duplication_list", "fa_reclassification_entry", "fa_error_entry_no", "index_entry"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -3738,6 +3863,18 @@ func (t *GenJournalLine) Modify(runTrigger bool) bool {
 		if t.hasFieldChanged("reason_code") {
 			setClauses = append(setClauses, "reason_code = ?")
 			values = append(values, t.Reason_code)
+		}
+		if t.hasFieldChanged("recurring_method") {
+			setClauses = append(setClauses, "recurring_method = ?")
+			values = append(values, t.Recurring_method)
+		}
+		if t.hasFieldChanged("expiration_date") {
+			setClauses = append(setClauses, "expiration_date = ?")
+			values = append(values, t.Expiration_date)
+		}
+		if t.hasFieldChanged("recurring_frequency") {
+			setClauses = append(setClauses, "recurring_frequency = ?")
+			values = append(values, t.Recurring_frequency)
 		}
 		if t.hasFieldChanged("gen_posting_type") {
 			setClauses = append(setClauses, "gen_posting_type = ?")
@@ -4048,6 +4185,12 @@ func (t *GenJournalLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Applies_to_id)
 		setClauses = append(setClauses, "reason_code = ?")
 		values = append(values, t.Reason_code)
+		setClauses = append(setClauses, "recurring_method = ?")
+		values = append(values, t.Recurring_method)
+		setClauses = append(setClauses, "expiration_date = ?")
+		values = append(values, t.Expiration_date)
+		setClauses = append(setClauses, "recurring_frequency = ?")
+		values = append(values, t.Recurring_frequency)
 		setClauses = append(setClauses, "gen_posting_type = ?")
 		values = append(values, t.Gen_posting_type)
 		setClauses = append(setClauses, "gen_bus_posting_group = ?")
@@ -4378,6 +4521,18 @@ func (t *GenJournalLine) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Reason_code.Equal(old)
 		}
+	case "recurring_method":
+		if old, ok := oldValue.(GenJournalLineRecurring_method); ok {
+			return t.Recurring_method != old
+		}
+	case "expiration_date":
+		if old, ok := oldValue.(types.Date); ok {
+			return !t.Expiration_date.Equal(old)
+		}
+	case "recurring_frequency":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Recurring_frequency.Equal(old)
+		}
 	case "gen_posting_type":
 		if old, ok := oldValue.(GenJournalLineGen_posting_type); ok {
 			return t.Gen_posting_type != old
@@ -4666,14 +4821,105 @@ func (t *GenJournalLine) Delete(runTrigger bool) bool {
 	return true
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *GenJournalLine) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
+	// If no field names specified, calculate all FlowFields
+	if len(fieldNames) == 0 {
+		t.calcFlowField_allocated_amt_lcy()
+		return
+	}
+
+	// Calculate only specified fields
+	for _, fieldName := range fieldNames {
+		switch fieldName {
+		case "allocated_amt_lcy":
+			t.calcFlowField_allocated_amt_lcy()
+		}
+	}
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// calcFlowField_allocated_amt_lcy calculates the allocated_amt_lcy FlowField
+// CalcFormula: Sum(GenJnlAllocation.amount)
+func (t *GenJournalLine) calcFlowField_allocated_amt_lcy() {
+	t.Allocated_amt_lcy = t.calcSum_allocated_amt_lcy()
+}
+
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *GenJournalLine) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
+	if len(records) == 0 {
+		return
+	}
+	if len(fieldNames) == 0 {
+		fieldNames = t.GetFlowFields()
+	}
+	for _, fieldName := range fieldNames {
+		switch fieldName {
+		case "allocated_amt_lcy":
+			t.calcForRecords_allocated_amt_lcy(records)
+		}
+	}
+}
+
+// calcForRecords_allocated_amt_lcy calculates the allocated_amt_lcy FlowField for a set of records
+// CalcFormula: Sum(GenJnlAllocation.amount)
+func (t *GenJournalLine) calcForRecords_allocated_amt_lcy(records []map[string]interface{}) {
+	// No single key field to group by: calculate per record
+	for _, rec := range records {
+		r := &GenJournalLine{db: t.db, company: t.company, dbType: t.dbType}
+		r.FromMap(rec)
+		r.calcFlowField_allocated_amt_lcy()
+		rec["allocated_amt_lcy"] = r.Allocated_amt_lcy.String()
+	}
+}
+
+// Helper methods for FlowField calculations
+
+func (t *GenJournalLine) calcSum_allocated_amt_lcy() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, GenJnlAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "journal_template_name = ?")
+	args = append(args, t.Journal_template_name)
+	whereClauses = append(whereClauses, "journal_batch_name = ?")
+	args = append(args, t.Journal_batch_name)
+	whereClauses = append(whereClauses, "journal_line_no = ?")
+	args = append(args, t.Line_no)
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for allocated_amt_lcy: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
 }
 
 // ========================================
@@ -4689,6 +4935,7 @@ type genJournalLineFilterCondition struct {
 	isExpression bool   // True if using filterExpr instead of min/max
 	invalidField bool   // Filter on an unknown field: matches no rows (fail closed)
 	blankDate    bool   // A date range from the blank date: blank dates (NULL) match too
+	flowField    string // Filter on a FlowField (filterExpr applied to its subquery)
 }
 
 // SetRange sets a range filter on a field
@@ -4764,6 +5011,16 @@ func (t *GenJournalLine) SetFilter(fieldName, filterExpr string) {
 	if t.filters == nil {
 		t.filters = make(map[string]*genJournalLineFilterCondition)
 	}
+	if _, ok := t.FlowFieldFilterKind(fieldName); ok {
+		// A FlowField is not a column: the filter applies to its subquery (flowFieldExpr)
+		name := strings.ToLower(fieldName)
+		t.filters["flowfield:"+name] = &genJournalLineFilterCondition{
+			flowField:    name,
+			filterExpr:   filterExpr,
+			isExpression: true,
+		}
+		return
+	}
 	column, ok := t.columnName(fieldName)
 	if !ok {
 		// Unknown field: fail closed (no rows) rather than drop the filter or put
@@ -4779,12 +5036,54 @@ func (t *GenJournalLine) SetFilter(fieldName, filterExpr string) {
 	}
 }
 
+// FlowFieldFilterKind reports whether a list can be filtered on FlowField field (Sum and
+// Count FlowFields: SETFILTER on a FlowField) and the kind of its values.
+func (t *GenJournalLine) FlowFieldFilterKind(field string) (flowfilter.Kind, bool) {
+	switch strings.ToLower(field) {
+	case "allocated_amt_lcy":
+		return flowfilter.KindDecimal, true
+	}
+	return "", false
+}
+
+// flowFieldExpr is the SQL expression computing FlowField field for each row of a query
+// on this table: a correlated subquery reading the source like CalcFieldsForRecords (the
+// SIFT totals of a covering key, else the entries), with the FlowFilters set on t.
+func (t *GenJournalLine) flowFieldExpr(field string) (string, []interface{}) {
+	outer := "\"" + fmt.Sprintf("%s$%s", t.company, GenJournalLineTableName) + "\""
+	_ = outer
+	switch strings.ToLower(field) {
+	case "allocated_amt_lcy":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName), false
+		tableName, useSIFT = sift.TableName(t.company, GenJnlAllocationTableName, "Primary"), true
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "journal_template_name = "+outer+".journal_template_name")
+		whereClauses = append(whereClauses, "journal_batch_name = "+outer+".journal_batch_name")
+		whereClauses = append(whereClauses, "journal_line_no = "+outer+".line_no")
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(amount), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	}
+	return "NULL", nil
+}
+
 // SetCurrentKey sets the sort order for queries
 // Unknown fields are ignored (the primary key order is used if none remain).
 // Example: customer.SetCurrentKey("City", "Name")
 func (t *GenJournalLine) SetCurrentKey(fields ...string) {
 	t.orderByFields = nil
 	for _, field := range fields {
+		// A Sum/Count FlowField sorts on its calculated value (flowFieldExpr, see getOrderByClause)
+		if _, ok := t.FlowFieldFilterKind(field); ok {
+			t.orderByFields = append(t.orderByFields, "flowfield:"+strings.ToLower(field))
+			continue
+		}
 		column, ok := t.columnName(field)
 		if !ok {
 			fmt.Printf("Error: SetCurrentKey on unknown field %q of Gen_Journal_Line\n", field)
@@ -4907,6 +5206,12 @@ func (t *GenJournalLine) columnName(fieldName string) (string, bool) {
 		return "applies_to_id", true
 	case strings.ToLower("reason_code"):
 		return "reason_code", true
+	case strings.ToLower("recurring_method"):
+		return "recurring_method", true
+	case strings.ToLower("expiration_date"):
+		return "expiration_date", true
+	case strings.ToLower("recurring_frequency"):
+		return "recurring_frequency", true
 	case strings.ToLower("gen_posting_type"):
 		return "gen_posting_type", true
 	case strings.ToLower("gen_bus_posting_group"):
@@ -5070,6 +5375,18 @@ func (t *GenJournalLine) buildWhereClause() (string, []interface{}) {
 	for _, filter := range filters {
 		if filter.invalidField {
 			conditions = append(conditions, "1=0")
+		} else if filter.flowField != "" {
+			// filter syntax on the FlowField's value; an invalid expression matches no rows
+			// (the API validates it first and reports it)
+			kind, _ := t.FlowFieldFilterKind(filter.flowField)
+			expr, exprArgs := t.flowFieldExpr(filter.flowField)
+			clause, clauseArgs, err := flowfilter.ClauseFor(expr, exprArgs, kind, filter.filterExpr)
+			if err != nil {
+				conditions = append(conditions, "1=0")
+			} else if clause != "" {
+				conditions = append(conditions, clause)
+				args = append(args, clauseArgs...)
+			}
 		} else if filter.isExpression {
 			// Parse filter expression
 			clause, exprArgs := t.parseFilterExpression(filter.fieldName, filter.filterExpr)
@@ -5214,6 +5531,8 @@ func (t *GenJournalLine) isDateColumn(column string) bool {
 	case "due_date":
 		return true
 	case "pmt_discount_date":
+		return true
+	case "expiration_date":
 		return true
 	case "document_date":
 		return true
@@ -5404,6 +5723,12 @@ func (t *GenJournalLine) getOrderByClause() (string, []interface{}) {
 	var columns []string
 	var args []interface{}
 	for _, column := range t.orderByFields {
+		if name, ok := strings.CutPrefix(column, "flowfield:"); ok {
+			expr, exprArgs := t.flowFieldExpr(name)
+			columns = append(columns, expr)
+			args = append(args, exprArgs...)
+			continue
+		}
 		columns = append(columns, t.cmpColumn(column))
 	}
 	for _, column := range pk {
@@ -5456,7 +5781,7 @@ func (t *GenJournalLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5500,6 +5825,9 @@ func (t *GenJournalLine) FindFirst() bool {
 	var payment_terms_codeNull sql.NullString
 	var applies_to_idNull sql.NullString
 	var reason_codeNull sql.NullString
+	var recurring_methodInt int
+	var expiration_dateNull sql.NullString
+	var recurring_frequencyNull sql.NullString
 	var gen_posting_typeInt int
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
@@ -5597,6 +5925,9 @@ func (t *GenJournalLine) FindFirst() bool {
 		&payment_terms_codeNull,
 		&applies_to_idNull,
 		&reason_codeNull,
+		&recurring_methodInt,
+		&expiration_dateNull,
+		&recurring_frequencyNull,
 		&gen_posting_typeInt,
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
@@ -5704,6 +6035,9 @@ func (t *GenJournalLine) FindFirst() bool {
 	t.Payment_terms_code = types.NewCode(payment_terms_codeNull.String)
 	t.Applies_to_id = types.NewCode(applies_to_idNull.String)
 	t.Reason_code = types.NewCode(reason_codeNull.String)
+	t.Recurring_method = GenJournalLineRecurring_method(recurring_methodInt)
+	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
+	t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
 	t.Gen_posting_type = GenJournalLineGen_posting_type(gen_posting_typeInt)
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
@@ -5779,7 +6113,7 @@ func (t *GenJournalLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5823,6 +6157,9 @@ func (t *GenJournalLine) FindLast() bool {
 	var payment_terms_codeNull sql.NullString
 	var applies_to_idNull sql.NullString
 	var reason_codeNull sql.NullString
+	var recurring_methodInt int
+	var expiration_dateNull sql.NullString
+	var recurring_frequencyNull sql.NullString
 	var gen_posting_typeInt int
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
@@ -5920,6 +6257,9 @@ func (t *GenJournalLine) FindLast() bool {
 		&payment_terms_codeNull,
 		&applies_to_idNull,
 		&reason_codeNull,
+		&recurring_methodInt,
+		&expiration_dateNull,
+		&recurring_frequencyNull,
 		&gen_posting_typeInt,
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
@@ -6027,6 +6367,9 @@ func (t *GenJournalLine) FindLast() bool {
 	t.Payment_terms_code = types.NewCode(payment_terms_codeNull.String)
 	t.Applies_to_id = types.NewCode(applies_to_idNull.String)
 	t.Reason_code = types.NewCode(reason_codeNull.String)
+	t.Recurring_method = GenJournalLineRecurring_method(recurring_methodInt)
+	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
+	t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
 	t.Gen_posting_type = GenJournalLineGen_posting_type(gen_posting_typeInt)
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
@@ -6132,7 +6475,7 @@ func (t *GenJournalLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -6240,6 +6583,9 @@ func (t *GenJournalLine) Next(steps ...int) bool {
 		var payment_terms_codeNull sql.NullString
 		var applies_to_idNull sql.NullString
 		var reason_codeNull sql.NullString
+		var recurring_methodInt int
+		var expiration_dateNull sql.NullString
+		var recurring_frequencyNull sql.NullString
 		var gen_posting_typeInt int
 		var gen_bus_posting_groupNull sql.NullString
 		var gen_prod_posting_groupNull sql.NullString
@@ -6337,6 +6683,9 @@ func (t *GenJournalLine) Next(steps ...int) bool {
 			&payment_terms_codeNull,
 			&applies_to_idNull,
 			&reason_codeNull,
+			&recurring_methodInt,
+			&expiration_dateNull,
+			&recurring_frequencyNull,
 			&gen_posting_typeInt,
 			&gen_bus_posting_groupNull,
 			&gen_prod_posting_groupNull,
@@ -6443,6 +6792,9 @@ func (t *GenJournalLine) Next(steps ...int) bool {
 		t.Payment_terms_code = types.NewCode(payment_terms_codeNull.String)
 		t.Applies_to_id = types.NewCode(applies_to_idNull.String)
 		t.Reason_code = types.NewCode(reason_codeNull.String)
+		t.Recurring_method = GenJournalLineRecurring_method(recurring_methodInt)
+		t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
+		t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
 		t.Gen_posting_type = GenJournalLineGen_posting_type(gen_posting_typeInt)
 		t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 		t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
@@ -6547,7 +6899,7 @@ func (t *GenJournalLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -6608,6 +6960,9 @@ func (t *GenJournalLine) FindSetBuffered() bool {
 		var payment_terms_codeNull sql.NullString
 		var applies_to_idNull sql.NullString
 		var reason_codeNull sql.NullString
+		var recurring_methodInt int
+		var expiration_dateNull sql.NullString
+		var recurring_frequencyNull sql.NullString
 		var gen_posting_typeInt int
 		var gen_bus_posting_groupNull sql.NullString
 		var gen_prod_posting_groupNull sql.NullString
@@ -6705,6 +7060,9 @@ func (t *GenJournalLine) FindSetBuffered() bool {
 			&payment_terms_codeNull,
 			&applies_to_idNull,
 			&reason_codeNull,
+			&recurring_methodInt,
+			&expiration_dateNull,
+			&recurring_frequencyNull,
 			&gen_posting_typeInt,
 			&gen_bus_posting_groupNull,
 			&gen_prod_posting_groupNull,
@@ -6809,6 +7167,9 @@ func (t *GenJournalLine) FindSetBuffered() bool {
 		record.Payment_terms_code = types.NewCode(payment_terms_codeNull.String)
 		record.Applies_to_id = types.NewCode(applies_to_idNull.String)
 		record.Reason_code = types.NewCode(reason_codeNull.String)
+		record.Recurring_method = GenJournalLineRecurring_method(recurring_methodInt)
+		record.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
+		record.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
 		record.Gen_posting_type = GenJournalLineGen_posting_type(gen_posting_typeInt)
 		record.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 		record.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
@@ -6932,6 +7293,10 @@ func (t *GenJournalLine) copyFromBuffered(record *GenJournalLine) {
 	t.Payment_terms_code = record.Payment_terms_code
 	t.Applies_to_id = record.Applies_to_id
 	t.Reason_code = record.Reason_code
+	t.Recurring_method = record.Recurring_method
+	t.Expiration_date = record.Expiration_date
+	t.Recurring_frequency = record.Recurring_frequency
+	t.Allocated_amt_lcy = record.Allocated_amt_lcy
 	t.Gen_posting_type = record.Gen_posting_type
 	t.Gen_bus_posting_group = record.Gen_bus_posting_group
 	t.Gen_prod_posting_group = record.Gen_prod_posting_group
@@ -8164,6 +8529,100 @@ func (t *GenJournalLine) ValidateField(fieldName string, value interface{}) erro
 		for _, l := range t.registeredLogic() {
 			if trg, ok := l.(GenJournalLineOnValidate_Reason_code); ok {
 				if err := trg.OnValidate_Reason_code(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "recurring_method":
+		// Set field value
+		// Accept enum type directly
+		if v, ok := value.(GenJournalLineRecurring_method); ok {
+			t.Recurring_method = v
+			// Accept int (convert to enum)
+		} else if v, ok := value.(int); ok {
+			if v < 0 || v >= 7 {
+				return fmt.Errorf("invalid option value %d for field recurring_method (valid range: 0-%d)", v, 7-1)
+			}
+			t.Recurring_method = GenJournalLineRecurring_method(v)
+			// Accept float64 (JSON numbers decode as float64)
+		} else if v, ok := value.(float64); ok {
+			intVal := int(v)
+			if intVal < 0 || intVal >= 7 {
+				return fmt.Errorf("invalid option value %d for field recurring_method (valid range: 0-%d)", intVal, 7-1)
+			}
+			t.Recurring_method = GenJournalLineRecurring_method(intVal)
+			// Accept string (lookup in options and convert)
+		} else if v, ok := value.(string); ok {
+			if v == "" {
+				// Empty string defaults to first option (behavior)
+				t.Recurring_method = 0
+			} else {
+				options := []string{" ", "F Fixed", "V Variable", "B Balance", "RF Reversing Fixed", "RV Reversing Variable", "RB Reversing Balance"}
+				found := false
+				for i, opt := range options {
+					if opt == v {
+						t.Recurring_method = GenJournalLineRecurring_method(i)
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("invalid option '%s' for field recurring_method (valid options: %v)", v, options)
+				}
+			}
+		} else {
+			return fmt.Errorf("invalid type for field recurring_method (expected GenJournalLineRecurring_method, int, or string)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Recurring_method); ok {
+				if err := trg.OnValidate_Recurring_method(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "expiration_date":
+		// Set field value
+		if v, ok := value.(types.Date); ok {
+			t.Expiration_date = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Expiration_date, err = types.NewDateFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid date value for field expiration_date: %w", err)
+			}
+		} else if v, ok := value.(time.Time); ok {
+			t.Expiration_date = types.NewDateFromTime(v)
+		} else {
+			return fmt.Errorf("invalid type for field expiration_date (expected Date, string, or time.Time)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Expiration_date); ok {
+				if err := trg.OnValidate_Expiration_date(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "recurring_frequency":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Recurring_frequency = v
+		} else if v, ok := value.(string); ok {
+			t.Recurring_frequency = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field recurring_frequency")
+		}
+		if err := tables.CheckDateFormula(GenJournalLineTableName, "recurring_frequency", string(t.Recurring_frequency)); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Recurring_frequency); ok {
+				if err := trg.OnValidate_Recurring_frequency(t); err != nil {
 					return err
 				}
 			}
@@ -9778,6 +10237,12 @@ func (t *GenJournalLine) FieldValue(no int) (any, bool) {
 		return t.Applies_to_id, true
 	case 52:
 		return t.Reason_code, true
+	case 53:
+		return t.Recurring_method, true
+	case 54:
+		return t.Expiration_date, true
+	case 55:
+		return t.Recurring_frequency, true
 	case 57:
 		return t.Gen_posting_type, true
 	case 58:
@@ -9899,6 +10364,8 @@ func (t *GenJournalLine) FieldValue(no int) (any, bool) {
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *GenJournalLine) flowFieldValue(no int) (any, bool) {
 	switch no {
+	case 56:
+		return t.Allocated_amt_lcy, true
 	}
 	return nil, false
 }
@@ -10177,6 +10644,25 @@ func (t *GenJournalLine) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.Reason_code = types.NewCode(v)
+			return true
+		}
+	case 53:
+		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 7 {
+			t.Recurring_method = GenJournalLineRecurring_method(i)
+			return true
+		}
+	case 54:
+		if v, ok := value.(types.Date); ok {
+			t.Expiration_date = v
+			return true
+		}
+	case 55:
+		if v, ok := value.(types.Code); ok {
+			t.Recurring_frequency = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Recurring_frequency = types.NewCode(v)
 			return true
 		}
 	case 57:
@@ -10963,6 +11449,9 @@ func (t *GenJournalLine) FilterExpressions() []tables.FieldFilter {
 			continue
 		}
 		field := f.fieldName
+		if f.flowField != "" {
+			field = f.flowField
+		}
 		result = append(result, tables.FieldFilter{Field: field, Expression: expr})
 	}
 	return result
@@ -11283,6 +11772,12 @@ func (t *GenJournalLine) columnValue(column string) (interface{}, bool) {
 		return t.Applies_to_id, true
 	case "reason_code":
 		return t.Reason_code, true
+	case "recurring_method":
+		return int(t.Recurring_method), true
+	case "expiration_date":
+		return t.Expiration_date, true
+	case "recurring_frequency":
+		return t.Recurring_frequency, true
 	case "gen_posting_type":
 		return int(t.Gen_posting_type), true
 	case "gen_bus_posting_group":
@@ -11496,6 +11991,9 @@ func (t *GenJournalLine) Init() {
 	t.Payment_terms_code = *new(types.Code)
 	t.Applies_to_id = *new(types.Code)
 	t.Reason_code = *new(types.Code)
+	t.Recurring_method = 0
+	t.Expiration_date = *new(types.Date)
+	t.Recurring_frequency = *new(types.Code)
 	t.Gen_posting_type = 0
 	t.Gen_bus_posting_group = *new(types.Code)
 	t.Gen_prod_posting_group = *new(types.Code)
@@ -11587,46 +12085,51 @@ func (t *GenJournalLine) ClearFilters() {
 // ToMap converts the current record to a map for JSON serialization
 func (t *GenJournalLine) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"journal_template_name":          t.Journal_template_name.String(),
-		"journal_batch_name":             t.Journal_batch_name.String(),
-		"line_no":                        t.Line_no,
-		"account_type":                   int(t.Account_type),
-		"account_no":                     t.Account_no.String(),
-		"posting_date":                   t.Posting_date.String(),
-		"document_type":                  int(t.Document_type),
-		"document_no":                    t.Document_no.String(),
-		"description":                    t.Description.String(),
-		"tax_percent":                    t.Tax_percent.String(),
-		"bal_account_no":                 t.Bal_account_no.String(),
-		"currency_code":                  t.Currency_code.String(),
-		"amount":                         t.Amount.String(),
-		"debit_amount":                   t.Debit_amount.String(),
-		"credit_amount":                  t.Credit_amount.String(),
-		"amount_lcy":                     t.Amount_lcy.String(),
-		"balance_lcy":                    t.Balance_lcy.String(),
-		"currency_factor":                t.Currency_factor.String(),
-		"sales_purch_lcy":                t.Sales_purch_lcy.String(),
-		"profit_lcy":                     t.Profit_lcy.String(),
-		"inv_discount_lcy":               t.Inv_discount_lcy.String(),
-		"sell_to_buy_from_no":            t.Sell_to_buy_from_no.String(),
-		"posting_group":                  t.Posting_group.String(),
-		"department_code":                t.Department_code.String(),
-		"project_code":                   t.Project_code.String(),
-		"salespers_purch_code":           t.Salespers_purch_code.String(),
-		"source_code":                    t.Source_code.String(),
-		"system_created_entry":           t.System_created_entry,
-		"on_hold":                        t.On_hold.String(),
-		"applies_to_doc_type":            int(t.Applies_to_doc_type),
-		"applies_to_doc_no":              t.Applies_to_doc_no.String(),
-		"due_date":                       t.Due_date.String(),
-		"pmt_discount_date":              t.Pmt_discount_date.String(),
-		"payment_discount_percent":       t.Payment_discount_percent.String(),
-		"quantity":                       t.Quantity.String(),
-		"tax_amount":                     t.Tax_amount.String(),
-		"vat_posting":                    int(t.Vat_posting),
-		"payment_terms_code":             t.Payment_terms_code.String(),
-		"applies_to_id":                  t.Applies_to_id.String(),
-		"reason_code":                    t.Reason_code.String(),
+		"journal_template_name":    t.Journal_template_name.String(),
+		"journal_batch_name":       t.Journal_batch_name.String(),
+		"line_no":                  t.Line_no,
+		"account_type":             int(t.Account_type),
+		"account_no":               t.Account_no.String(),
+		"posting_date":             t.Posting_date.String(),
+		"document_type":            int(t.Document_type),
+		"document_no":              t.Document_no.String(),
+		"description":              t.Description.String(),
+		"tax_percent":              t.Tax_percent.String(),
+		"bal_account_no":           t.Bal_account_no.String(),
+		"currency_code":            t.Currency_code.String(),
+		"amount":                   t.Amount.String(),
+		"debit_amount":             t.Debit_amount.String(),
+		"credit_amount":            t.Credit_amount.String(),
+		"amount_lcy":               t.Amount_lcy.String(),
+		"balance_lcy":              t.Balance_lcy.String(),
+		"currency_factor":          t.Currency_factor.String(),
+		"sales_purch_lcy":          t.Sales_purch_lcy.String(),
+		"profit_lcy":               t.Profit_lcy.String(),
+		"inv_discount_lcy":         t.Inv_discount_lcy.String(),
+		"sell_to_buy_from_no":      t.Sell_to_buy_from_no.String(),
+		"posting_group":            t.Posting_group.String(),
+		"department_code":          t.Department_code.String(),
+		"project_code":             t.Project_code.String(),
+		"salespers_purch_code":     t.Salespers_purch_code.String(),
+		"source_code":              t.Source_code.String(),
+		"system_created_entry":     t.System_created_entry,
+		"on_hold":                  t.On_hold.String(),
+		"applies_to_doc_type":      int(t.Applies_to_doc_type),
+		"applies_to_doc_no":        t.Applies_to_doc_no.String(),
+		"due_date":                 t.Due_date.String(),
+		"pmt_discount_date":        t.Pmt_discount_date.String(),
+		"payment_discount_percent": t.Payment_discount_percent.String(),
+		"quantity":                 t.Quantity.String(),
+		"tax_amount":               t.Tax_amount.String(),
+		"vat_posting":              int(t.Vat_posting),
+		"payment_terms_code":       t.Payment_terms_code.String(),
+		"applies_to_id":            t.Applies_to_id.String(),
+		"reason_code":              t.Reason_code.String(),
+		"recurring_method":         int(t.Recurring_method),
+		"expiration_date":          t.Expiration_date.String(),
+		"recurring_frequency":      t.Recurring_frequency.String(),
+		// FlowField: allocated_amt_lcy
+		"allocated_amt_lcy":              t.Allocated_amt_lcy.String(),
 		"gen_posting_type":               int(t.Gen_posting_type),
 		"gen_bus_posting_group":          t.Gen_bus_posting_group.String(),
 		"gen_prod_posting_group":         t.Gen_prod_posting_group.String(),
@@ -12034,6 +12537,33 @@ func (t *GenJournalLine) FromMap(data map[string]interface{}) {
 	if v, ok := data["reason_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Reason_code = types.NewCode(s)
+		}
+	}
+	if v, ok := data["recurring_method"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Recurring_method = GenJournalLineRecurring_method(int(val))
+		case int:
+			t.Recurring_method = GenJournalLineRecurring_method(val)
+		case string:
+			// Lookup string value in options
+			options := []string{" ", "F Fixed", "V Variable", "B Balance", "RF Reversing Fixed", "RV Reversing Variable", "RB Reversing Balance"}
+			for i, opt := range options {
+				if opt == val {
+					t.Recurring_method = GenJournalLineRecurring_method(i)
+					break
+				}
+			}
+		}
+	}
+	if v, ok := data["expiration_date"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Expiration_date, _ = types.NewDateFromString(s)
+		}
+	}
+	if v, ok := data["recurring_frequency"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Recurring_frequency = types.NewCode(s)
 		}
 	}
 	if v, ok := data["gen_posting_type"]; ok && v != nil {
@@ -12952,6 +13482,48 @@ func (t *GenJournalLine) GetFields() []tables.FieldInfo {
 			FlowField:  false,
 		},
 		{
+			No:         53,
+			Name:       "recurring_method",
+			Type:       tables.FieldTypeOption,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         54,
+			Name:       "expiration_date",
+			Type:       tables.FieldTypeDate,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         55,
+			Name:       "recurring_frequency",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:            56,
+			Name:          "allocated_amt_lcy",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			ReadOnly:      true,
+			DecimalPlaces: "2:2",
+		},
+		{
 			No:         57,
 			Name:       "gen_posting_type",
 			Type:       tables.FieldTypeOption,
@@ -13555,7 +14127,9 @@ func (t *GenJournalLine) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 
 // GetFlowFields returns names of FlowFields that need CalcFields
 func (t *GenJournalLine) GetFlowFields() []string {
-	return []string{}
+	return []string{
+		"allocated_amt_lcy",
+	}
 }
 
 // GetOptionFields returns Option field names mapped to their option values
@@ -13565,6 +14139,7 @@ func (t *GenJournalLine) GetOptionFields() map[string][]string {
 		"document_type":            {" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"},
 		"applies_to_doc_type":      {" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"},
 		"vat_posting":              {"Automatic VAT Entry", "Manual VAT Entry"},
+		"recurring_method":         {" ", "F Fixed", "V Variable", "B Balance", "RF Reversing Fixed", "RV Reversing Variable", "RB Reversing Balance"},
 		"gen_posting_type":         {" ", "Purchase", "Sale", "Settlement"},
 		"tax_calculation_type":     {"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"},
 		"bal_account_type":         {"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"},

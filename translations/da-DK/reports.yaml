@@ -99,6 +99,163 @@ reports:
       ADJ_GEN_SETUP: "Regulering af bogf.opsætning %1,%2"
       COGS_GEN_SETUP: "Vareforbrug for bogf.opsætning %1,%2"
       POSTED: "Lagerværdien er bogført i Finans: vareforbrug %1, lagerreguleringer %2."
+  "188":
+    caption: "Opret rykkere"
+    options:
+      posting_date: "Bogføringsdato"
+      document_date: "Bilagsdato"
+      only_overdue_entries: "Kun poster med forfaldne beløb"
+    texts:
+      OPTIONS: "Indstillinger"
+      WINDOW: "Behandler @1@@@@@@@@@@@@@"
+      SPECIFY_DOCUMENT_DATE: "Bilagsdato skal angives."
+      ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
+      DONE: "%1 debitorer blev behandlet."
+      NOT_ALL_DONE: "Det var ikke muligt at oprette dokumenter for nogle af de valgte debitorer (%1 behandlet):
+%2"
+  "189":
+    caption: "Foreslå rykkerlinjer"
+    options:
+      only_overdue_entries: "Kun poster med forfaldne beløb"
+    texts:
+      OPTIONS: "Indstillinger"
+      WINDOW: "Behandler @1@@@@@@@@@@@@@"
+      SPECIFY_DOCUMENT_DATE: "Bilagsdato skal angives."
+      ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
+      DONE: "%1 rykkere blev behandlet."
+      NOT_ALL_DONE: "Det var ikke muligt at behandle nogle af de valgte rykkere (%1 behandlet):
+%2"
+  "190":
+    caption: "Udsted rykkere"
+    options:
+      replace_posting_date: "Erstat bogføringsdato"
+      posting_date: "Bogføringsdato"
+    texts:
+      OPTIONS: "Indstillinger"
+      WINDOW: "Behandler @1@@@@@@@@@@@@@"
+      SPECIFY_DOCUMENT_DATE: "Bilagsdato skal angives."
+      ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
+      DONE: "%1 rykkere blev udstedt."
+      NOT_ALL_DONE: "Det var ikke muligt at udstede nogle af de valgte rykkere (%1 udstedt):
+%2"
+  "187":
+    caption: "Opdater rykkertekst"
+    options:
+      reminder_level: "Rykkerniveau"
+    texts:
+      OPTIONS: "Indstillinger"
+      WINDOW: "Behandler @1@@@@@@@@@@@@@"
+      SPECIFY_DOCUMENT_DATE: "Bilagsdato skal angives."
+      ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
+      DONE: "%1 rykkere blev opdateret."
+      NOT_ALL_DONE: "Det var ikke muligt at opdatere nogle af de valgte rykkere (%1 opdateret):
+%2"
+  "191":
+    caption: "Opret rentenotaer"
+    options:
+      posting_date: "Bogføringsdato"
+      document_date: "Bilagsdato"
+    texts:
+      OPTIONS: "Indstillinger"
+      WINDOW: "Behandler @1@@@@@@@@@@@@@"
+      SPECIFY_DOCUMENT_DATE: "Bilagsdato skal angives."
+      ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
+      DONE: "%1 debitorer blev behandlet."
+      NOT_ALL_DONE: "Det var ikke muligt at oprette dokumenter for nogle af de valgte debitorer (%1 behandlet):
+%2"
+  "192":
+    caption: "Foreslå rentenotalinjer"
+    texts:
+      OPTIONS: "Indstillinger"
+      WINDOW: "Behandler @1@@@@@@@@@@@@@"
+      SPECIFY_DOCUMENT_DATE: "Bilagsdato skal angives."
+      ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
+      DONE: "%1 rentenotaer blev behandlet."
+      NOT_ALL_DONE: "Det var ikke muligt at behandle nogle af de valgte rentenotaer (%1 behandlet):
+%2"
+  "193":
+    caption: "Udsted rentenotaer"
+    options:
+      replace_posting_date: "Erstat bogføringsdato"
+      posting_date: "Bogføringsdato"
+    texts:
+      OPTIONS: "Indstillinger"
+      WINDOW: "Behandler @1@@@@@@@@@@@@@"
+      SPECIFY_DOCUMENT_DATE: "Bilagsdato skal angives."
+      ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
+      DONE: "%1 rentenotaer blev udstedt."
+      NOT_ALL_DONE: "Det var ikke muligt at udstede nogle af de valgte rentenotaer (%1 udstedt):
+%2"
+  "186":
+    caption: "Opdater rentenotatekst"
+    texts:
+      OPTIONS: "Indstillinger"
+      WINDOW: "Behandler @1@@@@@@@@@@@@@"
+      SPECIFY_DOCUMENT_DATE: "Bilagsdato skal angives."
+      ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
+      DONE: "%1 rentenotaer blev opdateret."
+      NOT_ALL_DONE: "Det var ikke muligt at opdatere nogle af de valgte rentenotaer (%1 opdateret):
+%2"
+  "117":
+    caption: "Rykker"
+    options:
+      no_of_copies: "Antal kopier"
+      print_company_address: "Udskriv firmaadresse"
+    texts:
+      FILE_NAME: "Rykker %1"
+      REMINDER: "RYKKER"
+      FINANCE_CHARGE_MEMO: "RENTENOTA"
+      REMINDER_NO: "Rykkernr."
+      FINANCE_CHARGE_MEMO_NO: "Rentenotanr."
+      DOCUMENT_DATE: "Bilagsdato"
+      DUE_DATE: "Forfaldsdato"
+      REMINDER_LEVEL: "Rykkerniveau"
+      PAGE: "Side"
+      CUSTOMER_NO: "Debitornr."
+      YOUR_REFERENCE: "Deres reference"
+      POSTING_DATE: "Bogføringsdato"
+      DOCUMENT_TYPE: "Bilagstype"
+      DOCUMENT_NO: "Bilagsnr."
+      ORIGINAL_AMOUNT: "Oprindeligt beløb"
+      REMAINING_AMOUNT: "Restbeløb"
+      AMOUNT: "Beløb"
+      INTEREST_AMOUNT: "Rentebeløb"
+      ADDITIONAL_FEE: "Gebyr"
+      SALES_TAX: "Salgsskat"
+      TOTAL: "I alt"
+      PHONE_NO: "Telefon"
+      E_MAIL: "E-mail"
+      COPY: "KOPI"
+  "118":
+    caption: "Rentenota"
+    options:
+      no_of_copies: "Antal kopier"
+      print_company_address: "Udskriv firmaadresse"
+    texts:
+      FILE_NAME: "Rentenota %1"
+      REMINDER: "RYKKER"
+      FINANCE_CHARGE_MEMO: "RENTENOTA"
+      REMINDER_NO: "Rykkernr."
+      FINANCE_CHARGE_MEMO_NO: "Rentenotanr."
+      DOCUMENT_DATE: "Bilagsdato"
+      DUE_DATE: "Forfaldsdato"
+      REMINDER_LEVEL: "Rykkerniveau"
+      PAGE: "Side"
+      CUSTOMER_NO: "Debitornr."
+      YOUR_REFERENCE: "Deres reference"
+      POSTING_DATE: "Bogføringsdato"
+      DOCUMENT_TYPE: "Bilagstype"
+      DOCUMENT_NO: "Bilagsnr."
+      ORIGINAL_AMOUNT: "Oprindeligt beløb"
+      REMAINING_AMOUNT: "Restbeløb"
+      AMOUNT: "Beløb"
+      INTEREST_AMOUNT: "Rentebeløb"
+      ADDITIONAL_FEE: "Gebyr"
+      SALES_TAX: "Salgsskat"
+      TOTAL: "I alt"
+      PHONE_NO: "Telefon"
+      E_MAIL: "E-mail"
+      COPY: "KOPI"
   "204":
     caption: "Salg - tilbud"
     options:
@@ -606,6 +763,40 @@ reports:
     texts:
       OPTIONS: "Indstillinger"
       WINDOW: "Opretter anlægsprofil       #1##########\nOpretter ikke anlægsprofil  #2##########"
+  "1496":
+    caption: "Foreslå bankafstemningslinjer"
+    options:
+      starting_date: "Startdato"
+      ending_date: "Slutdato"
+      include_checks: "Medtag checks"
+    texts:
+      STATEMENT_PERIOD: "Kontoudtogsperiode"
+      NO_RECONCILIATION: "Kør rapporten fra en bankkontoafstemning."
+      ENTER_ENDING_DATE: "Angiv slutdatoen."
+  "1497":
+    caption: "Overfør bankafstemning til finanskladde"
+    options:
+      gen_journal_template: "Finanskladdetype"
+      gen_journal_batch: "Finanskladdenavn"
+    texts:
+      OPTIONS: "Indstillinger"
+      NO_RECONCILIATION: "Kør rapporten fra en bankkontoafstemning."
+  "595":
+    caption: "Reguler valutakurser"
+    options:
+      starting_date: "Startdato"
+      ending_date: "Slutdato"
+      posting_description: "Bogføringsbeskrivelse"
+      posting_date: "Bogføringsdato"
+      document_no: "Bilagsnr."
+    texts:
+      ADJUSTMENT_PERIOD: "Reguleringsperiode"
+      POSTING_DESCRIPTION: "Valutaregulering af %1 %2"
+      ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
+      ENTER_DOCUMENT_NO: "Bilagsnr. skal angives."
+      NO_CURRENCIES: "Der blev ikke fundet nogen valutaer."
+      WINDOW: "Regulerer valutakurser...\nValuta #1######\nDebitor #2##########\nKreditor #3##########\nRegulering #4#############"
+      DONE: "Valutakurserne blev reguleret med i alt %1."
   "5692":
     caption: "Beregn afskrivninger"
     options:

@@ -6,6 +6,7 @@ import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
 	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
+	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
 	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/openerp/backend/foundation/system"
 	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
@@ -71,6 +72,9 @@ func (c *GenJnlPost) code(rec *gtables.GenJournalLine) (fcodeunits.Result, error
 	err = genJnlTemplate.TestField("force_posting_report", false)
 	if err != nil {
 		return fcodeunits.Result{}, err
+	}
+	if genJnlTemplate.Recurring && rec.GetFilter("posting_date") != "" {
+		return fcodeunits.Result{}, apperrors.JnlRecurringDateFiltered(gtables.GenJournalLineTableName)
 	}
 	if !system.Confirm(ts.Message("GEN_JNL_POST_CONFIRM", lang)) {
 		return fcodeunits.Result{Success: true}, nil

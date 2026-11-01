@@ -1,0 +1,36 @@
+page:
+  id: 106
+  type: List
+  name: Exch. Rate Adjmt. Registers
+  source_table: Exch_Rate_Adjmt_Reg
+  caption: Exch. Rate Adjmt. Registers
+  editable: false   # written by Adjust Exchange Rates (report 595)
+
+  layout:
+    repeater:
+      fields:
+        - source: "no"
+          width: 80
+        - source: creation_date
+          width: 110
+        - source: account_type
+          width: 130
+        - source: posting_group
+          width: 110
+        - source: currency_code
+          width: 90
+        - source: currency_factor
+          width: 120
+          visible: false
+        - source: adjusted_base
+          width: 140
+        - source: adjusted_base_lcy
+          width: 140
+        - source: adjusted_amt_lcy
+          width: 140
+        - source: adjusted_base_add_curr
+          width: 140
+          visible: false
+        - source: adjusted_amt_add_curr
+          width: 140
+          visible: false

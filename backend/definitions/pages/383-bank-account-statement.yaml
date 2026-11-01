@@ -1,0 +1,47 @@
+page:
+  id: 383
+  type: Card
+  name: Bank Account Statement
+  source_table: Bank_Account_Statement
+  caption: Bank Account Statement
+  list_page_id: 389
+  enable_navigation: true
+  editable: false   # a posted reconciliation
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: bank_account_no
+            importance: Promoted
+          - source: statement_no
+            importance: Promoted
+          - source: statement_date
+          - source: balance_last_statement
+          - source: statement_ending_balance
+
+      - name: Lines
+        caption: Lines
+        subpage:
+          page_id: 384
+          link:
+            bank_account_no: bank_account_no
+            statement_no: statement_no
+
+  actions:
+    - name: Back to List
+      caption: Back to List
+      image: Back
+      shortcut: Esc
+      promoted: true
+      run_page: 389
+
+    - name: Bank Account Card
+      caption: Bank Account Card
+      image: Card
+      shortcut: Shift+F5
+      promoted: true
+      run_page: 370
+      run_page_filter_field: "no"
+      run_page_filter_value: bank_account_no

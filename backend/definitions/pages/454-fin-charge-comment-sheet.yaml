@@ -1,0 +1,47 @@
+page:
+  id: 454
+  type: List
+  name: Fin. Charge Comment Sheet
+  source_table: Fin_Charge_Comment_Line   # opened from a document, filtered on its type and No.
+  caption: Comments
+  editable: true
+  auto_split_key: true
+
+  layout:
+    repeater:
+      fields:
+        - source: type
+          width: 100
+          visible: false
+        - source: "no"
+          width: 100
+          visible: false
+        - source: line_no
+          width: 90
+          visible: false
+        - source: date
+          width: 110
+        - source: comment
+          width: 400
+        - source: code
+          width: 100
+          visible: false
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

@@ -16,6 +16,10 @@ application:
       # Post Inventory Cost to G/L, 1191–1195 resource prices)
       - from: 1000
         to: 1299
+      # Bank account reports keep their classic numbers (1496 Suggest Bank Acc. Recon. Lines,
+      # 1497 Trans. Bank Rec. to Gen. Jnl.)
+      - from: 1400
+        to: 1499
       # Items keep their classic numbers (Item Variant 5401, Item Unit of Measure 5404 …)
       - from: 5400
         to: 5499

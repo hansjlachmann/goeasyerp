@@ -1,0 +1,98 @@
+page:
+  id: 379
+  type: Card
+  name: Bank Acc. Reconciliation
+  source_table: Bank_Acc_Reconciliation
+  caption: Bank Acc. Reconciliation
+  list_page_id: 388
+  enable_navigation: true
+  editable: true
+  focus_field: bank_account_no
+  # classic form 379: a bank statement — Suggest Lines fills it from the open entries, Apply
+  # Entries (on a line) applies entries by hand, Post closes the applied entries
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: bank_account_no
+            importance: Promoted
+          - source: statement_no
+            importance: Promoted
+          - source: statement_date
+          - source: balance_last_statement
+          - source: statement_ending_balance
+          # the lines' totals (OnAfterGetRecord, business-logic/pages/bankaccreconciliation.go)
+          - source: total_balance
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_difference
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      # The statement's lines: Apply Entries (Shift+F9) on a line
+      - name: Lines
+        caption: Lines
+        subpage:
+          page_id: 380
+          link:
+            bank_account_no: bank_account_no
+            statement_no: statement_no
+
+  actions:
+    - name: Back to List
+      caption: Back to List
+      image: Back
+      shortcut: Esc
+      promoted: true
+      run_page: 388
+
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    - name: Functions
+      caption: Functions
+      image: Calculate
+      promoted: true
+      items:
+        - name: Suggest Lines
+          caption: Suggest Lines
+          run_object: report:1496
+        - name: Transfer to General Journal
+          caption: Transfer to General Journal
+          run_object: report:1497
+
+    # Post (codeunit 371, after asking): the reconciliation becomes a bank account statement
+    - name: Post
+      caption: Post
+      image: Post
+      shortcut: F11
+      promoted: true
+      run_object: codeunit:371
+
+    - name: Bank Account Card
+      caption: Bank Account Card
+      image: Card
+      shortcut: Shift+F5
+      promoted: true
+      run_page: 370
+      run_page_filter_field: "no"
+      run_page_filter_value: bank_account_no

@@ -1,0 +1,47 @@
+page:
+  id: 388
+  type: List
+  name: Bank Acc. Reconciliation List
+  source_table: Bank_Acc_Reconciliation
+  caption: Bank Acc. Reconciliations
+  card_page_id: 379
+
+  layout:
+    repeater:
+      fields:
+        - source: bank_account_no
+          width: 120
+        - source: statement_no
+          width: 120
+        - source: statement_date
+          width: 110
+        - source: balance_last_statement
+          width: 140
+        - source: statement_ending_balance
+          width: 140
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    - name: Post
+      caption: Post
+      image: Post
+      shortcut: F11
+      promoted: true
+      run_object: codeunit:371

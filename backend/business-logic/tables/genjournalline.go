@@ -11,7 +11,7 @@ import (
 
 // genJournalLineLogic is the business logic of table 81 Gen. Journal Line.
 //
-// Not migrated yet: allocations (table 221), recurring lines, the credit limit warning when an
+// Not migrated yet: the credit limit warning when an
 // amount is entered (codeunit 312), budgeted fixed assets and the FA add.-currency factor, 1099
 // fields (local field series), the additional reporting currency.
 // The tax fields (Tax %, Tax Base Amount, tax posting groups) are calculated with sales tax.
@@ -52,14 +52,53 @@ func (genJournalLineLogic) OnModify(rec *gtables.GenJournalLine) error {
 	return nil
 }
 
-// OnDelete: a line with a printed check cannot be deleted; its Applies-to ID is taken off the
-// entries it marked
+// OnDelete: a line with a printed check cannot be deleted; its allocations go with it; its
+// Applies-to ID is taken off the entries it marked
 func (genJournalLineLogic) OnDelete(rec *gtables.GenJournalLine) error {
 	err := rec.TestField("check_printed", false)
 	if err != nil {
 		return err
 	}
+	genJnlAlloc := gtables.NewGenJnlAllocation(rec)
+	genJnlAlloc.SetRange("journal_template_name", rec.Journal_template_name)
+	genJnlAlloc.SetRange("journal_batch_name", rec.Journal_batch_name)
+	genJnlAlloc.SetRange("journal_line_no", rec.Line_no)
+	genJnlAlloc.DeleteAll()
 	return ClearCustVendApplID(rec)
+}
+
+// IsBalanceRecurringMethod: B Balance or RB Reversing Balance (the line posts the account's
+// balance)
+func IsBalanceRecurringMethod(method gtables.GenJournalLineRecurring_method) bool {
+	return method == gtables.GenJournalLine_Recurring_method.BBalance ||
+		method == gtables.GenJournalLine_Recurring_method.RBReversingBalance
+}
+
+// OnValidate_Recurring_method: the (Reversing) Balance method posts in LCY only
+func (genJournalLineLogic) OnValidate_Recurring_method(rec *gtables.GenJournalLine) error {
+	if IsBalanceRecurringMethod(rec.Recurring_method) {
+		return rec.TestField("currency_code", types.Code(""))
+	}
+	return nil
+}
+
+// checkTaxInAlloc: a line with a general posting type — its allocations must have none
+// (CheckTaxInAlloc)
+func checkTaxInAlloc(rec *gtables.GenJournalLine) error {
+	if rec.Gen_posting_type == gtables.GenJournalLine_Gen_posting_type.Blank {
+		return nil
+	}
+	genJnlAlloc := gtables.NewGenJnlAllocation(rec)
+	genJnlAlloc.SetRange("journal_template_name", rec.Journal_template_name)
+	genJnlAlloc.SetRange("journal_batch_name", rec.Journal_batch_name)
+	genJnlAlloc.SetRange("journal_line_no", rec.Line_no)
+	for found := genJnlAlloc.FindSet(); found; found = genJnlAlloc.Next() {
+		err := CheckGenJnlAllocTax(genJnlAlloc, rec)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // OnRename: a line with a printed check cannot be renamed
@@ -117,7 +156,9 @@ func (genJournalLineLogic) OnValidate_Account_type(rec *gtables.GenJournalLine) 
 // terms and currency come to the line
 func (genJournalLineLogic) OnValidate_Account_no(rec *gtables.GenJournalLine) error {
 	if rec.Account_no == "" {
-		UpdateGenJnlLineBalance(rec)
+		if err := UpdateGenJnlLineBalance(rec); err != nil {
+			return err
+		}
 		UpdateGenJnlLineSource(rec)
 		xRec := rec.XRec()
 		if xRec.Bal_account_no != "" {
@@ -308,7 +349,9 @@ func (genJournalLineLogic) OnValidate_Account_no(rec *gtables.GenJournalLine) er
 	if err != nil {
 		return err
 	}
-	UpdateGenJnlLineBalance(rec)
+	if err := UpdateGenJnlLineBalance(rec); err != nil {
+		return err
+	}
 	UpdateGenJnlLineSource(rec)
 	return nil
 }
@@ -358,7 +401,9 @@ func (genJournalLineLogic) OnValidate_Document_type(rec *gtables.GenJournalLine)
 // when the line has no account)
 func (genJournalLineLogic) OnValidate_Bal_account_no(rec *gtables.GenJournalLine) error {
 	if rec.Bal_account_no == "" {
-		UpdateGenJnlLineBalance(rec)
+		if err := UpdateGenJnlLineBalance(rec); err != nil {
+			return err
+		}
 		UpdateGenJnlLineSource(rec)
 		return nil
 	}
@@ -521,7 +566,9 @@ func (genJournalLineLogic) OnValidate_Bal_account_no(rec *gtables.GenJournalLine
 	if err != nil {
 		return err
 	}
-	UpdateGenJnlLineBalance(rec)
+	if err := UpdateGenJnlLineBalance(rec); err != nil {
+		return err
+	}
 	UpdateGenJnlLineSource(rec)
 	return nil
 }
@@ -550,6 +597,9 @@ func (genJournalLineLogic) OnValidate_Currency_code(rec *gtables.GenJournalLine)
 				return err
 			}
 		}
+	}
+	if IsBalanceRecurringMethod(rec.Recurring_method) && rec.Currency_code != "" {
+		return apperrors.JnlRecurringMethodCurrency(genJnlLineTable, rec.Recurring_method)
 	}
 	if rec.Account_type == gtables.GenJournalLine_Account_type.BankAccount {
 		bankAcc3 := gtables.NewBankAccount(rec)
@@ -605,7 +655,9 @@ func (genJournalLineLogic) OnValidate_Amount(rec *gtables.GenJournalLine) error 
 	if err != nil {
 		return err
 	}
-	UpdateGenJnlLineBalance(rec)
+	if err := UpdateGenJnlLineBalance(rec); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -658,7 +710,9 @@ func (genJournalLineLogic) OnValidate_Amount_lcy(rec *gtables.GenJournalLine) er
 		if err != nil {
 			return err
 		}
-		UpdateGenJnlLineBalance(rec)
+		if err := UpdateGenJnlLineBalance(rec); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -727,6 +781,10 @@ func (genJournalLineLogic) OnValidate_Gen_posting_type(rec *gtables.GenJournalLi
 	}
 	if rec.Gen_posting_type == gtables.GenJournalLine_Gen_posting_type.Settlement && !rec.System_created_entry {
 		return apperrors.JnlOptionInternal(genJnlLineTable, "gen_posting_type", rec.Gen_posting_type)
+	}
+	err := checkTaxInAlloc(rec)
+	if err != nil {
+		return err
 	}
 	if rec.Gen_posting_type > 0 {
 		return rec.Validate("tax_prod_posting_group", rec.Tax_prod_posting_group)
@@ -930,9 +988,9 @@ func GenJnlLineEmptyLine(rec *gtables.GenJournalLine) bool {
 }
 
 // UpdateGenJnlLineBalance sets Debit/Credit Amount from the amount and Balance (LCY): what the
-// line adds to the journal's balance (0 when it has both an account and a balancing account)
-// — UpdateLineBalance
-func UpdateGenJnlLineBalance(rec *gtables.GenJournalLine) {
+// line adds to the journal's balance (0 when it has both an account and a balancing account);
+// the line's allocations get their shares and are part of the balance — UpdateLineBalance
+func UpdateGenJnlLineBalance(rec *gtables.GenJournalLine) error {
 	if rec.Amount.IsPositive() && !rec.Correction || rec.Amount.IsNegative() && rec.Correction {
 		rec.Debit_amount = rec.Amount
 		rec.Credit_amount = types.Decimal{}
@@ -951,6 +1009,7 @@ func UpdateGenJnlLineBalance(rec *gtables.GenJournalLine) {
 	default:
 		rec.Balance_lcy = rec.Amount_lcy
 	}
+	return UpdateGenJnlAllocations(rec)
 }
 
 // SetUpNewGenJnlLine gives a new line its values (page OnNewRecord): the posting date and
@@ -989,6 +1048,7 @@ func SetUpNewGenJnlLine(rec, lastGenJnlLine *gtables.GenJournalLine, balance typ
 			rec.Document_no = noSeriesMgt.TryGetNextNo(genJnlBatch.No_series, rec.Posting_date)
 		}
 	}
+	rec.Recurring_method = lastGenJnlLine.Recurring_method
 	rec.Account_type = lastGenJnlLine.Account_type
 	rec.Document_type = lastGenJnlLine.Document_type
 	rec.Source_code = genJnlTemplate.Source_code
@@ -1375,6 +1435,10 @@ func (genJournalLineLogic) OnValidate_Tax_bus_posting_group(rec *gtables.GenJour
 // OnValidate_Tax_prod_posting_group: a line with a general posting type takes the tax
 // calculation type (and VAT %) of its tax posting setup
 func (genJournalLineLogic) OnValidate_Tax_prod_posting_group(rec *gtables.GenJournalLine) error {
+	err := checkTaxInAlloc(rec)
+	if err != nil {
+		return err
+	}
 	rec.Tax_percent = types.Decimal{}
 	rec.Tax_calculation_type = gtables.GenJournalLine_Tax_calculation_type.NormalVAT
 	if rec.Gen_posting_type != gtables.GenJournalLine_Gen_posting_type.Blank {
