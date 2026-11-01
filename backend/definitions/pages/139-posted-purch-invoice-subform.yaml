@@ -74,3 +74,6 @@ page:
         - source: project_code
           width: 110
           visible: false
+        - source: receipt_no
+          width: 120
+          visible: false

@@ -600,6 +600,8 @@ pages:
     caption: "Linjer"
   purchase_order_subform:
     caption: "Linjer"
+  get_receipt_lines:
+    caption: "Hent mottakslinjer"
   purchase_invoices:
     caption: "Innkjøpsfakturaer"
   purchase_invoice:

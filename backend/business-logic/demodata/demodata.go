@@ -80,6 +80,7 @@ const (
 	PhaseResources Phase = "resources" // the resources' postings
 	PhaseItems     Phase = "items"     // the items' postings and the assemblies
 	PhaseSales     Phase = "sales"     // the sales documents and their postings
+	PhasePurchases Phase = "purchases" // the purchase documents and their postings
 )
 
 // Options control a Create run.
@@ -101,6 +102,10 @@ type Options struct {
 	// orders, invoices and credit memos are posted through it (codeunit 901:
 	// salesposting.NewSalesPost); needs ItemJnlPostLine (the items on inventory)
 	SalesPost func(src ftables.Source) SalesPoster
+	// PurchPost (optional) opens the purchase posting (codeunit 90) the same way: the demo
+	// purchase orders, invoices and credit memos are posted through it (codeunit 901:
+	// purchposting.NewPurchPost); needs ItemJnlPostLine
+	PurchPost func(src ftables.Source) PurchPoster
 }
 
 // ItemJnlPoster posts an item journal line (codeunit 22 Item Jnl.-Post Line)
@@ -140,6 +145,13 @@ type Counts struct {
 	PostedSalesShipments int
 	PostedSalesInvoices  int
 	PostedSalesCrMemos   int
+	// The demo purchase documents: open quotes, orders and invoices, and the posted ones
+	PurchaseQuotes      int
+	PurchaseOrders      int
+	PurchaseInvoices    int
+	PostedPurchReceipts int
+	PostedPurchInvoices int
+	PostedPurchCrMemos  int
 	// AccountingPeriods: monthly periods of the fiscal years from two years ago to this year
 	// and the first period of the next year; the oldest year is closed
 	AccountingPeriods int
@@ -469,6 +481,14 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 		if opts.SalesPost != nil {
 			p.phase(PhaseSales)
 			err = postDemoSales(ftables.DBSource(exec, company, dbType), opts.SalesPost, today, opts.Size, &counts, p)
+			if err != nil {
+				rollback()
+				return Counts{}, err
+			}
+		}
+		if opts.PurchPost != nil {
+			p.phase(PhasePurchases)
+			err = postDemoPurchases(ftables.DBSource(exec, company, dbType), opts.PurchPost, today, opts.Size, &counts, p)
 			if err != nil {
 				rollback()
 				return Counts{}, err
@@ -939,7 +959,8 @@ var phaseRanges = map[Phase][2]float64{
 	PhaseResources:  {7, 31},
 	PhaseItems:      {38, 28},
 	PhaseAssemblies: {66, 8},
-	PhaseSales:      {74, 25},
+	PhaseSales:      {74, 17},
+	PhasePurchases:  {91, 8},
 }
 
 var phaseRangesLarge = map[Phase][2]float64{
@@ -950,7 +971,8 @@ var phaseRangesLarge = map[Phase][2]float64{
 	PhaseResources:  {50, 15},
 	PhaseItems:      {65, 14},
 	PhaseAssemblies: {79, 4},
-	PhaseSales:      {83, 16},
+	PhaseSales:      {83, 10},
+	PhasePurchases:  {93, 6},
 }
 
 func newProgress(report func(int, Phase), size Size, setup, customers, entries int) *progress {

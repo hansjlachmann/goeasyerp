@@ -290,6 +290,19 @@ table:
       scale: 5
       validation: {min: 0}
 
+    - name: receipt_no
+      no: 63
+      type: types.Code
+      db_name: receipt_no
+      length: 20
+      editable: false
+
+    - name: receipt_line_no
+      no: 64
+      type: int
+      db_name: receipt_line_no
+      editable: false
+
     - name: pay_to_vendor_no
       no: 68
       type: types.Code

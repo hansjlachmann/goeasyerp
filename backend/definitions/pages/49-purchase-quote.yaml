@@ -122,6 +122,12 @@ page:
       promoted: true
       run_object: codeunit:97
 
+    - name: Print
+      caption: Print
+      image: Print
+      promoted: true
+      run_object: report:404
+
     - name: Statistics
       caption: Statistics
       image: Statistics

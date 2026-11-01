@@ -1,0 +1,107 @@
+# Report 407 Purchase - Credit Memo: the printed layout (sections per data item, positions in mm from
+# the section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 407
+  name: Purchase - Credit Memo
+  page:
+    size: A4
+    orientation: portrait
+    margins: {top: 12, bottom: 12, left: 15, right: 12}
+  font_size: 9
+  data_items:
+    - name: PurchCrMemoHdr
+      new_page_per_record: true
+
+    - name: CopyLoop
+      new_page_per_record: true
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 118
+          elements:
+            # The company (Print Company Address) and its logo
+            - {lines: company_address, x: 0, y: 0, width: 95}
+            - {text: PHONE_NO, x: 0, y: 34, width: 22, print_if: company_phone_no}
+            - {value: company_phone_no, x: 22, y: 34, width: 70}
+            - {text: E_MAIL, x: 0, y: 38, width: 22, print_if: company_e_mail}
+            - {value: company_e_mail, x: 22, y: 38, width: 70}
+            - {image: company_picture, x: 133, y: 0, width: 50, height: 20}
+            # The document
+            - {text: CREDIT_MEMO, x: 93, y: 22, width: 90, align: right, size: 16, bold: true}
+            - {value: copy_text, x: 93, y: 29, width: 90, align: right, bold: true}
+            - {text: CREDIT_MEMO_NO, x: 118, y: 35, width: 30}
+            - {field: PurchCrMemoHdr.no, x: 148, y: 35, width: 35, align: right}
+            - {text: POSTING_DATE, x: 118, y: 39, width: 30}
+            - {field: PurchCrMemoHdr.posting_date, x: 148, y: 39, width: 35, align: right}
+            - {text: APPLIES_TO, x: 118, y: 43, width: 30}
+            - {field: PurchCrMemoHdr.applies_to_doc_no, x: 148, y: 43, width: 35, align: right}
+            - {text: PAGE, x: 118, y: 47, width: 30}
+            - {page_no: true, x: 148, y: 47, width: 35, align: right}
+            # Bill-to and ship-to addresses
+            - {text: VENDOR, x: 0, y: 52, width: 85, bold: true}
+            - {lines: vendor_address, x: 0, y: 57, width: 85}
+            - {text: SHIP_TO, x: 98, y: 52, width: 85, bold: true}
+            - {lines: ship_to_address, x: 98, y: 57, width: 85}
+            # The terms
+            - {line: true, x: 0, y: 93}
+            - {text: VENDOR_ID, x: 0, y: 94, width: 30, bold: true}
+            - {field: PurchCrMemoHdr.buy_from_vendor_no, x: 0, y: 98.5, width: 30}
+            - {text: VENDOR_CR_MEMO_NO, x: 30, y: 94, width: 35, bold: true}
+            - {field: PurchCrMemoHdr.vendor_cr_memo_no, x: 30, y: 98.5, width: 35}
+            - {text: PURCHASER, x: 65, y: 94, width: 40, bold: true}
+            - {value: salesperson, x: 65, y: 98.5, width: 40}
+            - {text: SHIP_VIA, x: 105, y: 94, width: 38, bold: true}
+            - {value: ship_via, x: 105, y: 98.5, width: 38}
+            - {text: TERMS, x: 143, y: 94, width: 40, bold: true}
+            - {value: terms, x: 143, y: 98.5, width: 40}
+            - {line: true, x: 0, y: 104}
+            # The columns of the lines
+            - {text: ITEM_NO, x: 0, y: 108, width: 22, bold: true}
+            - {text: UNIT, x: 22, y: 108, width: 15, bold: true}
+            - {text: DESCRIPTION, x: 37, y: 108, width: 76, bold: true}
+            - {text: QUANTITY, x: 113, y: 108, width: 20, align: right, bold: true}
+            - {text: DIRECT_UNIT_COST, x: 133, y: 108, width: 25, align: right, bold: true}
+            - {text: TOTAL_PRICE, x: 158, y: 108, width: 25, align: right, bold: true}
+            - {line: true, x: 0, y: 113}
+
+    - name: PurchCrMemoLine
+      sections:
+        - type: trans_header
+          height: 6
+          elements:
+            - {text: CONTINUED_FROM, x: 37, y: 0, width: 96}
+            - {total_value: amount_excl_inv_disc, x: 158, y: 0, width: 25, align: right}
+        - type: body
+          height: 4.6
+          elements:
+            - {field: no, x: 0, y: 0, width: 21}
+            - {field: unit_of_measure_code, x: 22, y: 0, width: 14}
+            - {field: description, x: 37, y: 0, width: 75, wrap: true}
+            - {field: quantity, x: 113, y: 0, width: 20, align: right, blank_zero: true}
+            - {field: direct_unit_cost, x: 133, y: 0, width: 25, align: right, blank_zero: true, decimal_places: "2:5"}
+            - {value: amount_excl_inv_disc, x: 158, y: 0, width: 25, align: right, blank_zero: true}
+        - type: body
+          print_if: description_2
+          height: 4.6
+          elements:
+            - {field: description_2, x: 37, y: 0, width: 75, wrap: true}
+        - type: trans_footer
+          height: 7
+          elements:
+            - {line: true, x: 133, y: 1, width: 50}
+            - {text: CONTINUED, x: 37, y: 1.5, width: 96}
+            - {total_value: amount_excl_inv_disc, x: 158, y: 1.5, width: 25, align: right}
+        - type: footer
+          height: 26
+          elements:
+            - {line: true, x: 113, y: 2, width: 70}
+            - {text: SUBTOTAL, x: 113, y: 3, width: 45}
+            - {value: subtotal, x: 158, y: 3, width: 25, align: right}
+            - {text: INVOICE_DISCOUNT, x: 113, y: 7.5, width: 45, print_if: invoice_discount}
+            - {value: invoice_discount, x: 158, y: 7.5, width: 25, align: right, print_if: invoice_discount}
+            - {text: SALES_TAX, x: 113, y: 12, width: 45}
+            - {value: tax_amount, x: 158, y: 12, width: 25, align: right}
+            - {line: true, x: 113, y: 17, width: 70}
+            - {text: TOTAL, x: 113, y: 18, width: 30, bold: true}
+            - {value: currency, x: 143, y: 18, width: 15, bold: true}
+            - {value: total, x: 158, y: 18, width: 25, align: right, bold: true}

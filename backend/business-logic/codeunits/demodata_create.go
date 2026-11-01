@@ -3,6 +3,7 @@ package codeunits
 import (
 	"errors"
 	"fmt"
+	"github.com/hansjlachmann/openerp/backend/business-logic/purchposting"
 	"github.com/hansjlachmann/openerp/backend/business-logic/salesposting"
 
 	"github.com/hansjlachmann/openerp/backend/business-logic/bomjnl"
@@ -98,6 +99,7 @@ func (c *DemoDataCreate) create(jobQueue *gtables.JobQueue, ts *i18n.Translation
 		demodata.PhaseItems:      "DEMO_DATA_ITEMS",
 		demodata.PhaseAssemblies: "DEMO_DATA_ASSEMBLIES",
 		demodata.PhaseSales:      "DEMO_DATA_SALES",
+		demodata.PhasePurchases:  "DEMO_DATA_PURCHASES",
 	}
 	progress := func(pct int, phase demodata.Phase) {
 		if dialog != nil {
@@ -105,7 +107,7 @@ func (c *DemoDataCreate) create(jobQueue *gtables.JobQueue, ts *i18n.Translation
 		}
 	}
 
-	return demodata.Create(c.db, c.company, c.dbType, demodata.Options{Size: size, Progress: progress, ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost})
+	return demodata.Create(c.db, c.company, c.dbType, demodata.Options{Size: size, Progress: progress, ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost})
 }
 
 // errorMessage translates the demodata errors users can act on.
@@ -136,4 +138,9 @@ func openBOMJnlPostLine(src ftables.Source) demodata.BOMJnlPoster {
 // openSalesPost opens the sales posting (codeunit 80) for the demo sales documents
 func openSalesPost(src ftables.Source) demodata.SalesPoster {
 	return salesposting.NewSalesPost(src)
+}
+
+// openPurchPost opens the purchase posting (codeunit 90) for the demo purchase documents
+func openPurchPost(src ftables.Source) demodata.PurchPoster {
+	return purchposting.NewPurchPost(src)
 }

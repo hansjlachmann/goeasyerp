@@ -600,6 +600,8 @@ pages:
     caption: "Lines"
   purchase_order_subform:
     caption: "Lines"
+  get_receipt_lines:
+    caption: "Get Receipt Lines"
   purchase_invoices:
     caption: "Purchase Invoices"
   purchase_invoice:

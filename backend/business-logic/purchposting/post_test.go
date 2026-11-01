@@ -10,7 +10,10 @@ import (
 
 	"github.com/hansjlachmann/openerp/backend/business-logic/demodata"
 	"github.com/hansjlachmann/openerp/backend/business-logic/itemjnl"
+	"github.com/hansjlachmann/openerp/backend/business-logic/navigate"
+	"github.com/hansjlachmann/openerp/backend/business-logic/purchgetreceipt"
 	"github.com/hansjlachmann/openerp/backend/business-logic/purchposting"
+	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
 	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
@@ -352,5 +355,119 @@ func TestPostUseTax(t *testing.T) {
 	taxEntry.SetRange("document_no", purchPost.InvoiceNo)
 	if !taxEntry.FindFirst() || !taxEntry.Use_tax || taxEntry.Amount.IsZero() {
 		t.Errorf("use tax entry: found %v use tax %v amount %s", taxEntry.Count() > 0, taxEntry.Use_tax, taxEntry.Amount)
+	}
+}
+
+// printTexts: the texts of a printout run on a document (as from its card)
+func printTexts(t *testing.T, src ftables.Source, reportID int, context interface{}) string {
+	t.Helper()
+	result, err := reports.Execute(reportID, src.GetDB(), src.GetCompany(), src.GetDBType(), reports.RunOptions{Output: reports.OutputPDF, Context: context})
+	must(t, err)
+	var texts []string
+	for _, text := range result.Texts {
+		texts = append(texts, text.Text)
+	}
+	return "|" + strings.Join(texts, "|") + "|"
+}
+
+// An order received, its receipt got onto an invoice (Get Receipt Lines) and the invoice posted:
+// the receipt's item entry is invoiced, the order line counts it; the printouts of the order,
+// the receipt and the invoice count in No. Printed; Navigate finds the posted invoice
+func TestPurchaseHistory(t *testing.T) {
+	src := demoCompany(t)
+	order := newDocument(t, src, gtables.PurchaseHeader_Document_type.Order, "V00010")
+	addLine(t, order, 10000, gtables.PurchaseLine_Type.Item, "1000", "5")
+	orderCost := getLine(t, order, 10000).Direct_unit_cost
+	joined := printTexts(t, src, reports.PurchaseOrderID, order)
+	if !strings.Contains(joined, "|"+order.No.String()+"|") || !strings.Contains(joined, "|Nordisk Papir AS|") {
+		t.Errorf("order printout: %s", joined)
+	}
+	receipt := post(t, order, true, false).ReceiptNo
+
+	// Get Receipt Lines onto an invoice, post it
+	invoice := newDocument(t, src, gtables.PurchaseHeader_Document_type.Invoice, "V00010")
+	must(t, purchgetreceipt.CreateInvLines(invoice, receipt, "Receipt No. %1:"))
+	invLine := getLine(t, invoice, 20000)
+	if invLine.Receipt_no != receipt || !invLine.Quantity.Equal(dec("5")) || !invLine.Direct_unit_cost.Equal(orderCost) {
+		t.Fatalf("invoice line from the receipt: %s %s at %s", invLine.Receipt_no, invLine.Quantity, invLine.Direct_unit_cost)
+	}
+	if getLine(t, invoice, 10000).Description != types.Text("Receipt No. "+receipt.String()+":") {
+		t.Errorf("description line %q", getLine(t, invoice, 10000).Description)
+	}
+	must(t, invoice.Validate("vendor_invoice_no", types.Code("V-GR-1")))
+	must(t, invoice.ModifyOrError(true))
+	purchPost := post(t, invoice, false, false)
+	if purchPost.ReceiptNo != "" {
+		t.Errorf("the invoice received again: %s", purchPost.ReceiptNo)
+	}
+	qty, invoiced := itemEntries(t, src, purchPost.InvoiceNo)
+	wantDec(t, "invoice item quantity", qty, types.Decimal{})
+	wantDec(t, "invoice item invoiced", invoiced, dec("5"))
+	glBalance(t, src, purchPost.InvoiceNo)
+	rcptLine := gtables.NewPurchRcptLine(src)
+	must(t, rcptLine.GetOrError(map[string]interface{}{"document_no": receipt, "line_no": 10000}))
+	wantDec(t, "receipt line not invoiced", rcptLine.Qty_rcd_not_invoiced, types.Decimal{})
+	orderLine := getLine(t, order, 10000)
+	wantDec(t, "order line invoiced", orderLine.Quantity_invoiced, dec("5"))
+	wantDec(t, "order line received not invoiced", orderLine.Qty_rcd_not_invoiced, types.Decimal{})
+	postedLine := gtables.NewPurchInvLine(src)
+	must(t, postedLine.GetOrError(map[string]interface{}{"document_no": purchPost.InvoiceNo, "line_no": 20000}))
+	if postedLine.Receipt_no != receipt {
+		t.Errorf("posted invoice line receipt no. %q", postedLine.Receipt_no)
+	}
+
+	// The printouts count in No. Printed
+	invHeader := gtables.NewPurchInvHeader(src)
+	invHeader.No = purchPost.InvoiceNo
+	rcptHeader := gtables.NewPurchRcptHeader(src)
+	rcptHeader.No = receipt
+	for _, c := range []struct {
+		reportID int
+		no       types.Code
+		context  interface{}
+	}{{reports.PurchaseInvoiceID, purchPost.InvoiceNo, invHeader}, {reports.PurchaseReceiptID, receipt, rcptHeader}} {
+		joined := printTexts(t, src, c.reportID, c.context)
+		if !strings.Contains(joined, "|"+c.no.String()+"|") || !strings.Contains(joined, "|Nordisk Papir AS|") {
+			t.Errorf("report %d: %s", c.reportID, joined)
+		}
+	}
+	must(t, invHeader.GetOrError(purchPost.InvoiceNo))
+	must(t, rcptHeader.GetOrError(receipt))
+	if !reread(t, order) || invHeader.No_printed != 1 || rcptHeader.No_printed != 1 || order.No_printed != 1 {
+		t.Errorf("No. Printed: invoice %d, receipt %d, order %d", invHeader.No_printed, rcptHeader.No_printed, order.No_printed)
+	}
+
+	// Navigate finds the posted invoice and its entries
+	docEntry := gtables.NewDocumentEntry(src)
+	must(t, docEntry.InitTemporary(src.GetDB(), src.GetCompany(), src.GetDBType()))
+	must(t, navigate.FindRecords(docEntry, purchPost.InvoiceNo.String(), ""))
+	found := map[int]string{}
+	for ok := docEntry.FindSet(); ok; ok = docEntry.Next() {
+		found[docEntry.Table_id] = docEntry.No_filter.String() + "/" + docEntry.Document_no_filter.String()
+	}
+	if found[gtables.PurchInvHeaderTableID] != purchPost.InvoiceNo.String()+"/" || found[gtables.VendorLedgerEntryTableID] != "/"+purchPost.InvoiceNo.String() {
+		t.Errorf("navigate: %v", found)
+	}
+}
+
+// The quote and the posted credit memo print with their number and vendor
+func TestPurchaseQuoteAndCreditMemoPrintouts(t *testing.T) {
+	src := demoCompany(t)
+	quote := newDocument(t, src, gtables.PurchaseHeader_Document_type.Quote, "V00010")
+	addLine(t, quote, 10000, gtables.PurchaseLine_Type.Item, "1000", "2")
+	joined := printTexts(t, src, reports.PurchaseQuoteID, quote)
+	if !strings.Contains(joined, "|"+quote.No.String()+"|") || !strings.Contains(joined, "|Nordisk Papir AS|") {
+		t.Errorf("quote printout: %s", joined)
+	}
+	creditMemo := newDocument(t, src, gtables.PurchaseHeader_Document_type.CreditMemo, "V00010")
+	addLine(t, creditMemo, 10000, gtables.PurchaseLine_Type.Item, "1000", "1")
+	must(t, creditMemo.Validate("vendor_cr_memo_no", types.Code("V-CR-9")))
+	must(t, creditMemo.ModifyOrError(true))
+	crMemoNo := post(t, creditMemo, false, false).CrMemoNo
+	crMemoHeader := gtables.NewPurchCrMemoHdr(src)
+	crMemoHeader.No = crMemoNo
+	joined = printTexts(t, src, reports.PurchaseCrMemoID, crMemoHeader)
+	if !strings.Contains(joined, "|"+crMemoNo.String()+"|") || !strings.Contains(joined, "|V-CR-9|") {
+		t.Errorf("credit memo printout: %s", joined)
 	}
 }

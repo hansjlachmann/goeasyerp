@@ -369,6 +369,7 @@ messages:
   DEMO_DATA_ITEMS: "Bokfører varene..."
   DEMO_DATA_ASSEMBLIES: "Monterer stykklistene..."
   DEMO_DATA_SALES: "Bokfører salgsdokumentene..."
+  DEMO_DATA_PURCHASES: "Bokfører innkjøpsdokumentene..."
 
   # Jobbkø-varsler på e-post (%1 jobb, %2 selskap)
   JOBQUEUE_MAIL_SUBJECT_SUCCESS: "Jobbkø %1 fullført (%2)"
@@ -453,6 +454,7 @@ messages:
   GL_CHECK_ENTRIES_MISSING: "Poster i intervallet mangler"
   GL_CHECK_NOT_REGISTERED: "Poster uten journal"
   SALES_SHIPMENT_NO_DESCRIPTION: "Leveringsnr. %1:"
+  PURCH_RECEIPT_NO_DESCRIPTION: "Mottaksnr. %1:"
   SALES_SERVICE_CHARGE: "Gebyr"
   PURCH_SERVICE_CHARGE: "Gebyr"
   GEN_JNL_NOTHING_TO_POST: "Det er ingenting å bokføre."

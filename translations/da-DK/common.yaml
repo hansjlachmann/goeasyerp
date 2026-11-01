@@ -85,6 +85,7 @@ common:
     post_and_print: "Bogfør og udskriv"
     preview_posting: "Vis bogføring"
     get_shipment_lines: "Hent leverancelinjer"
+    get_receipt_lines: "Hent modtagelseslinjer"
     show_document: "Vis bilag"
     ok: "OK"
     cancel: "Annuller"

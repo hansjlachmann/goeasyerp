@@ -85,6 +85,7 @@ common:
     post_and_print: "Post and Print"
     preview_posting: "Preview Posting"
     get_shipment_lines: "Get Shipment Lines"
+    get_receipt_lines: "Get Receipt Lines"
     show_document: "Show Document"
     ok: "OK"
     cancel: "Cancel"

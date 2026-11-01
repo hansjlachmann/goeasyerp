@@ -265,8 +265,11 @@ func (p *PurchPost) qtysToPost(purchLine *gtables.PurchaseLine) (qtyToReceive, q
 			}
 		}
 	case gtables.PurchaseHeader_Document_type.Invoice:
-		qtyToReceive = purchLine.Quantity
-		qtyToReceiveBase = purchLine.Quantity_base
+		// a line got from a receipt (Get Receipt Lines) was received there
+		if purchLine.Receipt_no == "" {
+			qtyToReceive = purchLine.Quantity
+			qtyToReceiveBase = purchLine.Quantity_base
+		}
 		qtyToInvoice = purchLine.Quantity
 		qtyToInvoiceBase = purchLine.Quantity_base
 	case gtables.PurchaseHeader_Document_type.CreditMemo:
@@ -397,7 +400,13 @@ func (p *PurchPost) postLines() error {
 			lineFCY, lineLCY = p.totals.InvoicedShare(purchLine, qtyToInvoice)
 		}
 		itemRcptEntryNo := 0
-		if purchLine.Type == gtables.PurchaseLine_Type.Item {
+		fromReceipt := purchHeader.Document_type == gtables.PurchaseHeader_Document_type.Invoice && purchLine.Receipt_no != ""
+		if fromReceipt {
+			err := p.invoiceReceiptLine(purchLine, qtyToInvoice, qtyToInvoiceBase, lineLCY)
+			if err != nil {
+				return err
+			}
+		} else if purchLine.Type == gtables.PurchaseLine_Type.Item {
 			var err error
 			itemRcptEntryNo, err = p.postItemLines(purchLine, qtyToReceive, qtyToReceiveBase, qtyToInvoice, qtyToInvoiceBase, lineLCY)
 			if err != nil {
@@ -481,6 +490,36 @@ func (p *PurchPost) postItemLines(purchLine *gtables.PurchaseLine, qtyToReceive,
 		qtyToReceiveBase = qtyToInvoiceBase
 	}
 	return p.postItemJnlLine(purchLine, qtyToReceive, qtyToReceiveBase, invoicedNow, invoicedNowBase, p.amountPart(lineLCY, invoicedNow, qtyToInvoice), 0)
+}
+
+// invoiceReceiptLine invoices a line got from a receipt: an item's receipt entry is invoiced (an
+// entry without quantity on it), the receipt line and the order line it came from count the
+// quantity invoiced
+func (p *PurchPost) invoiceReceiptLine(purchLine *gtables.PurchaseLine, qtyToInvoice, qtyToInvoiceBase types.Decimal, lineLCY *gtables.PurchaseLine) error {
+	purchRcptLine := gtables.NewPurchRcptLine(purchLine)
+	err := purchRcptLine.GetOrError(map[string]interface{}{"document_no": purchLine.Receipt_no, "line_no": purchLine.Receipt_line_no})
+	if err != nil {
+		return err
+	}
+	if purchLine.Type == gtables.PurchaseLine_Type.Item {
+		_, err = p.postItemJnlLine(purchLine, types.Decimal{}, types.Decimal{}, qtyToInvoice, qtyToInvoiceBase, p.amountPart(lineLCY, qtyToInvoice, qtyToInvoice), purchRcptLine.Item_rcpt_entry_no)
+		if err != nil {
+			return err
+		}
+	}
+	purchRcptLine.Quantity_invoiced = purchRcptLine.Quantity_invoiced.Add(qtyToInvoice)
+	purchRcptLine.Qty_invoiced_base = purchRcptLine.Qty_invoiced_base.Add(qtyToInvoiceBase)
+	purchRcptLine.Qty_rcd_not_invoiced = purchRcptLine.Qty_rcd_not_invoiced.Sub(qtyToInvoice)
+	purchRcptLine.Qty_rcd_not_invd_base = purchRcptLine.Qty_rcd_not_invd_base.Sub(qtyToInvoiceBase)
+	err = purchRcptLine.ModifyOrError(false)
+	if err != nil {
+		return err
+	}
+	purchOrderLine := gtables.NewPurchaseLine(purchLine)
+	if !purchOrderLine.Get(map[string]interface{}{"document_type": int(gtables.PurchaseLine_Document_type.Order), "document_no": purchRcptLine.Order_no, "line_no": purchRcptLine.Order_line_no}) {
+		return nil
+	}
+	return p.updateOrderLine(purchOrderLine, types.Decimal{}, types.Decimal{}, qtyToInvoice, qtyToInvoiceBase)
 }
 
 // amountPart: the LCY amounts of part of the invoiced quantity
@@ -930,6 +969,10 @@ func (p *PurchPost) insertPostedLines(purchLine *gtables.PurchaseLine, qtyToRece
 		purchInvLine.Tax_base_amount = lineFCY.Tax_base_amount
 		purchInvLine.Line_discount_amount = lineFCY.Line_discount_amount
 		purchInvLine.Inv_discount_amount = lineFCY.Inv_discount_amount
+	}
+	if p.purchRcptHeader != nil && !qtyToReceive.IsZero() {
+		purchInvLine.Receipt_no = p.purchRcptHeader.No
+		purchInvLine.Receipt_line_no = purchLine.Line_no
 	}
 	return purchInvLine.InsertOrError(false)
 }

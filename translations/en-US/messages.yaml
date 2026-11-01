@@ -369,6 +369,7 @@ messages:
   DEMO_DATA_ITEMS: "Posting the items..."
   DEMO_DATA_ASSEMBLIES: "Assembling the bills of materials..."
   DEMO_DATA_SALES: "Posting the sales documents..."
+  DEMO_DATA_PURCHASES: "Posting the purchase documents..."
 
   # Job Queue notification e-mails (%1 job, %2 company)
   JOBQUEUE_MAIL_SUBJECT_SUCCESS: "Job Queue %1 completed (%2)"
@@ -453,6 +454,7 @@ messages:
   GL_CHECK_ENTRIES_MISSING: "Entries of the range are missing"
   GL_CHECK_NOT_REGISTERED: "Entries in no register"
   SALES_SHIPMENT_NO_DESCRIPTION: "Shipment No. %1:"
+  PURCH_RECEIPT_NO_DESCRIPTION: "Receipt No. %1:"
   SALES_SERVICE_CHARGE: "Service Charge"
   PURCH_SERVICE_CHARGE: "Service Charge"
   GEN_JNL_NOTHING_TO_POST: "There is nothing to post."

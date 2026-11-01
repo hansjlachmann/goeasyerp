@@ -4014,6 +4014,8 @@ tables:
   purchase_line:
     caption: "Purchase Line"
     fields:
+      receipt_no: "Receipt No."
+      receipt_line_no: "Receipt Line No."
       document_type: "Document Type"
       buy_from_vendor_no: "Buy-from Vendor No."
       document_no: "Document No."
@@ -4420,6 +4422,8 @@ tables:
   purch_inv_line:
     caption: "Purch. Inv. Line"
     fields:
+      receipt_no: "Receipt No."
+      receipt_line_no: "Receipt Line No."
       buy_from_vendor_no: "Buy-from Vendor No."
       document_no: "Document No."
       line_no: "Line No."

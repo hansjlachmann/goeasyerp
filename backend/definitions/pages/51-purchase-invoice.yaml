@@ -132,6 +132,19 @@ page:
       promoted: true
       run_object: "table:Purchase_Header.PreviewPosting"
 
+    - name: Get Receipt Lines
+      caption: Get Receipt Lines
+      image: Lines
+      promoted: true
+      run_object: codeunit:74
+
+    - name: Post and Print
+      caption: Post and Print
+      image: Print
+      shortcut: Shift+F11
+      promoted: true
+      run_object: codeunit:92
+
     - name: Statistics
       caption: Statistics
       image: Statistics

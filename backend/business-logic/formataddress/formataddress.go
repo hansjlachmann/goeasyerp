@@ -194,3 +194,53 @@ func SalesCrMemoShipTo(rec *gtables.SalesCrMemoHeader) (AddrArray, error) {
 		rec.Ship_to_address.String(), rec.Ship_to_address_2.String(), rec.Ship_to_city.String(), rec.Ship_to_post_code,
 		rec.Ship_to_state.String(), rec.Ship_to_country_code)
 }
+
+// The purchase documents: the vendor (buy-from) and the ship-to address (the company or its location)
+
+func PurchHeaderBuyFrom(rec *gtables.PurchaseHeader) (AddrArray, error) {
+	return FormatAddr(rec, rec.Buy_from_vendor_name.String(), rec.Buy_from_vendor_name_2.String(), rec.Buy_from_contact.String(),
+		rec.Buy_from_address.String(), rec.Buy_from_address_2.String(), rec.Buy_from_city.String(), rec.Buy_from_post_code,
+		rec.Buy_from_state.String(), rec.Buy_from_country_code)
+}
+
+func PurchHeaderShipTo(rec *gtables.PurchaseHeader) (AddrArray, error) {
+	return FormatAddr(rec, rec.Ship_to_name.String(), rec.Ship_to_name_2.String(), rec.Ship_to_contact.String(),
+		rec.Ship_to_address.String(), rec.Ship_to_address_2.String(), rec.Ship_to_city.String(), rec.Ship_to_post_code,
+		rec.Ship_to_state.String(), rec.Ship_to_country_code)
+}
+
+func PurchRcptBuyFrom(rec *gtables.PurchRcptHeader) (AddrArray, error) {
+	return FormatAddr(rec, rec.Buy_from_vendor_name.String(), rec.Buy_from_vendor_name_2.String(), rec.Buy_from_contact.String(),
+		rec.Buy_from_address.String(), rec.Buy_from_address_2.String(), rec.Buy_from_city.String(), rec.Buy_from_post_code,
+		rec.Buy_from_state.String(), rec.Buy_from_country_code)
+}
+
+func PurchRcptShipTo(rec *gtables.PurchRcptHeader) (AddrArray, error) {
+	return FormatAddr(rec, rec.Ship_to_name.String(), rec.Ship_to_name_2.String(), rec.Ship_to_contact.String(),
+		rec.Ship_to_address.String(), rec.Ship_to_address_2.String(), rec.Ship_to_city.String(), rec.Ship_to_post_code,
+		rec.Ship_to_state.String(), rec.Ship_to_country_code)
+}
+
+func PurchInvBuyFrom(rec *gtables.PurchInvHeader) (AddrArray, error) {
+	return FormatAddr(rec, rec.Buy_from_vendor_name.String(), rec.Buy_from_vendor_name_2.String(), rec.Buy_from_contact.String(),
+		rec.Buy_from_address.String(), rec.Buy_from_address_2.String(), rec.Buy_from_city.String(), rec.Buy_from_post_code,
+		rec.Buy_from_state.String(), rec.Buy_from_country_code)
+}
+
+func PurchInvShipTo(rec *gtables.PurchInvHeader) (AddrArray, error) {
+	return FormatAddr(rec, rec.Ship_to_name.String(), rec.Ship_to_name_2.String(), rec.Ship_to_contact.String(),
+		rec.Ship_to_address.String(), rec.Ship_to_address_2.String(), rec.Ship_to_city.String(), rec.Ship_to_post_code,
+		rec.Ship_to_state.String(), rec.Ship_to_country_code)
+}
+
+func PurchCrMemoBuyFrom(rec *gtables.PurchCrMemoHdr) (AddrArray, error) {
+	return FormatAddr(rec, rec.Buy_from_vendor_name.String(), rec.Buy_from_vendor_name_2.String(), rec.Buy_from_contact.String(),
+		rec.Buy_from_address.String(), rec.Buy_from_address_2.String(), rec.Buy_from_city.String(), rec.Buy_from_post_code,
+		rec.Buy_from_state.String(), rec.Buy_from_country_code)
+}
+
+func PurchCrMemoShipTo(rec *gtables.PurchCrMemoHdr) (AddrArray, error) {
+	return FormatAddr(rec, rec.Ship_to_name.String(), rec.Ship_to_name_2.String(), rec.Ship_to_contact.String(),
+		rec.Ship_to_address.String(), rec.Ship_to_address_2.String(), rec.Ship_to_city.String(), rec.Ship_to_post_code,
+		rec.Ship_to_state.String(), rec.Ship_to_country_code)
+}

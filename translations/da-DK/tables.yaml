@@ -4014,6 +4014,8 @@ tables:
   purchase_line:
     caption: "Købslinje"
     fields:
+      receipt_no: "Modtagelsesnr."
+      receipt_line_no: "Modtagelseslinjenr."
       document_type: "Dokumenttype"
       buy_from_vendor_no: "Leverandørnr."
       document_no: "Bilagsnr."
@@ -4420,6 +4422,8 @@ tables:
   purch_inv_line:
     caption: "Købsfakturalinje"
     fields:
+      receipt_no: "Modtagelsesnr."
+      receipt_line_no: "Modtagelseslinjenr."
       buy_from_vendor_no: "Leverandørnr."
       document_no: "Bilagsnr."
       line_no: "Linjenr."

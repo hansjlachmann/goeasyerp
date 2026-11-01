@@ -369,6 +369,7 @@ messages:
   DEMO_DATA_ITEMS: "Bogfører varerne..."
   DEMO_DATA_ASSEMBLIES: "Samler styklisterne..."
   DEMO_DATA_SALES: "Bogfører salgsdokumenterne..."
+  DEMO_DATA_PURCHASES: "Bogfører købsdokumenterne..."
 
   # Opgavekø-notifikationer på e-mail (%1 opgave, %2 virksomhed)
   JOBQUEUE_MAIL_SUBJECT_SUCCESS: "Opgavekø %1 fuldført (%2)"
@@ -453,6 +454,7 @@ messages:
   GL_CHECK_ENTRIES_MISSING: "Poster i intervallet mangler"
   GL_CHECK_NOT_REGISTERED: "Poster uden journal"
   SALES_SHIPMENT_NO_DESCRIPTION: "Leverancenr. %1:"
+  PURCH_RECEIPT_NO_DESCRIPTION: "Modtagelsesnr. %1:"
   SALES_SERVICE_CHARGE: "Gebyr"
   PURCH_SERVICE_CHARGE: "Gebyr"
   GEN_JNL_NOTHING_TO_POST: "Der er intet at bogføre."

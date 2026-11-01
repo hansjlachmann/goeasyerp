@@ -1,0 +1,36 @@
+page:
+  id: 5709
+  type: List
+  name: Get Receipt Lines
+  source_table: Purch_Rcpt_Line   # opened by Get Receipt Lines (codeunit 74) in lookup mode: the vendor's lines not invoiced
+  caption: Get Receipt Lines
+
+  layout:
+    repeater:
+      fields:
+        - source: document_no
+          width: 120
+        - source: line_no
+          width: 90
+          visible: false
+        - source: buy_from_vendor_no
+          width: 120
+        - source: type
+          width: 110
+        - source: "no"
+          width: 120
+        - source: description
+          width: 260
+        - source: quantity
+          width: 100
+        - source: unit_of_measure_code
+          width: 110
+        - source: qty_rcd_not_invoiced
+          width: 150
+        - source: quantity_invoiced
+          width: 120
+        - source: order_no
+          width: 120
+        - source: expected_receipt_date
+          width: 110
+          visible: false

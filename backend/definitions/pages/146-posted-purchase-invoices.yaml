@@ -33,6 +33,12 @@ page:
           visible: false
 
   actions:
+    - name: Print
+      caption: Print
+      image: Print
+      promoted: true
+      run_object: report:406
+
     - name: Navigate
       caption: Navigate
       image: Navigate
