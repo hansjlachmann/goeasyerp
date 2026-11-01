@@ -2038,6 +2038,41 @@ tables:
       reason_code: "Årsakskode"
       no_series: "Nummerserie"
       posting_no_series: "Bokføringsnummerserie"
+  fa_reclass_journal_template:
+    caption: "Anleggsomklassifiseringskladdetype"
+    fields:
+      name: "Navn"
+      description: "Beskrivelse"
+      page_id: "Side-ID"
+  fa_reclass_journal_batch:
+    caption: "Anleggsomklassifiseringskladdenavn"
+    fields:
+      journal_template_name: "Kladdetypenavn"
+      name: "Navn"
+      description: "Beskrivelse"
+  fa_reclass_journal_line:
+    caption: "Anleggsomklassifiseringskladdelinje"
+    fields:
+      journal_template_name: "Kladdetypenavn"
+      journal_batch_name: "Kladdenavn"
+      line_no: "Linjenr."
+      fa_no: "Anleggsnr."
+      new_fa_no: "Nytt anleggsnr."
+      fa_posting_date: "Anleggsbokføringsdato"
+      posting_date: "Bokføringsdato"
+      depreciation_book_code: "Avskrivningsprofilkode"
+      reclassify_acq_cost_amount: "Omklassifiser anskaffelseskostbeløp"
+      reclassify_acq_cost_percent: "Omklassifiser anskaffelseskost %"
+      reclassify_acquisition_cost: "Omklassifiser anskaffelseskost"
+      reclassify_depreciation: "Omklassifiser avskrivning"
+      reclassify_write_down: "Omklassifiser nedskrivning"
+      reclassify_appreciation: "Omklassifiser oppskrivning"
+      reclassify_custom_1: "Omklassifiser bruker 1"
+      reclassify_custom_2: "Omklassifiser bruker 2"
+      reclassify_salvage_value: "Omklassifiser utrangeringsverdi"
+      insert_bal_account: "Sett inn motkonto"
+      description: "Beskrivelse"
+      document_no: "Bilagsnr."
   depreciation_table_header:
     caption: "Avskrivningstabellhode"
     fields:

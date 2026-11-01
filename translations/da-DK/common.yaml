@@ -14,6 +14,7 @@ common:
     create_fa_depreciation_books: "Opret anlægsafskrivningsprofiler"
     cancel_fa_ledger_entries: "Annuller anlægsposter"
     cancel_entries: "Annuller poster"
+    reclassify: "Ompostér"
     acquisition: "Anskaffelse"
     depreciation: "Afskrivning"
     write_down: "Nedskrivning"

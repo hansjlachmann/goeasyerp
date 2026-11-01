@@ -717,6 +717,17 @@ pages:
     caption: "Anlægskladdetypeoversigt"
   fa_journal_batches:
     caption: "Anlægskladdenavne"
+  fa_reclass_journal:
+    caption: "Anlægsomposteringskladde"
+    fields:
+      fa_description: "Anlægsbeskrivelse"
+      new_fa_description: "Ny anlægsbeskrivelse"
+  fa_reclass_journal_templates:
+    caption: "Anlægsomposteringskladdetyper"
+  fa_reclass_jnl_template_list:
+    caption: "Anlægsomposteringskladdetypeoversigt"
+  fa_reclass_journal_batches:
+    caption: "Anlægsomposteringskladdenavne"
   fa_registers:
     caption: "Anlægsjournaler"
   fa_posting_type_setup:

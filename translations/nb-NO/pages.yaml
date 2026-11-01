@@ -717,6 +717,17 @@ pages:
     caption: "Anleggskladdemalliste"
   fa_journal_batches:
     caption: "Anleggskladdenavn"
+  fa_reclass_journal:
+    caption: "Anleggsomklassifiseringskladd"
+    fields:
+      fa_description: "Anleggsbeskrivelse"
+      new_fa_description: "Ny anleggsbeskrivelse"
+  fa_reclass_journal_templates:
+    caption: "Anleggsomklassifiseringskladdetyper"
+  fa_reclass_jnl_template_list:
+    caption: "Anleggsomklassifiseringskladdetypeliste"
+  fa_reclass_journal_batches:
+    caption: "Anleggsomklassifiseringskladdenavn"
   fa_registers:
     caption: "Anleggsjournaler"
   fa_posting_type_setup:

@@ -1,0 +1,16 @@
+page:
+  id: 5638
+  type: List
+  name: FA Reclass. Jnl. Template List
+  source_table: FA_Reclass_Journal_Template
+  caption: FA Reclass. Jnl. Template List
+  editable: false
+  # The template to open an FA reclass. journal with (lookup)
+
+  layout:
+    repeater:
+      fields:
+        - source: name
+          width: 110
+        - source: description
+          width: 250

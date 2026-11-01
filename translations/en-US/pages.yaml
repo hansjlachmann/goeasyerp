@@ -717,6 +717,17 @@ pages:
     caption: "FA Journal Template List"
   fa_journal_batches:
     caption: "FA Journal Batches"
+  fa_reclass_journal:
+    caption: "FA Reclass. Journal"
+    fields:
+      fa_description: "FA Description"
+      new_fa_description: "New FA Description"
+  fa_reclass_journal_templates:
+    caption: "FA Reclass. Journal Templates"
+  fa_reclass_jnl_template_list:
+    caption: "FA Reclass. Jnl. Template List"
+  fa_reclass_journal_batches:
+    caption: "FA Reclass. Journal Batches"
   fa_registers:
     caption: "FA Registers"
   fa_posting_type_setup:

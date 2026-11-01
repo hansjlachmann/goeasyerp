@@ -1,0 +1,41 @@
+table:
+  id: 5623
+  name: "FA_Reclass_Journal_Batch"
+  description: "FA reclass. journal batches (table 5623): the batches of an FA reclass. journal template"
+  lookup_page_id: 5640
+  data_caption_fields: [name, description]
+  fields:
+    - name: journal_template_name
+      no: 1
+      type: types.Code
+      db_name: journal_template_name
+      length: 10
+      primary_key: true
+      required: true
+      table_relation:
+        table: FA_Reclass_Journal_Template
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: name
+      no: 2
+      type: types.Code
+      db_name: name
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: description
+      no: 3
+      type: types.Text
+      db_name: description
+      length: 50
+
+  keys:
+    - name: Primary
+      fields: [journal_template_name, name]
+      clustered: true
