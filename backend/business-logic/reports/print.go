@@ -32,15 +32,20 @@ type printer struct {
 	pageNo     int  // CurrReport.PAGENO
 	nextPageNo int  // > 0: the next page gets this number (SetPageNo before it starts)
 	frames     []*frame
+	// pageHeaders: the header sections the current page started with (not printed again)
+	pageHeaders map[*Section]bool
 }
 
 // frame is a data item being printed
 type frame struct {
 	item    *LayoutDataItem
 	rec     interface{}
-	records int                      // records got (not skipped)
-	bodies  int                      // body sections printed: a page break carries it over (trans sections)
-	totals  map[string]types.Decimal // field → its total
+	records int // records got (not skipped)
+	bodies  int // body sections printed: a page break carries it over (trans sections)
+	// headersDone: the headers before the first record are printed (a later page repeats only
+	// those printed on every page)
+	headersDone bool
+	totals      map[string]types.Decimal // field → its total
 	// valueTotals: value → its total (total_value)
 	valueTotals map[string]types.Decimal
 }
@@ -91,6 +96,7 @@ func (p *printer) record(f *frame) error {
 				return err
 			}
 		}
+		f.headersDone = true
 	}
 	for _, s := range f.item.sections(SectionBody) {
 		err := p.output(f, s)
@@ -149,9 +155,9 @@ func (p *printer) output(f *frame, s *Section) error {
 		if err != nil {
 			return err
 		}
-		if s.Type == SectionHeader && s.PrintOnEveryPage {
-			return nil // the new page printed it
-		}
+	}
+	if s.Type == SectionHeader && p.pageHeaders[s] {
+		return nil // the page started with it
 	}
 	err := draw(p.y)
 	p.y += height
@@ -207,8 +213,9 @@ func (p *printer) breakPage() error {
 	return p.startPage()
 }
 
-// startPage starts a page: the headers printed on every page of the data items in progress,
-// then the trans headers of those carried over
+// startPage starts a page: the headers printed on every page of the data items in progress (all
+// the headers of one whose first record starts the page, in their order), then the trans headers
+// of those carried over
 func (p *printer) startPage() error {
 	p.doc.AddPage()
 	p.pageOpen = true
@@ -220,16 +227,19 @@ func (p *printer) startPage() error {
 		p.pageNo++
 	}
 	p.y = p.doc.Margins().Top
+	p.pageHeaders = map[*Section]bool{}
 	for _, f := range p.frames {
 		if f.records == 0 {
 			continue
 		}
+		// the headers on every page; on the data item's first page all its headers, in order
 		for _, s := range f.item.sections(SectionHeader) {
-			if s.PrintOnEveryPage {
+			if s.PrintOnEveryPage || !f.headersDone {
 				err := p.place(f, s)
 				if err != nil {
 					return err
 				}
+				p.pageHeaders[s] = true
 			}
 		}
 	}

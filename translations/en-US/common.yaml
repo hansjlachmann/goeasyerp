@@ -208,6 +208,10 @@ common:
 
   # Menu items
   menu:
+    fixed_asset_details: "Fixed Asset - Details"
+    fixed_asset_book_value_01: "Fixed Asset - Book Value 01"
+    fixed_asset_book_value_02: "Fixed Asset - Book Value 02"
+    fixed_asset_register: "Fixed Asset Register"
     account_schedules: "Account Schedules"
     activities: "Activities"
     adjust_cost_item_entries: "Adjust Cost - Item Entries"

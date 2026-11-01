@@ -606,6 +606,15 @@ menu:
         page_id: 5654
       - separator: true
       - name: "Reports"
+        items:
+          - name: "Fixed Asset - Details"
+            run_object: "report:5604"
+          - name: "Fixed Asset - Book Value 01"
+            run_object: "report:5605"
+          - name: "Fixed Asset - Book Value 02"
+            run_object: "report:5606"
+          - name: "Fixed Asset Register"
+            run_object: "report:5603"
       - name: "FA Registers"
         page_id: 5627
       - name: "FA Ledger Entries"

@@ -208,6 +208,10 @@ common:
 
   # Menu items
   menu:
+    fixed_asset_details: "Anleggsmiddel - detaljer"
+    fixed_asset_book_value_01: "Anleggsmiddel - bokført verdi 01"
+    fixed_asset_book_value_02: "Anleggsmiddel - bokført verdi 02"
+    fixed_asset_register: "Anleggsjournal"
     account_schedules: "Kontoskjemaer"
     activities: "Aktiviteter"
     adjust_cost_item_entries: "Juster kostnad - vareposter"
