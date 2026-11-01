@@ -371,6 +371,7 @@ messages:
   DEMO_DATA_SALES: "Bogfører salgsdokumenterne..."
   DEMO_DATA_PURCHASES: "Bogfører købsdokumenterne..."
   DEMO_DATA_FIXED_ASSETS: "Bogfører anlægsaktiverne..."
+  DEMO_DATA_JOURNALS: "Udfylder kladderne..."
 
   # Opgavekø-notifikationer på e-mail (%1 opgave, %2 virksomhed)
   JOBQUEUE_MAIL_SUBJECT_SUCCESS: "Opgavekø %1 fuldført (%2)"

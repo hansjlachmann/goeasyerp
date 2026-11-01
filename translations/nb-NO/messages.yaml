@@ -371,6 +371,7 @@ messages:
   DEMO_DATA_SALES: "Bokfører salgsdokumentene..."
   DEMO_DATA_PURCHASES: "Bokfører innkjøpsdokumentene..."
   DEMO_DATA_FIXED_ASSETS: "Bokfører anleggsmidlene..."
+  DEMO_DATA_JOURNALS: "Fyller kladdene..."
 
   # Jobbkø-varsler på e-post (%1 jobb, %2 selskap)
   JOBQUEUE_MAIL_SUBJECT_SUCCESS: "Jobbkø %1 fullført (%2)"

@@ -102,6 +102,7 @@ func (c *DemoDataCreate) create(jobQueue *gtables.JobQueue, ts *i18n.Translation
 		demodata.PhaseSales:       "DEMO_DATA_SALES",
 		demodata.PhasePurchases:   "DEMO_DATA_PURCHASES",
 		demodata.PhaseFixedAssets: "DEMO_DATA_FIXED_ASSETS",
+		demodata.PhaseJournals:    "DEMO_DATA_JOURNALS",
 	}
 	progress := func(pct int, phase demodata.Phase) {
 		if dialog != nil {
@@ -109,7 +110,7 @@ func (c *DemoDataCreate) create(jobQueue *gtables.JobQueue, ts *i18n.Translation
 		}
 	}
 
-	return demodata.Create(c.db, c.company, c.dbType, demodata.Options{Size: size, Progress: progress, ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost, GenJnlPostLine: openGenJnlPostLine})
+	return demodata.Create(c.db, c.company, c.dbType, demodata.Options{Size: size, Progress: progress, ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost, GenJnlPostLine: openGenJnlPostLine, Journals: true})
 }
 
 // errorMessage translates the demodata errors users can act on.
