@@ -781,6 +781,22 @@ reports:
     texts:
       OPTIONS: "Options"
       NO_RECONCILIATION: "Run the report from a bank account reconciliation."
+  "595":
+    caption: "Adjust Exchange Rates"
+    options:
+      starting_date: "Starting Date"
+      ending_date: "Ending Date"
+      posting_description: "Posting Description"
+      posting_date: "Posting Date"
+      document_no: "Document No."
+    texts:
+      ADJUSTMENT_PERIOD: "Adjustment Period"
+      POSTING_DESCRIPTION: "Exchange Rate Adjmt. of %1 %2"
+      ENTER_POSTING_DATE: "Enter the Posting Date."
+      ENTER_DOCUMENT_NO: "Document No. must be entered."
+      NO_CURRENCIES: "No currencies have been found."
+      WINDOW: "Adjusting exchange rates...\nCurrency #1######\nCustomer #2##########\nVendor #3##########\nAdjustment #4#############"
+      DONE: "The exchange rates were adjusted by %1 in total."
   "5692":
     caption: "Calculate Depreciation"
     options:

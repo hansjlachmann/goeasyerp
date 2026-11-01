@@ -2648,6 +2648,26 @@ tables:
         reverse_charge_vat: "Reverse Charge VAT"
         full_vat: "Full VAT"
         sales_tax: "Sales Tax"
+  exch_rate_adjmt_reg:
+    caption: "Exch. Rate Adjmt. Reg."
+    fields:
+      no: "No."
+      creation_date: "Creation Date"
+      account_type: "Account Type"
+      posting_group: "Posting Group"
+      currency_code: "Currency Code"
+      currency_factor: "Currency Factor"
+      adjusted_base: "Adjusted Base"
+      adjusted_base_lcy: "Adjusted Base (LCY)"
+      adjusted_amt_lcy: "Adjusted Amt. (LCY)"
+      adjusted_base_add_curr: "Adjusted Base (Add.-Curr.)"
+      adjusted_amt_add_curr: "Adjusted Amt. (Add.-Curr.)"
+    options:
+      account_type:
+        g_l_account: "G/L Account"
+        customer: "Customer"
+        vendor: "Vendor"
+        bank_account: "Bank Account"
   fa_allocation:
     caption: "FA Allocation"
     fields:

@@ -400,6 +400,8 @@ pages:
     caption: "Bankkontoafstemninger"
   bank_account_statement_list:
     caption: "Bankkontoudtog"
+  exch_rate_adjmt_registers:
+    caption: "Valutareguleringsjournaler"
   sales_journal:
     caption: "Salgskladde"
     fields:  # the batch above the lines and the footer (calculated)

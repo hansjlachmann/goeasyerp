@@ -124,6 +124,10 @@ type Options struct {
 	// NewFinChrgMemoIssue)
 	ReminderIssue    func(src ftables.Source) ReminderIssuer
 	FinChrgMemoIssue func(src ftables.Source) FinChrgMemoIssuer
+	// AdjustExchRates (optional) runs Adjust Exchange Rates (report 595) without a request page;
+	// with Journals, the currencies get new rates last month and are adjusted at its end
+	// (exchrates.go; codeunit 901: reports.Execute)
+	AdjustExchRates func(src ftables.Source, postingDate types.Date, documentNo types.Code) error
 }
 
 // GenJnlPoster posts a general journal line (codeunit 12 Gen. Jnl.-Post Line)
@@ -160,6 +164,7 @@ type Counts struct {
 	IssuedReminders    int
 	FinChrgMemos       int
 	IssuedFinChrgMemos int
+	ExchRateAdjmtRegs  int // the registers of the demo's exchange rate adjustment
 	Customers          int
 	LedgerEntries      int
 	GLEntries          int // demo G/L entries (monthly sales and costs against the bank)
@@ -537,6 +542,9 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 		err = insertDemoJournals(ftables.DBSource(exec, company, dbType), today, &counts, p)
 		if err == nil {
 			err = insertDemoReminders(ftables.DBSource(exec, company, dbType), types.NewDateFromTime(today), opts, &counts)
+		}
+		if err == nil && opts.AdjustExchRates != nil {
+			err = adjustDemoExchRates(ftables.DBSource(exec, company, dbType), types.NewDateFromTime(today), opts.AdjustExchRates, &counts)
 		}
 		if err != nil {
 			rollback()

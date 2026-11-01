@@ -391,8 +391,8 @@ master_data:
     records:
       - {code: EUR, description: Euro, amount_rounding_precision: 0.01, invoice_rounding_precision: 0.01, realized_gains_acc: "6140", realized_losses_acc: "6150", unrealized_gains_acc: "6160", unrealized_losses_acc: "6170"}
       - {code: USD, description: US dollar, amount_rounding_precision: 0.01, invoice_rounding_precision: 0.01, realized_gains_acc: "6140", realized_losses_acc: "6150", unrealized_gains_acc: "6160", unrealized_losses_acc: "6170"}
-      - {code: SEK, description: Swedish krona, amount_rounding_precision: 0.01, invoice_rounding_precision: 1}
-      - {code: GBP, description: Pound sterling, amount_rounding_precision: 0.01, invoice_rounding_precision: 0.01}
+      - {code: SEK, description: Swedish krona, amount_rounding_precision: 0.01, invoice_rounding_precision: 1, realized_gains_acc: "6140", realized_losses_acc: "6150", unrealized_gains_acc: "6160", unrealized_losses_acc: "6170"}
+      - {code: GBP, description: Pound sterling, amount_rounding_precision: 0.01, invoice_rounding_precision: 0.01, realized_gains_acc: "6140", realized_losses_acc: "6150", unrealized_gains_acc: "6160", unrealized_losses_acc: "6170"}
   - table: Currency_Exchange_Rate
     records:
       - {currency_code: EUR, starting_date: "2020-01-01", exchange_rate_amount: 100, adjustment_exch_rate_amount: 100, relational_exch_rate_amount: 1150, relational_adjmt_exch_rate_amt: 1150}

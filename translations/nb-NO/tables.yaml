@@ -2648,6 +2648,26 @@ tables:
         reverse_charge_vat: "Omvendt avgiftsplikt"
         full_vat: "Full mva."
         sales_tax: "Salgsavgift"
+  exch_rate_adjmt_reg:
+    caption: "Valutareguleringsjournal"
+    fields:
+      no: "Nr."
+      creation_date: "Opprettet dato"
+      account_type: "Kontotype"
+      posting_group: "Bokføringsgruppe"
+      currency_code: "Valutakode"
+      currency_factor: "Valutafaktor"
+      adjusted_base: "Regulert grunnlag"
+      adjusted_base_lcy: "Regulert grunnlag (NOK)"
+      adjusted_amt_lcy: "Regulert beløp (NOK)"
+      adjusted_base_add_curr: "Regulert grunnlag (tilleggsvaluta)"
+      adjusted_amt_add_curr: "Regulert beløp (tilleggsvaluta)"
+    options:
+      account_type:
+        g_l_account: "Finanskonto"
+        customer: "Kunde"
+        vendor: "Leverandør"
+        bank_account: "Bankkonto"
   fa_allocation:
     caption: "Anleggsfordeling"
     fields:

@@ -1,0 +1,105 @@
+table:
+  id: 86
+  name: "Exch_Rate_Adjmt_Reg"
+  posted: true               # written by posting only: the table API does not insert, delete or rename
+  description: "Exchange rate adjustment registers (table 86): what each run of Adjust Exchange Rates adjusted, per account type, posting group and currency"
+  lookup_page_id: 106
+  fields:
+    - name: "no"
+      no: 1
+      type: int
+      db_name: "no"
+      primary_key: true
+      required: true
+
+    - name: creation_date
+      no: 2
+      type: types.Date
+      db_name: creation_date
+
+    - name: account_type
+      no: 3
+      type: Option
+      db_name: account_type
+      options: ["G/L Account", "Customer", "Vendor", "Bank Account"]
+
+    - name: posting_group
+      no: 4
+      type: types.Code
+      db_name: posting_group
+      length: 10
+      table_relation:
+        conditions:
+          - when: {field: account_type, equal: 1}
+            table: Customer_Posting_Group
+            field: code
+            lookup_columns:
+              - source: code
+                width: 100
+          - when: {field: account_type, equal: 2}
+            table: Vendor_Posting_Group
+            field: code
+            lookup_columns:
+              - source: code
+                width: 100
+          - when: {field: account_type, equal: 3}
+            table: Bank_Account_Posting_Group
+            field: code
+            lookup_columns:
+              - source: code
+                width: 100
+
+    - name: currency_code
+      no: 5
+      type: types.Code
+      db_name: currency_code
+      length: 10
+      table_relation:
+        table: Currency
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: currency_factor
+      no: 6
+      type: types.Decimal
+      db_name: currency_factor
+      decimal_places: "0:15"
+
+    - name: adjusted_base
+      no: 7
+      type: types.Decimal
+      db_name: adjusted_base
+      decimal_places: "2:2"
+
+    - name: adjusted_base_lcy
+      no: 8
+      type: types.Decimal
+      db_name: adjusted_base_lcy
+      decimal_places: "2:2"
+
+    - name: adjusted_amt_lcy
+      no: 9
+      type: types.Decimal
+      db_name: adjusted_amt_lcy
+      decimal_places: "2:2"
+
+    - name: adjusted_base_add_curr
+      no: 10
+      type: types.Decimal
+      db_name: adjusted_base_add_curr
+      decimal_places: "2:2"
+
+    - name: adjusted_amt_add_curr
+      no: 11
+      type: types.Decimal
+      db_name: adjusted_amt_add_curr
+      decimal_places: "2:2"
+
+  keys:
+    - name: Primary
+      fields: ["no"]
+      clustered: true

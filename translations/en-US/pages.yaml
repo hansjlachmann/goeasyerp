@@ -400,6 +400,8 @@ pages:
     caption: "Bank Acc. Reconciliations"
   bank_account_statement_list:
     caption: "Bank Account Statements"
+  exch_rate_adjmt_registers:
+    caption: "Exch. Rate Adjmt. Registers"
   sales_journal:
     caption: "Sales Journal"
     fields:  # the batch above the lines and the footer (calculated)

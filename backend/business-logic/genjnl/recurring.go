@@ -63,9 +63,12 @@ func (b *GenJnlPostBatch) updateRecurringAmt(genJnlLine2 *gtables.GenJournalLine
 	}
 	glAcc := gtables.NewGLAccount(b.src)
 	glAcc.No = genJnlLine2.Account_no
-	glAcc.SetRange("date_filter", types.Date{}, genJnlLine2.Posting_date)
+	err := glAcc.SetFlowFilter("date_filter", ".."+genJnlLine2.Posting_date.String())
+	if err != nil {
+		return err
+	}
 	glAcc.CalcFields("net_change")
-	err := genJnlLine2.Validate("amount", glAcc.Net_change.Neg())
+	err = genJnlLine2.Validate("amount", glAcc.Net_change.Neg())
 	if err != nil {
 		return err
 	}

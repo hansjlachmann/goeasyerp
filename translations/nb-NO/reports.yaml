@@ -781,6 +781,22 @@ reports:
     texts:
       OPTIONS: "Alternativer"
       NO_RECONCILIATION: "Kjør rapporten fra en bankkontoavstemming."
+  "595":
+    caption: "Juster valutakurser"
+    options:
+      starting_date: "Startdato"
+      ending_date: "Sluttdato"
+      posting_description: "Bokføringsbeskrivelse"
+      posting_date: "Bokføringsdato"
+      document_no: "Bilagsnr."
+    texts:
+      ADJUSTMENT_PERIOD: "Reguleringsperiode"
+      POSTING_DESCRIPTION: "Valutaregulering av %1 %2"
+      ENTER_POSTING_DATE: "Angi bokføringsdatoen."
+      ENTER_DOCUMENT_NO: "Bilagsnr. må angis."
+      NO_CURRENCIES: "Ingen valutaer ble funnet."
+      WINDOW: "Regulerer valutakurser...\nValuta #1######\nKunde #2##########\nLeverandør #3##########\nRegulering #4#############"
+      DONE: "Valutakursene ble regulert med totalt %1."
   "5692":
     caption: "Beregn avskrivning"
     options:

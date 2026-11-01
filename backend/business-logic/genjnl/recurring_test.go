@@ -9,21 +9,29 @@ import (
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
 
-// recurringJournal: template RECURRING (recurring, General) with batch DEFAULT
+// recurringJournal: the demo template RECURRING (recurring, General) with batch DEFAULT, emptied;
+// a new recurring template gets the Recurring General Journal page
 func recurringJournal(t *testing.T, src ftables.Source) {
 	t.Helper()
 	tpl := gtables.NewGenJournalTemplate(src)
-	tpl.Name = "RECURRING"
+	tpl.Name = "RECURRING2"
 	must(t, tpl.Validate("type", gtables.GenJournalTemplate_Type.General))
 	must(t, tpl.Validate("recurring", true))
 	must(t, tpl.InsertOrError(true))
 	if tpl.Page_id != 283 {
 		t.Errorf("recurring template page %d, want 283", tpl.Page_id)
 	}
-	batch := gtables.NewGenJournalBatch(src)
-	batch.Journal_template_name = "RECURRING"
-	batch.Name = "DEFAULT"
-	must(t, batch.InsertOrError(true))
+	demo := gtables.NewGenJournalTemplate(src)
+	must(t, demo.GetOrError(types.Code("RECURRING")))
+	if !demo.Recurring || demo.Page_id != 283 {
+		t.Errorf("the demo's RECURRING template: recurring %v, page %d", demo.Recurring, demo.Page_id)
+	}
+	// the demo's lines are not part of the tests
+	demoLines := gtables.NewGenJournalLine(src)
+	demoLines.SetRange("journal_template_name", types.Code("RECURRING"))
+	for found := demoLines.FindSetBuffered(); found; found = demoLines.Next() {
+		must(t, demoLines.DeleteOrError(true))
+	}
 }
 
 func recurringLine(t *testing.T, src ftables.Source, lineNo int, method gtables.GenJournalLineRecurring_method, accNo, amount string) *gtables.GenJournalLine {
@@ -151,7 +159,7 @@ func TestRecurringBalanceAndChecks(t *testing.T) {
 	recurringJournal(t, src)
 	acc := gtables.NewGLAccount(src)
 	acc.No = "1270"
-	acc.SetRange("date_filter", types.Date{}, date(t, 31, 10, 2026))
+	must(t, acc.SetFlowFilter("date_filter", "..2026-10-31"))
 	acc.CalcFields("net_change")
 	if acc.Net_change.IsZero() {
 		t.Skip("account 1270 has no balance in the demo")

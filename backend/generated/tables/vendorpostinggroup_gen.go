@@ -998,7 +998,7 @@ func (t *VendorPostingGroup) renameReferences(field string, oldValue, newValue i
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Item_Journal_Line", false, "source_posting_group", "source_type", 2}, {"Item_Ledger_Entry", false, "source_posting_group", "source_type", 2}, {"Purch_Cr_Memo_Hdr", false, "vendor_posting_group", "", 0}, {"Purch_Inv_Header", false, "vendor_posting_group", "", 0}, {"Purch_Rcpt_Header", false, "vendor_posting_group", "", 0}, {"Purchase_Header", false, "vendor_posting_group", "", 0}, {"Vendor", false, "vendor_posting_group", "", 0}, {"Vendor Ledger Entry", false, "vendor_posting_group", "", 0}},
+		"code": {{"Exch_Rate_Adjmt_Reg", false, "posting_group", "account_type", 2}, {"Item_Journal_Line", false, "source_posting_group", "source_type", 2}, {"Item_Ledger_Entry", false, "source_posting_group", "source_type", 2}, {"Purch_Cr_Memo_Hdr", false, "vendor_posting_group", "", 0}, {"Purch_Inv_Header", false, "vendor_posting_group", "", 0}, {"Purch_Rcpt_Header", false, "vendor_posting_group", "", 0}, {"Purchase_Header", false, "vendor_posting_group", "", 0}, {"Vendor", false, "vendor_posting_group", "", 0}, {"Vendor Ledger Entry", false, "vendor_posting_group", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

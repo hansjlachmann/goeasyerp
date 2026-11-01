@@ -2648,6 +2648,26 @@ tables:
         reverse_charge_vat: "Omvendt betalingspligt"
         full_vat: "Fuld moms"
         sales_tax: "Salgsskat"
+  exch_rate_adjmt_reg:
+    caption: "Valutareguleringsjournal"
+    fields:
+      no: "Nr."
+      creation_date: "Oprettelsesdato"
+      account_type: "Kontotype"
+      posting_group: "Bogføringsgruppe"
+      currency_code: "Valutakode"
+      currency_factor: "Valutafaktor"
+      adjusted_base: "Reguleret grundlag"
+      adjusted_base_lcy: "Reguleret grundlag (RV)"
+      adjusted_amt_lcy: "Reguleret beløb (RV)"
+      adjusted_base_add_curr: "Reguleret grundlag (ekstra valuta)"
+      adjusted_amt_add_curr: "Reguleret beløb (ekstra valuta)"
+    options:
+      account_type:
+        g_l_account: "Finanskonto"
+        customer: "Debitor"
+        vendor: "Kreditor"
+        bank_account: "Bankkonto"
   fa_allocation:
     caption: "Anlægsfordeling"
     fields:
