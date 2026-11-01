@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.123](https://github.com/hansjlachmann/openerp/compare/v0.1.122...v0.1.123) (2026-11-01)
+
+
+### Features
+
+* fixed asset reclassification, insurance, printouts, posted demo data and demo journals (FA5, FA6) ([#179](https://github.com/hansjlachmann/openerp/issues/179)) ([44f3305](https://github.com/hansjlachmann/openerp/commit/44f3305f676a07f5a8e8e4c65dd3d9d1b0943f48))
+
 ## [0.1.122](https://github.com/hansjlachmann/openerp/compare/v0.1.121...v0.1.122) (2026-11-01)
 
 
