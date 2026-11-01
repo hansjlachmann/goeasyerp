@@ -603,6 +603,7 @@ menu:
       - name: "FA Reclass. Journals"
         page_id: 5636
       - name: "Insurance Journals"
+        page_id: 5654
       - separator: true
       - name: "Reports"
       - name: "FA Registers"

@@ -23,6 +23,10 @@ page:
           width: 120
         - source: gen_jnl_batch_name
           width: 120
+        - source: insurance_jnl_template_name
+          width: 120
+        - source: insurance_jnl_batch_name
+          width: 120
 
   actions:
     - name: New

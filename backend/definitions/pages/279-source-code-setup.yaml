@@ -79,3 +79,15 @@ page:
 
           - source: inventory_post_cost
             editable: true
+
+      - name: Fixed Assets
+        caption: Fixed Assets
+        fields:
+          - source: fixed_asset_g_l_journal
+            editable: true
+
+          - source: fixed_asset_journal
+            editable: true
+
+          - source: insurance_journal
+            editable: true

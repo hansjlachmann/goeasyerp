@@ -1996,6 +1996,8 @@ tables:
       fa_jnl_batch_name: "Anleggskladdenavn"
       gen_jnl_template_name: "Finanskladdemalnavn"
       gen_jnl_batch_name: "Finanskladdenavn"
+      insurance_jnl_template_name: "Forsikringskladdetypenavn"
+      insurance_jnl_batch_name: "Forsikringskladdenavn"
   fa_register:
     caption: "Anleggsjournal"
     fields:
@@ -2073,6 +2075,64 @@ tables:
       insert_bal_account: "Sett inn motkonto"
       description: "Beskrivelse"
       document_no: "Bilagsnr."
+  insurance_journal_template:
+    caption: "Forsikringskladdetype"
+    fields:
+      name: "Navn"
+      description: "Beskrivelse"
+      test_report_id: "Testrapport-ID"
+      page_id: "Side-ID"
+      posting_report_id: "Bokføringsrapport-ID"
+      force_posting_report: "Tving bokføringsrapport"
+      source_code: "Kildekode"
+      reason_code: "Årsakskode"
+      no_series: "Nummerserie"
+      posting_no_series: "Bokføringsnummerserie"
+  insurance_journal_batch:
+    caption: "Forsikringskladdenavn"
+    fields:
+      journal_template_name: "Kladdetypenavn"
+      name: "Navn"
+      description: "Beskrivelse"
+      reason_code: "Årsakskode"
+      no_series: "Nummerserie"
+      posting_no_series: "Bokføringsnummerserie"
+  insurance_journal_line:
+    caption: "Forsikringskladdelinje"
+    fields:
+      journal_template_name: "Kladdetypenavn"
+      journal_batch_name: "Kladdenavn"
+      line_no: "Linjenr."
+      insurance_no: "Forsikringsnr."
+      fa_no: "Anleggsnr."
+      fa_description: "Anleggsbeskrivelse"
+      posting_date: "Bokføringsdato"
+      document_type: "Bilagstype"
+      document_date: "Bilagsdato"
+      document_no: "Bilagsnr."
+      external_document_no: "Eksternt bilagsnr."
+      amount: "Beløp"
+      description: "Beskrivelse"
+      department_code: "Avdelingskode"
+      project_code: "Prosjektkode"
+      reason_code: "Årsakskode"
+      source_code: "Kildekode"
+      index_entry: "Indekspost"
+      posting_no_series: "Bokføringsnummerserie"
+    options:
+      document_type:
+        invoice: "Faktura"
+        credit_memo: "Kreditnota"
+  insurance_register:
+    caption: "Forsikringsjournal"
+    fields:
+      no: "Nr."
+      from_entry_no: "Fra løpenr."
+      to_entry_no: "Til løpenr."
+      creation_date: "Opprettet dato"
+      source_code: "Kildekode"
+      user_id: "Bruker-ID"
+      journal_batch_name: "Kladdenavn"
   depreciation_table_header:
     caption: "Avskrivningstabellhode"
     fields:
@@ -2551,6 +2611,7 @@ tables:
     fields:
       fixed_asset_journal: "Anleggskladd"
       fixed_asset_g_l_journal: "Anleggsfinanskladd"
+      insurance_journal: "Forsikringskladd"
       bom_journal: "Stykklistekladd"
       resource_journal: "Ressurskladd"
       inventory_post_cost: "Lagerkostbokføring"

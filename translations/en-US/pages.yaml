@@ -717,6 +717,19 @@ pages:
     caption: "FA Journal Template List"
   fa_journal_batches:
     caption: "FA Journal Batches"
+  insurance_journal:
+    caption: "Insurance Journal"
+    fields:
+      insurance_description: "Insurance Description"
+      fa_description_footer: "FA Description"
+  insurance_journal_templates:
+    caption: "Insurance Journal Templates"
+  insurance_jnl_template_list:
+    caption: "Insurance Jnl. Template List"
+  insurance_journal_batches:
+    caption: "Insurance Journal Batches"
+  insurance_registers:
+    caption: "Insurance Registers"
   fa_reclass_journal:
     caption: "FA Reclass. Journal"
     fields:

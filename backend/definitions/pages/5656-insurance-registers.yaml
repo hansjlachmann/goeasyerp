@@ -1,0 +1,35 @@
+page:
+  id: 5656
+  type: List
+  name: Insurance Registers
+  source_table: Insurance_Register
+  caption: Insurance Registers
+  editable: false
+
+  layout:
+    repeater:
+      fields:
+        - source: "no"
+          width: 90
+        - source: creation_date
+          width: 100
+        - source: user_id
+          width: 110
+        - source: source_code
+          width: 110
+        - source: journal_batch_name
+          width: 110
+        - source: from_entry_no
+          width: 90
+        - source: to_entry_no
+          width: 90
+
+  actions:
+    # The entries the posting wrote (codeunit 5655 Insurance Reg.-Show Ledger)
+    - name: Coverage Ledger
+      caption: Coverage Ledger
+      image: Entries
+      promoted: true
+      run_page: 5647
+      run_page_filters:
+        - {field: entry_no, from: from_entry_no, to: to_entry_no}

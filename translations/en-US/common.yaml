@@ -15,6 +15,8 @@ common:
     cancel_fa_ledger_entries: "Cancel FA Ledger Entries"
     cancel_entries: "Cancel Entries"
     reclassify: "Reclassify"
+    insurance: "Insurance"
+    coverage_ledger: "Coverage Ledger"
     acquisition: "Acquisition"
     depreciation: "Depreciation"
     write_down: "Write-Down"
@@ -148,6 +150,7 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    fixed_assets: "Fixed Assets"
     locations: "Locations"
     variants: "Variants"
     periods: "Periods"

@@ -1568,6 +1568,17 @@ func (t *InsCoverageLedgerEntry) Modify(runTrigger bool) bool {
 	} else {
 		values = append(values, t.Entry_no)
 	}
+	// Renamed key fields that other tables refer to (Rename): carried over below
+	type renamedKey struct {
+		field    string
+		old, new interface{}
+	}
+	var renamed []renamedKey
+	if t.oldValues != nil {
+		if t.hasFieldChanged("entry_no") {
+			renamed = append(renamed, renamedKey{"entry_no", t.oldValues["entry_no"], t.Entry_no})
+		}
+	}
 
 	// Build and execute SQL
 	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND entry_no = ?`,
@@ -1582,6 +1593,17 @@ func (t *InsCoverageLedgerEntry) Modify(runTrigger bool) bool {
 	if err != nil {
 		fmt.Printf("Error: Failed to modify Ins_Coverage_Ledger_Entry: %v\n", err)
 		return false
+	}
+	// A temporary record's rename stays in the record: other tables are not changed
+	for _, r := range renamed {
+		if t.temp != nil {
+			break
+		}
+		if err := t.renameReferences(r.field, r.old, r.new); err != nil {
+			fmt.Printf("Error: Failed to rename references to Ins_Coverage_Ledger_Entry: %v\n", err)
+			t.triggerErr = err
+			return false
+		}
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1712,6 +1734,46 @@ func (t *InsCoverageLedgerEntry) hasFieldChanged(fieldName string) bool {
 // run a Modify (with its rename cascade) inside a transaction.
 func (t *InsCoverageLedgerEntry) SetDB(db database.Executor) {
 	t.db = db
+}
+
+// renameReferences carries a renamed key over to every field of another table that refers
+// to it (Rename). References from company tables are updated in this company — in
+// every company when this table is global. Runs on the record's executor, so inside the
+// caller's transaction.
+func (t *InsCoverageLedgerEntry) renameReferences(field string, oldValue, newValue interface{}) error {
+	type reference struct {
+		table      string
+		global     bool
+		column     string
+		condColumn string // a conditional relation: only rows whose condColumn = condValue
+		condValue  int
+	}
+	references := map[string][]reference{
+		"entry_no": {{"Insurance_Register", false, "from_entry_no", "", 0}, {"Insurance_Register", false, "to_entry_no", "", 0}},
+	}
+	companies := []string{t.company}
+	for _, ref := range references[field] {
+		tables := []string{ref.table}
+		if !ref.global {
+			tables = tables[:0]
+			for _, c := range companies {
+				tables = append(tables, c+"$"+ref.table)
+			}
+		}
+		for _, tbl := range tables {
+			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
+			args := []interface{}{newValue, oldValue}
+			if ref.condColumn != "" {
+				stmt += fmt.Sprintf(" AND %s = ?", ref.condColumn)
+				args = append(args, ref.condValue)
+			}
+			query := t.convertPlaceholders(stmt, len(args))
+			if _, err := t.db.Exec(query, args...); err != nil {
+				return fmt.Errorf("%s.%s: %w", tbl, ref.column, err)
+			}
+		}
+	}
+	return nil
 }
 
 // Delete removes the record from the database
