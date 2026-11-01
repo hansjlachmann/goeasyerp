@@ -1,0 +1,554 @@
+# Report 5606 Fixed Asset - Book Value 02: the printed layout (sections per data item, positions in
+# mm from the section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 5606
+  name: Fixed Asset - Book Value 02
+  page:
+    size: A4
+    orientation: portrait
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: FixedAsset
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 120, bold: true, size: 10}
+            - {value: depr_book_text, x: 0, y: 5, width: 120}
+            - {value: company_name, x: 0, y: 9, width: 120}
+            - {value: today, x: 126, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 126, y: 4, width: 50, align: right}
+            - {page_no: true, x: 176, y: 4, width: 10, align: right}
+            - {value: user_id, x: 126, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 186, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 11.5
+          elements:
+            - {value: group_code_name, x: 0, y: 0, width: 90}
+            - {text: AMOUNT, x: 100, y: 4, width: 30, align: right, bold: true}
+            - {text: RECLASSIFICATION, x: 135, y: 4, width: 30, align: right, bold: true, print_if: reclassify}
+            - {line: true, x: 0, y: 9}
+        # The total of the group before (the classic group footer)
+        - type: body
+          print_if: print_group_footer
+          height: 7
+          elements:
+            - {value: group_total_text, x: 0, y: 1.5, width: 120, bold: true}
+        - type: body
+          print_if: grp_show_1
+          height: 17.5
+          elements:
+            - {text: ACQUISITION_COST, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: grp_start_1, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: grp_rstart_1, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: grp_net_1, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: grp_rnet_1, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: grp_disp_1, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: grp_rdisp_1, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ACQUISITION_COST, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: grp_end_1, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: grp_rend_1, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: body
+          print_if: grp_show_2
+          height: 17.5
+          elements:
+            - {text: DEPRECIATION, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: grp_start_2, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: grp_rstart_2, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: grp_net_2, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: grp_rnet_2, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: grp_disp_2, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: grp_rdisp_2, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DEPRECIATION, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: grp_end_2, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: grp_rend_2, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: body
+          print_if: grp_show_3
+          height: 17.5
+          elements:
+            - {text: WRITE_DOWN, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: grp_start_3, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: grp_rstart_3, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: grp_net_3, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: grp_rnet_3, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: grp_disp_3, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: grp_rdisp_3, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: WRITE_DOWN, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: grp_end_3, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: grp_rend_3, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: body
+          print_if: grp_show_4
+          height: 17.5
+          elements:
+            - {text: APPRECIATION, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: grp_start_4, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: grp_rstart_4, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: grp_net_4, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: grp_rnet_4, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: grp_disp_4, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: grp_rdisp_4, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: APPRECIATION, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: grp_end_4, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: grp_rend_4, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: body
+          print_if: grp_show_5
+          height: 17.5
+          elements:
+            - {text: CUSTOM_1, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: grp_start_5, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: grp_rstart_5, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: grp_net_5, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: grp_rnet_5, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: grp_disp_5, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: grp_rdisp_5, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: CUSTOM_1, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: grp_end_5, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: grp_rend_5, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: body
+          print_if: grp_show_6
+          height: 17.5
+          elements:
+            - {text: CUSTOM_2, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: grp_start_6, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: grp_rstart_6, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: grp_net_6, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: grp_rnet_6, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: grp_disp_6, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: grp_rdisp_6, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: CUSTOM_2, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: grp_end_6, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: grp_rend_6, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: body
+          print_if: print_group_footer
+          height: 11
+          elements:
+            - {text: BOOK_VALUE, x: 4, y: 0.5, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0.5, width: 25}
+            - {value: grp_bv_start, x: 100, y: 0.5, width: 30, align: right, bold: true}
+            - {text: BOOK_VALUE, x: 4, y: 4.7, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 4.7, width: 25}
+            - {value: grp_bv_end, x: 100, y: 4.7, width: 30, align: right, bold: true}
+        - type: body
+          print_if: print_details
+          height: 7
+          elements:
+            - {field: "no", x: 0, y: 1.5, width: 25, bold: true}
+            - {field: description, x: 26, y: 1.5, width: 120, bold: true}
+        - type: body
+          print_if: show_1
+          height: 17.5
+          elements:
+            - {text: ACQUISITION_COST, x: 4, y: 0, width: 56}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: start_1, x: 100, y: 0, width: 30, align: right}
+            - {value: rstart_1, x: 135, y: 0, width: 30, align: right, print_if: reclassify}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: net_1, x: 100, y: 4.2, width: 30, align: right}
+            - {value: rnet_1, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: disp_1, x: 100, y: 8.4, width: 30, align: right}
+            - {value: rdisp_1, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify}
+            - {text: ACQUISITION_COST, x: 4, y: 12.6, width: 56}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: end_1, x: 100, y: 12.6, width: 30, align: right}
+            - {value: rend_1, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify}
+        - type: body
+          print_if: show_2
+          height: 17.5
+          elements:
+            - {text: DEPRECIATION, x: 4, y: 0, width: 56}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: start_2, x: 100, y: 0, width: 30, align: right}
+            - {value: rstart_2, x: 135, y: 0, width: 30, align: right, print_if: reclassify}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: net_2, x: 100, y: 4.2, width: 30, align: right}
+            - {value: rnet_2, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: disp_2, x: 100, y: 8.4, width: 30, align: right}
+            - {value: rdisp_2, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify}
+            - {text: DEPRECIATION, x: 4, y: 12.6, width: 56}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: end_2, x: 100, y: 12.6, width: 30, align: right}
+            - {value: rend_2, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify}
+        - type: body
+          print_if: show_3
+          height: 17.5
+          elements:
+            - {text: WRITE_DOWN, x: 4, y: 0, width: 56}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: start_3, x: 100, y: 0, width: 30, align: right}
+            - {value: rstart_3, x: 135, y: 0, width: 30, align: right, print_if: reclassify}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: net_3, x: 100, y: 4.2, width: 30, align: right}
+            - {value: rnet_3, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: disp_3, x: 100, y: 8.4, width: 30, align: right}
+            - {value: rdisp_3, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify}
+            - {text: WRITE_DOWN, x: 4, y: 12.6, width: 56}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: end_3, x: 100, y: 12.6, width: 30, align: right}
+            - {value: rend_3, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify}
+        - type: body
+          print_if: show_4
+          height: 17.5
+          elements:
+            - {text: APPRECIATION, x: 4, y: 0, width: 56}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: start_4, x: 100, y: 0, width: 30, align: right}
+            - {value: rstart_4, x: 135, y: 0, width: 30, align: right, print_if: reclassify}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: net_4, x: 100, y: 4.2, width: 30, align: right}
+            - {value: rnet_4, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: disp_4, x: 100, y: 8.4, width: 30, align: right}
+            - {value: rdisp_4, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify}
+            - {text: APPRECIATION, x: 4, y: 12.6, width: 56}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: end_4, x: 100, y: 12.6, width: 30, align: right}
+            - {value: rend_4, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify}
+        - type: body
+          print_if: show_5
+          height: 17.5
+          elements:
+            - {text: CUSTOM_1, x: 4, y: 0, width: 56}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: start_5, x: 100, y: 0, width: 30, align: right}
+            - {value: rstart_5, x: 135, y: 0, width: 30, align: right, print_if: reclassify}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: net_5, x: 100, y: 4.2, width: 30, align: right}
+            - {value: rnet_5, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: disp_5, x: 100, y: 8.4, width: 30, align: right}
+            - {value: rdisp_5, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify}
+            - {text: CUSTOM_1, x: 4, y: 12.6, width: 56}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: end_5, x: 100, y: 12.6, width: 30, align: right}
+            - {value: rend_5, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify}
+        - type: body
+          print_if: show_6
+          height: 17.5
+          elements:
+            - {text: CUSTOM_2, x: 4, y: 0, width: 56}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: start_6, x: 100, y: 0, width: 30, align: right}
+            - {value: rstart_6, x: 135, y: 0, width: 30, align: right, print_if: reclassify}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: net_6, x: 100, y: 4.2, width: 30, align: right}
+            - {value: rnet_6, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: disp_6, x: 100, y: 8.4, width: 30, align: right}
+            - {value: rdisp_6, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify}
+            - {text: CUSTOM_2, x: 4, y: 12.6, width: 56}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: end_6, x: 100, y: 12.6, width: 30, align: right}
+            - {value: rend_6, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify}
+        - type: body
+          print_if: print_details
+          height: 11
+          elements:
+            - {text: BOOK_VALUE, x: 4, y: 0.5, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0.5, width: 25}
+            - {value: bv_start, x: 100, y: 0.5, width: 30, align: right, bold: true}
+            - {text: BOOK_VALUE, x: 4, y: 4.7, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 4.7, width: 25}
+            - {value: bv_end, x: 100, y: 4.7, width: 30, align: right, bold: true}
+        - type: footer
+          print_if: group_totals
+          height: 7
+          elements:
+            - {value: last_group_total_text, x: 0, y: 1.5, width: 120, bold: true}
+        - type: footer
+          print_if: lgrp_show_1
+          height: 17.5
+          elements:
+            - {text: ACQUISITION_COST, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: lgrp_start_1, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: lgrp_rstart_1, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: lgrp_net_1, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: lgrp_rnet_1, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: lgrp_disp_1, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: lgrp_rdisp_1, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ACQUISITION_COST, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: lgrp_end_1, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: lgrp_rend_1, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: footer
+          print_if: lgrp_show_2
+          height: 17.5
+          elements:
+            - {text: DEPRECIATION, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: lgrp_start_2, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: lgrp_rstart_2, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: lgrp_net_2, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: lgrp_rnet_2, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: lgrp_disp_2, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: lgrp_rdisp_2, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DEPRECIATION, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: lgrp_end_2, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: lgrp_rend_2, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: footer
+          print_if: lgrp_show_3
+          height: 17.5
+          elements:
+            - {text: WRITE_DOWN, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: lgrp_start_3, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: lgrp_rstart_3, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: lgrp_net_3, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: lgrp_rnet_3, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: lgrp_disp_3, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: lgrp_rdisp_3, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: WRITE_DOWN, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: lgrp_end_3, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: lgrp_rend_3, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: footer
+          print_if: lgrp_show_4
+          height: 17.5
+          elements:
+            - {text: APPRECIATION, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: lgrp_start_4, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: lgrp_rstart_4, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: lgrp_net_4, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: lgrp_rnet_4, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: lgrp_disp_4, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: lgrp_rdisp_4, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: APPRECIATION, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: lgrp_end_4, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: lgrp_rend_4, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: footer
+          print_if: lgrp_show_5
+          height: 17.5
+          elements:
+            - {text: CUSTOM_1, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: lgrp_start_5, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: lgrp_rstart_5, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: lgrp_net_5, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: lgrp_rnet_5, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: lgrp_disp_5, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: lgrp_rdisp_5, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: CUSTOM_1, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: lgrp_end_5, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: lgrp_rend_5, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: footer
+          print_if: lgrp_show_6
+          height: 17.5
+          elements:
+            - {text: CUSTOM_2, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: lgrp_start_6, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: lgrp_rstart_6, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: lgrp_net_6, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: lgrp_rnet_6, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: lgrp_disp_6, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: lgrp_rdisp_6, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: CUSTOM_2, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: lgrp_end_6, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: lgrp_rend_6, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: footer
+          print_if: group_totals
+          height: 11
+          elements:
+            - {text: BOOK_VALUE, x: 4, y: 0.5, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0.5, width: 25}
+            - {value: lgrp_bv_start, x: 100, y: 0.5, width: 30, align: right, bold: true}
+            - {text: BOOK_VALUE, x: 4, y: 4.7, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 4.7, width: 25}
+            - {value: lgrp_bv_end, x: 100, y: 4.7, width: 30, align: right, bold: true}
+        - type: footer
+          height: 7
+          elements:
+            - {line: true, x: 0, y: 1}
+            - {text: TOTAL, x: 0, y: 2, width: 120, bold: true}
+        - type: footer
+          print_if: tot_show_1
+          height: 17.5
+          elements:
+            - {text: ACQUISITION_COST, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: tot_start_1, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: tot_rstart_1, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: tot_net_1, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: tot_rnet_1, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: tot_disp_1, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: tot_rdisp_1, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ACQUISITION_COST, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: tot_end_1, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: tot_rend_1, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: footer
+          print_if: tot_show_2
+          height: 17.5
+          elements:
+            - {text: DEPRECIATION, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: tot_start_2, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: tot_rstart_2, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: tot_net_2, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: tot_rnet_2, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: tot_disp_2, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: tot_rdisp_2, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DEPRECIATION, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: tot_end_2, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: tot_rend_2, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: footer
+          print_if: tot_show_3
+          height: 17.5
+          elements:
+            - {text: WRITE_DOWN, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: tot_start_3, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: tot_rstart_3, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: tot_net_3, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: tot_rnet_3, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: tot_disp_3, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: tot_rdisp_3, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: WRITE_DOWN, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: tot_end_3, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: tot_rend_3, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: footer
+          print_if: tot_show_4
+          height: 17.5
+          elements:
+            - {text: APPRECIATION, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: tot_start_4, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: tot_rstart_4, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: tot_net_4, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: tot_rnet_4, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: tot_disp_4, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: tot_rdisp_4, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: APPRECIATION, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: tot_end_4, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: tot_rend_4, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: footer
+          print_if: tot_show_5
+          height: 17.5
+          elements:
+            - {text: CUSTOM_1, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: tot_start_5, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: tot_rstart_5, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: tot_net_5, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: tot_rnet_5, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: tot_disp_5, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: tot_rdisp_5, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: CUSTOM_1, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: tot_end_5, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: tot_rend_5, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: footer
+          print_if: tot_show_6
+          height: 17.5
+          elements:
+            - {text: CUSTOM_2, x: 4, y: 0, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0, width: 25}
+            - {value: tot_start_6, x: 100, y: 0, width: 30, align: right, bold: true}
+            - {value: tot_rstart_6, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
+            - {value: tot_net_6, x: 100, y: 4.2, width: 30, align: right, bold: true}
+            - {value: tot_rnet_6, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
+            - {value: tot_disp_6, x: 100, y: 8.4, width: 30, align: right, bold: true}
+            - {value: tot_rdisp_6, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
+            - {text: CUSTOM_2, x: 4, y: 12.6, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 12.6, width: 25}
+            - {line: true, x: 100, y: 12.4, width: 30}
+            - {value: tot_end_6, x: 100, y: 12.6, width: 30, align: right, bold: true}
+            - {value: tot_rend_6, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
+        - type: footer
+          height: 11
+          elements:
+            - {text: BOOK_VALUE, x: 4, y: 0.5, width: 56, bold: true}
+            - {value: start_text, x: 62, y: 0.5, width: 25}
+            - {value: tot_bv_start, x: 100, y: 0.5, width: 30, align: right, bold: true}
+            - {text: BOOK_VALUE, x: 4, y: 4.7, width: 56, bold: true}
+            - {value: end_text, x: 62, y: 4.7, width: 25}
+            - {value: tot_bv_end, x: 100, y: 4.7, width: 30, align: right, bold: true}
