@@ -445,6 +445,36 @@ table:
       scale: 2
       decimal_places: "2:2"
 
+    # Fixed assets: the FA or maintenance ledger entry a G/L entry belongs to
+    - name: fa_entry_type
+      no: 5600
+      type: Option
+      db_name: fa_entry_type
+      options: [" ", "Fixed Asset", "Maintenance"]
+
+    - name: fa_entry_no
+      no: 5601
+      type: int
+      db_name: fa_entry_no
+      table_relation:
+        conditions:
+          - when: {field: fa_entry_type, equal: 1}
+            table: FA_Ledger_Entry
+            field: entry_no
+            lookup_columns:
+              - source: entry_no
+                width: 90
+              - source: description
+                width: 250
+          - when: {field: fa_entry_type, equal: 2}
+            table: Maintenance_Ledger_Entry
+            field: entry_no
+            lookup_columns:
+              - source: entry_no
+                width: 90
+              - source: description
+                width: 250
+
   keys:
     - name: Primary
       fields: [entry_no]

@@ -472,6 +472,10 @@ Bokfører linjer #3###### @4@@@@@@@@@@@@@"
   BOM_JNL_POST_WINDOW: "Kladdenavn #1##########
 Kontrollerer linjer #2######
 Bokfører linjer #3###### @4@@@@@@@@@@@@@"
+  FA_JNL_TEMPLATE_DESCRIPTION: "Anleggskladd"
+  FA_JNL_POST_WINDOW: "Kladdenavn #1##########
+Kontrollerer linjer #2######
+Bokfører linjer #3###### @4@@@@@@@@@@@@@"
   BOM_JNL_TEMPLATE_DESCRIPTION: "Stykklistekladd"
   BOM_EXPLODE_CONFIRM: "Vil du utvide stykklisten?"
   BOM_CALC_COST_LEVELS: "Dette stykklistenivået,Alle stykklistenivåer"

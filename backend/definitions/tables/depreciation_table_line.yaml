@@ -1,0 +1,47 @@
+table:
+  id: 5643
+  name: "Depreciation_Table_Line"
+  description: "Depreciation table lines (table 5643): the depreciation % (or units) of each period of a depreciation table"
+  fields:
+    - name: depreciation_table_code
+      no: 1
+      type: types.Code
+      db_name: depreciation_table_code
+      length: 10
+      primary_key: true
+      required: true
+      table_relation:
+        table: Depreciation_Table_Header
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: period_no
+      no: 2
+      type: int
+      db_name: period_no
+      primary_key: true
+      required: true
+      validation: {min: 1}
+
+    - name: period_depreciation_percent
+      no: 3
+      type: types.Decimal
+      db_name: period_depreciation_percent
+      decimal_places: "2:8"
+      validation: {min: 0}
+
+    - name: no_of_units_in_period
+      no: 4
+      type: types.Decimal
+      db_name: no_of_units_in_period
+      decimal_places: "0:5"
+      validation: {min: 0}
+
+  keys:
+    - name: Primary
+      fields: [depreciation_table_code, period_no]
+      clustered: true

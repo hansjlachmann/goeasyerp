@@ -148,3 +148,98 @@ page:
       shortcut: Ctrl+D
       promoted: true
       enabled: true
+
+    # The group's FA allocations per allocation type (FA Allocations 5623)
+    - name: Allocations
+      caption: Allocations
+      image: Setup
+      promoted: true
+      items:
+        - name: Acquisition
+          caption: Acquisition
+          run_page: 5623
+          run_page_filters:
+            - field: code
+              value: code
+            - field: allocation_type
+              const: "0"
+        - name: Depreciation
+          caption: Depreciation
+          run_page: 5623
+          run_page_filters:
+            - field: code
+              value: code
+            - field: allocation_type
+              const: "1"
+        - name: Write-Down
+          caption: Write-Down
+          run_page: 5623
+          run_page_filters:
+            - field: code
+              value: code
+            - field: allocation_type
+              const: "2"
+        - name: Appreciation
+          caption: Appreciation
+          run_page: 5623
+          run_page_filters:
+            - field: code
+              value: code
+            - field: allocation_type
+              const: "3"
+        - name: Custom 1
+          caption: Custom 1
+          run_page: 5623
+          run_page_filters:
+            - field: code
+              value: code
+            - field: allocation_type
+              const: "4"
+        - name: Custom 2
+          caption: Custom 2
+          run_page: 5623
+          run_page_filters:
+            - field: code
+              value: code
+            - field: allocation_type
+              const: "5"
+        - name: Disposal
+          caption: Disposal
+          run_page: 5623
+          run_page_filters:
+            - field: code
+              value: code
+            - field: allocation_type
+              const: "6"
+        - name: Maintenance
+          caption: Maintenance
+          run_page: 5623
+          run_page_filters:
+            - field: code
+              value: code
+            - field: allocation_type
+              const: "7"
+        - name: Gain
+          caption: Gain
+          run_page: 5623
+          run_page_filters:
+            - field: code
+              value: code
+            - field: allocation_type
+              const: "8"
+        - name: Loss
+          caption: Loss
+          run_page: 5623
+          run_page_filters:
+            - field: code
+              value: code
+            - field: allocation_type
+              const: "9"
+        - name: Book Value
+          caption: Book Value
+          run_page: 5623
+          run_page_filters:
+            - field: code
+              value: code
+            - field: allocation_type
+              const: "10"

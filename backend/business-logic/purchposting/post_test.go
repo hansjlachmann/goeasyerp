@@ -471,3 +471,60 @@ func TestPurchaseQuoteAndCreditMemoPrintouts(t *testing.T) {
 		t.Errorf("credit memo printout: %s", joined)
 	}
 }
+
+// A purchase invoice with a fixed asset line (acquisition) and a maintenance line: the FA and
+// maintenance entries in the COMPANY book, the G/L entries on the posting group's accounts, the
+// vendor entry; the posted invoice keeps the FA fields
+func TestPostFixedAssetLines(t *testing.T) {
+	src := demoCompany(t)
+	// the asset and maintenance accounts need product posting groups for purchase lines
+	for _, no := range []string{"1230", "5320"} {
+		glAcc := gtables.NewGLAccount(src)
+		must(t, glAcc.GetOrError(types.Code(no)))
+		glAcc.Gen_prod_posting_group = "RETAIL"
+		glAcc.Tax_prod_posting_group = "STANDARD"
+		glAcc.Tax_group_code = "TAXABLE"
+		must(t, glAcc.ModifyOrError(false))
+	}
+	invoice := newDocument(t, src, gtables.PurchaseHeader_Document_type.Invoice, "V00050")
+	must(t, invoice.Validate("vendor_invoice_no", types.Code("V-FA-1")))
+	must(t, invoice.ModifyOrError(true))
+	acq := addLine(t, invoice, 10000, gtables.PurchaseLine_Type.FixedAsset, "FA0040", "1")
+	if acq.Depreciation_book_code != "COMPANY" || acq.Fa_posting_type != gtables.PurchaseLine_Fa_posting_type.AcquisitionCost || acq.Posting_group != "EQUIPMENT" {
+		t.Fatalf("FA line: book %q type %v group %q", acq.Depreciation_book_code, acq.Fa_posting_type, acq.Posting_group)
+	}
+	must(t, acq.Validate("direct_unit_cost", dec("12000")))
+	must(t, acq.ModifyOrError(true))
+	maint := addLine(t, invoice, 20000, gtables.PurchaseLine_Type.FixedAsset, "FA0040", "1")
+	must(t, maint.Validate("fa_posting_type", gtables.PurchaseLine_Fa_posting_type.Maintenance))
+	must(t, maint.Validate("direct_unit_cost", dec("800")))
+	maint.Maintenance_code = "SERVICE"
+	must(t, maint.ModifyOrError(true))
+
+	faBook := gtables.NewFADepreciationBook(src)
+	must(t, faBook.GetOrError(map[string]interface{}{"fa_no": "FA0040", "depreciation_book_code": "COMPANY"}))
+	faBook.CalcFields("acquisition_cost", "maintenance")
+	acqBefore, maintBefore := faBook.Acquisition_cost, faBook.Maintenance
+
+	purchPost := post(t, invoice, false, false)
+	glBalance(t, src, purchPost.InvoiceNo)
+	faBook.CalcFields("acquisition_cost", "maintenance")
+	wantDec(t, "acquisition cost added", faBook.Acquisition_cost.Sub(acqBefore), dec("12000"))
+	wantDec(t, "maintenance added", faBook.Maintenance.Sub(maintBefore), dec("800"))
+	wantDec(t, "acquisition cost account", glAmount(t, src, purchPost.InvoiceNo, "1230"), dec("12000"))
+	wantDec(t, "maintenance expense account", glAmount(t, src, purchPost.InvoiceNo, "5320"), dec("800"))
+	faLedgEntry := gtables.NewFALedgerEntry(src)
+	faLedgEntry.SetRange("document_no", purchPost.InvoiceNo)
+	if !faLedgEntry.FindFirst() || faLedgEntry.G_l_entry_no == 0 || faLedgEntry.Fa_no != "FA0040" {
+		t.Errorf("FA entry of the invoice: %+v", faLedgEntry.Fa_no)
+	}
+	invLine := gtables.NewPurchInvLine(src)
+	must(t, invLine.GetOrError(map[string]interface{}{"document_no": purchPost.InvoiceNo, "line_no": 20000}))
+	if invLine.Type != gtables.PurchInvLine_Type.FixedAsset || invLine.Fa_posting_type != gtables.PurchInvLine_Fa_posting_type.Maintenance || invLine.Maintenance_code != "SERVICE" {
+		t.Errorf("posted line: type %v FA type %v maintenance %q", invLine.Type, invLine.Fa_posting_type, invLine.Maintenance_code)
+	}
+	entry := vendEntry(t, src, purchPost.InvoiceNo)
+	if !entry.Amount.IsNegative() {
+		t.Errorf("vendor entry %s", entry.Amount)
+	}
+}

@@ -1,0 +1,134 @@
+table:
+  id: 5617
+  name: "FA_Register"
+  posted: true               # written by posting only: the table API does not insert, delete or rename
+  description: "FA registers (table 5617): one per posting, the ranges of the FA and maintenance ledger entries it wrote"
+  lookup_page_id: 5627
+  fields:
+    - name: no
+      no: 1
+      type: int
+      db_name: no
+      primary_key: true
+      required: true
+
+    - name: from_entry_no
+      no: 2
+      type: int
+      db_name: from_entry_no
+      table_relation:
+        table: FA_Ledger_Entry
+        field: entry_no
+        lookup_columns:
+          - source: entry_no
+            width: 90
+          - source: description
+            width: 250
+
+    - name: to_entry_no
+      no: 3
+      type: int
+      db_name: to_entry_no
+      table_relation:
+        table: FA_Ledger_Entry
+        field: entry_no
+        lookup_columns:
+          - source: entry_no
+            width: 90
+          - source: description
+            width: 250
+
+    - name: creation_date
+      no: 4
+      type: types.Date
+      db_name: creation_date
+
+    - name: source_code
+      no: 5
+      type: types.Code
+      db_name: source_code
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: user_id
+      no: 6
+      type: types.Code
+      db_name: user_id
+      length: 50
+      table_relation:
+        table: User
+        field: user_id
+        validate: false
+        lookup_columns:
+          - source: user_id
+            width: 120
+          - source: user_name
+            width: 200
+
+    - name: journal_batch_name
+      no: 7
+      type: types.Code
+      db_name: journal_batch_name
+      length: 10
+
+    - name: journal_type
+      no: 8
+      type: Option
+      db_name: journal_type
+      options: ["G/L", "Fixed Asset"]
+
+    - name: g_l_register_no
+      no: 9
+      type: int
+      db_name: g_l_register_no
+      table_relation:
+        table: G_L_Register
+        field: no
+        validate: false
+        lookup_columns:
+          - source: no
+            width: 90
+          - source: creation_date
+            width: 110
+
+    - name: from_maintenance_entry_no
+      no: 10
+      type: int
+      db_name: from_maintenance_entry_no
+      table_relation:
+        table: Maintenance_Ledger_Entry
+        field: entry_no
+        lookup_columns:
+          - source: entry_no
+            width: 90
+          - source: description
+            width: 250
+
+    - name: to_maintenance_entry_no
+      no: 11
+      type: int
+      db_name: to_maintenance_entry_no
+      table_relation:
+        table: Maintenance_Ledger_Entry
+        field: entry_no
+        lookup_columns:
+          - source: entry_no
+            width: 90
+          - source: description
+            width: 250
+
+  keys:
+    - name: Primary
+      fields: [no]
+      clustered: true
+    - name: creation_date
+      fields: [creation_date]
+    - name: source_code
+      fields: [source_code, journal_batch_name, creation_date]

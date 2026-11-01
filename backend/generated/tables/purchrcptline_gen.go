@@ -93,7 +93,7 @@ type PurchRcptLineType int
 
 // String returns the text representation of PurchRcptLineType
 func (o PurchRcptLineType) String() string {
-	options := []string{" ", "G/L Account", "Item"}
+	options := []string{" ", "G/L Account", "Item", "", "Fixed Asset"}
 	if o >= 0 && int(o) < len(options) {
 		return options[o]
 	}
@@ -102,7 +102,7 @@ func (o PurchRcptLineType) String() string {
 
 // IsValid checks if the PurchRcptLineType value is within valid range
 func (o PurchRcptLineType) IsValid() bool {
-	return o >= 0 && o < 3
+	return o >= 0 && o < 5
 }
 
 // PurchRcptLineTax_calculation_type represents the tax_calculation_type option field
@@ -246,13 +246,17 @@ const PurchRcptLineTableName = "Purch_Rcpt_Line"
 
 // PurchRcptLine_Type provides named constants for the type option field (FieldName.OptionValue syntax)
 var PurchRcptLine_Type = struct {
-	Blank     PurchRcptLineType
-	GLAccount PurchRcptLineType
-	Item      PurchRcptLineType
+	Blank      PurchRcptLineType
+	GLAccount  PurchRcptLineType
+	Item       PurchRcptLineType
+	Blank3     PurchRcptLineType
+	FixedAsset PurchRcptLineType
 }{
-	Blank:     0,
-	GLAccount: 1,
-	Item:      2,
+	Blank:      0,
+	GLAccount:  1,
+	Item:       2,
+	Blank3:     3,
+	FixedAsset: 4,
 }
 
 // PurchRcptLine_Tax_calculation_type provides named constants for the tax_calculation_type option field (FieldName.OptionValue syntax)
@@ -1199,7 +1203,7 @@ func GetPurchRcptLineTableSchema() string {
 		buy_from_vendor_no TEXT(20),
 		document_no TEXT(20),
 		line_no INTEGER,
-		type INTEGER CHECK (type >= 0 AND type <= 2),
+		type INTEGER CHECK (type >= 0 AND type <= 4),
 		no TEXT(20),
 		location_code TEXT(10),
 		posting_group TEXT(10),
@@ -1261,7 +1265,7 @@ func GetPurchRcptLinePostgresTableSchema() string {
 		buy_from_vendor_no VARCHAR(20),
 		document_no VARCHAR(20),
 		line_no INTEGER,
-		type INTEGER CHECK (type >= 0 AND type <= 2),
+		type INTEGER CHECK (type >= 0 AND type <= 4),
 		no VARCHAR(20),
 		location_code VARCHAR(10),
 		posting_group VARCHAR(10),
@@ -4688,15 +4692,15 @@ func (t *PurchRcptLine) ValidateField(fieldName string, value interface{}) error
 			t.Type = v
 			// Accept int (convert to enum)
 		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 3-1)
+			if v < 0 || v >= 5 {
+				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 5-1)
 			}
 			t.Type = PurchRcptLineType(v)
 			// Accept float64 (JSON numbers decode as float64)
 		} else if v, ok := value.(float64); ok {
 			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 3-1)
+			if intVal < 0 || intVal >= 5 {
+				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 5-1)
 			}
 			t.Type = PurchRcptLineType(intVal)
 			// Accept string (lookup in options and convert)
@@ -4705,7 +4709,7 @@ func (t *PurchRcptLine) ValidateField(fieldName string, value interface{}) error
 				// Empty string defaults to first option (behavior)
 				t.Type = 0
 			} else {
-				options := []string{" ", "G/L Account", "Item"}
+				options := []string{" ", "G/L Account", "Item", "", "Fixed Asset"}
 				found := false
 				for i, opt := range options {
 					if opt == v {
@@ -6167,7 +6171,7 @@ func (t *PurchRcptLine) SetFieldValue(no int, value any) bool {
 			return true
 		}
 	case 5:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
+		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 5 {
 			t.Type = PurchRcptLineType(i)
 			return true
 		}
@@ -7502,7 +7506,7 @@ func (t *PurchRcptLine) FromMap(data map[string]interface{}) {
 			t.Type = PurchRcptLineType(val)
 		case string:
 			// Lookup string value in options
-			options := []string{" ", "G/L Account", "Item"}
+			options := []string{" ", "G/L Account", "Item", "", "Fixed Asset"}
 			for i, opt := range options {
 				if opt == val {
 					t.Type = PurchRcptLineType(i)
@@ -8599,7 +8603,7 @@ func (t *PurchRcptLine) GetFlowFields() []string {
 // GetOptionFields returns Option field names mapped to their option values
 func (t *PurchRcptLine) GetOptionFields() map[string][]string {
 	return map[string][]string{
-		"type":                 {" ", "G/L Account", "Item"},
+		"type":                 {" ", "G/L Account", "Item", "", "Fixed Asset"},
 		"tax_calculation_type": {"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"},
 	}
 }
@@ -8635,6 +8639,11 @@ func (t *PurchRcptLine) GetTableRelationFields() map[string]tables.TableRelation
 				}},
 				{Field: "type", Value: 2, Relation: tables.TableRelationInfo{
 					Table: "Item", Field: "no", DisplayField: "",
+					LookupColumns: []tables.LookupColumnInfo{{Source: "no", Width: 100}, {Source: "description", Width: 250}},
+					SearchTimeout: 0,
+				}},
+				{Field: "type", Value: 4, Relation: tables.TableRelationInfo{
+					Table: "Fixed_Asset", Field: "no", DisplayField: "",
 					LookupColumns: []tables.LookupColumnInfo{{Source: "no", Width: 100}, {Source: "description", Width: 250}},
 					SearchTimeout: 0,
 				}},

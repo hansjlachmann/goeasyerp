@@ -860,6 +860,123 @@ table:
       db_name: reversing_entry
       editable: false
 
+    # Fixed assets (classic field series 5600): the FA posting of a line with a fixed asset
+    - name: fa_posting_date
+      no: 5600
+      type: types.Date
+      db_name: fa_posting_date
+
+    - name: fa_posting_type
+      no: 5601
+      type: Option
+      db_name: fa_posting_type
+      options: [" ", "Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance"]
+
+    - name: depreciation_book_code
+      no: 5602
+      type: types.Code
+      db_name: depreciation_book_code
+      length: 10
+      table_relation:
+        table: Depreciation_Book
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: salvage_value
+      no: 5603
+      type: types.Decimal
+      db_name: salvage_value
+      decimal_places: "2:2"
+
+    - name: no_of_depreciation_days
+      no: 5604
+      type: int
+      db_name: no_of_depreciation_days
+
+    - name: depr_until_fa_posting_date
+      no: 5605
+      type: bool
+      db_name: depr_until_fa_posting_date
+
+    - name: depr_acquisition_cost
+      no: 5606
+      type: bool
+      db_name: depr_acquisition_cost
+
+    - name: maintenance_code
+      no: 5609
+      type: types.Code
+      db_name: maintenance_code
+      length: 10
+      table_relation:
+        table: Maintenance
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: insurance_no
+      no: 5610
+      type: types.Code
+      db_name: insurance_no
+      length: 20
+      table_relation:
+        table: Insurance
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
+
+    - name: duplicate_in_depreciation_book
+      no: 5612
+      type: types.Code
+      db_name: duplicate_in_depreciation_book
+      length: 10
+      table_relation:
+        table: Depreciation_Book
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: use_duplication_list
+      no: 5613
+      type: bool
+      db_name: use_duplication_list
+
+    - name: fa_reclassification_entry
+      no: 5614
+      type: bool
+      db_name: fa_reclassification_entry
+
+    - name: fa_error_entry_no
+      no: 5615
+      type: int
+      db_name: fa_error_entry_no
+      table_relation:
+        table: FA_Ledger_Entry
+        field: entry_no
+        lookup_columns:
+          - source: entry_no
+            width: 90
+          - source: description
+            width: 250
+
+    - name: index_entry
+      no: 5616
+      type: bool
+      db_name: index_entry
+
   keys:
     - name: Primary
       fields: [journal_template_name, journal_batch_name, line_no]

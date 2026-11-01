@@ -707,3 +707,35 @@ pages:
     caption: "Ressurstilgjengelighet"
   res_group_availability:
     caption: "Ressursgruppetilgjengelighet"
+  fixed_asset_journal:
+    caption: "Anleggskladd"
+    fields:
+      fa_description: "Anleggsbeskrivelse"
+  fa_journal_templates:
+    caption: "Anleggskladdemaler"
+  fa_journal_template_list:
+    caption: "Anleggskladdemalliste"
+  fa_journal_batches:
+    caption: "Anleggskladdenavn"
+  fa_registers:
+    caption: "Anleggsjournaler"
+  fa_posting_type_setup:
+    caption: "Oppsett av anleggsbokføringstyper"
+  fa_journal_setup:
+    caption: "Oppsett av anleggskladd"
+  fixed_asset_g_l_journal:
+    caption: "Anleggsfinanskladd"
+    fields:  # the batch above the lines and the footer (calculated)
+      journal_batch_name: "Kladdenavn"
+      account_name: "Kontonavn"
+      bal_account_name: "Motkontonavn"
+      balance: "Saldo"
+      total_balance: "Total saldo"
+  fa_allocations:
+    caption: "Anleggsfordelinger"
+  depreciation_table_list:
+    caption: "Avskrivningstabelliste"
+  depreciation_table_card:
+    caption: "Avskrivningstabellkort"
+  depreciation_table_lines:
+    caption: "Linjer"

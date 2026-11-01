@@ -11,7 +11,6 @@ const (
 	ErrJnlWithoutField        ErrorCode = "ERR_JNL_WITHOUT_FIELD"
 	ErrJnlRecurringOnlyField  ErrorCode = "ERR_JNL_RECURRING_ONLY_FIELD"
 	ErrJnlMustNotBe           ErrorCode = "ERR_JNL_MUST_NOT_BE"
-	ErrJnlFixedAssetNotYet    ErrorCode = "ERR_JNL_FIXED_ASSET_NOT_YET"
 	ErrJnlTaxNotYet           ErrorCode = "ERR_JNL_TAX_NOT_YET"
 	ErrJnlTemplateTypeNoPage  ErrorCode = "ERR_JNL_TEMPLATE_TYPE_NO_PAGE"
 )
@@ -52,11 +51,6 @@ func JnlRecurringOnlyField(table, field string) *AppError {
 // JnlMustNotBe: a field must not have a value (Posting No. Series equal to No. Series)
 func JnlMustNotBe(table, field, value string) *AppError {
 	return &AppError{Code: ErrJnlMustNotBe, Table: table, Field: field, Params: []string{value}}
-}
-
-// JnlFixedAssetNotYet: fixed asset lines cannot be posted until fixed asset posting is built
-func JnlFixedAssetNotYet(table, field string) *AppError {
-	return &AppError{Code: ErrJnlFixedAssetNotYet, Table: table, Field: field}
 }
 
 // JnlTaxNotYet: a tax calculation type that cannot be posted (only Sales Tax)

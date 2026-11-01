@@ -1,0 +1,18 @@
+page:
+  id: 5631
+  type: List
+  name: FA Journal Template List
+  source_table: FA_Journal_Template
+  caption: FA Journal Template List
+  editable: false
+  # The template to open an FA journal with (lookup)
+
+  layout:
+    repeater:
+      fields:
+        - source: name
+          width: 110
+        - source: description
+          width: 250
+        - source: recurring
+          width: 80

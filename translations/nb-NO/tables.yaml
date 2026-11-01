@@ -806,6 +806,8 @@ tables:
   g_l_entry:
     caption: "Finanspost"
     fields:
+      fa_entry_type: "Anleggsposttype"
+      fa_entry_no: "Anleggspostnr."
       entry_no: "Løpenr."
       gl_account_no: "Finanskontonr."
       posting_date: "Bokføringsdato"
@@ -850,6 +852,9 @@ tables:
 
     # Option field values
     options:
+      fa_entry_type:
+        fixed_asset: "Anleggsmiddel"
+        maintenance: "Vedlikehold"
       document_type:
         payment: "Betaling"
         invoice: "Faktura"
@@ -1644,6 +1649,17 @@ tables:
   fa_posting_group:
     caption: "Anleggsbokføringsgruppe"
     fields:
+      allocated_acquisition_cost_percent: "Fordelt anskaffelseskost %"
+      allocated_depreciation_percent: "Fordelt avskrivning %"
+      allocated_write_down_percent: "Fordelt nedskrivning %"
+      allocated_appreciation_percent: "Fordelt oppskrivning %"
+      allocated_custom_1_percent: "Fordelt bruker 1 %"
+      allocated_custom_2_percent: "Fordelt bruker 2 %"
+      allocated_sales_price_percent: "Fordelt salgspris %"
+      allocated_maintenance_percent: "Fordelt vedlikehold %"
+      allocated_gain_percent: "Fordelt gevinst %"
+      allocated_loss_percent: "Fordelt tap %"
+      allocated_book_value_percent: "Fordelt bokført verdi %"
       code: "Kode"
       acquisition_cost_account: "Konto for anskaffelseskost"
       accum_depreciation_account: "Konto for akkumulerte avskrivninger"
@@ -1949,6 +1965,176 @@ tables:
         " ": " "
         personal_property: "Løsøre"
         real_property: "Fast eiendom"
+  fa_posting_type_setup:
+    caption: "Oppsett av anleggsbokføringstyper"
+    fields:
+      fa_posting_type: "Anleggsbokføringstype"
+      depreciation_book_code: "Avskrivningsprofilkode"
+      part_of_book_value: "Del av bokført verdi"
+      part_of_depreciable_basis: "Del av avskrivningsgrunnlag"
+      include_in_depr_calculation: "Ta med i avskrivningsberegning"
+      include_in_gain_loss_calc: "Ta med i gevinst/tap-beregning"
+      reverse_before_disposal: "Tilbakefør før avhending"
+      sign: "Fortegn"
+      depreciation_type: "Avskrivningstype"
+      acquisition_type: "Anskaffelsestype"
+    options:
+      fa_posting_type:
+        write_down: "Nedskrivning"
+        appreciation: "Oppskrivning"
+        custom_1: "Bruker 1"
+        custom_2: "Bruker 2"
+      sign:
+        debit: "Debet"
+        credit: "Kredit"
+  fa_journal_setup:
+    caption: "Oppsett av anleggskladd"
+    fields:
+      depreciation_book_code: "Avskrivningsprofilkode"
+      user_id: "Bruker-ID"
+      fa_jnl_template_name: "Anleggskladdemalnavn"
+      fa_jnl_batch_name: "Anleggskladdenavn"
+      gen_jnl_template_name: "Finanskladdemalnavn"
+      gen_jnl_batch_name: "Finanskladdenavn"
+  fa_register:
+    caption: "Anleggsjournal"
+    fields:
+      no: "Nr."
+      from_entry_no: "Fra løpenr."
+      to_entry_no: "Til løpenr."
+      creation_date: "Opprettet dato"
+      source_code: "Kildekode"
+      user_id: "Bruker-ID"
+      journal_batch_name: "Kladdenavn"
+      journal_type: "Kladdetype"
+      g_l_register_no: "Finansjournalnr."
+      from_maintenance_entry_no: "Fra vedlikeholdsløpenr."
+      to_maintenance_entry_no: "Til vedlikeholdsløpenr."
+    options:
+      journal_type:
+        g_l: "Finans"
+        fixed_asset: "Anleggsmiddel"
+  fa_journal_template:
+    caption: "Anleggskladdemal"
+    fields:
+      name: "Navn"
+      description: "Beskrivelse"
+      test_report_id: "Testrapport-ID"
+      page_id: "Side-ID"
+      posting_report_id: "Bokføringsrapport-ID"
+      force_posting_report: "Tving bokføringsrapport"
+      source_code: "Kildekode"
+      reason_code: "Årsakskode"
+      recurring: "Gjentakende"
+      maint_posting_report_id: "Vedl.bokføringsrapport-ID"
+      no_series: "Nummerserie"
+      posting_no_series: "Bokføringsnummerserie"
+  fa_journal_batch:
+    caption: "Anleggskladdenavn"
+    fields:
+      journal_template_name: "Kladdemalnavn"
+      name: "Navn"
+      description: "Beskrivelse"
+      reason_code: "Årsakskode"
+      no_series: "Nummerserie"
+      posting_no_series: "Bokføringsnummerserie"
+  depreciation_table_header:
+    caption: "Avskrivningstabellhode"
+    fields:
+      code: "Kode"
+      description: "Beskrivelse"
+      period_length: "Periodelengde"
+      total_no_of_units: "Totalt antall enheter"
+    options:
+      period_length:
+        month: "Måned"
+        period: "Periode"
+        quarter: "Kvartal"
+        year: "År"
+  depreciation_table_line:
+    caption: "Avskrivningstabellinje"
+    fields:
+      depreciation_table_code: "Avskrivningstabellkode"
+      period_no: "Periodenr."
+      period_depreciation_percent: "Periodeavskrivning %"
+      no_of_units_in_period: "Antall enheter i periode"
+  fa_allocation:
+    caption: "Anleggsfordeling"
+    fields:
+      code: "Kode"
+      line_no: "Linjenr."
+      description: "Beskrivelse"
+      account_no: "Kontonr."
+      department_code: "Avdelingskode"
+      project_code: "Prosjektkode"
+      allocation_percent: "Fordeling %"
+      allocation_type: "Fordelingstype"
+      account_name: "Kontonavn"
+    options:
+      allocation_type:
+        acquisition: "Anskaffelse"
+        depreciation: "Avskrivning"
+        write_down: "Nedskrivning"
+        appreciation: "Oppskrivning"
+        custom_1: "Bruker 1"
+        custom_2: "Bruker 2"
+        disposal: "Avhending"
+        maintenance: "Vedlikehold"
+        gain: "Gevinst"
+        loss: "Tap"
+        book_value: "Bokført verdi"
+  fa_journal_line:
+    caption: "Anleggskladdelinje"
+    fields:
+      journal_template_name: "Kladdemalnavn"
+      journal_batch_name: "Kladdenavn"
+      line_no: "Linjenr."
+      depreciation_book_code: "Avskrivningsprofilkode"
+      fa_posting_type: "Anleggsbokføringstype"
+      fa_no: "Anleggsmiddelnr."
+      fa_posting_date: "Anleggsbokføringsdato"
+      posting_date: "Bokføringsdato"
+      document_type: "Bilagstype"
+      document_date: "Bilagsdato"
+      document_no: "Bilagsnr."
+      external_document_no: "Eksternt bilagsnr."
+      description: "Beskrivelse"
+      amount: "Beløp"
+      debit_amount: "Debetbeløp"
+      credit_amount: "Kreditbeløp"
+      salvage_value: "Utrangeringsverdi"
+      quantity: "Antall"
+      correction: "Korreksjon"
+      no_of_depreciation_days: "Antall avskrivningsdager"
+      depr_until_fa_posting_date: "Avskriv til anleggsbokføringsdato"
+      depr_acquisition_cost: "Avskriv anskaffelseskost"
+      fa_posting_group: "Anleggsbokføringsgruppe"
+      maintenance_code: "Vedlikeholdskode"
+      department_code: "Avdelingskode"
+      project_code: "Prosjektkode"
+      insurance_no: "Forsikringsnr."
+      use_duplication_list: "Bruk dupliseringsliste"
+      duplicate_in_depreciation_book: "Dupliser i avskrivningsprofil"
+      fa_reclassification_entry: "Anleggsomklassifiseringspost"
+      fa_error_entry_no: "Anleggsfeilpostnr."
+      reason_code: "Årsakskode"
+      source_code: "Kildekode"
+      index_entry: "Indekspost"
+      posting_no_series: "Bokføringsnummerserie"
+    options:
+      fa_posting_type:
+        acquisition_cost: "Anskaffelseskost"
+        depreciation: "Avskrivning"
+        write_down: "Nedskrivning"
+        appreciation: "Oppskrivning"
+        custom_1: "Bruker 1"
+        custom_2: "Bruker 2"
+        disposal: "Avhending"
+        maintenance: "Vedlikehold"
+        salvage_value: "Utrangeringsverdi"
+      document_type:
+        invoice: "Faktura"
+        credit_memo: "Kreditnota"
   maintenance_ledger_entry:
     caption: "Vedlikeholdspost"
     fields:
@@ -2150,6 +2336,20 @@ tables:
   gen_journal_line:
     caption: "Finanskladdelinje"
     fields:
+      fa_posting_date: "Anleggsbokføringsdato"
+      fa_posting_type: "Anleggsbokføringstype"
+      depreciation_book_code: "Avskrivningsprofilkode"
+      salvage_value: "Utrangeringsverdi"
+      no_of_depreciation_days: "Antall avskrivningsdager"
+      depr_until_fa_posting_date: "Avskriv til anleggsbokføringsdato"
+      depr_acquisition_cost: "Avskriv anskaffelseskost"
+      maintenance_code: "Vedlikeholdskode"
+      insurance_no: "Forsikringsnr."
+      duplicate_in_depreciation_book: "Dupliser i avskrivningsprofil"
+      use_duplication_list: "Bruk dupliseringsliste"
+      fa_reclassification_entry: "Anleggsomklassifiseringspost"
+      fa_error_entry_no: "Anleggsfeilpostnr."
+      index_entry: "Indekspost"
       journal_template_name: "Kladdemalnavn"
       line_no: "Linjenr."
       account_type: "Kontotype"
@@ -2234,6 +2434,15 @@ tables:
       bal_tax_base_amount_lcy: "Mva.-grunnlag for motkonto (NOK)"
       reversing_entry: "Tilbakeførende post"
     options:
+      fa_posting_type:
+        acquisition_cost: "Anskaffelseskost"
+        depreciation: "Avskrivning"
+        write_down: "Nedskrivning"
+        appreciation: "Oppskrivning"
+        custom_1: "Bruker 1"
+        custom_2: "Bruker 2"
+        disposal: "Avhending"
+        maintenance: "Vedlikehold"
       account_type:
         g_l_account: "Finanskonto"
         customer: "Kunde"
@@ -2305,6 +2514,8 @@ tables:
   source_code_setup:
     caption: "Kildekodeoppsett"
     fields:
+      fixed_asset_journal: "Anleggskladd"
+      fixed_asset_g_l_journal: "Anleggsfinanskladd"
       bom_journal: "Stykklistekladd"
       resource_journal: "Ressurskladd"
       inventory_post_cost: "Lagerkostbokføring"
@@ -2330,6 +2541,8 @@ tables:
   user_setup:
     caption: "Brukeroppsett"
     fields:
+      allow_fa_posting_from: "Tillat anleggsbokføring fra"
+      allow_fa_posting_to: "Tillat anleggsbokføring til"
       user_id: "Bruker-ID"
       allow_posting_from: "Tillat bokføring fra"
       allow_posting_to: "Tillat bokføring til"
@@ -4014,6 +4227,16 @@ tables:
   purchase_line:
     caption: "Kjøpslinje"
     fields:
+      fa_posting_date: "Anleggsbokføringsdato"
+      fa_posting_type: "Anleggsbokføringstype"
+      depreciation_book_code: "Avskrivningsprofilkode"
+      salvage_value: "Utrangeringsverdi"
+      depr_until_fa_posting_date: "Avskriv til anleggsbokføringsdato"
+      depr_acquisition_cost: "Avskriv anskaffelseskost"
+      maintenance_code: "Vedlikeholdskode"
+      insurance_no: "Forsikringsnr."
+      duplicate_in_depreciation_book: "Dupliser i avskrivningsprofil"
+      use_duplication_list: "Bruk dupliseringsliste"
       receipt_no: "Mottaksnr."
       receipt_line_no: "Mottakslinjenr."
       document_type: "Dokumenttype"
@@ -4082,6 +4305,9 @@ tables:
       qty_received_base: "Antall mottatt (basis)"
       qty_invoiced_base: "Antall fakturert (basis)"
     options:
+      fa_posting_type:
+        acquisition_cost: "Anskaffelseskost"
+        maintenance: "Vedlikehold"
       document_type:
         quote: "Tilbud"
         order: "Ordre"
@@ -4089,6 +4315,7 @@ tables:
         credit_memo: "Kreditnota"
         blanket_order: "Rammeordre"
       type:
+        fixed_asset: "Anleggsmiddel"
         g_l_account: "Finanskonto"
         item: "Vare"
       tax_calculation_type:
@@ -4412,6 +4639,7 @@ tables:
       item_rcpt_entry_no: "Varemottakslø.nr."
     options:
       type:
+        fixed_asset: "Anleggsmiddel"
         g_l_account: "Finanskonto"
         item: "Vare"
       tax_calculation_type:
@@ -4422,6 +4650,16 @@ tables:
   purch_inv_line:
     caption: "Kjøpsfakturalinje"
     fields:
+      fa_posting_date: "Anleggsbokføringsdato"
+      fa_posting_type: "Anleggsbokføringstype"
+      depreciation_book_code: "Avskrivningsprofilkode"
+      salvage_value: "Utrangeringsverdi"
+      depr_until_fa_posting_date: "Avskriv til anleggsbokføringsdato"
+      depr_acquisition_cost: "Avskriv anskaffelseskost"
+      maintenance_code: "Vedlikeholdskode"
+      insurance_no: "Forsikringsnr."
+      duplicate_in_depreciation_book: "Dupliser i avskrivningsprofil"
+      use_duplication_list: "Bruk dupliseringsliste"
       receipt_no: "Mottaksnr."
       receipt_line_no: "Mottakslinjenr."
       buy_from_vendor_no: "Kjøp fra-leverandørnr."
@@ -4473,7 +4711,11 @@ tables:
       unit_of_measure_code: "Enhetskode"
       quantity_base: "Antall (basis)"
     options:
+      fa_posting_type:
+        acquisition_cost: "Anskaffelseskost"
+        maintenance: "Vedlikehold"
       type:
+        fixed_asset: "Anleggsmiddel"
         g_l_account: "Finanskonto"
         item: "Vare"
       tax_calculation_type:
@@ -4484,6 +4726,16 @@ tables:
   purch_cr_memo_line:
     caption: "Kjøpskreditnotalinje"
     fields:
+      fa_posting_date: "Anleggsbokføringsdato"
+      fa_posting_type: "Anleggsbokføringstype"
+      depreciation_book_code: "Avskrivningsprofilkode"
+      salvage_value: "Utrangeringsverdi"
+      depr_until_fa_posting_date: "Avskriv til anleggsbokføringsdato"
+      depr_acquisition_cost: "Avskriv anskaffelseskost"
+      maintenance_code: "Vedlikeholdskode"
+      insurance_no: "Forsikringsnr."
+      duplicate_in_depreciation_book: "Dupliser i avskrivningsprofil"
+      use_duplication_list: "Bruk dupliseringsliste"
       buy_from_vendor_no: "Kjøp fra-leverandørnr."
       document_no: "Dokumentnr."
       line_no: "Linjenr."
@@ -4533,7 +4785,11 @@ tables:
       unit_of_measure_code: "Enhetskode"
       quantity_base: "Antall (basis)"
     options:
+      fa_posting_type:
+        acquisition_cost: "Anskaffelseskost"
+        maintenance: "Vedlikehold"
       type:
+        fixed_asset: "Anleggsmiddel"
         g_l_account: "Finanskonto"
         item: "Vare"
       tax_calculation_type:

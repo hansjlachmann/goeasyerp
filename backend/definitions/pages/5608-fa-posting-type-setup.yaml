@@ -1,0 +1,40 @@
+page:
+  id: 5608
+  type: List
+  name: FA Posting Type Setup
+  source_table: FA_Posting_Type_Setup
+  caption: FA Posting Type Setup
+  editable: true
+  # opened from a depreciation book (filtered on it); the book creates its four lines
+
+  layout:
+    repeater:
+      fields:
+        - source: depreciation_book_code
+          width: 110
+          visible: false
+        - source: fa_posting_type
+          width: 120
+        - source: part_of_book_value
+          width: 100
+        - source: part_of_depreciable_basis
+          width: 120
+        - source: include_in_depr_calculation
+          width: 120
+        - source: include_in_gain_loss_calc
+          width: 120
+        - source: reverse_before_disposal
+          width: 120
+        - source: acquisition_type
+          width: 100
+        - source: depreciation_type
+          width: 100
+        - source: sign
+          width: 90
+
+  actions:
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true

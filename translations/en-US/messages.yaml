@@ -472,6 +472,10 @@ Posting lines #3###### @4@@@@@@@@@@@@@"
   BOM_JNL_POST_WINDOW: "Journal Batch Name #1##########
 Checking lines #2######
 Posting lines #3###### @4@@@@@@@@@@@@@"
+  FA_JNL_TEMPLATE_DESCRIPTION: "Fixed Asset Journal"
+  FA_JNL_POST_WINDOW: "Journal Batch Name #1##########
+Checking lines #2######
+Posting lines #3###### @4@@@@@@@@@@@@@"
   BOM_JNL_TEMPLATE_DESCRIPTION: "BOM Journal"
   BOM_EXPLODE_CONFIRM: "Do you want to explode the BOM?"
   BOM_CALC_COST_LEVELS: "This BOM level,All BOM levels"

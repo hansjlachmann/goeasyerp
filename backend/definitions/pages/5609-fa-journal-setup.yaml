@@ -1,0 +1,44 @@
+page:
+  id: 5609
+  type: List
+  name: FA Journal Setup
+  source_table: FA_Journal_Setup
+  caption: FA Journal Setup
+  editable: true
+  # opened from a depreciation book (filtered on it): per user the journals the batch functions fill
+
+  layout:
+    repeater:
+      fields:
+        - source: depreciation_book_code
+          width: 110
+          visible: false
+        - source: user_id
+          width: 120
+        - source: fa_jnl_template_name
+          width: 120
+        - source: fa_jnl_batch_name
+          width: 120
+        - source: gen_jnl_template_name
+          width: 120
+        - source: gen_jnl_batch_name
+          width: 120
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

@@ -17,13 +17,15 @@ type genJournalTemplateLogic struct{}
 func init() { gtables.RegisterGenJournalTemplateLogic(genJournalTemplateLogic{}) }
 
 // The journal page of each template type (Form ID): General Journal 39, Sales Journal 253,
-// Purchase Journal 254, Cash Receipt Journal 255, Payment Journal 256
+// Purchase Journal 254, Cash Receipt Journal 255, Payment Journal 256, Fixed Asset G/L Journal
+// 5628
 var genJnlTemplatePages = map[gtables.GenJournalTemplateType]int{
 	gtables.GenJournalTemplate_Type.General:      39,
 	gtables.GenJournalTemplate_Type.Sales:        253,
 	gtables.GenJournalTemplate_Type.Purchases:    254,
 	gtables.GenJournalTemplate_Type.CashReceipts: 255,
 	gtables.GenJournalTemplate_Type.Payments:     256,
+	gtables.GenJournalTemplate_Type.Assets:       5628,
 }
 
 // OnInsert: a template without a page gets its type's page
@@ -79,6 +81,8 @@ func (genJournalTemplateLogic) OnValidate_Type(rec *gtables.GenJournalTemplate) 
 		rec.Source_code = sourceCodeSetup.Cash_receipt_journal
 	case gtables.GenJournalTemplate_Type.Payments:
 		rec.Source_code = sourceCodeSetup.Payment_journal
+	case gtables.GenJournalTemplate_Type.Assets:
+		rec.Source_code = sourceCodeSetup.Fixed_asset_g_l_journal
 	}
 	rec.Page_id = genJnlTemplatePages[rec.Type]
 	return nil

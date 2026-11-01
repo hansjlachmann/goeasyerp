@@ -38,7 +38,7 @@ table:
       no: 5
       type: Option
       db_name: type
-      options: [" ", "G/L Account", "Item"]
+      options: [" ", "G/L Account", "Item", "", "Fixed Asset"]
 
     - name: no
       no: 6
@@ -67,6 +67,14 @@ table:
                 width: 250
           - when: {field: type, equal: 2}
             table: Item
+            field: no
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: description
+                width: 250
+          - when: {field: type, equal: 4}
+            table: Fixed_Asset
             field: no
             lookup_columns:
               - source: no

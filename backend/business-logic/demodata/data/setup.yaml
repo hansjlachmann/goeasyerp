@@ -56,6 +56,8 @@ master_data:
       - {code: INVTPCOST, description: Inventory cost posted to the G/L}
       - {code: RESJNL, description: Resource journal}
       - {code: BOMJNL, description: BOM journal}
+      - {code: FAJNL, description: Fixed asset journal}
+      - {code: FAGLJNL, description: Fixed asset G/L journal}
   - table: Reason_Code
     records:
       - {code: CORRECTION, description: Correction of an entry}
@@ -190,6 +192,8 @@ master_data:
       - {no: "6150", name: "Realized Exchange Losses", account_type: 0, income_balance: 0}
       - {no: "6160", name: "Unrealized Exchange Gains", account_type: 0, income_balance: 0}
       - {no: "6170", name: "Unrealized Exchange Losses", account_type: 0, income_balance: 0}
+      - {no: "6180", name: "Gains on Disposal of FA", account_type: 0, income_balance: 0}
+      - {no: "6190", name: "Losses on Disposal of FA", account_type: 0, income_balance: 0}
       - {no: "6199", name: "Total Financial Items", account_type: 4, income_balance: 0, direct_posting: false}
       - {no: "8999", name: "NET INCOME", account_type: 2, income_balance: 0, direct_posting: false, totaling: "3000..6999"}
   - table: Tax_Jurisdiction   # sales tax: the domestic tax on the demo's tax accounts
@@ -622,9 +626,9 @@ master_data:
       - {code: WAREHOUSE, name: Main warehouse}
   - table: FA_Posting_Group   # the asset, accumulated depreciation and depreciation expense accounts
     records:
-      - {code: VEHICLES, acquisition_cost_account: "1250", accum_depreciation_account: "1260", acq_cost_acc_on_disposal: "1250", accum_depr_acc_on_disposal: "1260", depreciation_expense_acc: "5630", maintenance_expense_account: "5320", acquisition_cost_bal_acc: "2310"}
-      - {code: EQUIPMENT, acquisition_cost_account: "1230", accum_depreciation_account: "1240", acq_cost_acc_on_disposal: "1230", accum_depr_acc_on_disposal: "1240", depreciation_expense_acc: "5620", maintenance_expense_account: "5320", acquisition_cost_bal_acc: "2310"}
-      - {code: OFFICE, acquisition_cost_account: "1270", accum_depreciation_account: "1280", acq_cost_acc_on_disposal: "1270", accum_depr_acc_on_disposal: "1280", depreciation_expense_acc: "5640", maintenance_expense_account: "5320", acquisition_cost_bal_acc: "2310"}
+      - {code: VEHICLES, acquisition_cost_account: "1250", accum_depreciation_account: "1260", acq_cost_acc_on_disposal: "1250", accum_depr_acc_on_disposal: "1260", depreciation_expense_acc: "5630", maintenance_expense_account: "5320", acquisition_cost_bal_acc: "2310", gains_acc_on_disposal: "6180", losses_acc_on_disposal: "6190", sales_acc_on_disposal: "6180", book_value_acc_on_disposal: "6190"}
+      - {code: EQUIPMENT, acquisition_cost_account: "1230", accum_depreciation_account: "1240", acq_cost_acc_on_disposal: "1230", accum_depr_acc_on_disposal: "1240", depreciation_expense_acc: "5620", maintenance_expense_account: "5320", acquisition_cost_bal_acc: "2310", gains_acc_on_disposal: "6180", losses_acc_on_disposal: "6190", sales_acc_on_disposal: "6180", book_value_acc_on_disposal: "6190"}
+      - {code: OFFICE, acquisition_cost_account: "1270", accum_depreciation_account: "1280", acq_cost_acc_on_disposal: "1270", accum_depr_acc_on_disposal: "1280", depreciation_expense_acc: "5640", maintenance_expense_account: "5320", acquisition_cost_bal_acc: "2310", gains_acc_on_disposal: "6180", losses_acc_on_disposal: "6190", sales_acc_on_disposal: "6180", book_value_acc_on_disposal: "6190"}
   - table: Maintenance
     records:
       - {code: SERVICE, description: Periodic service}
@@ -636,7 +640,7 @@ master_data:
       - {code: PROPERTY, description: Property insurance}
   - table: Source_Code_Setup   # the single setup record (blank key): the journals' source codes
     records:
-      - {general_journal: GENJNL, sales_journal: SALESJNL, purchase_journal: PURCHJNL, cash_receipt_journal: CASHRECJNL, payment_journal: PAYMENTJNL, sales: SALES, purchases: PURCHASES, sales_entry_application: SALESAPPL, purchase_entry_application: PURCHAPPL, item_journal: ITEMJNL, item_transfer_journal: TRANSFER, phys_inventory_journal: PHYSINVJNL, inventory_post_cost: INVTPCOST, resource_journal: RESJNL, bom_journal: BOMJNL}
+      - {general_journal: GENJNL, sales_journal: SALESJNL, purchase_journal: PURCHJNL, cash_receipt_journal: CASHRECJNL, payment_journal: PAYMENTJNL, sales: SALES, purchases: PURCHASES, sales_entry_application: SALESAPPL, purchase_entry_application: PURCHAPPL, item_journal: ITEMJNL, item_transfer_journal: TRANSFER, phys_inventory_journal: PHYSINVJNL, inventory_post_cost: INVTPCOST, resource_journal: RESJNL, bom_journal: BOMJNL, fixed_asset_journal: FAJNL, fixed_asset_g_l_journal: FAGLJNL}
   - table: Gen_Journal_Template   # one per journal type (type 0 General … 4 Payments); page and source code come from the type
     records:
       - {name: GENERAL, description: General Journal, type: 0, no_series: GJNL-GEN}
@@ -684,6 +688,12 @@ master_data:
   - table: BOM_Journal_Batch
     records:
       - {journal_template_name: BOM, name: DEFAULT, description: Default Journal, no_series: BJNL}
+  - table: FA_Journal_Template
+    records:
+      - {name: ASSETS, description: Fixed Asset Journal, page_id: 5629, source_code: FAJNL}
+  - table: FA_Journal_Batch
+    records:
+      - {journal_template_name: ASSETS, name: DEFAULT, description: Default Journal}
   - table: Work_Type
     records:
       - {code: NORMAL, description: Normal hours, unit_of_measure_code: HOUR}

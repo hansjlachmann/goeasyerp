@@ -93,7 +93,14 @@ table:
       type: types.Code
       db_name: depreciation_table_code
       length: 10
-      # relates to the Depreciation Table Header (comes with the depreciation tables)
+      table_relation:
+        table: Depreciation_Table_Header
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
 
     - name: final_rounding_amount
       no: 11

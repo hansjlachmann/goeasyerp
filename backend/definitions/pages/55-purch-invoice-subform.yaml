@@ -83,6 +83,15 @@ page:
         - source: receipt_no
           width: 120
           visible: false
+        - source: fa_posting_type
+          width: 130
+          visible: false
+        - source: depreciation_book_code
+          width: 110
+          visible: false
+        - source: maintenance_code
+          width: 110
+          visible: false
 
   actions:
     - name: New

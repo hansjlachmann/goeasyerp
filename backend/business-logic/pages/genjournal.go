@@ -8,16 +8,17 @@ import (
 )
 
 // The journal pages 39 General Journal, 253 Sales Journal, 254 Purchase Journal, 255 Cash
-// Receipt Journal and 256 Payment Journal: OnOpenPage opens a template of the page's type and
+// Receipt Journal, 256 Payment Journal and 5628 Fixed Asset G/L Journal: OnOpenPage opens a template of the page's type and
 // one of its batches (GenJnlManagement); a new line gets its values from the line above
 // (SetUpNewLine); the footer shows the names of the line's accounts and the journal's balance
 // up to the line and in total.
 var genJournalPages = map[int]gtables.GenJournalTemplateType{
-	39:  gtables.GenJournalTemplate_Type.General,
-	253: gtables.GenJournalTemplate_Type.Sales,
-	254: gtables.GenJournalTemplate_Type.Purchases,
-	255: gtables.GenJournalTemplate_Type.CashReceipts,
-	256: gtables.GenJournalTemplate_Type.Payments,
+	39:   gtables.GenJournalTemplate_Type.General,
+	253:  gtables.GenJournalTemplate_Type.Sales,
+	254:  gtables.GenJournalTemplate_Type.Purchases,
+	255:  gtables.GenJournalTemplate_Type.CashReceipts,
+	256:  gtables.GenJournalTemplate_Type.Payments,
+	5628: gtables.GenJournalTemplate_Type.Assets,
 }
 
 func init() {

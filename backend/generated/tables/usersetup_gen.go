@@ -14,6 +14,8 @@
 //	OnValidate_Allow_posting_from(rec *gtables.UserSetup) error
 //	OnValidate_Allow_posting_to(rec *gtables.UserSetup) error
 //	OnValidate_Register_time(rec *gtables.UserSetup) error
+//	OnValidate_Allow_fa_posting_from(rec *gtables.UserSetup) error
+//	OnValidate_Allow_fa_posting_to(rec *gtables.UserSetup) error
 
 package tables
 
@@ -36,10 +38,12 @@ import (
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterUserSetupLogic.
 type UserSetup struct {
-	User_id            types.Code `db:"user_id,pk"`
-	Allow_posting_from types.Date `db:"allow_posting_from"`
-	Allow_posting_to   types.Date `db:"allow_posting_to"`
-	Register_time      bool       `db:"register_time"`
+	User_id               types.Code `db:"user_id,pk"`
+	Allow_posting_from    types.Date `db:"allow_posting_from"`
+	Allow_posting_to      types.Date `db:"allow_posting_to"`
+	Register_time         bool       `db:"register_time"`
+	Allow_fa_posting_from types.Date `db:"allow_fa_posting_from"`
+	Allow_fa_posting_to   types.Date `db:"allow_fa_posting_to"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -106,15 +110,19 @@ const UserSetupTableName = "User_Setup"
 // UserSetup_FieldNo holds the field numbers of User_Setup (FieldNo):
 // UserSetup_FieldNo.User_id is 1
 var UserSetup_FieldNo = struct {
-	User_id            int
-	Allow_posting_from int
-	Allow_posting_to   int
-	Register_time      int
+	User_id               int
+	Allow_posting_from    int
+	Allow_posting_to      int
+	Register_time         int
+	Allow_fa_posting_from int
+	Allow_fa_posting_to   int
 }{
-	User_id:            1,
-	Allow_posting_from: 2,
-	Allow_posting_to:   3,
-	Register_time:      4,
+	User_id:               1,
+	Allow_posting_from:    2,
+	Allow_posting_to:      3,
+	Register_time:         4,
+	Allow_fa_posting_from: 5600,
+	Allow_fa_posting_to:   5601,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -128,6 +136,10 @@ func (t *UserSetup) FieldNo(fieldName string) int {
 		return 3
 	case "register_time":
 		return 4
+	case "allow_fa_posting_from":
+		return 5600
+	case "allow_fa_posting_to":
+		return 5601
 	}
 	return 0
 }
@@ -143,6 +155,10 @@ func (t *UserSetup) FieldName(fieldNo int) string {
 		return "allow_posting_to"
 	case 4:
 		return "register_time"
+	case 5600:
+		return "allow_fa_posting_from"
+	case 5601:
+		return "allow_fa_posting_to"
 	}
 	return ""
 }
@@ -232,14 +248,16 @@ func (t *UserSetup) DeleteOrError(runTrigger bool) error {
 
 // Triggers of User_Setup: a business logic type implements the ones it needs
 type (
-	UserSetupOnInsert                      interface{ OnInsert(rec *UserSetup) error }
-	UserSetupOnModify                      interface{ OnModify(rec *UserSetup) error }
-	UserSetupOnDelete                      interface{ OnDelete(rec *UserSetup) error }
-	UserSetupOnRename                      interface{ OnRename(rec *UserSetup) error }
-	UserSetupOnValidate_User_id            interface{ OnValidate_User_id(rec *UserSetup) error }
-	UserSetupOnValidate_Allow_posting_from interface{ OnValidate_Allow_posting_from(rec *UserSetup) error }
-	UserSetupOnValidate_Allow_posting_to   interface{ OnValidate_Allow_posting_to(rec *UserSetup) error }
-	UserSetupOnValidate_Register_time      interface{ OnValidate_Register_time(rec *UserSetup) error }
+	UserSetupOnInsert                         interface{ OnInsert(rec *UserSetup) error }
+	UserSetupOnModify                         interface{ OnModify(rec *UserSetup) error }
+	UserSetupOnDelete                         interface{ OnDelete(rec *UserSetup) error }
+	UserSetupOnRename                         interface{ OnRename(rec *UserSetup) error }
+	UserSetupOnValidate_User_id               interface{ OnValidate_User_id(rec *UserSetup) error }
+	UserSetupOnValidate_Allow_posting_from    interface{ OnValidate_Allow_posting_from(rec *UserSetup) error }
+	UserSetupOnValidate_Allow_posting_to      interface{ OnValidate_Allow_posting_to(rec *UserSetup) error }
+	UserSetupOnValidate_Register_time         interface{ OnValidate_Register_time(rec *UserSetup) error }
+	UserSetupOnValidate_Allow_fa_posting_from interface{ OnValidate_Allow_fa_posting_from(rec *UserSetup) error }
+	UserSetupOnValidate_Allow_fa_posting_to   interface{ OnValidate_Allow_fa_posting_to(rec *UserSetup) error }
 )
 
 // userSetupLogic is the registered business logic of User_Setup, in
@@ -277,6 +295,10 @@ func userSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(UserSetupOnValidate_Allow_posting_to)
 	case "OnValidate_Register_time":
 		_, ok = logic.(UserSetupOnValidate_Register_time)
+	case "OnValidate_Allow_fa_posting_from":
+		_, ok = logic.(UserSetupOnValidate_Allow_fa_posting_from)
+	case "OnValidate_Allow_fa_posting_to":
+		_, ok = logic.(UserSetupOnValidate_Allow_fa_posting_to)
 	default:
 		return false, false
 	}
@@ -387,7 +409,9 @@ func GetUserSetupTableSchema() string {
 		user_id TEXT(50) PRIMARY KEY,
 		allow_posting_from TEXT,
 		allow_posting_to TEXT,
-		register_time INTEGER
+		register_time INTEGER,
+		allow_fa_posting_from TEXT,
+		allow_fa_posting_to TEXT
 	`
 }
 
@@ -397,7 +421,9 @@ func GetUserSetupPostgresTableSchema() string {
 		user_id VARCHAR(50) PRIMARY KEY,
 		allow_posting_from DATE,
 		allow_posting_to DATE,
-		register_time BOOLEAN
+		register_time BOOLEAN,
+		allow_fa_posting_from DATE,
+		allow_fa_posting_to DATE
 	`
 }
 
@@ -524,6 +550,8 @@ func (t *UserSetup) StoreOldValues() {
 	t.oldValues["allow_posting_from"] = t.Allow_posting_from
 	t.oldValues["allow_posting_to"] = t.Allow_posting_to
 	t.oldValues["register_time"] = t.Register_time
+	t.oldValues["allow_fa_posting_from"] = t.Allow_fa_posting_from
+	t.oldValues["allow_fa_posting_to"] = t.Allow_fa_posting_to
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -549,6 +577,12 @@ func (t *UserSetup) XRec() *UserSetup {
 	}
 	if v, ok := t.oldValues["register_time"].(bool); ok {
 		x.Register_time = v
+	}
+	if v, ok := t.oldValues["allow_fa_posting_from"].(types.Date); ok {
+		x.Allow_fa_posting_from = v
+	}
+	if v, ok := t.oldValues["allow_fa_posting_to"].(types.Date); ok {
+		x.Allow_fa_posting_to = v
 	}
 	return x
 }
@@ -615,6 +649,8 @@ func (t *UserSetup) GetByPK(user_id types.Code) bool {
 	var allow_posting_fromNull sql.NullString
 	var allow_posting_toNull sql.NullString
 	var register_timeBool sql.NullBool
+	var allow_fa_posting_fromNull sql.NullString
+	var allow_fa_posting_toNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -622,7 +658,7 @@ func (t *UserSetup) GetByPK(user_id types.Code) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT user_id, allow_posting_from, allow_posting_to, register_time FROM "%s" WHERE 1=1 AND user_id = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT user_id, allow_posting_from, allow_posting_to, register_time, allow_fa_posting_from, allow_fa_posting_to FROM "%s" WHERE 1=1 AND user_id = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -633,6 +669,8 @@ func (t *UserSetup) GetByPK(user_id types.Code) bool {
 		&allow_posting_fromNull,
 		&allow_posting_toNull,
 		&register_timeBool,
+		&allow_fa_posting_fromNull,
+		&allow_fa_posting_toNull,
 	)
 
 	if err != nil {
@@ -650,6 +688,8 @@ func (t *UserSetup) GetByPK(user_id types.Code) bool {
 	t.Allow_posting_from, _ = types.NewDateFromString(allow_posting_fromNull.String)
 	t.Allow_posting_to, _ = types.NewDateFromString(allow_posting_toNull.String)
 	t.Register_time = register_timeBool.Bool
+	t.Allow_fa_posting_from, _ = types.NewDateFromString(allow_fa_posting_fromNull.String)
+	t.Allow_fa_posting_to, _ = types.NewDateFromString(allow_fa_posting_toNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -676,11 +716,13 @@ func (t *UserSetup) Insert(runTrigger bool) bool {
 		t.Allow_posting_from,
 		t.Allow_posting_to,
 		t.Register_time,
+		t.Allow_fa_posting_from,
+		t.Allow_fa_posting_to,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (user_id, allow_posting_from, allow_posting_to, register_time) VALUES (?, ?, ?, ?) ON CONFLICT (user_id) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (user_id, allow_posting_from, allow_posting_to, register_time, allow_fa_posting_from, allow_fa_posting_to) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (user_id) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -722,10 +764,12 @@ func (t *UserSetup) InsertAll(records []*UserSetup, runTrigger bool) error {
 			r.Allow_posting_from,
 			r.Allow_posting_to,
 			r.Register_time,
+			r.Allow_fa_posting_from,
+			r.Allow_fa_posting_to,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, UserSetupTableName)
-	columns := []string{"user_id", "allow_posting_from", "allow_posting_to", "register_time"}
+	columns := []string{"user_id", "allow_posting_from", "allow_posting_to", "register_time", "allow_fa_posting_from", "allow_fa_posting_to"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -781,6 +825,14 @@ func (t *UserSetup) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "register_time = ?")
 			values = append(values, t.Register_time)
 		}
+		if t.hasFieldChanged("allow_fa_posting_from") {
+			setClauses = append(setClauses, "allow_fa_posting_from = ?")
+			values = append(values, t.Allow_fa_posting_from)
+		}
+		if t.hasFieldChanged("allow_fa_posting_to") {
+			setClauses = append(setClauses, "allow_fa_posting_to = ?")
+			values = append(values, t.Allow_fa_posting_to)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -794,6 +846,10 @@ func (t *UserSetup) Modify(runTrigger bool) bool {
 		values = append(values, t.Allow_posting_to)
 		setClauses = append(setClauses, "register_time = ?")
 		values = append(values, t.Register_time)
+		setClauses = append(setClauses, "allow_fa_posting_from = ?")
+		values = append(values, t.Allow_fa_posting_from)
+		setClauses = append(setClauses, "allow_fa_posting_to = ?")
+		values = append(values, t.Allow_fa_posting_to)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -855,6 +911,14 @@ func (t *UserSetup) hasFieldChanged(fieldName string) bool {
 			return t.Register_time != old
 		}
 		return true // Type mismatch, assume changed
+	case "allow_fa_posting_from":
+		if old, ok := oldValue.(types.Date); ok {
+			return !t.Allow_fa_posting_from.Equal(old)
+		}
+	case "allow_fa_posting_to":
+		if old, ok := oldValue.(types.Date); ok {
+			return !t.Allow_fa_posting_to.Equal(old)
+		}
 	}
 
 	return false
@@ -1067,6 +1131,10 @@ func (t *UserSetup) columnName(fieldName string) (string, bool) {
 		return "allow_posting_to", true
 	case strings.ToLower("register_time"):
 		return "register_time", true
+	case strings.ToLower("allow_fa_posting_from"):
+		return "allow_fa_posting_from", true
+	case strings.ToLower("allow_fa_posting_to"):
+		return "allow_fa_posting_to", true
 	}
 	return "", false
 }
@@ -1232,6 +1300,10 @@ func (t *UserSetup) isDateColumn(column string) bool {
 	case "allow_posting_from":
 		return true
 	case "allow_posting_to":
+		return true
+	case "allow_fa_posting_from":
+		return true
+	case "allow_fa_posting_to":
 		return true
 	}
 	return false
@@ -1420,7 +1492,7 @@ func (t *UserSetup) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT user_id, allow_posting_from, allow_posting_to, register_time FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT user_id, allow_posting_from, allow_posting_to, register_time, allow_fa_posting_from, allow_fa_posting_to FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1429,12 +1501,16 @@ func (t *UserSetup) FindFirst() bool {
 	var allow_posting_fromNull sql.NullString
 	var allow_posting_toNull sql.NullString
 	var register_timeBool sql.NullBool
+	var allow_fa_posting_fromNull sql.NullString
+	var allow_fa_posting_toNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&user_idNull,
 		&allow_posting_fromNull,
 		&allow_posting_toNull,
 		&register_timeBool,
+		&allow_fa_posting_fromNull,
+		&allow_fa_posting_toNull,
 	)
 
 	if err != nil {
@@ -1450,6 +1526,8 @@ func (t *UserSetup) FindFirst() bool {
 	t.Allow_posting_from, _ = types.NewDateFromString(allow_posting_fromNull.String)
 	t.Allow_posting_to, _ = types.NewDateFromString(allow_posting_toNull.String)
 	t.Register_time = register_timeBool.Bool
+	t.Allow_fa_posting_from, _ = types.NewDateFromString(allow_fa_posting_fromNull.String)
+	t.Allow_fa_posting_to, _ = types.NewDateFromString(allow_fa_posting_toNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1470,7 +1548,7 @@ func (t *UserSetup) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT user_id, allow_posting_from, allow_posting_to, register_time FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT user_id, allow_posting_from, allow_posting_to, register_time, allow_fa_posting_from, allow_fa_posting_to FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1479,12 +1557,16 @@ func (t *UserSetup) FindLast() bool {
 	var allow_posting_fromNull sql.NullString
 	var allow_posting_toNull sql.NullString
 	var register_timeBool sql.NullBool
+	var allow_fa_posting_fromNull sql.NullString
+	var allow_fa_posting_toNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&user_idNull,
 		&allow_posting_fromNull,
 		&allow_posting_toNull,
 		&register_timeBool,
+		&allow_fa_posting_fromNull,
+		&allow_fa_posting_toNull,
 	)
 
 	if err != nil {
@@ -1500,6 +1582,8 @@ func (t *UserSetup) FindLast() bool {
 	t.Allow_posting_from, _ = types.NewDateFromString(allow_posting_fromNull.String)
 	t.Allow_posting_to, _ = types.NewDateFromString(allow_posting_toNull.String)
 	t.Register_time = register_timeBool.Bool
+	t.Allow_fa_posting_from, _ = types.NewDateFromString(allow_fa_posting_fromNull.String)
+	t.Allow_fa_posting_to, _ = types.NewDateFromString(allow_fa_posting_toNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1550,7 +1634,7 @@ func (t *UserSetup) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT user_id, allow_posting_from, allow_posting_to, register_time FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT user_id, allow_posting_from, allow_posting_to, register_time, allow_fa_posting_from, allow_fa_posting_to FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1623,12 +1707,16 @@ func (t *UserSetup) Next(steps ...int) bool {
 		var allow_posting_fromNull sql.NullString
 		var allow_posting_toNull sql.NullString
 		var register_timeBool sql.NullBool
+		var allow_fa_posting_fromNull sql.NullString
+		var allow_fa_posting_toNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&user_idNull,
 			&allow_posting_fromNull,
 			&allow_posting_toNull,
 			&register_timeBool,
+			&allow_fa_posting_fromNull,
+			&allow_fa_posting_toNull,
 		)
 
 		if err != nil {
@@ -1643,6 +1731,8 @@ func (t *UserSetup) Next(steps ...int) bool {
 		t.Allow_posting_from, _ = types.NewDateFromString(allow_posting_fromNull.String)
 		t.Allow_posting_to, _ = types.NewDateFromString(allow_posting_toNull.String)
 		t.Register_time = register_timeBool.Bool
+		t.Allow_fa_posting_from, _ = types.NewDateFromString(allow_fa_posting_fromNull.String)
+		t.Allow_fa_posting_to, _ = types.NewDateFromString(allow_fa_posting_toNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -1692,7 +1782,7 @@ func (t *UserSetup) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT user_id, allow_posting_from, allow_posting_to, register_time FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT user_id, allow_posting_from, allow_posting_to, register_time, allow_fa_posting_from, allow_fa_posting_to FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1718,12 +1808,16 @@ func (t *UserSetup) FindSetBuffered() bool {
 		var allow_posting_fromNull sql.NullString
 		var allow_posting_toNull sql.NullString
 		var register_timeBool sql.NullBool
+		var allow_fa_posting_fromNull sql.NullString
+		var allow_fa_posting_toNull sql.NullString
 
 		err := rows.Scan(
 			&user_idNull,
 			&allow_posting_fromNull,
 			&allow_posting_toNull,
 			&register_timeBool,
+			&allow_fa_posting_fromNull,
+			&allow_fa_posting_toNull,
 		)
 
 		if err != nil {
@@ -1736,6 +1830,8 @@ func (t *UserSetup) FindSetBuffered() bool {
 		record.Allow_posting_from, _ = types.NewDateFromString(allow_posting_fromNull.String)
 		record.Allow_posting_to, _ = types.NewDateFromString(allow_posting_toNull.String)
 		record.Register_time = register_timeBool.Bool
+		record.Allow_fa_posting_from, _ = types.NewDateFromString(allow_fa_posting_fromNull.String)
+		record.Allow_fa_posting_to, _ = types.NewDateFromString(allow_fa_posting_toNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -1768,6 +1864,8 @@ func (t *UserSetup) copyFromBuffered(record *UserSetup) {
 	t.Allow_posting_from = record.Allow_posting_from
 	t.Allow_posting_to = record.Allow_posting_to
 	t.Register_time = record.Register_time
+	t.Allow_fa_posting_from = record.Allow_fa_posting_from
+	t.Allow_fa_posting_to = record.Allow_fa_posting_to
 	t.StoreOldValues()
 }
 
@@ -1991,6 +2089,54 @@ func (t *UserSetup) ValidateField(fieldName string, value interface{}) error {
 			}
 		}
 		return nil
+	case "allow_fa_posting_from":
+		// Set field value
+		if v, ok := value.(types.Date); ok {
+			t.Allow_fa_posting_from = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Allow_fa_posting_from, err = types.NewDateFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid date value for field allow_fa_posting_from: %w", err)
+			}
+		} else if v, ok := value.(time.Time); ok {
+			t.Allow_fa_posting_from = types.NewDateFromTime(v)
+		} else {
+			return fmt.Errorf("invalid type for field allow_fa_posting_from (expected Date, string, or time.Time)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(UserSetupOnValidate_Allow_fa_posting_from); ok {
+				if err := trg.OnValidate_Allow_fa_posting_from(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "allow_fa_posting_to":
+		// Set field value
+		if v, ok := value.(types.Date); ok {
+			t.Allow_fa_posting_to = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Allow_fa_posting_to, err = types.NewDateFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid date value for field allow_fa_posting_to: %w", err)
+			}
+		} else if v, ok := value.(time.Time); ok {
+			t.Allow_fa_posting_to = types.NewDateFromTime(v)
+		} else {
+			return fmt.Errorf("invalid type for field allow_fa_posting_to (expected Date, string, or time.Time)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(UserSetupOnValidate_Allow_fa_posting_to); ok {
+				if err := trg.OnValidate_Allow_fa_posting_to(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -2011,6 +2157,10 @@ func (t *UserSetup) FieldValue(no int) (any, bool) {
 		return t.Allow_posting_to, true
 	case 4:
 		return t.Register_time, true
+	case 5600:
+		return t.Allow_fa_posting_from, true
+	case 5601:
+		return t.Allow_fa_posting_to, true
 	}
 	return nil, false
 }
@@ -2048,6 +2198,16 @@ func (t *UserSetup) SetFieldValue(no int, value any) bool {
 	case 4:
 		if v, ok := value.(bool); ok {
 			t.Register_time = v
+			return true
+		}
+	case 5600:
+		if v, ok := value.(types.Date); ok {
+			t.Allow_fa_posting_from = v
+			return true
+		}
+	case 5601:
+		if v, ok := value.(types.Date); ok {
+			t.Allow_fa_posting_to = v
 			return true
 		}
 	}
@@ -2478,6 +2638,10 @@ func (t *UserSetup) columnValue(column string) (interface{}, bool) {
 		return t.Allow_posting_to, true
 	case "register_time":
 		return t.Register_time, true
+	case "allow_fa_posting_from":
+		return t.Allow_fa_posting_from, true
+	case "allow_fa_posting_to":
+		return t.Allow_fa_posting_to, true
 	}
 	return nil, false
 }
@@ -2535,6 +2699,8 @@ func (t *UserSetup) Init() {
 	t.Allow_posting_from = *new(types.Date)
 	t.Allow_posting_to = *new(types.Date)
 	t.Register_time = *new(bool)
+	t.Allow_fa_posting_from = *new(types.Date)
+	t.Allow_fa_posting_to = *new(types.Date)
 	t.applyDefaults()
 }
 
@@ -2569,10 +2735,12 @@ func (t *UserSetup) ClearFilters() {
 // ToMap converts the current record to a map for JSON serialization
 func (t *UserSetup) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"user_id":            t.User_id.String(),
-		"allow_posting_from": t.Allow_posting_from.String(),
-		"allow_posting_to":   t.Allow_posting_to.String(),
-		"register_time":      t.Register_time,
+		"user_id":               t.User_id.String(),
+		"allow_posting_from":    t.Allow_posting_from.String(),
+		"allow_posting_to":      t.Allow_posting_to.String(),
+		"register_time":         t.Register_time,
+		"allow_fa_posting_from": t.Allow_fa_posting_from.String(),
+		"allow_fa_posting_to":   t.Allow_fa_posting_to.String(),
 	}
 }
 
@@ -2596,6 +2764,16 @@ func (t *UserSetup) FromMap(data map[string]interface{}) {
 	if v, ok := data["register_time"]; ok && v != nil {
 		if b, ok := v.(bool); ok {
 			t.Register_time = b
+		}
+	}
+	if v, ok := data["allow_fa_posting_from"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Allow_fa_posting_from, _ = types.NewDateFromString(s)
+		}
+	}
+	if v, ok := data["allow_fa_posting_to"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Allow_fa_posting_to, _ = types.NewDateFromString(s)
 		}
 	}
 }
@@ -2653,6 +2831,26 @@ func (t *UserSetup) GetFields() []tables.FieldInfo {
 			No:         4,
 			Name:       "register_time",
 			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5600,
+			Name:       "allow_fa_posting_from",
+			Type:       tables.FieldTypeDate,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5601,
+			Name:       "allow_fa_posting_to",
+			Type:       tables.FieldTypeDate,
 			Length:     0,
 			Required:   false,
 			Editable:   true,

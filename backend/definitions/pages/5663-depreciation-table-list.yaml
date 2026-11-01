@@ -1,0 +1,39 @@
+page:
+  id: 5663
+  type: List
+  name: Depreciation Table List
+  source_table: Depreciation_Table_Header
+  caption: Depreciation Table List
+  card_page_id: 5659
+  modal_card: true
+
+  layout:
+    repeater:
+      fields:
+        - source: code
+          width: 110
+        - source: description
+          width: 250
+        - source: period_length
+          width: 110
+        - source: total_no_of_units
+          width: 130
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

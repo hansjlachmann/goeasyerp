@@ -35,6 +35,9 @@ application:
       # The classic item fields (Variant Code 5402, Unit of Measure Code 5407 …)
       - from: 5400
         to: 5499
+      # The classic fixed asset fields (FA Posting Date 5600, FA Entry Type 5600 on G/L entries …)
+      - from: 5600
+        to: 5699
   # System tables (2000000000 range: User, Company, Permission …)
   system_tables:
     - from: 2000000000

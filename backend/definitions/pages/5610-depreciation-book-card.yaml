@@ -92,3 +92,20 @@ page:
       shortcut: Ctrl+D
       promoted: true
       enabled: true
+
+    # The book's posting types (FA Posting Type Setup) and the journals its batch functions fill
+    - name: Depr. Book
+      caption: Depr. Book
+      image: Setup
+      promoted: true
+      items:
+        - name: FA Posting Type Setup
+          caption: FA Posting Type Setup
+          run_page: 5608
+          run_page_filter_field: depreciation_book_code
+          run_page_filter_value: code
+        - name: FA Journal Setup
+          caption: FA Journal Setup
+          run_page: 5609
+          run_page_filter_field: depreciation_book_code
+          run_page_filter_value: code

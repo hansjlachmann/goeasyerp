@@ -707,3 +707,35 @@ pages:
     caption: "Ressourcedisponering"
   res_group_availability:
     caption: "Ressourcegruppedisponering"
+  fixed_asset_journal:
+    caption: "Anlægskladde"
+    fields:
+      fa_description: "Anlægsbeskrivelse"
+  fa_journal_templates:
+    caption: "Anlægskladdetyper"
+  fa_journal_template_list:
+    caption: "Anlægskladdetypeoversigt"
+  fa_journal_batches:
+    caption: "Anlægskladdenavne"
+  fa_registers:
+    caption: "Anlægsjournaler"
+  fa_posting_type_setup:
+    caption: "Opsætning af anlægsbogføringstyper"
+  fa_journal_setup:
+    caption: "Opsætning af anlægskladde"
+  fixed_asset_g_l_journal:
+    caption: "Anlægsfinanskladde"
+    fields:  # the batch above the lines and the footer (calculated)
+      journal_batch_name: "Kladdenavn"
+      account_name: "Kontonavn"
+      bal_account_name: "Modkontonavn"
+      balance: "Saldo"
+      total_balance: "Total saldo"
+  fa_allocations:
+    caption: "Anlægsfordelinger"
+  depreciation_table_list:
+    caption: "Afskrivningstabeloversigt"
+  depreciation_table_card:
+    caption: "Afskrivningstabelkort"
+  depreciation_table_lines:
+    caption: "Linjer"

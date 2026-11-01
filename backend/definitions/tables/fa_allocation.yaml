@@ -1,0 +1,109 @@
+table:
+  id: 5615
+  name: "FA_Allocation"
+  description: "FA allocations (table 5615): the G/L accounts (with department and project) an FA posting group's balancing amounts are split over, per allocation type"
+  lookup_page_id: 5623
+  fields:
+    - name: code
+      no: 1
+      type: types.Code
+      db_name: code
+      length: 10
+      primary_key: true
+      required: true
+      table_relation:
+        table: FA_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+
+    - name: line_no
+      no: 2
+      type: int
+      db_name: line_no
+      primary_key: true
+
+    - name: description
+      no: 3
+      type: types.Text
+      db_name: description
+      length: 50
+
+    - name: account_no
+      no: 4
+      type: types.Code
+      db_name: account_no
+      length: 20
+      table_relation:
+        table: G_L_Account
+        field: no
+        filters:
+          account_type: {const: 0}   # Posting accounts only
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: department_code
+      no: 5
+      type: types.Code
+      db_name: department_code
+      length: 10
+      table_relation:
+        table: Department
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: project_code
+      no: 6
+      type: types.Code
+      db_name: project_code
+      length: 10
+      table_relation:
+        table: Project
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: allocation_percent
+      no: 7
+      type: types.Decimal
+      db_name: allocation_percent
+      decimal_places: "0:5"
+      validation: {min: 0, max: 100}
+
+    - name: allocation_type
+      no: 8
+      type: Option
+      db_name: allocation_type
+      primary_key: true
+      options: ["Acquisition", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance", "Gain", "Loss", "Book Value"]
+
+    # FlowField: the account's name
+    - name: account_name
+      no: 9
+      type: types.Text
+      length: 30
+      flow_field: true
+      calc_formula: Lookup
+      source_table: GLAccount
+      source_field: name
+      flow_filters:
+        - field: no
+          type: field
+          value: account_no
+
+  keys:
+    - name: Primary
+      fields: [code, allocation_type, line_no]
+      clustered: true
+      sum_index_fields: [allocation_percent]

@@ -36,6 +36,16 @@ table:
       type: bool
       db_name: register_time
 
+    - name: allow_fa_posting_from
+      no: 5600
+      type: types.Date
+      db_name: allow_fa_posting_from
+
+    - name: allow_fa_posting_to
+      no: 5601
+      type: types.Date
+      db_name: allow_fa_posting_to
+
   keys:
     - name: Primary
       fields: [user_id]

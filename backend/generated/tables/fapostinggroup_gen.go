@@ -51,6 +51,7 @@ import (
 
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
+	"github.com/hansjlachmann/openerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/openerp/backend/foundation/sift"
 	"github.com/hansjlachmann/openerp/backend/foundation/tables"
@@ -91,6 +92,28 @@ type FAPostingGroup struct {
 	Custom_1_expense_acc         types.Code `db:"custom_1_expense_acc"`
 	Custom_2_expense_acc         types.Code `db:"custom_2_expense_acc"`
 	Sales_bal_acc                types.Code `db:"sales_bal_acc"`
+	// FlowField: Sum(FAAllocation.allocation_percent)
+	Allocated_acquisition_cost_percent types.Decimal
+	// FlowField: Sum(FAAllocation.allocation_percent)
+	Allocated_depreciation_percent types.Decimal
+	// FlowField: Sum(FAAllocation.allocation_percent)
+	Allocated_write_down_percent types.Decimal
+	// FlowField: Sum(FAAllocation.allocation_percent)
+	Allocated_appreciation_percent types.Decimal
+	// FlowField: Sum(FAAllocation.allocation_percent)
+	Allocated_custom_1_percent types.Decimal
+	// FlowField: Sum(FAAllocation.allocation_percent)
+	Allocated_custom_2_percent types.Decimal
+	// FlowField: Sum(FAAllocation.allocation_percent)
+	Allocated_sales_price_percent types.Decimal
+	// FlowField: Sum(FAAllocation.allocation_percent)
+	Allocated_maintenance_percent types.Decimal
+	// FlowField: Sum(FAAllocation.allocation_percent)
+	Allocated_gain_percent types.Decimal
+	// FlowField: Sum(FAAllocation.allocation_percent)
+	Allocated_loss_percent types.Decimal
+	// FlowField: Sum(FAAllocation.allocation_percent)
+	Allocated_book_value_percent types.Decimal
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -157,67 +180,89 @@ const FAPostingGroupTableName = "FA_Posting_Group"
 // FAPostingGroup_FieldNo holds the field numbers of FA_Posting_Group (FieldNo):
 // FAPostingGroup_FieldNo.Code is 1
 var FAPostingGroup_FieldNo = struct {
-	Code                         int
-	Acquisition_cost_account     int
-	Accum_depreciation_account   int
-	Write_down_account           int
-	Appreciation_account         int
-	Custom_1_account             int
-	Custom_2_account             int
-	Acq_cost_acc_on_disposal     int
-	Accum_depr_acc_on_disposal   int
-	Write_down_acc_on_disposal   int
-	Appreciation_acc_on_disposal int
-	Custom_1_account_on_disposal int
-	Custom_2_account_on_disposal int
-	Gains_acc_on_disposal        int
-	Losses_acc_on_disposal       int
-	Book_value_acc_on_disposal   int
-	Sales_acc_on_disposal        int
-	Write_down_bal_acc_on_disp   int
-	Apprec_bal_acc_on_disp       int
-	Custom_1_bal_acc_on_disposal int
-	Custom_2_bal_acc_on_disposal int
-	Maintenance_expense_account  int
-	Maintenance_bal_acc          int
-	Acquisition_cost_bal_acc     int
-	Depreciation_expense_acc     int
-	Write_down_expense_acc       int
-	Appreciation_bal_account     int
-	Custom_1_expense_acc         int
-	Custom_2_expense_acc         int
-	Sales_bal_acc                int
+	Code                               int
+	Acquisition_cost_account           int
+	Accum_depreciation_account         int
+	Write_down_account                 int
+	Appreciation_account               int
+	Custom_1_account                   int
+	Custom_2_account                   int
+	Acq_cost_acc_on_disposal           int
+	Accum_depr_acc_on_disposal         int
+	Write_down_acc_on_disposal         int
+	Appreciation_acc_on_disposal       int
+	Custom_1_account_on_disposal       int
+	Custom_2_account_on_disposal       int
+	Gains_acc_on_disposal              int
+	Losses_acc_on_disposal             int
+	Book_value_acc_on_disposal         int
+	Sales_acc_on_disposal              int
+	Write_down_bal_acc_on_disp         int
+	Apprec_bal_acc_on_disp             int
+	Custom_1_bal_acc_on_disposal       int
+	Custom_2_bal_acc_on_disposal       int
+	Maintenance_expense_account        int
+	Maintenance_bal_acc                int
+	Acquisition_cost_bal_acc           int
+	Depreciation_expense_acc           int
+	Write_down_expense_acc             int
+	Appreciation_bal_account           int
+	Custom_1_expense_acc               int
+	Custom_2_expense_acc               int
+	Sales_bal_acc                      int
+	Allocated_acquisition_cost_percent int
+	Allocated_depreciation_percent     int
+	Allocated_write_down_percent       int
+	Allocated_appreciation_percent     int
+	Allocated_custom_1_percent         int
+	Allocated_custom_2_percent         int
+	Allocated_sales_price_percent      int
+	Allocated_maintenance_percent      int
+	Allocated_gain_percent             int
+	Allocated_loss_percent             int
+	Allocated_book_value_percent       int
 }{
-	Code:                         1,
-	Acquisition_cost_account:     2,
-	Accum_depreciation_account:   3,
-	Write_down_account:           4,
-	Appreciation_account:         5,
-	Custom_1_account:             6,
-	Custom_2_account:             7,
-	Acq_cost_acc_on_disposal:     8,
-	Accum_depr_acc_on_disposal:   9,
-	Write_down_acc_on_disposal:   10,
-	Appreciation_acc_on_disposal: 11,
-	Custom_1_account_on_disposal: 12,
-	Custom_2_account_on_disposal: 13,
-	Gains_acc_on_disposal:        14,
-	Losses_acc_on_disposal:       15,
-	Book_value_acc_on_disposal:   16,
-	Sales_acc_on_disposal:        17,
-	Write_down_bal_acc_on_disp:   18,
-	Apprec_bal_acc_on_disp:       19,
-	Custom_1_bal_acc_on_disposal: 20,
-	Custom_2_bal_acc_on_disposal: 21,
-	Maintenance_expense_account:  22,
-	Maintenance_bal_acc:          23,
-	Acquisition_cost_bal_acc:     24,
-	Depreciation_expense_acc:     25,
-	Write_down_expense_acc:       26,
-	Appreciation_bal_account:     27,
-	Custom_1_expense_acc:         28,
-	Custom_2_expense_acc:         29,
-	Sales_bal_acc:                30,
+	Code:                               1,
+	Acquisition_cost_account:           2,
+	Accum_depreciation_account:         3,
+	Write_down_account:                 4,
+	Appreciation_account:               5,
+	Custom_1_account:                   6,
+	Custom_2_account:                   7,
+	Acq_cost_acc_on_disposal:           8,
+	Accum_depr_acc_on_disposal:         9,
+	Write_down_acc_on_disposal:         10,
+	Appreciation_acc_on_disposal:       11,
+	Custom_1_account_on_disposal:       12,
+	Custom_2_account_on_disposal:       13,
+	Gains_acc_on_disposal:              14,
+	Losses_acc_on_disposal:             15,
+	Book_value_acc_on_disposal:         16,
+	Sales_acc_on_disposal:              17,
+	Write_down_bal_acc_on_disp:         18,
+	Apprec_bal_acc_on_disp:             19,
+	Custom_1_bal_acc_on_disposal:       20,
+	Custom_2_bal_acc_on_disposal:       21,
+	Maintenance_expense_account:        22,
+	Maintenance_bal_acc:                23,
+	Acquisition_cost_bal_acc:           24,
+	Depreciation_expense_acc:           25,
+	Write_down_expense_acc:             26,
+	Appreciation_bal_account:           27,
+	Custom_1_expense_acc:               28,
+	Custom_2_expense_acc:               29,
+	Sales_bal_acc:                      30,
+	Allocated_acquisition_cost_percent: 31,
+	Allocated_depreciation_percent:     32,
+	Allocated_write_down_percent:       33,
+	Allocated_appreciation_percent:     34,
+	Allocated_custom_1_percent:         35,
+	Allocated_custom_2_percent:         36,
+	Allocated_sales_price_percent:      37,
+	Allocated_maintenance_percent:      38,
+	Allocated_gain_percent:             39,
+	Allocated_loss_percent:             40,
+	Allocated_book_value_percent:       41,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -283,6 +328,28 @@ func (t *FAPostingGroup) FieldNo(fieldName string) int {
 		return 29
 	case "sales_bal_acc":
 		return 30
+	case "allocated_acquisition_cost_percent":
+		return 31
+	case "allocated_depreciation_percent":
+		return 32
+	case "allocated_write_down_percent":
+		return 33
+	case "allocated_appreciation_percent":
+		return 34
+	case "allocated_custom_1_percent":
+		return 35
+	case "allocated_custom_2_percent":
+		return 36
+	case "allocated_sales_price_percent":
+		return 37
+	case "allocated_maintenance_percent":
+		return 38
+	case "allocated_gain_percent":
+		return 39
+	case "allocated_loss_percent":
+		return 40
+	case "allocated_book_value_percent":
+		return 41
 	}
 	return 0
 }
@@ -350,6 +417,28 @@ func (t *FAPostingGroup) FieldName(fieldNo int) string {
 		return "custom_2_expense_acc"
 	case 30:
 		return "sales_bal_acc"
+	case 31:
+		return "allocated_acquisition_cost_percent"
+	case 32:
+		return "allocated_depreciation_percent"
+	case 33:
+		return "allocated_write_down_percent"
+	case 34:
+		return "allocated_appreciation_percent"
+	case 35:
+		return "allocated_custom_1_percent"
+	case 36:
+		return "allocated_custom_2_percent"
+	case 37:
+		return "allocated_sales_price_percent"
+	case 38:
+		return "allocated_maintenance_percent"
+	case 39:
+		return "allocated_gain_percent"
+	case 40:
+		return "allocated_loss_percent"
+	case 41:
+		return "allocated_book_value_percent"
 	}
 	return ""
 }
@@ -853,7 +942,18 @@ func GetFAPostingGroupTableSchema() string {
 		appreciation_bal_account TEXT(20),
 		custom_1_expense_acc TEXT(20),
 		custom_2_expense_acc TEXT(20),
-		sales_bal_acc TEXT(20)
+		sales_bal_acc TEXT(20),
+		allocated_acquisition_cost_percent TEXT,
+		allocated_depreciation_percent TEXT,
+		allocated_write_down_percent TEXT,
+		allocated_appreciation_percent TEXT,
+		allocated_custom_1_percent TEXT,
+		allocated_custom_2_percent TEXT,
+		allocated_sales_price_percent TEXT,
+		allocated_maintenance_percent TEXT,
+		allocated_gain_percent TEXT,
+		allocated_loss_percent TEXT,
+		allocated_book_value_percent TEXT
 	`
 }
 
@@ -889,7 +989,18 @@ func GetFAPostingGroupPostgresTableSchema() string {
 		appreciation_bal_account VARCHAR(20),
 		custom_1_expense_acc VARCHAR(20),
 		custom_2_expense_acc VARCHAR(20),
-		sales_bal_acc VARCHAR(20)
+		sales_bal_acc VARCHAR(20),
+		allocated_acquisition_cost_percent NUMERIC,
+		allocated_depreciation_percent NUMERIC,
+		allocated_write_down_percent NUMERIC,
+		allocated_appreciation_percent NUMERIC,
+		allocated_custom_1_percent NUMERIC,
+		allocated_custom_2_percent NUMERIC,
+		allocated_sales_price_percent NUMERIC,
+		allocated_maintenance_percent NUMERIC,
+		allocated_gain_percent NUMERIC,
+		allocated_loss_percent NUMERIC,
+		allocated_book_value_percent NUMERIC
 	`
 }
 
@@ -1886,7 +1997,7 @@ func (t *FAPostingGroup) renameReferences(field string, oldValue, newValue inter
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"FA_Depreciation_Book", false, "fa_posting_group", "", 0}, {"FA_Ledger_Entry", false, "fa_posting_group", "", 0}, {"Maintenance_Ledger_Entry", false, "fa_posting_group", "", 0}},
+		"code": {{"FA_Allocation", false, "code", "", 0}, {"FA_Depreciation_Book", false, "fa_posting_group", "", 0}, {"FA_Journal_Line", false, "fa_posting_group", "", 0}, {"FA_Ledger_Entry", false, "fa_posting_group", "", 0}, {"Maintenance_Ledger_Entry", false, "fa_posting_group", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
@@ -1945,14 +2056,1321 @@ func (t *FAPostingGroup) Delete(runTrigger bool) bool {
 	return true
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *FAPostingGroup) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
+	// If no field names specified, calculate all FlowFields
+	if len(fieldNames) == 0 {
+		t.calcFlowField_allocated_acquisition_cost_percent()
+		t.calcFlowField_allocated_depreciation_percent()
+		t.calcFlowField_allocated_write_down_percent()
+		t.calcFlowField_allocated_appreciation_percent()
+		t.calcFlowField_allocated_custom_1_percent()
+		t.calcFlowField_allocated_custom_2_percent()
+		t.calcFlowField_allocated_sales_price_percent()
+		t.calcFlowField_allocated_maintenance_percent()
+		t.calcFlowField_allocated_gain_percent()
+		t.calcFlowField_allocated_loss_percent()
+		t.calcFlowField_allocated_book_value_percent()
+		return
+	}
+
+	// Calculate only specified fields
+	for _, fieldName := range fieldNames {
+		switch fieldName {
+		case "allocated_acquisition_cost_percent":
+			t.calcFlowField_allocated_acquisition_cost_percent()
+		case "allocated_depreciation_percent":
+			t.calcFlowField_allocated_depreciation_percent()
+		case "allocated_write_down_percent":
+			t.calcFlowField_allocated_write_down_percent()
+		case "allocated_appreciation_percent":
+			t.calcFlowField_allocated_appreciation_percent()
+		case "allocated_custom_1_percent":
+			t.calcFlowField_allocated_custom_1_percent()
+		case "allocated_custom_2_percent":
+			t.calcFlowField_allocated_custom_2_percent()
+		case "allocated_sales_price_percent":
+			t.calcFlowField_allocated_sales_price_percent()
+		case "allocated_maintenance_percent":
+			t.calcFlowField_allocated_maintenance_percent()
+		case "allocated_gain_percent":
+			t.calcFlowField_allocated_gain_percent()
+		case "allocated_loss_percent":
+			t.calcFlowField_allocated_loss_percent()
+		case "allocated_book_value_percent":
+			t.calcFlowField_allocated_book_value_percent()
+		}
+	}
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// calcFlowField_allocated_acquisition_cost_percent calculates the allocated_acquisition_cost_percent FlowField
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcFlowField_allocated_acquisition_cost_percent() {
+	t.Allocated_acquisition_cost_percent = t.calcSum_allocated_acquisition_cost_percent()
+}
+
+// calcFlowField_allocated_depreciation_percent calculates the allocated_depreciation_percent FlowField
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcFlowField_allocated_depreciation_percent() {
+	t.Allocated_depreciation_percent = t.calcSum_allocated_depreciation_percent()
+}
+
+// calcFlowField_allocated_write_down_percent calculates the allocated_write_down_percent FlowField
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcFlowField_allocated_write_down_percent() {
+	t.Allocated_write_down_percent = t.calcSum_allocated_write_down_percent()
+}
+
+// calcFlowField_allocated_appreciation_percent calculates the allocated_appreciation_percent FlowField
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcFlowField_allocated_appreciation_percent() {
+	t.Allocated_appreciation_percent = t.calcSum_allocated_appreciation_percent()
+}
+
+// calcFlowField_allocated_custom_1_percent calculates the allocated_custom_1_percent FlowField
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcFlowField_allocated_custom_1_percent() {
+	t.Allocated_custom_1_percent = t.calcSum_allocated_custom_1_percent()
+}
+
+// calcFlowField_allocated_custom_2_percent calculates the allocated_custom_2_percent FlowField
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcFlowField_allocated_custom_2_percent() {
+	t.Allocated_custom_2_percent = t.calcSum_allocated_custom_2_percent()
+}
+
+// calcFlowField_allocated_sales_price_percent calculates the allocated_sales_price_percent FlowField
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcFlowField_allocated_sales_price_percent() {
+	t.Allocated_sales_price_percent = t.calcSum_allocated_sales_price_percent()
+}
+
+// calcFlowField_allocated_maintenance_percent calculates the allocated_maintenance_percent FlowField
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcFlowField_allocated_maintenance_percent() {
+	t.Allocated_maintenance_percent = t.calcSum_allocated_maintenance_percent()
+}
+
+// calcFlowField_allocated_gain_percent calculates the allocated_gain_percent FlowField
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcFlowField_allocated_gain_percent() {
+	t.Allocated_gain_percent = t.calcSum_allocated_gain_percent()
+}
+
+// calcFlowField_allocated_loss_percent calculates the allocated_loss_percent FlowField
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcFlowField_allocated_loss_percent() {
+	t.Allocated_loss_percent = t.calcSum_allocated_loss_percent()
+}
+
+// calcFlowField_allocated_book_value_percent calculates the allocated_book_value_percent FlowField
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcFlowField_allocated_book_value_percent() {
+	t.Allocated_book_value_percent = t.calcSum_allocated_book_value_percent()
+}
+
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *FAPostingGroup) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
+	if len(records) == 0 {
+		return
+	}
+	if len(fieldNames) == 0 {
+		fieldNames = t.GetFlowFields()
+	}
+	for _, fieldName := range fieldNames {
+		switch fieldName {
+		case "allocated_acquisition_cost_percent":
+			t.calcForRecords_allocated_acquisition_cost_percent(records)
+		case "allocated_depreciation_percent":
+			t.calcForRecords_allocated_depreciation_percent(records)
+		case "allocated_write_down_percent":
+			t.calcForRecords_allocated_write_down_percent(records)
+		case "allocated_appreciation_percent":
+			t.calcForRecords_allocated_appreciation_percent(records)
+		case "allocated_custom_1_percent":
+			t.calcForRecords_allocated_custom_1_percent(records)
+		case "allocated_custom_2_percent":
+			t.calcForRecords_allocated_custom_2_percent(records)
+		case "allocated_sales_price_percent":
+			t.calcForRecords_allocated_sales_price_percent(records)
+		case "allocated_maintenance_percent":
+			t.calcForRecords_allocated_maintenance_percent(records)
+		case "allocated_gain_percent":
+			t.calcForRecords_allocated_gain_percent(records)
+		case "allocated_loss_percent":
+			t.calcForRecords_allocated_loss_percent(records)
+		case "allocated_book_value_percent":
+			t.calcForRecords_allocated_book_value_percent(records)
+		}
+	}
+}
+
+// calcForRecords_allocated_acquisition_cost_percent calculates the allocated_acquisition_cost_percent FlowField for a set of records
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcForRecords_allocated_acquisition_cost_percent(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 0)
+		if chunk != nil {
+			whereClauses = append(whereClauses, "code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT code, COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s GROUP BY code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate allocated_acquisition_cost_percent: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["allocated_acquisition_cost_percent"] = v.String()
+	}
+}
+
+// calcForRecords_allocated_depreciation_percent calculates the allocated_depreciation_percent FlowField for a set of records
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcForRecords_allocated_depreciation_percent(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 1)
+		if chunk != nil {
+			whereClauses = append(whereClauses, "code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT code, COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s GROUP BY code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate allocated_depreciation_percent: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["allocated_depreciation_percent"] = v.String()
+	}
+}
+
+// calcForRecords_allocated_write_down_percent calculates the allocated_write_down_percent FlowField for a set of records
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcForRecords_allocated_write_down_percent(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 2)
+		if chunk != nil {
+			whereClauses = append(whereClauses, "code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT code, COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s GROUP BY code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate allocated_write_down_percent: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["allocated_write_down_percent"] = v.String()
+	}
+}
+
+// calcForRecords_allocated_appreciation_percent calculates the allocated_appreciation_percent FlowField for a set of records
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcForRecords_allocated_appreciation_percent(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 3)
+		if chunk != nil {
+			whereClauses = append(whereClauses, "code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT code, COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s GROUP BY code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate allocated_appreciation_percent: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["allocated_appreciation_percent"] = v.String()
+	}
+}
+
+// calcForRecords_allocated_custom_1_percent calculates the allocated_custom_1_percent FlowField for a set of records
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcForRecords_allocated_custom_1_percent(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 4)
+		if chunk != nil {
+			whereClauses = append(whereClauses, "code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT code, COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s GROUP BY code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate allocated_custom_1_percent: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["allocated_custom_1_percent"] = v.String()
+	}
+}
+
+// calcForRecords_allocated_custom_2_percent calculates the allocated_custom_2_percent FlowField for a set of records
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcForRecords_allocated_custom_2_percent(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 5)
+		if chunk != nil {
+			whereClauses = append(whereClauses, "code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT code, COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s GROUP BY code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate allocated_custom_2_percent: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["allocated_custom_2_percent"] = v.String()
+	}
+}
+
+// calcForRecords_allocated_sales_price_percent calculates the allocated_sales_price_percent FlowField for a set of records
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcForRecords_allocated_sales_price_percent(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 6)
+		if chunk != nil {
+			whereClauses = append(whereClauses, "code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT code, COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s GROUP BY code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate allocated_sales_price_percent: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["allocated_sales_price_percent"] = v.String()
+	}
+}
+
+// calcForRecords_allocated_maintenance_percent calculates the allocated_maintenance_percent FlowField for a set of records
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcForRecords_allocated_maintenance_percent(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 7)
+		if chunk != nil {
+			whereClauses = append(whereClauses, "code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT code, COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s GROUP BY code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate allocated_maintenance_percent: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["allocated_maintenance_percent"] = v.String()
+	}
+}
+
+// calcForRecords_allocated_gain_percent calculates the allocated_gain_percent FlowField for a set of records
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcForRecords_allocated_gain_percent(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 8)
+		if chunk != nil {
+			whereClauses = append(whereClauses, "code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT code, COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s GROUP BY code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate allocated_gain_percent: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["allocated_gain_percent"] = v.String()
+	}
+}
+
+// calcForRecords_allocated_loss_percent calculates the allocated_loss_percent FlowField for a set of records
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcForRecords_allocated_loss_percent(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 9)
+		if chunk != nil {
+			whereClauses = append(whereClauses, "code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT code, COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s GROUP BY code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate allocated_loss_percent: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["allocated_loss_percent"] = v.String()
+	}
+}
+
+// calcForRecords_allocated_book_value_percent calculates the allocated_book_value_percent FlowField for a set of records
+// CalcFormula: Sum(FAAllocation.allocation_percent)
+func (t *FAPostingGroup) calcForRecords_allocated_book_value_percent(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 10)
+		if chunk != nil {
+			whereClauses = append(whereClauses, "code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT code, COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s GROUP BY code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate allocated_book_value_percent: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["allocated_book_value_percent"] = v.String()
+	}
+}
+
+// Helper methods for FlowField calculations
+
+func (t *FAPostingGroup) calcSum_allocated_acquisition_cost_percent() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "code = ?")
+	args = append(args, t.Code)
+	whereClauses = append(whereClauses, "allocation_type = ?")
+	args = append(args, 0)
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for allocated_acquisition_cost_percent: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *FAPostingGroup) calcSum_allocated_depreciation_percent() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "code = ?")
+	args = append(args, t.Code)
+	whereClauses = append(whereClauses, "allocation_type = ?")
+	args = append(args, 1)
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for allocated_depreciation_percent: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *FAPostingGroup) calcSum_allocated_write_down_percent() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "code = ?")
+	args = append(args, t.Code)
+	whereClauses = append(whereClauses, "allocation_type = ?")
+	args = append(args, 2)
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for allocated_write_down_percent: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *FAPostingGroup) calcSum_allocated_appreciation_percent() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "code = ?")
+	args = append(args, t.Code)
+	whereClauses = append(whereClauses, "allocation_type = ?")
+	args = append(args, 3)
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for allocated_appreciation_percent: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *FAPostingGroup) calcSum_allocated_custom_1_percent() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "code = ?")
+	args = append(args, t.Code)
+	whereClauses = append(whereClauses, "allocation_type = ?")
+	args = append(args, 4)
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for allocated_custom_1_percent: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *FAPostingGroup) calcSum_allocated_custom_2_percent() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "code = ?")
+	args = append(args, t.Code)
+	whereClauses = append(whereClauses, "allocation_type = ?")
+	args = append(args, 5)
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for allocated_custom_2_percent: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *FAPostingGroup) calcSum_allocated_sales_price_percent() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "code = ?")
+	args = append(args, t.Code)
+	whereClauses = append(whereClauses, "allocation_type = ?")
+	args = append(args, 6)
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for allocated_sales_price_percent: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *FAPostingGroup) calcSum_allocated_maintenance_percent() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "code = ?")
+	args = append(args, t.Code)
+	whereClauses = append(whereClauses, "allocation_type = ?")
+	args = append(args, 7)
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for allocated_maintenance_percent: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *FAPostingGroup) calcSum_allocated_gain_percent() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "code = ?")
+	args = append(args, t.Code)
+	whereClauses = append(whereClauses, "allocation_type = ?")
+	args = append(args, 8)
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for allocated_gain_percent: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *FAPostingGroup) calcSum_allocated_loss_percent() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "code = ?")
+	args = append(args, t.Code)
+	whereClauses = append(whereClauses, "allocation_type = ?")
+	args = append(args, 9)
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for allocated_loss_percent: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *FAPostingGroup) calcSum_allocated_book_value_percent() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+	tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "code = ?")
+	args = append(args, t.Code)
+	whereClauses = append(whereClauses, "allocation_type = ?")
+	args = append(args, 10)
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(allocation_percent), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for allocated_book_value_percent: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
 }
 
 // ========================================
@@ -1968,6 +3386,7 @@ type fAPostingGroupFilterCondition struct {
 	isExpression bool   // True if using filterExpr instead of min/max
 	invalidField bool   // Filter on an unknown field: matches no rows (fail closed)
 	blankDate    bool   // A date range from the blank date: blank dates (NULL) match too
+	flowField    string // Filter on a FlowField (filterExpr applied to its subquery)
 }
 
 // SetRange sets a range filter on a field
@@ -2043,6 +3462,16 @@ func (t *FAPostingGroup) SetFilter(fieldName, filterExpr string) {
 	if t.filters == nil {
 		t.filters = make(map[string]*fAPostingGroupFilterCondition)
 	}
+	if _, ok := t.FlowFieldFilterKind(fieldName); ok {
+		// A FlowField is not a column: the filter applies to its subquery (flowFieldExpr)
+		name := strings.ToLower(fieldName)
+		t.filters["flowfield:"+name] = &fAPostingGroupFilterCondition{
+			flowField:    name,
+			filterExpr:   filterExpr,
+			isExpression: true,
+		}
+		return
+	}
 	column, ok := t.columnName(fieldName)
 	if !ok {
 		// Unknown field: fail closed (no rows) rather than drop the filter or put
@@ -2058,12 +3487,234 @@ func (t *FAPostingGroup) SetFilter(fieldName, filterExpr string) {
 	}
 }
 
+// FlowFieldFilterKind reports whether a list can be filtered on FlowField field (Sum and
+// Count FlowFields: SETFILTER on a FlowField) and the kind of its values.
+func (t *FAPostingGroup) FlowFieldFilterKind(field string) (flowfilter.Kind, bool) {
+	switch strings.ToLower(field) {
+	case "allocated_acquisition_cost_percent":
+		return flowfilter.KindDecimal, true
+	case "allocated_depreciation_percent":
+		return flowfilter.KindDecimal, true
+	case "allocated_write_down_percent":
+		return flowfilter.KindDecimal, true
+	case "allocated_appreciation_percent":
+		return flowfilter.KindDecimal, true
+	case "allocated_custom_1_percent":
+		return flowfilter.KindDecimal, true
+	case "allocated_custom_2_percent":
+		return flowfilter.KindDecimal, true
+	case "allocated_sales_price_percent":
+		return flowfilter.KindDecimal, true
+	case "allocated_maintenance_percent":
+		return flowfilter.KindDecimal, true
+	case "allocated_gain_percent":
+		return flowfilter.KindDecimal, true
+	case "allocated_loss_percent":
+		return flowfilter.KindDecimal, true
+	case "allocated_book_value_percent":
+		return flowfilter.KindDecimal, true
+	}
+	return "", false
+}
+
+// flowFieldExpr is the SQL expression computing FlowField field for each row of a query
+// on this table: a correlated subquery reading the source like CalcFieldsForRecords (the
+// SIFT totals of a covering key, else the entries), with the FlowFilters set on t.
+func (t *FAPostingGroup) flowFieldExpr(field string) (string, []interface{}) {
+	outer := "\"" + fmt.Sprintf("%s$%s", t.company, FAPostingGroupTableName) + "\""
+	_ = outer
+	switch strings.ToLower(field) {
+	case "allocated_acquisition_cost_percent":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+		tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "code = "+outer+".code")
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 0)
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(allocation_percent), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "allocated_depreciation_percent":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+		tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "code = "+outer+".code")
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 1)
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(allocation_percent), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "allocated_write_down_percent":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+		tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "code = "+outer+".code")
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 2)
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(allocation_percent), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "allocated_appreciation_percent":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+		tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "code = "+outer+".code")
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 3)
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(allocation_percent), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "allocated_custom_1_percent":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+		tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "code = "+outer+".code")
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 4)
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(allocation_percent), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "allocated_custom_2_percent":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+		tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "code = "+outer+".code")
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 5)
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(allocation_percent), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "allocated_sales_price_percent":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+		tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "code = "+outer+".code")
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 6)
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(allocation_percent), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "allocated_maintenance_percent":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+		tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "code = "+outer+".code")
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 7)
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(allocation_percent), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "allocated_gain_percent":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+		tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "code = "+outer+".code")
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 8)
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(allocation_percent), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "allocated_loss_percent":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+		tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "code = "+outer+".code")
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 9)
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(allocation_percent), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "allocated_book_value_percent":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName), false
+		tableName, useSIFT = sift.TableName(t.company, FAAllocationTableName, "Primary"), true
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "code = "+outer+".code")
+		whereClauses = append(whereClauses, "allocation_type = ?")
+		args = append(args, 10)
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(allocation_percent), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	}
+	return "NULL", nil
+}
+
 // SetCurrentKey sets the sort order for queries
 // Unknown fields are ignored (the primary key order is used if none remain).
 // Example: customer.SetCurrentKey("City", "Name")
 func (t *FAPostingGroup) SetCurrentKey(fields ...string) {
 	t.orderByFields = nil
 	for _, field := range fields {
+		// A Sum/Count FlowField sorts on its calculated value (flowFieldExpr, see getOrderByClause)
+		if _, ok := t.FlowFieldFilterKind(field); ok {
+			t.orderByFields = append(t.orderByFields, "flowfield:"+strings.ToLower(field))
+			continue
+		}
 		column, ok := t.columnName(field)
 		if !ok {
 			fmt.Printf("Error: SetCurrentKey on unknown field %q of FA_Posting_Group\n", field)
@@ -2215,6 +3866,18 @@ func (t *FAPostingGroup) buildWhereClause() (string, []interface{}) {
 	for _, filter := range filters {
 		if filter.invalidField {
 			conditions = append(conditions, "1=0")
+		} else if filter.flowField != "" {
+			// filter syntax on the FlowField's value; an invalid expression matches no rows
+			// (the API validates it first and reports it)
+			kind, _ := t.FlowFieldFilterKind(filter.flowField)
+			expr, exprArgs := t.flowFieldExpr(filter.flowField)
+			clause, clauseArgs, err := flowfilter.ClauseFor(expr, exprArgs, kind, filter.filterExpr)
+			if err != nil {
+				conditions = append(conditions, "1=0")
+			} else if clause != "" {
+				conditions = append(conditions, clause)
+				args = append(args, clauseArgs...)
+			}
 		} else if filter.isExpression {
 			// Parse filter expression
 			clause, exprArgs := t.parseFilterExpression(filter.fieldName, filter.filterExpr)
@@ -2461,6 +4124,12 @@ func (t *FAPostingGroup) getOrderByClause() (string, []interface{}) {
 	var columns []string
 	var args []interface{}
 	for _, column := range t.orderByFields {
+		if name, ok := strings.CutPrefix(column, "flowfield:"); ok {
+			expr, exprArgs := t.flowFieldExpr(name)
+			columns = append(columns, expr)
+			args = append(args, exprArgs...)
+			continue
+		}
 		columns = append(columns, t.cmpColumn(column))
 	}
 	for _, column := range pk {
@@ -3199,6 +4868,17 @@ func (t *FAPostingGroup) copyFromBuffered(record *FAPostingGroup) {
 	t.Custom_1_expense_acc = record.Custom_1_expense_acc
 	t.Custom_2_expense_acc = record.Custom_2_expense_acc
 	t.Sales_bal_acc = record.Sales_bal_acc
+	t.Allocated_acquisition_cost_percent = record.Allocated_acquisition_cost_percent
+	t.Allocated_depreciation_percent = record.Allocated_depreciation_percent
+	t.Allocated_write_down_percent = record.Allocated_write_down_percent
+	t.Allocated_appreciation_percent = record.Allocated_appreciation_percent
+	t.Allocated_custom_1_percent = record.Allocated_custom_1_percent
+	t.Allocated_custom_2_percent = record.Allocated_custom_2_percent
+	t.Allocated_sales_price_percent = record.Allocated_sales_price_percent
+	t.Allocated_maintenance_percent = record.Allocated_maintenance_percent
+	t.Allocated_gain_percent = record.Allocated_gain_percent
+	t.Allocated_loss_percent = record.Allocated_loss_percent
+	t.Allocated_book_value_percent = record.Allocated_book_value_percent
 	t.StoreOldValues()
 }
 
@@ -4068,6 +5748,28 @@ func (t *FAPostingGroup) FieldValue(no int) (any, bool) {
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *FAPostingGroup) flowFieldValue(no int) (any, bool) {
 	switch no {
+	case 31:
+		return t.Allocated_acquisition_cost_percent, true
+	case 32:
+		return t.Allocated_depreciation_percent, true
+	case 33:
+		return t.Allocated_write_down_percent, true
+	case 34:
+		return t.Allocated_appreciation_percent, true
+	case 35:
+		return t.Allocated_custom_1_percent, true
+	case 36:
+		return t.Allocated_custom_2_percent, true
+	case 37:
+		return t.Allocated_sales_price_percent, true
+	case 38:
+		return t.Allocated_maintenance_percent, true
+	case 39:
+		return t.Allocated_gain_percent, true
+	case 40:
+		return t.Allocated_loss_percent, true
+	case 41:
+		return t.Allocated_book_value_percent, true
 	}
 	return nil, false
 }
@@ -4528,6 +6230,9 @@ func (t *FAPostingGroup) FilterExpressions() []tables.FieldFilter {
 			continue
 		}
 		field := f.fieldName
+		if f.flowField != "" {
+			field = f.flowField
+		}
 		result = append(result, tables.FieldFilter{Field: field, Expression: expr})
 	}
 	return result
@@ -4973,6 +6678,28 @@ func (t *FAPostingGroup) ToMap() map[string]interface{} {
 		"custom_1_expense_acc":         t.Custom_1_expense_acc.String(),
 		"custom_2_expense_acc":         t.Custom_2_expense_acc.String(),
 		"sales_bal_acc":                t.Sales_bal_acc.String(),
+		// FlowField: allocated_acquisition_cost_percent
+		"allocated_acquisition_cost_percent": t.Allocated_acquisition_cost_percent.String(),
+		// FlowField: allocated_depreciation_percent
+		"allocated_depreciation_percent": t.Allocated_depreciation_percent.String(),
+		// FlowField: allocated_write_down_percent
+		"allocated_write_down_percent": t.Allocated_write_down_percent.String(),
+		// FlowField: allocated_appreciation_percent
+		"allocated_appreciation_percent": t.Allocated_appreciation_percent.String(),
+		// FlowField: allocated_custom_1_percent
+		"allocated_custom_1_percent": t.Allocated_custom_1_percent.String(),
+		// FlowField: allocated_custom_2_percent
+		"allocated_custom_2_percent": t.Allocated_custom_2_percent.String(),
+		// FlowField: allocated_sales_price_percent
+		"allocated_sales_price_percent": t.Allocated_sales_price_percent.String(),
+		// FlowField: allocated_maintenance_percent
+		"allocated_maintenance_percent": t.Allocated_maintenance_percent.String(),
+		// FlowField: allocated_gain_percent
+		"allocated_gain_percent": t.Allocated_gain_percent.String(),
+		// FlowField: allocated_loss_percent
+		"allocated_loss_percent": t.Allocated_loss_percent.String(),
+		// FlowField: allocated_book_value_percent
+		"allocated_book_value_percent": t.Allocated_book_value_percent.String(),
 	}
 }
 
@@ -5449,6 +7176,127 @@ func (t *FAPostingGroup) GetFields() []tables.FieldInfo {
 			PrimaryKey: false,
 			FlowField:  false,
 		},
+		{
+			No:            31,
+			Name:          "allocated_acquisition_cost_percent",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "0:5",
+		},
+		{
+			No:            32,
+			Name:          "allocated_depreciation_percent",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "0:5",
+		},
+		{
+			No:            33,
+			Name:          "allocated_write_down_percent",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "0:5",
+		},
+		{
+			No:            34,
+			Name:          "allocated_appreciation_percent",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "0:5",
+		},
+		{
+			No:            35,
+			Name:          "allocated_custom_1_percent",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "0:5",
+		},
+		{
+			No:            36,
+			Name:          "allocated_custom_2_percent",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "0:5",
+		},
+		{
+			No:            37,
+			Name:          "allocated_sales_price_percent",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "0:5",
+		},
+		{
+			No:            38,
+			Name:          "allocated_maintenance_percent",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "0:5",
+		},
+		{
+			No:            39,
+			Name:          "allocated_gain_percent",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "0:5",
+		},
+		{
+			No:            40,
+			Name:          "allocated_loss_percent",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "0:5",
+		},
+		{
+			No:            41,
+			Name:          "allocated_book_value_percent",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "0:5",
+		},
 	}
 }
 
@@ -5467,7 +7315,19 @@ func (t *FAPostingGroup) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 
 // GetFlowFields returns names of FlowFields that need CalcFields
 func (t *FAPostingGroup) GetFlowFields() []string {
-	return []string{}
+	return []string{
+		"allocated_acquisition_cost_percent",
+		"allocated_depreciation_percent",
+		"allocated_write_down_percent",
+		"allocated_appreciation_percent",
+		"allocated_custom_1_percent",
+		"allocated_custom_2_percent",
+		"allocated_sales_price_percent",
+		"allocated_maintenance_percent",
+		"allocated_gain_percent",
+		"allocated_loss_percent",
+		"allocated_book_value_percent",
+	}
 }
 
 // GetOptionFields returns Option field names mapped to their option values

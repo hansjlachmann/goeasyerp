@@ -1,0 +1,38 @@
+table:
+  id: 5642
+  name: "Depreciation_Table_Header"
+  description: "Depreciation table headers (table 5642): user-defined depreciation — a percentage (or units) per period"
+  lookup_page_id: 5663
+  data_caption_fields: [code, description]
+  fields:
+    - name: code
+      no: 1
+      type: types.Code
+      db_name: code
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: description
+      no: 2
+      type: types.Text
+      db_name: description
+      length: 30
+
+    - name: period_length
+      no: 3
+      type: Option
+      db_name: period_length
+      options: ["Month", "Period", "Quarter", "Year"]
+
+    - name: total_no_of_units
+      no: 4
+      type: types.Decimal
+      db_name: total_no_of_units
+      decimal_places: "0:5"
+      validation: {min: 0}
+
+  keys:
+    - name: Primary
+      fields: [code]
+      clustered: true
