@@ -180,7 +180,7 @@ func TestFinanceChargeMemoIssued(t *testing.T) {
 	glEntry := gtables.NewGLEntry(src)
 	glEntry.SetRange("document_no", issued.No)
 	glEntry.SetRange("gl_account_no", types.Code("6115"))
-	glEntry.CalcSums("amount")
+	must(t, glEntry.CalcSums("amount"))
 	if !glEntry.Amount.Equal(h.Interest_amount.Neg()) {
 		t.Errorf("interest account %s, want %s", glEntry.Amount, h.Interest_amount.Neg())
 	}

@@ -28,9 +28,8 @@ func init() {
 }
 
 type suggestBankAccReconLines struct {
-	bankAccRecon     *gtables.BankAccReconciliation
-	bankAccReconLine *gtables.BankAccReconciliationLine
-	lastLineNo       int
+	bankAccRecon *gtables.BankAccReconciliation
+	lastLineNo   int
 }
 
 func (r *suggestBankAccReconLines) Definition() *Definition {

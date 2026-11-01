@@ -18,8 +18,6 @@ type genJnlAllocationLogic struct{}
 
 func init() { gtables.RegisterGenJnlAllocationLogic(genJnlAllocationLogic{}) }
 
-const genJnlAllocTable = gtables.GenJnlAllocationTableName
-
 // genJnlLineKey is the key of a Gen. Journal Line (template, batch, line no.)
 func genJnlLineKey(template, batch types.Code, lineNo int) map[string]interface{} {
 	return map[string]interface{}{"journal_template_name": template, "journal_batch_name": batch, "line_no": lineNo}

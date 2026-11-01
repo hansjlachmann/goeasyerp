@@ -37,10 +37,9 @@ func TestAdjustExchangeRates(t *testing.T) {
 	post := genjnl.NewGenJnlPostLine(src)
 	for i, l := range []struct {
 		accType gtables.GenJournalLineAccount_type
-		no      string
 		amount  int64
-	}{{gtables.GenJournalLine_Account_type.Customer, "", 1000}, {gtables.GenJournalLine_Account_type.Vendor, "", -800}} {
-		accNo := types.Code(l.no)
+	}{{gtables.GenJournalLine_Account_type.Customer, 1000}, {gtables.GenJournalLine_Account_type.Vendor, -800}} {
+		var accNo types.Code
 		if l.accType == gtables.GenJournalLine_Account_type.Customer {
 			cust := gtables.NewCustomer(src)
 			cust.SetRange("customer_posting_group", types.Code("FOREIGN"))
