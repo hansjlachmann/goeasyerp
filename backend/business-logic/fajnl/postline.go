@@ -26,7 +26,10 @@ import (
 // A line with Depr. until FA Posting Date first posts the depreciation up to its date, with Depr.
 // Acquisition Cost after an acquisition the depreciation it adds (package fadepr).
 //
-// Not migrated yet: duplication in other books (FA5), budgeted assets.
+// Duplicate in Depreciation Book / Use Duplication List put the line into the other books' journals
+// (codeunit 5640, duplicate.go).
+//
+// Not migrated yet: budgeted assets.
 type FAJnlPostLine struct {
 	src                    ftables.Source
 	faJnlCheckLine         FAJnlCheckLine
@@ -56,6 +59,10 @@ func (p *FAJnlPostLine) FAJnlPostLine(faJnlLine *gtables.FAJournalLine, checkLin
 			return err
 		}
 	}
+	err := duplicateFAJnlLine(p.src, faJnlLine)
+	if err != nil {
+		return err
+	}
 	if faJnlLine.Fa_posting_type == gtables.FAJournalLine_Fa_posting_type.Maintenance {
 		maintenanceLedgEntry := makeMaintenanceLedgEntry(p.src, faJnlLine)
 		return p.maintenanceCode(maintenanceLedgEntry)
@@ -75,6 +82,10 @@ func (p *FAJnlPostLine) GenJnlPostLine(genJnlLine *gtables.GenJournalLine, faAmo
 	}
 	if genJnlLine.Fa_posting_date.IsZero() {
 		genJnlLine.Fa_posting_date = genJnlLine.Posting_date
+	}
+	err := duplicateGenJnlLine(p.src, genJnlLine, faAmount)
+	if err != nil {
+		return err
 	}
 	if genJnlLine.Fa_posting_type == gtables.GenJournalLine_Fa_posting_type.Maintenance {
 		maintenanceLedgEntry := makeMaintenanceLedgEntryFromGenJnl(p.src, genJnlLine)

@@ -1,0 +1,236 @@
+package fajnl
+
+import (
+	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
+	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
+	"github.com/hansjlachmann/openerp/backend/foundation/system"
+	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
+	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+)
+
+// Codeunit 5640 Duplicate Depr. Book: a line posted with Duplicate in Depreciation Book (or Use
+// Duplication List: every book marked Part of Duplication List) puts the same posting as a line
+// in the other book's journal (FA Journal Setup — the general journal when that book posts the
+// type to the G/L, codeunit 5639 JnlName), at the books' FA exchange rates when the book uses them.
+// The user posts those lines.
+
+// dupLine: what a duplicated line copies (MakeGenJnlLine/MakeFAJnlLine/Adjust…)
+type dupLine struct {
+	journalTemplate, journalBatch types.Code
+	genJnl                        bool // the line comes from the general journal
+	faNo                          types.Code
+	postingType                   gtables.FAJournalLineFa_posting_type
+	faPostingDate, postingDate    types.Date
+	documentType                  int
+	documentDate                  types.Date
+	documentNo, externalDocNo     types.Code
+	description                   types.Text
+	amount, salvageValue          types.Decimal
+	quantity                      types.Decimal
+	correction                    bool
+	noOfDeprDays                  int
+	deprUntil, deprAcqCost        bool
+	faPostingGroup                types.Code
+	maintenanceCode               types.Code
+	departmentCode, projectCode   types.Code
+	reclassification, indexEntry  bool
+}
+
+// duplicateFAJnlLine (DuplicateFAJnlLine)
+func duplicateFAJnlLine(src ftables.Source, l *gtables.FAJournalLine) error {
+	if l.Duplicate_in_depreciation_book == "" && !l.Use_duplication_list {
+		return nil
+	}
+	return duplicate(src, l.Depreciation_book_code, l.Duplicate_in_depreciation_book, l.Use_duplication_list, &dupLine{
+		journalTemplate: l.Journal_template_name, journalBatch: l.Journal_batch_name,
+		faNo: l.Fa_no, postingType: l.Fa_posting_type, faPostingDate: l.Fa_posting_date, postingDate: l.Posting_date,
+		documentType: int(l.Document_type), documentDate: l.Document_date, documentNo: l.Document_no, externalDocNo: l.External_document_no,
+		description: l.Description, amount: l.Amount, salvageValue: l.Salvage_value, quantity: l.Quantity, correction: l.Correction,
+		noOfDeprDays: l.No_of_depreciation_days, deprUntil: l.Depr_until_fa_posting_date, deprAcqCost: l.Depr_acquisition_cost,
+		faPostingGroup: l.Fa_posting_group, maintenanceCode: l.Maintenance_code, departmentCode: l.Department_code, projectCode: l.Project_code,
+		reclassification: l.Fa_reclassification_entry, indexEntry: l.Index_entry,
+	})
+}
+
+// duplicateGenJnlLine (DuplicateGenJnlLine): the FA amount is the line's G/L entry amount
+func duplicateGenJnlLine(src ftables.Source, l *gtables.GenJournalLine, faAmount types.Decimal) error {
+	if l.Duplicate_in_depreciation_book == "" && !l.Use_duplication_list {
+		return nil
+	}
+	return duplicate(src, l.Depreciation_book_code, l.Duplicate_in_depreciation_book, l.Use_duplication_list, &dupLine{
+		journalTemplate: l.Journal_template_name, journalBatch: l.Journal_batch_name, genJnl: true,
+		faNo: l.Account_no, postingType: gtables.FAJournalLineFa_posting_type(l.Fa_posting_type - 1), faPostingDate: l.Fa_posting_date, postingDate: l.Posting_date,
+		documentType: int(l.Document_type), documentDate: l.Document_date, documentNo: l.Document_no, externalDocNo: l.External_document_no,
+		description: l.Description, amount: faAmount, salvageValue: l.Salvage_value, quantity: l.Quantity, correction: l.Correction,
+		noOfDeprDays: l.No_of_depreciation_days, deprUntil: l.Depr_until_fa_posting_date, deprAcqCost: l.Depr_acquisition_cost,
+		faPostingGroup: l.Posting_group, maintenanceCode: l.Maintenance_code, departmentCode: l.Department_code, projectCode: l.Project_code,
+		reclassification: l.Fa_reclassification_entry, indexEntry: l.Index_entry,
+	})
+}
+
+// duplicate: the line in the one book or in every book of the duplication list
+func duplicate(src ftables.Source, deprBookCode, duplicateIn types.Code, useList bool, l *dupLine) error {
+	deprBook := gtables.NewDepreciationBook(src)
+	err := deprBook.GetOrError(deprBookCode)
+	if err != nil {
+		return err
+	}
+	exchangeRate := dupExchangeRate(src, l.faNo, deprBook)
+	if duplicateIn != "" {
+		target := gtables.NewDepreciationBook(src)
+		err = target.GetOrError(duplicateIn)
+		if err != nil {
+			return err
+		}
+		return createDupLine(src, target, exchangeRate, l)
+	}
+	if useList {
+		target := gtables.NewDepreciationBook(src)
+		for found := target.FindSet(); found; found = target.Next() {
+			if target.Part_of_duplication_list && target.Code != deprBookCode {
+				book := gtables.NewDepreciationBook(src)
+				book.Copy(target)
+				err = createDupLine(src, book, exchangeRate, l)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// dupExchangeRate (GetExchangeRate): the asset's FA exchange rate in a book that uses them (100:
+// none)
+func dupExchangeRate(src ftables.Source, faNo types.Code, deprBook *gtables.DepreciationBook) types.Decimal {
+	hundred := types.NewDecimalFromInt(100)
+	if !deprBook.Use_fa_exch_rate_in_duplic {
+		return hundred
+	}
+	faDeprBook := gtables.NewFADepreciationBook(src)
+	if faDeprBook.Get(map[string]interface{}{"fa_no": faNo, "depreciation_book_code": deprBook.Code}) && faDeprBook.Fa_exchange_rate.IsPositive() {
+		return faDeprBook.Fa_exchange_rate
+	}
+	if deprBook.Default_exchange_rate.IsPositive() {
+		return deprBook.Default_exchange_rate
+	}
+	return hundred
+}
+
+// createDupLine (CreateLine, JnlName, InsertLine): the line in the target book's journal
+func createDupLine(src ftables.Source, deprBook *gtables.DepreciationBook, exchangeRate types.Decimal, l *dupLine) error {
+	fa := gtables.NewFixedAsset(src)
+	err := fa.GetOrError(l.faNo)
+	if err != nil {
+		return err
+	}
+	toGenJnl := !fa.Budgeted_asset && glIntegration(deprBook, l.postingType)
+	var templateName, batchName types.Code
+	if toGenJnl {
+		templateName, batchName, _, err = tables.GenJnlName(src, deprBook.Code)
+	} else {
+		templateName, batchName, _, err = tables.FAJnlName(src, deprBook.Code)
+	}
+	if err != nil {
+		return err
+	}
+	if toGenJnl == l.genJnl && templateName == l.journalTemplate && batchName == l.journalBatch {
+		return apperrors.FADuplicateCurrentJnl(gtables.FAJournalSetupTableName)
+	}
+	amount, salvageValue := l.amount, l.salvageValue
+	if deprBook.Use_fa_exch_rate_in_duplic {
+		rate := exchangeRate.Div(dupExchangeRate(src, l.faNo, deprBook))
+		amount = system.Round(amount.Mul(rate))
+		salvageValue = system.Round(salvageValue.Mul(rate))
+	}
+	if toGenJnl {
+		_, _, lastLineNo, _ := tables.GenJnlName(src, deprBook.Code)
+		g := gtables.NewGenJournalLine(src)
+		g.Init()
+		g.Journal_template_name = templateName
+		g.Journal_batch_name = batchName
+		g.Line_no = lastLineNo + 10000
+		g.Account_type = gtables.GenJournalLine_Account_type.FixedAsset
+		g.Account_no = l.faNo
+		g.Fa_posting_type = gtables.GenJournalLineFa_posting_type(l.postingType + 1)
+		g.Fa_posting_date = l.faPostingDate
+		g.Posting_date = l.postingDate
+		if g.Posting_date.IsZero() {
+			g.Posting_date = l.faPostingDate
+		}
+		if g.Posting_date.Equal(g.Fa_posting_date) {
+			g.Fa_posting_date = types.Date{}
+		}
+		g.Document_type = gtables.GenJournalLineDocument_type(l.documentType)
+		g.Document_date = l.documentDate
+		g.Document_no = l.documentNo
+		g.External_document_no = l.externalDocNo
+		g.Description = l.description
+		if err = g.Validate("amount", amount); err != nil {
+			return err
+		}
+		g.Salvage_value = salvageValue
+		g.Quantity = l.quantity
+		if err = g.Validate("correction", l.correction); err != nil {
+			return err
+		}
+		g.No_of_depreciation_days = l.noOfDeprDays
+		g.Depr_until_fa_posting_date = l.deprUntil
+		g.Depr_acquisition_cost = l.deprAcqCost
+		g.Posting_group = l.faPostingGroup
+		g.Maintenance_code = l.maintenanceCode
+		g.Department_code = l.departmentCode
+		g.Project_code = l.projectCode
+		g.Fa_reclassification_entry = l.reclassification
+		g.Index_entry = l.indexEntry
+		if err = g.Validate("depreciation_book_code", deprBook.Code); err != nil {
+			return err
+		}
+		g.Posting_no_series = tables.GetGenNoSeries(src, templateName, batchName)
+		if err = tables.SetGenJnlTrailCodes(g); err != nil {
+			return err
+		}
+		return g.InsertOrError(true)
+	}
+	_, _, lastLineNo, _ := tables.FAJnlName(src, deprBook.Code)
+	f := gtables.NewFAJournalLine(src)
+	f.Init()
+	f.Journal_template_name = templateName
+	f.Journal_batch_name = batchName
+	f.Line_no = lastLineNo + 10000
+	f.Fa_no = l.faNo
+	f.Fa_posting_type = l.postingType
+	f.Fa_posting_date = l.faPostingDate
+	f.Posting_date = l.postingDate
+	if f.Posting_date.Equal(f.Fa_posting_date) {
+		f.Posting_date = types.Date{}
+	}
+	f.Document_type = gtables.FAJournalLineDocument_type(l.documentType)
+	f.Document_date = l.documentDate
+	f.Document_no = l.documentNo
+	f.External_document_no = l.externalDocNo
+	f.Description = l.description
+	if err = f.Validate("amount", amount); err != nil {
+		return err
+	}
+	f.Salvage_value = salvageValue
+	f.Quantity = l.quantity
+	if err = f.Validate("correction", l.correction); err != nil {
+		return err
+	}
+	f.No_of_depreciation_days = l.noOfDeprDays
+	f.Depr_until_fa_posting_date = l.deprUntil
+	f.Depr_acquisition_cost = l.deprAcqCost
+	f.Fa_posting_group = l.faPostingGroup
+	f.Maintenance_code = l.maintenanceCode
+	f.Department_code = l.departmentCode
+	f.Project_code = l.projectCode
+	f.Fa_reclassification_entry = l.reclassification
+	f.Index_entry = l.indexEntry
+	if err = f.Validate("depreciation_book_code", deprBook.Code); err != nil {
+		return err
+	}
+	f.Posting_no_series = tables.GetFANoSeries(src, templateName, batchName)
+	return f.InsertOrError(true)
+}

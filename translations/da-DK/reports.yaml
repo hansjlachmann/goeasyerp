@@ -439,6 +439,59 @@ reports:
       RECEIPT: "VAREMODTAGELSE"
       RECEIPT_NO: "Modtagelsesnr."
       RECEIPT_DATE: "Modtagelsesdato"
+  "5687":
+    caption: "Kopier afskrivningsprofil"
+    options:
+      copy_from_book: "Kopier fra profil"
+      copy_to_book: "Kopier til profil"
+      starting_date: "Startdato"
+      ending_date: "Slutdato"
+      document_no: "Bilagsnr."
+      posting_description: "Bogføringsbeskrivelse"
+      insert_bal_account: "Indsæt modkonto"
+      acquisition_cost: "Anskaffelsespris"
+      depreciation: "Afskrivning"
+      write_down: "Nedskrivning"
+      appreciation: "Opskrivning"
+      custom_1: "Bruger 1"
+      custom_2: "Bruger 2"
+      salvage_value: "Scrapværdi"
+      disposal: "Afhændelse"
+    texts:
+      OPTIONS: "Indstillinger"
+      STARTING_DATE_LATER: "Startdatoen er senere end slutdatoen."
+      ENTER_DOCUMENT_NO: "Du skal angive bilagsnummeret."
+      WINDOW: "Kopierer anlæg    #1##########"
+  "5688":
+    caption: "Annuller anlægsposter"
+    options:
+      cancel_book: "Annuller profil"
+      starting_date: "Startdato"
+      ending_date: "Slutdato"
+      document_no: "Bilagsnr."
+      posting_description: "Bogføringsbeskrivelse"
+      insert_bal_account: "Indsæt modkonto"
+      acquisition_cost: "Anskaffelsespris"
+      depreciation: "Afskrivning"
+      write_down: "Nedskrivning"
+      appreciation: "Opskrivning"
+      custom_1: "Bruger 1"
+      custom_2: "Bruger 2"
+      salvage_value: "Scrapværdi"
+      disposal: "Afhændelse"
+    texts:
+      OPTIONS: "Indstillinger"
+      STARTING_DATE_LATER: "Startdatoen er senere end slutdatoen."
+      ENTER_DOCUMENT_NO: "Du skal angive bilagsnummeret."
+      WINDOW: "Annullerer anlæg    #1##########"
+  "5689":
+    caption: "Opret anlægsafskrivningsprofiler"
+    options:
+      depreciation_book: "Afskrivningsprofil"
+      copy_from_fa_no: "Kopier fra anlægsnr."
+    texts:
+      OPTIONS: "Indstillinger"
+      WINDOW: "Opretter anlægsprofil       #1##########\nOpretter ikke anlægsprofil  #2##########"
   "5692":
     caption: "Beregn afskrivninger"
     options:

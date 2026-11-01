@@ -118,3 +118,27 @@ func (depreciationBookLogic) OnValidate_Default_exchange_rate(rec *gtables.Depre
 	}
 	return nil
 }
+
+// DeprBookGLIntegration (IndexGLIntegration): whether the book posts an FA journal posting type
+// to the G/L
+func DeprBookGLIntegration(deprBook *gtables.DepreciationBook, postingType gtables.FAJournalLineFa_posting_type) bool {
+	switch postingType {
+	case gtables.FAJournalLine_Fa_posting_type.AcquisitionCost:
+		return deprBook.G_l_integration_acq_cost
+	case gtables.FAJournalLine_Fa_posting_type.Depreciation:
+		return deprBook.G_l_integration_depreciation
+	case gtables.FAJournalLine_Fa_posting_type.WriteDown:
+		return deprBook.G_l_integration_write_down
+	case gtables.FAJournalLine_Fa_posting_type.Appreciation:
+		return deprBook.G_l_integration_appreciation
+	case gtables.FAJournalLine_Fa_posting_type.Custom1:
+		return deprBook.G_l_integration_custom_1
+	case gtables.FAJournalLine_Fa_posting_type.Custom2:
+		return deprBook.G_l_integration_custom_2
+	case gtables.FAJournalLine_Fa_posting_type.Disposal:
+		return deprBook.G_l_integration_disposal
+	case gtables.FAJournalLine_Fa_posting_type.Maintenance:
+		return deprBook.G_l_integration_maintenance
+	}
+	return false
+}

@@ -439,6 +439,59 @@ reports:
       RECEIPT: "RECEIPT"
       RECEIPT_NO: "Receipt No."
       RECEIPT_DATE: "Receipt Date"
+  "5687":
+    caption: "Copy Depreciation Book"
+    options:
+      copy_from_book: "Copy from Book"
+      copy_to_book: "Copy to Book"
+      starting_date: "Starting Date"
+      ending_date: "Ending Date"
+      document_no: "Document No."
+      posting_description: "Posting Description"
+      insert_bal_account: "Insert Bal. Account"
+      acquisition_cost: "Acquisition Cost"
+      depreciation: "Depreciation"
+      write_down: "Write-Down"
+      appreciation: "Appreciation"
+      custom_1: "Custom 1"
+      custom_2: "Custom 2"
+      salvage_value: "Salvage Value"
+      disposal: "Disposal"
+    texts:
+      OPTIONS: "Options"
+      STARTING_DATE_LATER: "The Starting Date is later than the Ending Date."
+      ENTER_DOCUMENT_NO: "You must specify the document no."
+      WINDOW: "Copying fixed asset    #1##########"
+  "5688":
+    caption: "Cancel FA Ledger Entries"
+    options:
+      cancel_book: "Cancel Book"
+      starting_date: "Starting Date"
+      ending_date: "Ending Date"
+      document_no: "Document No."
+      posting_description: "Posting Description"
+      insert_bal_account: "Insert Bal. Account"
+      acquisition_cost: "Acquisition Cost"
+      depreciation: "Depreciation"
+      write_down: "Write-Down"
+      appreciation: "Appreciation"
+      custom_1: "Custom 1"
+      custom_2: "Custom 2"
+      salvage_value: "Salvage Value"
+      disposal: "Disposal"
+    texts:
+      OPTIONS: "Options"
+      STARTING_DATE_LATER: "The Starting Date is later than the Ending Date."
+      ENTER_DOCUMENT_NO: "You must specify the document no."
+      WINDOW: "Canceling fixed asset    #1##########"
+  "5689":
+    caption: "Create FA Depreciation Books"
+    options:
+      depreciation_book: "Depreciation Book"
+      copy_from_fa_no: "Copy from FA No."
+    texts:
+      OPTIONS: "Options"
+      WINDOW: "Creating fixed asset book     #1##########\nNot creating fixed asset book #2##########"
   "5692":
     caption: "Calculate Depreciation"
     options:

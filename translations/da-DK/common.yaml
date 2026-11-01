@@ -10,6 +10,10 @@ common:
   actions:
     allocations: "Fordelinger"
     insert_fa_bal_account: "Indsæt anlægsmodkonto"
+    copy_depreciation_book: "Kopier afskrivningsprofil"
+    create_fa_depreciation_books: "Opret anlægsafskrivningsprofiler"
+    cancel_fa_ledger_entries: "Annuller anlægsposter"
+    cancel_entries: "Annuller poster"
     acquisition: "Anskaffelse"
     depreciation: "Afskrivning"
     write_down: "Nedskrivning"
