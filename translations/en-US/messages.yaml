@@ -473,6 +473,8 @@ Posting lines #3###### @4@@@@@@@@@@@@@"
 Checking lines #2######
 Posting lines #3###### @4@@@@@@@@@@@@@"
   FA_JNL_TEMPLATE_DESCRIPTION: "Fixed Asset Journal"
+  FA_CANCEL_ENTRIES_CONFIRM: "Do you want to cancel the selected ledger entries?"
+  FA_CANCEL_ENTRIES_TRANSFERRED: "The ledger entries have been transferred to the journal."
   FA_JNL_POST_WINDOW: "Journal Batch Name #1##########
 Checking lines #2######
 Posting lines #3###### @4@@@@@@@@@@@@@"

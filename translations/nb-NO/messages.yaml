@@ -473,6 +473,8 @@ Bokfører linjer #3###### @4@@@@@@@@@@@@@"
 Kontrollerer linjer #2######
 Bokfører linjer #3###### @4@@@@@@@@@@@@@"
   FA_JNL_TEMPLATE_DESCRIPTION: "Anleggskladd"
+  FA_CANCEL_ENTRIES_CONFIRM: "Vil du annullere de valgte postene?"
+  FA_CANCEL_ENTRIES_TRANSFERRED: "Postene er overført til kladden."
   FA_JNL_POST_WINDOW: "Kladdenavn #1##########
 Kontrollerer linjer #2######
 Bokfører linjer #3###### @4@@@@@@@@@@@@@"

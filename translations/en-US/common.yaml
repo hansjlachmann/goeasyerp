@@ -10,6 +10,10 @@ common:
   actions:
     allocations: "Allocations"
     insert_fa_bal_account: "Insert FA Bal. Account"
+    copy_depreciation_book: "Copy Depreciation Book"
+    create_fa_depreciation_books: "Create FA Depreciation Books"
+    cancel_fa_ledger_entries: "Cancel FA Ledger Entries"
+    cancel_entries: "Cancel Entries"
     acquisition: "Acquisition"
     depreciation: "Depreciation"
     write_down: "Write-Down"

@@ -439,6 +439,59 @@ reports:
       RECEIPT: "VAREMOTTAK"
       RECEIPT_NO: "Mottaksnr."
       RECEIPT_DATE: "Mottaksdato"
+  "5687":
+    caption: "Kopier avskrivningsprofil"
+    options:
+      copy_from_book: "Kopier fra profil"
+      copy_to_book: "Kopier til profil"
+      starting_date: "Startdato"
+      ending_date: "Sluttdato"
+      document_no: "Bilagsnr."
+      posting_description: "Posteringsbeskrivelse"
+      insert_bal_account: "Sett inn motkonto"
+      acquisition_cost: "Anskaffelseskost"
+      depreciation: "Avskrivning"
+      write_down: "Nedskrivning"
+      appreciation: "Oppskrivning"
+      custom_1: "Bruker 1"
+      custom_2: "Bruker 2"
+      salvage_value: "Utrangeringsverdi"
+      disposal: "Avhending"
+    texts:
+      OPTIONS: "Alternativer"
+      STARTING_DATE_LATER: "Startdatoen er senere enn sluttdatoen."
+      ENTER_DOCUMENT_NO: "Du må angi bilagsnummeret."
+      WINDOW: "Kopierer anleggsmiddel    #1##########"
+  "5688":
+    caption: "Annuller anleggsposter"
+    options:
+      cancel_book: "Annuller profil"
+      starting_date: "Startdato"
+      ending_date: "Sluttdato"
+      document_no: "Bilagsnr."
+      posting_description: "Posteringsbeskrivelse"
+      insert_bal_account: "Sett inn motkonto"
+      acquisition_cost: "Anskaffelseskost"
+      depreciation: "Avskrivning"
+      write_down: "Nedskrivning"
+      appreciation: "Oppskrivning"
+      custom_1: "Bruker 1"
+      custom_2: "Bruker 2"
+      salvage_value: "Utrangeringsverdi"
+      disposal: "Avhending"
+    texts:
+      OPTIONS: "Alternativer"
+      STARTING_DATE_LATER: "Startdatoen er senere enn sluttdatoen."
+      ENTER_DOCUMENT_NO: "Du må angi bilagsnummeret."
+      WINDOW: "Annullerer anleggsmiddel    #1##########"
+  "5689":
+    caption: "Opprett anleggsavskrivningsprofiler"
+    options:
+      depreciation_book: "Avskrivningsprofil"
+      copy_from_fa_no: "Kopier fra anleggsnr."
+    texts:
+      OPTIONS: "Alternativer"
+      WINDOW: "Oppretter anleggsprofil       #1##########\nOppretter ikke anleggsprofil  #2##########"
   "5692":
     caption: "Beregn avskrivning"
     options:
