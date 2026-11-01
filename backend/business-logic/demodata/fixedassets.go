@@ -13,8 +13,10 @@ import (
 
 // Demo fixed assets (data/fixedassets.yaml): each asset with its COMPANY depreciation book
 // (straight-line, through the table's own validation), the acquisition and a monthly
-// depreciation entry up to last month, a yearly service for the vehicles, one insurance with
-// the coverage of the insured assets, and one main asset with a component.
+// depreciation up to last month, a yearly service for the vehicles, one insurance with the
+// coverage of the insured assets, and one main asset with a component. With Options.GenJnlPostLine
+// the ledgers are posted (fixedassetposting.go: acquisitions, payments, depreciation, services
+// and a disposal); without it their entries are inserted as they would be.
 
 type fixedAssetData struct {
 	No                string  `yaml:"no"`
@@ -34,7 +36,13 @@ type fixedAssetData struct {
 
 type fixedAssetsFile struct {
 	FixedAssets []fixedAssetData `yaml:"fixed_assets"`
-	Insurance   struct {
+	// Disposal: the asset sold (posted ledgers only)
+	Disposal struct {
+		FANo     string  `yaml:"fa_no"`
+		Day      int     `yaml:"day"` // of last month
+		Proceeds float64 `yaml:"proceeds"`
+	} `yaml:"disposal"`
+	Insurance struct {
 		No             string  `yaml:"no"`
 		Description    string  `yaml:"description"`
 		InsuranceType  string  `yaml:"insurance_type"`
@@ -47,7 +55,9 @@ type fixedAssetsFile struct {
 
 const demoDeprBook = types.Code("COMPANY")
 
-func insertFixedAssets(exec database.Executor, company string, dbType database.DBType, data fixedAssetsFile, today time.Time, counts *Counts) error {
+// insertFixedAssets inserts the insurance, the assets with their COMPANY book and the main asset
+// components — and, unless the ledgers are posted (posted), the assets' ledger entries
+func insertFixedAssets(exec database.Executor, company string, dbType database.DBType, data fixedAssetsFile, today time.Time, posted bool, counts *Counts) error {
 	src := ftables.DBSource(exec, company, dbType)
 	monthStart := time.Date(today.Year(), today.Month(), 1, 0, 0, 0, 0, today.Location())
 	faEntryNo, maintEntryNo, insEntryNo := 0, 0, 0
@@ -105,6 +115,13 @@ func insertFixedAssets(exec database.Executor, company string, dbType database.D
 		}
 		if err != nil {
 			return &InsertError{Table: gtables.FADepreciationBookTableName, Key: a.No, Err: err}
+		}
+		if posted {
+			err = book.ModifyOrError(true)
+			if err != nil {
+				return &InsertError{Table: gtables.FADepreciationBookTableName, Key: a.No, Err: err}
+			}
+			continue
 		}
 
 		newEntry := func(date time.Time, postingType gtables.FALedgerEntryFa_posting_type, amount float64, description string) {
