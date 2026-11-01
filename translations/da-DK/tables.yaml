@@ -1996,6 +1996,8 @@ tables:
       fa_jnl_batch_name: "Anlægskladdenavn"
       gen_jnl_template_name: "Finanskladdetypenavn"
       gen_jnl_batch_name: "Finanskladdenavn"
+      insurance_jnl_template_name: "Forsikringskladdetypenavn"
+      insurance_jnl_batch_name: "Forsikringskladdenavn"
   fa_register:
     caption: "Anlægsjournal"
     fields:
@@ -2038,6 +2040,99 @@ tables:
       reason_code: "Årsagskode"
       no_series: "Nummerserie"
       posting_no_series: "Bogføringsnummerserie"
+  fa_reclass_journal_template:
+    caption: "Anlægsomposteringskladdetype"
+    fields:
+      name: "Navn"
+      description: "Beskrivelse"
+      page_id: "Side-id"
+  fa_reclass_journal_batch:
+    caption: "Anlægsomposteringskladdenavn"
+    fields:
+      journal_template_name: "Kladdetypenavn"
+      name: "Navn"
+      description: "Beskrivelse"
+  fa_reclass_journal_line:
+    caption: "Anlægsomposteringskladdelinje"
+    fields:
+      journal_template_name: "Kladdetypenavn"
+      journal_batch_name: "Kladdenavn"
+      line_no: "Linjenr."
+      fa_no: "Anlægsnr."
+      new_fa_no: "Nyt anlægsnr."
+      fa_posting_date: "Anlægsbogføringsdato"
+      posting_date: "Bogføringsdato"
+      depreciation_book_code: "Afskrivningsprofilkode"
+      reclassify_acq_cost_amount: "Ompostér anskaffelsesbeløb"
+      reclassify_acq_cost_percent: "Ompostér anskaffelsespris %"
+      reclassify_acquisition_cost: "Ompostér anskaffelsespris"
+      reclassify_depreciation: "Ompostér afskrivning"
+      reclassify_write_down: "Ompostér nedskrivning"
+      reclassify_appreciation: "Ompostér opskrivning"
+      reclassify_custom_1: "Ompostér bruger 1"
+      reclassify_custom_2: "Ompostér bruger 2"
+      reclassify_salvage_value: "Ompostér scrapværdi"
+      insert_bal_account: "Indsæt modkonto"
+      description: "Beskrivelse"
+      document_no: "Bilagsnr."
+  insurance_journal_template:
+    caption: "Forsikringskladdetype"
+    fields:
+      name: "Navn"
+      description: "Beskrivelse"
+      test_report_id: "Testrapport-id"
+      page_id: "Side-id"
+      posting_report_id: "Bogføringsrapport-id"
+      force_posting_report: "Gennemtving bogføringsrapport"
+      source_code: "Kildespor"
+      reason_code: "Årsagskode"
+      no_series: "Nummerserie"
+      posting_no_series: "Bogføringsnummerserie"
+  insurance_journal_batch:
+    caption: "Forsikringskladdenavn"
+    fields:
+      journal_template_name: "Kladdetypenavn"
+      name: "Navn"
+      description: "Beskrivelse"
+      reason_code: "Årsagskode"
+      no_series: "Nummerserie"
+      posting_no_series: "Bogføringsnummerserie"
+  insurance_journal_line:
+    caption: "Forsikringskladdelinje"
+    fields:
+      journal_template_name: "Kladdetypenavn"
+      journal_batch_name: "Kladdenavn"
+      line_no: "Linjenr."
+      insurance_no: "Forsikringsnr."
+      fa_no: "Anlægsnr."
+      fa_description: "Anlægsbeskrivelse"
+      posting_date: "Bogføringsdato"
+      document_type: "Bilagstype"
+      document_date: "Bilagsdato"
+      document_no: "Bilagsnr."
+      external_document_no: "Eksternt bilagsnr."
+      amount: "Beløb"
+      description: "Beskrivelse"
+      department_code: "Afdelingskode"
+      project_code: "Projektkode"
+      reason_code: "Årsagskode"
+      source_code: "Kildespor"
+      index_entry: "Indekspost"
+      posting_no_series: "Bogføringsnummerserie"
+    options:
+      document_type:
+        invoice: "Faktura"
+        credit_memo: "Kreditnota"
+  insurance_register:
+    caption: "Forsikringsjournal"
+    fields:
+      no: "Nr."
+      from_entry_no: "Fra løbenr."
+      to_entry_no: "Til løbenr."
+      creation_date: "Oprettelsesdato"
+      source_code: "Kildespor"
+      user_id: "Bruger-id"
+      journal_batch_name: "Kladdenavn"
   depreciation_table_header:
     caption: "Afskrivningstabelhoved"
     fields:
@@ -2516,6 +2611,7 @@ tables:
     fields:
       fixed_asset_journal: "Anlægskladde"
       fixed_asset_g_l_journal: "Anlægsfinanskladde"
+      insurance_journal: "Forsikringskladde"
       bom_journal: "Styklistekladde"
       resource_journal: "Ressourcekladde"
       inventory_post_cost: "Lagerkostbogføring"

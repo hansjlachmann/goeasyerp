@@ -1996,6 +1996,8 @@ tables:
       fa_jnl_batch_name: "FA Jnl. Batch Name"
       gen_jnl_template_name: "Gen. Jnl. Template Name"
       gen_jnl_batch_name: "Gen. Jnl. Batch Name"
+      insurance_jnl_template_name: "Insurance Jnl. Template Name"
+      insurance_jnl_batch_name: "Insurance Jnl. Batch Name"
   fa_register:
     caption: "FA Register"
     fields:
@@ -2038,6 +2040,99 @@ tables:
       reason_code: "Reason Code"
       no_series: "No. Series"
       posting_no_series: "Posting No. Series"
+  fa_reclass_journal_template:
+    caption: "FA Reclass. Journal Template"
+    fields:
+      name: "Name"
+      description: "Description"
+      page_id: "Page ID"
+  fa_reclass_journal_batch:
+    caption: "FA Reclass. Journal Batch"
+    fields:
+      journal_template_name: "Journal Template Name"
+      name: "Name"
+      description: "Description"
+  fa_reclass_journal_line:
+    caption: "FA Reclass. Journal Line"
+    fields:
+      journal_template_name: "Journal Template Name"
+      journal_batch_name: "Journal Batch Name"
+      line_no: "Line No."
+      fa_no: "FA No."
+      new_fa_no: "New FA No."
+      fa_posting_date: "FA Posting Date"
+      posting_date: "Posting Date"
+      depreciation_book_code: "Depreciation Book Code"
+      reclassify_acq_cost_amount: "Reclassify Acq. Cost Amount"
+      reclassify_acq_cost_percent: "Reclassify Acq. Cost %"
+      reclassify_acquisition_cost: "Reclassify Acquisition Cost"
+      reclassify_depreciation: "Reclassify Depreciation"
+      reclassify_write_down: "Reclassify Write-Down"
+      reclassify_appreciation: "Reclassify Appreciation"
+      reclassify_custom_1: "Reclassify Custom 1"
+      reclassify_custom_2: "Reclassify Custom 2"
+      reclassify_salvage_value: "Reclassify Salvage Value"
+      insert_bal_account: "Insert Bal. Account"
+      description: "Description"
+      document_no: "Document No."
+  insurance_journal_template:
+    caption: "Insurance Journal Template"
+    fields:
+      name: "Name"
+      description: "Description"
+      test_report_id: "Test Report ID"
+      page_id: "Page ID"
+      posting_report_id: "Posting Report ID"
+      force_posting_report: "Force Posting Report"
+      source_code: "Source Code"
+      reason_code: "Reason Code"
+      no_series: "No. Series"
+      posting_no_series: "Posting No. Series"
+  insurance_journal_batch:
+    caption: "Insurance Journal Batch"
+    fields:
+      journal_template_name: "Journal Template Name"
+      name: "Name"
+      description: "Description"
+      reason_code: "Reason Code"
+      no_series: "No. Series"
+      posting_no_series: "Posting No. Series"
+  insurance_journal_line:
+    caption: "Insurance Journal Line"
+    fields:
+      journal_template_name: "Journal Template Name"
+      journal_batch_name: "Journal Batch Name"
+      line_no: "Line No."
+      insurance_no: "Insurance No."
+      fa_no: "FA No."
+      fa_description: "FA Description"
+      posting_date: "Posting Date"
+      document_type: "Document Type"
+      document_date: "Document Date"
+      document_no: "Document No."
+      external_document_no: "External Document No."
+      amount: "Amount"
+      description: "Description"
+      department_code: "Department Code"
+      project_code: "Project Code"
+      reason_code: "Reason Code"
+      source_code: "Source Code"
+      index_entry: "Index Entry"
+      posting_no_series: "Posting No. Series"
+    options:
+      document_type:
+        invoice: "Invoice"
+        credit_memo: "Credit Memo"
+  insurance_register:
+    caption: "Insurance Register"
+    fields:
+      no: "No."
+      from_entry_no: "From Entry No."
+      to_entry_no: "To Entry No."
+      creation_date: "Creation Date"
+      source_code: "Source Code"
+      user_id: "User ID"
+      journal_batch_name: "Journal Batch Name"
   depreciation_table_header:
     caption: "Depreciation Table Header"
     fields:
@@ -2516,6 +2611,7 @@ tables:
     fields:
       fixed_asset_journal: "Fixed Asset Journal"
       fixed_asset_g_l_journal: "Fixed Asset G/L Journal"
+      insurance_journal: "Insurance Journal"
       bom_journal: "BOM Journal"
       resource_journal: "Resource Journal"
       inventory_post_cost: "Inventory Post Cost"

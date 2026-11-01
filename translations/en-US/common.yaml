@@ -10,6 +10,13 @@ common:
   actions:
     allocations: "Allocations"
     insert_fa_bal_account: "Insert FA Bal. Account"
+    copy_depreciation_book: "Copy Depreciation Book"
+    create_fa_depreciation_books: "Create FA Depreciation Books"
+    cancel_fa_ledger_entries: "Cancel FA Ledger Entries"
+    cancel_entries: "Cancel Entries"
+    reclassify: "Reclassify"
+    insurance: "Insurance"
+    coverage_ledger: "Coverage Ledger"
     acquisition: "Acquisition"
     depreciation: "Depreciation"
     write_down: "Write-Down"
@@ -143,6 +150,7 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    fixed_assets: "Fixed Assets"
     locations: "Locations"
     variants: "Variants"
     periods: "Periods"
@@ -200,6 +208,10 @@ common:
 
   # Menu items
   menu:
+    fixed_asset_details: "Fixed Asset - Details"
+    fixed_asset_book_value_01: "Fixed Asset - Book Value 01"
+    fixed_asset_book_value_02: "Fixed Asset - Book Value 02"
+    fixed_asset_register: "Fixed Asset Register"
     account_schedules: "Account Schedules"
     activities: "Activities"
     adjust_cost_item_entries: "Adjust Cost - Item Entries"

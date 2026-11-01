@@ -3,23 +3,22 @@ package errors
 // Fixed asset posting errors (FA journals, codeunits 5600, 5606, 5631–5633). The messages about
 // an asset name it and its depreciation book (classic FAName): their first two parameters.
 const (
-	ErrFAMustBeIdentical      ErrorCode = "ERR_FA_MUST_BE_IDENTICAL"
-	ErrFAPostInGenJnl         ErrorCode = "ERR_FA_POST_IN_GEN_JNL"
-	ErrFAPostInFAJnl          ErrorCode = "ERR_FA_POST_IN_FA_JNL"
-	ErrFADeprGLIntegration    ErrorCode = "ERR_FA_DEPR_GL_INTEGRATION"
-	ErrFANotTogetherWith      ErrorCode = "ERR_FA_NOT_TOGETHER_WITH"
-	ErrFANotWithErrorEntry    ErrorCode = "ERR_FA_NOT_WITH_ERROR_ENTRY"
-	ErrFANotDifferentThan     ErrorCode = "ERR_FA_NOT_DIFFERENT_THAN"
-	ErrFANotYet               ErrorCode = "ERR_FA_NOT_YET"
-	ErrFAMainAssetPosting     ErrorCode = "ERR_FA_MAIN_ASSET_POSTING"
-	ErrFAFirstAcquisition     ErrorCode = "ERR_FA_FIRST_ACQUISITION"
-	ErrFADisposed             ErrorCode = "ERR_FA_DISPOSED"
-	ErrFAMustNotBePositive    ErrorCode = "ERR_FA_MUST_NOT_BE_POSITIVE"
-	ErrFAMustNotBeNegative    ErrorCode = "ERR_FA_MUST_NOT_BE_NEGATIVE"
-	ErrFABookValueNegative    ErrorCode = "ERR_FA_BOOK_VALUE_NEGATIVE"
-	ErrFADeprBasisNegative    ErrorCode = "ERR_FA_DEPR_BASIS_NEGATIVE"
-	ErrFAErrorEntryNotFound   ErrorCode = "ERR_FA_ERROR_ENTRY_NOT_FOUND"
-	ErrFAErrorEntryNoMatch    ErrorCode = "ERR_FA_ERROR_ENTRY_NO_MATCH"
+	ErrFAMustBeIdentical    ErrorCode = "ERR_FA_MUST_BE_IDENTICAL"
+	ErrFAPostInGenJnl       ErrorCode = "ERR_FA_POST_IN_GEN_JNL"
+	ErrFAPostInFAJnl        ErrorCode = "ERR_FA_POST_IN_FA_JNL"
+	ErrFADeprGLIntegration  ErrorCode = "ERR_FA_DEPR_GL_INTEGRATION"
+	ErrFANotTogetherWith    ErrorCode = "ERR_FA_NOT_TOGETHER_WITH"
+	ErrFANotWithErrorEntry  ErrorCode = "ERR_FA_NOT_WITH_ERROR_ENTRY"
+	ErrFANotDifferentThan   ErrorCode = "ERR_FA_NOT_DIFFERENT_THAN"
+	ErrFAMainAssetPosting   ErrorCode = "ERR_FA_MAIN_ASSET_POSTING"
+	ErrFAFirstAcquisition   ErrorCode = "ERR_FA_FIRST_ACQUISITION"
+	ErrFADisposed           ErrorCode = "ERR_FA_DISPOSED"
+	ErrFAMustNotBePositive  ErrorCode = "ERR_FA_MUST_NOT_BE_POSITIVE"
+	ErrFAMustNotBeNegative  ErrorCode = "ERR_FA_MUST_NOT_BE_NEGATIVE"
+	ErrFABookValueNegative  ErrorCode = "ERR_FA_BOOK_VALUE_NEGATIVE"
+	ErrFADeprBasisNegative  ErrorCode = "ERR_FA_DEPR_BASIS_NEGATIVE"
+	ErrFAErrorEntryNotFound ErrorCode = "ERR_FA_ERROR_ENTRY_NOT_FOUND"
+	ErrFAErrorEntryNoMatch  ErrorCode = "ERR_FA_ERROR_ENTRY_NO_MATCH"
 )
 
 // FAMustBeIdentical: a date must be the same as another (the book's Use Same FA+G/L Posting
@@ -61,12 +60,6 @@ func FANotWithErrorEntry(table, field, field2 string) *AppError {
 // FANotDifferentThan: a field must differ from another (Duplicate in Depreciation Book)
 func FANotDifferentThan(table, field, field2 string) *AppError {
 	return &AppError{Code: ErrFANotDifferentThan, Table: table, Field: field, Field2: field2}
-}
-
-// FANotYet: a field or posting type that comes with a later fixed asset step (value: the
-// field's value — a posting type)
-func FANotYet(table, field string, value any) *AppError {
-	return &AppError{Code: ErrFANotYet, Table: table, Field: field, Value: value}
 }
 
 // FAMainAssetPosting: a main asset cannot be posted to without the FA Setup's Allow Posting to
@@ -224,4 +217,74 @@ func FADisposalCancelFirst(faNo, deprBookCode, disposalEntryNo string) *AppError
 // FADisposalLastDate: the disposal date must be the asset's last date in the book
 func FADisposalLastDate(faNo, deprBookCode string) *AppError {
 	return &AppError{Code: ErrFADisposalLastDate, Params: []string{faNo, deprBookCode}}
+}
+
+// ErrFADuplicateCurrentJnl: duplication would put the line in the journal it comes from
+const ErrFADuplicateCurrentJnl ErrorCode = "ERR_FA_DUPLICATE_CURRENT_JNL"
+
+// FADuplicateCurrentJnl: you cannot duplicate using the current journal (check FA Journal Setup)
+func FADuplicateCurrentJnl(table string) *AppError {
+	return &AppError{Code: ErrFADuplicateCurrentJnl, Table: table, WithTableCaption: true}
+}
+
+// Cancel FA Entries errors (codeunit 5624)
+const (
+	ErrFACancelSameBook   ErrorCode = "ERR_FA_CANCEL_SAME_BOOK"
+	ErrFAAlreadyCanceled  ErrorCode = "ERR_FA_ALREADY_CANCELED"
+	ErrFACannotBeCanceled ErrorCode = "ERR_FA_CANNOT_BE_CANCELED"
+)
+
+// FACancelSameBook: the canceled entries must all be in one depreciation book
+func FACancelSameBook(table string) *AppError {
+	return &AppError{Code: ErrFACancelSameBook, Table: table, Field: "depreciation_book_code"}
+}
+
+// FAAlreadyCanceled: the entry has been canceled (its FA No. is blank)
+func FAAlreadyCanceled(entryNo string) *AppError {
+	return &AppError{Code: ErrFAAlreadyCanceled, Params: []string{entryNo}}
+}
+
+// FACannotBeCanceled: a disposal entry is canceled by a disposal line (FA Posting Type, value)
+func FACannotBeCanceled(table, entryNo string, value any) *AppError {
+	return &AppError{Code: ErrFACannotBeCanceled, Table: table, Field: "fa_posting_type", Params: []string{entryNo}, Value: value}
+}
+
+// FA reclassification errors (codeunits 5641, 5642)
+const (
+	ErrFAReclassSameBook       ErrorCode = "ERR_FA_RECLASS_SAME_BOOK"
+	ErrFAReclassBudgeted       ErrorCode = "ERR_FA_RECLASS_BUDGETED"
+	ErrFAReclassSameAsset      ErrorCode = "ERR_FA_RECLASS_SAME_ASSET"
+	ErrFAReclassDisposed       ErrorCode = "ERR_FA_RECLASS_DISPOSED"
+	ErrFAReclassNoAcqCost      ErrorCode = "ERR_FA_RECLASS_NO_ACQ_COST"
+	ErrFAReclassAmountTooLarge ErrorCode = "ERR_FA_RECLASS_AMOUNT_TOO_LARGE"
+)
+
+// FAReclassSameBook: the lines of a reclassification are all in one depreciation book
+func FAReclassSameBook(table string) *AppError {
+	return &AppError{Code: ErrFAReclassSameBook, Table: table, Field: "depreciation_book_code"}
+}
+
+// FAReclassBudgeted: one asset is budgeted and the other is not (the budgeted one's field first)
+func FAReclassBudgeted(table, field, field2 string) *AppError {
+	return &AppError{Code: ErrFAReclassBudgeted, Table: table, Field: field, Field2: field2}
+}
+
+// FAReclassSameAsset: FA No. and New FA No. are the same asset
+func FAReclassSameAsset(table string) *AppError {
+	return &AppError{Code: ErrFAReclassSameAsset, Table: table, Field: "fa_no", Field2: "new_fa_no"}
+}
+
+// FAReclassDisposed: the asset is disposed in the book
+func FAReclassDisposed(faNo, deprBookCode string) *AppError {
+	return &AppError{Code: ErrFAReclassDisposed, Params: []string{faNo, deprBookCode}}
+}
+
+// FAReclassNoAcqCost: the asset has no acquisition cost in the book
+func FAReclassNoAcqCost(faNo, deprBookCode string) *AppError {
+	return &AppError{Code: ErrFAReclassNoAcqCost, Params: []string{faNo, deprBookCode}}
+}
+
+// FAReclassAmountTooLarge: Reclassify Acq. Cost Amount is above the asset's acquisition cost
+func FAReclassAmountTooLarge(table, faNo, deprBookCode string) *AppError {
+	return &AppError{Code: ErrFAReclassAmountTooLarge, Table: table, Field: "reclassify_acq_cost_amount", Params: []string{faNo, deprBookCode}}
 }

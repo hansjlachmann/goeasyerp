@@ -159,8 +159,10 @@ func (g *glGenerator) expense(date time.Time, account, department, project, desc
 }
 
 // generateGLEntries creates the demo G/L entries for the 12 months up to today: SMALL posts 12
-// sales invoices a month, LARGE 30, HEAVY 60 (and a quarter as many purchases)
-func generateGLEntries(today time.Time, size Size, customers []string, newEntry func() *gtables.GLEntry) []*gtables.GLEntry {
+// sales invoices a month, LARGE 30, HEAVY 60 (and a quarter as many purchases). With
+// fixedAssetsPosted the machinery, vehicle and office equipment accounts get no opening balance
+// and no depreciation here: the fixed asset postings write them (buildings stay)
+func generateGLEntries(today time.Time, size Size, customers []string, fixedAssetsPosted bool, newEntry func() *gtables.GLEntry) []*gtables.GLEntry {
 	g := &glGenerator{rng: rand.New(rand.NewSource(42)), customers: customers, docNos: map[string]int{}}
 	invoicesPerMonth := 12
 	switch size {
@@ -172,17 +174,27 @@ func generateGLEntries(today time.Time, size Size, customers []string, newEntry 
 	first := time.Date(today.Year(), today.Month(), 1, 0, 0, 0, 0, time.Local).AddDate(0, -11, 0)
 
 	// Opening balances on the first day (entries of the prior year's closing)
-	g.add(glTx{date: first, docNo: "OPENING", description: "Opening balance", sourceCode: "GENJNL", priorYear: true,
-		lines: []glLine{
-			{account: accLand, amount: 2500000}, {account: accAccDeprBuildings, amount: -250000},
-			{account: accMachinery, amount: 800000}, {account: accAccDeprMachine, amount: -160000},
-			{account: accVehicles, amount: 450000}, {account: accAccDeprVehicles, amount: -90000},
-			{account: accOffice, amount: 120000}, {account: accAccDeprOffice, amount: -40000},
-			{account: accRawMaterials, amount: 180000}, {account: accFinished, amount: 95000},
-			{account: accBank, amount: 640000}, {account: accSavings, amount: 300000}, {account: accCash, amount: 15000},
-			{account: accShareCapital, amount: -1000000}, {account: accBankLoans, amount: -1200000},
-			{account: accMortgage, amount: -1100000}, {account: accRetained, amount: -1260000},
-		}})
+	opening := []glLine{
+		{account: accLand, amount: 2500000}, {account: accAccDeprBuildings, amount: -250000},
+		{account: accMachinery, amount: 800000}, {account: accAccDeprMachine, amount: -160000},
+		{account: accVehicles, amount: 450000}, {account: accAccDeprVehicles, amount: -90000},
+		{account: accOffice, amount: 120000}, {account: accAccDeprOffice, amount: -40000},
+		{account: accRawMaterials, amount: 180000}, {account: accFinished, amount: 95000},
+		{account: accBank, amount: 640000}, {account: accSavings, amount: 300000}, {account: accCash, amount: 15000},
+		{account: accShareCapital, amount: -1000000}, {account: accBankLoans, amount: -1200000},
+		{account: accMortgage, amount: -1100000}, {account: accRetained, amount: -1260000},
+	}
+	depreciation := []glLine{
+		{account: "5610", amount: 6250, department: "ADM", system: true}, {account: accAccDeprBuildings, amount: -6250, system: true},
+		{account: "5620", amount: 13333.33, department: "PROD", system: true}, {account: accAccDeprMachine, amount: -13333.33, system: true},
+		{account: "5630", amount: 7500, department: "SALES", system: true}, {account: accAccDeprVehicles, amount: -7500, system: true},
+		{account: "5640", amount: 2000, department: "ADM", system: true}, {account: accAccDeprOffice, amount: -2000, system: true},
+	}
+	if fixedAssetsPosted {
+		opening = withoutFixedAssetAccounts(opening, accRetained)
+		depreciation = depreciation[:2]
+	}
+	g.add(glTx{date: first, docNo: "OPENING", description: "Opening balance", sourceCode: "GENJNL", priorYear: true, lines: opening})
 
 	for m := 0; m < 12; m++ {
 		month := first.AddDate(0, m, 0)
@@ -279,12 +291,7 @@ func generateGLEntries(today time.Time, size Size, customers []string, newEntry 
 
 		// Depreciation at month end (system-created)
 		g.add(glTx{date: day(28), docNo: g.docNo("DEPR", day(28)), description: "Depreciation", sourceCode: "GENJNL",
-			lines: []glLine{
-				{account: "5610", amount: 6250, department: "ADM", system: true}, {account: accAccDeprBuildings, amount: -6250, system: true},
-				{account: "5620", amount: 13333.33, department: "PROD", system: true}, {account: accAccDeprMachine, amount: -13333.33, system: true},
-				{account: "5630", amount: 7500, department: "SALES", system: true}, {account: accAccDeprVehicles, amount: -7500, system: true},
-				{account: "5640", amount: 2000, department: "ADM", system: true}, {account: accAccDeprOffice, amount: -2000, system: true},
-			}})
+			lines: append([]glLine(nil), depreciation...)})
 
 		// Quarterly tax settlement: output tax less input tax to the tax settlement account
 		if m%3 == 2 {
@@ -414,4 +421,26 @@ func insertGLEntries(exec database.Executor, company string, dbType database.DBT
 		return err
 	}
 	return (&gtables.GLEntry{}).SyncKeys(exec, company, dbType)
+}
+
+// withoutFixedAssetAccounts: the opening balance without the accounts of the fixed asset posting
+// groups (machinery, vehicles, office equipment and their depreciation) — their amount goes to the
+// balancing account, so the transaction still balances
+func withoutFixedAssetAccounts(lines []glLine, balancing string) []glLine {
+	faAccounts := map[string]bool{accMachinery: true, accAccDeprMachine: true, accVehicles: true, accAccDeprVehicles: true, accOffice: true, accAccDeprOffice: true}
+	var removed float64
+	var kept []glLine
+	for _, l := range lines {
+		if faAccounts[l.account] {
+			removed += l.amount
+			continue
+		}
+		kept = append(kept, l)
+	}
+	for i := range kept {
+		if kept[i].account == balancing {
+			kept[i].amount += removed
+		}
+	}
+	return kept
 }

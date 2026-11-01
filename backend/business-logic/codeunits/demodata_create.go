@@ -3,6 +3,7 @@ package codeunits
 import (
 	"errors"
 	"fmt"
+	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/purchposting"
 	"github.com/hansjlachmann/openerp/backend/business-logic/salesposting"
 
@@ -91,15 +92,17 @@ func (c *DemoDataCreate) create(jobQueue *gtables.JobQueue, ts *i18n.Translation
 
 	dialog := fcodeunits.GetCurrentDialog() // nil in a scheduled run
 	phaseKeys := map[demodata.Phase]string{
-		demodata.PhaseSetup:      "DEMO_DATA_SETUP",
-		demodata.PhaseCustomers:  "DEMO_DATA_CUSTOMERS",
-		demodata.PhaseEntries:    "DEMO_DATA_ENTRIES",
-		demodata.PhaseLedgers:    "DEMO_DATA_LEDGERS",
-		demodata.PhaseResources:  "DEMO_DATA_RESOURCES",
-		demodata.PhaseItems:      "DEMO_DATA_ITEMS",
-		demodata.PhaseAssemblies: "DEMO_DATA_ASSEMBLIES",
-		demodata.PhaseSales:      "DEMO_DATA_SALES",
-		demodata.PhasePurchases:  "DEMO_DATA_PURCHASES",
+		demodata.PhaseSetup:       "DEMO_DATA_SETUP",
+		demodata.PhaseCustomers:   "DEMO_DATA_CUSTOMERS",
+		demodata.PhaseEntries:     "DEMO_DATA_ENTRIES",
+		demodata.PhaseLedgers:     "DEMO_DATA_LEDGERS",
+		demodata.PhaseResources:   "DEMO_DATA_RESOURCES",
+		demodata.PhaseItems:       "DEMO_DATA_ITEMS",
+		demodata.PhaseAssemblies:  "DEMO_DATA_ASSEMBLIES",
+		demodata.PhaseSales:       "DEMO_DATA_SALES",
+		demodata.PhasePurchases:   "DEMO_DATA_PURCHASES",
+		demodata.PhaseFixedAssets: "DEMO_DATA_FIXED_ASSETS",
+		demodata.PhaseJournals:    "DEMO_DATA_JOURNALS",
 	}
 	progress := func(pct int, phase demodata.Phase) {
 		if dialog != nil {
@@ -107,7 +110,7 @@ func (c *DemoDataCreate) create(jobQueue *gtables.JobQueue, ts *i18n.Translation
 		}
 	}
 
-	return demodata.Create(c.db, c.company, c.dbType, demodata.Options{Size: size, Progress: progress, ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost})
+	return demodata.Create(c.db, c.company, c.dbType, demodata.Options{Size: size, Progress: progress, ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost, GenJnlPostLine: openGenJnlPostLine, Journals: true})
 }
 
 // errorMessage translates the demodata errors users can act on.
@@ -138,6 +141,11 @@ func openBOMJnlPostLine(src ftables.Source) demodata.BOMJnlPoster {
 // openSalesPost opens the sales posting (codeunit 80) for the demo sales documents
 func openSalesPost(src ftables.Source) demodata.SalesPoster {
 	return salesposting.NewSalesPost(src)
+}
+
+// openGenJnlPostLine opens the general journal posting (codeunit 12) for the demo fixed assets
+func openGenJnlPostLine(src ftables.Source) demodata.GenJnlPoster {
+	return genjnl.NewGenJnlPostLine(src)
 }
 
 // openPurchPost opens the purchase posting (codeunit 90) for the demo purchase documents

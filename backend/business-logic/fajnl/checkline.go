@@ -1,6 +1,7 @@
 package fajnl
 
 import (
+	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
 	"github.com/hansjlachmann/openerp/backend/foundation/system"
 	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
@@ -16,7 +17,7 @@ import (
 // journal; the fields the posting type does not use are blank; a cancelling line (FA Error Entry
 // No.) uses none of the extras.
 //
-// Not migrated yet: duplication in other books (FA5), budgeted assets.
+// Not migrated yet: budgeted assets.
 type FAJnlCheckLine struct {
 	allowPostingFrom types.Date
 	allowPostingTo   types.Date
@@ -169,12 +170,8 @@ func testNoGenPosting(genJnlLine *gtables.GenJournalLine, fields ...string) erro
 
 // checkJnlLine (CheckJnlLine): the checks of both journals
 func (c *FAJnlCheckLine) checkJnlLine(l *faCheck) error {
-	err := checkNotYet(l)
-	if err != nil {
-		return err
-	}
 	fa := gtables.NewFixedAsset(l.src)
-	err = fa.GetOrError(l.faNo)
+	err := fa.GetOrError(l.faNo)
 	if err != nil {
 		return err
 	}
@@ -201,17 +198,6 @@ func (c *FAJnlCheckLine) checkJnlLine(l *faCheck) error {
 		return err
 	}
 	return checkErrorNo(l)
-}
-
-// checkNotYet: what later fixed asset steps bring
-func checkNotYet(l *faCheck) error {
-	switch {
-	case l.useDuplicationList:
-		return apperrors.FANotYet(l.table, "use_duplication_list", true)
-	case l.duplicateInDeprBook != "":
-		return apperrors.FANotYet(l.table, "duplicate_in_depreciation_book", l.duplicateInDeprBook)
-	}
-	return nil
 }
 
 // checkFAPostingDate (CheckFAPostingDate): not a closing date, within the allowed FA posting
@@ -272,25 +258,7 @@ func checkFAIntegration(l *faCheck, deprBook *gtables.DepreciationBook) error {
 
 // glIntegration: whether the book posts a posting type to the G/L
 func glIntegration(deprBook *gtables.DepreciationBook, postingType gtables.FAJournalLineFa_posting_type) bool {
-	switch postingType {
-	case gtables.FAJournalLine_Fa_posting_type.AcquisitionCost:
-		return deprBook.G_l_integration_acq_cost
-	case gtables.FAJournalLine_Fa_posting_type.Depreciation:
-		return deprBook.G_l_integration_depreciation
-	case gtables.FAJournalLine_Fa_posting_type.WriteDown:
-		return deprBook.G_l_integration_write_down
-	case gtables.FAJournalLine_Fa_posting_type.Appreciation:
-		return deprBook.G_l_integration_appreciation
-	case gtables.FAJournalLine_Fa_posting_type.Custom1:
-		return deprBook.G_l_integration_custom_1
-	case gtables.FAJournalLine_Fa_posting_type.Custom2:
-		return deprBook.G_l_integration_custom_2
-	case gtables.FAJournalLine_Fa_posting_type.Disposal:
-		return deprBook.G_l_integration_disposal
-	case gtables.FAJournalLine_Fa_posting_type.Maintenance:
-		return deprBook.G_l_integration_maintenance
-	}
-	return false
+	return tables.DeprBookGLIntegration(deprBook, postingType)
 }
 
 // checkConsistency (CheckConsistency): the fields the posting type does not use are blank

@@ -16,6 +16,8 @@
 //	OnValidate_Fa_jnl_batch_name(rec *gtables.FAJournalSetup) error
 //	OnValidate_Gen_jnl_template_name(rec *gtables.FAJournalSetup) error
 //	OnValidate_Gen_jnl_batch_name(rec *gtables.FAJournalSetup) error
+//	OnValidate_Insurance_jnl_template_name(rec *gtables.FAJournalSetup) error
+//	OnValidate_Insurance_jnl_batch_name(rec *gtables.FAJournalSetup) error
 
 package tables
 
@@ -37,12 +39,14 @@ import (
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterFAJournalSetupLogic.
 type FAJournalSetup struct {
-	Depreciation_book_code types.Code `db:"depreciation_book_code,pk"`
-	User_id                types.Code `db:"user_id,pk"`
-	Fa_jnl_template_name   types.Code `db:"fa_jnl_template_name"`
-	Fa_jnl_batch_name      types.Code `db:"fa_jnl_batch_name"`
-	Gen_jnl_template_name  types.Code `db:"gen_jnl_template_name"`
-	Gen_jnl_batch_name     types.Code `db:"gen_jnl_batch_name"`
+	Depreciation_book_code      types.Code `db:"depreciation_book_code,pk"`
+	User_id                     types.Code `db:"user_id,pk"`
+	Fa_jnl_template_name        types.Code `db:"fa_jnl_template_name"`
+	Fa_jnl_batch_name           types.Code `db:"fa_jnl_batch_name"`
+	Gen_jnl_template_name       types.Code `db:"gen_jnl_template_name"`
+	Gen_jnl_batch_name          types.Code `db:"gen_jnl_batch_name"`
+	Insurance_jnl_template_name types.Code `db:"insurance_jnl_template_name"`
+	Insurance_jnl_batch_name    types.Code `db:"insurance_jnl_batch_name"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -109,19 +113,23 @@ const FAJournalSetupTableName = "FA_Journal_Setup"
 // FAJournalSetup_FieldNo holds the field numbers of FA_Journal_Setup (FieldNo):
 // FAJournalSetup_FieldNo.Depreciation_book_code is 1
 var FAJournalSetup_FieldNo = struct {
-	Depreciation_book_code int
-	User_id                int
-	Fa_jnl_template_name   int
-	Fa_jnl_batch_name      int
-	Gen_jnl_template_name  int
-	Gen_jnl_batch_name     int
+	Depreciation_book_code      int
+	User_id                     int
+	Fa_jnl_template_name        int
+	Fa_jnl_batch_name           int
+	Gen_jnl_template_name       int
+	Gen_jnl_batch_name          int
+	Insurance_jnl_template_name int
+	Insurance_jnl_batch_name    int
 }{
-	Depreciation_book_code: 1,
-	User_id:                2,
-	Fa_jnl_template_name:   3,
-	Fa_jnl_batch_name:      4,
-	Gen_jnl_template_name:  5,
-	Gen_jnl_batch_name:     6,
+	Depreciation_book_code:      1,
+	User_id:                     2,
+	Fa_jnl_template_name:        3,
+	Fa_jnl_batch_name:           4,
+	Gen_jnl_template_name:       5,
+	Gen_jnl_batch_name:          6,
+	Insurance_jnl_template_name: 7,
+	Insurance_jnl_batch_name:    8,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -139,6 +147,10 @@ func (t *FAJournalSetup) FieldNo(fieldName string) int {
 		return 5
 	case "gen_jnl_batch_name":
 		return 6
+	case "insurance_jnl_template_name":
+		return 7
+	case "insurance_jnl_batch_name":
+		return 8
 	}
 	return 0
 }
@@ -158,6 +170,10 @@ func (t *FAJournalSetup) FieldName(fieldNo int) string {
 		return "gen_jnl_template_name"
 	case 6:
 		return "gen_jnl_batch_name"
+	case 7:
+		return "insurance_jnl_template_name"
+	case 8:
+		return "insurance_jnl_batch_name"
 	}
 	return ""
 }
@@ -277,6 +293,12 @@ type (
 	FAJournalSetupOnValidate_Gen_jnl_batch_name interface {
 		OnValidate_Gen_jnl_batch_name(rec *FAJournalSetup) error
 	}
+	FAJournalSetupOnValidate_Insurance_jnl_template_name interface {
+		OnValidate_Insurance_jnl_template_name(rec *FAJournalSetup) error
+	}
+	FAJournalSetupOnValidate_Insurance_jnl_batch_name interface {
+		OnValidate_Insurance_jnl_batch_name(rec *FAJournalSetup) error
+	}
 )
 
 // fAJournalSetupLogic is the registered business logic of FA_Journal_Setup, in
@@ -318,6 +340,10 @@ func fAJournalSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FAJournalSetupOnValidate_Gen_jnl_template_name)
 	case "OnValidate_Gen_jnl_batch_name":
 		_, ok = logic.(FAJournalSetupOnValidate_Gen_jnl_batch_name)
+	case "OnValidate_Insurance_jnl_template_name":
+		_, ok = logic.(FAJournalSetupOnValidate_Insurance_jnl_template_name)
+	case "OnValidate_Insurance_jnl_batch_name":
+		_, ok = logic.(FAJournalSetupOnValidate_Insurance_jnl_batch_name)
 	default:
 		return false, false
 	}
@@ -413,6 +439,12 @@ func (t *FAJournalSetup) CheckFields() error {
 	if err := tables.CheckMaxLength(FAJournalSetupTableName, "gen_jnl_batch_name", string(t.Gen_jnl_batch_name), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(FAJournalSetupTableName, "insurance_jnl_template_name", string(t.Insurance_jnl_template_name), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(FAJournalSetupTableName, "insurance_jnl_batch_name", string(t.Insurance_jnl_batch_name), 10); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -446,6 +478,8 @@ func GetFAJournalSetupTableSchema() string {
 		fa_jnl_batch_name TEXT(10),
 		gen_jnl_template_name TEXT(10),
 		gen_jnl_batch_name TEXT(10),
+		insurance_jnl_template_name TEXT(10),
+		insurance_jnl_batch_name TEXT(10),
 		PRIMARY KEY (depreciation_book_code, user_id)
 	`
 }
@@ -459,6 +493,8 @@ func GetFAJournalSetupPostgresTableSchema() string {
 		fa_jnl_batch_name VARCHAR(10),
 		gen_jnl_template_name VARCHAR(10),
 		gen_jnl_batch_name VARCHAR(10),
+		insurance_jnl_template_name VARCHAR(10),
+		insurance_jnl_batch_name VARCHAR(10),
 		PRIMARY KEY (depreciation_book_code, user_id)
 	`
 }
@@ -588,6 +624,8 @@ func (t *FAJournalSetup) StoreOldValues() {
 	t.oldValues["fa_jnl_batch_name"] = t.Fa_jnl_batch_name
 	t.oldValues["gen_jnl_template_name"] = t.Gen_jnl_template_name
 	t.oldValues["gen_jnl_batch_name"] = t.Gen_jnl_batch_name
+	t.oldValues["insurance_jnl_template_name"] = t.Insurance_jnl_template_name
+	t.oldValues["insurance_jnl_batch_name"] = t.Insurance_jnl_batch_name
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -619,6 +657,12 @@ func (t *FAJournalSetup) XRec() *FAJournalSetup {
 	}
 	if v, ok := t.oldValues["gen_jnl_batch_name"].(types.Code); ok {
 		x.Gen_jnl_batch_name = v
+	}
+	if v, ok := t.oldValues["insurance_jnl_template_name"].(types.Code); ok {
+		x.Insurance_jnl_template_name = v
+	}
+	if v, ok := t.oldValues["insurance_jnl_batch_name"].(types.Code); ok {
+		x.Insurance_jnl_batch_name = v
 	}
 	return x
 }
@@ -691,6 +735,8 @@ func (t *FAJournalSetup) GetByPK(depreciation_book_code types.Code, user_id type
 	var fa_jnl_batch_nameNull sql.NullString
 	var gen_jnl_template_nameNull sql.NullString
 	var gen_jnl_batch_nameNull sql.NullString
+	var insurance_jnl_template_nameNull sql.NullString
+	var insurance_jnl_batch_nameNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -699,7 +745,7 @@ func (t *FAJournalSetup) GetByPK(depreciation_book_code types.Code, user_id type
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT depreciation_book_code, user_id, fa_jnl_template_name, fa_jnl_batch_name, gen_jnl_template_name, gen_jnl_batch_name FROM "%s" WHERE 1=1 AND depreciation_book_code = ? AND user_id = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT depreciation_book_code, user_id, fa_jnl_template_name, fa_jnl_batch_name, gen_jnl_template_name, gen_jnl_batch_name, insurance_jnl_template_name, insurance_jnl_batch_name FROM "%s" WHERE 1=1 AND depreciation_book_code = ? AND user_id = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -712,6 +758,8 @@ func (t *FAJournalSetup) GetByPK(depreciation_book_code types.Code, user_id type
 		&fa_jnl_batch_nameNull,
 		&gen_jnl_template_nameNull,
 		&gen_jnl_batch_nameNull,
+		&insurance_jnl_template_nameNull,
+		&insurance_jnl_batch_nameNull,
 	)
 
 	if err != nil {
@@ -731,6 +779,8 @@ func (t *FAJournalSetup) GetByPK(depreciation_book_code types.Code, user_id type
 	t.Fa_jnl_batch_name = types.NewCode(fa_jnl_batch_nameNull.String)
 	t.Gen_jnl_template_name = types.NewCode(gen_jnl_template_nameNull.String)
 	t.Gen_jnl_batch_name = types.NewCode(gen_jnl_batch_nameNull.String)
+	t.Insurance_jnl_template_name = types.NewCode(insurance_jnl_template_nameNull.String)
+	t.Insurance_jnl_batch_name = types.NewCode(insurance_jnl_batch_nameNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -759,11 +809,13 @@ func (t *FAJournalSetup) Insert(runTrigger bool) bool {
 		t.Fa_jnl_batch_name,
 		t.Gen_jnl_template_name,
 		t.Gen_jnl_batch_name,
+		t.Insurance_jnl_template_name,
+		t.Insurance_jnl_batch_name,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (depreciation_book_code, user_id, fa_jnl_template_name, fa_jnl_batch_name, gen_jnl_template_name, gen_jnl_batch_name) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (depreciation_book_code, user_id) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (depreciation_book_code, user_id, fa_jnl_template_name, fa_jnl_batch_name, gen_jnl_template_name, gen_jnl_batch_name, insurance_jnl_template_name, insurance_jnl_batch_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (depreciation_book_code, user_id) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -807,10 +859,12 @@ func (t *FAJournalSetup) InsertAll(records []*FAJournalSetup, runTrigger bool) e
 			r.Fa_jnl_batch_name,
 			r.Gen_jnl_template_name,
 			r.Gen_jnl_batch_name,
+			r.Insurance_jnl_template_name,
+			r.Insurance_jnl_batch_name,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalSetupTableName)
-	columns := []string{"depreciation_book_code", "user_id", "fa_jnl_template_name", "fa_jnl_batch_name", "gen_jnl_template_name", "gen_jnl_batch_name"}
+	columns := []string{"depreciation_book_code", "user_id", "fa_jnl_template_name", "fa_jnl_batch_name", "gen_jnl_template_name", "gen_jnl_batch_name", "insurance_jnl_template_name", "insurance_jnl_batch_name"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -877,6 +931,14 @@ func (t *FAJournalSetup) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "gen_jnl_batch_name = ?")
 			values = append(values, t.Gen_jnl_batch_name)
 		}
+		if t.hasFieldChanged("insurance_jnl_template_name") {
+			setClauses = append(setClauses, "insurance_jnl_template_name = ?")
+			values = append(values, t.Insurance_jnl_template_name)
+		}
+		if t.hasFieldChanged("insurance_jnl_batch_name") {
+			setClauses = append(setClauses, "insurance_jnl_batch_name = ?")
+			values = append(values, t.Insurance_jnl_batch_name)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -892,6 +954,10 @@ func (t *FAJournalSetup) Modify(runTrigger bool) bool {
 		values = append(values, t.Gen_jnl_template_name)
 		setClauses = append(setClauses, "gen_jnl_batch_name = ?")
 		values = append(values, t.Gen_jnl_batch_name)
+		setClauses = append(setClauses, "insurance_jnl_template_name = ?")
+		values = append(values, t.Insurance_jnl_template_name)
+		setClauses = append(setClauses, "insurance_jnl_batch_name = ?")
+		values = append(values, t.Insurance_jnl_batch_name)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -964,6 +1030,14 @@ func (t *FAJournalSetup) hasFieldChanged(fieldName string) bool {
 	case "gen_jnl_batch_name":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Gen_jnl_batch_name.Equal(old)
+		}
+	case "insurance_jnl_template_name":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Insurance_jnl_template_name.Equal(old)
+		}
+	case "insurance_jnl_batch_name":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Insurance_jnl_batch_name.Equal(old)
 		}
 	}
 
@@ -1182,6 +1256,10 @@ func (t *FAJournalSetup) columnName(fieldName string) (string, bool) {
 		return "gen_jnl_template_name", true
 	case strings.ToLower("gen_jnl_batch_name"):
 		return "gen_jnl_batch_name", true
+	case strings.ToLower("insurance_jnl_template_name"):
+		return "insurance_jnl_template_name", true
+	case strings.ToLower("insurance_jnl_batch_name"):
+		return "insurance_jnl_batch_name", true
 	}
 	return "", false
 }
@@ -1529,7 +1607,7 @@ func (t *FAJournalSetup) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT depreciation_book_code, user_id, fa_jnl_template_name, fa_jnl_batch_name, gen_jnl_template_name, gen_jnl_batch_name FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT depreciation_book_code, user_id, fa_jnl_template_name, fa_jnl_batch_name, gen_jnl_template_name, gen_jnl_batch_name, insurance_jnl_template_name, insurance_jnl_batch_name FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1540,6 +1618,8 @@ func (t *FAJournalSetup) FindFirst() bool {
 	var fa_jnl_batch_nameNull sql.NullString
 	var gen_jnl_template_nameNull sql.NullString
 	var gen_jnl_batch_nameNull sql.NullString
+	var insurance_jnl_template_nameNull sql.NullString
+	var insurance_jnl_batch_nameNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&depreciation_book_codeNull,
@@ -1548,6 +1628,8 @@ func (t *FAJournalSetup) FindFirst() bool {
 		&fa_jnl_batch_nameNull,
 		&gen_jnl_template_nameNull,
 		&gen_jnl_batch_nameNull,
+		&insurance_jnl_template_nameNull,
+		&insurance_jnl_batch_nameNull,
 	)
 
 	if err != nil {
@@ -1565,6 +1647,8 @@ func (t *FAJournalSetup) FindFirst() bool {
 	t.Fa_jnl_batch_name = types.NewCode(fa_jnl_batch_nameNull.String)
 	t.Gen_jnl_template_name = types.NewCode(gen_jnl_template_nameNull.String)
 	t.Gen_jnl_batch_name = types.NewCode(gen_jnl_batch_nameNull.String)
+	t.Insurance_jnl_template_name = types.NewCode(insurance_jnl_template_nameNull.String)
+	t.Insurance_jnl_batch_name = types.NewCode(insurance_jnl_batch_nameNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1585,7 +1669,7 @@ func (t *FAJournalSetup) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT depreciation_book_code, user_id, fa_jnl_template_name, fa_jnl_batch_name, gen_jnl_template_name, gen_jnl_batch_name FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT depreciation_book_code, user_id, fa_jnl_template_name, fa_jnl_batch_name, gen_jnl_template_name, gen_jnl_batch_name, insurance_jnl_template_name, insurance_jnl_batch_name FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1596,6 +1680,8 @@ func (t *FAJournalSetup) FindLast() bool {
 	var fa_jnl_batch_nameNull sql.NullString
 	var gen_jnl_template_nameNull sql.NullString
 	var gen_jnl_batch_nameNull sql.NullString
+	var insurance_jnl_template_nameNull sql.NullString
+	var insurance_jnl_batch_nameNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&depreciation_book_codeNull,
@@ -1604,6 +1690,8 @@ func (t *FAJournalSetup) FindLast() bool {
 		&fa_jnl_batch_nameNull,
 		&gen_jnl_template_nameNull,
 		&gen_jnl_batch_nameNull,
+		&insurance_jnl_template_nameNull,
+		&insurance_jnl_batch_nameNull,
 	)
 
 	if err != nil {
@@ -1621,6 +1709,8 @@ func (t *FAJournalSetup) FindLast() bool {
 	t.Fa_jnl_batch_name = types.NewCode(fa_jnl_batch_nameNull.String)
 	t.Gen_jnl_template_name = types.NewCode(gen_jnl_template_nameNull.String)
 	t.Gen_jnl_batch_name = types.NewCode(gen_jnl_batch_nameNull.String)
+	t.Insurance_jnl_template_name = types.NewCode(insurance_jnl_template_nameNull.String)
+	t.Insurance_jnl_batch_name = types.NewCode(insurance_jnl_batch_nameNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1671,7 +1761,7 @@ func (t *FAJournalSetup) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT depreciation_book_code, user_id, fa_jnl_template_name, fa_jnl_batch_name, gen_jnl_template_name, gen_jnl_batch_name FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT depreciation_book_code, user_id, fa_jnl_template_name, fa_jnl_batch_name, gen_jnl_template_name, gen_jnl_batch_name, insurance_jnl_template_name, insurance_jnl_batch_name FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1746,6 +1836,8 @@ func (t *FAJournalSetup) Next(steps ...int) bool {
 		var fa_jnl_batch_nameNull sql.NullString
 		var gen_jnl_template_nameNull sql.NullString
 		var gen_jnl_batch_nameNull sql.NullString
+		var insurance_jnl_template_nameNull sql.NullString
+		var insurance_jnl_batch_nameNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&depreciation_book_codeNull,
@@ -1754,6 +1846,8 @@ func (t *FAJournalSetup) Next(steps ...int) bool {
 			&fa_jnl_batch_nameNull,
 			&gen_jnl_template_nameNull,
 			&gen_jnl_batch_nameNull,
+			&insurance_jnl_template_nameNull,
+			&insurance_jnl_batch_nameNull,
 		)
 
 		if err != nil {
@@ -1770,6 +1864,8 @@ func (t *FAJournalSetup) Next(steps ...int) bool {
 		t.Fa_jnl_batch_name = types.NewCode(fa_jnl_batch_nameNull.String)
 		t.Gen_jnl_template_name = types.NewCode(gen_jnl_template_nameNull.String)
 		t.Gen_jnl_batch_name = types.NewCode(gen_jnl_batch_nameNull.String)
+		t.Insurance_jnl_template_name = types.NewCode(insurance_jnl_template_nameNull.String)
+		t.Insurance_jnl_batch_name = types.NewCode(insurance_jnl_batch_nameNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -1819,7 +1915,7 @@ func (t *FAJournalSetup) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT depreciation_book_code, user_id, fa_jnl_template_name, fa_jnl_batch_name, gen_jnl_template_name, gen_jnl_batch_name FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT depreciation_book_code, user_id, fa_jnl_template_name, fa_jnl_batch_name, gen_jnl_template_name, gen_jnl_batch_name, insurance_jnl_template_name, insurance_jnl_batch_name FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1847,6 +1943,8 @@ func (t *FAJournalSetup) FindSetBuffered() bool {
 		var fa_jnl_batch_nameNull sql.NullString
 		var gen_jnl_template_nameNull sql.NullString
 		var gen_jnl_batch_nameNull sql.NullString
+		var insurance_jnl_template_nameNull sql.NullString
+		var insurance_jnl_batch_nameNull sql.NullString
 
 		err := rows.Scan(
 			&depreciation_book_codeNull,
@@ -1855,6 +1953,8 @@ func (t *FAJournalSetup) FindSetBuffered() bool {
 			&fa_jnl_batch_nameNull,
 			&gen_jnl_template_nameNull,
 			&gen_jnl_batch_nameNull,
+			&insurance_jnl_template_nameNull,
+			&insurance_jnl_batch_nameNull,
 		)
 
 		if err != nil {
@@ -1869,6 +1969,8 @@ func (t *FAJournalSetup) FindSetBuffered() bool {
 		record.Fa_jnl_batch_name = types.NewCode(fa_jnl_batch_nameNull.String)
 		record.Gen_jnl_template_name = types.NewCode(gen_jnl_template_nameNull.String)
 		record.Gen_jnl_batch_name = types.NewCode(gen_jnl_batch_nameNull.String)
+		record.Insurance_jnl_template_name = types.NewCode(insurance_jnl_template_nameNull.String)
+		record.Insurance_jnl_batch_name = types.NewCode(insurance_jnl_batch_nameNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -1903,6 +2005,8 @@ func (t *FAJournalSetup) copyFromBuffered(record *FAJournalSetup) {
 	t.Fa_jnl_batch_name = record.Fa_jnl_batch_name
 	t.Gen_jnl_template_name = record.Gen_jnl_template_name
 	t.Gen_jnl_batch_name = record.Gen_jnl_batch_name
+	t.Insurance_jnl_template_name = record.Insurance_jnl_template_name
+	t.Insurance_jnl_batch_name = record.Insurance_jnl_batch_name
 	t.StoreOldValues()
 }
 
@@ -2169,6 +2273,50 @@ func (t *FAJournalSetup) ValidateField(fieldName string, value interface{}) erro
 			}
 		}
 		return nil
+	case "insurance_jnl_template_name":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Insurance_jnl_template_name = v
+		} else if v, ok := value.(string); ok {
+			t.Insurance_jnl_template_name = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field insurance_jnl_template_name")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "insurance_jnl_template_name"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(FAJournalSetupOnValidate_Insurance_jnl_template_name); ok {
+				if err := trg.OnValidate_Insurance_jnl_template_name(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "insurance_jnl_batch_name":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Insurance_jnl_batch_name = v
+		} else if v, ok := value.(string); ok {
+			t.Insurance_jnl_batch_name = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field insurance_jnl_batch_name")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "insurance_jnl_batch_name"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(FAJournalSetupOnValidate_Insurance_jnl_batch_name); ok {
+				if err := trg.OnValidate_Insurance_jnl_batch_name(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -2193,6 +2341,10 @@ func (t *FAJournalSetup) FieldValue(no int) (any, bool) {
 		return t.Gen_jnl_template_name, true
 	case 6:
 		return t.Gen_jnl_batch_name, true
+	case 7:
+		return t.Insurance_jnl_template_name, true
+	case 8:
+		return t.Insurance_jnl_batch_name, true
 	}
 	return nil, false
 }
@@ -2260,6 +2412,24 @@ func (t *FAJournalSetup) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.Gen_jnl_batch_name = types.NewCode(v)
+			return true
+		}
+	case 7:
+		if v, ok := value.(types.Code); ok {
+			t.Insurance_jnl_template_name = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Insurance_jnl_template_name = types.NewCode(v)
+			return true
+		}
+	case 8:
+		if v, ok := value.(types.Code); ok {
+			t.Insurance_jnl_batch_name = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Insurance_jnl_batch_name = types.NewCode(v)
 			return true
 		}
 	}
@@ -2695,6 +2865,10 @@ func (t *FAJournalSetup) columnValue(column string) (interface{}, bool) {
 		return t.Gen_jnl_template_name, true
 	case "gen_jnl_batch_name":
 		return t.Gen_jnl_batch_name, true
+	case "insurance_jnl_template_name":
+		return t.Insurance_jnl_template_name, true
+	case "insurance_jnl_batch_name":
+		return t.Insurance_jnl_batch_name, true
 	}
 	return nil, false
 }
@@ -2757,6 +2931,8 @@ func (t *FAJournalSetup) Init() {
 	t.Fa_jnl_batch_name = *new(types.Code)
 	t.Gen_jnl_template_name = *new(types.Code)
 	t.Gen_jnl_batch_name = *new(types.Code)
+	t.Insurance_jnl_template_name = *new(types.Code)
+	t.Insurance_jnl_batch_name = *new(types.Code)
 	t.applyDefaults()
 }
 
@@ -2791,12 +2967,14 @@ func (t *FAJournalSetup) ClearFilters() {
 // ToMap converts the current record to a map for JSON serialization
 func (t *FAJournalSetup) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"depreciation_book_code": t.Depreciation_book_code.String(),
-		"user_id":                t.User_id.String(),
-		"fa_jnl_template_name":   t.Fa_jnl_template_name.String(),
-		"fa_jnl_batch_name":      t.Fa_jnl_batch_name.String(),
-		"gen_jnl_template_name":  t.Gen_jnl_template_name.String(),
-		"gen_jnl_batch_name":     t.Gen_jnl_batch_name.String(),
+		"depreciation_book_code":      t.Depreciation_book_code.String(),
+		"user_id":                     t.User_id.String(),
+		"fa_jnl_template_name":        t.Fa_jnl_template_name.String(),
+		"fa_jnl_batch_name":           t.Fa_jnl_batch_name.String(),
+		"gen_jnl_template_name":       t.Gen_jnl_template_name.String(),
+		"gen_jnl_batch_name":          t.Gen_jnl_batch_name.String(),
+		"insurance_jnl_template_name": t.Insurance_jnl_template_name.String(),
+		"insurance_jnl_batch_name":    t.Insurance_jnl_batch_name.String(),
 	}
 }
 
@@ -2830,6 +3008,16 @@ func (t *FAJournalSetup) FromMap(data map[string]interface{}) {
 	if v, ok := data["gen_jnl_batch_name"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Gen_jnl_batch_name = types.NewCode(s)
+		}
+	}
+	if v, ok := data["insurance_jnl_template_name"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Insurance_jnl_template_name = types.NewCode(s)
+		}
+	}
+	if v, ok := data["insurance_jnl_batch_name"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Insurance_jnl_batch_name = types.NewCode(s)
 		}
 	}
 }
@@ -2906,6 +3094,26 @@ func (t *FAJournalSetup) GetFields() []tables.FieldInfo {
 		{
 			No:         6,
 			Name:       "gen_jnl_batch_name",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         7,
+			Name:       "insurance_jnl_template_name",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         8,
+			Name:       "insurance_jnl_batch_name",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -3007,6 +3215,29 @@ func (t *FAJournalSetup) GetTableRelationFields() map[string]tables.TableRelatio
 			SearchTimeout: 0,
 			Filters: []tables.RelationFilterInfo{
 				{Column: "journal_template_name", Field: "gen_jnl_template_name", Const: ""},
+			},
+		},
+		"insurance_jnl_template_name": {
+			Table:        "Insurance_Journal_Template",
+			Field:        "name",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "name", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"insurance_jnl_batch_name": {
+			Table:        "Insurance_Journal_Batch",
+			Field:        "name",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "name", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+			Filters: []tables.RelationFilterInfo{
+				{Column: "journal_template_name", Field: "insurance_jnl_template_name", Const: ""},
 			},
 		},
 	}

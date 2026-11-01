@@ -50,3 +50,10 @@ page:
           run_page: 5641
           run_page_filters:
             - {field: entry_no, from: from_maintenance_entry_no, to: to_maintenance_entry_no}
+
+    # The registers in the list's filters (report 5603 Fixed Asset Register)
+    - name: Print
+      caption: Print
+      image: Print
+      promoted: true
+      run_object: report:5603

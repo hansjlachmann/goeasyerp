@@ -334,6 +334,20 @@ table:
           - source: description
             width: 250
 
+    - name: insurance_journal
+      no: 5602
+      type: types.Code
+      db_name: insurance_journal
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
   keys:
     - name: Primary
       fields: [primary_key]

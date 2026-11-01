@@ -109,3 +109,6 @@ page:
           run_page: 5609
           run_page_filter_field: depreciation_book_code
           run_page_filter_value: code
+        - name: Copy Depreciation Book
+          caption: Copy Depreciation Book
+          run_object: report:5687

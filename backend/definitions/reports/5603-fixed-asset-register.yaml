@@ -1,0 +1,82 @@
+# Report 5603 Fixed Asset Register: the printed layout (sections per data item, positions in mm
+# from the section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 5603
+  name: Fixed Asset Register
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: FARegister
+      sections:
+        # The report head on every page
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 120, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 120}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        # The filters (page 1)
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        # The columns of the entries
+        - type: header
+          print_on_every_page: true
+          height: 11.5
+          elements:
+            - {text: FA_POSTING_DATE, x: 0, y: 1, width: 18, bold: true, wrap: true}
+            - {text: DOCUMENT_TYPE, x: 19, y: 1, width: 16, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 36, y: 1, width: 22, bold: true}
+            - {text: FA_NO, x: 59, y: 1, width: 18, bold: true}
+            - {text: FA_DESCRIPTION, x: 78, y: 1, width: 40, bold: true}
+            - {text: FA_POSTING_CATEGORY, x: 119, y: 1, width: 18, bold: true, wrap: true}
+            - {text: FA_POSTING_TYPE, x: 138, y: 1, width: 26, bold: true}
+            - {text: DESCRIPTION, x: 165, y: 1, width: 34, bold: true}
+            - {text: DEPRECIATION_BOOK, x: 200, y: 1, width: 24, bold: true, wrap: true}
+            - {text: AMOUNT, x: 225, y: 1, width: 24, align: right, bold: true}
+            - {text: ENTRY_NO, x: 250, y: 1, width: 14, align: right, bold: true}
+            - {line: true, x: 0, y: 9.5}
+        - type: body
+          height: 7
+          elements:
+            - {text: REGISTER_NO, x: 0, y: 1.5, width: 30, bold: true}
+            - {field: "no", x: 30, y: 1.5, width: 20, bold: true}
+        - type: footer
+          height: 8
+          elements:
+            - {line: true, x: 225, y: 1}
+            - {text: TOTAL, x: 165, y: 2, width: 40, bold: true}
+            - {value: total, x: 225, y: 2, width: 24, align: right, bold: true}
+
+    - name: FALedgerEntry
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {field: fa_posting_date, x: 0, y: 0, width: 18}
+            - {field: document_type, x: 19, y: 0, width: 16}
+            - {field: document_no, x: 36, y: 0, width: 22}
+            - {field: fa_no, x: 59, y: 0, width: 18}
+            - {value: fa_description, x: 78, y: 0, width: 40}
+            - {field: fa_posting_category, x: 119, y: 0, width: 18}
+            - {field: fa_posting_type, x: 138, y: 0, width: 26}
+            - {field: description, x: 165, y: 0, width: 34}
+            - {field: depreciation_book_code, x: 200, y: 0, width: 24}
+            - {field: amount, x: 225, y: 0, width: 24, align: right}
+            - {field: entry_no, x: 250, y: 0, width: 14, align: right}
+            - {value: canceled, x: 265, y: 0, width: 8}
+        - type: footer
+          height: 6
+          elements:
+            - {line: true, x: 225, y: 0.5}
+            - {text: REGISTER_TOTAL, x: 165, y: 1.5, width: 40}
+            - {total: amount, x: 225, y: 1.5, width: 24, align: right}

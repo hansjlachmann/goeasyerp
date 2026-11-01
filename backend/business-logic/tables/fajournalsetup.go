@@ -27,6 +27,12 @@ func (fAJournalSetupLogic) OnValidate_Gen_jnl_template_name(rec *gtables.FAJourn
 	return nil
 }
 
+// OnValidate_Insurance_jnl_template_name: another template, no batch
+func (fAJournalSetupLogic) OnValidate_Insurance_jnl_template_name(rec *gtables.FAJournalSetup) error {
+	rec.Insurance_jnl_batch_name = ""
+	return nil
+}
+
 // getFAJnlSetup: the depreciation book's FA Journal Setup of the user, else of everyone (blank
 // user)
 func getFAJnlSetup(src ftables.Source, deprBookCode types.Code) (*gtables.FAJournalSetup, error) {
@@ -166,4 +172,43 @@ func SetGenJnlTrailCodes(genJnlLine *gtables.GenJournalLine) error {
 		return err
 	}
 	return genJnlBatch.TestField("bal_account_no", types.Code(""))
+}
+
+// InsuranceJnlName (InsuranceJnlName): the insurance journal batch of the book's FA Journal Setup
+// and its last line no. (SetInsuranceJnlRange)
+func InsuranceJnlName(src ftables.Source, deprBookCode types.Code) (templateName, batchName types.Code, nextLineNo int, err error) {
+	faJnlSetup, err := getFAJnlSetup(src, deprBookCode)
+	if err != nil {
+		return
+	}
+	if err = faJnlSetup.TestField("insurance_jnl_template_name"); err != nil {
+		return
+	}
+	if err = faJnlSetup.TestField("insurance_jnl_batch_name"); err != nil {
+		return
+	}
+	templateName, batchName = faJnlSetup.Insurance_jnl_template_name, faJnlSetup.Insurance_jnl_batch_name
+	if err = gtables.NewInsuranceJournalTemplate(src).GetOrError(templateName); err != nil {
+		return
+	}
+	if err = gtables.NewInsuranceJournalBatch(src).GetOrError(map[string]interface{}{"journal_template_name": templateName, "name": batchName}); err != nil {
+		return
+	}
+	insuranceJnlLine := gtables.NewInsuranceJournalLine(src)
+	insuranceJnlLine.SetRange("journal_template_name", templateName)
+	insuranceJnlLine.SetRange("journal_batch_name", batchName)
+	if insuranceJnlLine.FindLast() {
+		nextLineNo = insuranceJnlLine.Line_no
+	}
+	return
+}
+
+// GetInsuranceNoSeries (GetInsuranceNoSeries): the batch's Posting No. Series when it differs
+// from its No. Series
+func GetInsuranceNoSeries(src ftables.Source, templateName, batchName types.Code) types.Code {
+	insuranceJnlBatch := gtables.NewInsuranceJournalBatch(src)
+	if insuranceJnlBatch.Get(map[string]interface{}{"journal_template_name": templateName, "name": batchName}) && insuranceJnlBatch.No_series != insuranceJnlBatch.Posting_no_series {
+		return insuranceJnlBatch.Posting_no_series
+	}
+	return ""
 }

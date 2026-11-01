@@ -1,0 +1,103 @@
+table:
+  id: 5633
+  name: "Insurance_Journal_Template"
+  description: "Insurance journal templates (table 5633): the insurance journals and their pages, source codes and numbering"
+  lookup_page_id: 5653
+  data_caption_fields: [name, description]
+  fields:
+    - name: name
+      no: 1
+      type: types.Code
+      db_name: name
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: description
+      no: 2
+      type: types.Text
+      db_name: description
+      length: 80
+
+    # Reports (test, posting) come with the report prints
+    - name: test_report_id
+      no: 5
+      type: int
+      db_name: test_report_id
+
+    # Form ID: the journal page of the template
+    - name: page_id
+      no: 6
+      type: int
+      db_name: page_id
+
+    - name: posting_report_id
+      no: 7
+      type: int
+      db_name: posting_report_id
+
+    - name: force_posting_report
+      no: 8
+      type: bool
+      db_name: force_posting_report
+
+    - name: source_code
+      no: 10
+      type: types.Code
+      db_name: source_code
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: reason_code
+      no: 11
+      type: types.Code
+      db_name: reason_code
+      length: 10
+      table_relation:
+        table: Reason_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: no_series
+      no: 16
+      type: types.Code
+      db_name: no_series
+      length: 10
+      table_relation:
+        table: No_Series
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: posting_no_series
+      no: 17
+      type: types.Code
+      db_name: posting_no_series
+      length: 10
+      table_relation:
+        table: No_Series
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+  keys:
+    - name: Primary
+      fields: [name]
+      clustered: true

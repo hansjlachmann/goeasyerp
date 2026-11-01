@@ -1,6 +1,7 @@
 package fajnl
 
 import (
+	"github.com/hansjlachmann/openerp/backend/business-logic/insurancejnl"
 	"strconv"
 
 	"github.com/hansjlachmann/openerp/backend/business-logic/fadepr"
@@ -26,7 +27,10 @@ import (
 // A line with Depr. until FA Posting Date first posts the depreciation up to its date, with Depr.
 // Acquisition Cost after an acquisition the depreciation it adds (package fadepr).
 //
-// Not migrated yet: duplication in other books (FA5), budgeted assets.
+// Duplicate in Depreciation Book / Use Duplication List put the line into the other books' journals
+// (codeunit 5640, duplicate.go).
+//
+// Not migrated yet: budgeted assets.
 type FAJnlPostLine struct {
 	src                    ftables.Source
 	faJnlCheckLine         FAJnlCheckLine
@@ -34,11 +38,12 @@ type FAJnlPostLine struct {
 	nextMaintenanceEntryNo int
 	faReg                  *gtables.FARegister
 	glAcc                  faInsertGLAcc
+	insuranceJnlPostLine   *insurancejnl.InsuranceJnlPostLine // automatic insurance posting (codeunit 5640's)
 }
 
 // NewFAJnlPostLine opens the line posting in the posting's database (its transaction)
 func NewFAJnlPostLine(src ftables.Source) *FAJnlPostLine {
-	return &FAJnlPostLine{src: src}
+	return &FAJnlPostLine{src: src, insuranceJnlPostLine: insurancejnl.NewInsuranceJnlPostLine(src)}
 }
 
 // FAJnlPostLine posts an FA journal line (checked first when checkLine): a maintenance writes a
@@ -55,6 +60,10 @@ func (p *FAJnlPostLine) FAJnlPostLine(faJnlLine *gtables.FAJournalLine, checkLin
 		if err != nil {
 			return err
 		}
+	}
+	err := p.duplicateFAJnlLine(faJnlLine)
+	if err != nil {
+		return err
 	}
 	if faJnlLine.Fa_posting_type == gtables.FAJournalLine_Fa_posting_type.Maintenance {
 		maintenanceLedgEntry := makeMaintenanceLedgEntry(p.src, faJnlLine)
@@ -75,6 +84,10 @@ func (p *FAJnlPostLine) GenJnlPostLine(genJnlLine *gtables.GenJournalLine, faAmo
 	}
 	if genJnlLine.Fa_posting_date.IsZero() {
 		genJnlLine.Fa_posting_date = genJnlLine.Posting_date
+	}
+	err := p.duplicateGenJnlLine(genJnlLine, faAmount)
+	if err != nil {
+		return err
 	}
 	if genJnlLine.Fa_posting_type == gtables.GenJournalLine_Fa_posting_type.Maintenance {
 		maintenanceLedgEntry := makeMaintenanceLedgEntryFromGenJnl(p.src, genJnlLine)

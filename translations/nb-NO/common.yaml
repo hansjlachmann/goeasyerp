@@ -10,6 +10,13 @@ common:
   actions:
     allocations: "Fordelinger"
     insert_fa_bal_account: "Sett inn anleggsmotkonto"
+    copy_depreciation_book: "Kopier avskrivningsprofil"
+    create_fa_depreciation_books: "Opprett anleggsavskrivningsprofiler"
+    cancel_fa_ledger_entries: "Annuller anleggsposter"
+    cancel_entries: "Annuller poster"
+    reclassify: "Omklassifiser"
+    insurance: "Forsikring"
+    coverage_ledger: "Dekningsposter"
     acquisition: "Anskaffelse"
     depreciation: "Avskrivning"
     write_down: "Nedskrivning"
@@ -143,6 +150,7 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    fixed_assets: "Anleggsmidler"
     locations: "Lokasjoner"
     variants: "Varianter"
     periods: "Perioder"
@@ -200,6 +208,10 @@ common:
 
   # Menu items
   menu:
+    fixed_asset_details: "Anleggsmiddel - detaljer"
+    fixed_asset_book_value_01: "Anleggsmiddel - bokført verdi 01"
+    fixed_asset_book_value_02: "Anleggsmiddel - bokført verdi 02"
+    fixed_asset_register: "Anleggsjournal"
     account_schedules: "Kontoskjemaer"
     activities: "Aktiviteter"
     adjust_cost_item_entries: "Juster kostnad - vareposter"

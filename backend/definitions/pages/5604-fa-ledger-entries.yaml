@@ -132,3 +132,12 @@ page:
       run_page_params:
         document_no: document_no
         posting_date: posting_date
+
+    - name: Functions
+      caption: Functions
+      image: Calculate
+      promoted: true
+      items:
+        - name: Cancel Entries
+          caption: Cancel Entries
+          run_object: table:FA_Ledger_Entry.CancelEntries

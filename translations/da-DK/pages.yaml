@@ -717,6 +717,30 @@ pages:
     caption: "Anlægskladdetypeoversigt"
   fa_journal_batches:
     caption: "Anlægskladdenavne"
+  insurance_journal:
+    caption: "Forsikringskladde"
+    fields:
+      insurance_description: "Forsikringsbeskrivelse"
+      fa_description_footer: "Anlægsbeskrivelse"
+  insurance_journal_templates:
+    caption: "Forsikringskladdetyper"
+  insurance_jnl_template_list:
+    caption: "Forsikringskladdetypeoversigt"
+  insurance_journal_batches:
+    caption: "Forsikringskladdenavne"
+  insurance_registers:
+    caption: "Forsikringsjournaler"
+  fa_reclass_journal:
+    caption: "Anlægsomposteringskladde"
+    fields:
+      fa_description: "Anlægsbeskrivelse"
+      new_fa_description: "Ny anlægsbeskrivelse"
+  fa_reclass_journal_templates:
+    caption: "Anlægsomposteringskladdetyper"
+  fa_reclass_jnl_template_list:
+    caption: "Anlægsomposteringskladdetypeoversigt"
+  fa_reclass_journal_batches:
+    caption: "Anlægsomposteringskladdenavne"
   fa_registers:
     caption: "Anlægsjournaler"
   fa_posting_type_setup:

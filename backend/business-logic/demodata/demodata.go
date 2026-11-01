@@ -81,6 +81,10 @@ const (
 	PhaseItems     Phase = "items"     // the items' postings and the assemblies
 	PhaseSales     Phase = "sales"     // the sales documents and their postings
 	PhasePurchases Phase = "purchases" // the purchase documents and their postings
+	// PhaseFixedAssets: the fixed assets' postings
+	PhaseFixedAssets Phase = "fixed_assets"
+	// PhaseJournals: the open journals (lines ready to post)
+	PhaseJournals Phase = "journals"
 )
 
 // Options control a Create run.
@@ -106,6 +110,19 @@ type Options struct {
 	// purchase orders, invoices and credit memos are posted through it (codeunit 901:
 	// purchposting.NewPurchPost); needs ItemJnlPostLine
 	PurchPost func(src ftables.Source) PurchPoster
+	// GenJnlPostLine (optional) opens the general journal posting (codeunit 12) the same way: the
+	// demo fixed assets' acquisitions, payments, depreciation, services and a disposal are posted
+	// through it as Fixed Asset G/L Journal lines (codeunit 901: genjnl.NewGenJnlPostLine);
+	// without it their ledger entries are inserted
+	GenJnlPostLine func(src ftables.Source) GenJnlPoster
+	// Journals: the journals get lines ready to post, a depreciation table and resource price
+	// changes (journals.go; codeunit 901) — nothing posted
+	Journals bool
+}
+
+// GenJnlPoster posts a general journal line (codeunit 12 Gen. Jnl.-Post Line)
+type GenJnlPoster interface {
+	Run(genJnlLine *gtables.GenJournalLine) error
 }
 
 // ItemJnlPoster posts an item journal line (codeunit 22 Item Jnl.-Post Line)
@@ -131,6 +148,7 @@ type Counts struct {
 	FixedAssets              int
 	FALedgerEntries          int // acquisitions and monthly depreciation
 	MaintenanceLedgerEntries int
+	JournalLines             int // the open journals' lines (Options.Journals)
 	Customers                int
 	LedgerEntries            int
 	GLEntries                int // demo G/L entries (monthly sales and costs against the bank)
@@ -426,7 +444,7 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 		rollback()
 		return Counts{}, err
 	}
-	err = insertFixedAssets(exec, company, dbType, fixedAssets, today, &counts)
+	err = insertFixedAssets(exec, company, dbType, fixedAssets, today, opts.GenJnlPostLine != nil, &counts)
 	if err != nil {
 		rollback()
 		return Counts{}, err
@@ -441,7 +459,7 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 		rollback()
 		return Counts{}, err
 	}
-	err = insertGLEntries(exec, company, dbType, generateGLEntries(today, opts.Size, customerNos(customers), func() *gtables.GLEntry {
+	err = insertGLEntries(exec, company, dbType, generateGLEntries(today, opts.Size, customerNos(customers), opts.GenJnlPostLine != nil, func() *gtables.GLEntry {
 		e := &gtables.GLEntry{}
 		e.InitWithDBType(exec, company, dbType)
 		return e
@@ -493,6 +511,22 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 				rollback()
 				return Counts{}, err
 			}
+		}
+	}
+	if opts.GenJnlPostLine != nil {
+		p.phase(PhaseFixedAssets)
+		err = postDemoFixedAssets(ftables.DBSource(exec, company, dbType), opts.GenJnlPostLine, fixedAssets, today, &counts, p)
+		if err != nil {
+			rollback()
+			return Counts{}, err
+		}
+	}
+	if opts.Journals {
+		p.phase(PhaseJournals)
+		err = insertDemoJournals(ftables.DBSource(exec, company, dbType), today, &counts, p)
+		if err != nil {
+			rollback()
+			return Counts{}, err
 		}
 	}
 
@@ -952,27 +986,31 @@ const PhaseAssemblies Phase = "assemblies"
 // phaseRanges: the start and the share (in %) of each phase — as measured for SMALL, where the
 // postings take most of the time; LARGE and HEAVY spend more on the customers and their entries
 var phaseRanges = map[Phase][2]float64{
-	PhaseSetup:      {0, 1},
-	PhaseCustomers:  {1, 1},
-	PhaseEntries:    {2, 2},
-	PhaseLedgers:    {4, 3},
-	PhaseResources:  {7, 31},
-	PhaseItems:      {38, 28},
-	PhaseAssemblies: {66, 8},
-	PhaseSales:      {74, 17},
-	PhasePurchases:  {91, 8},
+	PhaseSetup:       {0, 1},
+	PhaseCustomers:   {1, 1},
+	PhaseEntries:     {2, 2},
+	PhaseLedgers:     {4, 3},
+	PhaseResources:   {7, 31},
+	PhaseItems:       {38, 28},
+	PhaseAssemblies:  {66, 8},
+	PhaseSales:       {74, 17},
+	PhasePurchases:   {91, 5},
+	PhaseFixedAssets: {96, 2},
+	PhaseJournals:    {98, 1},
 }
 
 var phaseRangesLarge = map[Phase][2]float64{
-	PhaseSetup:      {0, 1},
-	PhaseCustomers:  {1, 14},
-	PhaseEntries:    {15, 30},
-	PhaseLedgers:    {45, 5},
-	PhaseResources:  {50, 15},
-	PhaseItems:      {65, 14},
-	PhaseAssemblies: {79, 4},
-	PhaseSales:      {83, 10},
-	PhasePurchases:  {93, 6},
+	PhaseSetup:       {0, 1},
+	PhaseCustomers:   {1, 14},
+	PhaseEntries:     {15, 30},
+	PhaseLedgers:     {45, 5},
+	PhaseResources:   {50, 15},
+	PhaseItems:       {65, 14},
+	PhaseAssemblies:  {79, 4},
+	PhaseSales:       {83, 10},
+	PhasePurchases:   {93, 3},
+	PhaseFixedAssets: {96, 2},
+	PhaseJournals:    {98, 1},
 }
 
 func newProgress(report func(int, Phase), size Size, setup, customers, entries int) *progress {

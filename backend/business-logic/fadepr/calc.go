@@ -53,9 +53,9 @@ func ToMorrow(thisDate types.Date) types.Date {
 	return thisDate
 }
 
-// setFAFilter (SetFAFilter): an asset's entries in a book — in posting type order (category blank)
+// SetFAFilter (SetFAFilter): an asset's entries in a book — in posting type order (category blank)
 // or in date order
-func setFAFilter(src ftables.Source, faNo, deprBookCode types.Code, faPostingTypeOrder bool) *gtables.FALedgerEntry {
+func SetFAFilter(src ftables.Source, faNo, deprBookCode types.Code, faPostingTypeOrder bool) *gtables.FALedgerEntry {
 	faLedgEntry := gtables.NewFALedgerEntry(src)
 	if faPostingTypeOrder {
 		faLedgEntry.SetCurrentKey("fa_no", "depreciation_book_code", "fa_posting_category", "fa_posting_type", "fa_posting_date")
@@ -73,7 +73,7 @@ func setFAFilter(src ftables.Source, faNo, deprBookCode types.Code, faPostingTyp
 func CalcEntryAmounts(src ftables.Source, faNo, deprBookCode types.Code, startingDate, endingDate types.Date) (EntryAmounts, error) {
 	var amounts EntryAmounts
 	for i, postingType := range entryPostingTypes {
-		faLedgEntry := setFAFilter(src, faNo, deprBookCode, true)
+		faLedgEntry := SetFAFilter(src, faNo, deprBookCode, true)
 		if endingDate.IsZero() {
 			if !startingDate.IsZero() {
 				faLedgEntry.SetFilter("fa_posting_date", startingDate.String()+"..")
@@ -147,7 +147,7 @@ func getLastEntryDates(src ftables.Source, faNo, deprBookCode types.Code) ([4]ty
 		if !included {
 			continue
 		}
-		faLedgEntry := setFAFilter(src, faNo, deprBookCode, true)
+		faLedgEntry := SetFAFilter(src, faNo, deprBookCode, true)
 		faLedgEntry.SetRange("fa_posting_type", postingType)
 		for found := faLedgEntry.FindSet(); found; found = faLedgEntry.Next() {
 			if (faLedgEntry.Part_of_book_value || faLedgEntry.Part_of_depreciable_basis) && faLedgEntry.Fa_posting_date.After(entryDates[i]) {
@@ -161,7 +161,7 @@ func getLastEntryDates(src ftables.Source, faNo, deprBookCode types.Code) ([4]ty
 // UseDeprStartingDate (UseDeprStartingDate): no depreciation and none of the four posting types
 // posted yet — the depreciation starts at the Depreciation Starting Date
 func UseDeprStartingDate(src ftables.Source, faNo, deprBookCode types.Code) (bool, error) {
-	faLedgEntry := setFAFilter(src, faNo, deprBookCode, true)
+	faLedgEntry := SetFAFilter(src, faNo, deprBookCode, true)
 	faLedgEntry.SetRange("fa_posting_type", gtables.FALedgerEntry_Fa_posting_type.Depreciation)
 	if faLedgEntry.FindFirst() {
 		return false, nil
@@ -183,7 +183,7 @@ func UseDeprStartingDate(src ftables.Source, faNo, deprBookCode types.Code) (boo
 // the depreciation
 func GetFirstDeprDate(src ftables.Source, faNo, deprBookCode types.Code) (types.Date, error) {
 	var localDate types.Date
-	faLedgEntry := setFAFilter(src, faNo, deprBookCode, true)
+	faLedgEntry := SetFAFilter(src, faNo, deprBookCode, true)
 	for _, postingType := range []gtables.FALedgerEntryFa_posting_type{gtables.FALedgerEntry_Fa_posting_type.AcquisitionCost, gtables.FALedgerEntry_Fa_posting_type.SalvageValue} {
 		faLedgEntry.SetRange("fa_posting_type", postingType)
 		if faLedgEntry.FindLast() && faLedgEntry.Fa_posting_date.After(localDate) {
@@ -395,7 +395,7 @@ func getDeprPeriod(src ftables.Source, faNo, deprBookCode types.Code, untilDate 
 	}
 	usedDeprStartingDate := false
 	if startingDate.IsZero() {
-		faLedgEntry := setFAFilter(src, faNo, deprBookCode, true)
+		faLedgEntry := SetFAFilter(src, faNo, deprBookCode, true)
 		faLedgEntry.SetRange("fa_posting_type", gtables.FALedgerEntry_Fa_posting_type.Depreciation)
 		if faLedgEntry.FindLast() {
 			*startingDate = ToMorrow(faLedgEntry.Fa_posting_date)
@@ -407,7 +407,7 @@ func getDeprPeriod(src ftables.Source, faNo, deprBookCode types.Code, untilDate 
 		*startingDate = ToMorrow(*endingDate)
 	}
 	*endingDate = types.Date{}
-	faLedgEntry := setFAFilter(src, faNo, deprBookCode, false)
+	faLedgEntry := SetFAFilter(src, faNo, deprBookCode, false)
 	if !usedDeprStartingDate {
 		faLedgEntry.SetFilter("fa_posting_date", startingDate.AddDays(1).String()+"..")
 	}
@@ -449,7 +449,7 @@ func DeprInFiscalYear(src ftables.Source, faNo, deprBookCode types.Code, startin
 	if err != nil {
 		return types.Decimal{}, err
 	}
-	faLedgEntry := setFAFilter(src, faNo, deprBookCode, true)
+	faLedgEntry := SetFAFilter(src, faNo, deprBookCode, true)
 	faLedgEntry.SetFilter("fa_posting_date", fiscalYearBegin.String()+"..")
 	faLedgEntry.SetRange("fa_posting_type", gtables.FALedgerEntry_Fa_posting_type.Depreciation)
 	faLedgEntry.SetRange("part_of_book_value", true)

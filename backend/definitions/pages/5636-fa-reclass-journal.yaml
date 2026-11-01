@@ -1,0 +1,101 @@
+page:
+  id: 5636
+  type: List
+  name: FA Reclass. Journal
+  source_table: FA_Reclass_Journal_Line
+  caption: FA Reclass. Journal
+  editable: true
+  auto_split_key: true
+  delayed_insert: true
+  # classic form 5636: Reclassify (F11, codeunit 5644) moves a share of the FA No.'s amounts in the
+  # book to the New FA No. as FA or general journal lines (FA Journal Setup), posted there
+
+  # The batch the journal shows; OnOpenPage (business-logic/pages/fareclassjournal.go) turns
+  # template and batch into the list's filters
+  header_fields:
+    - param: batch
+      source: journal_batch_name
+      lookup_page: 5640
+      lookup_field: name
+      lookup_filters:
+        journal_template_name: journal_template_name
+
+  # Under the list for the cursor row (OnAfterGetRecord: codeunit 5646 GetFAS)
+  footer:
+    - source: fa_description
+      calculated: true
+      type: types.Text
+    - source: new_fa_description
+      calculated: true
+      type: types.Text
+
+  layout:
+    repeater:
+      fields:
+        - source: fa_posting_date
+          width: 100
+        - source: posting_date
+          width: 100
+          visible: false
+        - source: document_no
+          width: 110
+        - source: fa_no
+          width: 110
+        - source: new_fa_no
+          width: 110
+        - source: depreciation_book_code
+          width: 110
+        - source: description
+          width: 250
+        - source: reclassify_acq_cost_amount
+          width: 120
+        - source: reclassify_acq_cost_percent
+          width: 100
+        - source: reclassify_acquisition_cost
+          width: 90
+        - source: reclassify_depreciation
+          width: 90
+        - source: reclassify_write_down
+          width: 90
+          visible: false
+        - source: reclassify_appreciation
+          width: 90
+          visible: false
+        - source: reclassify_custom_1
+          width: 90
+          visible: false
+        - source: reclassify_custom_2
+          width: 90
+          visible: false
+        - source: reclassify_salvage_value
+          width: 90
+          visible: false
+        - source: insert_bal_account
+          width: 90
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    # The batch (codeunit 5644 FA Reclass. Jnl.-Transfer, after asking)
+    - name: Reclassify
+      caption: Reclassify
+      image: Post
+      shortcut: F11
+      promoted: true
+      run_object: codeunit:5644
