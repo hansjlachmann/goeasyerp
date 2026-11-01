@@ -22,6 +22,19 @@ menu:
         page_id: 39
       - separator: true
       - name: "Reports"
+        items:
+          - name: "Chart of Accounts"
+            run_object: "report:1"
+          - name: "Trial Balance"
+            run_object: "report:6"
+          - name: "Detail Trial Balance"
+            run_object: "report:4"
+          - name: "G/L Register"
+            run_object: "report:3"
+          - name: "Bank Account - List"
+            run_object: "report:1402"
+          - name: "Bank Acc. - Detail Trial Bal."
+            run_object: "report:1404"
       - name: "Registers"
         page_id: 116
       - name: "General Ledger Entries"
@@ -227,7 +240,25 @@ menu:
         page_id: 9302
       - separator: true
       - name: "Reports"
+        items:
+          - name: "Customer - List"
+            run_object: "report:101"
+          - name: "Customer - Detail Trial Bal."
+            run_object: "report:104"
+          - name: "Aged Accounts Receivable"
+            run_object: "report:120"
       - name: "Documents"
+        items:
+          - name: "Sales - Quote"
+            run_object: "report:204"
+          - name: "Order Confirmation"
+            run_object: "report:205"
+          - name: "Sales - Invoice"
+            run_object: "report:206"
+          - name: "Sales - Credit Memo"
+            run_object: "report:207"
+          - name: "Sales - Shipment"
+            run_object: "report:208"
       - name: "Posted Shipments"
         page_id: 142
       - name: "Posted Invoices"
@@ -324,7 +355,25 @@ menu:
         page_id: 9309
       - separator: true
       - name: "Reports"
+        items:
+          - name: "Vendor - List"
+            run_object: "report:301"
+          - name: "Vendor - Detail Trial Balance"
+            run_object: "report:304"
+          - name: "Aged Accounts Payable"
+            run_object: "report:322"
       - name: "Documents"
+        items:
+          - name: "Purchase - Quote"
+            run_object: "report:404"
+          - name: "Order"
+            run_object: "report:405"
+          - name: "Purchase - Invoice"
+            run_object: "report:406"
+          - name: "Purchase - Credit Memo"
+            run_object: "report:407"
+          - name: "Purchase - Receipt"
+            run_object: "report:408"
       - name: "Posted Receipts"
         page_id: 145
       - name: "Posted Invoices"
@@ -393,6 +442,11 @@ menu:
         page_id: 109
       - separator: true
       - name: "Item Reports"
+        items:
+          - name: "Inventory - List"
+            run_object: "report:701"
+          - name: "Inventory Valuation"
+            run_object: "report:1001"
       - name: "BOM Reports"
       - name: "Item Registers"
         page_id: 117
@@ -484,6 +538,9 @@ menu:
         page_id: 207
       - separator: true
       - name: "Reports"
+        items:
+          - name: "Resource - List"
+            run_object: "report:1101"
       - name: "Registers"
         page_id: 274
       - name: "Navigate"

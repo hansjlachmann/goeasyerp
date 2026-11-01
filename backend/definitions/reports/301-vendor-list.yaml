@@ -1,0 +1,58 @@
+# Report 301 Vendor - List: the printed layout (sections per data item, positions in mm from the
+# section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 301
+  name: Vendor - List
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Vendor
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 9
+          elements:
+            - {text: NO, x: 0, y: 1, width: 20, bold: true, wrap: true}
+            - {text: NAME, x: 21, y: 1, width: 60, bold: true, wrap: true}
+            - {text: ADDRESS, x: 82, y: 1, width: 50, bold: true, wrap: true}
+            - {text: CITY, x: 133, y: 1, width: 30, bold: true, wrap: true}
+            - {text: PHONE_NO, x: 164, y: 1, width: 28, bold: true, wrap: true}
+            - {text: POSTING_GROUP, x: 193, y: 1, width: 22, bold: true, wrap: true}
+            - {text: PAYMENT_TERMS, x: 216, y: 1, width: 26, bold: true, wrap: true}
+            - {text: BALANCE_LCY, x: 243, y: 1, width: 30, align: right, bold: true, wrap: true}
+            - {line: true, x: 0, y: 7.5}
+        - type: body
+          height: 4.2
+          elements:
+            - {field: "no", x: 0, y: 0, width: 20}
+            - {field: name, x: 21, y: 0, width: 60}
+            - {field: address, x: 82, y: 0, width: 50}
+            - {field: city, x: 133, y: 0, width: 30}
+            - {field: phone_no, x: 164, y: 0, width: 28}
+            - {field: vendor_posting_group, x: 193, y: 0, width: 22}
+            - {field: payment_terms_code, x: 216, y: 0, width: 26}
+            - {field: balance_lcy, x: 243, y: 0, width: 30, align: right}
+        - type: footer
+          height: 8
+          elements:
+            - {line: true, x: 243, y: 1}
+            - {text: TOTAL, x: 183, y: 2, width: 50, bold: true}
+            - {value: total, x: 243, y: 2, width: 30, align: right, bold: true}
