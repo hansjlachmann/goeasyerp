@@ -359,6 +359,18 @@ pages:
       bal_account_name: "Modkontonavn"
       balance: "Saldo"
       total_balance: "Total saldo"
+  recurring_general_journal:
+    caption: "Gentagelseskladde"
+    fields:  # the batch above the lines and the footer (calculated)
+      journal_batch_name: "Kladdenavn"
+      account_name: "Kontonavn"
+      balance: "Saldo"
+      total_balance: "Total saldo"
+  allocations:
+    caption: "Fordelinger"
+    fields:  # the footer (calculated)
+      allocation_amount: "Beløb"
+      total_allocation_amount: "Totalbeløb"
   sales_journal:
     caption: "Salgskladde"
     fields:  # the batch above the lines and the footer (calculated)

@@ -2553,6 +2553,42 @@ tables:
       period_no: "Periodenr."
       period_depreciation_percent: "Periodeafskrivning %"
       no_of_units_in_period: "Antal enheder i periode"
+  gen_jnl_allocation:
+    caption: "Finanskladdefordeling"
+    fields:
+      journal_template_name: "Kladdetypenavn"
+      journal_batch_name: "Kladdenavn"
+      journal_line_no: "Kladdelinjenr."
+      line_no: "Linjenr."
+      account_no: "Kontonr."
+      department_code: "Afdelingskode"
+      project_code: "Projektkode"
+      allocation_quantity: "Fordelingsantal"
+      allocation_percent: "Fordeling %"
+      amount: "Beløb"
+      gen_posting_type: "Bogføringstype"
+      gen_bus_posting_group: "Virksomhedsbogføringsgruppe"
+      gen_prod_posting_group: "Produktbogføringsgruppe"
+      tax_calculation_type: "Momsberegningstype"
+      tax_amount: "Afgiftsbeløb"
+      tax_percent: "Moms %"
+      account_name: "Kontonavn"
+      tax_area_code: "Skatteområdekode"
+      tax_liable: "Skattepligtig"
+      tax_group_code: "Skattegruppekode"
+      use_tax: "Forbrugsskat"
+      tax_bus_posting_group: "Momsvirksomhedsbogf.gruppe"
+      tax_prod_posting_group: "Momsproduktbogf.gruppe"
+      additional_currency_amount: "Beløb i ekstra valuta"
+    options:
+      gen_posting_type:
+        purchase: "Køb"
+        sale: "Salg"
+      tax_calculation_type:
+        normal_vat: "Normal moms"
+        reverse_charge_vat: "Omvendt betalingspligt"
+        full_vat: "Fuld moms"
+        sales_tax: "Salgsskat"
   fa_allocation:
     caption: "Anlægsfordeling"
     fields:
@@ -2928,7 +2964,18 @@ tables:
       bal_tax_amount_lcy: "Momsbeløb for modkonto (RV)"
       bal_tax_base_amount_lcy: "Momsgrundlag for modkonto (RV)"
       reversing_entry: "Tilbageførselspost"
+      recurring_method: "Gentagelsesmetode"
+      expiration_date: "Udløbsdato"
+      recurring_frequency: "Gentagelsesinterval"
+      allocated_amt_lcy: "Fordelt beløb (RV)"
     options:
+      recurring_method:
+        f_fixed: "F Fast"
+        v_variable: "V Variabel"
+        b_balance: "S Saldo"
+        rf_reversing_fixed: "TF Tilbageført fast"
+        rv_reversing_variable: "TV Tilbageført variabel"
+        rb_reversing_balance: "TS Tilbageført saldo"
       fa_posting_type:
         acquisition_cost: "Anskaffelsespris"
         depreciation: "Afskrivning"

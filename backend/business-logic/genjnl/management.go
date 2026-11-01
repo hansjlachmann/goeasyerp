@@ -22,8 +22,8 @@ const TemplateListPageID = 250
 // Receipt and Payment Journal): the template of the page's type (TemplateSelection: the one
 // in the page's parameters, the only one, a new one, or the user picks one) and its batch
 // (OpenJnl), as the page's filters. It returns early when the user must pick a template.
-func OpenJournalPage(rec *gtables.GenJournalLine, page *pages.Open, pageTemplate gtables.GenJournalTemplateType) error {
-	jnlSelected, err := TemplateSelection(rec, page, pageTemplate)
+func OpenJournalPage(rec *gtables.GenJournalLine, page *pages.Open, pageTemplate gtables.GenJournalTemplateType, recurringJnl bool) error {
+	jnlSelected, err := TemplateSelection(rec, page, pageTemplate, recurringJnl)
 	if err != nil {
 		return err
 	}
@@ -41,8 +41,9 @@ func OpenJournalPage(rec *gtables.GenJournalLine, page *pages.Open, pageTemplate
 // TemplateSelection finds the journal template of a page's type — the template in the page's
 // parameters, the only template of the type, a new one when there is none — or asks the user
 // to pick one (page 250); the template's name becomes the page's filter and parameter. It
-// reports whether a template was selected.
-func TemplateSelection(rec *gtables.GenJournalLine, page *pages.Open, pageTemplate gtables.GenJournalTemplateType) (bool, error) {
+// reports whether a template was selected. The Recurring General Journal takes the recurring
+// templates of any type (a new one: RECURRING).
+func TemplateSelection(rec *gtables.GenJournalLine, page *pages.Open, pageTemplate gtables.GenJournalTemplateType, recurringJnl bool) (bool, error) {
 	genJnlTemplate := gtables.NewGenJournalTemplate(rec)
 	if page.Param("template") != "" {
 		err := genJnlTemplate.GetOrError(types.Code(page.Param("template")))
@@ -50,17 +51,24 @@ func TemplateSelection(rec *gtables.GenJournalLine, page *pages.Open, pageTempla
 			return false, err
 		}
 	} else {
-		genJnlTemplate.SetRange("recurring", false)
-		genJnlTemplate.SetRange("type", pageTemplate)
+		genJnlTemplate.SetRange("recurring", recurringJnl)
+		if !recurringJnl {
+			genJnlTemplate.SetRange("type", pageTemplate)
+		}
 		switch genJnlTemplate.Count() {
 		case 0:
 			genJnlTemplate.InitRecord()
 			genJnlTemplate.Type = pageTemplate
-			genJnlTemplate.Recurring = false
-			genJnlTemplate.Name = types.Code(system.UpperCase(system.CopyStr(pageTemplate.String(), 1, genJnlTemplate.MaxStrLen("name"))))
+			genJnlTemplate.Recurring = recurringJnl
 			language := fcodeunits.CurrentLanguage()
-			typeCaption := i18n.GetInstance().OptionCaption(gtables.GenJournalTemplateTableName, "type", i18n.Key(pageTemplate.String()), language)
-			genJnlTemplate.Description = types.Text(i18n.GetInstance().MessageWithParams("GEN_JNL_TEMPLATE_DESCRIPTION", language, typeCaption))
+			if !recurringJnl {
+				genJnlTemplate.Name = types.Code(system.UpperCase(system.CopyStr(pageTemplate.String(), 1, genJnlTemplate.MaxStrLen("name"))))
+				typeCaption := i18n.GetInstance().OptionCaption(gtables.GenJournalTemplateTableName, "type", i18n.Key(pageTemplate.String()), language)
+				genJnlTemplate.Description = types.Text(i18n.GetInstance().MessageWithParams("GEN_JNL_TEMPLATE_DESCRIPTION", language, typeCaption))
+			} else {
+				genJnlTemplate.Name = "RECURRING"
+				genJnlTemplate.Description = types.Text(i18n.GetInstance().Message("GEN_JNL_RECURRING_TEMPLATE_DESCRIPTION", language))
+			}
 			err := genJnlTemplate.Validate("type", genJnlTemplate.Type)
 			if err != nil {
 				return false, err
@@ -72,7 +80,11 @@ func TemplateSelection(rec *gtables.GenJournalLine, page *pages.Open, pageTempla
 		case 1:
 			genJnlTemplate.FindFirst()
 		default:
-			page.SelectRecord(TemplateListPageID, "template", "name", pages.FixedFilter{Field: "type", Value: int(pageTemplate)}, pages.FixedFilter{Field: "recurring", Value: false})
+			if recurringJnl {
+				page.SelectRecord(TemplateListPageID, "template", "name", pages.FixedFilter{Field: "recurring", Value: true})
+			} else {
+				page.SelectRecord(TemplateListPageID, "template", "name", pages.FixedFilter{Field: "type", Value: int(pageTemplate)}, pages.FixedFilter{Field: "recurring", Value: false})
+			}
 			return false, nil
 		}
 	}

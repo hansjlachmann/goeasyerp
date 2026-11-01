@@ -1,0 +1,262 @@
+table:
+  id: 221
+  name: "Gen_Jnl_Allocation"
+  caption: Gen. Jnl. Allocation
+  description: "Gen. journal allocations (table 221): the G/L accounts a recurring journal line's amount is allocated to — by quantity, percentage or amount"
+  lookup_page_id: 284
+  fields:
+    - name: journal_template_name
+      no: 1
+      type: types.Code
+      db_name: journal_template_name
+      length: 10
+      primary_key: true
+      required: true
+      table_relation:
+        table: Gen_Journal_Template
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: journal_batch_name
+      no: 2
+      type: types.Code
+      db_name: journal_batch_name
+      length: 10
+      primary_key: true
+      required: true
+      table_relation:
+        table: Gen_Journal_Batch
+        field: name
+        filters:
+          journal_template_name: {field: journal_template_name}
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: journal_line_no
+      no: 3
+      type: int
+      db_name: journal_line_no
+      primary_key: true
+      required: true
+
+    - name: line_no
+      no: 4
+      type: int
+      db_name: line_no
+      primary_key: true
+
+    - name: account_no
+      no: 5
+      type: types.Code
+      db_name: account_no
+      length: 20
+      table_relation:
+        table: G_L_Account
+        field: no
+        filters:
+          account_type: {const: 0}   # Posting accounts only
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: department_code
+      no: 6
+      type: types.Code
+      db_name: department_code
+      length: 10
+      table_relation:
+        table: Department
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: project_code
+      no: 7
+      type: types.Code
+      db_name: project_code
+      length: 10
+      table_relation:
+        table: Project
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: allocation_quantity
+      no: 8
+      type: types.Decimal
+      db_name: allocation_quantity
+      decimal_places: "0:5"
+
+    - name: allocation_percent
+      no: 9
+      type: types.Decimal
+      db_name: allocation_percent
+      decimal_places: "2:2"
+
+    - name: amount
+      no: 10
+      type: types.Decimal
+      db_name: amount
+      decimal_places: "2:2"
+
+    - name: gen_posting_type
+      no: 11
+      type: Option
+      db_name: gen_posting_type
+      options: [" ", "Purchase", "Sale"]
+
+    - name: gen_bus_posting_group
+      no: 12
+      type: types.Code
+      db_name: gen_bus_posting_group
+      length: 10
+      table_relation:
+        table: Gen_Business_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: gen_prod_posting_group
+      no: 13
+      type: types.Code
+      db_name: gen_prod_posting_group
+      length: 10
+      table_relation:
+        table: Gen_Product_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: tax_calculation_type
+      no: 14
+      type: Option
+      db_name: tax_calculation_type
+      options: ["Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"]
+      editable: false
+
+    - name: tax_amount
+      no: 15
+      type: types.Decimal
+      db_name: tax_amount
+      decimal_places: "2:2"
+      editable: false
+
+    - name: tax_percent
+      no: 16
+      type: types.Decimal
+      db_name: tax_percent
+      decimal_places: "0:5"
+      editable: false
+
+    - name: account_name
+      no: 17
+      type: types.Text
+      length: 30
+      flow_field: true
+      calc_formula: Lookup
+      source_table: GLAccount
+      source_field: name
+      flow_filters:
+        - field: no
+          type: field
+          value: account_no
+
+    - name: tax_area_code
+      no: 18
+      type: types.Code
+      db_name: tax_area_code
+      length: 20
+      table_relation:
+        table: Tax_Area
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: tax_liable
+      no: 19
+      type: bool
+      db_name: tax_liable
+
+    - name: tax_group_code
+      no: 20
+      type: types.Code
+      db_name: tax_group_code
+      length: 10
+      table_relation:
+        table: Tax_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: use_tax
+      no: 21
+      type: bool
+      db_name: use_tax
+
+    - name: tax_bus_posting_group
+      no: 22
+      type: types.Code
+      db_name: tax_bus_posting_group
+      length: 10
+      table_relation:
+        table: Tax_Business_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: tax_prod_posting_group
+      no: 23
+      type: types.Code
+      db_name: tax_prod_posting_group
+      length: 10
+      table_relation:
+        table: Tax_Product_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: additional_currency_amount
+      no: 24
+      type: types.Decimal
+      db_name: additional_currency_amount
+      decimal_places: "2:2"
+      editable: false
+
+  keys:
+    - name: Primary
+      fields: [journal_template_name, journal_batch_name, journal_line_no, line_no]
+      clustered: true
+      sum_index_fields: [amount]

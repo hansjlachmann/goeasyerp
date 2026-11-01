@@ -1,0 +1,227 @@
+page:
+  id: 283
+  type: List
+  name: Recurring General Journal
+  source_table: Gen_Journal_Line
+  caption: Recurring General Journal
+  editable: true
+  auto_split_key: true      # a new line gets Line No. 10000, 20000 … or halfway between its neighbours
+  delayed_insert: true      # inserted when the user leaves the line
+  # classic form 283: the lines of a recurring template — each with its Recurring Method and
+  # Frequency, no balancing account (the allocations balance it); posted they stay, dated ahead
+
+  # The batch the journal shows (classic Batch Name above the lines): the page's batch
+  # parameter; OnOpenPage (business-logic/pages/genjournal.go) turns template and batch into
+  # the list's filters
+  header_fields:
+    - param: batch
+      source: journal_batch_name
+      lookup_page: 251
+      lookup_field: name
+      lookup_filters:
+        journal_template_name: journal_template_name
+
+  # Under the list for the cursor row (OnAfterGetRecord, business-logic/pages/genjournal.go)
+  footer:
+    - source: account_name
+      calculated: true
+      type: types.Text
+    - source: balance
+      calculated: true
+      type: types.Decimal
+      decimal_places: "2:2"
+    - source: total_balance
+      calculated: true
+      type: types.Decimal
+      decimal_places: "2:2"
+
+  layout:
+    repeater:
+      fields:
+        - source: recurring_method
+          width: 150
+
+        - source: recurring_frequency
+          width: 100
+
+        - source: posting_date
+          width: 100
+
+        - source: document_date
+          width: 100
+          visible: false
+
+        - source: document_type
+          width: 130
+
+        - source: document_no
+          width: 110
+
+        - source: account_type
+          width: 130
+
+        - source: account_no
+          width: 110
+
+        - source: description
+          width: 250
+
+        - source: department_code
+          width: 110
+          visible: false
+
+        - source: project_code
+          width: 110
+          visible: false
+
+        - source: salespers_purch_code
+          width: 110
+          visible: false
+
+        - source: currency_code
+          width: 110
+          visible: false
+
+        - source: gen_posting_type
+          width: 130
+          visible: false
+
+        - source: gen_bus_posting_group
+          width: 110
+          visible: false
+
+        - source: gen_prod_posting_group
+          width: 110
+          visible: false
+
+        - source: tax_bus_posting_group
+          width: 110
+          visible: false
+
+        - source: tax_prod_posting_group
+          width: 110
+          visible: false
+
+        - source: tax_area_code
+          width: 110
+          visible: false
+
+        - source: tax_liable
+          width: 80
+          visible: false
+
+        - source: tax_group_code
+          width: 110
+          visible: false
+
+        - source: use_tax
+          width: 80
+          visible: false
+
+        - source: tax_base_amount
+          width: 120
+          visible: false
+
+        - source: amount
+          width: 120
+
+        - source: payment_terms_code
+          width: 110
+          visible: false
+
+        - source: applies_to_doc_type
+          width: 130
+          visible: false
+
+        - source: applies_to_doc_no
+          width: 110
+          visible: false
+
+        - source: applies_to_id
+          width: 110
+          visible: false
+
+        - source: on_hold
+          width: 110
+          visible: false
+
+        - source: bank_payment_type
+          width: 130
+          visible: false
+
+        - source: reason_code
+          width: 110
+          visible: false
+
+        - source: allocated_amt_lcy
+          width: 120
+
+        - source: expiration_date
+          width: 100
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+      enabled: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+      enabled: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+      enabled: true
+
+    # The line's account: its card (codeunit 15) and its ledger entries (codeunit 14)
+    - name: Account
+      caption: Account
+      image: Card
+      promoted: true
+      items:
+        - name: Card
+          caption: Card
+          shortcut: Shift+F5
+          run_object: table:Gen_Journal_Line.ShowCard
+        - name: Ledger Entries
+          caption: Ledger Entries
+          shortcut: Ctrl+F5
+          run_object: table:Gen_Journal_Line.ShowEntries
+
+    # The G/L accounts the line's amount is allocated to (page 284)
+    - name: Allocations
+      caption: Allocations
+      image: Lines
+      promoted: true
+      run_page: 284
+      run_page_filters:
+        - field: journal_template_name
+          value: journal_template_name
+        - field: journal_batch_name
+          value: journal_batch_name
+        - field: journal_line_no
+          value: line_no
+
+    # Posting: the batch (codeunit 231 Gen. Jnl.-Post, after asking; the list's filters say which batch)
+    - name: Post
+      caption: Post
+      image: Post
+      shortcut: F11
+      promoted: true
+      run_object: codeunit:231
+
+    # what Post would write for the batch, nothing saved (Posting Preview 115)
+    - name: Preview Posting
+      caption: Preview Posting
+      image: Search
+      shortcut: Ctrl+Alt+F9
+      promoted: true
+      run_object: "table:Gen_Journal_Line.PreviewPosting"

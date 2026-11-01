@@ -425,6 +425,7 @@ messages:
   BTN_EXPORT: "Eksporter"
   DLG_PRINT_PREVIEW: "Forhåndsvisning"
   GEN_JNL_TEMPLATE_DESCRIPTION: "Kladd %1"
+  GEN_JNL_RECURRING_TEMPLATE_DESCRIPTION: "Gjentakelseskladd"
   GEN_JNL_DEFAULT_BATCH: "Standardkladd"
   GEN_JNL_POST_CONFIRM: "Vil du bokføre kladdelinjene?"
   SALES_CALC_INV_DISC_CONFIRM: "Vil du beregne fakturarabatten?"
@@ -463,6 +464,7 @@ messages:
   GEN_JNL_POSTED: "Kladdelinjene er bokført."
   GEN_JNL_POSTED_NEW_BATCH: "Kladdelinjene er bokført. Du er nå i kladden %1."
   GEN_JNL_POST_WINDOW: "Kladdenavn #1##########\nKontrollerer linjer #2######\nKontrollerer saldo #3###### @4@@@@@@@@@@@@@\nBokfører linjer #5###### @6@@@@@@@@@@@@@"
+  GEN_JNL_POST_WINDOW_RECURRING: "Kladdenavn #1##########\nKontrollerer linjer #2######\nKontrollerer saldo #3###### @4@@@@@@@@@@@@@\nBokfører linjer #5###### @6@@@@@@@@@@@@@\nBokfører tilbakeføringer #7###### @8@@@@@@@@@@@@@\nOppdaterer linjer #9###### @10@@@@@@@@@@@@"
   GEN_JNL_APPLY_CHANGE_CURRENCY: "%1 i %2 endres fra %3 til %4.\nVil du fortsette?"
   ITEM_JNL_POST_WINDOW: "Kladdenavn #1##########
 Kontrollerer linjer #2######

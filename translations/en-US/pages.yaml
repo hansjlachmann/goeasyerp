@@ -359,6 +359,18 @@ pages:
       bal_account_name: "Bal. Account Name"
       balance: "Balance"
       total_balance: "Total Balance"
+  recurring_general_journal:
+    caption: "Recurring General Journal"
+    fields:  # the batch above the lines and the footer (calculated)
+      journal_batch_name: "Batch Name"
+      account_name: "Account Name"
+      balance: "Balance"
+      total_balance: "Total Balance"
+  allocations:
+    caption: "Allocations"
+    fields:  # the footer (calculated)
+      allocation_amount: "Amount"
+      total_allocation_amount: "Total Amount"
   sales_journal:
     caption: "Sales Journal"
     fields:  # the batch above the lines and the footer (calculated)

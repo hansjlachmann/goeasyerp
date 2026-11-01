@@ -2553,6 +2553,42 @@ tables:
       period_no: "Period No."
       period_depreciation_percent: "Period Depreciation %"
       no_of_units_in_period: "No. of Units in Period"
+  gen_jnl_allocation:
+    caption: "Gen. Jnl. Allocation"
+    fields:
+      journal_template_name: "Journal Template Name"
+      journal_batch_name: "Journal Batch Name"
+      journal_line_no: "Journal Line No."
+      line_no: "Line No."
+      account_no: "Account No."
+      department_code: "Department Code"
+      project_code: "Project Code"
+      allocation_quantity: "Allocation Quantity"
+      allocation_percent: "Allocation %"
+      amount: "Amount"
+      gen_posting_type: "Gen. Posting Type"
+      gen_bus_posting_group: "Gen. Bus. Posting Group"
+      gen_prod_posting_group: "Gen. Prod. Posting Group"
+      tax_calculation_type: "Tax Calculation Type"
+      tax_amount: "Tax Amount"
+      tax_percent: "Tax %"
+      account_name: "Account Name"
+      tax_area_code: "Tax Area Code"
+      tax_liable: "Tax Liable"
+      tax_group_code: "Tax Group Code"
+      use_tax: "Use Tax"
+      tax_bus_posting_group: "Tax Bus. Posting Group"
+      tax_prod_posting_group: "Tax Prod. Posting Group"
+      additional_currency_amount: "Additional-Currency Amount"
+    options:
+      gen_posting_type:
+        purchase: "Purchase"
+        sale: "Sale"
+      tax_calculation_type:
+        normal_vat: "Normal VAT"
+        reverse_charge_vat: "Reverse Charge VAT"
+        full_vat: "Full VAT"
+        sales_tax: "Sales Tax"
   fa_allocation:
     caption: "FA Allocation"
     fields:
@@ -2928,7 +2964,18 @@ tables:
       bal_tax_amount_lcy: "Bal. Tax Amount (LCY)"
       bal_tax_base_amount_lcy: "Bal. Tax Base Amount (LCY)"
       reversing_entry: "Reversing Entry"
+      recurring_method: "Recurring Method"
+      expiration_date: "Expiration Date"
+      recurring_frequency: "Recurring Frequency"
+      allocated_amt_lcy: "Allocated Amt. (LCY)"
     options:
+      recurring_method:
+        f_fixed: "F Fixed"
+        v_variable: "V Variable"
+        b_balance: "B Balance"
+        rf_reversing_fixed: "RF Reversing Fixed"
+        rv_reversing_variable: "RV Reversing Variable"
+        rb_reversing_balance: "RB Reversing Balance"
       fa_posting_type:
         acquisition_cost: "Acquisition Cost"
         depreciation: "Depreciation"

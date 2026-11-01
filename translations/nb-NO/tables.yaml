@@ -2553,6 +2553,42 @@ tables:
       period_no: "Periodenr."
       period_depreciation_percent: "Periodeavskrivning %"
       no_of_units_in_period: "Antall enheter i periode"
+  gen_jnl_allocation:
+    caption: "Finanskladdefordeling"
+    fields:
+      journal_template_name: "Kladdemalnavn"
+      journal_batch_name: "Kladdenavn"
+      journal_line_no: "Kladdelinjenr."
+      line_no: "Linjenr."
+      account_no: "Kontonr."
+      department_code: "Avdelingskode"
+      project_code: "Prosjektkode"
+      allocation_quantity: "Fordelingsantall"
+      allocation_percent: "Fordeling %"
+      amount: "Beløp"
+      gen_posting_type: "Bokføringstype"
+      gen_bus_posting_group: "Bokføringsgruppe - forretning"
+      gen_prod_posting_group: "Bokføringsgruppe - produkt"
+      tax_calculation_type: "Avgiftsberegningstype"
+      tax_amount: "Avgiftsbeløp"
+      tax_percent: "Avgift %"
+      account_name: "Kontonavn"
+      tax_area_code: "Avgiftsområdekode"
+      tax_liable: "Avgiftspliktig"
+      tax_group_code: "Avgiftsgruppekode"
+      use_tax: "Forbruksavgift"
+      tax_bus_posting_group: "Avgiftsbokføringsgruppe - forretning"
+      tax_prod_posting_group: "Avgiftsbokføringsgruppe - produkt"
+      additional_currency_amount: "Beløp i tilleggsvaluta"
+    options:
+      gen_posting_type:
+        purchase: "Kjøp"
+        sale: "Salg"
+      tax_calculation_type:
+        normal_vat: "Normal mva."
+        reverse_charge_vat: "Omvendt avgiftsplikt"
+        full_vat: "Full mva."
+        sales_tax: "Salgsavgift"
   fa_allocation:
     caption: "Anleggsfordeling"
     fields:
@@ -2928,7 +2964,18 @@ tables:
       bal_tax_amount_lcy: "Mva.-beløp for motkonto (NOK)"
       bal_tax_base_amount_lcy: "Mva.-grunnlag for motkonto (NOK)"
       reversing_entry: "Tilbakeførende post"
+      recurring_method: "Gjentakelsesmetode"
+      expiration_date: "Utløpsdato"
+      recurring_frequency: "Gjentakelsesfrekvens"
+      allocated_amt_lcy: "Fordelt beløp (NOK)"
     options:
+      recurring_method:
+        f_fixed: "F Fast"
+        v_variable: "V Variabel"
+        b_balance: "S Saldo"
+        rf_reversing_fixed: "TF Tilbakeført fast"
+        rv_reversing_variable: "TV Tilbakeført variabel"
+        rb_reversing_balance: "TS Tilbakeført saldo"
       fa_posting_type:
         acquisition_cost: "Anskaffelseskost"
         depreciation: "Avskrivning"

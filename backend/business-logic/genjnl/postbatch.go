@@ -21,7 +21,11 @@ const maxPostingNoSeries = 10
 // from the posting number series, every line posted — and deletes the posted lines. Open it on
 // the posting's transaction; an error leaves everything to the caller's rollback.
 //
-// Not migrated yet: recurring journals and allocations.
+// A recurring journal (recurring.go) posts its lines dated up to the work date that have not
+// expired — with their allocations, the reversing lines the day after — and keeps them: each
+// moves on by its Recurring Frequency, a variable or balance line without its amount.
+//
+// Not migrated yet: the additional reporting currency of the balance methods.
 type GenJnlPostBatch struct {
 	src             ftables.Source
 	genJnlCheckLine GenJnlCheckLine
@@ -34,6 +38,8 @@ type GenJnlPostBatch struct {
 	postingNoSeriesMgt map[types.Code]*noseries.Manager
 
 	lastDate               types.Date
+	currentBalanceReverse  types.Decimal
+	startLineNoReverse     int
 	lastDocType            gtables.GenJournalLineDocument_type
 	lastDocNo              types.Code
 	lastPostedDocNo        types.Code
@@ -79,12 +85,21 @@ func (b *GenJnlPostBatch) Run(rec *gtables.GenJournalLine) (PostBatchResult, err
 	if system.StrLen(system.IncStr(b.genJnlBatch.Name.String())) > b.genJnlBatch.MaxStrLen("name") {
 		return result, apperrors.JnlNameTooLong(gtables.GenJournalBatchTableName, "name", b.genJnlBatch.MaxStrLen("name"))
 	}
+	if b.genJnlTemplate.Recurring {
+		workDate := system.WorkDate()
+		genJnlLine.SetFilter("posting_date", "<="+workDate.String())
+		genJnlLine.SetFilter("expiration_date", "''|>="+workDate.String())
+	}
 	if !genJnlLine.FindFirst() {
 		return result, nil
 	}
 
 	language := fcodeunits.CurrentLanguage()
-	b.window = system.OpenWindow(i18n.GetInstance().Message("GEN_JNL_POST_WINDOW", language))
+	windowText := "GEN_JNL_POST_WINDOW"
+	if b.genJnlTemplate.Recurring {
+		windowText = "GEN_JNL_POST_WINDOW_RECURRING"
+	}
+	b.window = system.OpenWindow(i18n.GetInstance().Message(windowText, language))
 	defer b.window.Close()
 	b.window.Update(1, rec.Journal_batch_name)
 
@@ -93,6 +108,18 @@ func (b *GenJnlPostBatch) Run(rec *gtables.GenJournalLine) (PostBatchResult, err
 	for found := genJnlLine.FindSet(); found; found = genJnlLine.Next() {
 		lineCount = lineCount + 1
 		b.window.Update(2, lineCount)
+		err = b.checkRecurringLine(genJnlLine)
+		if err != nil {
+			return result, err
+		}
+		err = b.updateRecurringAmt(genJnlLine)
+		if err != nil {
+			return result, err
+		}
+		err = b.checkAllocations(genJnlLine)
+		if err != nil {
+			return result, err
+		}
 		genJnlLine5 := gtables.NewGenJournalLine(b.src)
 		genJnlLine5.Copy(genJnlLine)
 		err = b.genJnlCheckLine.RunCheck(genJnlLine5)
@@ -114,17 +141,57 @@ func (b *GenJnlPostBatch) Run(rec *gtables.GenJournalLine) (PostBatchResult, err
 	lineCount = 0
 	b.lastDocNo = ""
 	b.lastPostedDocNo = ""
+	var genJnlLine4 []*gtables.GenJournalLine // the reversing lines (a temporary table)
 	for found := genJnlLine.FindSet(); found; found = genJnlLine.Next() {
 		genJnlLine3 := gtables.NewGenJournalLine(b.src)
 		genJnlLine3.Copy(genJnlLine)
 		lineCount = lineCount + 1
 		b.window.Update(5, lineCount)
 		b.window.Update(6, system.Round(types.NewDecimalFromInt(int64(lineCount*10000/noOfRecords)), 1))
+		b.makeRecurringText(genJnlLine3)
 		err = b.checkDocumentNo(genJnlLine3)
 		if err != nil {
 			return result, err
 		}
-		err = b.genJnlPostLine.RunWithoutCheck(genJnlLine3)
+		genJnlLine5 := gtables.NewGenJournalLine(b.src)
+		genJnlLine5.Copy(genJnlLine3)
+		err = b.genJnlPostLine.RunWithoutCheck(genJnlLine5)
+		if err != nil {
+			return result, err
+		}
+		if isReversingMethod(genJnlLine3.Recurring_method) && !genJnlLine3.Posting_date.IsZero() {
+			reversing := gtables.NewGenJournalLine(b.src)
+			reversing.Copy(genJnlLine3)
+			reversing.Posting_date = reversing.Posting_date.AddDays(1)
+			multiplyAmounts(reversing, types.NewDecimalFromInt(-1))
+			reversing.Reversing_entry = true
+			genJnlLine4 = append(genJnlLine4, reversing)
+		}
+		err = b.postAllocations(genJnlLine3, false)
+		if err != nil {
+			return result, err
+		}
+	}
+
+	// Post reversing lines
+	lineCount = 0
+	b.lastDocNo = ""
+	b.lastPostedDocNo = ""
+	for _, genJnlLine3 := range genJnlLine4 {
+		lineCount = lineCount + 1
+		b.window.Update(7, lineCount)
+		b.window.Update(8, system.Round(types.NewDecimalFromInt(int64(lineCount*10000/len(genJnlLine4))), 1))
+		err = b.checkDocumentNo(genJnlLine3)
+		if err != nil {
+			return result, err
+		}
+		genJnlLine5 := gtables.NewGenJournalLine(b.src)
+		genJnlLine5.Copy(genJnlLine3)
+		err = b.genJnlPostLine.RunWithoutCheck(genJnlLine5)
+		if err != nil {
+			return result, err
+		}
+		err = b.postAllocations(genJnlLine3, true)
 		if err != nil {
 			return result, err
 		}
@@ -135,8 +202,15 @@ func (b *GenJnlPostBatch) Run(rec *gtables.GenJournalLine) (PostBatchResult, err
 		result.RegisterNo = glReg.No
 	}
 
+	// A recurring journal keeps its lines, the next date ahead
+	if result.RegisterNo != 0 && b.genJnlTemplate.Recurring {
+		err = b.updateRecurringLines(genJnlLine, noOfRecords)
+		if err != nil {
+			return result, err
+		}
+	}
 	// Delete the posted lines; a numbered batch that is now empty moves to the next name
-	if result.RegisterNo != 0 {
+	if result.RegisterNo != 0 && !b.genJnlTemplate.Recurring {
 		genJnlLine2 := gtables.NewGenJournalLine(b.src)
 		genJnlLine2.CopyFilters(genJnlLine)
 		genJnlLine2.SetFilter("account_no", "<>''")
@@ -202,6 +276,7 @@ func (b *GenJnlPostBatch) checkLinesBalance(genJnlLine *gtables.GenJournalLine, 
 	b.currentCustomerVendors = 0
 	b.taxEntryCreated = false
 	b.currentBalance = types.Decimal{}
+	b.currentBalanceReverse = types.Decimal{}
 	b.currencyBalance = types.Decimal{}
 	found := genJnlLine.FindSet()
 	b.lastCurrencyCode = genJnlLine.Currency_code
@@ -255,8 +330,17 @@ func (b *GenJnlPostBatch) checkLinesBalance(genJnlLine *gtables.GenJournalLine, 
 			b.currentCustomerVendors = 0
 			b.taxEntryCreated = false
 		}
-		tables.UpdateGenJnlLineBalance(genJnlLine)
+		if b.currentBalanceReverse.IsZero() {
+			b.startLineNoReverse = genJnlLine.Line_no
+		}
+		err := tables.UpdateGenJnlLineBalance(genJnlLine)
+		if err != nil {
+			return err
+		}
 		b.currentBalance = b.currentBalance.Add(genJnlLine.Balance_lcy)
+		if isReversingMethod(genJnlLine.Recurring_method) {
+			b.currentBalanceReverse = b.currentBalanceReverse.Add(genJnlLine.Balance_lcy)
+		}
 		if genJnlLine.Currency_code != b.lastCurrencyCode {
 			b.lastCurrencyCode = ""
 		} else {
@@ -301,6 +385,12 @@ func (b *GenJnlPostBatch) checkBalance() error {
 			return apperrors.JnlDocOutOfBalance(jnlLine, b.lastDocNo.String(), b.currentBalance.String())
 		}
 		return apperrors.JnlDateOutOfBalance(jnlLine, b.lastDate.String(), b.currentBalance.String())
+	}
+	if !b.currentBalanceReverse.IsZero() {
+		if b.genJnlTemplate.Force_doc_balance {
+			return apperrors.JnlReversingDocOutOfBalance(jnlLine, b.lastDocNo.String(), b.currentBalanceReverse.String())
+		}
+		return apperrors.JnlReversingOutOfBalance(jnlLine, b.lastDate.String(), b.currentBalanceReverse.String())
 	}
 	if b.lastCurrencyCode != "" && !b.currencyBalance.IsZero() {
 		if b.genJnlTemplate.Force_doc_balance {

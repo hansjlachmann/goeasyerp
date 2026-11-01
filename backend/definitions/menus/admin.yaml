@@ -143,6 +143,7 @@ menu:
       - name: "Activities"
         items:
           - name: "Recurring Journals"
+            page_id: 283
           - separator: true
           - name: "Bank Account Reconciliations"
             page_id: 379
@@ -272,6 +273,7 @@ menu:
       - name: "Activities"
         items:
           - name: "Recurring Journals"
+            page_id: 283
           - separator: true
           - name: "Combine Shipments"
             run_object: "report:295"
@@ -359,6 +361,7 @@ menu:
       - name: "Activities"
         items:
           - name: "Recurring Journals"
+            page_id: 283
           - name: "Recurring Req. Worksheets"
           - separator: true
           - name: "Delete Invoiced Purch. Orders"
@@ -661,6 +664,7 @@ menu:
       - name: "Activities"
         items:
           - name: "Recurring General Journals"
+            page_id: 283
           - name: "Recurring Fixed Asset Journals"
           - separator: true
           - name: "Calculate Depreciation"

@@ -76,7 +76,7 @@ table:
           - source: description
             width: 250
 
-    # Recurring journals come later
+    # A recurring journal: its lines post again and again (Recurring Method, Recurring Frequency)
     - name: recurring
       no: 12
       type: bool

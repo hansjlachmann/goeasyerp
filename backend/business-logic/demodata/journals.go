@@ -13,7 +13,9 @@ import (
 
 // The open journals of the demo (Options.Journals, codeunit 901): every journal of the main menu
 // has lines ready to post, dated today — nothing is posted:
-//   - General Journals: office supplies paid in cash; Sales Journals: a service invoice to a
+//   - General Journals: office supplies paid in cash; Recurring General Journals: the monthly
+//     rent paid from the bank, allocated to the departments, and the salaries accrued at the
+//     month's end (reversed the day after); Sales Journals: a service invoice to a
 //     customer; Purchase Journals: a vendor's invoice; Cash Receipt Journals: a customer's payment
 //     of an open invoice; Payment Journals: the payment of an open vendor invoice;
 //   - Fixed Asset G/L Journals (template ASSETS): this month's depreciation of the assets, as
@@ -41,6 +43,7 @@ func insertDemoJournals(src ftables.Source, today time.Time, counts *Counts, p *
 		fn   func() error
 	}{
 		{"general journals", j.generalJournals},
+		{"recurring journal", j.recurringJournal},
 		{"fixed asset journals", j.fixedAssetJournals},
 		{"item journals", j.itemJournals},
 		{"resource journals", j.resourceJournals},
@@ -591,4 +594,93 @@ func (j *demoJournals) resourcePriceChanges() error {
 		}
 	}
 	return nil
+}
+
+// recurringJournal: template RECURRING — the rent, fixed each month, paid from bank B010 and
+// allocated to the departments by their floor space (5:3:2), and the salary accrual of the month,
+// variable, reversed the day after
+func (j *demoJournals) recurringJournal() error {
+	l, err := j.genJnlLine("RECURRING", 10000, nil)
+	if err != nil {
+		return err
+	}
+	l.Document_no = "RENT-%3"
+	err = set(l, "recurring_method", gtables.GenJournalLine_Recurring_method.FFixed, "account_type", gtables.GenJournalLine_Account_type.BankAccount,
+		"account_no", types.Code("B010"))
+	if err != nil {
+		return err
+	}
+	l.Recurring_frequency = "1M"
+	l.Description = "Office rent %4"
+	err = j.insertGenJnlLine(l)
+	if err == nil {
+		err = l.Validate("amount", types.NewDecimalFromInt(-45000))
+	}
+	if err == nil {
+		err = l.ModifyOrError(true)
+	}
+	if err != nil {
+		return err
+	}
+	for i, d := range []struct {
+		department types.Code
+		quantity   int64
+	}{{"ADM", 5}, {"SALES", 3}, {"PROD", 2}} {
+		err = j.allocation(l, (i+1)*10000, "5210", d.department, func(a *gtables.GenJnlAllocation) error {
+			return a.Validate("allocation_quantity", types.NewDecimalFromInt(d.quantity))
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	l2, err := j.genJnlLine("RECURRING", 20000, l)
+	if err != nil {
+		return err
+	}
+	l2.Document_no = "ACCR-%3"
+	err = set(l2, "recurring_method", gtables.GenJournalLine_Recurring_method.RVReversingVariable, "account_type", gtables.GenJournalLine_Account_type.GLAccount,
+		"account_no", types.Code("2360"))
+	if err != nil {
+		return err
+	}
+	l2.Recurring_frequency = "1M"
+	l2.Description = "Accrued salaries %4"
+	err = j.insertGenJnlLine(l2)
+	if err == nil {
+		err = l2.Validate("amount", types.NewDecimalFromInt(-38000))
+	}
+	if err == nil {
+		err = l2.ModifyOrError(true)
+	}
+	if err != nil {
+		return err
+	}
+	return j.allocation(l2, 10000, "5110", "", func(a *gtables.GenJnlAllocation) error {
+		return a.Validate("allocation_percent", types.NewDecimalFromInt(100))
+	})
+}
+
+// allocation: an allocation of a journal line to a G/L account (and department)
+func (j *demoJournals) allocation(l *gtables.GenJournalLine, lineNo int, accNo, department types.Code, fn func(a *gtables.GenJnlAllocation) error) error {
+	a := gtables.NewGenJnlAllocation(j.src)
+	a.Journal_template_name = l.Journal_template_name
+	a.Journal_batch_name = l.Journal_batch_name
+	a.Journal_line_no = l.Line_no
+	a.Line_no = lineNo
+	err := a.Validate("account_no", accNo)
+	if err != nil {
+		return err
+	}
+	if department != "" {
+		a.Department_code = department
+	}
+	err = a.InsertOrError(true)
+	if err == nil {
+		err = fn(a)
+	}
+	if err == nil {
+		err = a.ModifyOrError(true)
+	}
+	return err
 }

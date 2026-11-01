@@ -1397,7 +1397,7 @@ func (t *GenJournalTemplate) renameReferences(field string, oldValue, newValue i
 		condValue  int
 	}
 	references := map[string][]reference{
-		"name": {{"FA_Journal_Setup", false, "gen_jnl_template_name", "", 0}, {"Gen_Journal_Batch", false, "journal_template_name", "", 0}, {"Gen_Journal_Line", false, "journal_template_name", "", 0}},
+		"name": {{"FA_Journal_Setup", false, "gen_jnl_template_name", "", 0}, {"Gen_Jnl_Allocation", false, "journal_template_name", "", 0}, {"Gen_Journal_Batch", false, "journal_template_name", "", 0}, {"Gen_Journal_Line", false, "journal_template_name", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
