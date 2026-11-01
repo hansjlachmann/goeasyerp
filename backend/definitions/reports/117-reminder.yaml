@@ -1,0 +1,101 @@
+# Report 117 Reminder: the printed layout (sections per data item, positions in mm from the
+# section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 117
+  name: Reminder
+  page:
+    size: A4
+    orientation: portrait
+    margins: {top: 12, bottom: 12, left: 15, right: 12}
+  font_size: 9
+  data_items:
+    - name: IssuedReminderHeader
+      new_page_per_record: true
+
+    - name: CopyLoop
+      new_page_per_record: true
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 100
+          elements:
+            # The company (Print Company Address) and its logo
+            - {lines: company_address, x: 0, y: 0, width: 95}
+            - {text: PHONE_NO, x: 0, y: 34, width: 22, print_if: company_phone_no}
+            - {value: company_phone_no, x: 22, y: 34, width: 70}
+            - {text: E_MAIL, x: 0, y: 38, width: 22, print_if: company_e_mail}
+            - {value: company_e_mail, x: 22, y: 38, width: 70}
+            - {image: company_picture, x: 133, y: 0, width: 50, height: 20}
+            # The document
+            - {text: REMINDER, x: 93, y: 22, width: 90, align: right, size: 16, bold: true}
+            - {value: copy_text, x: 93, y: 29, width: 90, align: right, bold: true}
+            - {text: REMINDER_NO, x: 118, y: 35, width: 30}
+            - {field: IssuedReminderHeader.no, x: 148, y: 35, width: 35, align: right}
+            - {text: DOCUMENT_DATE, x: 118, y: 39, width: 30}
+            - {field: IssuedReminderHeader.document_date, x: 148, y: 39, width: 35, align: right}
+            - {text: DUE_DATE, x: 118, y: 43, width: 30}
+            - {field: IssuedReminderHeader.due_date, x: 148, y: 43, width: 35, align: right}
+            - {text: REMINDER_LEVEL, x: 118, y: 47, width: 30}
+            - {field: IssuedReminderHeader.reminder_level, x: 148, y: 47, width: 35, align: right}
+            - {text: PAGE, x: 118, y: 51, width: 30}
+            - {page_no: true, x: 148, y: 51, width: 35, align: right}
+            # The customer
+            - {lines: customer_address, x: 0, y: 52, width: 85}
+            - {text: CUSTOMER_NO, x: 118, y: 60, width: 30}
+            - {field: IssuedReminderHeader.customer_no, x: 148, y: 60, width: 35, align: right}
+            - {text: YOUR_REFERENCE, x: 118, y: 64, width: 30, print_if: your_reference}
+            - {field: IssuedReminderHeader.your_reference, x: 148, y: 64, width: 35, align: right}
+            # The columns of the lines
+            - {line: true, x: 0, y: 89}
+            - {text: POSTING_DATE, x: 0, y: 91, width: 20, bold: true}
+            - {text: DOCUMENT_TYPE, x: 21, y: 91, width: 24, bold: true}
+            - {text: DOCUMENT_NO, x: 45, y: 91, width: 24, bold: true}
+            - {text: DUE_DATE, x: 69, y: 91, width: 20, bold: true}
+            - {text: ORIGINAL_AMOUNT, x: 89, y: 91, width: 30, align: right, bold: true}
+            - {text: REMAINING_AMOUNT, x: 120, y: 91, width: 30, align: right, bold: true}
+            - {text: AMOUNT, x: 153, y: 91, width: 30, align: right, bold: true}
+            - {line: true, x: 0, y: 96}
+
+    - name: IssuedReminderLine
+      sections:
+        # a text line
+        - type: body
+          print_if: text_line
+          height: 4.6
+          elements:
+            - {field: description, x: 0, y: 0, width: 183, wrap: true}
+        # a customer entry: its document and amounts, the interest
+        - type: body
+          print_if: entry_line
+          height: 4.6
+          elements:
+            - {field: posting_date, x: 0, y: 0, width: 20}
+            - {field: document_type, x: 21, y: 0, width: 24}
+            - {field: document_no, x: 45, y: 0, width: 24}
+            - {field: due_date, x: 69, y: 0, width: 20}
+            - {field: original_amount, x: 89, y: 0, width: 30, align: right}
+            - {field: remaining_amount, x: 120, y: 0, width: 30, align: right}
+            - {field: amount, x: 153, y: 0, width: 30, align: right, blank_zero: true}
+        # the additional fee
+        - type: body
+          print_if: amount_line
+          height: 4.6
+          elements:
+            - {field: description, x: 0, y: 0, width: 150}
+            - {field: amount, x: 153, y: 0, width: 30, align: right, blank_zero: true}
+        - type: footer
+          height: 31
+          elements:
+            - {line: true, x: 113, y: 2, width: 70}
+            - {text: REMAINING_AMOUNT, x: 113, y: 3, width: 40}
+            - {value: remaining_amount, x: 153, y: 3, width: 30, align: right}
+            - {text: INTEREST_AMOUNT, x: 113, y: 7.5, width: 40}
+            - {value: interest_amount, x: 153, y: 7.5, width: 30, align: right}
+            - {text: ADDITIONAL_FEE, x: 113, y: 12, width: 40}
+            - {value: additional_fee, x: 153, y: 12, width: 30, align: right}
+            - {text: SALES_TAX, x: 113, y: 16.5, width: 40}
+            - {value: tax_amount, x: 153, y: 16.5, width: 30, align: right}
+            - {line: true, x: 113, y: 21.5, width: 70}
+            - {text: TOTAL, x: 113, y: 22.5, width: 25, bold: true}
+            - {value: currency, x: 138, y: 22.5, width: 15, bold: true}
+            - {value: total, x: 153, y: 22.5, width: 30, align: right, bold: true}

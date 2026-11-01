@@ -99,6 +99,163 @@ reports:
       ADJ_GEN_SETUP: "Adj. of gen. posting setup %1,%2"
       COGS_GEN_SETUP: "COGS of gen. posting setup %1,%2"
       POSTED: "The inventory cost was posted to the G/L: COGS %1, inventory adjustments %2."
+  "188":
+    caption: "Create Reminders"
+    options:
+      posting_date: "Posting Date"
+      document_date: "Document Date"
+      only_overdue_entries: "Only Entries with Overdue Amounts"
+    texts:
+      OPTIONS: "Options"
+      WINDOW: "Processing @1@@@@@@@@@@@@@"
+      SPECIFY_DOCUMENT_DATE: "Document Date must be specified."
+      ENTER_POSTING_DATE: "Please enter the posting date."
+      DONE: "%1 customers were processed."
+      NOT_ALL_DONE: "It was not possible to create documents for some of the selected customers (%1 processed):
+%2"
+  "189":
+    caption: "Suggest Reminder Lines"
+    options:
+      only_overdue_entries: "Only Entries with Overdue Amounts"
+    texts:
+      OPTIONS: "Options"
+      WINDOW: "Processing @1@@@@@@@@@@@@@"
+      SPECIFY_DOCUMENT_DATE: "Document Date must be specified."
+      ENTER_POSTING_DATE: "Please enter the posting date."
+      DONE: "%1 reminders were processed."
+      NOT_ALL_DONE: "It was not possible to process some of the selected reminders (%1 processed):
+%2"
+  "190":
+    caption: "Issue Reminders"
+    options:
+      replace_posting_date: "Replace Posting Date"
+      posting_date: "Posting Date"
+    texts:
+      OPTIONS: "Options"
+      WINDOW: "Processing @1@@@@@@@@@@@@@"
+      SPECIFY_DOCUMENT_DATE: "Document Date must be specified."
+      ENTER_POSTING_DATE: "Please enter the posting date."
+      DONE: "%1 reminders were issued."
+      NOT_ALL_DONE: "It was not possible to issue some of the selected reminders (%1 issued):
+%2"
+  "187":
+    caption: "Update Reminder Text"
+    options:
+      reminder_level: "Reminder Level"
+    texts:
+      OPTIONS: "Options"
+      WINDOW: "Processing @1@@@@@@@@@@@@@"
+      SPECIFY_DOCUMENT_DATE: "Document Date must be specified."
+      ENTER_POSTING_DATE: "Please enter the posting date."
+      DONE: "%1 reminders were updated."
+      NOT_ALL_DONE: "It was not possible to update some of the selected reminders (%1 updated):
+%2"
+  "191":
+    caption: "Create Finance Charge Memos"
+    options:
+      posting_date: "Posting Date"
+      document_date: "Document Date"
+    texts:
+      OPTIONS: "Options"
+      WINDOW: "Processing @1@@@@@@@@@@@@@"
+      SPECIFY_DOCUMENT_DATE: "Document Date must be specified."
+      ENTER_POSTING_DATE: "Please enter the posting date."
+      DONE: "%1 customers were processed."
+      NOT_ALL_DONE: "It was not possible to create documents for some of the selected customers (%1 processed):
+%2"
+  "192":
+    caption: "Suggest Fin. Charge Memo Lines"
+    texts:
+      OPTIONS: "Options"
+      WINDOW: "Processing @1@@@@@@@@@@@@@"
+      SPECIFY_DOCUMENT_DATE: "Document Date must be specified."
+      ENTER_POSTING_DATE: "Please enter the posting date."
+      DONE: "%1 finance charge memos were processed."
+      NOT_ALL_DONE: "It was not possible to process some of the selected finance charge memos (%1 processed):
+%2"
+  "193":
+    caption: "Issue Finance Charge Memos"
+    options:
+      replace_posting_date: "Replace Posting Date"
+      posting_date: "Posting Date"
+    texts:
+      OPTIONS: "Options"
+      WINDOW: "Processing @1@@@@@@@@@@@@@"
+      SPECIFY_DOCUMENT_DATE: "Document Date must be specified."
+      ENTER_POSTING_DATE: "Please enter the posting date."
+      DONE: "%1 finance charge memos were issued."
+      NOT_ALL_DONE: "It was not possible to issue some of the selected finance charge memos (%1 issued):
+%2"
+  "186":
+    caption: "Update Finance Charge Text"
+    texts:
+      OPTIONS: "Options"
+      WINDOW: "Processing @1@@@@@@@@@@@@@"
+      SPECIFY_DOCUMENT_DATE: "Document Date must be specified."
+      ENTER_POSTING_DATE: "Please enter the posting date."
+      DONE: "%1 finance charge memos were updated."
+      NOT_ALL_DONE: "It was not possible to update some of the selected finance charge memos (%1 updated):
+%2"
+  "117":
+    caption: "Reminder"
+    options:
+      no_of_copies: "No. of Copies"
+      print_company_address: "Print Company Address"
+    texts:
+      FILE_NAME: "Reminder %1"
+      REMINDER: "REMINDER"
+      FINANCE_CHARGE_MEMO: "FINANCE CHARGE MEMO"
+      REMINDER_NO: "Reminder No."
+      FINANCE_CHARGE_MEMO_NO: "Fin. Charge Memo No."
+      DOCUMENT_DATE: "Document Date"
+      DUE_DATE: "Due Date"
+      REMINDER_LEVEL: "Reminder Level"
+      PAGE: "Page"
+      CUSTOMER_NO: "Customer No."
+      YOUR_REFERENCE: "Your Reference"
+      POSTING_DATE: "Posting Date"
+      DOCUMENT_TYPE: "Document Type"
+      DOCUMENT_NO: "Document No."
+      ORIGINAL_AMOUNT: "Original Amount"
+      REMAINING_AMOUNT: "Remaining Amount"
+      AMOUNT: "Amount"
+      INTEREST_AMOUNT: "Interest Amount"
+      ADDITIONAL_FEE: "Additional Fee"
+      SALES_TAX: "Sales Tax"
+      TOTAL: "Total"
+      PHONE_NO: "Phone No."
+      E_MAIL: "E-Mail"
+      COPY: "COPY"
+  "118":
+    caption: "Finance Charge Memo"
+    options:
+      no_of_copies: "No. of Copies"
+      print_company_address: "Print Company Address"
+    texts:
+      FILE_NAME: "Finance Charge Memo %1"
+      REMINDER: "REMINDER"
+      FINANCE_CHARGE_MEMO: "FINANCE CHARGE MEMO"
+      REMINDER_NO: "Reminder No."
+      FINANCE_CHARGE_MEMO_NO: "Fin. Charge Memo No."
+      DOCUMENT_DATE: "Document Date"
+      DUE_DATE: "Due Date"
+      REMINDER_LEVEL: "Reminder Level"
+      PAGE: "Page"
+      CUSTOMER_NO: "Customer No."
+      YOUR_REFERENCE: "Your Reference"
+      POSTING_DATE: "Posting Date"
+      DOCUMENT_TYPE: "Document Type"
+      DOCUMENT_NO: "Document No."
+      ORIGINAL_AMOUNT: "Original Amount"
+      REMAINING_AMOUNT: "Remaining Amount"
+      AMOUNT: "Amount"
+      INTEREST_AMOUNT: "Interest Amount"
+      ADDITIONAL_FEE: "Additional Fee"
+      SALES_TAX: "Sales Tax"
+      TOTAL: "Total"
+      PHONE_NO: "Phone No."
+      E_MAIL: "E-Mail"
+      COPY: "COPY"
   "204":
     caption: "Sales - Quote"
     options:

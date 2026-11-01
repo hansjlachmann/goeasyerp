@@ -244,3 +244,15 @@ func PurchCrMemoShipTo(rec *gtables.PurchCrMemoHdr) (AddrArray, error) {
 		rec.Ship_to_address.String(), rec.Ship_to_address_2.String(), rec.Ship_to_city.String(), rec.Ship_to_post_code,
 		rec.Ship_to_state.String(), rec.Ship_to_country_code)
 }
+
+// IssuedReminder (IssuedReminder): an issued reminder's customer address
+func IssuedReminder(rec *gtables.IssuedReminderHeader) (AddrArray, error) {
+	return FormatAddr(rec, rec.Name.String(), rec.Name_2.String(), rec.Contact.String(), rec.Address.String(), rec.Address_2.String(),
+		rec.City.String(), rec.Post_code, rec.State.String(), rec.Country_code)
+}
+
+// IssuedFinChrgMemo (IssuedFinChrgMemo): an issued finance charge memo's customer address
+func IssuedFinChrgMemo(rec *gtables.IssuedFinChargeMemoHeader) (AddrArray, error) {
+	return FormatAddr(rec, rec.Name.String(), rec.Name_2.String(), rec.Contact.String(), rec.Address.String(), rec.Address_2.String(),
+		rec.City.String(), rec.Post_code, rec.State.String(), rec.Country_code)
+}

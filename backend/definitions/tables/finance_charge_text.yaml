@@ -1,0 +1,45 @@
+table:
+  id: 301
+  name: "Finance_Charge_Text"
+  description: "Finance charge texts (table 301): the texts at the beginning and the end of a finance charge memo"
+  fields:
+    - name: fin_charge_terms_code
+      no: 1
+      type: types.Code
+      db_name: fin_charge_terms_code
+      length: 10
+      primary_key: true
+      required: true
+      table_relation:
+        table: Finance_Charge_Terms
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: position
+      no: 2
+      type: Option
+      db_name: position
+      primary_key: true
+      options: ["Beginning", "Ending"]
+
+    - name: line_no
+      no: 3
+      type: int
+      db_name: line_no
+      primary_key: true
+
+    # %1 document date, %2 due date, %3 interest rate, %4 remaining amount, %5 interest, %6 additional fee, %7 total, %9 currency
+    - name: text
+      no: 4
+      type: types.Text
+      db_name: text
+      length: 100
+
+  keys:
+    - name: Primary
+      fields: [fin_charge_terms_code, position, line_no]
+      clustered: true

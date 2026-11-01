@@ -730,6 +730,38 @@ pages:
     caption: "Forsikringskladdenavn"
   insurance_registers:
     caption: "Forsikringsjournaler"
+  reminder:
+    caption: "Purring"
+  reminder_lines:
+    caption: "Purrelinjer"
+  reminder_list:
+    caption: "Purringer"
+  issued_reminder:
+    caption: "Utstedt purring"
+  issued_reminder_lines:
+    caption: "Utstedte purrelinjer"
+  issued_reminder_list:
+    caption: "Utstedte purringer"
+  reminder_comment_sheet:
+    caption: "Purremerknader"
+  reminder_fin_charge_entries:
+    caption: "Purre-/rentenotaposter"
+  finance_charge_text:
+    caption: "Rentenotatekst"
+  finance_charge_memo:
+    caption: "Rentenota"
+  finance_charge_memo_lines:
+    caption: "Rentenotalinjer"
+  finance_charge_memo_list:
+    caption: "Rentenotaer"
+  issued_finance_charge_memo:
+    caption: "Utstedt rentenota"
+  issued_fin_charge_memo_lines:
+    caption: "Utstedte rentenotalinjer"
+  issued_fin_charge_memo_list:
+    caption: "Utstedte rentenotaer"
+  fin_charge_comment_sheet:
+    caption: "Rentenotamerknader"
   fa_reclass_journal:
     caption: "Anleggsomklassifiseringskladd"
     fields:

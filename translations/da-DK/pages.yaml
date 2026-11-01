@@ -730,6 +730,38 @@ pages:
     caption: "Forsikringskladdenavne"
   insurance_registers:
     caption: "Forsikringsjournaler"
+  reminder:
+    caption: "Rykker"
+  reminder_lines:
+    caption: "Rykkerlinjer"
+  reminder_list:
+    caption: "Rykkere"
+  issued_reminder:
+    caption: "Udstedt rykker"
+  issued_reminder_lines:
+    caption: "Udstedte rykkerlinjer"
+  issued_reminder_list:
+    caption: "Udstedte rykkere"
+  reminder_comment_sheet:
+    caption: "Rykkerbemærkninger"
+  reminder_fin_charge_entries:
+    caption: "Rykker-/rentenotaposter"
+  finance_charge_text:
+    caption: "Rentenotatekst"
+  finance_charge_memo:
+    caption: "Rentenota"
+  finance_charge_memo_lines:
+    caption: "Rentenotalinjer"
+  finance_charge_memo_list:
+    caption: "Rentenotaer"
+  issued_finance_charge_memo:
+    caption: "Udstedt rentenota"
+  issued_fin_charge_memo_lines:
+    caption: "Udstedte rentenotalinjer"
+  issued_fin_charge_memo_list:
+    caption: "Udstedte rentenotaer"
+  fin_charge_comment_sheet:
+    caption: "Rentenotabemærkninger"
   fa_reclass_journal:
     caption: "Anlægsomposteringskladde"
     fields:

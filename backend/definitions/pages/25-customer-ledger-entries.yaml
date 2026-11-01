@@ -58,3 +58,12 @@ page:
       run_page_params:
         document_no: document_no
         posting_date: posting_date
+
+    # The reminders and finance charge memos issued for the entry
+    - name: Reminder/Fin. Charge Entries
+      caption: Reminder/Fin. Charge Entries
+      image: Entries
+      promoted: true
+      run_page: 444
+      run_page_filter_field: customer_entry_no
+      run_page_filter_value: entry_no

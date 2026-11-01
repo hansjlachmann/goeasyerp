@@ -304,6 +304,8 @@ func (p *GenJnlPostLine) applyCustLedgEntry(newCustLedgEntry *gtables.CustomerLe
 			oldCustLedgEntry.Closed_by_amount_lcy = appliedAmountLCY.Neg()
 			oldCustLedgEntry.Closed_by_currency_code = newCustLedgEntry.Currency_code
 			oldCustLedgEntry.Closed_by_currency_amount = appliedAmount.Neg()
+			p.updateCalcInterest(oldCustLedgEntry)
+			updateCalcInterest2(oldCustLedgEntry, newCustLedgEntry)
 		}
 		custUpdateDebitCredit(
 			oldCustLedgEntry.Debit_amount.IsNegative() || oldCustLedgEntry.Credit_amount.IsNegative() ||
@@ -352,8 +354,30 @@ func (p *GenJnlPostLine) applyCustLedgEntry(newCustLedgEntry *gtables.CustomerLe
 	// Blank the Applies-to ID field
 	if !newCustLedgEntry.Open {
 		newCustLedgEntry.Applies_to_id = ""
+		p.updateCalcInterest(newCustLedgEntry)
 	}
 	return nil
+}
+
+// updateCalcInterest (UpdateCalcInterest): a closed entry earns interest when it was closed after
+// its due date — by the entry that closed it, or by those it closed
+func (p *GenJnlPostLine) updateCalcInterest(custLedgEntry *gtables.CustomerLedgerEntry) {
+	custLedgEntry2 := gtables.NewCustomerLedgerEntry(p.src)
+	if custLedgEntry2.Get(custLedgEntry.Closed_by_entry_no) {
+		updateCalcInterest2(custLedgEntry, custLedgEntry2)
+	}
+	custLedgEntry2 = gtables.NewCustomerLedgerEntry(p.src)
+	custLedgEntry2.SetRange("closed_by_entry_no", custLedgEntry.Entry_no)
+	for found := custLedgEntry2.FindSet(); found; found = custLedgEntry2.Next() {
+		updateCalcInterest2(custLedgEntry, custLedgEntry2)
+	}
+}
+
+// updateCalcInterest2 (UpdateCalcInterest2)
+func updateCalcInterest2(custLedgEntry, custLedgEntry2 *gtables.CustomerLedgerEntry) {
+	if custLedgEntry.Due_date.Before(custLedgEntry2.Document_date) {
+		custLedgEntry.Calculate_interest = true
+	}
 }
 
 // applCustLedgEntryAmt applies an amount to a customer ledger entry: its remaining amounts and

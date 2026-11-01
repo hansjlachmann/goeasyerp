@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/purchposting"
+	"github.com/hansjlachmann/openerp/backend/business-logic/reminderissue"
 	"github.com/hansjlachmann/openerp/backend/business-logic/salesposting"
 
 	"github.com/hansjlachmann/openerp/backend/business-logic/bomjnl"
@@ -110,7 +111,8 @@ func (c *DemoDataCreate) create(jobQueue *gtables.JobQueue, ts *i18n.Translation
 		}
 	}
 
-	return demodata.Create(c.db, c.company, c.dbType, demodata.Options{Size: size, Progress: progress, ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost, GenJnlPostLine: openGenJnlPostLine, Journals: true})
+	return demodata.Create(c.db, c.company, c.dbType, demodata.Options{Size: size, Progress: progress, ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost, GenJnlPostLine: openGenJnlPostLine, Journals: true,
+		ReminderIssue: openReminderIssue, FinChrgMemoIssue: openFinChrgMemoIssue})
 }
 
 // errorMessage translates the demodata errors users can act on.
@@ -151,4 +153,14 @@ func openGenJnlPostLine(src ftables.Source) demodata.GenJnlPoster {
 // openPurchPost opens the purchase posting (codeunit 90) for the demo purchase documents
 func openPurchPost(src ftables.Source) demodata.PurchPoster {
 	return purchposting.NewPurchPost(src)
+}
+
+// openReminderIssue opens codeunit 393 Reminder-Issue for the demo data
+func openReminderIssue(src ftables.Source) demodata.ReminderIssuer {
+	return reminderissue.New(src)
+}
+
+// openFinChrgMemoIssue opens codeunit 395 FinChrgMemo-Issue for the demo data
+func openFinChrgMemoIssue(src ftables.Source) demodata.FinChrgMemoIssuer {
+	return reminderissue.NewFinChrgMemoIssue(src)
 }

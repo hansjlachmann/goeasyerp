@@ -3,6 +3,7 @@ package types
 import (
 	"database/sql/driver"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 )
@@ -158,7 +159,7 @@ func (d Date) AddYears(years int) Date {
 // DaysBetween returns the number of days between two dates
 func (d Date) DaysBetween(other Date) int {
 	duration := other.Time.Sub(d.Time)
-	return int(duration.Hours() / 24)
+	return int(math.Round(duration.Hours() / 24)) // a daylight saving change makes a day 23 or 25 hours
 }
 
 // UnmarshalText implements encoding.TextUnmarshaler for JSON/form input

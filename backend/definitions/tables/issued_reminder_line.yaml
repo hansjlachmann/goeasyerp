@@ -1,0 +1,209 @@
+table:
+  id: 298
+  name: "Issued_Reminder_Line"
+  posted: true               # written by posting only: the table API does not insert, delete or rename
+  description: "Issued reminder lines (table 298)"
+  fields:
+    - name: reminder_no
+      no: 1
+      type: types.Code
+      db_name: reminder_no
+      length: 20
+      primary_key: true
+      table_relation:
+        table: Issued_Reminder_Header
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: line_no
+      no: 2
+      type: int
+      db_name: line_no
+      primary_key: true
+
+    - name: attached_to_line_no
+      no: 3
+      type: int
+      db_name: attached_to_line_no
+      editable: false
+
+    - name: type
+      no: 4
+      type: Option
+      db_name: type
+      options: [" ", "G/L Account", "Customer Ledger Entry"]
+
+    - name: entry_no
+      no: 5
+      type: int
+      db_name: entry_no
+      table_relation:
+        table: Customer_ledger_entry
+        field: entry_no
+        lookup_columns:
+          - source: entry_no
+            width: 90
+          - source: document_no
+            width: 110
+          - source: description
+            width: 250
+
+    - name: reminder_level
+      no: 6
+      type: int
+      db_name: reminder_level
+
+    - name: posting_date
+      no: 7
+      type: types.Date
+      db_name: posting_date
+
+    - name: document_date
+      no: 8
+      type: types.Date
+      db_name: document_date
+
+    - name: due_date
+      no: 9
+      type: types.Date
+      db_name: due_date
+
+    - name: document_type
+      no: 10
+      type: Option
+      db_name: document_type
+      options: [" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"]
+
+    - name: document_no
+      no: 11
+      type: types.Code
+      db_name: document_no
+      length: 20
+
+    - name: description
+      no: 12
+      type: types.Text
+      db_name: description
+      length: 100
+
+    - name: original_amount
+      no: 13
+      type: types.Decimal
+      db_name: original_amount
+      decimal_places: "2:2"
+
+    - name: remaining_amount
+      no: 14
+      type: types.Decimal
+      db_name: remaining_amount
+      decimal_places: "2:2"
+
+    # Type blank: a standard text, G/L Account: the account the fee is posted to
+    - name: "no"
+      no: 15
+      type: types.Code
+      db_name: no
+      length: 20
+      table_relation:
+        conditions:
+          - when: {field: type, equal: 0}
+            table: Standard_Text
+            field: code
+            lookup_columns:
+              - source: code
+                width: 100
+              - source: description
+                width: 250
+          - when: {field: type, equal: 1}
+            table: G_L_Account
+            field: "no"
+            filters:
+              account_type: {const: 0}
+            lookup_columns:
+              - source: "no"
+                width: 100
+              - source: name
+                width: 250
+
+    - name: amount
+      no: 16
+      type: types.Decimal
+      db_name: amount
+      decimal_places: "2:2"
+
+    - name: interest_rate
+      no: 17
+      type: types.Decimal
+      db_name: interest_rate
+      decimal_places: "0:5"
+
+    - name: gen_prod_posting_group
+      no: 18
+      type: types.Code
+      db_name: gen_prod_posting_group
+      length: 10
+      table_relation:
+        table: Gen_Product_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: tax_percent
+      no: 19
+      type: types.Decimal
+      db_name: tax_percent
+      decimal_places: "0:5"
+
+    - name: tax_calculation_type
+      no: 20
+      type: Option
+      db_name: tax_calculation_type
+      options: ["Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"]
+
+    - name: tax_amount
+      no: 21
+      type: types.Decimal
+      db_name: tax_amount
+      decimal_places: "2:2"
+
+    - name: tax_group_code
+      no: 22
+      type: types.Code
+      db_name: tax_group_code
+      length: 10
+      table_relation:
+        table: Tax_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: tax_prod_posting_group
+      no: 23
+      type: types.Code
+      db_name: tax_prod_posting_group
+      length: 10
+      table_relation:
+        table: Tax_Product_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+  keys:
+    - name: Primary
+      fields: [reminder_no, line_no]
+      clustered: true
+    - name: type
+      fields: [reminder_no, type]

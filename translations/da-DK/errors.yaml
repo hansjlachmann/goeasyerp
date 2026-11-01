@@ -113,6 +113,11 @@ errors:
   ERR_FA_RECLASS_DISPOSED: "Anlæg %1 er afhændet i afskrivningsprofil %2."
   ERR_FA_RECLASS_NO_ACQ_COST: "Anlæg %1 har ingen anskaffelsespris i afskrivningsprofil %2."
   ERR_FA_RECLASS_AMOUNT_TOO_LARGE: "%1 er større end anskaffelsesprisen for anlæg %2 i afskrivningsprofil %3."
+  ERR_REMINDER_NO_SPACE_FOR_TEXT: "Der er ikke plads nok til at indsætte teksten."
+  ERR_REMINDER_CURRENCY_MISMATCH: "%1 i %2 og i debitorposten skal være den samme."
+  ERR_REMINDER_LINE_TYPE_MUST_BE: "%1 skal være %2 eller %3."
+  ERR_REMINDER_NOTHING_TO_ISSUE: "Der er intet at udstede."
+  ERR_REMINDER_AMOUNT_NEGATIVE: "%1 skal være positivt eller 0."
   ERR_RENAME_NOT_ALLOWED: "Du kan ikke omdøbe en %1."
   ERR_DATE_LATER: "%1 er senere end %2."
 

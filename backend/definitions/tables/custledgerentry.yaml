@@ -498,6 +498,19 @@ table:
 
   # Keys (Indexes) - style
   # These indexes optimize FlowField calculations and common queries
+
+    # Finance charges: the entry still earns interest (an invoice; off once a reminder or finance
+    # charge memo charged it after it was closed) / the interest on its closing was charged
+    - name: calculate_interest
+      no: 64
+      type: bool
+      db_name: calculate_interest
+
+    - name: closing_interest_calculated
+      no: 65
+      type: bool
+      db_name: closing_interest_calculated
+
   keys:
     # SIFT key (SumIndexFields): the database keeps totals per customer + open, so
     # Customer.Balance_lcy (customer + open), Sales_lcy and No_of_ledger_entries (customer)

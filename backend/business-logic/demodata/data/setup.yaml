@@ -59,6 +59,9 @@ master_data:
       - {code: FAJNL, description: Fixed asset journal}
       - {code: FAGLJNL, description: Fixed asset G/L journal}
       - {code: INSJNL, description: Insurance journal}
+      - {code: REMINDER, description: Reminder}
+      - {code: FINCHRG, description: Finance charge memo}
+      - {code: EXCHRATADJ, description: Exchange rate adjustment}
   - table: Reason_Code
     records:
       - {code: CORRECTION, description: Correction of an entry}
@@ -187,6 +190,7 @@ master_data:
       - {no: "5999", name: "Total Operating Expenses", account_type: 4, income_balance: 0, direct_posting: false}
       - {no: "6000", name: "Financial Items", account_type: 3, income_balance: 0, direct_posting: false}
       - {no: "6110", name: "Interest Income", account_type: 0, income_balance: 0}
+      - {no: "6115", name: "Interest on Overdue Payments", account_type: 0, income_balance: 0, gen_posting_type: 2, gen_bus_posting_group: DOMESTIC, gen_prod_posting_group: SERVICES, tax_bus_posting_group: DOMESTIC, tax_prod_posting_group: EXEMPT, tax_area_code: DOMESTIC, tax_liable: false, tax_group_code: NONTAXABLE}
       - {no: "6120", name: "Interest Expenses", account_type: 0, income_balance: 0}
       - {no: "6130", name: "Bank Fees", account_type: 0, income_balance: 0}
       - {no: "6140", name: "Realized Exchange Gains", account_type: 0, income_balance: 0}
@@ -432,8 +436,8 @@ master_data:
       - {code: OSLO, name: Oslo store}
   - table: Customer_Posting_Group   # the receivables accounts of the customers' country
     records:
-      - {code: DOMESTIC, receivables_account: "1410", service_charge_acc: "3130", payment_disc_acc: "3150", invoice_rounding_account: "3150", additional_fee_account: "3130", interest_account: "6110", curr_appln_rounding_account: "6140"}
-      - {code: FOREIGN, receivables_account: "1420", service_charge_acc: "3130", payment_disc_acc: "3150", invoice_rounding_account: "3150", additional_fee_account: "3130", interest_account: "6110", curr_appln_rounding_account: "6140"}
+      - {code: DOMESTIC, receivables_account: "1410", service_charge_acc: "3130", payment_disc_acc: "3150", invoice_rounding_account: "3150", additional_fee_account: "3130", interest_account: "6115", curr_appln_rounding_account: "6140"}
+      - {code: FOREIGN, receivables_account: "1420", service_charge_acc: "3130", payment_disc_acc: "3150", invoice_rounding_account: "3150", additional_fee_account: "3130", interest_account: "6115", curr_appln_rounding_account: "6140"}
   - table: Vendor_Posting_Group   # the payables accounts of the vendors' country
     records:
       - {code: DOMESTIC, payables_account: "2310", payment_disc_acc: "3150", invoice_rounding_account: "3150", curr_appln_rounding_account: "6140"}
@@ -641,7 +645,7 @@ master_data:
       - {code: PROPERTY, description: Property insurance}
   - table: Source_Code_Setup   # the single setup record (blank key): the journals' source codes
     records:
-      - {general_journal: GENJNL, sales_journal: SALESJNL, purchase_journal: PURCHJNL, cash_receipt_journal: CASHRECJNL, payment_journal: PAYMENTJNL, sales: SALES, purchases: PURCHASES, sales_entry_application: SALESAPPL, purchase_entry_application: PURCHAPPL, item_journal: ITEMJNL, item_transfer_journal: TRANSFER, phys_inventory_journal: PHYSINVJNL, inventory_post_cost: INVTPCOST, resource_journal: RESJNL, bom_journal: BOMJNL, fixed_asset_journal: FAJNL, fixed_asset_g_l_journal: FAGLJNL, insurance_journal: INSJNL}
+      - {general_journal: GENJNL, sales_journal: SALESJNL, purchase_journal: PURCHJNL, cash_receipt_journal: CASHRECJNL, payment_journal: PAYMENTJNL, sales: SALES, purchases: PURCHASES, sales_entry_application: SALESAPPL, purchase_entry_application: PURCHAPPL, item_journal: ITEMJNL, item_transfer_journal: TRANSFER, phys_inventory_journal: PHYSINVJNL, inventory_post_cost: INVTPCOST, resource_journal: RESJNL, bom_journal: BOMJNL, fixed_asset_journal: FAJNL, fixed_asset_g_l_journal: FAGLJNL, insurance_journal: INSJNL, reminder: REMINDER, finance_charge_memo: FINCHRG, exchange_rate_adjmt: EXCHRATADJ}
   - table: Gen_Journal_Template   # one per journal type (type 0 General … 4 Payments); page and source code come from the type
     records:
       - {name: GENERAL, description: General Journal, type: 0, no_series: GJNL-GEN}

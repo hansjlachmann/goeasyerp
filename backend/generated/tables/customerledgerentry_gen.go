@@ -63,6 +63,8 @@
 //	OnValidate_Rounding_currency(rec *gtables.CustomerLedgerEntry) error
 //	OnValidate_Rounding_amount(rec *gtables.CustomerLedgerEntry) error
 //	OnValidate_Rounding_amount_lcy(rec *gtables.CustomerLedgerEntry) error
+//	OnValidate_Calculate_interest(rec *gtables.CustomerLedgerEntry) error
+//	OnValidate_Closing_interest_calculated(rec *gtables.CustomerLedgerEntry) error
 
 package tables
 
@@ -141,59 +143,61 @@ func (o CustomerLedgerEntryBal_account_type) IsValid() bool {
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterCustomerLedgerEntryLogic.
 type CustomerLedgerEntry struct {
-	Entry_no                  int                                    `db:"entry_no,pk"`
-	Customer_no               types.Code                             `db:"customer_no"`
-	Sell_to_customer_no       types.Code                             `db:"sell_to_customer_no"`
-	Posting_date              types.Date                             `db:"posting_date"`
-	Document_date             types.Date                             `db:"document_date"`
-	Document_type             CustomerLedgerEntryDocument_type       `db:"document_type"`
-	Document_no               types.Code                             `db:"document_no"`
-	External_document_no      types.Code                             `db:"external_document_no"`
-	Description               types.Text                             `db:"description"`
-	Currency_code             types.Code                             `db:"currency_code"`
-	Amount                    types.Decimal                          `db:"amount"`
-	Remaining_amount          types.Decimal                          `db:"remaining_amount"`
-	Closed_by_amount          types.Decimal                          `db:"closed_by_amount"`
-	Original_amount_lcy       types.Decimal                          `db:"original_amount_lcy"`
-	Remaining_amt_lcy         types.Decimal                          `db:"remaining_amt_lcy"`
-	Amount_lcy                types.Decimal                          `db:"amount_lcy"`
-	Closed_by_amount_lcy      types.Decimal                          `db:"closed_by_amount_lcy"`
-	Debit_amount              types.Decimal                          `db:"debit_amount"`
-	Credit_amount             types.Decimal                          `db:"credit_amount"`
-	Debit_amount_lcy          types.Decimal                          `db:"debit_amount_lcy"`
-	Credit_amount_lcy         types.Decimal                          `db:"credit_amount_lcy"`
-	Sales_lcy                 types.Decimal                          `db:"sales_lcy"`
-	Profit_lcy                types.Decimal                          `db:"profit_lcy"`
-	Inv_discount_lcy          types.Decimal                          `db:"inv_discount_lcy"`
-	Pmt_discount_date         types.Date                             `db:"pmt_discount_date"`
-	Pmt_disc_possible         types.Decimal                          `db:"pmt_disc_possible"`
-	Pmt_disc_given_lcy        types.Decimal                          `db:"pmt_disc_given_lcy"`
-	Customer_posting_group    types.Code                             `db:"customer_posting_group"`
-	Department_code           types.Code                             `db:"department_code"`
-	Project_code              types.Code                             `db:"project_code"`
-	Salesperson_code          types.Code                             `db:"salesperson_code"`
-	User_id                   types.Code                             `db:"user_id"`
-	Source_code               types.Code                             `db:"source_code"`
-	Reason_code               types.Code                             `db:"reason_code"`
-	Journal_batch_name        types.Code                             `db:"journal_batch_name"`
-	Transaction_no            int                                    `db:"transaction_no"`
-	Applies_to_doc_type       CustomerLedgerEntryApplies_to_doc_type `db:"applies_to_doc_type"`
-	Applies_to_doc_no         types.Code                             `db:"applies_to_doc_no"`
-	Applies_to_id             types.Code                             `db:"applies_to_id"`
-	Open                      bool                                   `db:"open"`
-	Positive                  bool                                   `db:"positive"`
-	On_hold                   types.Code                             `db:"on_hold"`
-	Due_date                  types.Date                             `db:"due_date"`
-	Closed_by_entry_no        int                                    `db:"closed_by_entry_no"`
-	Closed_at_date            types.Date                             `db:"closed_at_date"`
-	Bal_account_type          CustomerLedgerEntryBal_account_type    `db:"bal_account_type"`
-	Bal_account_no            types.Code                             `db:"bal_account_no"`
-	No_series                 types.Code                             `db:"no_series"`
-	Closed_by_currency_code   types.Code                             `db:"closed_by_currency_code"`
-	Closed_by_currency_amount types.Decimal                          `db:"closed_by_currency_amount"`
-	Rounding_currency         types.Code                             `db:"rounding_currency"`
-	Rounding_amount           types.Decimal                          `db:"rounding_amount"`
-	Rounding_amount_lcy       types.Decimal                          `db:"rounding_amount_lcy"`
+	Entry_no                    int                                    `db:"entry_no,pk"`
+	Customer_no                 types.Code                             `db:"customer_no"`
+	Sell_to_customer_no         types.Code                             `db:"sell_to_customer_no"`
+	Posting_date                types.Date                             `db:"posting_date"`
+	Document_date               types.Date                             `db:"document_date"`
+	Document_type               CustomerLedgerEntryDocument_type       `db:"document_type"`
+	Document_no                 types.Code                             `db:"document_no"`
+	External_document_no        types.Code                             `db:"external_document_no"`
+	Description                 types.Text                             `db:"description"`
+	Currency_code               types.Code                             `db:"currency_code"`
+	Amount                      types.Decimal                          `db:"amount"`
+	Remaining_amount            types.Decimal                          `db:"remaining_amount"`
+	Closed_by_amount            types.Decimal                          `db:"closed_by_amount"`
+	Original_amount_lcy         types.Decimal                          `db:"original_amount_lcy"`
+	Remaining_amt_lcy           types.Decimal                          `db:"remaining_amt_lcy"`
+	Amount_lcy                  types.Decimal                          `db:"amount_lcy"`
+	Closed_by_amount_lcy        types.Decimal                          `db:"closed_by_amount_lcy"`
+	Debit_amount                types.Decimal                          `db:"debit_amount"`
+	Credit_amount               types.Decimal                          `db:"credit_amount"`
+	Debit_amount_lcy            types.Decimal                          `db:"debit_amount_lcy"`
+	Credit_amount_lcy           types.Decimal                          `db:"credit_amount_lcy"`
+	Sales_lcy                   types.Decimal                          `db:"sales_lcy"`
+	Profit_lcy                  types.Decimal                          `db:"profit_lcy"`
+	Inv_discount_lcy            types.Decimal                          `db:"inv_discount_lcy"`
+	Pmt_discount_date           types.Date                             `db:"pmt_discount_date"`
+	Pmt_disc_possible           types.Decimal                          `db:"pmt_disc_possible"`
+	Pmt_disc_given_lcy          types.Decimal                          `db:"pmt_disc_given_lcy"`
+	Customer_posting_group      types.Code                             `db:"customer_posting_group"`
+	Department_code             types.Code                             `db:"department_code"`
+	Project_code                types.Code                             `db:"project_code"`
+	Salesperson_code            types.Code                             `db:"salesperson_code"`
+	User_id                     types.Code                             `db:"user_id"`
+	Source_code                 types.Code                             `db:"source_code"`
+	Reason_code                 types.Code                             `db:"reason_code"`
+	Journal_batch_name          types.Code                             `db:"journal_batch_name"`
+	Transaction_no              int                                    `db:"transaction_no"`
+	Applies_to_doc_type         CustomerLedgerEntryApplies_to_doc_type `db:"applies_to_doc_type"`
+	Applies_to_doc_no           types.Code                             `db:"applies_to_doc_no"`
+	Applies_to_id               types.Code                             `db:"applies_to_id"`
+	Open                        bool                                   `db:"open"`
+	Positive                    bool                                   `db:"positive"`
+	On_hold                     types.Code                             `db:"on_hold"`
+	Due_date                    types.Date                             `db:"due_date"`
+	Closed_by_entry_no          int                                    `db:"closed_by_entry_no"`
+	Closed_at_date              types.Date                             `db:"closed_at_date"`
+	Bal_account_type            CustomerLedgerEntryBal_account_type    `db:"bal_account_type"`
+	Bal_account_no              types.Code                             `db:"bal_account_no"`
+	No_series                   types.Code                             `db:"no_series"`
+	Closed_by_currency_code     types.Code                             `db:"closed_by_currency_code"`
+	Closed_by_currency_amount   types.Decimal                          `db:"closed_by_currency_amount"`
+	Rounding_currency           types.Code                             `db:"rounding_currency"`
+	Rounding_amount             types.Decimal                          `db:"rounding_amount"`
+	Rounding_amount_lcy         types.Decimal                          `db:"rounding_amount_lcy"`
+	Calculate_interest          bool                                   `db:"calculate_interest"`
+	Closing_interest_calculated bool                                   `db:"closing_interest_calculated"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -313,113 +317,117 @@ var CustomerLedgerEntry_Bal_account_type = struct {
 // CustomerLedgerEntry_FieldNo holds the field numbers of Customer Ledger Entry (FieldNo):
 // CustomerLedgerEntry_FieldNo.Entry_no is 1
 var CustomerLedgerEntry_FieldNo = struct {
-	Entry_no                  int
-	Customer_no               int
-	Sell_to_customer_no       int
-	Posting_date              int
-	Document_date             int
-	Document_type             int
-	Document_no               int
-	External_document_no      int
-	Description               int
-	Currency_code             int
-	Amount                    int
-	Remaining_amount          int
-	Closed_by_amount          int
-	Original_amount_lcy       int
-	Remaining_amt_lcy         int
-	Amount_lcy                int
-	Closed_by_amount_lcy      int
-	Debit_amount              int
-	Credit_amount             int
-	Debit_amount_lcy          int
-	Credit_amount_lcy         int
-	Sales_lcy                 int
-	Profit_lcy                int
-	Inv_discount_lcy          int
-	Pmt_discount_date         int
-	Pmt_disc_possible         int
-	Pmt_disc_given_lcy        int
-	Customer_posting_group    int
-	Department_code           int
-	Project_code              int
-	Salesperson_code          int
-	User_id                   int
-	Source_code               int
-	Reason_code               int
-	Journal_batch_name        int
-	Transaction_no            int
-	Applies_to_doc_type       int
-	Applies_to_doc_no         int
-	Applies_to_id             int
-	Open                      int
-	Positive                  int
-	On_hold                   int
-	Due_date                  int
-	Closed_by_entry_no        int
-	Closed_at_date            int
-	Bal_account_type          int
-	Bal_account_no            int
-	No_series                 int
-	Closed_by_currency_code   int
-	Closed_by_currency_amount int
-	Rounding_currency         int
-	Rounding_amount           int
-	Rounding_amount_lcy       int
+	Entry_no                    int
+	Customer_no                 int
+	Sell_to_customer_no         int
+	Posting_date                int
+	Document_date               int
+	Document_type               int
+	Document_no                 int
+	External_document_no        int
+	Description                 int
+	Currency_code               int
+	Amount                      int
+	Remaining_amount            int
+	Closed_by_amount            int
+	Original_amount_lcy         int
+	Remaining_amt_lcy           int
+	Amount_lcy                  int
+	Closed_by_amount_lcy        int
+	Debit_amount                int
+	Credit_amount               int
+	Debit_amount_lcy            int
+	Credit_amount_lcy           int
+	Sales_lcy                   int
+	Profit_lcy                  int
+	Inv_discount_lcy            int
+	Pmt_discount_date           int
+	Pmt_disc_possible           int
+	Pmt_disc_given_lcy          int
+	Customer_posting_group      int
+	Department_code             int
+	Project_code                int
+	Salesperson_code            int
+	User_id                     int
+	Source_code                 int
+	Reason_code                 int
+	Journal_batch_name          int
+	Transaction_no              int
+	Applies_to_doc_type         int
+	Applies_to_doc_no           int
+	Applies_to_id               int
+	Open                        int
+	Positive                    int
+	On_hold                     int
+	Due_date                    int
+	Closed_by_entry_no          int
+	Closed_at_date              int
+	Bal_account_type            int
+	Bal_account_no              int
+	No_series                   int
+	Closed_by_currency_code     int
+	Closed_by_currency_amount   int
+	Rounding_currency           int
+	Rounding_amount             int
+	Rounding_amount_lcy         int
+	Calculate_interest          int
+	Closing_interest_calculated int
 }{
-	Entry_no:                  1,
-	Customer_no:               3,
-	Sell_to_customer_no:       21,
-	Posting_date:              4,
-	Document_date:             62,
-	Document_type:             5,
-	Document_no:               6,
-	External_document_no:      63,
-	Description:               7,
-	Currency_code:             11,
-	Amount:                    13,
-	Remaining_amount:          14,
-	Closed_by_amount:          46,
-	Original_amount_lcy:       15,
-	Remaining_amt_lcy:         16,
-	Amount_lcy:                17,
-	Closed_by_amount_lcy:      54,
-	Debit_amount:              58,
-	Credit_amount:             59,
-	Debit_amount_lcy:          60,
-	Credit_amount_lcy:         61,
-	Sales_lcy:                 18,
-	Profit_lcy:                19,
-	Inv_discount_lcy:          20,
-	Pmt_discount_date:         38,
-	Pmt_disc_possible:         39,
-	Pmt_disc_given_lcy:        40,
-	Customer_posting_group:    22,
-	Department_code:           23,
-	Project_code:              24,
-	Salesperson_code:          25,
-	User_id:                   27,
-	Source_code:               28,
-	Reason_code:               50,
-	Journal_batch_name:        49,
-	Transaction_no:            53,
-	Applies_to_doc_type:       34,
-	Applies_to_doc_no:         35,
-	Applies_to_id:             47,
-	Open:                      36,
-	Positive:                  43,
-	On_hold:                   33,
-	Due_date:                  37,
-	Closed_by_entry_no:        44,
-	Closed_at_date:            45,
-	Bal_account_type:          51,
-	Bal_account_no:            52,
-	No_series:                 66,
-	Closed_by_currency_code:   67,
-	Closed_by_currency_amount: 68,
-	Rounding_currency:         70,
-	Rounding_amount:           71,
-	Rounding_amount_lcy:       72,
+	Entry_no:                    1,
+	Customer_no:                 3,
+	Sell_to_customer_no:         21,
+	Posting_date:                4,
+	Document_date:               62,
+	Document_type:               5,
+	Document_no:                 6,
+	External_document_no:        63,
+	Description:                 7,
+	Currency_code:               11,
+	Amount:                      13,
+	Remaining_amount:            14,
+	Closed_by_amount:            46,
+	Original_amount_lcy:         15,
+	Remaining_amt_lcy:           16,
+	Amount_lcy:                  17,
+	Closed_by_amount_lcy:        54,
+	Debit_amount:                58,
+	Credit_amount:               59,
+	Debit_amount_lcy:            60,
+	Credit_amount_lcy:           61,
+	Sales_lcy:                   18,
+	Profit_lcy:                  19,
+	Inv_discount_lcy:            20,
+	Pmt_discount_date:           38,
+	Pmt_disc_possible:           39,
+	Pmt_disc_given_lcy:          40,
+	Customer_posting_group:      22,
+	Department_code:             23,
+	Project_code:                24,
+	Salesperson_code:            25,
+	User_id:                     27,
+	Source_code:                 28,
+	Reason_code:                 50,
+	Journal_batch_name:          49,
+	Transaction_no:              53,
+	Applies_to_doc_type:         34,
+	Applies_to_doc_no:           35,
+	Applies_to_id:               47,
+	Open:                        36,
+	Positive:                    43,
+	On_hold:                     33,
+	Due_date:                    37,
+	Closed_by_entry_no:          44,
+	Closed_at_date:              45,
+	Bal_account_type:            51,
+	Bal_account_no:              52,
+	No_series:                   66,
+	Closed_by_currency_code:     67,
+	Closed_by_currency_amount:   68,
+	Rounding_currency:           70,
+	Rounding_amount:             71,
+	Rounding_amount_lcy:         72,
+	Calculate_interest:          64,
+	Closing_interest_calculated: 65,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -531,6 +539,10 @@ func (t *CustomerLedgerEntry) FieldNo(fieldName string) int {
 		return 71
 	case "rounding_amount_lcy":
 		return 72
+	case "calculate_interest":
+		return 64
+	case "closing_interest_calculated":
+		return 65
 	}
 	return 0
 }
@@ -644,6 +656,10 @@ func (t *CustomerLedgerEntry) FieldName(fieldNo int) string {
 		return "rounding_amount"
 	case 72:
 		return "rounding_amount_lcy"
+	case 64:
+		return "calculate_interest"
+	case 65:
+		return "closing_interest_calculated"
 	}
 	return ""
 }
@@ -904,6 +920,12 @@ type (
 	CustomerLedgerEntryOnValidate_Rounding_amount_lcy interface {
 		OnValidate_Rounding_amount_lcy(rec *CustomerLedgerEntry) error
 	}
+	CustomerLedgerEntryOnValidate_Calculate_interest interface {
+		OnValidate_Calculate_interest(rec *CustomerLedgerEntry) error
+	}
+	CustomerLedgerEntryOnValidate_Closing_interest_calculated interface {
+		OnValidate_Closing_interest_calculated(rec *CustomerLedgerEntry) error
+	}
 )
 
 // customerLedgerEntryLogic is the registered business logic of Customer Ledger Entry, in
@@ -1039,6 +1061,10 @@ func customerLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CustomerLedgerEntryOnValidate_Rounding_amount)
 	case "OnValidate_Rounding_amount_lcy":
 		_, ok = logic.(CustomerLedgerEntryOnValidate_Rounding_amount_lcy)
+	case "OnValidate_Calculate_interest":
+		_, ok = logic.(CustomerLedgerEntryOnValidate_Calculate_interest)
+	case "OnValidate_Closing_interest_calculated":
+		_, ok = logic.(CustomerLedgerEntryOnValidate_Closing_interest_calculated)
 	default:
 		return false, false
 	}
@@ -1255,7 +1281,9 @@ func GetCustomerLedgerEntryTableSchema() string {
 		closed_by_currency_amount TEXT,
 		rounding_currency TEXT(10),
 		rounding_amount TEXT,
-		rounding_amount_lcy TEXT
+		rounding_amount_lcy TEXT,
+		calculate_interest INTEGER,
+		closing_interest_calculated INTEGER
 	`
 }
 
@@ -1314,7 +1342,9 @@ func GetCustomerLedgerEntryPostgresTableSchema() string {
 		closed_by_currency_amount NUMERIC,
 		rounding_currency VARCHAR(10),
 		rounding_amount NUMERIC,
-		rounding_amount_lcy NUMERIC
+		rounding_amount_lcy NUMERIC,
+		calculate_interest BOOLEAN,
+		closing_interest_calculated BOOLEAN
 	`
 }
 
@@ -1520,6 +1550,8 @@ func (t *CustomerLedgerEntry) StoreOldValues() {
 	t.oldValues["rounding_currency"] = t.Rounding_currency
 	t.oldValues["rounding_amount"] = t.Rounding_amount
 	t.oldValues["rounding_amount_lcy"] = t.Rounding_amount_lcy
+	t.oldValues["calculate_interest"] = t.Calculate_interest
+	t.oldValues["closing_interest_calculated"] = t.Closing_interest_calculated
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1693,6 +1725,12 @@ func (t *CustomerLedgerEntry) XRec() *CustomerLedgerEntry {
 	if v, ok := t.oldValues["rounding_amount_lcy"].(types.Decimal); ok {
 		x.Rounding_amount_lcy = v
 	}
+	if v, ok := t.oldValues["calculate_interest"].(bool); ok {
+		x.Calculate_interest = v
+	}
+	if v, ok := t.oldValues["closing_interest_calculated"].(bool); ok {
+		x.Closing_interest_calculated = v
+	}
 	return x
 }
 
@@ -1817,6 +1855,8 @@ func (t *CustomerLedgerEntry) GetByPK(entry_no int) bool {
 	var rounding_currencyNull sql.NullString
 	var rounding_amountNull sql.NullString
 	var rounding_amount_lcyNull sql.NullString
+	var calculate_interestBool sql.NullBool
+	var closing_interest_calculatedBool sql.NullBool
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1824,7 +1864,7 @@ func (t *CustomerLedgerEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1884,6 +1924,8 @@ func (t *CustomerLedgerEntry) GetByPK(entry_no int) bool {
 		&rounding_currencyNull,
 		&rounding_amountNull,
 		&rounding_amount_lcyNull,
+		&calculate_interestBool,
+		&closing_interest_calculatedBool,
 	)
 
 	if err != nil {
@@ -1950,6 +1992,8 @@ func (t *CustomerLedgerEntry) GetByPK(entry_no int) bool {
 	t.Rounding_currency = types.NewCode(rounding_currencyNull.String)
 	t.Rounding_amount, _ = types.NewDecimalFromString(rounding_amountNull.String)
 	t.Rounding_amount_lcy, _ = types.NewDecimalFromString(rounding_amount_lcyNull.String)
+	t.Calculate_interest = calculate_interestBool.Bool
+	t.Closing_interest_calculated = closing_interest_calculatedBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2025,11 +2069,13 @@ func (t *CustomerLedgerEntry) Insert(runTrigger bool) bool {
 		t.Rounding_currency,
 		t.Rounding_amount,
 		t.Rounding_amount_lcy,
+		t.Calculate_interest,
+		t.Closing_interest_calculated,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2120,10 +2166,12 @@ func (t *CustomerLedgerEntry) InsertAll(records []*CustomerLedgerEntry, runTrigg
 			r.Rounding_currency,
 			r.Rounding_amount,
 			r.Rounding_amount_lcy,
+			r.Calculate_interest,
+			r.Closing_interest_calculated,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName)
-	columns := []string{"entry_no", "customer_no", "sell_to_customer_no", "posting_date", "document_date", "document_type", "document_no", "external_document_no", "description", "currency_code", "amount", "remaining_amount", "closed_by_amount", "original_amount_lcy", "remaining_amt_lcy", "amount_lcy", "closed_by_amount_lcy", "debit_amount", "credit_amount", "debit_amount_lcy", "credit_amount_lcy", "sales_lcy", "profit_lcy", "inv_discount_lcy", "pmt_discount_date", "pmt_disc_possible", "pmt_disc_given_lcy", "customer_posting_group", "department_code", "project_code", "salesperson_code", "user_id", "source_code", "reason_code", "journal_batch_name", "transaction_no", "applies_to_doc_type", "applies_to_doc_no", "applies_to_id", "open", "positive", "on_hold", "due_date", "closed_by_entry_no", "closed_at_date", "bal_account_type", "bal_account_no", "no_series", "closed_by_currency_code", "closed_by_currency_amount", "rounding_currency", "rounding_amount", "rounding_amount_lcy"}
+	columns := []string{"entry_no", "customer_no", "sell_to_customer_no", "posting_date", "document_date", "document_type", "document_no", "external_document_no", "description", "currency_code", "amount", "remaining_amount", "closed_by_amount", "original_amount_lcy", "remaining_amt_lcy", "amount_lcy", "closed_by_amount_lcy", "debit_amount", "credit_amount", "debit_amount_lcy", "credit_amount_lcy", "sales_lcy", "profit_lcy", "inv_discount_lcy", "pmt_discount_date", "pmt_disc_possible", "pmt_disc_given_lcy", "customer_posting_group", "department_code", "project_code", "salesperson_code", "user_id", "source_code", "reason_code", "journal_batch_name", "transaction_no", "applies_to_doc_type", "applies_to_doc_no", "applies_to_id", "open", "positive", "on_hold", "due_date", "closed_by_entry_no", "closed_at_date", "bal_account_type", "bal_account_no", "no_series", "closed_by_currency_code", "closed_by_currency_amount", "rounding_currency", "rounding_amount", "rounding_amount_lcy", "calculate_interest", "closing_interest_calculated"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2375,6 +2423,14 @@ func (t *CustomerLedgerEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "rounding_amount_lcy = ?")
 			values = append(values, t.Rounding_amount_lcy)
 		}
+		if t.hasFieldChanged("calculate_interest") {
+			setClauses = append(setClauses, "calculate_interest = ?")
+			values = append(values, t.Calculate_interest)
+		}
+		if t.hasFieldChanged("closing_interest_calculated") {
+			setClauses = append(setClauses, "closing_interest_calculated = ?")
+			values = append(values, t.Closing_interest_calculated)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -2486,6 +2542,10 @@ func (t *CustomerLedgerEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.Rounding_amount)
 		setClauses = append(setClauses, "rounding_amount_lcy = ?")
 		values = append(values, t.Rounding_amount_lcy)
+		setClauses = append(setClauses, "calculate_interest = ?")
+		values = append(values, t.Calculate_interest)
+		setClauses = append(setClauses, "closing_interest_calculated = ?")
+		values = append(values, t.Closing_interest_calculated)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -2493,6 +2553,17 @@ func (t *CustomerLedgerEntry) Modify(runTrigger bool) bool {
 		values = append(values, old)
 	} else {
 		values = append(values, t.Entry_no)
+	}
+	// Renamed key fields that other tables refer to (Rename): carried over below
+	type renamedKey struct {
+		field    string
+		old, new interface{}
+	}
+	var renamed []renamedKey
+	if t.oldValues != nil {
+		if t.hasFieldChanged("entry_no") {
+			renamed = append(renamed, renamedKey{"entry_no", t.oldValues["entry_no"], t.Entry_no})
+		}
 	}
 
 	// Build and execute SQL
@@ -2508,6 +2579,17 @@ func (t *CustomerLedgerEntry) Modify(runTrigger bool) bool {
 	if err != nil {
 		fmt.Printf("Error: Failed to modify Customer Ledger Entry: %v\n", err)
 		return false
+	}
+	// A temporary record's rename stays in the record: other tables are not changed
+	for _, r := range renamed {
+		if t.temp != nil {
+			break
+		}
+		if err := t.renameReferences(r.field, r.old, r.new); err != nil {
+			fmt.Printf("Error: Failed to rename references to Customer Ledger Entry: %v\n", err)
+			t.triggerErr = err
+			return false
+		}
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -2747,6 +2829,16 @@ func (t *CustomerLedgerEntry) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Decimal); ok {
 			return !t.Rounding_amount_lcy.Equal(old)
 		}
+	case "calculate_interest":
+		if old, ok := oldValue.(bool); ok {
+			return t.Calculate_interest != old
+		}
+		return true // Type mismatch, assume changed
+	case "closing_interest_calculated":
+		if old, ok := oldValue.(bool); ok {
+			return t.Closing_interest_calculated != old
+		}
+		return true // Type mismatch, assume changed
 	}
 
 	return false
@@ -2756,6 +2848,46 @@ func (t *CustomerLedgerEntry) hasFieldChanged(fieldName string) bool {
 // run a Modify (with its rename cascade) inside a transaction.
 func (t *CustomerLedgerEntry) SetDB(db database.Executor) {
 	t.db = db
+}
+
+// renameReferences carries a renamed key over to every field of another table that refers
+// to it (Rename). References from company tables are updated in this company — in
+// every company when this table is global. Runs on the record's executor, so inside the
+// caller's transaction.
+func (t *CustomerLedgerEntry) renameReferences(field string, oldValue, newValue interface{}) error {
+	type reference struct {
+		table      string
+		global     bool
+		column     string
+		condColumn string // a conditional relation: only rows whose condColumn = condValue
+		condValue  int
+	}
+	references := map[string][]reference{
+		"entry_no": {{"Finance_Charge_Memo_Line", false, "entry_no", "", 0}, {"Issued_Fin_Charge_Memo_Line", false, "entry_no", "", 0}, {"Issued_Reminder_Line", false, "entry_no", "", 0}, {"Reminder_Fin_Charge_Entry", false, "customer_entry_no", "", 0}, {"Reminder_Line", false, "entry_no", "", 0}},
+	}
+	companies := []string{t.company}
+	for _, ref := range references[field] {
+		tables := []string{ref.table}
+		if !ref.global {
+			tables = tables[:0]
+			for _, c := range companies {
+				tables = append(tables, c+"$"+ref.table)
+			}
+		}
+		for _, tbl := range tables {
+			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
+			args := []interface{}{newValue, oldValue}
+			if ref.condColumn != "" {
+				stmt += fmt.Sprintf(" AND %s = ?", ref.condColumn)
+				args = append(args, ref.condValue)
+			}
+			query := t.convertPlaceholders(stmt, len(args))
+			if _, err := t.db.Exec(query, args...); err != nil {
+				return fmt.Errorf("%s.%s: %w", tbl, ref.column, err)
+			}
+		}
+	}
+	return nil
 }
 
 // Delete removes the record from the database
@@ -3057,6 +3189,10 @@ func (t *CustomerLedgerEntry) columnName(fieldName string) (string, bool) {
 		return "rounding_amount", true
 	case strings.ToLower("rounding_amount_lcy"):
 		return "rounding_amount_lcy", true
+	case strings.ToLower("calculate_interest"):
+		return "calculate_interest", true
+	case strings.ToLower("closing_interest_calculated"):
+		return "closing_interest_calculated", true
 	}
 	return "", false
 }
@@ -3213,6 +3349,10 @@ func (t *CustomerLedgerEntry) isBoolColumn(column string) bool {
 	case "open":
 		return true
 	case "positive":
+		return true
+	case "calculate_interest":
+		return true
+	case "closing_interest_calculated":
 		return true
 	}
 	return false
@@ -3456,7 +3596,7 @@ func (t *CustomerLedgerEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3511,6 +3651,8 @@ func (t *CustomerLedgerEntry) FindFirst() bool {
 	var rounding_currencyNull sql.NullString
 	var rounding_amountNull sql.NullString
 	var rounding_amount_lcyNull sql.NullString
+	var calculate_interestBool sql.NullBool
+	var closing_interest_calculatedBool sql.NullBool
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&t.Entry_no,
@@ -3566,6 +3708,8 @@ func (t *CustomerLedgerEntry) FindFirst() bool {
 		&rounding_currencyNull,
 		&rounding_amountNull,
 		&rounding_amount_lcyNull,
+		&calculate_interestBool,
+		&closing_interest_calculatedBool,
 	)
 
 	if err != nil {
@@ -3627,6 +3771,8 @@ func (t *CustomerLedgerEntry) FindFirst() bool {
 	t.Rounding_currency = types.NewCode(rounding_currencyNull.String)
 	t.Rounding_amount, _ = types.NewDecimalFromString(rounding_amountNull.String)
 	t.Rounding_amount_lcy, _ = types.NewDecimalFromString(rounding_amount_lcyNull.String)
+	t.Calculate_interest = calculate_interestBool.Bool
+	t.Closing_interest_calculated = closing_interest_calculatedBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -3647,7 +3793,7 @@ func (t *CustomerLedgerEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3702,6 +3848,8 @@ func (t *CustomerLedgerEntry) FindLast() bool {
 	var rounding_currencyNull sql.NullString
 	var rounding_amountNull sql.NullString
 	var rounding_amount_lcyNull sql.NullString
+	var calculate_interestBool sql.NullBool
+	var closing_interest_calculatedBool sql.NullBool
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&t.Entry_no,
@@ -3757,6 +3905,8 @@ func (t *CustomerLedgerEntry) FindLast() bool {
 		&rounding_currencyNull,
 		&rounding_amountNull,
 		&rounding_amount_lcyNull,
+		&calculate_interestBool,
+		&closing_interest_calculatedBool,
 	)
 
 	if err != nil {
@@ -3818,6 +3968,8 @@ func (t *CustomerLedgerEntry) FindLast() bool {
 	t.Rounding_currency = types.NewCode(rounding_currencyNull.String)
 	t.Rounding_amount, _ = types.NewDecimalFromString(rounding_amountNull.String)
 	t.Rounding_amount_lcy, _ = types.NewDecimalFromString(rounding_amount_lcyNull.String)
+	t.Calculate_interest = calculate_interestBool.Bool
+	t.Closing_interest_calculated = closing_interest_calculatedBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -3868,7 +4020,7 @@ func (t *CustomerLedgerEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3987,6 +4139,8 @@ func (t *CustomerLedgerEntry) Next(steps ...int) bool {
 		var rounding_currencyNull sql.NullString
 		var rounding_amountNull sql.NullString
 		var rounding_amount_lcyNull sql.NullString
+		var calculate_interestBool sql.NullBool
+		var closing_interest_calculatedBool sql.NullBool
 
 		err := t.currentRows.Scan(
 			&t.Entry_no,
@@ -4042,6 +4196,8 @@ func (t *CustomerLedgerEntry) Next(steps ...int) bool {
 			&rounding_currencyNull,
 			&rounding_amountNull,
 			&rounding_amount_lcyNull,
+			&calculate_interestBool,
+			&closing_interest_calculatedBool,
 		)
 
 		if err != nil {
@@ -4102,6 +4258,8 @@ func (t *CustomerLedgerEntry) Next(steps ...int) bool {
 		t.Rounding_currency = types.NewCode(rounding_currencyNull.String)
 		t.Rounding_amount, _ = types.NewDecimalFromString(rounding_amountNull.String)
 		t.Rounding_amount_lcy, _ = types.NewDecimalFromString(rounding_amount_lcyNull.String)
+		t.Calculate_interest = calculate_interestBool.Bool
+		t.Closing_interest_calculated = closing_interest_calculatedBool.Bool
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -4151,7 +4309,7 @@ func (t *CustomerLedgerEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4223,6 +4381,8 @@ func (t *CustomerLedgerEntry) FindSetBuffered() bool {
 		var rounding_currencyNull sql.NullString
 		var rounding_amountNull sql.NullString
 		var rounding_amount_lcyNull sql.NullString
+		var calculate_interestBool sql.NullBool
+		var closing_interest_calculatedBool sql.NullBool
 
 		err := rows.Scan(
 			&record.Entry_no,
@@ -4278,6 +4438,8 @@ func (t *CustomerLedgerEntry) FindSetBuffered() bool {
 			&rounding_currencyNull,
 			&rounding_amountNull,
 			&rounding_amount_lcyNull,
+			&calculate_interestBool,
+			&closing_interest_calculatedBool,
 		)
 
 		if err != nil {
@@ -4336,6 +4498,8 @@ func (t *CustomerLedgerEntry) FindSetBuffered() bool {
 		record.Rounding_currency = types.NewCode(rounding_currencyNull.String)
 		record.Rounding_amount, _ = types.NewDecimalFromString(rounding_amountNull.String)
 		record.Rounding_amount_lcy, _ = types.NewDecimalFromString(rounding_amount_lcyNull.String)
+		record.Calculate_interest = calculate_interestBool.Bool
+		record.Closing_interest_calculated = closing_interest_calculatedBool.Bool
 
 		// Store old values
 		record.StoreOldValues()
@@ -4417,6 +4581,8 @@ func (t *CustomerLedgerEntry) copyFromBuffered(record *CustomerLedgerEntry) {
 	t.Rounding_currency = record.Rounding_currency
 	t.Rounding_amount = record.Rounding_amount
 	t.Rounding_amount_lcy = record.Rounding_amount_lcy
+	t.Calculate_interest = record.Calculate_interest
+	t.Closing_interest_calculated = record.Closing_interest_calculated
 	t.StoreOldValues()
 }
 
@@ -5895,6 +6061,44 @@ func (t *CustomerLedgerEntry) ValidateField(fieldName string, value interface{})
 			}
 		}
 		return nil
+	case "calculate_interest":
+		// Set field value
+		if v, ok := value.(bool); ok {
+			t.Calculate_interest = v
+		} else if v, ok := value.(string); ok {
+			// Handle string boolean values from JSON/frontend
+			t.Calculate_interest = v == "true" || v == "1"
+		} else {
+			return fmt.Errorf("invalid type for field calculate_interest")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(CustomerLedgerEntryOnValidate_Calculate_interest); ok {
+				if err := trg.OnValidate_Calculate_interest(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "closing_interest_calculated":
+		// Set field value
+		if v, ok := value.(bool); ok {
+			t.Closing_interest_calculated = v
+		} else if v, ok := value.(string); ok {
+			// Handle string boolean values from JSON/frontend
+			t.Closing_interest_calculated = v == "true" || v == "1"
+		} else {
+			return fmt.Errorf("invalid type for field closing_interest_calculated")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(CustomerLedgerEntryOnValidate_Closing_interest_calculated); ok {
+				if err := trg.OnValidate_Closing_interest_calculated(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -6013,6 +6217,10 @@ func (t *CustomerLedgerEntry) FieldValue(no int) (any, bool) {
 		return t.Rounding_amount, true
 	case 72:
 		return t.Rounding_amount_lcy, true
+	case 64:
+		return t.Calculate_interest, true
+	case 65:
+		return t.Closing_interest_calculated, true
 	}
 	return nil, false
 }
@@ -6375,6 +6583,16 @@ func (t *CustomerLedgerEntry) SetFieldValue(no int, value any) bool {
 	case 72:
 		if v, ok := value.(types.Decimal); ok {
 			t.Rounding_amount_lcy = v
+			return true
+		}
+	case 64:
+		if v, ok := value.(bool); ok {
+			t.Calculate_interest = v
+			return true
+		}
+	case 65:
+		if v, ok := value.(bool); ok {
+			t.Closing_interest_calculated = v
 			return true
 		}
 	}
@@ -7092,6 +7310,10 @@ func (t *CustomerLedgerEntry) columnValue(column string) (interface{}, bool) {
 		return t.Rounding_amount, true
 	case "rounding_amount_lcy":
 		return t.Rounding_amount_lcy, true
+	case "calculate_interest":
+		return t.Calculate_interest, true
+	case "closing_interest_calculated":
+		return t.Closing_interest_calculated, true
 	}
 	return nil, false
 }
@@ -7198,6 +7420,8 @@ func (t *CustomerLedgerEntry) Init() {
 	t.Rounding_currency = *new(types.Code)
 	t.Rounding_amount = *new(types.Decimal)
 	t.Rounding_amount_lcy = *new(types.Decimal)
+	t.Calculate_interest = *new(bool)
+	t.Closing_interest_calculated = *new(bool)
 	t.applyDefaults()
 }
 
@@ -7232,59 +7456,61 @@ func (t *CustomerLedgerEntry) ClearFilters() {
 // ToMap converts the current record to a map for JSON serialization
 func (t *CustomerLedgerEntry) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"entry_no":                  t.Entry_no,
-		"customer_no":               t.Customer_no.String(),
-		"sell_to_customer_no":       t.Sell_to_customer_no.String(),
-		"posting_date":              t.Posting_date.String(),
-		"document_date":             t.Document_date.String(),
-		"document_type":             int(t.Document_type),
-		"document_no":               t.Document_no.String(),
-		"external_document_no":      t.External_document_no.String(),
-		"description":               t.Description.String(),
-		"currency_code":             t.Currency_code.String(),
-		"amount":                    t.Amount.String(),
-		"remaining_amount":          t.Remaining_amount.String(),
-		"closed_by_amount":          t.Closed_by_amount.String(),
-		"original_amount_lcy":       t.Original_amount_lcy.String(),
-		"remaining_amt_lcy":         t.Remaining_amt_lcy.String(),
-		"amount_lcy":                t.Amount_lcy.String(),
-		"closed_by_amount_lcy":      t.Closed_by_amount_lcy.String(),
-		"debit_amount":              t.Debit_amount.String(),
-		"credit_amount":             t.Credit_amount.String(),
-		"debit_amount_lcy":          t.Debit_amount_lcy.String(),
-		"credit_amount_lcy":         t.Credit_amount_lcy.String(),
-		"sales_lcy":                 t.Sales_lcy.String(),
-		"profit_lcy":                t.Profit_lcy.String(),
-		"inv_discount_lcy":          t.Inv_discount_lcy.String(),
-		"pmt_discount_date":         t.Pmt_discount_date.String(),
-		"pmt_disc_possible":         t.Pmt_disc_possible.String(),
-		"pmt_disc_given_lcy":        t.Pmt_disc_given_lcy.String(),
-		"customer_posting_group":    t.Customer_posting_group.String(),
-		"department_code":           t.Department_code.String(),
-		"project_code":              t.Project_code.String(),
-		"salesperson_code":          t.Salesperson_code.String(),
-		"user_id":                   t.User_id.String(),
-		"source_code":               t.Source_code.String(),
-		"reason_code":               t.Reason_code.String(),
-		"journal_batch_name":        t.Journal_batch_name.String(),
-		"transaction_no":            t.Transaction_no,
-		"applies_to_doc_type":       int(t.Applies_to_doc_type),
-		"applies_to_doc_no":         t.Applies_to_doc_no.String(),
-		"applies_to_id":             t.Applies_to_id.String(),
-		"open":                      t.Open,
-		"positive":                  t.Positive,
-		"on_hold":                   t.On_hold.String(),
-		"due_date":                  t.Due_date.String(),
-		"closed_by_entry_no":        t.Closed_by_entry_no,
-		"closed_at_date":            t.Closed_at_date.String(),
-		"bal_account_type":          int(t.Bal_account_type),
-		"bal_account_no":            t.Bal_account_no.String(),
-		"no_series":                 t.No_series.String(),
-		"closed_by_currency_code":   t.Closed_by_currency_code.String(),
-		"closed_by_currency_amount": t.Closed_by_currency_amount.String(),
-		"rounding_currency":         t.Rounding_currency.String(),
-		"rounding_amount":           t.Rounding_amount.String(),
-		"rounding_amount_lcy":       t.Rounding_amount_lcy.String(),
+		"entry_no":                    t.Entry_no,
+		"customer_no":                 t.Customer_no.String(),
+		"sell_to_customer_no":         t.Sell_to_customer_no.String(),
+		"posting_date":                t.Posting_date.String(),
+		"document_date":               t.Document_date.String(),
+		"document_type":               int(t.Document_type),
+		"document_no":                 t.Document_no.String(),
+		"external_document_no":        t.External_document_no.String(),
+		"description":                 t.Description.String(),
+		"currency_code":               t.Currency_code.String(),
+		"amount":                      t.Amount.String(),
+		"remaining_amount":            t.Remaining_amount.String(),
+		"closed_by_amount":            t.Closed_by_amount.String(),
+		"original_amount_lcy":         t.Original_amount_lcy.String(),
+		"remaining_amt_lcy":           t.Remaining_amt_lcy.String(),
+		"amount_lcy":                  t.Amount_lcy.String(),
+		"closed_by_amount_lcy":        t.Closed_by_amount_lcy.String(),
+		"debit_amount":                t.Debit_amount.String(),
+		"credit_amount":               t.Credit_amount.String(),
+		"debit_amount_lcy":            t.Debit_amount_lcy.String(),
+		"credit_amount_lcy":           t.Credit_amount_lcy.String(),
+		"sales_lcy":                   t.Sales_lcy.String(),
+		"profit_lcy":                  t.Profit_lcy.String(),
+		"inv_discount_lcy":            t.Inv_discount_lcy.String(),
+		"pmt_discount_date":           t.Pmt_discount_date.String(),
+		"pmt_disc_possible":           t.Pmt_disc_possible.String(),
+		"pmt_disc_given_lcy":          t.Pmt_disc_given_lcy.String(),
+		"customer_posting_group":      t.Customer_posting_group.String(),
+		"department_code":             t.Department_code.String(),
+		"project_code":                t.Project_code.String(),
+		"salesperson_code":            t.Salesperson_code.String(),
+		"user_id":                     t.User_id.String(),
+		"source_code":                 t.Source_code.String(),
+		"reason_code":                 t.Reason_code.String(),
+		"journal_batch_name":          t.Journal_batch_name.String(),
+		"transaction_no":              t.Transaction_no,
+		"applies_to_doc_type":         int(t.Applies_to_doc_type),
+		"applies_to_doc_no":           t.Applies_to_doc_no.String(),
+		"applies_to_id":               t.Applies_to_id.String(),
+		"open":                        t.Open,
+		"positive":                    t.Positive,
+		"on_hold":                     t.On_hold.String(),
+		"due_date":                    t.Due_date.String(),
+		"closed_by_entry_no":          t.Closed_by_entry_no,
+		"closed_at_date":              t.Closed_at_date.String(),
+		"bal_account_type":            int(t.Bal_account_type),
+		"bal_account_no":              t.Bal_account_no.String(),
+		"no_series":                   t.No_series.String(),
+		"closed_by_currency_code":     t.Closed_by_currency_code.String(),
+		"closed_by_currency_amount":   t.Closed_by_currency_amount.String(),
+		"rounding_currency":           t.Rounding_currency.String(),
+		"rounding_amount":             t.Rounding_amount.String(),
+		"rounding_amount_lcy":         t.Rounding_amount_lcy.String(),
+		"calculate_interest":          t.Calculate_interest,
+		"closing_interest_calculated": t.Closing_interest_calculated,
 	}
 }
 
@@ -7746,6 +7972,16 @@ func (t *CustomerLedgerEntry) FromMap(data map[string]interface{}) {
 			t.Rounding_amount_lcy = types.NewDecimalFromInt(int64(val))
 		case int64:
 			t.Rounding_amount_lcy = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["calculate_interest"]; ok && v != nil {
+		if b, ok := v.(bool); ok {
+			t.Calculate_interest = b
+		}
+	}
+	if v, ok := data["closing_interest_calculated"]; ok && v != nil {
+		if b, ok := v.(bool); ok {
+			t.Closing_interest_calculated = b
 		}
 	}
 }
@@ -8297,6 +8533,26 @@ func (t *CustomerLedgerEntry) GetFields() []tables.FieldInfo {
 			No:         72,
 			Name:       "rounding_amount_lcy",
 			Type:       tables.FieldTypeDecimal,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         64,
+			Name:       "calculate_interest",
+			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         65,
+			Name:       "closing_interest_calculated",
+			Type:       tables.FieldTypeBoolean,
 			Length:     0,
 			Required:   false,
 			Editable:   true,

@@ -1072,7 +1072,7 @@ func (t *CustomerPostingGroup) renameReferences(field string, oldValue, newValue
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Customer", false, "customer_posting_group", "", 0}, {"Item_Journal_Line", false, "source_posting_group", "source_type", 1}, {"Item_Ledger_Entry", false, "source_posting_group", "source_type", 1}, {"Sales_Cr_Memo_Header", false, "customer_posting_group", "", 0}, {"Sales_Header", false, "customer_posting_group", "", 0}, {"Sales_Invoice_Header", false, "customer_posting_group", "", 0}, {"Sales_Shipment_Header", false, "customer_posting_group", "", 0}},
+		"code": {{"Customer", false, "customer_posting_group", "", 0}, {"Finance_Charge_Memo_Header", false, "customer_posting_group", "", 0}, {"Issued_Fin_Charge_Memo_Header", false, "customer_posting_group", "", 0}, {"Issued_Reminder_Header", false, "customer_posting_group", "", 0}, {"Item_Journal_Line", false, "source_posting_group", "source_type", 1}, {"Item_Ledger_Entry", false, "source_posting_group", "source_type", 1}, {"Reminder_Header", false, "customer_posting_group", "", 0}, {"Sales_Cr_Memo_Header", false, "customer_posting_group", "", 0}, {"Sales_Header", false, "customer_posting_group", "", 0}, {"Sales_Invoice_Header", false, "customer_posting_group", "", 0}, {"Sales_Shipment_Header", false, "customer_posting_group", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

@@ -730,6 +730,38 @@ pages:
     caption: "Insurance Journal Batches"
   insurance_registers:
     caption: "Insurance Registers"
+  reminder:
+    caption: "Reminder"
+  reminder_lines:
+    caption: "Reminder Lines"
+  reminder_list:
+    caption: "Reminders"
+  issued_reminder:
+    caption: "Issued Reminder"
+  issued_reminder_lines:
+    caption: "Issued Reminder Lines"
+  issued_reminder_list:
+    caption: "Issued Reminders"
+  reminder_comment_sheet:
+    caption: "Reminder Comment Sheet"
+  reminder_fin_charge_entries:
+    caption: "Reminder/Fin. Charge Entries"
+  finance_charge_text:
+    caption: "Finance Charge Text"
+  finance_charge_memo:
+    caption: "Finance Charge Memo"
+  finance_charge_memo_lines:
+    caption: "Finance Charge Memo Lines"
+  finance_charge_memo_list:
+    caption: "Finance Charge Memos"
+  issued_finance_charge_memo:
+    caption: "Issued Finance Charge Memo"
+  issued_fin_charge_memo_lines:
+    caption: "Issued Fin. Charge Memo Lines"
+  issued_fin_charge_memo_list:
+    caption: "Issued Finance Charge Memos"
+  fin_charge_comment_sheet:
+    caption: "Fin. Charge Comment Sheet"
   fa_reclass_journal:
     caption: "FA Reclass. Journal"
     fields:

@@ -118,6 +118,12 @@ type Options struct {
 	// Journals: the journals get lines ready to post, a depreciation table and resource price
 	// changes (journals.go; codeunit 901) — nothing posted
 	Journals bool
+	// ReminderIssue and FinChrgMemoIssue (optional) open the issuing of reminders and finance
+	// charge memos (codeunits 393 and 395) the same way: with Journals, a reminder and a memo of
+	// a month ago are issued (reminders.go; codeunit 901: reminderissue.New and
+	// NewFinChrgMemoIssue)
+	ReminderIssue    func(src ftables.Source) ReminderIssuer
+	FinChrgMemoIssue func(src ftables.Source) FinChrgMemoIssuer
 }
 
 // GenJnlPoster posts a general journal line (codeunit 12 Gen. Jnl.-Post Line)
@@ -149,13 +155,18 @@ type Counts struct {
 	FALedgerEntries          int // acquisitions and monthly depreciation
 	MaintenanceLedgerEntries int
 	JournalLines             int // the open journals' lines (Options.Journals)
-	Customers                int
-	LedgerEntries            int
-	GLEntries                int // demo G/L entries (monthly sales and costs against the bank)
-	ItemLedgerEntries        int // the demo items' opening stock, purchases and sales (posted)
-	BOMLedgerEntries         int // the demo assemblies of the bills of materials (posted)
-	ResCapacityEntries       int // the demo resources' capacity per working day
-	ResLedgerEntries         int // the demo resources' weekly usage and monthly sales (posted)
+	// The demo reminders and finance charge memos (Options.Journals), open and issued
+	Reminders          int
+	IssuedReminders    int
+	FinChrgMemos       int
+	IssuedFinChrgMemos int
+	Customers          int
+	LedgerEntries      int
+	GLEntries          int // demo G/L entries (monthly sales and costs against the bank)
+	ItemLedgerEntries  int // the demo items' opening stock, purchases and sales (posted)
+	BOMLedgerEntries   int // the demo assemblies of the bills of materials (posted)
+	ResCapacityEntries int // the demo resources' capacity per working day
+	ResLedgerEntries   int // the demo resources' weekly usage and monthly sales (posted)
 	// The demo sales documents: open quotes, orders and invoices, and the posted ones
 	SalesQuotes          int
 	SalesOrders          int
@@ -524,6 +535,9 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 	if opts.Journals {
 		p.phase(PhaseJournals)
 		err = insertDemoJournals(ftables.DBSource(exec, company, dbType), today, &counts, p)
+		if err == nil {
+			err = insertDemoReminders(ftables.DBSource(exec, company, dbType), types.NewDateFromTime(today), opts, &counts)
+		}
 		if err != nil {
 			rollback()
 			return Counts{}, err
@@ -716,6 +730,12 @@ func insertEntries(exec database.Executor, company string, dbType database.DBTyp
 	for i, e := range entries {
 		e.entryNo = firstNo + i
 	}
+	// the customers' posting groups (an entry keeps its customer's, as posting does)
+	postingGroups := map[types.Code]types.Code{}
+	cust := gtables.NewCustomer(&last)
+	for found := cust.FindSet(); found; found = cust.Next() {
+		postingGroups[cust.No] = cust.Customer_posting_group
+	}
 	// Multi-row inserts (InsertAll) in chunks: one round trip per chunk instead of one per
 	// entry (HEAVY: 190,000 entries); every entry still runs its OnInsert trigger
 	const chunk = 1000
@@ -743,6 +763,7 @@ func insertEntries(exec database.Executor, company string, dbType database.DBTyp
 		rec.Entry_no = e.entryNo
 		rec.Customer_no = types.NewCode(e.customerNo)
 		rec.Sell_to_customer_no = types.NewCode(e.customerNo)
+		rec.Customer_posting_group = postingGroups[rec.Customer_no]
 		rec.Posting_date = types.NewDateFromTime(e.date)
 		rec.Document_date = types.NewDateFromTime(e.date)
 		rec.Document_type = e.docType

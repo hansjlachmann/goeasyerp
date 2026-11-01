@@ -281,14 +281,14 @@ menu:
             run_object: "report:291"
           - separator: true
           - name: "Reminders"
-            page_id: 434
+            page_id: 436
           - name: "Issued Reminders"
-            page_id: 438
+            page_id: 440
           - separator: true
           - name: "Finance Charge Memos"
-            page_id: 446
+            page_id: 448
           - name: "Issued Finance Charge Memos"
-            page_id: 450
+            page_id: 452
           - separator: true
           - name: "Date Compression"
             items:
