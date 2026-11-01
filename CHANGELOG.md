@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.122](https://github.com/hansjlachmann/openerp/compare/v0.1.121...v0.1.122) (2026-11-01)
+
+
+### Features
+
+* purchase history and demo purchases (P4, P5) ([#173](https://github.com/hansjlachmann/openerp/issues/173)) ([cdcf594](https://github.com/hansjlachmann/openerp/commit/cdcf5941d7aebcc2cf1340e798fbcb022f409218))
+
 ## [0.1.121](https://github.com/hansjlachmann/openerp/compare/v0.1.120...v0.1.121) (2026-10-29)
 
 
