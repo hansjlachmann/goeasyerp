@@ -27,7 +27,9 @@ import (
 //     Oslo store; Phys. Inventory Journals: counted quantities; Resource Journals: usage; BOM
 //     Journals: an assembly of office kits (their pens are sold out: posted after the Item
 //     Journal);
-//   - a depreciation table and resource price changes.
+//   - a depreciation table and resource price changes;
+//   - Bank Account Reconciliations: this month's statement of bank B010, its lines applied to the
+//     open entries as Suggest Lines makes them (not posted).
 
 // demoJournals fills the journals; the lines are dated today
 type demoJournals struct {
@@ -44,6 +46,7 @@ func insertDemoJournals(src ftables.Source, today time.Time, counts *Counts, p *
 	}{
 		{"general journals", j.generalJournals},
 		{"recurring journal", j.recurringJournal},
+		{"bank reconciliation", j.bankReconciliation},
 		{"fixed asset journals", j.fixedAssetJournals},
 		{"item journals", j.itemJournals},
 		{"resource journals", j.resourceJournals},
@@ -683,4 +686,56 @@ func (j *demoJournals) allocation(l *gtables.GenJournalLine, lineNo int, accNo, 
 		err = a.ModifyOrError(true)
 	}
 	return err
+}
+
+// bankReconciliation: the statement after B010's last one, dated today, a line applied to each
+// open bank account ledger entry up to today (report 1496 Suggest Lines), the ending balance
+// matching — ready to post
+func (j *demoJournals) bankReconciliation() error {
+	recon := gtables.NewBankAccReconciliation(j.src)
+	err := recon.Validate("bank_account_no", types.Code("B010"))
+	if err != nil {
+		return err
+	}
+	recon.Statement_date = j.today
+	err = recon.InsertOrError(true)
+	if err != nil {
+		return err
+	}
+	entry := gtables.NewBankAccountLedgerEntry(j.src)
+	entry.SetCurrentKey("bank_account_no", "posting_date")
+	entry.SetRange("bank_account_no", recon.Bank_account_no)
+	entry.SetRange("posting_date", types.Date{}, j.today)
+	entry.SetRange("open", true)
+	entry.SetRange("statement_status", gtables.BankAccountLedgerEntry_Statement_status.Open)
+	var entries []*gtables.BankAccountLedgerEntry
+	for found := entry.FindSetBuffered(); found; found = entry.Next() {
+		e := gtables.NewBankAccountLedgerEntry(j.src)
+		e.Copy(entry)
+		entries = append(entries, e)
+	}
+	total := types.Decimal{}
+	for i, e := range entries {
+		line := gtables.NewBankAccReconciliationLine(j.src)
+		line.Bank_account_no = recon.Bank_account_no
+		line.Statement_no = recon.Statement_no
+		line.Statement_line_no = (i + 1) * 10000
+		line.Transaction_date = e.Posting_date
+		line.Description = e.Description
+		line.Document_no = e.Document_no
+		line.Statement_amount = e.Remaining_amount
+		line.Applied_amount = e.Remaining_amount
+		line.Type = gtables.BankAccReconciliationLine_Type.BankAccountLedgerEntry
+		line.Applied_entries = 1
+		err = tables.SetBankAccReconNo(e, line)
+		if err == nil {
+			err = line.InsertOrError(false)
+		}
+		if err != nil {
+			return err
+		}
+		total = total.Add(e.Remaining_amount)
+	}
+	recon.Statement_ending_balance = recon.Balance_last_statement.Add(total)
+	return recon.ModifyOrError(false)
 }

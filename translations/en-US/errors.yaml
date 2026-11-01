@@ -126,6 +126,11 @@ errors:
   ERR_JNL_REVERSING_DOC_OUT_OF_BALANCE: "Your reversing entries in %2 %3 are out of balance by %4. Check whether %1 is correct for each line for this %2."
   ERR_JNL_REVERSING_OUT_OF_BALANCE: "Your reversing entries for %3 are out of balance by %4. Check whether %1 is correct for each line for this %2."
   ERR_JNL_RECURRING_DATE_FILTERED: "%1 cannot be filtered when posting recurring journals."
+  ERR_BANK_REC_STATEMENT_EXISTS: "Statement %1 already exists."
+  ERR_BANK_REC_UPDATE_CANCELED: "Update canceled."
+  ERR_BANK_REC_ENDING_BALANCE: "%1 is not equal to Total Balance."
+  ERR_BANK_REC_APPLICATION: "The application is not correct. The total amount applied is %1; it should be %2."
+  ERR_BANK_REC_TOTAL_DIFFERENCE: "The total difference is %1. It must be %2."
   ERR_RENAME_NOT_ALLOWED: "You cannot rename a %1."
   ERR_DATE_LATER: "%1 is later than %2."
 

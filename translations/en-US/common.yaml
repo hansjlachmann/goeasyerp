@@ -8,6 +8,11 @@ common:
 
   # Common actions
   actions:
+    suggest_lines: "Suggest Lines"
+    transfer_to_general_journal: "Transfer to General Journal"
+    apply: "Apply"
+    statements: "Statements"
+    bank_account_card: "Bank Account Card"
     allocations: "Allocations"
     insert_fa_bal_account: "Insert FA Bal. Account"
     copy_depreciation_book: "Copy Depreciation Book"

@@ -1591,6 +1591,65 @@ tables:
         exported: "Eksportert"
         transmitted: "Overført"
   # Bank Account Posting Group (Table 277)
+  bank_acc_reconciliation:
+    caption: "Bankkontoavstemming"
+    fields:
+      bank_account_no: "Bankkontonr."
+      statement_no: "Kontoutskriftnr."
+      statement_ending_balance: "Kontoutskriftens sluttsaldo"
+      statement_date: "Kontoutskriftsdato"
+      balance_last_statement: "Saldo siste kontoutskrift"
+  bank_acc_reconciliation_line:
+    caption: "Bankkontoavstemmingslinje"
+    fields:
+      bank_account_no: "Bankkontonr."
+      statement_no: "Kontoutskriftnr."
+      statement_line_no: "Kontoutskriftlinjenr."
+      document_no: "Bilagsnr."
+      transaction_date: "Transaksjonsdato"
+      description: "Beskrivelse"
+      statement_amount: "Kontoutskriftsbeløp"
+      difference: "Differanse"
+      applied_amount: "Utlignet beløp"
+      type: "Type"
+      applied_entries: "Utlignede poster"
+      value_date: "Valuteringsdato"
+      ready_for_application: "Klar til utligning"
+      check_no: "Sjekknr."
+    options:
+      type:
+        bank_account_ledger_entry: "Bankkontopost"
+        check_ledger_entry: "Sjekkpost"
+        difference: "Differanse"
+  bank_account_statement:
+    caption: "Bankkontoutskrift"
+    fields:
+      bank_account_no: "Bankkontonr."
+      statement_no: "Kontoutskriftnr."
+      statement_ending_balance: "Kontoutskriftens sluttsaldo"
+      statement_date: "Kontoutskriftsdato"
+      balance_last_statement: "Saldo siste kontoutskrift"
+  bank_account_statement_line:
+    caption: "Bankkontoutskriftslinje"
+    fields:
+      bank_account_no: "Bankkontonr."
+      statement_no: "Kontoutskriftnr."
+      statement_line_no: "Kontoutskriftlinjenr."
+      document_no: "Bilagsnr."
+      transaction_date: "Transaksjonsdato"
+      description: "Beskrivelse"
+      statement_amount: "Kontoutskriftsbeløp"
+      difference: "Differanse"
+      applied_amount: "Utlignet beløp"
+      type: "Type"
+      applied_entries: "Utlignede poster"
+      value_date: "Valuteringsdato"
+      check_no: "Sjekknr."
+    options:
+      type:
+        bank_account_ledger_entry: "Bankkontopost"
+        check_ledger_entry: "Sjekkpost"
+        difference: "Differanse"
   bank_account_posting_group:
     caption: "Bankkontobokføringsgruppe"
     fields:

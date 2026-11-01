@@ -1,0 +1,63 @@
+page:
+  id: 382
+  type: List
+  name: Apply Check Ledger Entries
+  source_table: Check_Ledger_Entry
+  caption: Apply Check Ledger Entries
+  editable: false   # opened from a reconciliation line (Apply Entries): the open checks it can take
+
+  # Under the list: the statement line it applies to (OnAfterGetRecord with the page parameters,
+  # business-logic/bankrecon)
+  footer:
+    - source: statement_amount
+      calculated: true
+      type: types.Decimal
+      decimal_places: "2:2"
+    - source: applied_amount
+      calculated: true
+      type: types.Decimal
+      decimal_places: "2:2"
+    - source: difference
+      calculated: true
+      type: types.Decimal
+      decimal_places: "2:2"
+
+  layout:
+    repeater:
+      fields:
+        - source: applied
+          calculated: true
+          type: bool
+          width: 80
+        - source: check_date
+          width: 110
+        - source: check_no
+          width: 110
+        - source: description
+          width: 300
+        - source: amount
+          width: 130
+        - source: check_type
+          width: 120
+        - source: entry_status
+          width: 140
+        - source: open
+          width: 80
+        - source: statement_status
+          width: 160
+          visible: false
+        - source: statement_no
+          width: 110
+          visible: false
+        - source: statement_line_no
+          width: 100
+          visible: false
+
+  actions:
+    # Apply the selected checks to the statement line, or take them off (codeunit 376)
+    - name: Apply
+      caption: Apply
+      image: Approve
+      shortcut: F9
+      promoted: true
+      run_object: table:Check_Ledger_Entry.ToggleReconNo

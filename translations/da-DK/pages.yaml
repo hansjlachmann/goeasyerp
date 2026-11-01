@@ -371,6 +371,35 @@ pages:
     fields:  # the footer (calculated)
       allocation_amount: "Beløb"
       total_allocation_amount: "Totalbeløb"
+  bank_acc_reconciliation:
+    caption: "Bankkontoafstemning"
+    fields:
+      total_balance: "Total saldo"
+      total_difference: "Total difference"
+  bank_acc_reconciliation_lines:
+    caption: "Linjer"
+  apply_bank_acc_ledger_entries:
+    caption: "Udlign bankkontoposter"
+    fields:
+      applied: "Udlignet"
+      statement_amount: "Kontoudtogsbeløb"
+      applied_amount: "Udlignet beløb"
+      difference: "Difference"
+  apply_check_ledger_entries:
+    caption: "Udlign checkposter"
+    fields:
+      applied: "Udlignet"
+      statement_amount: "Kontoudtogsbeløb"
+      applied_amount: "Udlignet beløb"
+      difference: "Difference"
+  bank_account_statement:
+    caption: "Bankkontoudtog"
+  bank_account_statement_lines:
+    caption: "Linjer"
+  bank_acc_reconciliation_list:
+    caption: "Bankkontoafstemninger"
+  bank_account_statement_list:
+    caption: "Bankkontoudtog"
   sales_journal:
     caption: "Salgskladde"
     fields:  # the batch above the lines and the footer (calculated)

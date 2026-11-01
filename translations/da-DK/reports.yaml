@@ -763,6 +763,24 @@ reports:
     texts:
       OPTIONS: "Indstillinger"
       WINDOW: "Opretter anlægsprofil       #1##########\nOpretter ikke anlægsprofil  #2##########"
+  "1496":
+    caption: "Foreslå bankafstemningslinjer"
+    options:
+      starting_date: "Startdato"
+      ending_date: "Slutdato"
+      include_checks: "Medtag checks"
+    texts:
+      STATEMENT_PERIOD: "Kontoudtogsperiode"
+      NO_RECONCILIATION: "Kør rapporten fra en bankkontoafstemning."
+      ENTER_ENDING_DATE: "Angiv slutdatoen."
+  "1497":
+    caption: "Overfør bankafstemning til finanskladde"
+    options:
+      gen_journal_template: "Finanskladdetype"
+      gen_journal_batch: "Finanskladdenavn"
+    texts:
+      OPTIONS: "Indstillinger"
+      NO_RECONCILIATION: "Kør rapporten fra en bankkontoafstemning."
   "5692":
     caption: "Beregn afskrivninger"
     options:

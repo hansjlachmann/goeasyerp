@@ -763,6 +763,24 @@ reports:
     texts:
       OPTIONS: "Options"
       WINDOW: "Creating fixed asset book     #1##########\nNot creating fixed asset book #2##########"
+  "1496":
+    caption: "Suggest Bank Acc. Recon. Lines"
+    options:
+      starting_date: "Starting Date"
+      ending_date: "Ending Date"
+      include_checks: "Include Checks"
+    texts:
+      STATEMENT_PERIOD: "Statement Period"
+      NO_RECONCILIATION: "Run the report from a bank account reconciliation."
+      ENTER_ENDING_DATE: "Please enter the Ending Date."
+  "1497":
+    caption: "Trans. Bank Rec. to Gen. Jnl."
+    options:
+      gen_journal_template: "Gen. Journal Template"
+      gen_journal_batch: "Gen. Journal Batch"
+    texts:
+      OPTIONS: "Options"
+      NO_RECONCILIATION: "Run the report from a bank account reconciliation."
   "5692":
     caption: "Calculate Depreciation"
     options:

@@ -1,0 +1,44 @@
+page:
+  id: 384
+  type: List
+  name: Bank Account Statement Lines
+  source_table: Bank_Account_Statement_Line   # the lines of the statement card (383)
+  caption: Lines
+  editable: false
+
+  layout:
+    repeater:
+      fields:
+        - source: bank_account_no
+          width: 100
+          visible: false
+        - source: statement_no
+          width: 100
+          visible: false
+        - source: statement_line_no
+          width: 90
+          visible: false
+        - source: transaction_date
+          width: 110
+        - source: value_date
+          width: 110
+          visible: false
+        - source: document_no
+          width: 120
+          visible: false
+        - source: check_no
+          width: 110
+          visible: false
+        - source: type
+          width: 180
+        - source: description
+          width: 300
+        - source: statement_amount
+          width: 130
+        - source: applied_amount
+          width: 130
+        - source: difference
+          width: 130
+        - source: applied_entries
+          width: 100
+          visible: false

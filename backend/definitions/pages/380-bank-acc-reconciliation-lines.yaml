@@ -1,0 +1,73 @@
+page:
+  id: 380
+  type: List
+  name: Bank Acc. Reconciliation Lines
+  source_table: Bank_Acc_Reconciliation_Line   # the lines of the reconciliation card (379)
+  caption: Lines
+  editable: true
+  delayed_insert: true
+  auto_split_key: true
+
+  layout:
+    repeater:
+      fields:
+        - source: bank_account_no
+          width: 100
+          visible: false
+        - source: statement_no
+          width: 100
+          visible: false
+        - source: statement_line_no
+          width: 90
+          visible: false
+        - source: transaction_date
+          width: 110
+        - source: value_date
+          width: 110
+          visible: false
+        - source: document_no
+          width: 120
+          visible: false
+        - source: check_no
+          width: 110
+          visible: false
+        - source: type
+          width: 180
+        - source: description
+          width: 300
+        - source: statement_amount
+          width: 130
+        - source: applied_amount
+          width: 130
+        - source: difference
+          width: 130
+        - source: applied_entries
+          width: 100
+          visible: false
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    # The open entries of the line's type: F9 applies them to the line (codeunit 374)
+    - name: Apply Entries
+      caption: Apply Entries
+      image: Navigate
+      shortcut: Shift+F9
+      promoted: true
+      run_object: table:Bank_Acc_Reconciliation_Line.ApplyEntries

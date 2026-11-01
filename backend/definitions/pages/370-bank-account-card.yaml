@@ -127,6 +127,15 @@ page:
       run_page_filter_field: "no"
       run_page_filter_value: "no"
 
+    # The posted reconciliations of the account (page 389)
+    - name: Statements
+      caption: Statements
+      image: Document
+      promoted: true
+      run_page: 389
+      run_page_filter_field: bank_account_no
+      run_page_filter_value: "no"
+
     - name: Comments
       caption: Comments
       image: Document

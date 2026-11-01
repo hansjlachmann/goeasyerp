@@ -146,7 +146,7 @@ menu:
             page_id: 283
           - separator: true
           - name: "Bank Account Reconciliations"
-            page_id: 379
+            page_id: 388
           - name: "Tax"
             items:
               - name: "Calc. and Post Tax Settlement"

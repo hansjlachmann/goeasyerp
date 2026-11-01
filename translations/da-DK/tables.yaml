@@ -1591,6 +1591,65 @@ tables:
         exported: "Eksporteret"
         transmitted: "Overført"
   # Bank Account Posting Group (Table 277)
+  bank_acc_reconciliation:
+    caption: "Bankkontoafstemning"
+    fields:
+      bank_account_no: "Bankkontonr."
+      statement_no: "Kontoudtogsnr."
+      statement_ending_balance: "Kontoudtogets slutsaldo"
+      statement_date: "Kontoudtogsdato"
+      balance_last_statement: "Saldo sidste kontoudtog"
+  bank_acc_reconciliation_line:
+    caption: "Bankkontoafstemningslinje"
+    fields:
+      bank_account_no: "Bankkontonr."
+      statement_no: "Kontoudtogsnr."
+      statement_line_no: "Kontoudtogslinjenr."
+      document_no: "Bilagsnr."
+      transaction_date: "Transaktionsdato"
+      description: "Beskrivelse"
+      statement_amount: "Kontoudtogsbeløb"
+      difference: "Difference"
+      applied_amount: "Udlignet beløb"
+      type: "Type"
+      applied_entries: "Udlignede poster"
+      value_date: "Valørdato"
+      ready_for_application: "Klar til udligning"
+      check_no: "Checknr."
+    options:
+      type:
+        bank_account_ledger_entry: "Bankkontopost"
+        check_ledger_entry: "Checkpost"
+        difference: "Difference"
+  bank_account_statement:
+    caption: "Bankkontoudtog"
+    fields:
+      bank_account_no: "Bankkontonr."
+      statement_no: "Kontoudtogsnr."
+      statement_ending_balance: "Kontoudtogets slutsaldo"
+      statement_date: "Kontoudtogsdato"
+      balance_last_statement: "Saldo sidste kontoudtog"
+  bank_account_statement_line:
+    caption: "Bankkontoudtogslinje"
+    fields:
+      bank_account_no: "Bankkontonr."
+      statement_no: "Kontoudtogsnr."
+      statement_line_no: "Kontoudtogslinjenr."
+      document_no: "Bilagsnr."
+      transaction_date: "Transaktionsdato"
+      description: "Beskrivelse"
+      statement_amount: "Kontoudtogsbeløb"
+      difference: "Difference"
+      applied_amount: "Udlignet beløb"
+      type: "Type"
+      applied_entries: "Udlignede poster"
+      value_date: "Valørdato"
+      check_no: "Checknr."
+    options:
+      type:
+        bank_account_ledger_entry: "Bankkontopost"
+        check_ledger_entry: "Checkpost"
+        difference: "Difference"
   bank_account_posting_group:
     caption: "Bankkontobogføringsgruppe"
     fields:

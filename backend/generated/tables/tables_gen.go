@@ -15,8 +15,12 @@ import (
 // tableRegistry holds the factory of every table by name
 var tableRegistry = map[string]tables.TableFactory{
 	"Accounting_Period":             func() tables.Table { return &AccountingPeriod{} },
+	"Bank_Acc_Reconciliation":       func() tables.Table { return &BankAccReconciliation{} },
+	"Bank_Acc_Reconciliation_Line":  func() tables.Table { return &BankAccReconciliationLine{} },
 	"Bank_Account":                  func() tables.Table { return &BankAccount{} },
 	"Bank_Account_Posting_Group":    func() tables.Table { return &BankAccountPostingGroup{} },
+	"Bank_Account_Statement":        func() tables.Table { return &BankAccountStatement{} },
+	"Bank_Account_Statement_Line":   func() tables.Table { return &BankAccountStatementLine{} },
 	"Bank_Account_Ledger_Entry":     func() tables.Table { return &BankAccountLedgerEntry{} },
 	"BOM_Component":                 func() tables.Table { return &BOMComponent{} },
 	"BOM_Journal_Batch":             func() tables.Table { return &BOMJournalBatch{} },
@@ -207,8 +211,12 @@ var tableRegistry = map[string]tables.TableFactory{
 func NewRecords() map[int]tables.Table {
 	return map[int]tables.Table{
 		AccountingPeriodTableID:          &AccountingPeriod{},
+		BankAccReconciliationTableID:     &BankAccReconciliation{},
+		BankAccReconciliationLineTableID: &BankAccReconciliationLine{},
 		BankAccountTableID:               &BankAccount{},
 		BankAccountPostingGroupTableID:   &BankAccountPostingGroup{},
+		BankAccountStatementTableID:      &BankAccountStatement{},
+		BankAccountStatementLineTableID:  &BankAccountStatementLine{},
 		BankAccountLedgerEntryTableID:    &BankAccountLedgerEntry{},
 		BOMComponentTableID:              &BOMComponent{},
 		BOMJournalBatchTableID:           &BOMJournalBatch{},

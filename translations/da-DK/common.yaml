@@ -8,6 +8,11 @@ common:
 
   # Common actions
   actions:
+    suggest_lines: "Foreslå linjer"
+    transfer_to_general_journal: "Overfør til finanskladde"
+    apply: "Udlign"
+    statements: "Kontoudtog"
+    bank_account_card: "Bankkontokort"
     allocations: "Fordelinger"
     insert_fa_bal_account: "Indsæt anlægsmodkonto"
     copy_depreciation_book: "Kopier afskrivningsprofil"

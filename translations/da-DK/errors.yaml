@@ -126,6 +126,11 @@ errors:
   ERR_JNL_REVERSING_DOC_OUT_OF_BALANCE: "De tilbageførte poster i %2 %3 balancerer ikke med %4. Kontrollér, at %1 er korrekt på hver linje for dette %2."
   ERR_JNL_REVERSING_OUT_OF_BALANCE: "De tilbageførte poster for %3 balancerer ikke med %4. Kontrollér, at %1 er korrekt på hver linje for denne %2."
   ERR_JNL_RECURRING_DATE_FILTERED: "%1 kan ikke filtreres, når gentagelseskladder bogføres."
+  ERR_BANK_REC_STATEMENT_EXISTS: "Kontoudtog %1 findes allerede."
+  ERR_BANK_REC_UPDATE_CANCELED: "Opdateringen blev annulleret."
+  ERR_BANK_REC_ENDING_BALANCE: "%1 er ikke lig med total saldo."
+  ERR_BANK_REC_APPLICATION: "Udligningen er ikke korrekt. Det samlede udlignede beløb er %1; det skal være %2."
+  ERR_BANK_REC_TOTAL_DIFFERENCE: "Den samlede difference er %1. Den skal være %2."
   ERR_RENAME_NOT_ALLOWED: "Du kan ikke omdøbe en %1."
   ERR_DATE_LATER: "%1 er senere end %2."
 

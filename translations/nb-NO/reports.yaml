@@ -763,6 +763,24 @@ reports:
     texts:
       OPTIONS: "Alternativer"
       WINDOW: "Oppretter anleggsprofil       #1##########\nOppretter ikke anleggsprofil  #2##########"
+  "1496":
+    caption: "Foreslå bankavstemmingslinjer"
+    options:
+      starting_date: "Startdato"
+      ending_date: "Sluttdato"
+      include_checks: "Ta med sjekker"
+    texts:
+      STATEMENT_PERIOD: "Kontoutskriftsperiode"
+      NO_RECONCILIATION: "Kjør rapporten fra en bankkontoavstemming."
+      ENTER_ENDING_DATE: "Angi sluttdatoen."
+  "1497":
+    caption: "Overfør bankavstemming til finanskladd"
+    options:
+      gen_journal_template: "Finanskladdemal"
+      gen_journal_batch: "Finanskladdenavn"
+    texts:
+      OPTIONS: "Alternativer"
+      NO_RECONCILIATION: "Kjør rapporten fra en bankkontoavstemming."
   "5692":
     caption: "Beregn avskrivning"
     options:

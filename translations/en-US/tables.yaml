@@ -1591,6 +1591,65 @@ tables:
         exported: "Exported"
         transmitted: "Transmitted"
   # Bank Account Posting Group (Table 277)
+  bank_acc_reconciliation:
+    caption: "Bank Acc. Reconciliation"
+    fields:
+      bank_account_no: "Bank Account No."
+      statement_no: "Statement No."
+      statement_ending_balance: "Statement Ending Balance"
+      statement_date: "Statement Date"
+      balance_last_statement: "Balance Last Statement"
+  bank_acc_reconciliation_line:
+    caption: "Bank Acc. Reconciliation Line"
+    fields:
+      bank_account_no: "Bank Account No."
+      statement_no: "Statement No."
+      statement_line_no: "Statement Line No."
+      document_no: "Document No."
+      transaction_date: "Transaction Date"
+      description: "Description"
+      statement_amount: "Statement Amount"
+      difference: "Difference"
+      applied_amount: "Applied Amount"
+      type: "Type"
+      applied_entries: "Applied Entries"
+      value_date: "Value Date"
+      ready_for_application: "Ready for Application"
+      check_no: "Check No."
+    options:
+      type:
+        bank_account_ledger_entry: "Bank Account Ledger Entry"
+        check_ledger_entry: "Check Ledger Entry"
+        difference: "Difference"
+  bank_account_statement:
+    caption: "Bank Account Statement"
+    fields:
+      bank_account_no: "Bank Account No."
+      statement_no: "Statement No."
+      statement_ending_balance: "Statement Ending Balance"
+      statement_date: "Statement Date"
+      balance_last_statement: "Balance Last Statement"
+  bank_account_statement_line:
+    caption: "Bank Account Statement Line"
+    fields:
+      bank_account_no: "Bank Account No."
+      statement_no: "Statement No."
+      statement_line_no: "Statement Line No."
+      document_no: "Document No."
+      transaction_date: "Transaction Date"
+      description: "Description"
+      statement_amount: "Statement Amount"
+      difference: "Difference"
+      applied_amount: "Applied Amount"
+      type: "Type"
+      applied_entries: "Applied Entries"
+      value_date: "Value Date"
+      check_no: "Check No."
+    options:
+      type:
+        bank_account_ledger_entry: "Bank Account Ledger Entry"
+        check_ledger_entry: "Check Ledger Entry"
+        difference: "Difference"
   bank_account_posting_group:
     caption: "Bank Account Posting Group"
     fields:

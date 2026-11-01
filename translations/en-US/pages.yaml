@@ -371,6 +371,35 @@ pages:
     fields:  # the footer (calculated)
       allocation_amount: "Amount"
       total_allocation_amount: "Total Amount"
+  bank_acc_reconciliation:
+    caption: "Bank Acc. Reconciliation"
+    fields:
+      total_balance: "Total Balance"
+      total_difference: "Total Difference"
+  bank_acc_reconciliation_lines:
+    caption: "Lines"
+  apply_bank_acc_ledger_entries:
+    caption: "Apply Bank Acc. Ledger Entries"
+    fields:
+      applied: "Applied"
+      statement_amount: "Statement Amount"
+      applied_amount: "Applied Amount"
+      difference: "Difference"
+  apply_check_ledger_entries:
+    caption: "Apply Check Ledger Entries"
+    fields:
+      applied: "Applied"
+      statement_amount: "Statement Amount"
+      applied_amount: "Applied Amount"
+      difference: "Difference"
+  bank_account_statement:
+    caption: "Bank Account Statement"
+  bank_account_statement_lines:
+    caption: "Lines"
+  bank_acc_reconciliation_list:
+    caption: "Bank Acc. Reconciliations"
+  bank_account_statement_list:
+    caption: "Bank Account Statements"
   sales_journal:
     caption: "Sales Journal"
     fields:  # the batch above the lines and the footer (calculated)

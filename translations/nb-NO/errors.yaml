@@ -126,6 +126,11 @@ errors:
   ERR_JNL_REVERSING_DOC_OUT_OF_BALANCE: "De tilbakeførte postene i %2 %3 er ikke i balanse med %4. Kontroller at %1 er riktig på hver linje for denne %2."
   ERR_JNL_REVERSING_OUT_OF_BALANCE: "De tilbakeførte postene for %3 er ikke i balanse med %4. Kontroller at %1 er riktig på hver linje for denne %2."
   ERR_JNL_RECURRING_DATE_FILTERED: "%1 kan ikke filtreres når gjentakelseskladder bokføres."
+  ERR_BANK_REC_STATEMENT_EXISTS: "Kontoutskrift %1 finnes allerede."
+  ERR_BANK_REC_UPDATE_CANCELED: "Oppdateringen ble avbrutt."
+  ERR_BANK_REC_ENDING_BALANCE: "%1 er ikke lik total saldo."
+  ERR_BANK_REC_APPLICATION: "Utligningen er ikke riktig. Totalt utlignet beløp er %1; det skal være %2."
+  ERR_BANK_REC_TOTAL_DIFFERENCE: "Total differanse er %1. Den må være %2."
   ERR_RENAME_NOT_ALLOWED: "Du kan ikke gi nytt navn til en %1."
   ERR_DATE_LATER: "%1 er senere enn %2."
 
