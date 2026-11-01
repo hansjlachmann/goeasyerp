@@ -192,6 +192,8 @@ master_data:
       - {no: "6150", name: "Realized Exchange Losses", account_type: 0, income_balance: 0}
       - {no: "6160", name: "Unrealized Exchange Gains", account_type: 0, income_balance: 0}
       - {no: "6170", name: "Unrealized Exchange Losses", account_type: 0, income_balance: 0}
+      - {no: "6180", name: "Gains on Disposal of FA", account_type: 0, income_balance: 0}
+      - {no: "6190", name: "Losses on Disposal of FA", account_type: 0, income_balance: 0}
       - {no: "6199", name: "Total Financial Items", account_type: 4, income_balance: 0, direct_posting: false}
       - {no: "8999", name: "NET INCOME", account_type: 2, income_balance: 0, direct_posting: false, totaling: "3000..6999"}
   - table: Tax_Jurisdiction   # sales tax: the domestic tax on the demo's tax accounts
@@ -624,9 +626,9 @@ master_data:
       - {code: WAREHOUSE, name: Main warehouse}
   - table: FA_Posting_Group   # the asset, accumulated depreciation and depreciation expense accounts
     records:
-      - {code: VEHICLES, acquisition_cost_account: "1250", accum_depreciation_account: "1260", acq_cost_acc_on_disposal: "1250", accum_depr_acc_on_disposal: "1260", depreciation_expense_acc: "5630", maintenance_expense_account: "5320", acquisition_cost_bal_acc: "2310"}
-      - {code: EQUIPMENT, acquisition_cost_account: "1230", accum_depreciation_account: "1240", acq_cost_acc_on_disposal: "1230", accum_depr_acc_on_disposal: "1240", depreciation_expense_acc: "5620", maintenance_expense_account: "5320", acquisition_cost_bal_acc: "2310"}
-      - {code: OFFICE, acquisition_cost_account: "1270", accum_depreciation_account: "1280", acq_cost_acc_on_disposal: "1270", accum_depr_acc_on_disposal: "1280", depreciation_expense_acc: "5640", maintenance_expense_account: "5320", acquisition_cost_bal_acc: "2310"}
+      - {code: VEHICLES, acquisition_cost_account: "1250", accum_depreciation_account: "1260", acq_cost_acc_on_disposal: "1250", accum_depr_acc_on_disposal: "1260", depreciation_expense_acc: "5630", maintenance_expense_account: "5320", acquisition_cost_bal_acc: "2310", gains_acc_on_disposal: "6180", losses_acc_on_disposal: "6190", sales_acc_on_disposal: "6180", book_value_acc_on_disposal: "6190"}
+      - {code: EQUIPMENT, acquisition_cost_account: "1230", accum_depreciation_account: "1240", acq_cost_acc_on_disposal: "1230", accum_depr_acc_on_disposal: "1240", depreciation_expense_acc: "5620", maintenance_expense_account: "5320", acquisition_cost_bal_acc: "2310", gains_acc_on_disposal: "6180", losses_acc_on_disposal: "6190", sales_acc_on_disposal: "6180", book_value_acc_on_disposal: "6190"}
+      - {code: OFFICE, acquisition_cost_account: "1270", accum_depreciation_account: "1280", acq_cost_acc_on_disposal: "1270", accum_depr_acc_on_disposal: "1280", depreciation_expense_acc: "5640", maintenance_expense_account: "5320", acquisition_cost_bal_acc: "2310", gains_acc_on_disposal: "6180", losses_acc_on_disposal: "6190", sales_acc_on_disposal: "6180", book_value_acc_on_disposal: "6190"}
   - table: Maintenance
     records:
       - {code: SERVICE, description: Periodic service}

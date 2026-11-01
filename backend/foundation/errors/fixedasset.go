@@ -202,3 +202,26 @@ func FACustom1EntryOnDate(faNo, deprBookCode, date string) *AppError {
 func FACustom1BookValuePositive(faNo, deprBookCode, date string) *AppError {
 	return &AppError{Code: ErrFACustom1BookValuePos, Params: []string{faNo, deprBookCode, date}}
 }
+
+// Disposal errors (codeunits 5632, 5606)
+const (
+	ErrFADisposalMethodChanged ErrorCode = "ERR_FA_DISPOSAL_METHOD_CHANGED"
+	ErrFADisposalCancelFirst   ErrorCode = "ERR_FA_DISPOSAL_CANCEL_FIRST"
+	ErrFADisposalLastDate      ErrorCode = "ERR_FA_DISPOSAL_LAST_DATE"
+)
+
+// FADisposalMethodChanged: the book's Disposal Calculation Method (table/field, value) differs
+// from the one of the asset's earlier disposal
+func FADisposalMethodChanged(faNo, deprBookCode, table, field string, value any) *AppError {
+	return &AppError{Code: ErrFADisposalMethodChanged, Table: table, Field: field, Params: []string{faNo, deprBookCode}, Value: value}
+}
+
+// FADisposalCancelFirst: the last disposal must be cancelled first
+func FADisposalCancelFirst(faNo, deprBookCode, disposalEntryNo string) *AppError {
+	return &AppError{Code: ErrFADisposalCancelFirst, Params: []string{faNo, deprBookCode, disposalEntryNo}}
+}
+
+// FADisposalLastDate: the disposal date must be the asset's last date in the book
+func FADisposalLastDate(faNo, deprBookCode string) *AppError {
+	return &AppError{Code: ErrFADisposalLastDate, Params: []string{faNo, deprBookCode}}
+}

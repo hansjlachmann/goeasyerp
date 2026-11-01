@@ -26,7 +26,7 @@ import (
 // A line with Depr. until FA Posting Date first posts the depreciation up to its date, with Depr.
 // Acquisition Cost after an acquisition the depreciation it adds (package fadepr).
 //
-// Not migrated yet: disposal (FA4), duplication in other books (FA5), budgeted assets.
+// Not migrated yet: duplication in other books (FA5), budgeted assets.
 type FAJnlPostLine struct {
 	src                    ftables.Source
 	faJnlCheckLine         FAJnlCheckLine
@@ -131,6 +131,16 @@ func (p *FAJnlPostLine) code(faLedgEntry *gtables.FALedgerEntry, v lineValues) e
 		if err != nil {
 			return err
 		}
+	}
+	if faLedgEntry.Fa_posting_type == gtables.FALedgerEntry_Fa_posting_type.ProceedsOnDisposal {
+		err = p.postDisposalEntry(faLedgEntry, fa)
+		if err != nil {
+			return err
+		}
+		if v.deprAcqCost {
+			return p.postDeprUntilDate(faLedgEntry, fa, v, true)
+		}
+		return nil
 	}
 	// DeprLine: a depreciation line without amount only depreciates until its date
 	deprLine := v.amount.IsZero() && faLedgEntry.Fa_posting_type == gtables.FALedgerEntry_Fa_posting_type.Depreciation && v.deprUntilDate
@@ -415,6 +425,9 @@ func (p *FAJnlPostLine) insertFALedgEntry(entry *gtables.FALedgerEntry, fa *gtab
 	err = setFAPostingType(faLedgEntry)
 	if err != nil {
 		return err
+	}
+	if faLedgEntry.Automatic_entry {
+		adjustFALedgEntry(faLedgEntry, fa)
 	}
 	faLedgEntry.Amount_lcy = amountLCY(faLedgEntry.Amount, faLedgEntry.Fa_exchange_rate)
 	glIntegration, err := calcGLIntegration(p.src, faLedgEntry)
@@ -745,4 +758,199 @@ func makeMaintenanceLedgEntryFromGenJnl(src ftables.Source, genJnlLine *gtables.
 	e.Use_tax = genJnlLine.Use_tax
 	e.No_series = genJnlLine.Posting_no_series
 	return e
+}
+
+// adjustFALedgEntry is codeunit 5607 FA Automatic Entry's AdjustFALedgEntry: an automatic entry
+// has no quantity (but a budgeted asset's), balancing account, tax or general posting groups and
+// is no reclassification or index entry
+func adjustFALedgEntry(e *gtables.FALedgerEntry, fa *gtables.FixedAsset) {
+	if !fa.Budgeted_asset {
+		e.Quantity = types.Decimal{}
+	}
+	e.Bal_account_type = gtables.FALedgerEntry_Bal_account_type.GLAccount
+	e.Bal_account_no = ""
+	e.Tax_amount = types.Decimal{}
+	e.Gen_posting_type = gtables.FALedgerEntry_Gen_posting_type.Blank
+	e.Gen_bus_posting_group = ""
+	e.Gen_prod_posting_group = ""
+	e.Reclassification_entry = false
+	e.Index_entry = false
+}
+
+// postDisposalEntry (PostDisposalEntry): the proceeds of a disposal and — the first disposal —
+// the reversal of the types set to Reverse before Disposal, the asset's amounts taken out
+// (category Disposal), the book value on disposal or the balancing (by the book's Disposal
+// Calculation Method) and the gain or loss; a second disposal adds its proceeds to the gain or
+// loss; a cancelling line (FA Error Entry No.) cancels the last disposal's entries
+func (p *FAJnlPostLine) postDisposalEntry(entry *gtables.FALedgerEntry, fa *gtables.FixedAsset) error {
+	faNo, deprBookCode := entry.Fa_no, entry.Depreciation_book_code
+	deprBook := gtables.NewDepreciationBook(p.src)
+	err := deprBook.GetOrError(deprBookCode)
+	if err != nil {
+		return err
+	}
+	errorEntryNo := entry.Entry_no
+	entry.Disposal_calculation_method = gtables.FALedgerEntryDisposal_calculation_method(deprBook.Disposal_calculation_method + 1)
+	dt, oldMethod, maxDisposalNo, salesEntryNo := getDisposalType(p.src, faNo, deprBookCode, errorEntryNo)
+	if maxDisposalNo > 0 && entry.Disposal_calculation_method != oldMethod {
+		return apperrors.FADisposalMethodChanged(faNo.String(), deprBookCode.String(), gtables.DepreciationBookTableName, "disposal_calculation_method", deprBook.Disposal_calculation_method)
+	}
+	if errorEntryNo == 0 {
+		entry.Disposal_entry_no = maxDisposalNo + 1
+	} else if salesEntryNo != errorEntryNo {
+		return apperrors.FADisposalCancelFirst(faNo.String(), deprBookCode.String(), strconv.Itoa(maxDisposalNo))
+	}
+	if dt == firstDisposal {
+		err = p.postReverseType(entry, fa)
+		if err != nil {
+			return err
+		}
+	}
+	p.glAcc.orgGenJnlLine = true
+	err = p.insertFALedgEntry(entry, fa)
+	p.glAcc.orgGenJnlLine = false
+	if err != nil {
+		return err
+	}
+	insertAmount := func(i int, amount types.Decimal, cancelEntryNo int) error {
+		e := gtables.NewFALedgerEntry(p.src)
+		e.Copy(entry)
+		e.Automatic_entry = true
+		e.Entry_no = cancelEntryNo
+		e.Fa_posting_category = disposalPostingCategory(i)
+		e.Fa_posting_type = disposalPostingType(i)
+		e.Amount = amount
+		switch i {
+		case 0:
+			e.Result_on_disposal = gtables.FALedgerEntry_Result_on_disposal.Gain
+		case 1:
+			e.Result_on_disposal = gtables.FALedgerEntry_Result_on_disposal.Loss
+		default:
+			e.Result_on_disposal = gtables.FALedgerEntry_Result_on_disposal.Blank
+		}
+		err := p.insertFALedgEntry(e, fa)
+		if err != nil {
+			return err
+		}
+		return p.postAllocation(e, deprBook)
+	}
+	switch dt {
+	case firstDisposal:
+		amounts, err := calcGainLoss(p.src, faNo, deprBookCode)
+		if err != nil {
+			return err
+		}
+		for i, amount := range amounts {
+			if !amount.IsZero() {
+				if err = insertAmount(i, amount, 0); err != nil {
+					return err
+				}
+			}
+		}
+	case secondDisposal:
+		amounts, err := calcSecondGainLoss(p.src, faNo, deprBookCode, entry.Amount)
+		if err != nil {
+			return err
+		}
+		for i := 0; i < 2; i++ {
+			if !amounts[i].IsZero() {
+				if err = insertAmount(i, amounts[i], 0); err != nil {
+					return err
+				}
+			}
+		}
+	default:
+		amounts, numbers := getErrorDisposal(p.src, faNo, deprBookCode, dt == errorDisposal)
+		last := 14
+		if dt == errorDisposal {
+			last = 2
+		}
+		for i := 0; i < last; i++ {
+			if numbers[i] != 0 {
+				if err = insertAmount(i, amounts[i], numbers[i]); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// postReverseType (PostReverseType): the types set to Reverse before Disposal reversed (with G/L
+// integration their balancing amounts)
+func (p *FAJnlPostLine) postReverseType(entry *gtables.FALedgerEntry, fa *gtables.FixedAsset) error {
+	amounts, err := calcReverseAmounts(p.src, entry.Fa_no, entry.Depreciation_book_code)
+	if err != nil {
+		return err
+	}
+	for i, amount := range amounts {
+		if amount.IsZero() {
+			continue
+		}
+		e := gtables.NewFALedgerEntry(p.src)
+		e.Copy(entry)
+		e.Entry_no = 0
+		e.Fa_posting_category = gtables.FALedgerEntry_Fa_posting_category.Blank
+		e.Automatic_entry = true
+		e.Amount = amount
+		e.Fa_posting_type = reverseType(i)
+		err = p.insertFALedgEntry(e, fa)
+		if err != nil {
+			return err
+		}
+		if e.G_l_entry_no > 0 {
+			err = p.glAcc.insertBalAcc(p.src, e)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// postAllocation (PostAllocation): with G/L integration, a disposal's gain/loss (method Net) and
+// book value on disposal allocated by the posting group's Allocated Gain / Loss / Book Value %
+// (PostGLBalAcc)
+func (p *FAJnlPostLine) postAllocation(entry *gtables.FALedgerEntry, deprBook *gtables.DepreciationBook) error {
+	if entry.G_l_entry_no == 0 {
+		return nil
+	}
+	faPostingGr := gtables.NewFAPostingGroup(p.src)
+	err := faPostingGr.GetOrError(entry.Fa_posting_group)
+	if err != nil {
+		return err
+	}
+	faPostingGr.CalcFields("allocated_gain_percent", "allocated_loss_percent", "allocated_book_value_percent")
+	switch entry.Fa_posting_type {
+	case gtables.FALedgerEntry_Fa_posting_type.GainLoss:
+		if deprBook.Disposal_calculation_method == gtables.DepreciationBook_Disposal_calculation_method.Net {
+			if entry.Result_on_disposal == gtables.FALedgerEntry_Result_on_disposal.Gain {
+				return p.postGLBalAcc(entry, faPostingGr.Allocated_gain_percent)
+			}
+			return p.postGLBalAcc(entry, faPostingGr.Allocated_loss_percent)
+		}
+	case gtables.FALedgerEntry_Fa_posting_type.BookValueOnDisposal:
+		return p.postGLBalAcc(entry, faPostingGr.Allocated_book_value_percent)
+	}
+	return nil
+}
+
+// postGLBalAcc (PostGLBalAcc): with an allocation, the entry's amount moved off its account
+// (the other way) and onto the allocation's accounts
+func (p *FAJnlPostLine) postGLBalAcc(entry *gtables.FALedgerEntry, allocatedPct types.Decimal) error {
+	if !allocatedPct.IsPositive() {
+		return nil
+	}
+	e := gtables.NewFALedgerEntry(p.src)
+	e.Copy(entry)
+	e.Entry_no = 0
+	e.Automatic_entry = true
+	e.Amount = entry.Amount.Neg()
+	e.Correction = !entry.Correction
+	err := p.glAcc.insertFAEntry(p.src, e)
+	if err != nil {
+		return err
+	}
+	e.Correction = !e.Correction
+	return p.glAcc.insertBalAcc(p.src, e)
 }

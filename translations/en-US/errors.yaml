@@ -101,6 +101,9 @@ errors:
   ERR_FA_DEPR_TABLE_PERIOD_TOO_SHORT: "The number of days in an accounting period must not be less than 5."
   ERR_FA_CUSTOM1_ENTRY_ON_DATE: "A depreciation entry must be posted on the Depr. Ending Date (Custom 1) %3 for fixed asset %1 in depreciation book %2."
   ERR_FA_CUSTOM1_BOOK_VALUE_POSITIVE: "The book value is positive on the Depr. Ending Date (Custom 1) %3 for fixed asset %1 in depreciation book %2."
+  ERR_FA_DISPOSAL_METHOD_CHANGED: "%1 must not be %4 for fixed asset %2 in depreciation book %3: its earlier disposal used another method."
+  ERR_FA_DISPOSAL_CANCEL_FIRST: "Disposal Entry No. %3 must be canceled first for fixed asset %1 in depreciation book %2."
+  ERR_FA_DISPOSAL_LAST_DATE: "The disposal date must be the last date for fixed asset %1 in depreciation book %2."
   ERR_RENAME_NOT_ALLOWED: "You cannot rename a %1."
   ERR_DATE_LATER: "%1 is later than %2."
 

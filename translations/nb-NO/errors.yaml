@@ -101,6 +101,9 @@ errors:
   ERR_FA_DEPR_TABLE_PERIOD_TOO_SHORT: "Antall dager i en regnskapsperiode kan ikke være mindre enn 5."
   ERR_FA_CUSTOM1_ENTRY_ON_DATE: "En avskrivningspost må bokføres på sluttdato for avskrivning (bruker 1) %3 for anleggsmiddel %1 i avskrivningsprofil %2."
   ERR_FA_CUSTOM1_BOOK_VALUE_POSITIVE: "Bokført verdi er positiv på sluttdato for avskrivning (bruker 1) %3 for anleggsmiddel %1 i avskrivningsprofil %2."
+  ERR_FA_DISPOSAL_METHOD_CHANGED: "%1 kan ikke være %4 for anleggsmiddel %2 i avskrivningsprofil %3: den tidligere avhendingen brukte en annen metode."
+  ERR_FA_DISPOSAL_CANCEL_FIRST: "Avhendingspostnr. %3 må annulleres først for anleggsmiddel %1 i avskrivningsprofil %2."
+  ERR_FA_DISPOSAL_LAST_DATE: "Avhendingsdatoen må være den siste datoen for anleggsmiddel %1 i avskrivningsprofil %2."
   ERR_RENAME_NOT_ALLOWED: "Du kan ikke gi nytt navn til en %1."
   ERR_DATE_LATER: "%1 er senere enn %2."
 

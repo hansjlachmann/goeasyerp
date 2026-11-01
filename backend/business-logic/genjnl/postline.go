@@ -711,6 +711,17 @@ func (p *GenJnlPostLine) postFixedAsset(genJnlLine *gtables.GenJournalLine) erro
 		glEntry.Bal_account_no = tempGLEntry.Bal_account_no
 		glEntry.Fa_entry_type = b.FAEntryType
 		glEntry.Fa_entry_no = b.FAEntryNo
+		if b.AutomaticEntry {
+			// codeunit 5607 AdjustGLEntry: an automatic amount has no quantity, balancing
+			// account, tax or general posting groups
+			glEntry.Quantity = types.Decimal{}
+			glEntry.Bal_account_type = gtables.GLEntry_Bal_account_type.GLAccount
+			glEntry.Bal_account_no = ""
+			glEntry.Tax_amount = types.Decimal{}
+			glEntry.Gen_posting_type = gtables.GLEntry_Gen_posting_type.Blank
+			glEntry.Gen_bus_posting_group = ""
+			glEntry.Gen_prod_posting_group = ""
+		}
 		err = p.insertGLEntry()
 		if err != nil {
 			return err

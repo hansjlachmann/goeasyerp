@@ -180,7 +180,7 @@ func TestPostFAJournal(t *testing.T) {
 }
 
 // The checks: a posting type the book posts to the G/L belongs in the general journal; the first
-// entry must be an acquisition cost; depreciation must not become positive; disposal comes later;
+// entry must be an acquisition cost (also for a disposal); depreciation must not become positive;
 // a cancelling line takes the entry it cancels off the asset
 func TestFAJournalChecks(t *testing.T) {
 	db := demoDB(t)
@@ -204,7 +204,8 @@ func TestFAJournalChecks(t *testing.T) {
 	expectError("first entry", func(batch *gtables.FAJournalBatch) {
 		addLine(t, batch, 10000, gtables.FAJournalLine_Fa_posting_type.WriteDown, "2026-01-02", "-1000")
 	})
-	expectError("cannot be posted yet", func(batch *gtables.FAJournalBatch) {
+	expectError("must be an acquisition cost", func(batch *gtables.FAJournalBatch) {
+		// the disposal of an asset not acquired
 		addLine(t, batch, 10000, gtables.FAJournalLine_Fa_posting_type.Disposal, "2026-01-02", "-1000")
 	})
 	expectError("must not be positive", func(batch *gtables.FAJournalBatch) {

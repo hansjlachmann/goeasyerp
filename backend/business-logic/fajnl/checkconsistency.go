@@ -17,7 +17,8 @@ import (
 // depreciable basis is not negative. Then the FA depreciation book's Acquisition Date, Last …
 // Date of the posting type (SetFAPostingDate).
 //
-// Not migrated yet: disposal (CheckSalesPosting, the disposal date — FA4), insurance integration.
+// A disposal (proceeds) is checked by CheckSalesPosting; it sets the Disposal Date (and the
+// insurance coverage's Disposed FA in the insurance book).
 func checkConsistencyOfEntry(entry *gtables.FALedgerEntry) error {
 	if entry.Fa_posting_category != gtables.FALedgerEntry_Fa_posting_category.Blank ||
 		entry.Fa_posting_type == gtables.FALedgerEntry_Fa_posting_type.GainLoss ||
@@ -49,11 +50,81 @@ func checkConsistencyOfEntry(entry *gtables.FALedgerEntry) error {
 		}
 		sign = faPostingTypeSetup.Sign
 	}
-	err = checkNormalPosting(entry, deprBook, faDeprBook, sign)
+	if entry.Fa_posting_type == gtables.FALedgerEntry_Fa_posting_type.ProceedsOnDisposal {
+		err = checkSalesPosting(entry, deprBook, faDeprBook)
+	} else {
+		err = checkNormalPosting(entry, deprBook, faDeprBook, sign)
+	}
 	if err != nil {
 		return err
 	}
-	return setFAPostingDate(entry, faDeprBook)
+	err = setFAPostingDate(entry, faDeprBook)
+	if err != nil {
+		return err
+	}
+	return checkInsuranceIntegration(entry, deprBook, faDeprBook)
+}
+
+// checkSalesPosting (CheckSalesPosting): a disposal of an acquired asset, on its last date (no
+// entry in the book value or depreciable basis after it); with Use FA Ledger Check the proceeds
+// are not positive in total
+func checkSalesPosting(entry *gtables.FALedgerEntry, deprBook *gtables.DepreciationBook, faDeprBook *gtables.FADepreciationBook) error {
+	faNo, deprBookCode := entry.Fa_no.String(), entry.Depreciation_book_code.String()
+	if faDeprBook.Acquisition_date.IsZero() {
+		return apperrors.FAFirstAcquisition(faNo, deprBookCode)
+	}
+	after := entry.Fa_posting_date.AddDays(1).String() + ".."
+	for _, field := range []string{"part_of_book_value", "part_of_depreciable_basis"} {
+		later := gtables.NewFALedgerEntry(entry)
+		later.SetRange("fa_no", entry.Fa_no)
+		later.SetRange("depreciation_book_code", entry.Depreciation_book_code)
+		later.SetRange(field, true)
+		later.SetFilter("fa_posting_date", after)
+		if later.FindFirst() {
+			return apperrors.FADisposalLastDate(faNo, deprBookCode)
+		}
+	}
+	if !faDeprBook.Use_fa_ledger_check {
+		return deprBook.TestField("use_fa_ledger_check", false)
+	}
+	proceeds := gtables.NewFALedgerEntry(entry)
+	proceeds.SetRange("fa_no", entry.Fa_no)
+	proceeds.SetRange("depreciation_book_code", entry.Depreciation_book_code)
+	proceeds.SetRange("fa_posting_category", gtables.FALedgerEntry_Fa_posting_category.Blank)
+	proceeds.SetRange("fa_posting_type", gtables.FALedgerEntry_Fa_posting_type.ProceedsOnDisposal)
+	newAmount := types.Decimal{}
+	for found := proceeds.FindSet(); found; found = proceeds.Next() {
+		newAmount = newAmount.Add(proceeds.Amount)
+		if newAmount.IsPositive() {
+			return apperrors.FAMustNotBeSigned(true, faNo, deprBookCode, proceeds.Fa_posting_date.String(),
+				gtables.FALedgerEntryTableName, "fa_posting_type", entry.Fa_posting_type)
+		}
+	}
+	return nil
+}
+
+// checkInsuranceIntegration (CheckInsuranceIntegration): a disposal in the FA Setup's insurance
+// book marks the asset's insurance coverage entries Disposed FA
+func checkInsuranceIntegration(entry *gtables.FALedgerEntry, deprBook *gtables.DepreciationBook, faDeprBook *gtables.FADepreciationBook) error {
+	if entry.Fa_posting_type != gtables.FALedgerEntry_Fa_posting_type.ProceedsOnDisposal {
+		return nil
+	}
+	insCoverageLedgEntry := gtables.NewInsCoverageLedgerEntry(entry)
+	if !insCoverageLedgEntry.FindFirst() {
+		return nil
+	}
+	faSetup := gtables.GetFASetup(entry)
+	err := faSetup.TestField("insurance_depr_book")
+	if err != nil {
+		return err
+	}
+	if deprBook.Code != faSetup.Insurance_depr_book {
+		return nil
+	}
+	insCoverageLedgEntry = gtables.NewInsCoverageLedgerEntry(entry)
+	insCoverageLedgEntry.SetRange("fa_no", entry.Fa_no)
+	insCoverageLedgEntry.ModifyAll("disposed_fa", !faDeprBook.Disposal_date.IsZero())
+	return nil
 }
 
 // postingTypeSetupType: the FA Posting Type Setup line of a posting type (write-down,
@@ -194,10 +265,13 @@ func setFAPostingDate(entry *gtables.FALedgerEntry, faDeprBook *gtables.FADeprec
 	if faLedgEntry.FindLast() {
 		maxDate = faLedgEntry.Fa_posting_date
 	}
-	if entry.Fa_posting_type == gtables.FALedgerEntry_Fa_posting_type.AcquisitionCost {
+	if entry.Fa_posting_type == gtables.FALedgerEntry_Fa_posting_type.AcquisitionCost ||
+		entry.Fa_posting_type == gtables.FALedgerEntry_Fa_posting_type.ProceedsOnDisposal {
 		if faLedgEntry.FindFirst() {
 			minDate = faLedgEntry.Fa_posting_date
 		}
+	}
+	if entry.Fa_posting_type == gtables.FALedgerEntry_Fa_posting_type.AcquisitionCost {
 		faLedgEntry.SetCurrentKey("fa_no", "depreciation_book_code", "fa_posting_category", "fa_posting_type", "posting_date")
 		if faLedgEntry.FindFirst() {
 			glDate = faLedgEntry.Posting_date
@@ -220,6 +294,8 @@ func setFAPostingDate(entry *gtables.FALedgerEntry, faDeprBook *gtables.FADeprec
 		faDeprBook.Last_custom_1_date = maxDate
 	case gtables.FALedgerEntry_Fa_posting_type.Custom2:
 		faDeprBook.Last_custom_2_date = maxDate
+	case gtables.FALedgerEntry_Fa_posting_type.ProceedsOnDisposal:
+		faDeprBook.Disposal_date = minDate
 	}
 	return faDeprBook.ModifyOrError(false)
 }
