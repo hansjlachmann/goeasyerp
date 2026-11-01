@@ -2636,7 +2636,7 @@ func (t *MaintenanceLedgerEntry) renameReferences(field string, oldValue, newVal
 		condValue  int
 	}
 	references := map[string][]reference{
-		"entry_no": {{"FA_Register", false, "from_maintenance_entry_no", "", 0}, {"FA_Register", false, "to_maintenance_entry_no", "", 0}},
+		"entry_no": {{"FA_Register", false, "from_maintenance_entry_no", "", 0}, {"FA_Register", false, "to_maintenance_entry_no", "", 0}, {"G_L_Entry", false, "fa_entry_no", "fa_entry_type", 2}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

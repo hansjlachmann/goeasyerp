@@ -88,6 +88,7 @@ errors:
   ERR_FA_DEPR_BASIS_NEGATIVE: "Afskrivningsgrundlaget må ikke være negativt pr. %3 for anlæg %1 i afskrivningsprofil %2."
   ERR_FA_ERROR_ENTRY_NOT_FOUND: "Anlægsfejlpostløbenr. %3 findes ikke for anlæg %1 i afskrivningsprofil %2."
   ERR_FA_ERROR_ENTRY_NO_MATCH: "Anlægsfejlpostløbenr. %3 stemmer ikke med kladdelinjen for anlæg %1 i afskrivningsprofil %2."
+  ERR_FA_NO_SPACE_FOR_BAL_ACCOUNTS: "Der er ikke plads nok til at indsætte modkontiene."
   ERR_RENAME_NOT_ALLOWED: "Du kan ikke omdøbe en %1."
   ERR_DATE_LATER: "%1 er senere end %2."
 
@@ -144,7 +145,6 @@ errors:
   ERR_JNL_WITHOUT_FIELD: "%1 kan ikke angives uden %2."
   ERR_JNL_RECURRING_ONLY_FIELD: "Kun feltet %1 kan udfyldes i gentagelseskladder."
   ERR_JNL_MUST_NOT_BE: "%1 må ikke være %2."
-  ERR_JNL_FIXED_ASSET_NOT_YET: "%1 Anlægsaktiv kan ikke bogføres endnu: det kommer med bogføring af anlægsaktiver."
   ERR_SALES_TAX_CALCULATION_ORDER: "Jurisdiktionerne i momsområde %2 skal have forskellige værdier i %1, når der beregnes moms af moms."
   ERR_SALES_TAX_AMOUNT_INCORRECT: "Momsbeløbet svarer ikke til momsen for momsområde %1 og momsgruppe %2."
   ERR_TAX_NOT_FOR_SALES_TAX: "%2 kan ikke bruges, når %1 er %3."

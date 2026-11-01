@@ -8,6 +8,19 @@ common:
 
   # Common actions
   actions:
+    allocations: "Allocations"
+    insert_fa_bal_account: "Insert FA Bal. Account"
+    acquisition: "Acquisition"
+    depreciation: "Depreciation"
+    write_down: "Write-Down"
+    appreciation: "Appreciation"
+    custom_1: "Custom 1"
+    custom_2: "Custom 2"
+    disposal: "Disposal"
+    maintenance: "Maintenance"
+    gain: "Gain"
+    loss: "Loss"
+    book_value: "Book Value"
     fixed_asset: "Fixed Asset"
     depr_book: "Depr. Book"
     fa_posting_type_setup: "FA Posting Type Setup"

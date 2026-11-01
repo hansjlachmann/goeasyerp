@@ -88,6 +88,7 @@ errors:
   ERR_FA_DEPR_BASIS_NEGATIVE: "Avskrivningsgrunnlaget kan ikke være negativt per %3 for anleggsmiddel %1 i avskrivningsprofil %2."
   ERR_FA_ERROR_ENTRY_NOT_FOUND: "Anleggsfeilpostnr. %3 finnes ikke for anleggsmiddel %1 i avskrivningsprofil %2."
   ERR_FA_ERROR_ENTRY_NO_MATCH: "Anleggsfeilpostnr. %3 stemmer ikke med kladdelinjen for anleggsmiddel %1 i avskrivningsprofil %2."
+  ERR_FA_NO_SPACE_FOR_BAL_ACCOUNTS: "Det er ikke nok plass til å sette inn motkontoene."
   ERR_RENAME_NOT_ALLOWED: "Du kan ikke gi nytt navn til en %1."
   ERR_DATE_LATER: "%1 er senere enn %2."
 
@@ -144,7 +145,6 @@ errors:
   ERR_JNL_WITHOUT_FIELD: "%1 kan ikke angis uten %2."
   ERR_JNL_RECURRING_ONLY_FIELD: "Bare feltet %1 kan fylles ut i gjentakende kladder."
   ERR_JNL_MUST_NOT_BE: "%1 kan ikke være %2."
-  ERR_JNL_FIXED_ASSET_NOT_YET: "%1 Anleggsmiddel kan ikke bokføres ennå: det kommer med bokføring av anleggsmidler."
   ERR_SALES_TAX_CALCULATION_ORDER: "Jurisdiksjonene i mva.-område %2 må ha forskjellige verdier i %1 når det beregnes mva. av mva."
   ERR_SALES_TAX_AMOUNT_INCORRECT: "Mva.-beløpet stemmer ikke med mva. for mva.-område %1 og mva.-gruppe %2."
   ERR_TAX_NOT_FOR_SALES_TAX: "%2 kan ikke brukes når %1 er %3."

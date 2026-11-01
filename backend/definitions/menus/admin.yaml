@@ -597,6 +597,7 @@ menu:
         page_id: 5645
       - separator: true
       - name: "FA G/L Journals"
+        page_id: 5628
       - name: "FA Journals"
         page_id: 5629
       - name: "FA Reclass. Journals"

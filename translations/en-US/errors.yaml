@@ -88,6 +88,7 @@ errors:
   ERR_FA_DEPR_BASIS_NEGATIVE: "The depreciable basis must not be negative on %3 for fixed asset %1 in depreciation book %2."
   ERR_FA_ERROR_ENTRY_NOT_FOUND: "FA Error Entry No. %3 does not exist for fixed asset %1 in depreciation book %2."
   ERR_FA_ERROR_ENTRY_NO_MATCH: "FA Error Entry No. %3 does not match the journal line for fixed asset %1 in depreciation book %2."
+  ERR_FA_NO_SPACE_FOR_BAL_ACCOUNTS: "There is not enough space to insert the balance accounts."
   ERR_RENAME_NOT_ALLOWED: "You cannot rename a %1."
   ERR_DATE_LATER: "%1 is later than %2."
 
@@ -144,7 +145,6 @@ errors:
   ERR_JNL_WITHOUT_FIELD: "%1 cannot be specified without %2."
   ERR_JNL_RECURRING_ONLY_FIELD: "Only the %1 field can be filled in on recurring journals."
   ERR_JNL_MUST_NOT_BE: "%1 must not be %2."
-  ERR_JNL_FIXED_ASSET_NOT_YET: "%1 Fixed Asset cannot be posted yet: it comes with fixed asset posting."
   ERR_SALES_TAX_CALCULATION_ORDER: "The jurisdictions of tax area %2 need different values in %1 when tax is calculated on tax."
   ERR_SALES_TAX_AMOUNT_INCORRECT: "The tax amount is not the tax of tax area %1 and tax group %2."
   ERR_TAX_NOT_FOR_SALES_TAX: "%2 cannot be used when %1 is %3."

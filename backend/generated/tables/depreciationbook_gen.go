@@ -2103,7 +2103,7 @@ func (t *DepreciationBook) renameReferences(field string, oldValue, newValue int
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"FA_Depreciation_Book", false, "depreciation_book_code", "", 0}, {"FA_Journal_Line", false, "depreciation_book_code", "", 0}, {"FA_Journal_Line", false, "duplicate_in_depreciation_book", "", 0}, {"FA_Journal_Setup", false, "depreciation_book_code", "", 0}, {"FA_Posting_Type_Setup", false, "depreciation_book_code", "", 0}, {"FA_Setup", false, "default_depr_book", "", 0}, {"FA_Setup", false, "insurance_depr_book", "", 0}, {"FA_Ledger_Entry", false, "depreciation_book_code", "", 0}, {"Maintenance_Ledger_Entry", false, "depreciation_book_code", "", 0}},
+		"code": {{"FA_Depreciation_Book", false, "depreciation_book_code", "", 0}, {"FA_Journal_Line", false, "depreciation_book_code", "", 0}, {"FA_Journal_Line", false, "duplicate_in_depreciation_book", "", 0}, {"FA_Journal_Setup", false, "depreciation_book_code", "", 0}, {"FA_Posting_Type_Setup", false, "depreciation_book_code", "", 0}, {"FA_Setup", false, "default_depr_book", "", 0}, {"FA_Setup", false, "insurance_depr_book", "", 0}, {"FA_Ledger_Entry", false, "depreciation_book_code", "", 0}, {"Gen_Journal_Line", false, "depreciation_book_code", "", 0}, {"Gen_Journal_Line", false, "duplicate_in_depreciation_book", "", 0}, {"Maintenance_Ledger_Entry", false, "depreciation_book_code", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

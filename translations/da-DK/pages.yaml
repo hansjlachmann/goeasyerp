@@ -723,3 +723,13 @@ pages:
     caption: "Opsætning af anlægsbogføringstyper"
   fa_journal_setup:
     caption: "Opsætning af anlægskladde"
+  fixed_asset_g_l_journal:
+    caption: "Anlægsfinanskladde"
+    fields:  # the batch above the lines and the footer (calculated)
+      journal_batch_name: "Kladdenavn"
+      account_name: "Kontonavn"
+      bal_account_name: "Modkontonavn"
+      balance: "Saldo"
+      total_balance: "Total saldo"
+  fa_allocations:
+    caption: "Anlægsfordelinger"

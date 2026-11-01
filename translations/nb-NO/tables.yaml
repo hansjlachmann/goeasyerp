@@ -806,6 +806,8 @@ tables:
   g_l_entry:
     caption: "Finanspost"
     fields:
+      fa_entry_type: "Anleggsposttype"
+      fa_entry_no: "Anleggspostnr."
       entry_no: "Løpenr."
       gl_account_no: "Finanskontonr."
       posting_date: "Bokføringsdato"
@@ -850,6 +852,9 @@ tables:
 
     # Option field values
     options:
+      fa_entry_type:
+        fixed_asset: "Anleggsmiddel"
+        maintenance: "Vedlikehold"
       document_type:
         payment: "Betaling"
         invoice: "Faktura"
@@ -1644,6 +1649,17 @@ tables:
   fa_posting_group:
     caption: "Anleggsbokføringsgruppe"
     fields:
+      allocated_acquisition_cost_percent: "Fordelt anskaffelseskost %"
+      allocated_depreciation_percent: "Fordelt avskrivning %"
+      allocated_write_down_percent: "Fordelt nedskrivning %"
+      allocated_appreciation_percent: "Fordelt oppskrivning %"
+      allocated_custom_1_percent: "Fordelt bruker 1 %"
+      allocated_custom_2_percent: "Fordelt bruker 2 %"
+      allocated_sales_price_percent: "Fordelt salgspris %"
+      allocated_maintenance_percent: "Fordelt vedlikehold %"
+      allocated_gain_percent: "Fordelt gevinst %"
+      allocated_loss_percent: "Fordelt tap %"
+      allocated_book_value_percent: "Fordelt bokført verdi %"
       code: "Kode"
       acquisition_cost_account: "Konto for anskaffelseskost"
       accum_depreciation_account: "Konto for akkumulerte avskrivninger"
@@ -2022,6 +2038,31 @@ tables:
       reason_code: "Årsakskode"
       no_series: "Nummerserie"
       posting_no_series: "Bokføringsnummerserie"
+  fa_allocation:
+    caption: "Anleggsfordeling"
+    fields:
+      code: "Kode"
+      line_no: "Linjenr."
+      description: "Beskrivelse"
+      account_no: "Kontonr."
+      department_code: "Avdelingskode"
+      project_code: "Prosjektkode"
+      allocation_percent: "Fordeling %"
+      allocation_type: "Fordelingstype"
+      account_name: "Kontonavn"
+    options:
+      allocation_type:
+        acquisition: "Anskaffelse"
+        depreciation: "Avskrivning"
+        write_down: "Nedskrivning"
+        appreciation: "Oppskrivning"
+        custom_1: "Bruker 1"
+        custom_2: "Bruker 2"
+        disposal: "Avhending"
+        maintenance: "Vedlikehold"
+        gain: "Gevinst"
+        loss: "Tap"
+        book_value: "Bokført verdi"
   fa_journal_line:
     caption: "Anleggskladdelinje"
     fields:
@@ -2275,6 +2316,20 @@ tables:
   gen_journal_line:
     caption: "Finanskladdelinje"
     fields:
+      fa_posting_date: "Anleggsbokføringsdato"
+      fa_posting_type: "Anleggsbokføringstype"
+      depreciation_book_code: "Avskrivningsprofilkode"
+      salvage_value: "Utrangeringsverdi"
+      no_of_depreciation_days: "Antall avskrivningsdager"
+      depr_until_fa_posting_date: "Avskriv til anleggsbokføringsdato"
+      depr_acquisition_cost: "Avskriv anskaffelseskost"
+      maintenance_code: "Vedlikeholdskode"
+      insurance_no: "Forsikringsnr."
+      duplicate_in_depreciation_book: "Dupliser i avskrivningsprofil"
+      use_duplication_list: "Bruk dupliseringsliste"
+      fa_reclassification_entry: "Anleggsomklassifiseringspost"
+      fa_error_entry_no: "Anleggsfeilpostnr."
+      index_entry: "Indekspost"
       journal_template_name: "Kladdemalnavn"
       line_no: "Linjenr."
       account_type: "Kontotype"
@@ -2359,6 +2414,15 @@ tables:
       bal_tax_base_amount_lcy: "Mva.-grunnlag for motkonto (NOK)"
       reversing_entry: "Tilbakeførende post"
     options:
+      fa_posting_type:
+        acquisition_cost: "Anskaffelseskost"
+        depreciation: "Avskrivning"
+        write_down: "Nedskrivning"
+        appreciation: "Oppskrivning"
+        custom_1: "Bruker 1"
+        custom_2: "Bruker 2"
+        disposal: "Avhending"
+        maintenance: "Vedlikehold"
       account_type:
         g_l_account: "Finanskonto"
         customer: "Kunde"

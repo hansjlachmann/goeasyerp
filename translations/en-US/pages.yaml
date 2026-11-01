@@ -723,3 +723,13 @@ pages:
     caption: "FA Posting Type Setup"
   fa_journal_setup:
     caption: "FA Journal Setup"
+  fixed_asset_g_l_journal:
+    caption: "Fixed Asset G/L Journal"
+    fields:  # the batch above the lines and the footer (calculated)
+      journal_batch_name: "Batch Name"
+      account_name: "Account Name"
+      bal_account_name: "Bal. Account Name"
+      balance: "Balance"
+      total_balance: "Total Balance"
+  fa_allocations:
+    caption: "FA Allocations"

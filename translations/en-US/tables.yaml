@@ -806,6 +806,8 @@ tables:
   g_l_entry:
     caption: "G/L Entry"
     fields:
+      fa_entry_type: "FA Entry Type"
+      fa_entry_no: "FA Entry No."
       entry_no: "Entry No."
       gl_account_no: "G/L Account No."
       posting_date: "Posting Date"
@@ -850,6 +852,9 @@ tables:
 
     # Option field values
     options:
+      fa_entry_type:
+        fixed_asset: "Fixed Asset"
+        maintenance: "Maintenance"
       document_type:
         payment: "Payment"
         invoice: "Invoice"
@@ -1644,6 +1649,17 @@ tables:
   fa_posting_group:
     caption: "FA Posting Group"
     fields:
+      allocated_acquisition_cost_percent: "Allocated Acquisition Cost %"
+      allocated_depreciation_percent: "Allocated Depreciation %"
+      allocated_write_down_percent: "Allocated Write-Down %"
+      allocated_appreciation_percent: "Allocated Appreciation %"
+      allocated_custom_1_percent: "Allocated Custom 1 %"
+      allocated_custom_2_percent: "Allocated Custom 2 %"
+      allocated_sales_price_percent: "Allocated Sales Price %"
+      allocated_maintenance_percent: "Allocated Maintenance %"
+      allocated_gain_percent: "Allocated Gain %"
+      allocated_loss_percent: "Allocated Loss %"
+      allocated_book_value_percent: "Allocated Book Value %"
       code: "Code"
       acquisition_cost_account: "Acquisition Cost Account"
       accum_depreciation_account: "Accum. Depreciation Account"
@@ -2022,6 +2038,31 @@ tables:
       reason_code: "Reason Code"
       no_series: "No. Series"
       posting_no_series: "Posting No. Series"
+  fa_allocation:
+    caption: "FA Allocation"
+    fields:
+      code: "Code"
+      line_no: "Line No."
+      description: "Description"
+      account_no: "Account No."
+      department_code: "Department Code"
+      project_code: "Project Code"
+      allocation_percent: "Allocation %"
+      allocation_type: "Allocation Type"
+      account_name: "Account Name"
+    options:
+      allocation_type:
+        acquisition: "Acquisition"
+        depreciation: "Depreciation"
+        write_down: "Write-Down"
+        appreciation: "Appreciation"
+        custom_1: "Custom 1"
+        custom_2: "Custom 2"
+        disposal: "Disposal"
+        maintenance: "Maintenance"
+        gain: "Gain"
+        loss: "Loss"
+        book_value: "Book Value"
   fa_journal_line:
     caption: "FA Journal Line"
     fields:
@@ -2275,6 +2316,20 @@ tables:
   gen_journal_line:
     caption: "Gen. Journal Line"
     fields:
+      fa_posting_date: "FA Posting Date"
+      fa_posting_type: "FA Posting Type"
+      depreciation_book_code: "Depreciation Book Code"
+      salvage_value: "Salvage Value"
+      no_of_depreciation_days: "No. of Depreciation Days"
+      depr_until_fa_posting_date: "Depr. until FA Posting Date"
+      depr_acquisition_cost: "Depr. Acquisition Cost"
+      maintenance_code: "Maintenance Code"
+      insurance_no: "Insurance No."
+      duplicate_in_depreciation_book: "Duplicate in Depreciation Book"
+      use_duplication_list: "Use Duplication List"
+      fa_reclassification_entry: "FA Reclassification Entry"
+      fa_error_entry_no: "FA Error Entry No."
+      index_entry: "Index Entry"
       journal_template_name: "Journal Template Name"
       line_no: "Line No."
       account_type: "Account Type"
@@ -2359,6 +2414,15 @@ tables:
       bal_tax_base_amount_lcy: "Bal. Tax Base Amount (LCY)"
       reversing_entry: "Reversing Entry"
     options:
+      fa_posting_type:
+        acquisition_cost: "Acquisition Cost"
+        depreciation: "Depreciation"
+        write_down: "Write-Down"
+        appreciation: "Appreciation"
+        custom_1: "Custom 1"
+        custom_2: "Custom 2"
+        disposal: "Disposal"
+        maintenance: "Maintenance"
       account_type:
         g_l_account: "G/L Account"
         customer: "Customer"

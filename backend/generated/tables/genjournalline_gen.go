@@ -93,6 +93,20 @@
 //	OnValidate_Bal_tax_amount_lcy(rec *gtables.GenJournalLine) error
 //	OnValidate_Bal_tax_base_amount_lcy(rec *gtables.GenJournalLine) error
 //	OnValidate_Reversing_entry(rec *gtables.GenJournalLine) error
+//	OnValidate_Fa_posting_date(rec *gtables.GenJournalLine) error
+//	OnValidate_Fa_posting_type(rec *gtables.GenJournalLine) error
+//	OnValidate_Depreciation_book_code(rec *gtables.GenJournalLine) error
+//	OnValidate_Salvage_value(rec *gtables.GenJournalLine) error
+//	OnValidate_No_of_depreciation_days(rec *gtables.GenJournalLine) error
+//	OnValidate_Depr_until_fa_posting_date(rec *gtables.GenJournalLine) error
+//	OnValidate_Depr_acquisition_cost(rec *gtables.GenJournalLine) error
+//	OnValidate_Maintenance_code(rec *gtables.GenJournalLine) error
+//	OnValidate_Insurance_no(rec *gtables.GenJournalLine) error
+//	OnValidate_Duplicate_in_depreciation_book(rec *gtables.GenJournalLine) error
+//	OnValidate_Use_duplication_list(rec *gtables.GenJournalLine) error
+//	OnValidate_Fa_reclassification_entry(rec *gtables.GenJournalLine) error
+//	OnValidate_Fa_error_entry_no(rec *gtables.GenJournalLine) error
+//	OnValidate_Index_entry(rec *gtables.GenJournalLine) error
 
 package tables
 
@@ -303,93 +317,124 @@ func (o GenJournalLineSource_type) IsValid() bool {
 	return o >= 0 && o < 6
 }
 
+// GenJournalLineFa_posting_type represents the fa_posting_type option field
+type GenJournalLineFa_posting_type int
+
+// String returns the text representation of GenJournalLineFa_posting_type
+func (o GenJournalLineFa_posting_type) String() string {
+	options := []string{" ", "Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance"}
+	if o >= 0 && int(o) < len(options) {
+		return options[o]
+	}
+	return ""
+}
+
+// IsValid checks if the GenJournalLineFa_posting_type value is within valid range
+func (o GenJournalLineFa_posting_type) IsValid() bool {
+	return o >= 0 && o < 9
+}
+
 // GenJournalLine represents Table 81: Gen_Journal_Line
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterGenJournalLineLogic.
 type GenJournalLine struct {
-	Journal_template_name       types.Code                             `db:"journal_template_name,pk"`
-	Journal_batch_name          types.Code                             `db:"journal_batch_name,pk"`
-	Line_no                     int                                    `db:"line_no,pk"`
-	Account_type                GenJournalLineAccount_type             `db:"account_type"`
-	Account_no                  types.Code                             `db:"account_no"`
-	Posting_date                types.Date                             `db:"posting_date"`
-	Document_type               GenJournalLineDocument_type            `db:"document_type"`
-	Document_no                 types.Code                             `db:"document_no"`
-	Description                 types.Text                             `db:"description"`
-	Tax_percent                 types.Decimal                          `db:"tax_percent"`
-	Bal_account_no              types.Code                             `db:"bal_account_no"`
-	Currency_code               types.Code                             `db:"currency_code"`
-	Amount                      types.Decimal                          `db:"amount"`
-	Debit_amount                types.Decimal                          `db:"debit_amount"`
-	Credit_amount               types.Decimal                          `db:"credit_amount"`
-	Amount_lcy                  types.Decimal                          `db:"amount_lcy"`
-	Balance_lcy                 types.Decimal                          `db:"balance_lcy"`
-	Currency_factor             types.Decimal                          `db:"currency_factor"`
-	Sales_purch_lcy             types.Decimal                          `db:"sales_purch_lcy"`
-	Profit_lcy                  types.Decimal                          `db:"profit_lcy"`
-	Inv_discount_lcy            types.Decimal                          `db:"inv_discount_lcy"`
-	Sell_to_buy_from_no         types.Code                             `db:"sell_to_buy_from_no"`
-	Posting_group               types.Code                             `db:"posting_group"`
-	Department_code             types.Code                             `db:"department_code"`
-	Project_code                types.Code                             `db:"project_code"`
-	Salespers_purch_code        types.Code                             `db:"salespers_purch_code"`
-	Source_code                 types.Code                             `db:"source_code"`
-	System_created_entry        bool                                   `db:"system_created_entry"`
-	On_hold                     types.Code                             `db:"on_hold"`
-	Applies_to_doc_type         GenJournalLineApplies_to_doc_type      `db:"applies_to_doc_type"`
-	Applies_to_doc_no           types.Code                             `db:"applies_to_doc_no"`
-	Due_date                    types.Date                             `db:"due_date"`
-	Pmt_discount_date           types.Date                             `db:"pmt_discount_date"`
-	Payment_discount_percent    types.Decimal                          `db:"payment_discount_percent"`
-	Quantity                    types.Decimal                          `db:"quantity"`
-	Tax_amount                  types.Decimal                          `db:"tax_amount"`
-	Vat_posting                 GenJournalLineVat_posting              `db:"vat_posting"`
-	Payment_terms_code          types.Code                             `db:"payment_terms_code"`
-	Applies_to_id               types.Code                             `db:"applies_to_id"`
-	Reason_code                 types.Code                             `db:"reason_code"`
-	Gen_posting_type            GenJournalLineGen_posting_type         `db:"gen_posting_type"`
-	Gen_bus_posting_group       types.Code                             `db:"gen_bus_posting_group"`
-	Gen_prod_posting_group      types.Code                             `db:"gen_prod_posting_group"`
-	Tax_calculation_type        GenJournalLineTax_calculation_type     `db:"tax_calculation_type"`
-	Allow_application           bool                                   `db:"allow_application"`
-	Bal_account_type            GenJournalLineBal_account_type         `db:"bal_account_type"`
-	Bal_gen_posting_type        GenJournalLineBal_gen_posting_type     `db:"bal_gen_posting_type"`
-	Bal_gen_bus_posting_group   types.Code                             `db:"bal_gen_bus_posting_group"`
-	Bal_gen_prod_posting_group  types.Code                             `db:"bal_gen_prod_posting_group"`
-	Bal_tax_calculation_type    GenJournalLineBal_tax_calculation_type `db:"bal_tax_calculation_type"`
-	Bal_tax_percent             types.Decimal                          `db:"bal_tax_percent"`
-	Bal_tax_amount              types.Decimal                          `db:"bal_tax_amount"`
-	Bank_payment_type           GenJournalLineBank_payment_type        `db:"bank_payment_type"`
-	Tax_base_amount             types.Decimal                          `db:"tax_base_amount"`
-	Bal_tax_base_amount         types.Decimal                          `db:"bal_tax_base_amount"`
-	Correction                  bool                                   `db:"correction"`
-	Check_printed               bool                                   `db:"check_printed"`
-	Document_date               types.Date                             `db:"document_date"`
-	External_document_no        types.Code                             `db:"external_document_no"`
-	Source_type                 GenJournalLineSource_type              `db:"source_type"`
-	Source_no                   types.Code                             `db:"source_no"`
-	Posting_no_series           types.Code                             `db:"posting_no_series"`
-	Tax_area_code               types.Code                             `db:"tax_area_code"`
-	Tax_liable                  bool                                   `db:"tax_liable"`
-	Tax_group_code              types.Code                             `db:"tax_group_code"`
-	Use_tax                     bool                                   `db:"use_tax"`
-	Bal_tax_area_code           types.Code                             `db:"bal_tax_area_code"`
-	Bal_tax_liable              bool                                   `db:"bal_tax_liable"`
-	Bal_tax_group_code          types.Code                             `db:"bal_tax_group_code"`
-	Bal_use_tax                 bool                                   `db:"bal_use_tax"`
-	Tax_bus_posting_group       types.Code                             `db:"tax_bus_posting_group"`
-	Tax_prod_posting_group      types.Code                             `db:"tax_prod_posting_group"`
-	Bal_tax_bus_posting_group   types.Code                             `db:"bal_tax_bus_posting_group"`
-	Bal_tax_prod_posting_group  types.Code                             `db:"bal_tax_prod_posting_group"`
-	Source_currency_code        types.Code                             `db:"source_currency_code"`
-	Source_currency_amount      types.Decimal                          `db:"source_currency_amount"`
-	Source_curr_tax_base_amount types.Decimal                          `db:"source_curr_tax_base_amount"`
-	Source_curr_tax_amount      types.Decimal                          `db:"source_curr_tax_amount"`
-	Tax_amount_lcy              types.Decimal                          `db:"tax_amount_lcy"`
-	Tax_base_amount_lcy         types.Decimal                          `db:"tax_base_amount_lcy"`
-	Bal_tax_amount_lcy          types.Decimal                          `db:"bal_tax_amount_lcy"`
-	Bal_tax_base_amount_lcy     types.Decimal                          `db:"bal_tax_base_amount_lcy"`
-	Reversing_entry             bool                                   `db:"reversing_entry"`
+	Journal_template_name          types.Code                             `db:"journal_template_name,pk"`
+	Journal_batch_name             types.Code                             `db:"journal_batch_name,pk"`
+	Line_no                        int                                    `db:"line_no,pk"`
+	Account_type                   GenJournalLineAccount_type             `db:"account_type"`
+	Account_no                     types.Code                             `db:"account_no"`
+	Posting_date                   types.Date                             `db:"posting_date"`
+	Document_type                  GenJournalLineDocument_type            `db:"document_type"`
+	Document_no                    types.Code                             `db:"document_no"`
+	Description                    types.Text                             `db:"description"`
+	Tax_percent                    types.Decimal                          `db:"tax_percent"`
+	Bal_account_no                 types.Code                             `db:"bal_account_no"`
+	Currency_code                  types.Code                             `db:"currency_code"`
+	Amount                         types.Decimal                          `db:"amount"`
+	Debit_amount                   types.Decimal                          `db:"debit_amount"`
+	Credit_amount                  types.Decimal                          `db:"credit_amount"`
+	Amount_lcy                     types.Decimal                          `db:"amount_lcy"`
+	Balance_lcy                    types.Decimal                          `db:"balance_lcy"`
+	Currency_factor                types.Decimal                          `db:"currency_factor"`
+	Sales_purch_lcy                types.Decimal                          `db:"sales_purch_lcy"`
+	Profit_lcy                     types.Decimal                          `db:"profit_lcy"`
+	Inv_discount_lcy               types.Decimal                          `db:"inv_discount_lcy"`
+	Sell_to_buy_from_no            types.Code                             `db:"sell_to_buy_from_no"`
+	Posting_group                  types.Code                             `db:"posting_group"`
+	Department_code                types.Code                             `db:"department_code"`
+	Project_code                   types.Code                             `db:"project_code"`
+	Salespers_purch_code           types.Code                             `db:"salespers_purch_code"`
+	Source_code                    types.Code                             `db:"source_code"`
+	System_created_entry           bool                                   `db:"system_created_entry"`
+	On_hold                        types.Code                             `db:"on_hold"`
+	Applies_to_doc_type            GenJournalLineApplies_to_doc_type      `db:"applies_to_doc_type"`
+	Applies_to_doc_no              types.Code                             `db:"applies_to_doc_no"`
+	Due_date                       types.Date                             `db:"due_date"`
+	Pmt_discount_date              types.Date                             `db:"pmt_discount_date"`
+	Payment_discount_percent       types.Decimal                          `db:"payment_discount_percent"`
+	Quantity                       types.Decimal                          `db:"quantity"`
+	Tax_amount                     types.Decimal                          `db:"tax_amount"`
+	Vat_posting                    GenJournalLineVat_posting              `db:"vat_posting"`
+	Payment_terms_code             types.Code                             `db:"payment_terms_code"`
+	Applies_to_id                  types.Code                             `db:"applies_to_id"`
+	Reason_code                    types.Code                             `db:"reason_code"`
+	Gen_posting_type               GenJournalLineGen_posting_type         `db:"gen_posting_type"`
+	Gen_bus_posting_group          types.Code                             `db:"gen_bus_posting_group"`
+	Gen_prod_posting_group         types.Code                             `db:"gen_prod_posting_group"`
+	Tax_calculation_type           GenJournalLineTax_calculation_type     `db:"tax_calculation_type"`
+	Allow_application              bool                                   `db:"allow_application"`
+	Bal_account_type               GenJournalLineBal_account_type         `db:"bal_account_type"`
+	Bal_gen_posting_type           GenJournalLineBal_gen_posting_type     `db:"bal_gen_posting_type"`
+	Bal_gen_bus_posting_group      types.Code                             `db:"bal_gen_bus_posting_group"`
+	Bal_gen_prod_posting_group     types.Code                             `db:"bal_gen_prod_posting_group"`
+	Bal_tax_calculation_type       GenJournalLineBal_tax_calculation_type `db:"bal_tax_calculation_type"`
+	Bal_tax_percent                types.Decimal                          `db:"bal_tax_percent"`
+	Bal_tax_amount                 types.Decimal                          `db:"bal_tax_amount"`
+	Bank_payment_type              GenJournalLineBank_payment_type        `db:"bank_payment_type"`
+	Tax_base_amount                types.Decimal                          `db:"tax_base_amount"`
+	Bal_tax_base_amount            types.Decimal                          `db:"bal_tax_base_amount"`
+	Correction                     bool                                   `db:"correction"`
+	Check_printed                  bool                                   `db:"check_printed"`
+	Document_date                  types.Date                             `db:"document_date"`
+	External_document_no           types.Code                             `db:"external_document_no"`
+	Source_type                    GenJournalLineSource_type              `db:"source_type"`
+	Source_no                      types.Code                             `db:"source_no"`
+	Posting_no_series              types.Code                             `db:"posting_no_series"`
+	Tax_area_code                  types.Code                             `db:"tax_area_code"`
+	Tax_liable                     bool                                   `db:"tax_liable"`
+	Tax_group_code                 types.Code                             `db:"tax_group_code"`
+	Use_tax                        bool                                   `db:"use_tax"`
+	Bal_tax_area_code              types.Code                             `db:"bal_tax_area_code"`
+	Bal_tax_liable                 bool                                   `db:"bal_tax_liable"`
+	Bal_tax_group_code             types.Code                             `db:"bal_tax_group_code"`
+	Bal_use_tax                    bool                                   `db:"bal_use_tax"`
+	Tax_bus_posting_group          types.Code                             `db:"tax_bus_posting_group"`
+	Tax_prod_posting_group         types.Code                             `db:"tax_prod_posting_group"`
+	Bal_tax_bus_posting_group      types.Code                             `db:"bal_tax_bus_posting_group"`
+	Bal_tax_prod_posting_group     types.Code                             `db:"bal_tax_prod_posting_group"`
+	Source_currency_code           types.Code                             `db:"source_currency_code"`
+	Source_currency_amount         types.Decimal                          `db:"source_currency_amount"`
+	Source_curr_tax_base_amount    types.Decimal                          `db:"source_curr_tax_base_amount"`
+	Source_curr_tax_amount         types.Decimal                          `db:"source_curr_tax_amount"`
+	Tax_amount_lcy                 types.Decimal                          `db:"tax_amount_lcy"`
+	Tax_base_amount_lcy            types.Decimal                          `db:"tax_base_amount_lcy"`
+	Bal_tax_amount_lcy             types.Decimal                          `db:"bal_tax_amount_lcy"`
+	Bal_tax_base_amount_lcy        types.Decimal                          `db:"bal_tax_base_amount_lcy"`
+	Reversing_entry                bool                                   `db:"reversing_entry"`
+	Fa_posting_date                types.Date                             `db:"fa_posting_date"`
+	Fa_posting_type                GenJournalLineFa_posting_type          `db:"fa_posting_type"`
+	Depreciation_book_code         types.Code                             `db:"depreciation_book_code"`
+	Salvage_value                  types.Decimal                          `db:"salvage_value"`
+	No_of_depreciation_days        int                                    `db:"no_of_depreciation_days"`
+	Depr_until_fa_posting_date     bool                                   `db:"depr_until_fa_posting_date"`
+	Depr_acquisition_cost          bool                                   `db:"depr_acquisition_cost"`
+	Maintenance_code               types.Code                             `db:"maintenance_code"`
+	Insurance_no                   types.Code                             `db:"insurance_no"`
+	Duplicate_in_depreciation_book types.Code                             `db:"duplicate_in_depreciation_book"`
+	Use_duplication_list           bool                                   `db:"use_duplication_list"`
+	Fa_reclassification_entry      bool                                   `db:"fa_reclassification_entry"`
+	Fa_error_entry_no              int                                    `db:"fa_error_entry_no"`
+	Index_entry                    bool                                   `db:"index_entry"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -610,6 +655,29 @@ var GenJournalLine_Source_type = struct {
 	Employee:    5,
 }
 
+// GenJournalLine_Fa_posting_type provides named constants for the fa_posting_type option field (FieldName.OptionValue syntax)
+var GenJournalLine_Fa_posting_type = struct {
+	Blank           GenJournalLineFa_posting_type
+	AcquisitionCost GenJournalLineFa_posting_type
+	Depreciation    GenJournalLineFa_posting_type
+	WriteDown       GenJournalLineFa_posting_type
+	Appreciation    GenJournalLineFa_posting_type
+	Custom1         GenJournalLineFa_posting_type
+	Custom2         GenJournalLineFa_posting_type
+	Disposal        GenJournalLineFa_posting_type
+	Maintenance     GenJournalLineFa_posting_type
+}{
+	Blank:           0,
+	AcquisitionCost: 1,
+	Depreciation:    2,
+	WriteDown:       3,
+	Appreciation:    4,
+	Custom1:         5,
+	Custom2:         6,
+	Disposal:        7,
+	Maintenance:     8,
+}
+
 // ========================================
 // Field numbers (field IDs)
 // ========================================
@@ -617,173 +685,201 @@ var GenJournalLine_Source_type = struct {
 // GenJournalLine_FieldNo holds the field numbers of Gen_Journal_Line (FieldNo):
 // GenJournalLine_FieldNo.Journal_template_name is 1
 var GenJournalLine_FieldNo = struct {
-	Journal_template_name       int
-	Journal_batch_name          int
-	Line_no                     int
-	Account_type                int
-	Account_no                  int
-	Posting_date                int
-	Document_type               int
-	Document_no                 int
-	Description                 int
-	Tax_percent                 int
-	Bal_account_no              int
-	Currency_code               int
-	Amount                      int
-	Debit_amount                int
-	Credit_amount               int
-	Amount_lcy                  int
-	Balance_lcy                 int
-	Currency_factor             int
-	Sales_purch_lcy             int
-	Profit_lcy                  int
-	Inv_discount_lcy            int
-	Sell_to_buy_from_no         int
-	Posting_group               int
-	Department_code             int
-	Project_code                int
-	Salespers_purch_code        int
-	Source_code                 int
-	System_created_entry        int
-	On_hold                     int
-	Applies_to_doc_type         int
-	Applies_to_doc_no           int
-	Due_date                    int
-	Pmt_discount_date           int
-	Payment_discount_percent    int
-	Quantity                    int
-	Tax_amount                  int
-	Vat_posting                 int
-	Payment_terms_code          int
-	Applies_to_id               int
-	Reason_code                 int
-	Gen_posting_type            int
-	Gen_bus_posting_group       int
-	Gen_prod_posting_group      int
-	Tax_calculation_type        int
-	Allow_application           int
-	Bal_account_type            int
-	Bal_gen_posting_type        int
-	Bal_gen_bus_posting_group   int
-	Bal_gen_prod_posting_group  int
-	Bal_tax_calculation_type    int
-	Bal_tax_percent             int
-	Bal_tax_amount              int
-	Bank_payment_type           int
-	Tax_base_amount             int
-	Bal_tax_base_amount         int
-	Correction                  int
-	Check_printed               int
-	Document_date               int
-	External_document_no        int
-	Source_type                 int
-	Source_no                   int
-	Posting_no_series           int
-	Tax_area_code               int
-	Tax_liable                  int
-	Tax_group_code              int
-	Use_tax                     int
-	Bal_tax_area_code           int
-	Bal_tax_liable              int
-	Bal_tax_group_code          int
-	Bal_use_tax                 int
-	Tax_bus_posting_group       int
-	Tax_prod_posting_group      int
-	Bal_tax_bus_posting_group   int
-	Bal_tax_prod_posting_group  int
-	Source_currency_code        int
-	Source_currency_amount      int
-	Source_curr_tax_base_amount int
-	Source_curr_tax_amount      int
-	Tax_amount_lcy              int
-	Tax_base_amount_lcy         int
-	Bal_tax_amount_lcy          int
-	Bal_tax_base_amount_lcy     int
-	Reversing_entry             int
+	Journal_template_name          int
+	Journal_batch_name             int
+	Line_no                        int
+	Account_type                   int
+	Account_no                     int
+	Posting_date                   int
+	Document_type                  int
+	Document_no                    int
+	Description                    int
+	Tax_percent                    int
+	Bal_account_no                 int
+	Currency_code                  int
+	Amount                         int
+	Debit_amount                   int
+	Credit_amount                  int
+	Amount_lcy                     int
+	Balance_lcy                    int
+	Currency_factor                int
+	Sales_purch_lcy                int
+	Profit_lcy                     int
+	Inv_discount_lcy               int
+	Sell_to_buy_from_no            int
+	Posting_group                  int
+	Department_code                int
+	Project_code                   int
+	Salespers_purch_code           int
+	Source_code                    int
+	System_created_entry           int
+	On_hold                        int
+	Applies_to_doc_type            int
+	Applies_to_doc_no              int
+	Due_date                       int
+	Pmt_discount_date              int
+	Payment_discount_percent       int
+	Quantity                       int
+	Tax_amount                     int
+	Vat_posting                    int
+	Payment_terms_code             int
+	Applies_to_id                  int
+	Reason_code                    int
+	Gen_posting_type               int
+	Gen_bus_posting_group          int
+	Gen_prod_posting_group         int
+	Tax_calculation_type           int
+	Allow_application              int
+	Bal_account_type               int
+	Bal_gen_posting_type           int
+	Bal_gen_bus_posting_group      int
+	Bal_gen_prod_posting_group     int
+	Bal_tax_calculation_type       int
+	Bal_tax_percent                int
+	Bal_tax_amount                 int
+	Bank_payment_type              int
+	Tax_base_amount                int
+	Bal_tax_base_amount            int
+	Correction                     int
+	Check_printed                  int
+	Document_date                  int
+	External_document_no           int
+	Source_type                    int
+	Source_no                      int
+	Posting_no_series              int
+	Tax_area_code                  int
+	Tax_liable                     int
+	Tax_group_code                 int
+	Use_tax                        int
+	Bal_tax_area_code              int
+	Bal_tax_liable                 int
+	Bal_tax_group_code             int
+	Bal_use_tax                    int
+	Tax_bus_posting_group          int
+	Tax_prod_posting_group         int
+	Bal_tax_bus_posting_group      int
+	Bal_tax_prod_posting_group     int
+	Source_currency_code           int
+	Source_currency_amount         int
+	Source_curr_tax_base_amount    int
+	Source_curr_tax_amount         int
+	Tax_amount_lcy                 int
+	Tax_base_amount_lcy            int
+	Bal_tax_amount_lcy             int
+	Bal_tax_base_amount_lcy        int
+	Reversing_entry                int
+	Fa_posting_date                int
+	Fa_posting_type                int
+	Depreciation_book_code         int
+	Salvage_value                  int
+	No_of_depreciation_days        int
+	Depr_until_fa_posting_date     int
+	Depr_acquisition_cost          int
+	Maintenance_code               int
+	Insurance_no                   int
+	Duplicate_in_depreciation_book int
+	Use_duplication_list           int
+	Fa_reclassification_entry      int
+	Fa_error_entry_no              int
+	Index_entry                    int
 }{
-	Journal_template_name:       1,
-	Journal_batch_name:          51,
-	Line_no:                     2,
-	Account_type:                3,
-	Account_no:                  4,
-	Posting_date:                5,
-	Document_type:               6,
-	Document_no:                 7,
-	Description:                 8,
-	Tax_percent:                 10,
-	Bal_account_no:              11,
-	Currency_code:               12,
-	Amount:                      13,
-	Debit_amount:                14,
-	Credit_amount:               15,
-	Amount_lcy:                  16,
-	Balance_lcy:                 17,
-	Currency_factor:             18,
-	Sales_purch_lcy:             19,
-	Profit_lcy:                  20,
-	Inv_discount_lcy:            21,
-	Sell_to_buy_from_no:         22,
-	Posting_group:               23,
-	Department_code:             24,
-	Project_code:                25,
-	Salespers_purch_code:        26,
-	Source_code:                 29,
-	System_created_entry:        30,
-	On_hold:                     34,
-	Applies_to_doc_type:         35,
-	Applies_to_doc_no:           36,
-	Due_date:                    38,
-	Pmt_discount_date:           39,
-	Payment_discount_percent:    40,
-	Quantity:                    43,
-	Tax_amount:                  44,
-	Vat_posting:                 45,
-	Payment_terms_code:          47,
-	Applies_to_id:               48,
-	Reason_code:                 52,
-	Gen_posting_type:            57,
-	Gen_bus_posting_group:       58,
-	Gen_prod_posting_group:      59,
-	Tax_calculation_type:        60,
-	Allow_application:           62,
-	Bal_account_type:            63,
-	Bal_gen_posting_type:        64,
-	Bal_gen_bus_posting_group:   65,
-	Bal_gen_prod_posting_group:  66,
-	Bal_tax_calculation_type:    67,
-	Bal_tax_percent:             68,
-	Bal_tax_amount:              69,
-	Bank_payment_type:           70,
-	Tax_base_amount:             71,
-	Bal_tax_base_amount:         72,
-	Correction:                  73,
-	Check_printed:               75,
-	Document_date:               76,
-	External_document_no:        77,
-	Source_type:                 78,
-	Source_no:                   79,
-	Posting_no_series:           80,
-	Tax_area_code:               82,
-	Tax_liable:                  83,
-	Tax_group_code:              84,
-	Use_tax:                     85,
-	Bal_tax_area_code:           86,
-	Bal_tax_liable:              87,
-	Bal_tax_group_code:          88,
-	Bal_use_tax:                 89,
-	Tax_bus_posting_group:       90,
-	Tax_prod_posting_group:      91,
-	Bal_tax_bus_posting_group:   92,
-	Bal_tax_prod_posting_group:  93,
-	Source_currency_code:        99,
-	Source_currency_amount:      100,
-	Source_curr_tax_base_amount: 101,
-	Source_curr_tax_amount:      102,
-	Tax_amount_lcy:              104,
-	Tax_base_amount_lcy:         105,
-	Bal_tax_amount_lcy:          106,
-	Bal_tax_base_amount_lcy:     107,
-	Reversing_entry:             108,
+	Journal_template_name:          1,
+	Journal_batch_name:             51,
+	Line_no:                        2,
+	Account_type:                   3,
+	Account_no:                     4,
+	Posting_date:                   5,
+	Document_type:                  6,
+	Document_no:                    7,
+	Description:                    8,
+	Tax_percent:                    10,
+	Bal_account_no:                 11,
+	Currency_code:                  12,
+	Amount:                         13,
+	Debit_amount:                   14,
+	Credit_amount:                  15,
+	Amount_lcy:                     16,
+	Balance_lcy:                    17,
+	Currency_factor:                18,
+	Sales_purch_lcy:                19,
+	Profit_lcy:                     20,
+	Inv_discount_lcy:               21,
+	Sell_to_buy_from_no:            22,
+	Posting_group:                  23,
+	Department_code:                24,
+	Project_code:                   25,
+	Salespers_purch_code:           26,
+	Source_code:                    29,
+	System_created_entry:           30,
+	On_hold:                        34,
+	Applies_to_doc_type:            35,
+	Applies_to_doc_no:              36,
+	Due_date:                       38,
+	Pmt_discount_date:              39,
+	Payment_discount_percent:       40,
+	Quantity:                       43,
+	Tax_amount:                     44,
+	Vat_posting:                    45,
+	Payment_terms_code:             47,
+	Applies_to_id:                  48,
+	Reason_code:                    52,
+	Gen_posting_type:               57,
+	Gen_bus_posting_group:          58,
+	Gen_prod_posting_group:         59,
+	Tax_calculation_type:           60,
+	Allow_application:              62,
+	Bal_account_type:               63,
+	Bal_gen_posting_type:           64,
+	Bal_gen_bus_posting_group:      65,
+	Bal_gen_prod_posting_group:     66,
+	Bal_tax_calculation_type:       67,
+	Bal_tax_percent:                68,
+	Bal_tax_amount:                 69,
+	Bank_payment_type:              70,
+	Tax_base_amount:                71,
+	Bal_tax_base_amount:            72,
+	Correction:                     73,
+	Check_printed:                  75,
+	Document_date:                  76,
+	External_document_no:           77,
+	Source_type:                    78,
+	Source_no:                      79,
+	Posting_no_series:              80,
+	Tax_area_code:                  82,
+	Tax_liable:                     83,
+	Tax_group_code:                 84,
+	Use_tax:                        85,
+	Bal_tax_area_code:              86,
+	Bal_tax_liable:                 87,
+	Bal_tax_group_code:             88,
+	Bal_use_tax:                    89,
+	Tax_bus_posting_group:          90,
+	Tax_prod_posting_group:         91,
+	Bal_tax_bus_posting_group:      92,
+	Bal_tax_prod_posting_group:     93,
+	Source_currency_code:           99,
+	Source_currency_amount:         100,
+	Source_curr_tax_base_amount:    101,
+	Source_curr_tax_amount:         102,
+	Tax_amount_lcy:                 104,
+	Tax_base_amount_lcy:            105,
+	Bal_tax_amount_lcy:             106,
+	Bal_tax_base_amount_lcy:        107,
+	Reversing_entry:                108,
+	Fa_posting_date:                5600,
+	Fa_posting_type:                5601,
+	Depreciation_book_code:         5602,
+	Salvage_value:                  5603,
+	No_of_depreciation_days:        5604,
+	Depr_until_fa_posting_date:     5605,
+	Depr_acquisition_cost:          5606,
+	Maintenance_code:               5609,
+	Insurance_no:                   5610,
+	Duplicate_in_depreciation_book: 5612,
+	Use_duplication_list:           5613,
+	Fa_reclassification_entry:      5614,
+	Fa_error_entry_no:              5615,
+	Index_entry:                    5616,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -955,6 +1051,34 @@ func (t *GenJournalLine) FieldNo(fieldName string) int {
 		return 107
 	case "reversing_entry":
 		return 108
+	case "fa_posting_date":
+		return 5600
+	case "fa_posting_type":
+		return 5601
+	case "depreciation_book_code":
+		return 5602
+	case "salvage_value":
+		return 5603
+	case "no_of_depreciation_days":
+		return 5604
+	case "depr_until_fa_posting_date":
+		return 5605
+	case "depr_acquisition_cost":
+		return 5606
+	case "maintenance_code":
+		return 5609
+	case "insurance_no":
+		return 5610
+	case "duplicate_in_depreciation_book":
+		return 5612
+	case "use_duplication_list":
+		return 5613
+	case "fa_reclassification_entry":
+		return 5614
+	case "fa_error_entry_no":
+		return 5615
+	case "index_entry":
+		return 5616
 	}
 	return 0
 }
@@ -1128,6 +1252,34 @@ func (t *GenJournalLine) FieldName(fieldNo int) string {
 		return "bal_tax_base_amount_lcy"
 	case 108:
 		return "reversing_entry"
+	case 5600:
+		return "fa_posting_date"
+	case 5601:
+		return "fa_posting_type"
+	case 5602:
+		return "depreciation_book_code"
+	case 5603:
+		return "salvage_value"
+	case 5604:
+		return "no_of_depreciation_days"
+	case 5605:
+		return "depr_until_fa_posting_date"
+	case 5606:
+		return "depr_acquisition_cost"
+	case 5609:
+		return "maintenance_code"
+	case 5610:
+		return "insurance_no"
+	case 5612:
+		return "duplicate_in_depreciation_book"
+	case 5613:
+		return "use_duplication_list"
+	case 5614:
+		return "fa_reclassification_entry"
+	case 5615:
+		return "fa_error_entry_no"
+	case 5616:
+		return "index_entry"
 	}
 	return ""
 }
@@ -1478,6 +1630,48 @@ type (
 	GenJournalLineOnValidate_Reversing_entry interface {
 		OnValidate_Reversing_entry(rec *GenJournalLine) error
 	}
+	GenJournalLineOnValidate_Fa_posting_date interface {
+		OnValidate_Fa_posting_date(rec *GenJournalLine) error
+	}
+	GenJournalLineOnValidate_Fa_posting_type interface {
+		OnValidate_Fa_posting_type(rec *GenJournalLine) error
+	}
+	GenJournalLineOnValidate_Depreciation_book_code interface {
+		OnValidate_Depreciation_book_code(rec *GenJournalLine) error
+	}
+	GenJournalLineOnValidate_Salvage_value interface {
+		OnValidate_Salvage_value(rec *GenJournalLine) error
+	}
+	GenJournalLineOnValidate_No_of_depreciation_days interface {
+		OnValidate_No_of_depreciation_days(rec *GenJournalLine) error
+	}
+	GenJournalLineOnValidate_Depr_until_fa_posting_date interface {
+		OnValidate_Depr_until_fa_posting_date(rec *GenJournalLine) error
+	}
+	GenJournalLineOnValidate_Depr_acquisition_cost interface {
+		OnValidate_Depr_acquisition_cost(rec *GenJournalLine) error
+	}
+	GenJournalLineOnValidate_Maintenance_code interface {
+		OnValidate_Maintenance_code(rec *GenJournalLine) error
+	}
+	GenJournalLineOnValidate_Insurance_no interface {
+		OnValidate_Insurance_no(rec *GenJournalLine) error
+	}
+	GenJournalLineOnValidate_Duplicate_in_depreciation_book interface {
+		OnValidate_Duplicate_in_depreciation_book(rec *GenJournalLine) error
+	}
+	GenJournalLineOnValidate_Use_duplication_list interface {
+		OnValidate_Use_duplication_list(rec *GenJournalLine) error
+	}
+	GenJournalLineOnValidate_Fa_reclassification_entry interface {
+		OnValidate_Fa_reclassification_entry(rec *GenJournalLine) error
+	}
+	GenJournalLineOnValidate_Fa_error_entry_no interface {
+		OnValidate_Fa_error_entry_no(rec *GenJournalLine) error
+	}
+	GenJournalLineOnValidate_Index_entry interface {
+		OnValidate_Index_entry(rec *GenJournalLine) error
+	}
 )
 
 // genJournalLineLogic is the registered business logic of Gen_Journal_Line, in
@@ -1673,6 +1867,34 @@ func genJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GenJournalLineOnValidate_Bal_tax_base_amount_lcy)
 	case "OnValidate_Reversing_entry":
 		_, ok = logic.(GenJournalLineOnValidate_Reversing_entry)
+	case "OnValidate_Fa_posting_date":
+		_, ok = logic.(GenJournalLineOnValidate_Fa_posting_date)
+	case "OnValidate_Fa_posting_type":
+		_, ok = logic.(GenJournalLineOnValidate_Fa_posting_type)
+	case "OnValidate_Depreciation_book_code":
+		_, ok = logic.(GenJournalLineOnValidate_Depreciation_book_code)
+	case "OnValidate_Salvage_value":
+		_, ok = logic.(GenJournalLineOnValidate_Salvage_value)
+	case "OnValidate_No_of_depreciation_days":
+		_, ok = logic.(GenJournalLineOnValidate_No_of_depreciation_days)
+	case "OnValidate_Depr_until_fa_posting_date":
+		_, ok = logic.(GenJournalLineOnValidate_Depr_until_fa_posting_date)
+	case "OnValidate_Depr_acquisition_cost":
+		_, ok = logic.(GenJournalLineOnValidate_Depr_acquisition_cost)
+	case "OnValidate_Maintenance_code":
+		_, ok = logic.(GenJournalLineOnValidate_Maintenance_code)
+	case "OnValidate_Insurance_no":
+		_, ok = logic.(GenJournalLineOnValidate_Insurance_no)
+	case "OnValidate_Duplicate_in_depreciation_book":
+		_, ok = logic.(GenJournalLineOnValidate_Duplicate_in_depreciation_book)
+	case "OnValidate_Use_duplication_list":
+		_, ok = logic.(GenJournalLineOnValidate_Use_duplication_list)
+	case "OnValidate_Fa_reclassification_entry":
+		_, ok = logic.(GenJournalLineOnValidate_Fa_reclassification_entry)
+	case "OnValidate_Fa_error_entry_no":
+		_, ok = logic.(GenJournalLineOnValidate_Fa_error_entry_no)
+	case "OnValidate_Index_entry":
+		_, ok = logic.(GenJournalLineOnValidate_Index_entry)
 	default:
 		return false, false
 	}
@@ -1867,6 +2089,18 @@ func (t *GenJournalLine) CheckFields() error {
 	if err := tables.CheckMaxLength(GenJournalLineTableName, "source_currency_code", string(t.Source_currency_code), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(GenJournalLineTableName, "depreciation_book_code", string(t.Depreciation_book_code), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(GenJournalLineTableName, "maintenance_code", string(t.Maintenance_code), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(GenJournalLineTableName, "insurance_no", string(t.Insurance_no), 20); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(GenJournalLineTableName, "duplicate_in_depreciation_book", string(t.Duplicate_in_depreciation_book), 10); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -1977,6 +2211,20 @@ func GetGenJournalLineTableSchema() string {
 		bal_tax_amount_lcy TEXT,
 		bal_tax_base_amount_lcy TEXT,
 		reversing_entry INTEGER,
+		fa_posting_date TEXT,
+		fa_posting_type INTEGER CHECK (fa_posting_type >= 0 AND fa_posting_type <= 8),
+		depreciation_book_code TEXT(10),
+		salvage_value TEXT,
+		no_of_depreciation_days INTEGER,
+		depr_until_fa_posting_date INTEGER,
+		depr_acquisition_cost INTEGER,
+		maintenance_code TEXT(10),
+		insurance_no TEXT(20),
+		duplicate_in_depreciation_book TEXT(10),
+		use_duplication_list INTEGER,
+		fa_reclassification_entry INTEGER,
+		fa_error_entry_no INTEGER,
+		index_entry INTEGER,
 		PRIMARY KEY (journal_template_name, journal_batch_name, line_no)
 	`
 }
@@ -2067,6 +2315,20 @@ func GetGenJournalLinePostgresTableSchema() string {
 		bal_tax_amount_lcy NUMERIC,
 		bal_tax_base_amount_lcy NUMERIC,
 		reversing_entry BOOLEAN,
+		fa_posting_date DATE,
+		fa_posting_type INTEGER CHECK (fa_posting_type >= 0 AND fa_posting_type <= 8),
+		depreciation_book_code VARCHAR(10),
+		salvage_value NUMERIC,
+		no_of_depreciation_days INTEGER,
+		depr_until_fa_posting_date BOOLEAN,
+		depr_acquisition_cost BOOLEAN,
+		maintenance_code VARCHAR(10),
+		insurance_no VARCHAR(20),
+		duplicate_in_depreciation_book VARCHAR(10),
+		use_duplication_list BOOLEAN,
+		fa_reclassification_entry BOOLEAN,
+		fa_error_entry_no INTEGER,
+		index_entry BOOLEAN,
 		PRIMARY KEY (journal_template_name, journal_batch_name, line_no)
 	`
 }
@@ -2292,6 +2554,20 @@ func (t *GenJournalLine) StoreOldValues() {
 	t.oldValues["bal_tax_amount_lcy"] = t.Bal_tax_amount_lcy
 	t.oldValues["bal_tax_base_amount_lcy"] = t.Bal_tax_base_amount_lcy
 	t.oldValues["reversing_entry"] = t.Reversing_entry
+	t.oldValues["fa_posting_date"] = t.Fa_posting_date
+	t.oldValues["fa_posting_type"] = t.Fa_posting_type
+	t.oldValues["depreciation_book_code"] = t.Depreciation_book_code
+	t.oldValues["salvage_value"] = t.Salvage_value
+	t.oldValues["no_of_depreciation_days"] = t.No_of_depreciation_days
+	t.oldValues["depr_until_fa_posting_date"] = t.Depr_until_fa_posting_date
+	t.oldValues["depr_acquisition_cost"] = t.Depr_acquisition_cost
+	t.oldValues["maintenance_code"] = t.Maintenance_code
+	t.oldValues["insurance_no"] = t.Insurance_no
+	t.oldValues["duplicate_in_depreciation_book"] = t.Duplicate_in_depreciation_book
+	t.oldValues["use_duplication_list"] = t.Use_duplication_list
+	t.oldValues["fa_reclassification_entry"] = t.Fa_reclassification_entry
+	t.oldValues["fa_error_entry_no"] = t.Fa_error_entry_no
+	t.oldValues["index_entry"] = t.Index_entry
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -2555,6 +2831,48 @@ func (t *GenJournalLine) XRec() *GenJournalLine {
 	if v, ok := t.oldValues["reversing_entry"].(bool); ok {
 		x.Reversing_entry = v
 	}
+	if v, ok := t.oldValues["fa_posting_date"].(types.Date); ok {
+		x.Fa_posting_date = v
+	}
+	if v, ok := t.oldValues["fa_posting_type"].(GenJournalLineFa_posting_type); ok {
+		x.Fa_posting_type = v
+	}
+	if v, ok := t.oldValues["depreciation_book_code"].(types.Code); ok {
+		x.Depreciation_book_code = v
+	}
+	if v, ok := t.oldValues["salvage_value"].(types.Decimal); ok {
+		x.Salvage_value = v
+	}
+	if v, ok := t.oldValues["no_of_depreciation_days"].(int); ok {
+		x.No_of_depreciation_days = v
+	}
+	if v, ok := t.oldValues["depr_until_fa_posting_date"].(bool); ok {
+		x.Depr_until_fa_posting_date = v
+	}
+	if v, ok := t.oldValues["depr_acquisition_cost"].(bool); ok {
+		x.Depr_acquisition_cost = v
+	}
+	if v, ok := t.oldValues["maintenance_code"].(types.Code); ok {
+		x.Maintenance_code = v
+	}
+	if v, ok := t.oldValues["insurance_no"].(types.Code); ok {
+		x.Insurance_no = v
+	}
+	if v, ok := t.oldValues["duplicate_in_depreciation_book"].(types.Code); ok {
+		x.Duplicate_in_depreciation_book = v
+	}
+	if v, ok := t.oldValues["use_duplication_list"].(bool); ok {
+		x.Use_duplication_list = v
+	}
+	if v, ok := t.oldValues["fa_reclassification_entry"].(bool); ok {
+		x.Fa_reclassification_entry = v
+	}
+	if v, ok := t.oldValues["fa_error_entry_no"].(int); ok {
+		x.Fa_error_entry_no = v
+	}
+	if v, ok := t.oldValues["index_entry"].(bool); ok {
+		x.Index_entry = v
+	}
 	return x
 }
 
@@ -2717,6 +3035,20 @@ func (t *GenJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	var bal_tax_amount_lcyNull sql.NullString
 	var bal_tax_base_amount_lcyNull sql.NullString
 	var reversing_entryBool sql.NullBool
+	var fa_posting_dateNull sql.NullString
+	var fa_posting_typeInt int
+	var depreciation_book_codeNull sql.NullString
+	var salvage_valueNull sql.NullString
+	var no_of_depreciation_daysVal int
+	var depr_until_fa_posting_dateBool sql.NullBool
+	var depr_acquisition_costBool sql.NullBool
+	var maintenance_codeNull sql.NullString
+	var insurance_noNull sql.NullString
+	var duplicate_in_depreciation_bookNull sql.NullString
+	var use_duplication_listBool sql.NullBool
+	var fa_reclassification_entryBool sql.NullBool
+	var fa_error_entry_noVal int
+	var index_entryBool sql.NullBool
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -2726,7 +3058,7 @@ func (t *GenJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2816,6 +3148,20 @@ func (t *GenJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 		&bal_tax_amount_lcyNull,
 		&bal_tax_base_amount_lcyNull,
 		&reversing_entryBool,
+		&fa_posting_dateNull,
+		&fa_posting_typeInt,
+		&depreciation_book_codeNull,
+		&salvage_valueNull,
+		&no_of_depreciation_daysVal,
+		&depr_until_fa_posting_dateBool,
+		&depr_acquisition_costBool,
+		&maintenance_codeNull,
+		&insurance_noNull,
+		&duplicate_in_depreciation_bookNull,
+		&use_duplication_listBool,
+		&fa_reclassification_entryBool,
+		&fa_error_entry_noVal,
+		&index_entryBool,
 	)
 
 	if err != nil {
@@ -2912,6 +3258,20 @@ func (t *GenJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	t.Bal_tax_amount_lcy, _ = types.NewDecimalFromString(bal_tax_amount_lcyNull.String)
 	t.Bal_tax_base_amount_lcy, _ = types.NewDecimalFromString(bal_tax_base_amount_lcyNull.String)
 	t.Reversing_entry = reversing_entryBool.Bool
+	t.Fa_posting_date, _ = types.NewDateFromString(fa_posting_dateNull.String)
+	t.Fa_posting_type = GenJournalLineFa_posting_type(fa_posting_typeInt)
+	t.Depreciation_book_code = types.NewCode(depreciation_book_codeNull.String)
+	t.Salvage_value, _ = types.NewDecimalFromString(salvage_valueNull.String)
+	t.No_of_depreciation_days = no_of_depreciation_daysVal
+	t.Depr_until_fa_posting_date = depr_until_fa_posting_dateBool.Bool
+	t.Depr_acquisition_cost = depr_acquisition_costBool.Bool
+	t.Maintenance_code = types.NewCode(maintenance_codeNull.String)
+	t.Insurance_no = types.NewCode(insurance_noNull.String)
+	t.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
+	t.Use_duplication_list = use_duplication_listBool.Bool
+	t.Fa_reclassification_entry = fa_reclassification_entryBool.Bool
+	t.Fa_error_entry_no = fa_error_entry_noVal
+	t.Index_entry = index_entryBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -3017,11 +3377,25 @@ func (t *GenJournalLine) Insert(runTrigger bool) bool {
 		t.Bal_tax_amount_lcy,
 		t.Bal_tax_base_amount_lcy,
 		t.Reversing_entry,
+		t.Fa_posting_date,
+		t.Fa_posting_type,
+		t.Depreciation_book_code,
+		t.Salvage_value,
+		t.No_of_depreciation_days,
+		t.Depr_until_fa_posting_date,
+		t.Depr_acquisition_cost,
+		t.Maintenance_code,
+		t.Insurance_no,
+		t.Duplicate_in_depreciation_book,
+		t.Use_duplication_list,
+		t.Fa_reclassification_entry,
+		t.Fa_error_entry_no,
+		t.Index_entry,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -3142,10 +3516,24 @@ func (t *GenJournalLine) InsertAll(records []*GenJournalLine, runTrigger bool) e
 			r.Bal_tax_amount_lcy,
 			r.Bal_tax_base_amount_lcy,
 			r.Reversing_entry,
+			r.Fa_posting_date,
+			r.Fa_posting_type,
+			r.Depreciation_book_code,
+			r.Salvage_value,
+			r.No_of_depreciation_days,
+			r.Depr_until_fa_posting_date,
+			r.Depr_acquisition_cost,
+			r.Maintenance_code,
+			r.Insurance_no,
+			r.Duplicate_in_depreciation_book,
+			r.Use_duplication_list,
+			r.Fa_reclassification_entry,
+			r.Fa_error_entry_no,
+			r.Index_entry,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, GenJournalLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "account_type", "account_no", "posting_date", "document_type", "document_no", "description", "tax_percent", "bal_account_no", "currency_code", "amount", "debit_amount", "credit_amount", "amount_lcy", "balance_lcy", "currency_factor", "sales_purch_lcy", "profit_lcy", "inv_discount_lcy", "sell_to_buy_from_no", "posting_group", "department_code", "project_code", "salespers_purch_code", "source_code", "system_created_entry", "on_hold", "applies_to_doc_type", "applies_to_doc_no", "due_date", "pmt_discount_date", "payment_discount_percent", "quantity", "tax_amount", "vat_posting", "payment_terms_code", "applies_to_id", "reason_code", "gen_posting_type", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "allow_application", "bal_account_type", "bal_gen_posting_type", "bal_gen_bus_posting_group", "bal_gen_prod_posting_group", "bal_tax_calculation_type", "bal_tax_percent", "bal_tax_amount", "bank_payment_type", "tax_base_amount", "bal_tax_base_amount", "correction", "check_printed", "document_date", "external_document_no", "source_type", "source_no", "posting_no_series", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "bal_tax_area_code", "bal_tax_liable", "bal_tax_group_code", "bal_use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "bal_tax_bus_posting_group", "bal_tax_prod_posting_group", "source_currency_code", "source_currency_amount", "source_curr_tax_base_amount", "source_curr_tax_amount", "tax_amount_lcy", "tax_base_amount_lcy", "bal_tax_amount_lcy", "bal_tax_base_amount_lcy", "reversing_entry"}
+	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "account_type", "account_no", "posting_date", "document_type", "document_no", "description", "tax_percent", "bal_account_no", "currency_code", "amount", "debit_amount", "credit_amount", "amount_lcy", "balance_lcy", "currency_factor", "sales_purch_lcy", "profit_lcy", "inv_discount_lcy", "sell_to_buy_from_no", "posting_group", "department_code", "project_code", "salespers_purch_code", "source_code", "system_created_entry", "on_hold", "applies_to_doc_type", "applies_to_doc_no", "due_date", "pmt_discount_date", "payment_discount_percent", "quantity", "tax_amount", "vat_posting", "payment_terms_code", "applies_to_id", "reason_code", "gen_posting_type", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "allow_application", "bal_account_type", "bal_gen_posting_type", "bal_gen_bus_posting_group", "bal_gen_prod_posting_group", "bal_tax_calculation_type", "bal_tax_percent", "bal_tax_amount", "bank_payment_type", "tax_base_amount", "bal_tax_base_amount", "correction", "check_printed", "document_date", "external_document_no", "source_type", "source_no", "posting_no_series", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "bal_tax_area_code", "bal_tax_liable", "bal_tax_group_code", "bal_use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "bal_tax_bus_posting_group", "bal_tax_prod_posting_group", "source_currency_code", "source_currency_amount", "source_curr_tax_base_amount", "source_curr_tax_amount", "tax_amount_lcy", "tax_base_amount_lcy", "bal_tax_amount_lcy", "bal_tax_base_amount_lcy", "reversing_entry", "fa_posting_date", "fa_posting_type", "depreciation_book_code", "salvage_value", "no_of_depreciation_days", "depr_until_fa_posting_date", "depr_acquisition_cost", "maintenance_code", "insurance_no", "duplicate_in_depreciation_book", "use_duplication_list", "fa_reclassification_entry", "fa_error_entry_no", "index_entry"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -3523,6 +3911,62 @@ func (t *GenJournalLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "reversing_entry = ?")
 			values = append(values, t.Reversing_entry)
 		}
+		if t.hasFieldChanged("fa_posting_date") {
+			setClauses = append(setClauses, "fa_posting_date = ?")
+			values = append(values, t.Fa_posting_date)
+		}
+		if t.hasFieldChanged("fa_posting_type") {
+			setClauses = append(setClauses, "fa_posting_type = ?")
+			values = append(values, t.Fa_posting_type)
+		}
+		if t.hasFieldChanged("depreciation_book_code") {
+			setClauses = append(setClauses, "depreciation_book_code = ?")
+			values = append(values, t.Depreciation_book_code)
+		}
+		if t.hasFieldChanged("salvage_value") {
+			setClauses = append(setClauses, "salvage_value = ?")
+			values = append(values, t.Salvage_value)
+		}
+		if t.hasFieldChanged("no_of_depreciation_days") {
+			setClauses = append(setClauses, "no_of_depreciation_days = ?")
+			values = append(values, t.No_of_depreciation_days)
+		}
+		if t.hasFieldChanged("depr_until_fa_posting_date") {
+			setClauses = append(setClauses, "depr_until_fa_posting_date = ?")
+			values = append(values, t.Depr_until_fa_posting_date)
+		}
+		if t.hasFieldChanged("depr_acquisition_cost") {
+			setClauses = append(setClauses, "depr_acquisition_cost = ?")
+			values = append(values, t.Depr_acquisition_cost)
+		}
+		if t.hasFieldChanged("maintenance_code") {
+			setClauses = append(setClauses, "maintenance_code = ?")
+			values = append(values, t.Maintenance_code)
+		}
+		if t.hasFieldChanged("insurance_no") {
+			setClauses = append(setClauses, "insurance_no = ?")
+			values = append(values, t.Insurance_no)
+		}
+		if t.hasFieldChanged("duplicate_in_depreciation_book") {
+			setClauses = append(setClauses, "duplicate_in_depreciation_book = ?")
+			values = append(values, t.Duplicate_in_depreciation_book)
+		}
+		if t.hasFieldChanged("use_duplication_list") {
+			setClauses = append(setClauses, "use_duplication_list = ?")
+			values = append(values, t.Use_duplication_list)
+		}
+		if t.hasFieldChanged("fa_reclassification_entry") {
+			setClauses = append(setClauses, "fa_reclassification_entry = ?")
+			values = append(values, t.Fa_reclassification_entry)
+		}
+		if t.hasFieldChanged("fa_error_entry_no") {
+			setClauses = append(setClauses, "fa_error_entry_no = ?")
+			values = append(values, t.Fa_error_entry_no)
+		}
+		if t.hasFieldChanged("index_entry") {
+			setClauses = append(setClauses, "index_entry = ?")
+			values = append(values, t.Index_entry)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -3690,6 +4134,34 @@ func (t *GenJournalLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Bal_tax_base_amount_lcy)
 		setClauses = append(setClauses, "reversing_entry = ?")
 		values = append(values, t.Reversing_entry)
+		setClauses = append(setClauses, "fa_posting_date = ?")
+		values = append(values, t.Fa_posting_date)
+		setClauses = append(setClauses, "fa_posting_type = ?")
+		values = append(values, t.Fa_posting_type)
+		setClauses = append(setClauses, "depreciation_book_code = ?")
+		values = append(values, t.Depreciation_book_code)
+		setClauses = append(setClauses, "salvage_value = ?")
+		values = append(values, t.Salvage_value)
+		setClauses = append(setClauses, "no_of_depreciation_days = ?")
+		values = append(values, t.No_of_depreciation_days)
+		setClauses = append(setClauses, "depr_until_fa_posting_date = ?")
+		values = append(values, t.Depr_until_fa_posting_date)
+		setClauses = append(setClauses, "depr_acquisition_cost = ?")
+		values = append(values, t.Depr_acquisition_cost)
+		setClauses = append(setClauses, "maintenance_code = ?")
+		values = append(values, t.Maintenance_code)
+		setClauses = append(setClauses, "insurance_no = ?")
+		values = append(values, t.Insurance_no)
+		setClauses = append(setClauses, "duplicate_in_depreciation_book = ?")
+		values = append(values, t.Duplicate_in_depreciation_book)
+		setClauses = append(setClauses, "use_duplication_list = ?")
+		values = append(values, t.Use_duplication_list)
+		setClauses = append(setClauses, "fa_reclassification_entry = ?")
+		values = append(values, t.Fa_reclassification_entry)
+		setClauses = append(setClauses, "fa_error_entry_no = ?")
+		values = append(values, t.Fa_error_entry_no)
+		setClauses = append(setClauses, "index_entry = ?")
+		values = append(values, t.Index_entry)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -4086,6 +4558,69 @@ func (t *GenJournalLine) hasFieldChanged(fieldName string) bool {
 			return t.Reversing_entry != old
 		}
 		return true // Type mismatch, assume changed
+	case "fa_posting_date":
+		if old, ok := oldValue.(types.Date); ok {
+			return !t.Fa_posting_date.Equal(old)
+		}
+	case "fa_posting_type":
+		if old, ok := oldValue.(GenJournalLineFa_posting_type); ok {
+			return t.Fa_posting_type != old
+		}
+	case "depreciation_book_code":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Depreciation_book_code.Equal(old)
+		}
+	case "salvage_value":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Salvage_value.Equal(old)
+		}
+	case "no_of_depreciation_days":
+		if old, ok := oldValue.(int); ok {
+			return t.No_of_depreciation_days != old
+		}
+		return true // Type mismatch, assume changed
+	case "depr_until_fa_posting_date":
+		if old, ok := oldValue.(bool); ok {
+			return t.Depr_until_fa_posting_date != old
+		}
+		return true // Type mismatch, assume changed
+	case "depr_acquisition_cost":
+		if old, ok := oldValue.(bool); ok {
+			return t.Depr_acquisition_cost != old
+		}
+		return true // Type mismatch, assume changed
+	case "maintenance_code":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Maintenance_code.Equal(old)
+		}
+	case "insurance_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Insurance_no.Equal(old)
+		}
+	case "duplicate_in_depreciation_book":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Duplicate_in_depreciation_book.Equal(old)
+		}
+	case "use_duplication_list":
+		if old, ok := oldValue.(bool); ok {
+			return t.Use_duplication_list != old
+		}
+		return true // Type mismatch, assume changed
+	case "fa_reclassification_entry":
+		if old, ok := oldValue.(bool); ok {
+			return t.Fa_reclassification_entry != old
+		}
+		return true // Type mismatch, assume changed
+	case "fa_error_entry_no":
+		if old, ok := oldValue.(int); ok {
+			return t.Fa_error_entry_no != old
+		}
+		return true // Type mismatch, assume changed
+	case "index_entry":
+		if old, ok := oldValue.(bool); ok {
+			return t.Index_entry != old
+		}
+		return true // Type mismatch, assume changed
 	}
 
 	return false
@@ -4458,6 +4993,34 @@ func (t *GenJournalLine) columnName(fieldName string) (string, bool) {
 		return "bal_tax_base_amount_lcy", true
 	case strings.ToLower("reversing_entry"):
 		return "reversing_entry", true
+	case strings.ToLower("fa_posting_date"):
+		return "fa_posting_date", true
+	case strings.ToLower("fa_posting_type"):
+		return "fa_posting_type", true
+	case strings.ToLower("depreciation_book_code"):
+		return "depreciation_book_code", true
+	case strings.ToLower("salvage_value"):
+		return "salvage_value", true
+	case strings.ToLower("no_of_depreciation_days"):
+		return "no_of_depreciation_days", true
+	case strings.ToLower("depr_until_fa_posting_date"):
+		return "depr_until_fa_posting_date", true
+	case strings.ToLower("depr_acquisition_cost"):
+		return "depr_acquisition_cost", true
+	case strings.ToLower("maintenance_code"):
+		return "maintenance_code", true
+	case strings.ToLower("insurance_no"):
+		return "insurance_no", true
+	case strings.ToLower("duplicate_in_depreciation_book"):
+		return "duplicate_in_depreciation_book", true
+	case strings.ToLower("use_duplication_list"):
+		return "use_duplication_list", true
+	case strings.ToLower("fa_reclassification_entry"):
+		return "fa_reclassification_entry", true
+	case strings.ToLower("fa_error_entry_no"):
+		return "fa_error_entry_no", true
+	case strings.ToLower("index_entry"):
+		return "index_entry", true
 	}
 	return "", false
 }
@@ -4629,6 +5192,16 @@ func (t *GenJournalLine) isBoolColumn(column string) bool {
 		return true
 	case "reversing_entry":
 		return true
+	case "depr_until_fa_posting_date":
+		return true
+	case "depr_acquisition_cost":
+		return true
+	case "use_duplication_list":
+		return true
+	case "fa_reclassification_entry":
+		return true
+	case "index_entry":
+		return true
 	}
 	return false
 }
@@ -4643,6 +5216,8 @@ func (t *GenJournalLine) isDateColumn(column string) bool {
 	case "pmt_discount_date":
 		return true
 	case "document_date":
+		return true
+	case "fa_posting_date":
 		return true
 	}
 	return false
@@ -4698,6 +5273,8 @@ func (t *GenJournalLine) isDecimalColumn(column string) bool {
 	case "bal_tax_amount_lcy":
 		return true
 	case "bal_tax_base_amount_lcy":
+		return true
+	case "salvage_value":
 		return true
 	}
 	return false
@@ -4879,7 +5456,7 @@ func (t *GenJournalLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4966,6 +5543,18 @@ func (t *GenJournalLine) FindFirst() bool {
 	var bal_tax_amount_lcyNull sql.NullString
 	var bal_tax_base_amount_lcyNull sql.NullString
 	var reversing_entryBool sql.NullBool
+	var fa_posting_dateNull sql.NullString
+	var fa_posting_typeInt int
+	var depreciation_book_codeNull sql.NullString
+	var salvage_valueNull sql.NullString
+	var depr_until_fa_posting_dateBool sql.NullBool
+	var depr_acquisition_costBool sql.NullBool
+	var maintenance_codeNull sql.NullString
+	var insurance_noNull sql.NullString
+	var duplicate_in_depreciation_bookNull sql.NullString
+	var use_duplication_listBool sql.NullBool
+	var fa_reclassification_entryBool sql.NullBool
+	var index_entryBool sql.NullBool
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&journal_template_nameNull,
@@ -5051,6 +5640,20 @@ func (t *GenJournalLine) FindFirst() bool {
 		&bal_tax_amount_lcyNull,
 		&bal_tax_base_amount_lcyNull,
 		&reversing_entryBool,
+		&fa_posting_dateNull,
+		&fa_posting_typeInt,
+		&depreciation_book_codeNull,
+		&salvage_valueNull,
+		&t.No_of_depreciation_days,
+		&depr_until_fa_posting_dateBool,
+		&depr_acquisition_costBool,
+		&maintenance_codeNull,
+		&insurance_noNull,
+		&duplicate_in_depreciation_bookNull,
+		&use_duplication_listBool,
+		&fa_reclassification_entryBool,
+		&t.Fa_error_entry_no,
+		&index_entryBool,
 	)
 
 	if err != nil {
@@ -5144,6 +5747,18 @@ func (t *GenJournalLine) FindFirst() bool {
 	t.Bal_tax_amount_lcy, _ = types.NewDecimalFromString(bal_tax_amount_lcyNull.String)
 	t.Bal_tax_base_amount_lcy, _ = types.NewDecimalFromString(bal_tax_base_amount_lcyNull.String)
 	t.Reversing_entry = reversing_entryBool.Bool
+	t.Fa_posting_date, _ = types.NewDateFromString(fa_posting_dateNull.String)
+	t.Fa_posting_type = GenJournalLineFa_posting_type(fa_posting_typeInt)
+	t.Depreciation_book_code = types.NewCode(depreciation_book_codeNull.String)
+	t.Salvage_value, _ = types.NewDecimalFromString(salvage_valueNull.String)
+	t.Depr_until_fa_posting_date = depr_until_fa_posting_dateBool.Bool
+	t.Depr_acquisition_cost = depr_acquisition_costBool.Bool
+	t.Maintenance_code = types.NewCode(maintenance_codeNull.String)
+	t.Insurance_no = types.NewCode(insurance_noNull.String)
+	t.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
+	t.Use_duplication_list = use_duplication_listBool.Bool
+	t.Fa_reclassification_entry = fa_reclassification_entryBool.Bool
+	t.Index_entry = index_entryBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -5164,7 +5779,7 @@ func (t *GenJournalLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5251,6 +5866,18 @@ func (t *GenJournalLine) FindLast() bool {
 	var bal_tax_amount_lcyNull sql.NullString
 	var bal_tax_base_amount_lcyNull sql.NullString
 	var reversing_entryBool sql.NullBool
+	var fa_posting_dateNull sql.NullString
+	var fa_posting_typeInt int
+	var depreciation_book_codeNull sql.NullString
+	var salvage_valueNull sql.NullString
+	var depr_until_fa_posting_dateBool sql.NullBool
+	var depr_acquisition_costBool sql.NullBool
+	var maintenance_codeNull sql.NullString
+	var insurance_noNull sql.NullString
+	var duplicate_in_depreciation_bookNull sql.NullString
+	var use_duplication_listBool sql.NullBool
+	var fa_reclassification_entryBool sql.NullBool
+	var index_entryBool sql.NullBool
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&journal_template_nameNull,
@@ -5336,6 +5963,20 @@ func (t *GenJournalLine) FindLast() bool {
 		&bal_tax_amount_lcyNull,
 		&bal_tax_base_amount_lcyNull,
 		&reversing_entryBool,
+		&fa_posting_dateNull,
+		&fa_posting_typeInt,
+		&depreciation_book_codeNull,
+		&salvage_valueNull,
+		&t.No_of_depreciation_days,
+		&depr_until_fa_posting_dateBool,
+		&depr_acquisition_costBool,
+		&maintenance_codeNull,
+		&insurance_noNull,
+		&duplicate_in_depreciation_bookNull,
+		&use_duplication_listBool,
+		&fa_reclassification_entryBool,
+		&t.Fa_error_entry_no,
+		&index_entryBool,
 	)
 
 	if err != nil {
@@ -5429,6 +6070,18 @@ func (t *GenJournalLine) FindLast() bool {
 	t.Bal_tax_amount_lcy, _ = types.NewDecimalFromString(bal_tax_amount_lcyNull.String)
 	t.Bal_tax_base_amount_lcy, _ = types.NewDecimalFromString(bal_tax_base_amount_lcyNull.String)
 	t.Reversing_entry = reversing_entryBool.Bool
+	t.Fa_posting_date, _ = types.NewDateFromString(fa_posting_dateNull.String)
+	t.Fa_posting_type = GenJournalLineFa_posting_type(fa_posting_typeInt)
+	t.Depreciation_book_code = types.NewCode(depreciation_book_codeNull.String)
+	t.Salvage_value, _ = types.NewDecimalFromString(salvage_valueNull.String)
+	t.Depr_until_fa_posting_date = depr_until_fa_posting_dateBool.Bool
+	t.Depr_acquisition_cost = depr_acquisition_costBool.Bool
+	t.Maintenance_code = types.NewCode(maintenance_codeNull.String)
+	t.Insurance_no = types.NewCode(insurance_noNull.String)
+	t.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
+	t.Use_duplication_list = use_duplication_listBool.Bool
+	t.Fa_reclassification_entry = fa_reclassification_entryBool.Bool
+	t.Index_entry = index_entryBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -5479,7 +6132,7 @@ func (t *GenJournalLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5630,6 +6283,18 @@ func (t *GenJournalLine) Next(steps ...int) bool {
 		var bal_tax_amount_lcyNull sql.NullString
 		var bal_tax_base_amount_lcyNull sql.NullString
 		var reversing_entryBool sql.NullBool
+		var fa_posting_dateNull sql.NullString
+		var fa_posting_typeInt int
+		var depreciation_book_codeNull sql.NullString
+		var salvage_valueNull sql.NullString
+		var depr_until_fa_posting_dateBool sql.NullBool
+		var depr_acquisition_costBool sql.NullBool
+		var maintenance_codeNull sql.NullString
+		var insurance_noNull sql.NullString
+		var duplicate_in_depreciation_bookNull sql.NullString
+		var use_duplication_listBool sql.NullBool
+		var fa_reclassification_entryBool sql.NullBool
+		var index_entryBool sql.NullBool
 
 		err := t.currentRows.Scan(
 			&journal_template_nameNull,
@@ -5715,6 +6380,20 @@ func (t *GenJournalLine) Next(steps ...int) bool {
 			&bal_tax_amount_lcyNull,
 			&bal_tax_base_amount_lcyNull,
 			&reversing_entryBool,
+			&fa_posting_dateNull,
+			&fa_posting_typeInt,
+			&depreciation_book_codeNull,
+			&salvage_valueNull,
+			&t.No_of_depreciation_days,
+			&depr_until_fa_posting_dateBool,
+			&depr_acquisition_costBool,
+			&maintenance_codeNull,
+			&insurance_noNull,
+			&duplicate_in_depreciation_bookNull,
+			&use_duplication_listBool,
+			&fa_reclassification_entryBool,
+			&t.Fa_error_entry_no,
+			&index_entryBool,
 		)
 
 		if err != nil {
@@ -5807,6 +6486,18 @@ func (t *GenJournalLine) Next(steps ...int) bool {
 		t.Bal_tax_amount_lcy, _ = types.NewDecimalFromString(bal_tax_amount_lcyNull.String)
 		t.Bal_tax_base_amount_lcy, _ = types.NewDecimalFromString(bal_tax_base_amount_lcyNull.String)
 		t.Reversing_entry = reversing_entryBool.Bool
+		t.Fa_posting_date, _ = types.NewDateFromString(fa_posting_dateNull.String)
+		t.Fa_posting_type = GenJournalLineFa_posting_type(fa_posting_typeInt)
+		t.Depreciation_book_code = types.NewCode(depreciation_book_codeNull.String)
+		t.Salvage_value, _ = types.NewDecimalFromString(salvage_valueNull.String)
+		t.Depr_until_fa_posting_date = depr_until_fa_posting_dateBool.Bool
+		t.Depr_acquisition_cost = depr_acquisition_costBool.Bool
+		t.Maintenance_code = types.NewCode(maintenance_codeNull.String)
+		t.Insurance_no = types.NewCode(insurance_noNull.String)
+		t.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
+		t.Use_duplication_list = use_duplication_listBool.Bool
+		t.Fa_reclassification_entry = fa_reclassification_entryBool.Bool
+		t.Index_entry = index_entryBool.Bool
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -5856,7 +6547,7 @@ func (t *GenJournalLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5960,6 +6651,18 @@ func (t *GenJournalLine) FindSetBuffered() bool {
 		var bal_tax_amount_lcyNull sql.NullString
 		var bal_tax_base_amount_lcyNull sql.NullString
 		var reversing_entryBool sql.NullBool
+		var fa_posting_dateNull sql.NullString
+		var fa_posting_typeInt int
+		var depreciation_book_codeNull sql.NullString
+		var salvage_valueNull sql.NullString
+		var depr_until_fa_posting_dateBool sql.NullBool
+		var depr_acquisition_costBool sql.NullBool
+		var maintenance_codeNull sql.NullString
+		var insurance_noNull sql.NullString
+		var duplicate_in_depreciation_bookNull sql.NullString
+		var use_duplication_listBool sql.NullBool
+		var fa_reclassification_entryBool sql.NullBool
+		var index_entryBool sql.NullBool
 
 		err := rows.Scan(
 			&journal_template_nameNull,
@@ -6045,6 +6748,20 @@ func (t *GenJournalLine) FindSetBuffered() bool {
 			&bal_tax_amount_lcyNull,
 			&bal_tax_base_amount_lcyNull,
 			&reversing_entryBool,
+			&fa_posting_dateNull,
+			&fa_posting_typeInt,
+			&depreciation_book_codeNull,
+			&salvage_valueNull,
+			&record.No_of_depreciation_days,
+			&depr_until_fa_posting_dateBool,
+			&depr_acquisition_costBool,
+			&maintenance_codeNull,
+			&insurance_noNull,
+			&duplicate_in_depreciation_bookNull,
+			&use_duplication_listBool,
+			&fa_reclassification_entryBool,
+			&record.Fa_error_entry_no,
+			&index_entryBool,
 		)
 
 		if err != nil {
@@ -6135,6 +6852,18 @@ func (t *GenJournalLine) FindSetBuffered() bool {
 		record.Bal_tax_amount_lcy, _ = types.NewDecimalFromString(bal_tax_amount_lcyNull.String)
 		record.Bal_tax_base_amount_lcy, _ = types.NewDecimalFromString(bal_tax_base_amount_lcyNull.String)
 		record.Reversing_entry = reversing_entryBool.Bool
+		record.Fa_posting_date, _ = types.NewDateFromString(fa_posting_dateNull.String)
+		record.Fa_posting_type = GenJournalLineFa_posting_type(fa_posting_typeInt)
+		record.Depreciation_book_code = types.NewCode(depreciation_book_codeNull.String)
+		record.Salvage_value, _ = types.NewDecimalFromString(salvage_valueNull.String)
+		record.Depr_until_fa_posting_date = depr_until_fa_posting_dateBool.Bool
+		record.Depr_acquisition_cost = depr_acquisition_costBool.Bool
+		record.Maintenance_code = types.NewCode(maintenance_codeNull.String)
+		record.Insurance_no = types.NewCode(insurance_noNull.String)
+		record.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
+		record.Use_duplication_list = use_duplication_listBool.Bool
+		record.Fa_reclassification_entry = fa_reclassification_entryBool.Bool
+		record.Index_entry = index_entryBool.Bool
 
 		// Store old values
 		record.StoreOldValues()
@@ -6246,6 +6975,20 @@ func (t *GenJournalLine) copyFromBuffered(record *GenJournalLine) {
 	t.Bal_tax_amount_lcy = record.Bal_tax_amount_lcy
 	t.Bal_tax_base_amount_lcy = record.Bal_tax_base_amount_lcy
 	t.Reversing_entry = record.Reversing_entry
+	t.Fa_posting_date = record.Fa_posting_date
+	t.Fa_posting_type = record.Fa_posting_type
+	t.Depreciation_book_code = record.Depreciation_book_code
+	t.Salvage_value = record.Salvage_value
+	t.No_of_depreciation_days = record.No_of_depreciation_days
+	t.Depr_until_fa_posting_date = record.Depr_until_fa_posting_date
+	t.Depr_acquisition_cost = record.Depr_acquisition_cost
+	t.Maintenance_code = record.Maintenance_code
+	t.Insurance_no = record.Insurance_no
+	t.Duplicate_in_depreciation_book = record.Duplicate_in_depreciation_book
+	t.Use_duplication_list = record.Use_duplication_list
+	t.Fa_reclassification_entry = record.Fa_reclassification_entry
+	t.Fa_error_entry_no = record.Fa_error_entry_no
+	t.Index_entry = record.Index_entry
 	t.StoreOldValues()
 }
 
@@ -8601,6 +9344,348 @@ func (t *GenJournalLine) ValidateField(fieldName string, value interface{}) erro
 			}
 		}
 		return nil
+	case "fa_posting_date":
+		// Set field value
+		if v, ok := value.(types.Date); ok {
+			t.Fa_posting_date = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Fa_posting_date, err = types.NewDateFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid date value for field fa_posting_date: %w", err)
+			}
+		} else if v, ok := value.(time.Time); ok {
+			t.Fa_posting_date = types.NewDateFromTime(v)
+		} else {
+			return fmt.Errorf("invalid type for field fa_posting_date (expected Date, string, or time.Time)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Fa_posting_date); ok {
+				if err := trg.OnValidate_Fa_posting_date(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "fa_posting_type":
+		// Set field value
+		// Accept enum type directly
+		if v, ok := value.(GenJournalLineFa_posting_type); ok {
+			t.Fa_posting_type = v
+			// Accept int (convert to enum)
+		} else if v, ok := value.(int); ok {
+			if v < 0 || v >= 9 {
+				return fmt.Errorf("invalid option value %d for field fa_posting_type (valid range: 0-%d)", v, 9-1)
+			}
+			t.Fa_posting_type = GenJournalLineFa_posting_type(v)
+			// Accept float64 (JSON numbers decode as float64)
+		} else if v, ok := value.(float64); ok {
+			intVal := int(v)
+			if intVal < 0 || intVal >= 9 {
+				return fmt.Errorf("invalid option value %d for field fa_posting_type (valid range: 0-%d)", intVal, 9-1)
+			}
+			t.Fa_posting_type = GenJournalLineFa_posting_type(intVal)
+			// Accept string (lookup in options and convert)
+		} else if v, ok := value.(string); ok {
+			if v == "" {
+				// Empty string defaults to first option (behavior)
+				t.Fa_posting_type = 0
+			} else {
+				options := []string{" ", "Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance"}
+				found := false
+				for i, opt := range options {
+					if opt == v {
+						t.Fa_posting_type = GenJournalLineFa_posting_type(i)
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("invalid option '%s' for field fa_posting_type (valid options: %v)", v, options)
+				}
+			}
+		} else {
+			return fmt.Errorf("invalid type for field fa_posting_type (expected GenJournalLineFa_posting_type, int, or string)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Fa_posting_type); ok {
+				if err := trg.OnValidate_Fa_posting_type(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "depreciation_book_code":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Depreciation_book_code = v
+		} else if v, ok := value.(string); ok {
+			t.Depreciation_book_code = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field depreciation_book_code")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "depreciation_book_code"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Depreciation_book_code); ok {
+				if err := trg.OnValidate_Depreciation_book_code(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "salvage_value":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Salvage_value = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Salvage_value, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field salvage_value: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Salvage_value = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Salvage_value = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Salvage_value = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field salvage_value (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Salvage_value); ok {
+				if err := trg.OnValidate_Salvage_value(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "no_of_depreciation_days":
+		// Set field value
+		switch v := value.(type) {
+		case int:
+			t.No_of_depreciation_days = v
+		case float64:
+			t.No_of_depreciation_days = int(v)
+		case string:
+			if v == "" {
+				t.No_of_depreciation_days = 0
+			} else if i, err := strconv.Atoi(v); err == nil {
+				t.No_of_depreciation_days = i
+			} else {
+				return fmt.Errorf("invalid integer value for field no_of_depreciation_days: %s", v)
+			}
+		default:
+			return fmt.Errorf("invalid type for field no_of_depreciation_days")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_No_of_depreciation_days); ok {
+				if err := trg.OnValidate_No_of_depreciation_days(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "depr_until_fa_posting_date":
+		// Set field value
+		if v, ok := value.(bool); ok {
+			t.Depr_until_fa_posting_date = v
+		} else if v, ok := value.(string); ok {
+			// Handle string boolean values from JSON/frontend
+			t.Depr_until_fa_posting_date = v == "true" || v == "1"
+		} else {
+			return fmt.Errorf("invalid type for field depr_until_fa_posting_date")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Depr_until_fa_posting_date); ok {
+				if err := trg.OnValidate_Depr_until_fa_posting_date(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "depr_acquisition_cost":
+		// Set field value
+		if v, ok := value.(bool); ok {
+			t.Depr_acquisition_cost = v
+		} else if v, ok := value.(string); ok {
+			// Handle string boolean values from JSON/frontend
+			t.Depr_acquisition_cost = v == "true" || v == "1"
+		} else {
+			return fmt.Errorf("invalid type for field depr_acquisition_cost")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Depr_acquisition_cost); ok {
+				if err := trg.OnValidate_Depr_acquisition_cost(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "maintenance_code":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Maintenance_code = v
+		} else if v, ok := value.(string); ok {
+			t.Maintenance_code = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field maintenance_code")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "maintenance_code"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Maintenance_code); ok {
+				if err := trg.OnValidate_Maintenance_code(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "insurance_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Insurance_no = v
+		} else if v, ok := value.(string); ok {
+			t.Insurance_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field insurance_no")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "insurance_no"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Insurance_no); ok {
+				if err := trg.OnValidate_Insurance_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "duplicate_in_depreciation_book":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Duplicate_in_depreciation_book = v
+		} else if v, ok := value.(string); ok {
+			t.Duplicate_in_depreciation_book = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field duplicate_in_depreciation_book")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "duplicate_in_depreciation_book"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Duplicate_in_depreciation_book); ok {
+				if err := trg.OnValidate_Duplicate_in_depreciation_book(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "use_duplication_list":
+		// Set field value
+		if v, ok := value.(bool); ok {
+			t.Use_duplication_list = v
+		} else if v, ok := value.(string); ok {
+			// Handle string boolean values from JSON/frontend
+			t.Use_duplication_list = v == "true" || v == "1"
+		} else {
+			return fmt.Errorf("invalid type for field use_duplication_list")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Use_duplication_list); ok {
+				if err := trg.OnValidate_Use_duplication_list(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "fa_reclassification_entry":
+		// Set field value
+		if v, ok := value.(bool); ok {
+			t.Fa_reclassification_entry = v
+		} else if v, ok := value.(string); ok {
+			// Handle string boolean values from JSON/frontend
+			t.Fa_reclassification_entry = v == "true" || v == "1"
+		} else {
+			return fmt.Errorf("invalid type for field fa_reclassification_entry")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Fa_reclassification_entry); ok {
+				if err := trg.OnValidate_Fa_reclassification_entry(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "fa_error_entry_no":
+		// Set field value
+		switch v := value.(type) {
+		case int:
+			t.Fa_error_entry_no = v
+		case float64:
+			t.Fa_error_entry_no = int(v)
+		case string:
+			if v == "" {
+				t.Fa_error_entry_no = 0
+			} else if i, err := strconv.Atoi(v); err == nil {
+				t.Fa_error_entry_no = i
+			} else {
+				return fmt.Errorf("invalid integer value for field fa_error_entry_no: %s", v)
+			}
+		default:
+			return fmt.Errorf("invalid type for field fa_error_entry_no")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_error_entry_no"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Fa_error_entry_no); ok {
+				if err := trg.OnValidate_Fa_error_entry_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "index_entry":
+		// Set field value
+		if v, ok := value.(bool); ok {
+			t.Index_entry = v
+		} else if v, ok := value.(string); ok {
+			// Handle string boolean values from JSON/frontend
+			t.Index_entry = v == "true" || v == "1"
+		} else {
+			return fmt.Errorf("invalid type for field index_entry")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Index_entry); ok {
+				if err := trg.OnValidate_Index_entry(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -8779,6 +9864,34 @@ func (t *GenJournalLine) FieldValue(no int) (any, bool) {
 		return t.Bal_tax_base_amount_lcy, true
 	case 108:
 		return t.Reversing_entry, true
+	case 5600:
+		return t.Fa_posting_date, true
+	case 5601:
+		return t.Fa_posting_type, true
+	case 5602:
+		return t.Depreciation_book_code, true
+	case 5603:
+		return t.Salvage_value, true
+	case 5604:
+		return t.No_of_depreciation_days, true
+	case 5605:
+		return t.Depr_until_fa_posting_date, true
+	case 5606:
+		return t.Depr_acquisition_cost, true
+	case 5609:
+		return t.Maintenance_code, true
+	case 5610:
+		return t.Insurance_no, true
+	case 5612:
+		return t.Duplicate_in_depreciation_book, true
+	case 5613:
+		return t.Use_duplication_list, true
+	case 5614:
+		return t.Fa_reclassification_entry, true
+	case 5615:
+		return t.Fa_error_entry_no, true
+	case 5616:
+		return t.Index_entry, true
 	}
 	return nil, false
 }
@@ -9345,6 +10458,92 @@ func (t *GenJournalLine) SetFieldValue(no int, value any) bool {
 			t.Reversing_entry = v
 			return true
 		}
+	case 5600:
+		if v, ok := value.(types.Date); ok {
+			t.Fa_posting_date = v
+			return true
+		}
+	case 5601:
+		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 9 {
+			t.Fa_posting_type = GenJournalLineFa_posting_type(i)
+			return true
+		}
+	case 5602:
+		if v, ok := value.(types.Code); ok {
+			t.Depreciation_book_code = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Depreciation_book_code = types.NewCode(v)
+			return true
+		}
+	case 5603:
+		if v, ok := value.(types.Decimal); ok {
+			t.Salvage_value = v
+			return true
+		}
+	case 5604:
+		if v, ok := value.(int); ok {
+			t.No_of_depreciation_days = v
+			return true
+		}
+	case 5605:
+		if v, ok := value.(bool); ok {
+			t.Depr_until_fa_posting_date = v
+			return true
+		}
+	case 5606:
+		if v, ok := value.(bool); ok {
+			t.Depr_acquisition_cost = v
+			return true
+		}
+	case 5609:
+		if v, ok := value.(types.Code); ok {
+			t.Maintenance_code = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Maintenance_code = types.NewCode(v)
+			return true
+		}
+	case 5610:
+		if v, ok := value.(types.Code); ok {
+			t.Insurance_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Insurance_no = types.NewCode(v)
+			return true
+		}
+	case 5612:
+		if v, ok := value.(types.Code); ok {
+			t.Duplicate_in_depreciation_book = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Duplicate_in_depreciation_book = types.NewCode(v)
+			return true
+		}
+	case 5613:
+		if v, ok := value.(bool); ok {
+			t.Use_duplication_list = v
+			return true
+		}
+	case 5614:
+		if v, ok := value.(bool); ok {
+			t.Fa_reclassification_entry = v
+			return true
+		}
+	case 5615:
+		if v, ok := value.(int); ok {
+			t.Fa_error_entry_no = v
+			return true
+		}
+	case 5616:
+		if v, ok := value.(bool); ok {
+			t.Index_entry = v
+			return true
+		}
 	}
 	return false
 }
@@ -9468,6 +10667,12 @@ func (t *GenJournalLine) CalcSums(fieldNames ...string) error {
 			column = "bal_tax_amount_lcy"
 		case "bal_tax_base_amount_lcy":
 			column = "bal_tax_base_amount_lcy"
+		case "salvage_value":
+			column = "salvage_value"
+		case "no_of_depreciation_days":
+			column = "no_of_depreciation_days"
+		case "fa_error_entry_no":
+			column = "fa_error_entry_no"
 		default:
 			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Gen_Journal_Line", name)
 		}
@@ -9627,6 +10832,24 @@ func (t *GenJournalLine) CalcSums(fieldNames ...string) error {
 				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
 			}
 			t.Bal_tax_base_amount_lcy = d
+		case "salvage_value":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
+			}
+			t.Salvage_value = d
+		case "no_of_depreciation_days":
+			f, err := strconv.ParseFloat(total, 64)
+			if err != nil {
+				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
+			}
+			t.No_of_depreciation_days = int(f)
+		case "fa_error_entry_no":
+			f, err := strconv.ParseFloat(total, 64)
+			if err != nil {
+				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
+			}
+			t.Fa_error_entry_no = int(f)
 		}
 	}
 	return nil
@@ -10146,6 +11369,34 @@ func (t *GenJournalLine) columnValue(column string) (interface{}, bool) {
 		return t.Bal_tax_base_amount_lcy, true
 	case "reversing_entry":
 		return t.Reversing_entry, true
+	case "fa_posting_date":
+		return t.Fa_posting_date, true
+	case "fa_posting_type":
+		return int(t.Fa_posting_type), true
+	case "depreciation_book_code":
+		return t.Depreciation_book_code, true
+	case "salvage_value":
+		return t.Salvage_value, true
+	case "no_of_depreciation_days":
+		return t.No_of_depreciation_days, true
+	case "depr_until_fa_posting_date":
+		return t.Depr_until_fa_posting_date, true
+	case "depr_acquisition_cost":
+		return t.Depr_acquisition_cost, true
+	case "maintenance_code":
+		return t.Maintenance_code, true
+	case "insurance_no":
+		return t.Insurance_no, true
+	case "duplicate_in_depreciation_book":
+		return t.Duplicate_in_depreciation_book, true
+	case "use_duplication_list":
+		return t.Use_duplication_list, true
+	case "fa_reclassification_entry":
+		return t.Fa_reclassification_entry, true
+	case "fa_error_entry_no":
+		return t.Fa_error_entry_no, true
+	case "index_entry":
+		return t.Index_entry, true
 	}
 	return nil, false
 }
@@ -10288,6 +11539,20 @@ func (t *GenJournalLine) Init() {
 	t.Bal_tax_amount_lcy = *new(types.Decimal)
 	t.Bal_tax_base_amount_lcy = *new(types.Decimal)
 	t.Reversing_entry = *new(bool)
+	t.Fa_posting_date = *new(types.Date)
+	t.Fa_posting_type = 0
+	t.Depreciation_book_code = *new(types.Code)
+	t.Salvage_value = *new(types.Decimal)
+	t.No_of_depreciation_days = *new(int)
+	t.Depr_until_fa_posting_date = *new(bool)
+	t.Depr_acquisition_cost = *new(bool)
+	t.Maintenance_code = *new(types.Code)
+	t.Insurance_no = *new(types.Code)
+	t.Duplicate_in_depreciation_book = *new(types.Code)
+	t.Use_duplication_list = *new(bool)
+	t.Fa_reclassification_entry = *new(bool)
+	t.Fa_error_entry_no = *new(int)
+	t.Index_entry = *new(bool)
 	t.applyDefaults()
 }
 
@@ -10322,89 +11587,103 @@ func (t *GenJournalLine) ClearFilters() {
 // ToMap converts the current record to a map for JSON serialization
 func (t *GenJournalLine) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"journal_template_name":       t.Journal_template_name.String(),
-		"journal_batch_name":          t.Journal_batch_name.String(),
-		"line_no":                     t.Line_no,
-		"account_type":                int(t.Account_type),
-		"account_no":                  t.Account_no.String(),
-		"posting_date":                t.Posting_date.String(),
-		"document_type":               int(t.Document_type),
-		"document_no":                 t.Document_no.String(),
-		"description":                 t.Description.String(),
-		"tax_percent":                 t.Tax_percent.String(),
-		"bal_account_no":              t.Bal_account_no.String(),
-		"currency_code":               t.Currency_code.String(),
-		"amount":                      t.Amount.String(),
-		"debit_amount":                t.Debit_amount.String(),
-		"credit_amount":               t.Credit_amount.String(),
-		"amount_lcy":                  t.Amount_lcy.String(),
-		"balance_lcy":                 t.Balance_lcy.String(),
-		"currency_factor":             t.Currency_factor.String(),
-		"sales_purch_lcy":             t.Sales_purch_lcy.String(),
-		"profit_lcy":                  t.Profit_lcy.String(),
-		"inv_discount_lcy":            t.Inv_discount_lcy.String(),
-		"sell_to_buy_from_no":         t.Sell_to_buy_from_no.String(),
-		"posting_group":               t.Posting_group.String(),
-		"department_code":             t.Department_code.String(),
-		"project_code":                t.Project_code.String(),
-		"salespers_purch_code":        t.Salespers_purch_code.String(),
-		"source_code":                 t.Source_code.String(),
-		"system_created_entry":        t.System_created_entry,
-		"on_hold":                     t.On_hold.String(),
-		"applies_to_doc_type":         int(t.Applies_to_doc_type),
-		"applies_to_doc_no":           t.Applies_to_doc_no.String(),
-		"due_date":                    t.Due_date.String(),
-		"pmt_discount_date":           t.Pmt_discount_date.String(),
-		"payment_discount_percent":    t.Payment_discount_percent.String(),
-		"quantity":                    t.Quantity.String(),
-		"tax_amount":                  t.Tax_amount.String(),
-		"vat_posting":                 int(t.Vat_posting),
-		"payment_terms_code":          t.Payment_terms_code.String(),
-		"applies_to_id":               t.Applies_to_id.String(),
-		"reason_code":                 t.Reason_code.String(),
-		"gen_posting_type":            int(t.Gen_posting_type),
-		"gen_bus_posting_group":       t.Gen_bus_posting_group.String(),
-		"gen_prod_posting_group":      t.Gen_prod_posting_group.String(),
-		"tax_calculation_type":        int(t.Tax_calculation_type),
-		"allow_application":           t.Allow_application,
-		"bal_account_type":            int(t.Bal_account_type),
-		"bal_gen_posting_type":        int(t.Bal_gen_posting_type),
-		"bal_gen_bus_posting_group":   t.Bal_gen_bus_posting_group.String(),
-		"bal_gen_prod_posting_group":  t.Bal_gen_prod_posting_group.String(),
-		"bal_tax_calculation_type":    int(t.Bal_tax_calculation_type),
-		"bal_tax_percent":             t.Bal_tax_percent.String(),
-		"bal_tax_amount":              t.Bal_tax_amount.String(),
-		"bank_payment_type":           int(t.Bank_payment_type),
-		"tax_base_amount":             t.Tax_base_amount.String(),
-		"bal_tax_base_amount":         t.Bal_tax_base_amount.String(),
-		"correction":                  t.Correction,
-		"check_printed":               t.Check_printed,
-		"document_date":               t.Document_date.String(),
-		"external_document_no":        t.External_document_no.String(),
-		"source_type":                 int(t.Source_type),
-		"source_no":                   t.Source_no.String(),
-		"posting_no_series":           t.Posting_no_series.String(),
-		"tax_area_code":               t.Tax_area_code.String(),
-		"tax_liable":                  t.Tax_liable,
-		"tax_group_code":              t.Tax_group_code.String(),
-		"use_tax":                     t.Use_tax,
-		"bal_tax_area_code":           t.Bal_tax_area_code.String(),
-		"bal_tax_liable":              t.Bal_tax_liable,
-		"bal_tax_group_code":          t.Bal_tax_group_code.String(),
-		"bal_use_tax":                 t.Bal_use_tax,
-		"tax_bus_posting_group":       t.Tax_bus_posting_group.String(),
-		"tax_prod_posting_group":      t.Tax_prod_posting_group.String(),
-		"bal_tax_bus_posting_group":   t.Bal_tax_bus_posting_group.String(),
-		"bal_tax_prod_posting_group":  t.Bal_tax_prod_posting_group.String(),
-		"source_currency_code":        t.Source_currency_code.String(),
-		"source_currency_amount":      t.Source_currency_amount.String(),
-		"source_curr_tax_base_amount": t.Source_curr_tax_base_amount.String(),
-		"source_curr_tax_amount":      t.Source_curr_tax_amount.String(),
-		"tax_amount_lcy":              t.Tax_amount_lcy.String(),
-		"tax_base_amount_lcy":         t.Tax_base_amount_lcy.String(),
-		"bal_tax_amount_lcy":          t.Bal_tax_amount_lcy.String(),
-		"bal_tax_base_amount_lcy":     t.Bal_tax_base_amount_lcy.String(),
-		"reversing_entry":             t.Reversing_entry,
+		"journal_template_name":          t.Journal_template_name.String(),
+		"journal_batch_name":             t.Journal_batch_name.String(),
+		"line_no":                        t.Line_no,
+		"account_type":                   int(t.Account_type),
+		"account_no":                     t.Account_no.String(),
+		"posting_date":                   t.Posting_date.String(),
+		"document_type":                  int(t.Document_type),
+		"document_no":                    t.Document_no.String(),
+		"description":                    t.Description.String(),
+		"tax_percent":                    t.Tax_percent.String(),
+		"bal_account_no":                 t.Bal_account_no.String(),
+		"currency_code":                  t.Currency_code.String(),
+		"amount":                         t.Amount.String(),
+		"debit_amount":                   t.Debit_amount.String(),
+		"credit_amount":                  t.Credit_amount.String(),
+		"amount_lcy":                     t.Amount_lcy.String(),
+		"balance_lcy":                    t.Balance_lcy.String(),
+		"currency_factor":                t.Currency_factor.String(),
+		"sales_purch_lcy":                t.Sales_purch_lcy.String(),
+		"profit_lcy":                     t.Profit_lcy.String(),
+		"inv_discount_lcy":               t.Inv_discount_lcy.String(),
+		"sell_to_buy_from_no":            t.Sell_to_buy_from_no.String(),
+		"posting_group":                  t.Posting_group.String(),
+		"department_code":                t.Department_code.String(),
+		"project_code":                   t.Project_code.String(),
+		"salespers_purch_code":           t.Salespers_purch_code.String(),
+		"source_code":                    t.Source_code.String(),
+		"system_created_entry":           t.System_created_entry,
+		"on_hold":                        t.On_hold.String(),
+		"applies_to_doc_type":            int(t.Applies_to_doc_type),
+		"applies_to_doc_no":              t.Applies_to_doc_no.String(),
+		"due_date":                       t.Due_date.String(),
+		"pmt_discount_date":              t.Pmt_discount_date.String(),
+		"payment_discount_percent":       t.Payment_discount_percent.String(),
+		"quantity":                       t.Quantity.String(),
+		"tax_amount":                     t.Tax_amount.String(),
+		"vat_posting":                    int(t.Vat_posting),
+		"payment_terms_code":             t.Payment_terms_code.String(),
+		"applies_to_id":                  t.Applies_to_id.String(),
+		"reason_code":                    t.Reason_code.String(),
+		"gen_posting_type":               int(t.Gen_posting_type),
+		"gen_bus_posting_group":          t.Gen_bus_posting_group.String(),
+		"gen_prod_posting_group":         t.Gen_prod_posting_group.String(),
+		"tax_calculation_type":           int(t.Tax_calculation_type),
+		"allow_application":              t.Allow_application,
+		"bal_account_type":               int(t.Bal_account_type),
+		"bal_gen_posting_type":           int(t.Bal_gen_posting_type),
+		"bal_gen_bus_posting_group":      t.Bal_gen_bus_posting_group.String(),
+		"bal_gen_prod_posting_group":     t.Bal_gen_prod_posting_group.String(),
+		"bal_tax_calculation_type":       int(t.Bal_tax_calculation_type),
+		"bal_tax_percent":                t.Bal_tax_percent.String(),
+		"bal_tax_amount":                 t.Bal_tax_amount.String(),
+		"bank_payment_type":              int(t.Bank_payment_type),
+		"tax_base_amount":                t.Tax_base_amount.String(),
+		"bal_tax_base_amount":            t.Bal_tax_base_amount.String(),
+		"correction":                     t.Correction,
+		"check_printed":                  t.Check_printed,
+		"document_date":                  t.Document_date.String(),
+		"external_document_no":           t.External_document_no.String(),
+		"source_type":                    int(t.Source_type),
+		"source_no":                      t.Source_no.String(),
+		"posting_no_series":              t.Posting_no_series.String(),
+		"tax_area_code":                  t.Tax_area_code.String(),
+		"tax_liable":                     t.Tax_liable,
+		"tax_group_code":                 t.Tax_group_code.String(),
+		"use_tax":                        t.Use_tax,
+		"bal_tax_area_code":              t.Bal_tax_area_code.String(),
+		"bal_tax_liable":                 t.Bal_tax_liable,
+		"bal_tax_group_code":             t.Bal_tax_group_code.String(),
+		"bal_use_tax":                    t.Bal_use_tax,
+		"tax_bus_posting_group":          t.Tax_bus_posting_group.String(),
+		"tax_prod_posting_group":         t.Tax_prod_posting_group.String(),
+		"bal_tax_bus_posting_group":      t.Bal_tax_bus_posting_group.String(),
+		"bal_tax_prod_posting_group":     t.Bal_tax_prod_posting_group.String(),
+		"source_currency_code":           t.Source_currency_code.String(),
+		"source_currency_amount":         t.Source_currency_amount.String(),
+		"source_curr_tax_base_amount":    t.Source_curr_tax_base_amount.String(),
+		"source_curr_tax_amount":         t.Source_curr_tax_amount.String(),
+		"tax_amount_lcy":                 t.Tax_amount_lcy.String(),
+		"tax_base_amount_lcy":            t.Tax_base_amount_lcy.String(),
+		"bal_tax_amount_lcy":             t.Bal_tax_amount_lcy.String(),
+		"bal_tax_base_amount_lcy":        t.Bal_tax_base_amount_lcy.String(),
+		"reversing_entry":                t.Reversing_entry,
+		"fa_posting_date":                t.Fa_posting_date.String(),
+		"fa_posting_type":                int(t.Fa_posting_type),
+		"depreciation_book_code":         t.Depreciation_book_code.String(),
+		"salvage_value":                  t.Salvage_value.String(),
+		"no_of_depreciation_days":        t.No_of_depreciation_days,
+		"depr_until_fa_posting_date":     t.Depr_until_fa_posting_date,
+		"depr_acquisition_cost":          t.Depr_acquisition_cost,
+		"maintenance_code":               t.Maintenance_code.String(),
+		"insurance_no":                   t.Insurance_no.String(),
+		"duplicate_in_depreciation_book": t.Duplicate_in_depreciation_book.String(),
+		"use_duplication_list":           t.Use_duplication_list,
+		"fa_reclassification_entry":      t.Fa_reclassification_entry,
+		"fa_error_entry_no":              t.Fa_error_entry_no,
+		"index_entry":                    t.Index_entry,
 	}
 }
 
@@ -11131,6 +12410,111 @@ func (t *GenJournalLine) FromMap(data map[string]interface{}) {
 	if v, ok := data["reversing_entry"]; ok && v != nil {
 		if b, ok := v.(bool); ok {
 			t.Reversing_entry = b
+		}
+	}
+	if v, ok := data["fa_posting_date"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Fa_posting_date, _ = types.NewDateFromString(s)
+		}
+	}
+	if v, ok := data["fa_posting_type"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Fa_posting_type = GenJournalLineFa_posting_type(int(val))
+		case int:
+			t.Fa_posting_type = GenJournalLineFa_posting_type(val)
+		case string:
+			// Lookup string value in options
+			options := []string{" ", "Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance"}
+			for i, opt := range options {
+				if opt == val {
+					t.Fa_posting_type = GenJournalLineFa_posting_type(i)
+					break
+				}
+			}
+		}
+	}
+	if v, ok := data["depreciation_book_code"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Depreciation_book_code = types.NewCode(s)
+		}
+	}
+	if v, ok := data["salvage_value"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Salvage_value, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Salvage_value = types.NewDecimal(val)
+		case int:
+			t.Salvage_value = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Salvage_value = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["no_of_depreciation_days"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.No_of_depreciation_days = int(val)
+		case int:
+			t.No_of_depreciation_days = val
+		case string:
+			// a record key from a URL or a list selection
+			if n, err := strconv.Atoi(val); err == nil {
+				t.No_of_depreciation_days = n
+			}
+		}
+	}
+	if v, ok := data["depr_until_fa_posting_date"]; ok && v != nil {
+		if b, ok := v.(bool); ok {
+			t.Depr_until_fa_posting_date = b
+		}
+	}
+	if v, ok := data["depr_acquisition_cost"]; ok && v != nil {
+		if b, ok := v.(bool); ok {
+			t.Depr_acquisition_cost = b
+		}
+	}
+	if v, ok := data["maintenance_code"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Maintenance_code = types.NewCode(s)
+		}
+	}
+	if v, ok := data["insurance_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Insurance_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["duplicate_in_depreciation_book"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Duplicate_in_depreciation_book = types.NewCode(s)
+		}
+	}
+	if v, ok := data["use_duplication_list"]; ok && v != nil {
+		if b, ok := v.(bool); ok {
+			t.Use_duplication_list = b
+		}
+	}
+	if v, ok := data["fa_reclassification_entry"]; ok && v != nil {
+		if b, ok := v.(bool); ok {
+			t.Fa_reclassification_entry = b
+		}
+	}
+	if v, ok := data["fa_error_entry_no"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Fa_error_entry_no = int(val)
+		case int:
+			t.Fa_error_entry_no = val
+		case string:
+			// a record key from a URL or a list selection
+			if n, err := strconv.Atoi(val); err == nil {
+				t.Fa_error_entry_no = n
+			}
+		}
+	}
+	if v, ok := data["index_entry"]; ok && v != nil {
+		if b, ok := v.(bool); ok {
+			t.Index_entry = b
 		}
 	}
 }
@@ -12012,6 +13396,147 @@ func (t *GenJournalLine) GetFields() []tables.FieldInfo {
 			FlowField:  false,
 			ReadOnly:   true,
 		},
+		{
+			No:         5600,
+			Name:       "fa_posting_date",
+			Type:       tables.FieldTypeDate,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5601,
+			Name:       "fa_posting_type",
+			Type:       tables.FieldTypeOption,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5602,
+			Name:       "depreciation_book_code",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:            5603,
+			Name:          "salvage_value",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     false,
+			DecimalPlaces: "2:2",
+		},
+		{
+			No:         5604,
+			Name:       "no_of_depreciation_days",
+			Type:       tables.FieldTypeInteger,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5605,
+			Name:       "depr_until_fa_posting_date",
+			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5606,
+			Name:       "depr_acquisition_cost",
+			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5609,
+			Name:       "maintenance_code",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5610,
+			Name:       "insurance_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5612,
+			Name:       "duplicate_in_depreciation_book",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5613,
+			Name:       "use_duplication_list",
+			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5614,
+			Name:       "fa_reclassification_entry",
+			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5615,
+			Name:       "fa_error_entry_no",
+			Type:       tables.FieldTypeInteger,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5616,
+			Name:       "index_entry",
+			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
 	}
 }
 
@@ -12047,6 +13572,7 @@ func (t *GenJournalLine) GetOptionFields() map[string][]string {
 		"bal_tax_calculation_type": {"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"},
 		"bank_payment_type":        {" ", "Computer Check", "Manual Check", "Electronic Payment"},
 		"source_type":              {" ", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"},
+		"fa_posting_type":          {" ", "Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance"},
 	}
 }
 
@@ -12370,6 +13896,56 @@ func (t *GenJournalLine) GetTableRelationFields() map[string]tables.TableRelatio
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
 				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"depreciation_book_code": {
+			Table:        "Depreciation_Book",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"maintenance_code": {
+			Table:        "Maintenance",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"insurance_no": {
+			Table:        "Insurance",
+			Field:        "no",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "no", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"duplicate_in_depreciation_book": {
+			Table:        "Depreciation_Book",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"fa_error_entry_no": {
+			Table:        "FA_Ledger_Entry",
+			Field:        "entry_no",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "entry_no", Width: 90},
 				{Source: "description", Width: 250},
 			},
 			SearchTimeout: 0,

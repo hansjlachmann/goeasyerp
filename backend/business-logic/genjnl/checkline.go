@@ -6,17 +6,19 @@ import (
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 
+	"github.com/hansjlachmann/openerp/backend/business-logic/fajnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 )
 
 // GenJnlCheckLine is codeunit 11 Gen. Jnl.-Check Line: the checks a journal line must pass
-// before it is posted. One instance remembers the user's allowed posting dates.
+// before it is posted. One instance remembers the user's allowed posting dates. A line with a
+// fixed asset is checked by codeunit 5631 (fajnl.FAJnlCheckLine) too.
 //
-// Not migrated yet: fixed asset lines (refused until fixed asset posting), computer checks and
-// electronic payments (check printing), recurring lines.
+// Not migrated yet: computer checks and electronic payments (check printing), recurring lines.
 type GenJnlCheckLine struct {
 	allowPostingFrom types.Date
 	allowPostingTo   types.Date
+	faJnlCheckLine   fajnl.FAJnlCheckLine
 }
 
 const jnlLine = gtables.GenJournalLineTableName
@@ -229,13 +231,15 @@ func (c *GenJnlCheckLine) RunCheck(rec *gtables.GenJournalLine) error {
 			return err
 		}
 	}
-	if rec.Account_type == gtables.GenJournalLine_Account_type.FixedAsset {
-		return apperrors.JnlFixedAssetNotYet(jnlLine, "account_type")
+	if rec.Account_type == gtables.GenJournalLine_Account_type.FixedAsset ||
+		rec.Bal_account_type == gtables.GenJournalLine_Bal_account_type.FixedAsset {
+		return c.faJnlCheckLine.CheckGenJnlLine(rec)
 	}
-	if rec.Bal_account_type == gtables.GenJournalLine_Bal_account_type.FixedAsset {
-		return apperrors.JnlFixedAssetNotYet(jnlLine, "bal_account_type")
+	err = rec.TestField("depreciation_book_code", types.Code(""))
+	if err != nil {
+		return err
 	}
-	return nil
+	return rec.TestField("fa_posting_type", gtables.GenJournalLine_Fa_posting_type.Blank)
 }
 
 // isCustVendFA: Customer, Vendor or Fixed Asset (the account type numbers of both sides)

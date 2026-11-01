@@ -8,6 +8,19 @@ common:
 
   # Common actions
   actions:
+    allocations: "Fordelinger"
+    insert_fa_bal_account: "Indsæt anlægsmodkonto"
+    acquisition: "Anskaffelse"
+    depreciation: "Afskrivning"
+    write_down: "Nedskrivning"
+    appreciation: "Opskrivning"
+    custom_1: "Bruger 1"
+    custom_2: "Bruger 2"
+    disposal: "Afhændelse"
+    maintenance: "Vedligeholdelse"
+    gain: "Gevinst"
+    loss: "Tab"
+    book_value: "Bogført værdi"
     fixed_asset: "Anlæg"
     depr_book: "Afskr.profil"
     fa_posting_type_setup: "Opsætning af anlægsbogføringstyper"

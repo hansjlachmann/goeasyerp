@@ -12,8 +12,8 @@ import (
 // genJournalLineLogic is the business logic of table 81 Gen. Journal Line.
 //
 // Not migrated yet: allocations (table 221), recurring lines, the credit limit warning when an
-// amount is entered (codeunit 312), fixed asset fields (depreciation book, FA posting type —
-// fixed asset posting), 1099 fields (local field series), the additional reporting currency.
+// amount is entered (codeunit 312), budgeted fixed assets and the FA add.-currency factor, 1099
+// fields (local field series), the additional reporting currency.
 // The tax fields (Tax %, Tax Base Amount, tax posting groups) are calculated with sales tax.
 type genJournalLineLogic struct{}
 
@@ -104,6 +104,10 @@ func (genJournalLineLogic) OnValidate_Account_type(rec *gtables.GenJournalLine) 
 		if err != nil {
 			return err
 		}
+	}
+	err = clearGenJnlLineFAFields(rec)
+	if err != nil {
+		return err
 	}
 	UpdateGenJnlLineSource(rec)
 	return nil
@@ -286,6 +290,10 @@ func (genJournalLineLogic) OnValidate_Account_no(rec *gtables.GenJournalLine) er
 		rec.Description = fa.Description
 		rec.Department_code = fa.Department_code
 		rec.Project_code = fa.Project_code
+		err = setGenJnlLineFADeprBook(rec, rec.Account_no)
+		if err != nil {
+			return err
+		}
 	}
 
 	err := rec.Validate("currency_code", rec.Currency_code)
@@ -494,6 +502,10 @@ func (genJournalLineLogic) OnValidate_Bal_account_no(rec *gtables.GenJournalLine
 			rec.Description = fa.Description
 			rec.Department_code = fa.Department_code
 			rec.Project_code = fa.Project_code
+		}
+		err = setGenJnlLineFADeprBook(rec, rec.Bal_account_no)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -792,6 +804,10 @@ func (genJournalLineLogic) OnValidate_Bal_account_type(rec *gtables.GenJournalLi
 		if err != nil {
 			return err
 		}
+	}
+	err = clearGenJnlLineFAFields(rec)
+	if err != nil {
+		return err
 	}
 	UpdateGenJnlLineSource(rec)
 	return nil
@@ -1447,4 +1463,117 @@ func CalcDateFormula(formula types.Code, date types.Date) (types.Date, error) {
 		return date, nil
 	}
 	return system.CalcDate(string(formula), date)
+}
+
+// setGenJnlLineFADeprBook: a fixed asset line without a depreciation book takes the FA Setup's
+// default book when the asset has it; the asset's posting group in the book
+func setGenJnlLineFADeprBook(rec *gtables.GenJournalLine, faNo types.Code) error {
+	faDeprBook := gtables.NewFADepreciationBook(rec)
+	if rec.Depreciation_book_code == "" {
+		faSetup := gtables.GetFASetup(rec)
+		rec.Depreciation_book_code = faSetup.Default_depr_book
+		if !faDeprBook.Get(map[string]interface{}{"fa_no": faNo, "depreciation_book_code": rec.Depreciation_book_code}) {
+			rec.Depreciation_book_code = ""
+		}
+	}
+	if rec.Depreciation_book_code != "" {
+		err := faDeprBook.GetOrError(map[string]interface{}{"fa_no": faNo, "depreciation_book_code": rec.Depreciation_book_code})
+		if err != nil {
+			return err
+		}
+		rec.Posting_group = faDeprBook.Fa_posting_group
+	}
+	return nil
+}
+
+// clearGenJnlLineFAFields: a line without a fixed asset on either side has no depreciation book
+// and no FA posting type
+func clearGenJnlLineFAFields(rec *gtables.GenJournalLine) error {
+	if rec.Account_type != gtables.GenJournalLine_Account_type.FixedAsset &&
+		rec.Bal_account_type != gtables.GenJournalLine_Bal_account_type.FixedAsset {
+		rec.Depreciation_book_code = ""
+		return rec.Validate("fa_posting_type", gtables.GenJournalLine_Fa_posting_type.Blank)
+	}
+	return nil
+}
+
+// OnValidate_Fa_posting_type: a line without a fixed asset and posting type has none of the FA
+// fields; an insurance only on an acquisition, a maintenance code only on a maintenance
+func (genJournalLineLogic) OnValidate_Fa_posting_type(rec *gtables.GenJournalLine) error {
+	if rec.Account_type != gtables.GenJournalLine_Account_type.FixedAsset &&
+		rec.Bal_account_type != gtables.GenJournalLine_Bal_account_type.FixedAsset &&
+		rec.Fa_posting_type == gtables.GenJournalLine_Fa_posting_type.Blank {
+		rec.Fa_posting_date = types.Date{}
+		rec.Salvage_value = types.Decimal{}
+		rec.No_of_depreciation_days = 0
+		rec.Depr_until_fa_posting_date = false
+		rec.Depr_acquisition_cost = false
+		rec.Maintenance_code = ""
+		rec.Insurance_no = ""
+		rec.Duplicate_in_depreciation_book = ""
+		rec.Use_duplication_list = false
+		rec.Fa_reclassification_entry = false
+		rec.Fa_error_entry_no = 0
+	}
+	if rec.Fa_posting_type != gtables.GenJournalLine_Fa_posting_type.AcquisitionCost {
+		err := rec.TestField("insurance_no", types.Code(""))
+		if err != nil {
+			return err
+		}
+	}
+	if rec.Fa_posting_type != gtables.GenJournalLine_Fa_posting_type.Maintenance {
+		return rec.TestField("maintenance_code", types.Code(""))
+	}
+	return nil
+}
+
+// OnValidate_Depreciation_book_code: the fixed asset's posting group in the book
+func (genJournalLineLogic) OnValidate_Depreciation_book_code(rec *gtables.GenJournalLine) error {
+	if rec.Depreciation_book_code == "" {
+		return nil
+	}
+	faDeprBook := gtables.NewFADepreciationBook(rec)
+	if rec.Account_no != "" && rec.Account_type == gtables.GenJournalLine_Account_type.FixedAsset {
+		err := faDeprBook.GetOrError(map[string]interface{}{"fa_no": rec.Account_no, "depreciation_book_code": rec.Depreciation_book_code})
+		if err != nil {
+			return err
+		}
+		rec.Posting_group = faDeprBook.Fa_posting_group
+	}
+	if rec.Bal_account_no != "" && rec.Bal_account_type == gtables.GenJournalLine_Bal_account_type.FixedAsset {
+		err := faDeprBook.GetOrError(map[string]interface{}{"fa_no": rec.Bal_account_no, "depreciation_book_code": rec.Depreciation_book_code})
+		if err != nil {
+			return err
+		}
+		rec.Posting_group = faDeprBook.Fa_posting_group
+	}
+	return nil
+}
+
+// OnValidate_Maintenance_code: only on a maintenance
+func (genJournalLineLogic) OnValidate_Maintenance_code(rec *gtables.GenJournalLine) error {
+	if rec.Maintenance_code != "" {
+		return rec.TestField("fa_posting_type", gtables.GenJournalLine_Fa_posting_type.Maintenance)
+	}
+	return nil
+}
+
+// OnValidate_Insurance_no: only on an acquisition
+func (genJournalLineLogic) OnValidate_Insurance_no(rec *gtables.GenJournalLine) error {
+	if rec.Insurance_no != "" {
+		return rec.TestField("fa_posting_type", gtables.GenJournalLine_Fa_posting_type.AcquisitionCost)
+	}
+	return nil
+}
+
+// OnValidate_Duplicate_in_depreciation_book: not with the duplication list
+func (genJournalLineLogic) OnValidate_Duplicate_in_depreciation_book(rec *gtables.GenJournalLine) error {
+	rec.Use_duplication_list = false
+	return nil
+}
+
+// OnValidate_Use_duplication_list: not with a book to duplicate in
+func (genJournalLineLogic) OnValidate_Use_duplication_list(rec *gtables.GenJournalLine) error {
+	rec.Duplicate_in_depreciation_book = ""
+	return nil
 }

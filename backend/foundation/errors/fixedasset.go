@@ -116,3 +116,11 @@ func FAErrorEntryNotFound(faNo, deprBookCode, entryNo string) *AppError {
 func FAErrorEntryNoMatch(faNo, deprBookCode, entryNo string) *AppError {
 	return &AppError{Code: ErrFAErrorEntryNoMatch, Params: []string{faNo, deprBookCode, entryNo}}
 }
+
+// ErrFANoSpaceForBalAccounts: Insert FA Bal. Account finds no free line numbers below the line
+const ErrFANoSpaceForBalAccounts ErrorCode = "ERR_FA_NO_SPACE_FOR_BAL_ACCOUNTS"
+
+// FANoSpaceForBalAccounts: there is not enough space to insert the balancing accounts
+func FANoSpaceForBalAccounts() *AppError {
+	return &AppError{Code: ErrFANoSpaceForBalAccounts}
+}

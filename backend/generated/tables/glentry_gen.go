@@ -51,6 +51,8 @@
 //	OnValidate_Additional_currency_amount(rec *gtables.GLEntry) error
 //	OnValidate_Add_currency_debit_amount(rec *gtables.GLEntry) error
 //	OnValidate_Add_currency_credit_amount(rec *gtables.GLEntry) error
+//	OnValidate_Fa_entry_type(rec *gtables.GLEntry) error
+//	OnValidate_Fa_entry_no(rec *gtables.GLEntry) error
 
 package tables
 
@@ -142,6 +144,23 @@ func (o GLEntrySource_type) IsValid() bool {
 	return o >= 0 && o < 6
 }
 
+// GLEntryFa_entry_type represents the fa_entry_type option field
+type GLEntryFa_entry_type int
+
+// String returns the text representation of GLEntryFa_entry_type
+func (o GLEntryFa_entry_type) String() string {
+	options := []string{" ", "Fixed Asset", "Maintenance"}
+	if o >= 0 && int(o) < len(options) {
+		return options[o]
+	}
+	return ""
+}
+
+// IsValid checks if the GLEntryFa_entry_type value is within valid range
+func (o GLEntryFa_entry_type) IsValid() bool {
+	return o >= 0 && o < 3
+}
+
 // GLEntry represents Table 17: G_L_Entry
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterGLEntryLogic.
@@ -187,6 +206,8 @@ type GLEntry struct {
 	Additional_currency_amount types.Decimal           `db:"additional_currency_amount"`
 	Add_currency_debit_amount  types.Decimal           `db:"add_currency_debit_amount"`
 	Add_currency_credit_amount types.Decimal           `db:"add_currency_credit_amount"`
+	Fa_entry_type              GLEntryFa_entry_type    `db:"fa_entry_type"`
+	Fa_entry_no                int                     `db:"fa_entry_no"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -314,6 +335,17 @@ var GLEntry_Source_type = struct {
 	Employee:    5,
 }
 
+// GLEntry_Fa_entry_type provides named constants for the fa_entry_type option field (FieldName.OptionValue syntax)
+var GLEntry_Fa_entry_type = struct {
+	Blank       GLEntryFa_entry_type
+	FixedAsset  GLEntryFa_entry_type
+	Maintenance GLEntryFa_entry_type
+}{
+	Blank:       0,
+	FixedAsset:  1,
+	Maintenance: 2,
+}
+
 // ========================================
 // Field numbers (field IDs)
 // ========================================
@@ -362,6 +394,8 @@ var GLEntry_FieldNo = struct {
 	Additional_currency_amount int
 	Add_currency_debit_amount  int
 	Add_currency_credit_amount int
+	Fa_entry_type              int
+	Fa_entry_no                int
 }{
 	Entry_no:                   1,
 	Gl_account_no:              3,
@@ -404,6 +438,8 @@ var GLEntry_FieldNo = struct {
 	Additional_currency_amount: 68,
 	Add_currency_debit_amount:  69,
 	Add_currency_credit_amount: 70,
+	Fa_entry_type:              5600,
+	Fa_entry_no:                5601,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -491,6 +527,10 @@ func (t *GLEntry) FieldNo(fieldName string) int {
 		return 69
 	case "add_currency_credit_amount":
 		return 70
+	case "fa_entry_type":
+		return 5600
+	case "fa_entry_no":
+		return 5601
 	}
 	return 0
 }
@@ -580,6 +620,10 @@ func (t *GLEntry) FieldName(fieldNo int) string {
 		return "add_currency_debit_amount"
 	case 70:
 		return "add_currency_credit_amount"
+	case 5600:
+		return "fa_entry_type"
+	case 5601:
+		return "fa_entry_no"
 	}
 	return ""
 }
@@ -714,6 +758,8 @@ type (
 	GLEntryOnValidate_Additional_currency_amount interface{ OnValidate_Additional_currency_amount(rec *GLEntry) error }
 	GLEntryOnValidate_Add_currency_debit_amount  interface{ OnValidate_Add_currency_debit_amount(rec *GLEntry) error }
 	GLEntryOnValidate_Add_currency_credit_amount interface{ OnValidate_Add_currency_credit_amount(rec *GLEntry) error }
+	GLEntryOnValidate_Fa_entry_type              interface{ OnValidate_Fa_entry_type(rec *GLEntry) error }
+	GLEntryOnValidate_Fa_entry_no                interface{ OnValidate_Fa_entry_no(rec *GLEntry) error }
 )
 
 // gLEntryLogic is the registered business logic of G_L_Entry, in
@@ -825,6 +871,10 @@ func gLEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GLEntryOnValidate_Add_currency_debit_amount)
 	case "OnValidate_Add_currency_credit_amount":
 		_, ok = logic.(GLEntryOnValidate_Add_currency_credit_amount)
+	case "OnValidate_Fa_entry_type":
+		_, ok = logic.(GLEntryOnValidate_Fa_entry_type)
+	case "OnValidate_Fa_entry_no":
+		_, ok = logic.(GLEntryOnValidate_Fa_entry_no)
 	default:
 		return false, false
 	}
@@ -1029,7 +1079,9 @@ func GetGLEntryTableSchema() string {
 		tax_prod_posting_group TEXT(10),
 		additional_currency_amount TEXT,
 		add_currency_debit_amount TEXT,
-		add_currency_credit_amount TEXT
+		add_currency_credit_amount TEXT,
+		fa_entry_type INTEGER CHECK (fa_entry_type >= 0 AND fa_entry_type <= 2),
+		fa_entry_no INTEGER
 	`
 }
 
@@ -1076,7 +1128,9 @@ func GetGLEntryPostgresTableSchema() string {
 		tax_prod_posting_group VARCHAR(10),
 		additional_currency_amount NUMERIC,
 		add_currency_debit_amount NUMERIC,
-		add_currency_credit_amount NUMERIC
+		add_currency_credit_amount NUMERIC,
+		fa_entry_type INTEGER CHECK (fa_entry_type >= 0 AND fa_entry_type <= 2),
+		fa_entry_no INTEGER
 	`
 }
 
@@ -1281,6 +1335,8 @@ func (t *GLEntry) StoreOldValues() {
 	t.oldValues["additional_currency_amount"] = t.Additional_currency_amount
 	t.oldValues["add_currency_debit_amount"] = t.Add_currency_debit_amount
 	t.oldValues["add_currency_credit_amount"] = t.Add_currency_credit_amount
+	t.oldValues["fa_entry_type"] = t.Fa_entry_type
+	t.oldValues["fa_entry_no"] = t.Fa_entry_no
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1418,6 +1474,12 @@ func (t *GLEntry) XRec() *GLEntry {
 	if v, ok := t.oldValues["add_currency_credit_amount"].(types.Decimal); ok {
 		x.Add_currency_credit_amount = v
 	}
+	if v, ok := t.oldValues["fa_entry_type"].(GLEntryFa_entry_type); ok {
+		x.Fa_entry_type = v
+	}
+	if v, ok := t.oldValues["fa_entry_no"].(int); ok {
+		x.Fa_entry_no = v
+	}
 	return x
 }
 
@@ -1530,6 +1592,8 @@ func (t *GLEntry) GetByPK(entry_no int) bool {
 	var additional_currency_amountNull sql.NullString
 	var add_currency_debit_amountNull sql.NullString
 	var add_currency_credit_amountNull sql.NullString
+	var fa_entry_typeInt int
+	var fa_entry_noVal int
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1537,7 +1601,7 @@ func (t *GLEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1585,6 +1649,8 @@ func (t *GLEntry) GetByPK(entry_no int) bool {
 		&additional_currency_amountNull,
 		&add_currency_debit_amountNull,
 		&add_currency_credit_amountNull,
+		&fa_entry_typeInt,
+		&fa_entry_noVal,
 	)
 
 	if err != nil {
@@ -1639,6 +1705,8 @@ func (t *GLEntry) GetByPK(entry_no int) bool {
 	t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
 	t.Add_currency_debit_amount, _ = types.NewDecimalFromString(add_currency_debit_amountNull.String)
 	t.Add_currency_credit_amount, _ = types.NewDecimalFromString(add_currency_credit_amountNull.String)
+	t.Fa_entry_type = GLEntryFa_entry_type(fa_entry_typeInt)
+	t.Fa_entry_no = fa_entry_noVal
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1702,11 +1770,13 @@ func (t *GLEntry) Insert(runTrigger bool) bool {
 		t.Additional_currency_amount,
 		t.Add_currency_debit_amount,
 		t.Add_currency_credit_amount,
+		t.Fa_entry_type,
+		t.Fa_entry_no,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1785,10 +1855,12 @@ func (t *GLEntry) InsertAll(records []*GLEntry, runTrigger bool) error {
 			r.Additional_currency_amount,
 			r.Add_currency_debit_amount,
 			r.Add_currency_credit_amount,
+			r.Fa_entry_type,
+			r.Fa_entry_no,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, GLEntryTableName)
-	columns := []string{"entry_no", "gl_account_no", "posting_date", "document_type", "document_no", "description", "bal_account_no", "amount", "department_code", "project_code", "user_id", "source_code", "system_created_entry", "prior_year_entry", "job_no", "quantity", "tax_amount", "business_unit_code", "journal_batch_name", "reason_code", "gen_posting_type", "gen_bus_posting_group", "gen_prod_posting_group", "bal_account_type", "transaction_no", "debit_amount", "credit_amount", "document_date", "external_document_no", "source_type", "source_no", "no_series", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "additional_currency_amount", "add_currency_debit_amount", "add_currency_credit_amount"}
+	columns := []string{"entry_no", "gl_account_no", "posting_date", "document_type", "document_no", "description", "bal_account_no", "amount", "department_code", "project_code", "user_id", "source_code", "system_created_entry", "prior_year_entry", "job_no", "quantity", "tax_amount", "business_unit_code", "journal_batch_name", "reason_code", "gen_posting_type", "gen_bus_posting_group", "gen_prod_posting_group", "bal_account_type", "transaction_no", "debit_amount", "credit_amount", "document_date", "external_document_no", "source_type", "source_no", "no_series", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "additional_currency_amount", "add_currency_debit_amount", "add_currency_credit_amount", "fa_entry_type", "fa_entry_no"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1992,6 +2064,14 @@ func (t *GLEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "add_currency_credit_amount = ?")
 			values = append(values, t.Add_currency_credit_amount)
 		}
+		if t.hasFieldChanged("fa_entry_type") {
+			setClauses = append(setClauses, "fa_entry_type = ?")
+			values = append(values, t.Fa_entry_type)
+		}
+		if t.hasFieldChanged("fa_entry_no") {
+			setClauses = append(setClauses, "fa_entry_no = ?")
+			values = append(values, t.Fa_entry_no)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -2079,6 +2159,10 @@ func (t *GLEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.Add_currency_debit_amount)
 		setClauses = append(setClauses, "add_currency_credit_amount = ?")
 		values = append(values, t.Add_currency_credit_amount)
+		setClauses = append(setClauses, "fa_entry_type = ?")
+		values = append(values, t.Fa_entry_type)
+		setClauses = append(setClauses, "fa_entry_no = ?")
+		values = append(values, t.Fa_entry_no)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -2293,6 +2377,15 @@ func (t *GLEntry) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Decimal); ok {
 			return !t.Add_currency_credit_amount.Equal(old)
 		}
+	case "fa_entry_type":
+		if old, ok := oldValue.(GLEntryFa_entry_type); ok {
+			return t.Fa_entry_type != old
+		}
+	case "fa_entry_no":
+		if old, ok := oldValue.(int); ok {
+			return t.Fa_entry_no != old
+		}
+		return true // Type mismatch, assume changed
 	}
 
 	return false
@@ -2579,6 +2672,10 @@ func (t *GLEntry) columnName(fieldName string) (string, bool) {
 		return "add_currency_debit_amount", true
 	case strings.ToLower("add_currency_credit_amount"):
 		return "add_currency_credit_amount", true
+	case strings.ToLower("fa_entry_type"):
+		return "fa_entry_type", true
+	case strings.ToLower("fa_entry_no"):
+		return "fa_entry_no", true
 	}
 	return "", false
 }
@@ -2954,7 +3051,7 @@ func (t *GLEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2998,6 +3095,7 @@ func (t *GLEntry) FindFirst() bool {
 	var additional_currency_amountNull sql.NullString
 	var add_currency_debit_amountNull sql.NullString
 	var add_currency_credit_amountNull sql.NullString
+	var fa_entry_typeInt int
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&t.Entry_no,
@@ -3041,6 +3139,8 @@ func (t *GLEntry) FindFirst() bool {
 		&additional_currency_amountNull,
 		&add_currency_debit_amountNull,
 		&add_currency_credit_amountNull,
+		&fa_entry_typeInt,
+		&t.Fa_entry_no,
 	)
 
 	if err != nil {
@@ -3091,6 +3191,7 @@ func (t *GLEntry) FindFirst() bool {
 	t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
 	t.Add_currency_debit_amount, _ = types.NewDecimalFromString(add_currency_debit_amountNull.String)
 	t.Add_currency_credit_amount, _ = types.NewDecimalFromString(add_currency_credit_amountNull.String)
+	t.Fa_entry_type = GLEntryFa_entry_type(fa_entry_typeInt)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -3111,7 +3212,7 @@ func (t *GLEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3155,6 +3256,7 @@ func (t *GLEntry) FindLast() bool {
 	var additional_currency_amountNull sql.NullString
 	var add_currency_debit_amountNull sql.NullString
 	var add_currency_credit_amountNull sql.NullString
+	var fa_entry_typeInt int
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&t.Entry_no,
@@ -3198,6 +3300,8 @@ func (t *GLEntry) FindLast() bool {
 		&additional_currency_amountNull,
 		&add_currency_debit_amountNull,
 		&add_currency_credit_amountNull,
+		&fa_entry_typeInt,
+		&t.Fa_entry_no,
 	)
 
 	if err != nil {
@@ -3248,6 +3352,7 @@ func (t *GLEntry) FindLast() bool {
 	t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
 	t.Add_currency_debit_amount, _ = types.NewDecimalFromString(add_currency_debit_amountNull.String)
 	t.Add_currency_credit_amount, _ = types.NewDecimalFromString(add_currency_credit_amountNull.String)
+	t.Fa_entry_type = GLEntryFa_entry_type(fa_entry_typeInt)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -3298,7 +3403,7 @@ func (t *GLEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3406,6 +3511,7 @@ func (t *GLEntry) Next(steps ...int) bool {
 		var additional_currency_amountNull sql.NullString
 		var add_currency_debit_amountNull sql.NullString
 		var add_currency_credit_amountNull sql.NullString
+		var fa_entry_typeInt int
 
 		err := t.currentRows.Scan(
 			&t.Entry_no,
@@ -3449,6 +3555,8 @@ func (t *GLEntry) Next(steps ...int) bool {
 			&additional_currency_amountNull,
 			&add_currency_debit_amountNull,
 			&add_currency_credit_amountNull,
+			&fa_entry_typeInt,
+			&t.Fa_entry_no,
 		)
 
 		if err != nil {
@@ -3498,6 +3606,7 @@ func (t *GLEntry) Next(steps ...int) bool {
 		t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
 		t.Add_currency_debit_amount, _ = types.NewDecimalFromString(add_currency_debit_amountNull.String)
 		t.Add_currency_credit_amount, _ = types.NewDecimalFromString(add_currency_credit_amountNull.String)
+		t.Fa_entry_type = GLEntryFa_entry_type(fa_entry_typeInt)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -3547,7 +3656,7 @@ func (t *GLEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3608,6 +3717,7 @@ func (t *GLEntry) FindSetBuffered() bool {
 		var additional_currency_amountNull sql.NullString
 		var add_currency_debit_amountNull sql.NullString
 		var add_currency_credit_amountNull sql.NullString
+		var fa_entry_typeInt int
 
 		err := rows.Scan(
 			&record.Entry_no,
@@ -3651,6 +3761,8 @@ func (t *GLEntry) FindSetBuffered() bool {
 			&additional_currency_amountNull,
 			&add_currency_debit_amountNull,
 			&add_currency_credit_amountNull,
+			&fa_entry_typeInt,
+			&record.Fa_entry_no,
 		)
 
 		if err != nil {
@@ -3698,6 +3810,7 @@ func (t *GLEntry) FindSetBuffered() bool {
 		record.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
 		record.Add_currency_debit_amount, _ = types.NewDecimalFromString(add_currency_debit_amountNull.String)
 		record.Add_currency_credit_amount, _ = types.NewDecimalFromString(add_currency_credit_amountNull.String)
+		record.Fa_entry_type = GLEntryFa_entry_type(fa_entry_typeInt)
 
 		// Store old values
 		record.StoreOldValues()
@@ -3767,6 +3880,8 @@ func (t *GLEntry) copyFromBuffered(record *GLEntry) {
 	t.Additional_currency_amount = record.Additional_currency_amount
 	t.Add_currency_debit_amount = record.Add_currency_debit_amount
 	t.Add_currency_credit_amount = record.Add_currency_credit_amount
+	t.Fa_entry_type = record.Fa_entry_type
+	t.Fa_entry_no = record.Fa_entry_no
 	t.StoreOldValues()
 }
 
@@ -4933,6 +5048,86 @@ func (t *GLEntry) ValidateField(fieldName string, value interface{}) error {
 			}
 		}
 		return nil
+	case "fa_entry_type":
+		// Set field value
+		// Accept enum type directly
+		if v, ok := value.(GLEntryFa_entry_type); ok {
+			t.Fa_entry_type = v
+			// Accept int (convert to enum)
+		} else if v, ok := value.(int); ok {
+			if v < 0 || v >= 3 {
+				return fmt.Errorf("invalid option value %d for field fa_entry_type (valid range: 0-%d)", v, 3-1)
+			}
+			t.Fa_entry_type = GLEntryFa_entry_type(v)
+			// Accept float64 (JSON numbers decode as float64)
+		} else if v, ok := value.(float64); ok {
+			intVal := int(v)
+			if intVal < 0 || intVal >= 3 {
+				return fmt.Errorf("invalid option value %d for field fa_entry_type (valid range: 0-%d)", intVal, 3-1)
+			}
+			t.Fa_entry_type = GLEntryFa_entry_type(intVal)
+			// Accept string (lookup in options and convert)
+		} else if v, ok := value.(string); ok {
+			if v == "" {
+				// Empty string defaults to first option (behavior)
+				t.Fa_entry_type = 0
+			} else {
+				options := []string{" ", "Fixed Asset", "Maintenance"}
+				found := false
+				for i, opt := range options {
+					if opt == v {
+						t.Fa_entry_type = GLEntryFa_entry_type(i)
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("invalid option '%s' for field fa_entry_type (valid options: %v)", v, options)
+				}
+			}
+		} else {
+			return fmt.Errorf("invalid type for field fa_entry_type (expected GLEntryFa_entry_type, int, or string)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GLEntryOnValidate_Fa_entry_type); ok {
+				if err := trg.OnValidate_Fa_entry_type(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "fa_entry_no":
+		// Set field value
+		switch v := value.(type) {
+		case int:
+			t.Fa_entry_no = v
+		case float64:
+			t.Fa_entry_no = int(v)
+		case string:
+			if v == "" {
+				t.Fa_entry_no = 0
+			} else if i, err := strconv.Atoi(v); err == nil {
+				t.Fa_entry_no = i
+			} else {
+				return fmt.Errorf("invalid integer value for field fa_entry_no: %s", v)
+			}
+		default:
+			return fmt.Errorf("invalid type for field fa_entry_no")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_entry_no"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GLEntryOnValidate_Fa_entry_no); ok {
+				if err := trg.OnValidate_Fa_entry_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -5027,6 +5222,10 @@ func (t *GLEntry) FieldValue(no int) (any, bool) {
 		return t.Add_currency_debit_amount, true
 	case 70:
 		return t.Add_currency_credit_amount, true
+	case 5600:
+		return t.Fa_entry_type, true
+	case 5601:
+		return t.Fa_entry_no, true
 	}
 	return nil, false
 }
@@ -5331,6 +5530,16 @@ func (t *GLEntry) SetFieldValue(no int, value any) bool {
 			t.Add_currency_credit_amount = v
 			return true
 		}
+	case 5600:
+		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
+			t.Fa_entry_type = GLEntryFa_entry_type(i)
+			return true
+		}
+	case 5601:
+		if v, ok := value.(int); ok {
+			t.Fa_entry_no = v
+			return true
+		}
 	}
 	return false
 }
@@ -5424,6 +5633,8 @@ func (t *GLEntry) CalcSums(fieldNames ...string) error {
 			column = "add_currency_debit_amount"
 		case "add_currency_credit_amount":
 			column = "add_currency_credit_amount"
+		case "fa_entry_no":
+			column = "fa_entry_no"
 		default:
 			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of G_L_Entry", name)
 		}
@@ -5493,6 +5704,12 @@ func (t *GLEntry) CalcSums(fieldNames ...string) error {
 				return fmt.Errorf("CalcSums G_L_Entry.%s: %w", column, err)
 			}
 			t.Add_currency_credit_amount = d
+		case "fa_entry_no":
+			f, err := strconv.ParseFloat(total, 64)
+			if err != nil {
+				return fmt.Errorf("CalcSums G_L_Entry.%s: %w", column, err)
+			}
+			t.Fa_entry_no = int(f)
 		}
 	}
 	return nil
@@ -5926,6 +6143,10 @@ func (t *GLEntry) columnValue(column string) (interface{}, bool) {
 		return t.Add_currency_debit_amount, true
 	case "add_currency_credit_amount":
 		return t.Add_currency_credit_amount, true
+	case "fa_entry_type":
+		return int(t.Fa_entry_type), true
+	case "fa_entry_no":
+		return t.Fa_entry_no, true
 	}
 	return nil, false
 }
@@ -6020,6 +6241,8 @@ func (t *GLEntry) Init() {
 	t.Additional_currency_amount = *new(types.Decimal)
 	t.Add_currency_debit_amount = *new(types.Decimal)
 	t.Add_currency_credit_amount = *new(types.Decimal)
+	t.Fa_entry_type = 0
+	t.Fa_entry_no = *new(int)
 	t.applyDefaults()
 }
 
@@ -6095,6 +6318,8 @@ func (t *GLEntry) ToMap() map[string]interface{} {
 		"additional_currency_amount": t.Additional_currency_amount.String(),
 		"add_currency_debit_amount":  t.Add_currency_debit_amount.String(),
 		"add_currency_credit_amount": t.Add_currency_credit_amount.String(),
+		"fa_entry_type":              int(t.Fa_entry_type),
+		"fa_entry_no":                t.Fa_entry_no,
 	}
 }
 
@@ -6423,6 +6648,36 @@ func (t *GLEntry) FromMap(data map[string]interface{}) {
 			t.Add_currency_credit_amount = types.NewDecimalFromInt(int64(val))
 		case int64:
 			t.Add_currency_credit_amount = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["fa_entry_type"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Fa_entry_type = GLEntryFa_entry_type(int(val))
+		case int:
+			t.Fa_entry_type = GLEntryFa_entry_type(val)
+		case string:
+			// Lookup string value in options
+			options := []string{" ", "Fixed Asset", "Maintenance"}
+			for i, opt := range options {
+				if opt == val {
+					t.Fa_entry_type = GLEntryFa_entry_type(i)
+					break
+				}
+			}
+		}
+	}
+	if v, ok := data["fa_entry_no"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Fa_entry_no = int(val)
+		case int:
+			t.Fa_entry_no = val
+		case string:
+			// a record key from a URL or a list selection
+			if n, err := strconv.Atoi(val); err == nil {
+				t.Fa_entry_no = n
+			}
 		}
 	}
 }
@@ -6864,6 +7119,26 @@ func (t *GLEntry) GetFields() []tables.FieldInfo {
 			FlowField:     false,
 			DecimalPlaces: "2:2",
 		},
+		{
+			No:         5600,
+			Name:       "fa_entry_type",
+			Type:       tables.FieldTypeOption,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5601,
+			Name:       "fa_entry_no",
+			Type:       tables.FieldTypeInteger,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
 	}
 }
 
@@ -6892,6 +7167,7 @@ func (t *GLEntry) GetOptionFields() map[string][]string {
 		"gen_posting_type": {" ", "Purchase", "Sale", "Settlement"},
 		"bal_account_type": {"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"},
 		"source_type":      {" ", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"},
+		"fa_entry_type":    {" ", "Fixed Asset", "Maintenance"},
 	}
 }
 
@@ -7077,6 +7353,20 @@ func (t *GLEntry) GetTableRelationFields() map[string]tables.TableRelationInfo {
 				{Source: "description", Width: 250},
 			},
 			SearchTimeout: 0,
+		},
+		"fa_entry_no": {
+			Conditions: []tables.ConditionalRelationInfo{
+				{Field: "fa_entry_type", Value: 1, Relation: tables.TableRelationInfo{
+					Table: "FA_Ledger_Entry", Field: "entry_no", DisplayField: "",
+					LookupColumns: []tables.LookupColumnInfo{{Source: "entry_no", Width: 90}, {Source: "description", Width: 250}},
+					SearchTimeout: 0,
+				}},
+				{Field: "fa_entry_type", Value: 2, Relation: tables.TableRelationInfo{
+					Table: "Maintenance_Ledger_Entry", Field: "entry_no", DisplayField: "",
+					LookupColumns: []tables.LookupColumnInfo{{Source: "entry_no", Width: 90}, {Source: "description", Width: 250}},
+					SearchTimeout: 0,
+				}},
+			},
 		},
 	}
 }

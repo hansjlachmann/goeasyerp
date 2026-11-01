@@ -3,6 +3,7 @@ package genjnl
 import (
 	"fmt"
 
+	"github.com/hansjlachmann/openerp/backend/business-logic/fajnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/salestax"
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
@@ -17,7 +18,10 @@ import (
 // entries, customer and vendor entries. One instance posts a whole batch: it keeps the next
 // entry and transaction numbers and the register; open it on the posting's transaction.
 //
-// Not migrated yet: fixed asset lines (fixed asset posting), the additional reporting currency,
+// A fixed asset line posts its FA or maintenance entry (codeunit 5632, fajnl) and the G/L entries
+// of its accounts.
+//
+// Not migrated yet: the additional reporting currency,
 // computer checks and electronic payments (check printing), job ledger entries.
 type GenJnlPostLine struct {
 	src             ftables.Source
@@ -42,6 +46,7 @@ type GenJnlPostLine struct {
 	currentBalance      types.Decimal
 	fiscalYearStartDate types.Date
 	balanceCheck        *balanceCheck
+	faJnlPostLine       *fajnl.FAJnlPostLine
 
 	// Customer and vendor application of the current line
 	custPosting           bool
@@ -192,7 +197,7 @@ func (p *GenJnlPostLine) postAccount(genJnlLine *gtables.GenJournalLine) error {
 	case gtables.GenJournalLine_Account_type.BankAccount:
 		return p.postBankAcc(genJnlLine)
 	case gtables.GenJournalLine_Account_type.FixedAsset:
-		return apperrors.JnlFixedAssetNotYet(jnlLine, "account_type")
+		return p.postFixedAsset(genJnlLine)
 	}
 	return nil
 }
@@ -653,5 +658,75 @@ func (p *GenJnlPostLine) insertGLEntry() error {
 	}
 	p.glEntryTmp = append(p.glEntryTmp, glEntry)
 	p.nextEntryNo = p.nextEntryNo + 1
+	return nil
+}
+
+// postFixedAsset (PostFixedAsset) posts a fixed asset line: the line's G/L entry (with its tax)
+// goes to codeunit 5632 as the FA or maintenance entry's amount; the G/L amounts the asset's
+// posting group gives are the G/L entries (with the line's general and tax posting groups and the
+// FA entry they belong to); the line's tax; the FA register points at the G/L register
+func (p *GenJnlPostLine) postFixedAsset(genJnlLine *gtables.GenJournalLine) error {
+	_, err := p.initGLEntry("", genJnlLine.Amount_lcy, genJnlLine.System_created_entry)
+	if err != nil {
+		return err
+	}
+	p.glEntry.Gen_posting_type = gtables.GLEntryGen_posting_type(genJnlLine.Gen_posting_type)
+	p.glEntry.Bal_account_type = gtables.GLEntryBal_account_type(genJnlLine.Bal_account_type)
+	p.glEntry.Bal_account_no = genJnlLine.Bal_account_no
+	err = p.initTax(genJnlLine)
+	if err != nil {
+		return err
+	}
+	tempGLEntry := p.glEntry
+	if p.faJnlPostLine == nil {
+		p.faJnlPostLine = fajnl.NewFAJnlPostLine(p.src)
+	}
+	err = p.faJnlPostLine.GenJnlPostLine(genJnlLine, tempGLEntry.Amount, tempGLEntry.Tax_amount, p.nextTransactionNo, p.nextEntryNo)
+	if err != nil {
+		return err
+	}
+	departmentCode := genJnlLine.Department_code
+	projectCode := genJnlLine.Project_code
+	correction := genJnlLine.Correction
+	for _, b := range p.faJnlPostLine.GLBuffer() {
+		genJnlLine.Department_code = b.DepartmentCode
+		genJnlLine.Project_code = b.ProjectCode
+		genJnlLine.Correction = b.Correction
+		_, err = p.initGLEntry(b.AccountNo, b.Amount, true)
+		if err != nil {
+			return err
+		}
+		glEntry := p.glEntry
+		glEntry.Gen_posting_type = tempGLEntry.Gen_posting_type
+		glEntry.Gen_bus_posting_group = tempGLEntry.Gen_bus_posting_group
+		glEntry.Gen_prod_posting_group = tempGLEntry.Gen_prod_posting_group
+		glEntry.Tax_bus_posting_group = tempGLEntry.Tax_bus_posting_group
+		glEntry.Tax_prod_posting_group = tempGLEntry.Tax_prod_posting_group
+		glEntry.Tax_area_code = tempGLEntry.Tax_area_code
+		glEntry.Tax_liable = tempGLEntry.Tax_liable
+		glEntry.Tax_group_code = tempGLEntry.Tax_group_code
+		glEntry.Use_tax = tempGLEntry.Use_tax
+		glEntry.Tax_amount = tempGLEntry.Tax_amount
+		glEntry.Bal_account_type = tempGLEntry.Bal_account_type
+		glEntry.Bal_account_no = tempGLEntry.Bal_account_no
+		glEntry.Fa_entry_type = b.FAEntryType
+		glEntry.Fa_entry_no = b.FAEntryNo
+		err = p.insertGLEntry()
+		if err != nil {
+			return err
+		}
+	}
+	genJnlLine.Department_code = departmentCode
+	genJnlLine.Project_code = projectCode
+	genJnlLine.Correction = correction
+	p.glEntry = tempGLEntry
+	err = p.postTax(genJnlLine)
+	if err != nil {
+		return err
+	}
+	if faReg := p.faJnlPostLine.FARegister(); faReg != nil {
+		faReg.G_l_register_no = p.glReg.No
+		return faReg.ModifyOrError(false)
+	}
 	return nil
 }

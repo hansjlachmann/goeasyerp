@@ -1,0 +1,56 @@
+page:
+  id: 5623
+  type: List
+  name: FA Allocations
+  source_table: FA_Allocation
+  caption: FA Allocations
+  editable: true
+  auto_split_key: true
+  delayed_insert: true
+  # opened from an FA posting group (Allocations menu) on one allocation type: the G/L accounts its
+  # balancing amounts are split over; what is not allocated goes to the group's own account
+
+  layout:
+    repeater:
+      fields:
+        - source: code
+          width: 100
+          visible: false
+        - source: allocation_type
+          width: 120
+          visible: false
+        - source: line_no
+          width: 90
+          visible: false
+        - source: account_no
+          width: 120
+        - source: account_name
+          width: 250
+        - source: department_code
+          width: 110
+        - source: project_code
+          width: 110
+        - source: allocation_percent
+          width: 110
+        - source: description
+          width: 250
+          visible: false
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

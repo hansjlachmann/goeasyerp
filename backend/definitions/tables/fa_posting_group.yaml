@@ -478,6 +478,183 @@ table:
           - source: name
             width: 250
 
+    # FlowFields: the allocation % of the group's FA allocations per allocation type
+    - name: allocated_acquisition_cost_percent
+      no: 31
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: FAAllocation
+      source_field: allocation_percent
+      flow_filters:
+        - field: code
+          type: field
+          value: code
+        - field: allocation_type
+          type: const
+          value: 0
+
+    - name: allocated_depreciation_percent
+      no: 32
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: FAAllocation
+      source_field: allocation_percent
+      flow_filters:
+        - field: code
+          type: field
+          value: code
+        - field: allocation_type
+          type: const
+          value: 1
+
+    - name: allocated_write_down_percent
+      no: 33
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: FAAllocation
+      source_field: allocation_percent
+      flow_filters:
+        - field: code
+          type: field
+          value: code
+        - field: allocation_type
+          type: const
+          value: 2
+
+    - name: allocated_appreciation_percent
+      no: 34
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: FAAllocation
+      source_field: allocation_percent
+      flow_filters:
+        - field: code
+          type: field
+          value: code
+        - field: allocation_type
+          type: const
+          value: 3
+
+    - name: allocated_custom_1_percent
+      no: 35
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: FAAllocation
+      source_field: allocation_percent
+      flow_filters:
+        - field: code
+          type: field
+          value: code
+        - field: allocation_type
+          type: const
+          value: 4
+
+    - name: allocated_custom_2_percent
+      no: 36
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: FAAllocation
+      source_field: allocation_percent
+      flow_filters:
+        - field: code
+          type: field
+          value: code
+        - field: allocation_type
+          type: const
+          value: 5
+
+    - name: allocated_sales_price_percent
+      no: 37
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: FAAllocation
+      source_field: allocation_percent
+      flow_filters:
+        - field: code
+          type: field
+          value: code
+        - field: allocation_type
+          type: const
+          value: 6
+
+    - name: allocated_maintenance_percent
+      no: 38
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: FAAllocation
+      source_field: allocation_percent
+      flow_filters:
+        - field: code
+          type: field
+          value: code
+        - field: allocation_type
+          type: const
+          value: 7
+
+    - name: allocated_gain_percent
+      no: 39
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: FAAllocation
+      source_field: allocation_percent
+      flow_filters:
+        - field: code
+          type: field
+          value: code
+        - field: allocation_type
+          type: const
+          value: 8
+
+    - name: allocated_loss_percent
+      no: 40
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: FAAllocation
+      source_field: allocation_percent
+      flow_filters:
+        - field: code
+          type: field
+          value: code
+        - field: allocation_type
+          type: const
+          value: 9
+
+    - name: allocated_book_value_percent
+      no: 41
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: FAAllocation
+      source_field: allocation_percent
+      flow_filters:
+        - field: code
+          type: field
+          value: code
+        - field: allocation_type
+          type: const
+          value: 10
+
   keys:
     - name: Primary
       fields: [code]

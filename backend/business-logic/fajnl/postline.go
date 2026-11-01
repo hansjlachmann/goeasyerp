@@ -19,8 +19,10 @@ import (
 // Consistency. An acquisition cost with a salvage value posts the salvage value too. One
 // FAJnlPostLine posts the lines of one posting: they share its FA register.
 //
-// Not migrated yet: the general journal's fixed asset lines (FA2 — the G/L accounts of codeunit
-// 5601), automatic depreciation (Depr. until FA Posting Date, Depr. Acquisition Cost — FA3),
+// A general journal line with a fixed asset posts through GenJnlPostLine: its FA or maintenance
+// entry, and the G/L amounts (codeunit 5601, GLBuffer) codeunit 12 posts as G/L entries.
+//
+// Not migrated yet: automatic depreciation (Depr. until FA Posting Date, Depr. Acquisition Cost — FA3),
 // disposal (FA4), duplication in other books (FA5), budgeted assets.
 type FAJnlPostLine struct {
 	src                    ftables.Source
@@ -28,6 +30,7 @@ type FAJnlPostLine struct {
 	nextEntryNo            int
 	nextMaintenanceEntryNo int
 	faReg                  *gtables.FARegister
+	glAcc                  faInsertGLAcc
 }
 
 // NewFAJnlPostLine opens the line posting in the posting's database (its transaction)
@@ -58,6 +61,43 @@ func (p *FAJnlPostLine) FAJnlPostLine(faJnlLine *gtables.FAJournalLine, checkLin
 	return p.code(faLedgEntry, faJnlLine.Salvage_value)
 }
 
+// GenJnlPostLine posts a general journal line's fixed asset (codeunit 12's PostFixedAsset): the
+// FA or maintenance entry with the amount and tax of the line's G/L entry, its transaction and
+// G/L entry no.; GLBuffer has the G/L amounts to post
+func (p *FAJnlPostLine) GenJnlPostLine(genJnlLine *gtables.GenJournalLine, faAmount, taxAmount types.Decimal, nextTransactionNo, nextGLEntryNo int) error {
+	p.glAcc.buffer = nil
+	if genJnlLine.Account_no == "" {
+		return nil
+	}
+	if genJnlLine.Fa_posting_date.IsZero() {
+		genJnlLine.Fa_posting_date = genJnlLine.Posting_date
+	}
+	if genJnlLine.Fa_posting_type == gtables.GenJournalLine_Fa_posting_type.Maintenance {
+		maintenanceLedgEntry := makeMaintenanceLedgEntryFromGenJnl(p.src, genJnlLine)
+		maintenanceLedgEntry.Amount = faAmount
+		maintenanceLedgEntry.Tax_amount = taxAmount
+		maintenanceLedgEntry.Transaction_no = nextTransactionNo
+		maintenanceLedgEntry.G_l_entry_no = nextGLEntryNo
+		return p.maintenanceCode(maintenanceLedgEntry)
+	}
+	faLedgEntry := makeFALedgEntryFromGenJnl(p.src, genJnlLine)
+	faLedgEntry.Amount = faAmount
+	faLedgEntry.Tax_amount = taxAmount
+	faLedgEntry.Transaction_no = nextTransactionNo
+	faLedgEntry.G_l_entry_no = nextGLEntryNo
+	return p.code(faLedgEntry, genJnlLine.Salvage_value)
+}
+
+// GLBuffer is the G/L amounts of the last general journal line (FindFirstGLAcc/GetNextGLAcc)
+func (p *FAJnlPostLine) GLBuffer() []*FAGLPostBuffer {
+	return p.glAcc.buffer
+}
+
+// FARegister is the posting's FA register (nil before its first entry)
+func (p *FAJnlPostLine) FARegister() *gtables.FARegister {
+	return p.faReg
+}
+
 // code (Code): the asset may be posted to; the entry (and its salvage value) inserted
 func (p *FAJnlPostLine) code(faLedgEntry *gtables.FALedgerEntry, salvageValue types.Decimal) error {
 	fa, faDeprBook, err := p.getFA(faLedgEntry.Fa_no, faLedgEntry.Depreciation_book_code)
@@ -65,7 +105,16 @@ func (p *FAJnlPostLine) code(faLedgEntry *gtables.FALedgerEntry, salvageValue ty
 		return err
 	}
 	copyFromFACard(faLedgEntry, fa, faDeprBook)
+	if faLedgEntry.Fa_posting_group == "" && faLedgEntry.G_l_entry_no > 0 {
+		err = faDeprBook.TestField("fa_posting_group")
+		if err != nil {
+			return err
+		}
+		faLedgEntry.Fa_posting_group = faDeprBook.Fa_posting_group
+	}
+	p.glAcc.orgGenJnlLine = true
 	err = p.insertFALedgEntry(faLedgEntry, fa)
+	p.glAcc.orgGenJnlLine = false
 	if err != nil {
 		return err
 	}
@@ -91,7 +140,17 @@ func (p *FAJnlPostLine) maintenanceCode(maintenanceLedgEntry *gtables.Maintenanc
 	maintenanceLedgEntry.Fa_location_code = fa.Fa_location_code
 	maintenanceLedgEntry.Location_code = fa.Location_code
 	maintenanceLedgEntry.Fa_exchange_rate = getExchangeRate(faDeprBook)
-	return p.insertMaintenance(maintenanceLedgEntry, fa, faDeprBook)
+	if maintenanceLedgEntry.Fa_posting_group == "" && maintenanceLedgEntry.G_l_entry_no > 0 {
+		err = faDeprBook.TestField("fa_posting_group")
+		if err != nil {
+			return err
+		}
+		maintenanceLedgEntry.Fa_posting_group = faDeprBook.Fa_posting_group
+	}
+	p.glAcc.orgGenJnlLine = true
+	err = p.insertMaintenance(maintenanceLedgEntry, fa, faDeprBook)
+	p.glAcc.orgGenJnlLine = false
+	return err
 }
 
 // getFA: the asset (not blocked or inactive) and its depreciation book
@@ -275,8 +334,18 @@ func (p *FAJnlPostLine) insertFALedgEntry(entry *gtables.FALedgerEntry, fa *gtab
 		return err
 	}
 	faLedgEntry.Amount_lcy = amountLCY(faLedgEntry.Amount, faLedgEntry.Fa_exchange_rate)
-	// G/L integration (FA Insert G/L Account) comes with the general journal's fixed asset lines
-	faLedgEntry.G_l_entry_no = 0
+	glIntegration, err := calcGLIntegration(p.src, faLedgEntry)
+	if err != nil {
+		return err
+	}
+	if glIntegration {
+		err = p.glAcc.insertFAEntry(p.src, faLedgEntry)
+		if err != nil {
+			return err
+		}
+	} else {
+		faLedgEntry.G_l_entry_no = 0
+	}
 	err = faLedgEntry.InsertOrError(false)
 	if err != nil {
 		return err
@@ -351,6 +420,12 @@ func (p *FAJnlPostLine) insertMaintenance(entry *gtables.MaintenanceLedgerEntry,
 	entry.Entry_no = p.nextMaintenanceEntryNo
 	entry.Amount_lcy = amountLCY(entry.Amount, entry.Fa_exchange_rate)
 	entry.Debit_amount, entry.Credit_amount = setDebitCredit(entry.Amount, entry.Correction)
+	if entry.G_l_entry_no > 0 {
+		err = p.glAcc.insertMaintenanceAccNo(p.src, entry)
+		if err != nil {
+			return err
+		}
+	}
 	err = entry.InsertOrError(false)
 	if err != nil {
 		return err
@@ -472,4 +547,119 @@ func (p *FAJnlPostLine) insertRegister(maintenance bool, entryNo int) error {
 		p.faReg.To_entry_no = entryNo
 	}
 	return p.faReg.ModifyOrError(false)
+}
+
+// calcGLIntegration (CalcGLIntegration): an FA entry of a general journal line goes to the G/L —
+// not a salvage value, nor the proceeds (Net) or the gain/loss (Gross) of a disposal
+func calcGLIntegration(src ftables.Source, entry *gtables.FALedgerEntry) (bool, error) {
+	if entry.G_l_entry_no == 0 || entry.Fa_posting_type == gtables.FALedgerEntry_Fa_posting_type.SalvageValue {
+		return false, nil
+	}
+	deprBook := gtables.NewDepreciationBook(src)
+	err := deprBook.GetOrError(entry.Depreciation_book_code)
+	if err != nil {
+		return false, err
+	}
+	switch deprBook.Disposal_calculation_method {
+	case gtables.DepreciationBook_Disposal_calculation_method.Net:
+		if entry.Fa_posting_type == gtables.FALedgerEntry_Fa_posting_type.ProceedsOnDisposal {
+			return false, nil
+		}
+	case gtables.DepreciationBook_Disposal_calculation_method.Gross:
+		if entry.Fa_posting_type == gtables.FALedgerEntry_Fa_posting_type.GainLoss {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+// makeFALedgEntryFromGenJnl is codeunit 5604 Make FA Ledger Entry's CopyFromGenJnlLine
+func makeFALedgEntryFromGenJnl(src ftables.Source, genJnlLine *gtables.GenJournalLine) *gtables.FALedgerEntry {
+	e := gtables.NewFALedgerEntry(src)
+	e.Init()
+	e.User_id = types.Code(system.UserId())
+	e.Entry_no = genJnlLine.Fa_error_entry_no
+	e.G_l_entry_no = 1
+	e.Depreciation_book_code = genJnlLine.Depreciation_book_code
+	e.Fa_no = genJnlLine.Account_no
+	e.Fa_posting_date = genJnlLine.Fa_posting_date
+	e.Posting_date = genJnlLine.Posting_date
+	e.Document_date = genJnlLine.Document_date
+	if e.Document_date.IsZero() {
+		e.Document_date = e.Posting_date
+	}
+	e.Document_type = gtables.FALedgerEntryDocument_type(genJnlLine.Document_type)
+	e.Document_no = genJnlLine.Document_no
+	e.External_document_no = genJnlLine.External_document_no
+	e.Description = genJnlLine.Description
+	e.Quantity = genJnlLine.Quantity
+	e.Correction = genJnlLine.Correction
+	e.Index_entry = genJnlLine.Index_entry
+	e.Reclassification_entry = genJnlLine.Fa_reclassification_entry
+	e.No_of_depreciation_days = genJnlLine.No_of_depreciation_days
+	e.Fa_posting_group = genJnlLine.Posting_group
+	e.Department_code = genJnlLine.Department_code
+	e.Project_code = genJnlLine.Project_code
+	e.Reason_code = genJnlLine.Reason_code
+	e.Source_code = genJnlLine.Source_code
+	e.Journal_batch_name = genJnlLine.Journal_batch_name
+	e.Bal_account_type = gtables.FALedgerEntryBal_account_type(genJnlLine.Bal_account_type)
+	e.Bal_account_no = genJnlLine.Bal_account_no
+	e.Gen_posting_type = gtables.FALedgerEntryGen_posting_type(genJnlLine.Gen_posting_type)
+	e.Gen_bus_posting_group = genJnlLine.Gen_bus_posting_group
+	e.Gen_prod_posting_group = genJnlLine.Gen_prod_posting_group
+	e.Tax_bus_posting_group = genJnlLine.Tax_bus_posting_group
+	e.Tax_prod_posting_group = genJnlLine.Tax_prod_posting_group
+	e.Tax_area_code = genJnlLine.Tax_area_code
+	e.Tax_liable = genJnlLine.Tax_liable
+	e.Tax_group_code = genJnlLine.Tax_group_code
+	e.Use_tax = genJnlLine.Use_tax
+	e.No_series = genJnlLine.Posting_no_series
+	e.Fa_posting_type = tables.FAJnlLineConvertToLedgEntry(gtables.FAJournalLineFa_posting_type(genJnlLine.Fa_posting_type - 1))
+	return e
+}
+
+// makeMaintenanceLedgEntryFromGenJnl is codeunit 5647 Make Maintenance Ledger Entry's
+// CopyFromGenJnlLine
+func makeMaintenanceLedgEntryFromGenJnl(src ftables.Source, genJnlLine *gtables.GenJournalLine) *gtables.MaintenanceLedgerEntry {
+	e := gtables.NewMaintenanceLedgerEntry(src)
+	e.Init()
+	e.User_id = types.Code(system.UserId())
+	e.Entry_no = genJnlLine.Fa_error_entry_no
+	e.G_l_entry_no = 1
+	e.Depreciation_book_code = genJnlLine.Depreciation_book_code
+	e.Fa_no = genJnlLine.Account_no
+	e.Fa_posting_date = genJnlLine.Fa_posting_date
+	e.Posting_date = genJnlLine.Posting_date
+	e.Document_date = genJnlLine.Document_date
+	if e.Document_date.IsZero() {
+		e.Document_date = e.Posting_date
+	}
+	e.Document_type = gtables.MaintenanceLedgerEntryDocument_type(genJnlLine.Document_type)
+	e.Document_no = genJnlLine.Document_no
+	e.External_document_no = genJnlLine.External_document_no
+	e.Description = genJnlLine.Description
+	e.Quantity = genJnlLine.Quantity
+	e.Correction = genJnlLine.Correction
+	e.Index_entry = genJnlLine.Index_entry
+	e.Fa_posting_group = genJnlLine.Posting_group
+	e.Department_code = genJnlLine.Department_code
+	e.Project_code = genJnlLine.Project_code
+	e.Maintenance_code = genJnlLine.Maintenance_code
+	e.Reason_code = genJnlLine.Reason_code
+	e.Source_code = genJnlLine.Source_code
+	e.Journal_batch_name = genJnlLine.Journal_batch_name
+	e.Bal_account_type = gtables.MaintenanceLedgerEntryBal_account_type(genJnlLine.Bal_account_type)
+	e.Bal_account_no = genJnlLine.Bal_account_no
+	e.Gen_posting_type = gtables.MaintenanceLedgerEntryGen_posting_type(genJnlLine.Gen_posting_type)
+	e.Gen_bus_posting_group = genJnlLine.Gen_bus_posting_group
+	e.Gen_prod_posting_group = genJnlLine.Gen_prod_posting_group
+	e.Tax_bus_posting_group = genJnlLine.Tax_bus_posting_group
+	e.Tax_prod_posting_group = genJnlLine.Tax_prod_posting_group
+	e.Tax_area_code = genJnlLine.Tax_area_code
+	e.Tax_liable = genJnlLine.Tax_liable
+	e.Tax_group_code = genJnlLine.Tax_group_code
+	e.Use_tax = genJnlLine.Use_tax
+	e.No_series = genJnlLine.Posting_no_series
+	return e
 }
