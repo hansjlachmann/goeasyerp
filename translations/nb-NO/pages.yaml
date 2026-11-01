@@ -717,6 +717,19 @@ pages:
     caption: "Anleggskladdemalliste"
   fa_journal_batches:
     caption: "Anleggskladdenavn"
+  insurance_journal:
+    caption: "Forsikringskladd"
+    fields:
+      insurance_description: "Forsikringsbeskrivelse"
+      fa_description_footer: "Anleggsbeskrivelse"
+  insurance_journal_templates:
+    caption: "Forsikringskladdetyper"
+  insurance_jnl_template_list:
+    caption: "Forsikringskladdetypeliste"
+  insurance_journal_batches:
+    caption: "Forsikringskladdenavn"
+  insurance_registers:
+    caption: "Forsikringsjournaler"
   fa_reclass_journal:
     caption: "Anleggsomklassifiseringskladd"
     fields:

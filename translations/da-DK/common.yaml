@@ -15,6 +15,8 @@ common:
     cancel_fa_ledger_entries: "Annuller anlægsposter"
     cancel_entries: "Annuller poster"
     reclassify: "Ompostér"
+    insurance: "Forsikring"
+    coverage_ledger: "Dækningsposter"
     acquisition: "Anskaffelse"
     depreciation: "Afskrivning"
     write_down: "Nedskrivning"
@@ -148,6 +150,7 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    fixed_assets: "Anlægsaktiver"
     locations: "Lokationer"
     variants: "Varianter"
     periods: "Perioder"

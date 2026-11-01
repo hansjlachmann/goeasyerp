@@ -97,6 +97,36 @@ table:
           - source: description
             width: 250
 
+    - name: insurance_jnl_template_name
+      no: 7
+      type: types.Code
+      db_name: insurance_jnl_template_name
+      length: 10
+      table_relation:
+        table: Insurance_Journal_Template
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: insurance_jnl_batch_name
+      no: 8
+      type: types.Code
+      db_name: insurance_jnl_batch_name
+      length: 10
+      table_relation:
+        table: Insurance_Journal_Batch
+        field: name
+        filters:
+          journal_template_name: {field: insurance_jnl_template_name}
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
   keys:
     - name: Primary
       fields: [depreciation_book_code, user_id]

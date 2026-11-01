@@ -13,7 +13,9 @@ import (
 // Duplication List: every book marked Part of Duplication List) puts the same posting as a line
 // in the other book's journal (FA Journal Setup — the general journal when that book posts the
 // type to the G/L, codeunit 5639 JnlName), at the books' FA exchange rates when the book uses them.
-// The user posts those lines.
+// The user posts those lines. An acquisition with an Insurance No. (in the FA Setup's insurance
+// book) gives the insurance coverage: posted at once with Automatic Insurance Posting, else a line
+// in the book's insurance journal (InsertInsurance).
 
 // dupLine: what a duplicated line copies (MakeGenJnlLine/MakeFAJnlLine/Adjust…)
 type dupLine struct {
@@ -38,7 +40,19 @@ type dupLine struct {
 }
 
 // duplicateFAJnlLine (DuplicateFAJnlLine)
-func duplicateFAJnlLine(src ftables.Source, l *gtables.FAJournalLine) error {
+func (p *FAJnlPostLine) duplicateFAJnlLine(l *gtables.FAJournalLine) error {
+	src := p.src
+	if l.Insurance_no != "" {
+		err := p.insertInsurance(l.Depreciation_book_code, &insuranceLine{
+			journalBatchName: l.Journal_batch_name, sourceCode: l.Source_code, reasonCode: l.Reason_code,
+			insuranceNo: l.Insurance_no, faNo: l.Fa_no, postingDate: l.Fa_posting_date, amount: l.Amount,
+			documentType: int(l.Document_type), documentDate: l.Document_date, documentNo: l.Document_no, externalDocNo: l.External_document_no,
+			departmentCode: l.Department_code, projectCode: l.Project_code,
+		})
+		if err != nil {
+			return err
+		}
+	}
 	if l.Duplicate_in_depreciation_book == "" && !l.Use_duplication_list {
 		return nil
 	}
@@ -54,7 +68,23 @@ func duplicateFAJnlLine(src ftables.Source, l *gtables.FAJournalLine) error {
 }
 
 // duplicateGenJnlLine (DuplicateGenJnlLine): the FA amount is the line's G/L entry amount
-func duplicateGenJnlLine(src ftables.Source, l *gtables.GenJournalLine, faAmount types.Decimal) error {
+func (p *FAJnlPostLine) duplicateGenJnlLine(l *gtables.GenJournalLine, faAmount types.Decimal) error {
+	src := p.src
+	if l.Insurance_no != "" {
+		postingDate := l.Fa_posting_date
+		if postingDate.IsZero() {
+			postingDate = l.Posting_date
+		}
+		err := p.insertInsurance(l.Depreciation_book_code, &insuranceLine{
+			journalBatchName: l.Journal_batch_name, sourceCode: l.Source_code, reasonCode: l.Reason_code,
+			insuranceNo: l.Insurance_no, faNo: l.Account_no, postingDate: postingDate, amount: faAmount,
+			documentType: int(l.Document_type), documentDate: l.Document_date, documentNo: l.Document_no, externalDocNo: l.External_document_no,
+			departmentCode: l.Department_code, projectCode: l.Project_code,
+		})
+		if err != nil {
+			return err
+		}
+	}
 	if l.Duplicate_in_depreciation_book == "" && !l.Use_duplication_list {
 		return nil
 	}
@@ -233,4 +263,71 @@ func createDupLine(src ftables.Source, deprBook *gtables.DepreciationBook, excha
 	}
 	f.Posting_no_series = tables.GetFANoSeries(src, templateName, batchName)
 	return f.InsertOrError(true)
+}
+
+// insuranceLine: what an insurance journal line takes from the FA or general journal line
+type insuranceLine struct {
+	journalBatchName, sourceCode, reasonCode types.Code
+	insuranceNo, faNo                        types.Code
+	postingDate                              types.Date
+	amount                                   types.Decimal
+	documentType                             int
+	documentDate                             types.Date
+	documentNo, externalDocNo                types.Code
+	departmentCode, projectCode              types.Code
+}
+
+// insertInsurance (InsertInsurance, InitInsuranceJnlLine): the acquisition's insurance coverage —
+// posted at once with the FA Setup's Automatic Insurance Posting (the batch, source and reason code
+// of the line posted), else a line in the book's insurance journal (FA Journal Setup)
+func (p *FAJnlPostLine) insertInsurance(deprBookCode types.Code, l *insuranceLine) error {
+	faSetup := gtables.GetFASetup(p.src)
+	err := faSetup.TestField("insurance_depr_book", deprBookCode)
+	if err != nil {
+		return err
+	}
+	insuranceJnlLine := gtables.NewInsuranceJournalLine(p.src)
+	insuranceJnlLine.Init()
+	if !faSetup.Automatic_insurance_posting {
+		templateName, batchName, lastLineNo, err := tables.InsuranceJnlName(p.src, deprBookCode)
+		if err != nil {
+			return err
+		}
+		insuranceJnlLine.Journal_template_name = templateName
+		insuranceJnlLine.Journal_batch_name = batchName
+		insuranceJnlLine.LockTable()
+		insuranceJnlLine.Line_no = lastLineNo + 10000
+		insuranceJnlLine.Posting_no_series = tables.GetInsuranceNoSeries(p.src, templateName, batchName)
+	}
+	if faSetup.Automatic_insurance_posting {
+		insuranceJnlLine.Journal_batch_name = l.journalBatchName
+		insuranceJnlLine.Source_code = l.sourceCode
+		insuranceJnlLine.Reason_code = l.reasonCode
+	}
+	err = insuranceJnlLine.Validate("insurance_no", l.insuranceNo)
+	if err != nil {
+		return err
+	}
+	err = insuranceJnlLine.Validate("fa_no", l.faNo)
+	if err != nil {
+		return err
+	}
+	insuranceJnlLine.Posting_date = l.postingDate
+	err = insuranceJnlLine.Validate("amount", l.amount)
+	if err != nil {
+		return err
+	}
+	insuranceJnlLine.Document_type = gtables.InsuranceJournalLineDocument_type(l.documentType)
+	insuranceJnlLine.Document_date = l.documentDate
+	if insuranceJnlLine.Document_date.IsZero() {
+		insuranceJnlLine.Document_date = insuranceJnlLine.Posting_date
+	}
+	insuranceJnlLine.Document_no = l.documentNo
+	insuranceJnlLine.External_document_no = l.externalDocNo
+	insuranceJnlLine.Department_code = l.departmentCode
+	insuranceJnlLine.Project_code = l.projectCode
+	if faSetup.Automatic_insurance_posting {
+		return p.insuranceJnlPostLine.Run(insuranceJnlLine)
+	}
+	return insuranceJnlLine.InsertOrError(true)
 }

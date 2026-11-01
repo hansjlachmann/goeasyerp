@@ -1,6 +1,7 @@
 package fajnl
 
 import (
+	"github.com/hansjlachmann/openerp/backend/business-logic/insurancejnl"
 	"strconv"
 
 	"github.com/hansjlachmann/openerp/backend/business-logic/fadepr"
@@ -37,11 +38,12 @@ type FAJnlPostLine struct {
 	nextMaintenanceEntryNo int
 	faReg                  *gtables.FARegister
 	glAcc                  faInsertGLAcc
+	insuranceJnlPostLine   *insurancejnl.InsuranceJnlPostLine // automatic insurance posting (codeunit 5640's)
 }
 
 // NewFAJnlPostLine opens the line posting in the posting's database (its transaction)
 func NewFAJnlPostLine(src ftables.Source) *FAJnlPostLine {
-	return &FAJnlPostLine{src: src}
+	return &FAJnlPostLine{src: src, insuranceJnlPostLine: insurancejnl.NewInsuranceJnlPostLine(src)}
 }
 
 // FAJnlPostLine posts an FA journal line (checked first when checkLine): a maintenance writes a
@@ -59,7 +61,7 @@ func (p *FAJnlPostLine) FAJnlPostLine(faJnlLine *gtables.FAJournalLine, checkLin
 			return err
 		}
 	}
-	err := duplicateFAJnlLine(p.src, faJnlLine)
+	err := p.duplicateFAJnlLine(faJnlLine)
 	if err != nil {
 		return err
 	}
@@ -83,7 +85,7 @@ func (p *FAJnlPostLine) GenJnlPostLine(genJnlLine *gtables.GenJournalLine, faAmo
 	if genJnlLine.Fa_posting_date.IsZero() {
 		genJnlLine.Fa_posting_date = genJnlLine.Posting_date
 	}
-	err := duplicateGenJnlLine(p.src, genJnlLine, faAmount)
+	err := p.duplicateGenJnlLine(genJnlLine, faAmount)
 	if err != nil {
 		return err
 	}

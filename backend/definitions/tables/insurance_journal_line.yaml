@@ -1,0 +1,199 @@
+table:
+  id: 5635
+  name: "Insurance_Journal_Line"
+  description: "Insurance journal lines (table 5635): a fixed asset's coverage by an insurance policy, posted as an insurance coverage ledger entry"
+  fields:
+    - name: journal_template_name
+      no: 1
+      type: types.Code
+      db_name: journal_template_name
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Insurance_Journal_Template
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: journal_batch_name
+      no: 2
+      type: types.Code
+      db_name: journal_batch_name
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Insurance_Journal_Batch
+        field: name
+        filters:
+          journal_template_name: {field: journal_template_name}
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: line_no
+      no: 3
+      type: int
+      db_name: line_no
+      primary_key: true
+
+    - name: insurance_no
+      no: 4
+      type: types.Code
+      db_name: insurance_no
+      length: 20
+      table_relation:
+        table: Insurance
+        field: "no"
+        lookup_columns:
+          - source: "no"
+            width: 100
+          - source: description
+            width: 250
+
+    - name: fa_no
+      no: 6
+      type: types.Code
+      db_name: fa_no
+      length: 20
+      table_relation:
+        table: Fixed_Asset
+        field: "no"
+        lookup_columns:
+          - source: "no"
+            width: 100
+          - source: description
+            width: 250
+
+    - name: fa_description
+      no: 7
+      type: types.Text
+      db_name: fa_description
+      length: 30
+
+    - name: posting_date
+      no: 8
+      type: types.Date
+      db_name: posting_date
+
+    - name: document_type
+      no: 9
+      type: Option
+      db_name: document_type
+      options: [" ", "", "Invoice", "Credit Memo"]
+
+    - name: document_date
+      no: 10
+      type: types.Date
+      db_name: document_date
+
+    - name: document_no
+      no: 11
+      type: types.Code
+      db_name: document_no
+      length: 20
+
+    - name: external_document_no
+      no: 12
+      type: types.Code
+      db_name: external_document_no
+      length: 20
+
+    - name: amount
+      no: 13
+      type: types.Decimal
+      db_name: amount
+      decimal_places: "2:2"
+
+    - name: description
+      no: 14
+      type: types.Text
+      db_name: description
+      length: 50
+
+    - name: department_code
+      no: 15
+      type: types.Code
+      db_name: department_code
+      length: 10
+      table_relation:
+        table: Department
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: project_code
+      no: 16
+      type: types.Code
+      db_name: project_code
+      length: 10
+      table_relation:
+        table: Project
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: reason_code
+      no: 17
+      type: types.Code
+      db_name: reason_code
+      length: 10
+      table_relation:
+        table: Reason_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: source_code
+      no: 18
+      type: types.Code
+      db_name: source_code
+      length: 10
+      editable: false
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: index_entry
+      no: 20
+      type: bool
+      db_name: index_entry
+
+    - name: posting_no_series
+      no: 21
+      type: types.Code
+      db_name: posting_no_series
+      length: 10
+      table_relation:
+        table: No_Series
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+  keys:
+    - name: Primary
+      fields: [journal_template_name, journal_batch_name, line_no]
+      clustered: true
+    - name: PostingDate
+      fields: [journal_template_name, journal_batch_name, posting_date]

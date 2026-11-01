@@ -58,6 +58,7 @@ master_data:
       - {code: BOMJNL, description: BOM journal}
       - {code: FAJNL, description: Fixed asset journal}
       - {code: FAGLJNL, description: Fixed asset G/L journal}
+      - {code: INSJNL, description: Insurance journal}
   - table: Reason_Code
     records:
       - {code: CORRECTION, description: Correction of an entry}
@@ -640,7 +641,7 @@ master_data:
       - {code: PROPERTY, description: Property insurance}
   - table: Source_Code_Setup   # the single setup record (blank key): the journals' source codes
     records:
-      - {general_journal: GENJNL, sales_journal: SALESJNL, purchase_journal: PURCHJNL, cash_receipt_journal: CASHRECJNL, payment_journal: PAYMENTJNL, sales: SALES, purchases: PURCHASES, sales_entry_application: SALESAPPL, purchase_entry_application: PURCHAPPL, item_journal: ITEMJNL, item_transfer_journal: TRANSFER, phys_inventory_journal: PHYSINVJNL, inventory_post_cost: INVTPCOST, resource_journal: RESJNL, bom_journal: BOMJNL, fixed_asset_journal: FAJNL, fixed_asset_g_l_journal: FAGLJNL}
+      - {general_journal: GENJNL, sales_journal: SALESJNL, purchase_journal: PURCHJNL, cash_receipt_journal: CASHRECJNL, payment_journal: PAYMENTJNL, sales: SALES, purchases: PURCHASES, sales_entry_application: SALESAPPL, purchase_entry_application: PURCHAPPL, item_journal: ITEMJNL, item_transfer_journal: TRANSFER, phys_inventory_journal: PHYSINVJNL, inventory_post_cost: INVTPCOST, resource_journal: RESJNL, bom_journal: BOMJNL, fixed_asset_journal: FAJNL, fixed_asset_g_l_journal: FAGLJNL, insurance_journal: INSJNL}
   - table: Gen_Journal_Template   # one per journal type (type 0 General … 4 Payments); page and source code come from the type
     records:
       - {name: GENERAL, description: General Journal, type: 0, no_series: GJNL-GEN}
@@ -700,6 +701,12 @@ master_data:
   - table: FA_Reclass_Journal_Batch
     records:
       - {journal_template_name: RECLASSIFY, name: DEFAULT, description: Default Journal}
+  - table: Insurance_Journal_Template
+    records:
+      - {name: INSURANCE, description: Insurance Journal, page_id: 5654, source_code: INSJNL}
+  - table: Insurance_Journal_Batch
+    records:
+      - {journal_template_name: INSURANCE, name: DEFAULT, description: Default Journal}
   - table: Work_Type
     records:
       - {code: NORMAL, description: Normal hours, unit_of_measure_code: HOUR}

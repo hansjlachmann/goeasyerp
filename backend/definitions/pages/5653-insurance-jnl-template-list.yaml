@@ -1,0 +1,16 @@
+page:
+  id: 5653
+  type: List
+  name: Insurance Jnl. Template List
+  source_table: Insurance_Journal_Template
+  caption: Insurance Jnl. Template List
+  editable: false
+  # The template to open an insurance journal with (lookup)
+
+  layout:
+    repeater:
+      fields:
+        - source: name
+          width: 110
+        - source: description
+          width: 250
