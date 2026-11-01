@@ -20,3 +20,9 @@ insurance:
   policy_no: GJ-2291-77
   annual_premium: 38500
   policy_coverage: 1500000
+
+# Posted ledgers only: the forklift was sold on the 15th of last month (depreciated up to that day)
+disposal:
+  fa_no: FA0030
+  day: 15
+  proceeds: 150000
