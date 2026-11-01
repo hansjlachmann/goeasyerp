@@ -371,6 +371,7 @@ messages:
   DEMO_DATA_SALES: "Posting the sales documents..."
   DEMO_DATA_PURCHASES: "Posting the purchase documents..."
   DEMO_DATA_FIXED_ASSETS: "Posting the fixed assets..."
+  DEMO_DATA_JOURNALS: "Filling the journals..."
 
   # Job Queue notification e-mails (%1 job, %2 company)
   JOBQUEUE_MAIL_SUBJECT_SUCCESS: "Job Queue %1 completed (%2)"
