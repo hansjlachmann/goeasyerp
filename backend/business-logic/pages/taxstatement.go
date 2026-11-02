@@ -16,6 +16,10 @@ func init() {
 		return taxstatement.OpenStatementPage(rec, page)
 	})
 	pages.OnAfterGetRecord(474, func(rec *gtables.TaxStatementLine, page *pages.Control) {
+		if rec.Type == gtables.TaxStatementLine_Type.Description {
+			page.SetValue("column_amount", "") // a text: no amount
+			return
+		}
 		c := &taxstatement.Calculator{Src: rec, DateFilter: system.PageParam("date_filter"),
 			Selection: taxstatement.SelectionOpen, PeriodSelection: taxstatement.BeforeAndWithinPeriod}
 		amount, err := c.LineTotal(rec)
