@@ -441,6 +441,30 @@ reports:
       PERIOD: "Period: %1"
       POSTING_DATE: "Posting Date"
       REMAINING_AMOUNT: "Remaining Amount"
+  "12":
+    caption: "Tax Statement"
+    options:
+      include_tax_entries: "Include Tax Entries"
+      period: "Include Tax Entries of"
+      round_to_whole_numbers: "Round to Whole Numbers"
+    texts:
+      TITLE: "Tax Statement"
+      PAGE: "Page"
+      OPTIONS: "Options"
+      PERIOD: "Period: %1"
+      OPEN: "Open"
+      CLOSED: "Closed"
+      OPEN_AND_CLOSED: "Open and Closed"
+      BEFORE_AND_WITHIN_PERIOD: "Before and Within Period"
+      WITHIN_PERIOD: "Within Period"
+      TEMPLATE: "Tax Statement Template"
+      STATEMENT_NAME: "Tax Statement Name"
+      WHOLE_NUMBERS: "Amounts are in whole numbers."
+      ALL_ENTRIES: "The report includes all tax entries."
+      CLOSED_ENTRIES: "The report includes only closed tax entries."
+      ROW_NO: "Row No."
+      DESCRIPTION: "Description"
+      AMOUNT: "Amount"
   "117":
     caption: "Reminder"
     options:

@@ -441,6 +441,30 @@ reports:
       PERIOD: "Periode: %1"
       POSTING_DATE: "Bogføringsdato"
       REMAINING_AMOUNT: "Restbeløb"
+  "12":
+    caption: "Momsangivelse"
+    options:
+      include_tax_entries: "Medtag momsposter"
+      period: "Medtag momsposter fra"
+      round_to_whole_numbers: "Afrund til hele tal"
+    texts:
+      TITLE: "Momsangivelse"
+      PAGE: "Side"
+      OPTIONS: "Indstillinger"
+      PERIOD: "Periode: %1"
+      OPEN: "Åbne"
+      CLOSED: "Lukkede"
+      OPEN_AND_CLOSED: "Åbne og lukkede"
+      BEFORE_AND_WITHIN_PERIOD: "Før og i perioden"
+      WITHIN_PERIOD: "I perioden"
+      TEMPLATE: "Momsangivelsesskabelon"
+      STATEMENT_NAME: "Momsangivelsesnavn"
+      WHOLE_NUMBERS: "Beløbene er i hele tal."
+      ALL_ENTRIES: "Rapporten omfatter alle momsposter."
+      CLOSED_ENTRIES: "Rapporten omfatter kun lukkede momsposter."
+      ROW_NO: "Rækkenr."
+      DESCRIPTION: "Beskrivelse"
+      AMOUNT: "Beløb"
   "117":
     caption: "Rykker"
     options:

@@ -131,6 +131,7 @@ errors:
   ERR_BANK_REC_ENDING_BALANCE: "%1 er ikke lik total saldo."
   ERR_BANK_REC_APPLICATION: "Utligningen er ikke riktig. Totalt utlignet beløp er %1; det skal være %2."
   ERR_BANK_REC_TOTAL_DIFFERENCE: "Total differanse er %1. Den må være %2."
+  ERR_TAX_STMT_ROW_LOOP: "%1 %2: radsammentellingen går i ring eller er nestet for dypt: %3"
   ERR_RENAME_NOT_ALLOWED: "Du kan ikke gi nytt navn til en %1."
   ERR_DATE_LATER: "%1 er senere enn %2."
 

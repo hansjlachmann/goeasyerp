@@ -402,6 +402,21 @@ pages:
     caption: "Bankkontoutskrifter"
   exch_rate_adjmt_registers:
     caption: "Valutareguleringsjournaler"
+  tax_statement:
+    caption: "Avgiftsoppgave"
+    fields:
+      statement_name: "Navn"
+  tax_statement_preview:
+    caption: "Avgiftsoppgave - forhåndsvisning"
+    fields:
+      column_amount: "Kolonnebeløp"
+      date_filter: "Datofilter"
+  tax_statement_templates:
+    caption: "Avgiftsoppgavemaler"
+  tax_statement_template_list:
+    caption: "Avgiftsoppgavemaloversikt"
+  tax_statement_names:
+    caption: "Avgiftsoppgavenavn"
   sales_journal:
     caption: "Salgskladd"
     fields:  # the batch above the lines and the footer (calculated)

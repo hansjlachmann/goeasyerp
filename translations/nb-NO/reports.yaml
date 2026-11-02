@@ -441,6 +441,30 @@ reports:
       PERIOD: "Periode: %1"
       POSTING_DATE: "Bokføringsdato"
       REMAINING_AMOUNT: "Restbeløp"
+  "12":
+    caption: "Avgiftsoppgave"
+    options:
+      include_tax_entries: "Ta med avgiftsposter"
+      period: "Ta med avgiftsposter fra"
+      round_to_whole_numbers: "Avrund til hele tall"
+    texts:
+      TITLE: "Avgiftsoppgave"
+      PAGE: "Side"
+      OPTIONS: "Alternativer"
+      PERIOD: "Periode: %1"
+      OPEN: "Åpne"
+      CLOSED: "Lukkede"
+      OPEN_AND_CLOSED: "Åpne og lukkede"
+      BEFORE_AND_WITHIN_PERIOD: "Før og i perioden"
+      WITHIN_PERIOD: "I perioden"
+      TEMPLATE: "Avgiftsoppgavemal"
+      STATEMENT_NAME: "Avgiftsoppgavenavn"
+      WHOLE_NUMBERS: "Beløpene er i hele tall."
+      ALL_ENTRIES: "Rapporten omfatter alle avgiftsposter."
+      CLOSED_ENTRIES: "Rapporten omfatter bare lukkede avgiftsposter."
+      ROW_NO: "Radnr."
+      DESCRIPTION: "Beskrivelse"
+      AMOUNT: "Beløp"
   "117":
     caption: "Purring"
     options:

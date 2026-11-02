@@ -165,6 +165,7 @@ menu:
               - name: "Calc. and Post Tax Settlement"
                 run_object: "report:20"
               - name: "Tax Statements"
+                page_id: 317
               - name: "VIES Declaration Disk"
                 run_object: "report:88"
           - name: "Intrastat Journals"

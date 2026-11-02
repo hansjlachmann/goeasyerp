@@ -1,0 +1,49 @@
+page:
+  id: 318
+  type: List
+  name: Tax Statement Templates
+  source_table: Tax_Statement_Template
+  caption: Tax Statement Templates
+  editable: true
+
+  layout:
+    repeater:
+      fields:
+        - source: name
+          width: 110
+        - source: description
+          width: 300
+        - source: page_id
+          width: 90
+          visible: false
+        - source: tax_statement_report_id
+          width: 90
+          visible: false
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    # the template's statements (page 320)
+    - name: Statement Names
+      caption: Statement Names
+      image: List
+      promoted: true
+      run_page: 320
+      run_page_filter_field: statement_template_name
+      run_page_filter_value: name

@@ -121,8 +121,9 @@ func TestGetMenuMarksAvailableEntries(t *testing.T) {
 		find(fiscal["items"].([]interface{}), "Avslutt resultatregnskap")["enabled"] != false {
 		t.Errorf("Activities › Fiscal Year: %v", fiscal)
 	}
-	tax := find(activities["items"].([]interface{}), "Merverdiavgift")
-	if tax["enabled"] != false {
-		t.Errorf("a sub-menu without anything built is enabled: %v", tax)
+	setup := find(items, "Oppsett")
+	intrastat := find(setup["items"].([]interface{}), "Intrastat")
+	if intrastat["enabled"] != false {
+		t.Errorf("a sub-menu without anything built is enabled: %v", intrastat)
 	}
 }
