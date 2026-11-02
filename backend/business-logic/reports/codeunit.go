@@ -72,7 +72,11 @@ func (c *reportCodeunit) Run(record interface{}) (fcodeunits.Result, error) {
 		if result.Message != "" {
 			res = fcodeunits.Message(result.Message)
 		}
-		res.Data = map[string]interface{}{"file": base64.StdEncoding.EncodeToString(result.File), "filename": result.FileName}
+		if res.Data == nil {
+			res.Data = map[string]interface{}{}
+		}
+		res.Data["file"] = base64.StdEncoding.EncodeToString(result.File)
+		res.Data["filename"] = result.FileName
 		return res, nil
 	}
 	if result.Message != "" {

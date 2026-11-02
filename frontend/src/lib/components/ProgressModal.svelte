@@ -155,6 +155,8 @@
 			const filters = (requestFilters[item.name] ?? []).filter((f) => f.expression.trim() !== '');
 			result[`filters:${item.name}`] = JSON.stringify(filters.map((f) => ({ field: f.field, expression: f.expression.trim() })));
 		}
+		// OK on a request without fields: an answer that is not empty (empty is Cancel)
+		if (Object.keys(result).length === 0) result._ok = '1';
 		onInputResponse?.(result);
 	}
 
