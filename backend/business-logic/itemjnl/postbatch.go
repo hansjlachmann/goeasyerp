@@ -20,7 +20,8 @@ const maxPostingNoSeries = 10
 // renumbered from the posting number series, every line posted — and deletes the posted lines.
 // Open it on the posting's transaction; an error leaves everything to the caller's rollback.
 //
-// Not migrated yet: recurring item journals.
+// A recurring journal (recurring.go) posts the lines that are due and keeps them, each moved
+// on by its Recurring Frequency.
 type ItemJnlPostBatch struct {
 	src                ftables.Source
 	itemJnlCheckLine   ItemJnlCheckLine
@@ -63,6 +64,9 @@ func (b *ItemJnlPostBatch) Run(rec *gtables.ItemJournalLine) (PostBatchResult, e
 		return result, apperrors.JnlNameTooLong(gtables.ItemJournalBatchTableName, "name", itemJnlBatch.MaxStrLen("name"))
 	}
 
+	if itemJnlTemplate.Recurring {
+		tables.SetRecurringFilters(itemJnlLine, "posting_date")
+	}
 	if !itemJnlLine.FindFirst() {
 		return result, nil
 	}
@@ -79,6 +83,12 @@ func (b *ItemJnlPostBatch) Run(rec *gtables.ItemJournalLine) (PostBatchResult, e
 		window.Update(2, lineCount)
 		itemJnlLine2 := gtables.NewItemJournalLine(b.src)
 		itemJnlLine2.Copy(itemJnlLine)
+		if itemJnlLine2.Item_no != "" {
+			err = tables.CheckRecurringLine(itemJnlLine2, itemJnlTemplate.Recurring, itemJnlLine2.Recurring_method == gtables.ItemJournalLine_Recurring_method.Variable, "quantity")
+			if err != nil {
+				return result, err
+			}
+		}
 		err = b.itemJnlCheckLine.RunCheck(itemJnlLine2)
 		if err != nil {
 			return result, err
@@ -123,6 +133,10 @@ func (b *ItemJnlPostBatch) Run(rec *gtables.ItemJournalLine) (PostBatchResult, e
 			}
 		}
 		lastDocNo2 = itemJnlLine3.Document_no
+		if itemJnlLine3.Item_no != "" && itemJnlLine3.Recurring_method != 0 {
+			itemJnlLine3.Document_no, itemJnlLine3.Description = tables.RecurringText(b.src, itemJnlLine3.Posting_date, itemJnlLine3.Document_no, itemJnlLine3.Description,
+				itemJnlLine3.MaxStrLen("document_no"), itemJnlLine3.MaxStrLen("description"))
+		}
 		if itemJnlLine3.Posting_no_series == "" {
 			itemJnlLine3.Posting_no_series = itemJnlBatch.No_series
 		} else {
@@ -161,7 +175,14 @@ func (b *ItemJnlPostBatch) Run(rec *gtables.ItemJournalLine) (PostBatchResult, e
 	result.RegisterNo = itemRegNo
 
 	// Update/delete lines
-	if itemRegNo != 0 {
+	// A recurring journal keeps its lines, the next date ahead
+	if itemRegNo != 0 && itemJnlTemplate.Recurring {
+		err = b.updateRecurringLines(itemJnlLine)
+		if err != nil {
+			return result, err
+		}
+	}
+	if itemRegNo != 0 && !itemJnlTemplate.Recurring {
 		itemJnlLine2 := gtables.NewItemJournalLine(b.src)
 		itemJnlLine2.CopyFilters(itemJnlLine)
 		itemJnlLine2.SetFilter("item_no", "<>''")

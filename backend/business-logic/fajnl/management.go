@@ -20,8 +20,8 @@ const TemplateListPageID = 5631
 // OpenJournalPage opens the FA journal page (OnOpenPage of the Fixed Asset Journal): the
 // template (TemplateSelection) and its batch (OpenJnl), as the page's filters. It returns early
 // when the user must pick a template.
-func OpenJournalPage(rec *gtables.FAJournalLine, page *pages.Open) error {
-	jnlSelected, err := TemplateSelection(rec, page, false)
+func OpenJournalPage(rec *gtables.FAJournalLine, page *pages.Open, recurringJnl bool) error {
+	jnlSelected, err := TemplateSelection(rec, page, recurringJnl)
 	if err != nil {
 		return err
 	}
@@ -49,8 +49,13 @@ func TemplateSelection(rec *gtables.FAJournalLine, page *pages.Open, recurringJn
 		case 0:
 			faJnlTemplate.InitRecord()
 			faJnlTemplate.Recurring = recurringJnl
-			faJnlTemplate.Name = "ASSETS"
-			faJnlTemplate.Description = types.Text(i18n.GetInstance().Message("FA_JNL_TEMPLATE_DESCRIPTION", fcodeunits.CurrentLanguage()))
+			if recurringJnl {
+				faJnlTemplate.Name = "RECURRING"
+				faJnlTemplate.Description = types.Text(i18n.GetInstance().Message("RECURRING_FA_JNL_TEMPLATE_DESCRIPTION", fcodeunits.CurrentLanguage()))
+			} else {
+				faJnlTemplate.Name = "ASSETS"
+				faJnlTemplate.Description = types.Text(i18n.GetInstance().Message("FA_JNL_TEMPLATE_DESCRIPTION", fcodeunits.CurrentLanguage()))
+			}
 			err := faJnlTemplate.Validate("page_id", 0)
 			if err != nil {
 				return false, err

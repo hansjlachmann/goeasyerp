@@ -20,7 +20,8 @@ const maxPostingNoSeries = 10
 // renumbered from the posting number series, every line posted — and deletes the posted lines.
 // Open it on the posting's transaction; an error leaves everything to the caller's rollback.
 //
-// Not migrated yet: recurring BOM journals.
+// A recurring journal (recurring.go) posts the lines that are due and keeps them, each moved
+// on by its Recurring Frequency.
 type BOMJnlPostBatch struct {
 	src                ftables.Source
 	bomJnlCheckLine    BOMJnlCheckLine
@@ -63,6 +64,9 @@ func (b *BOMJnlPostBatch) Run(rec *gtables.BOMJournalLine) (PostBatchResult, err
 		return result, apperrors.JnlNameTooLong(gtables.BOMJournalBatchTableName, "name", bomJnlBatch.MaxStrLen("name"))
 	}
 
+	if bomJnlTemplate.Recurring {
+		tables.SetRecurringFilters(bomJnlLine, "posting_date")
+	}
 	if !bomJnlLine.FindFirst() {
 		return result, nil
 	}
@@ -79,6 +83,12 @@ func (b *BOMJnlPostBatch) Run(rec *gtables.BOMJournalLine) (PostBatchResult, err
 		window.Update(2, lineCount)
 		bomJnlLine2 := gtables.NewBOMJournalLine(b.src)
 		bomJnlLine2.Copy(bomJnlLine)
+		if bomJnlLine2.Item_no != "" {
+			err = tables.CheckRecurringLine(bomJnlLine2, bomJnlTemplate.Recurring, bomJnlLine2.Recurring_method == gtables.BOMJournalLine_Recurring_method.Variable, "quantity")
+			if err != nil {
+				return result, err
+			}
+		}
 		err = b.bomJnlCheckLine.RunCheck(bomJnlLine2)
 		if err != nil {
 			return result, err
@@ -123,6 +133,10 @@ func (b *BOMJnlPostBatch) Run(rec *gtables.BOMJournalLine) (PostBatchResult, err
 			}
 		}
 		lastDocNo2 = bomJnlLine3.Document_no
+		if bomJnlLine3.Item_no != "" && bomJnlLine3.Recurring_method != 0 {
+			bomJnlLine3.Document_no, bomJnlLine3.Description = tables.RecurringText(b.src, bomJnlLine3.Posting_date, bomJnlLine3.Document_no, bomJnlLine3.Description,
+				bomJnlLine3.MaxStrLen("document_no"), bomJnlLine3.MaxStrLen("description"))
+		}
 		if bomJnlLine3.Posting_no_series == "" {
 			bomJnlLine3.Posting_no_series = bomJnlBatch.No_series
 		} else {
@@ -161,7 +175,14 @@ func (b *BOMJnlPostBatch) Run(rec *gtables.BOMJournalLine) (PostBatchResult, err
 	result.RegisterNo = bomRegNo
 
 	// Update/delete lines
-	if bomRegNo != 0 {
+	// A recurring journal keeps its lines, the next date ahead
+	if bomRegNo != 0 && bomJnlTemplate.Recurring {
+		err = b.updateRecurringLines(bomJnlLine)
+		if err != nil {
+			return result, err
+		}
+	}
+	if bomRegNo != 0 && !bomJnlTemplate.Recurring {
 		bomJnlLine2 := gtables.NewBOMJournalLine(b.src)
 		bomJnlLine2.CopyFilters(bomJnlLine)
 		bomJnlLine2.SetFilter("item_no", "<>''")

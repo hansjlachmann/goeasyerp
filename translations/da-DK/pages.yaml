@@ -515,6 +515,11 @@ pages:
     fields:
       journal_batch_name: "Kladdenavn"
       item_description: "Varebeskrivelse"
+  recurring_item_jnl:
+    caption: "Gentagelseskladde - vare"
+    fields:
+      journal_batch_name: "Kladdenavn"
+      item_description: "Varebeskrivelse"
   item_journal_templates:
     caption: "Varekladdetyper"
   item_journal_template_list:
@@ -706,6 +711,10 @@ pages:
     caption: "Ressourcekladde"
     fields:
       resource_name: "Ressourcenavn"
+  recurring_resource_jnl:
+    caption: "Gentagelseskladde - ressource"
+    fields:
+      resource_name: "Ressourcenavn"
   resource_journal_templates:
     caption: "Ressourcekladdetyper"
   res_journal_template_list:
@@ -720,6 +729,10 @@ pages:
     caption: "Stykliste"
   bom_journal:
     caption: "Styklistekladde"
+    fields:
+      item_description: "Varebeskrivelse"
+  recurring_bom_jnl:
+    caption: "Gentagelseskladde - stykliste"
     fields:
       item_description: "Varebeskrivelse"
   bom_journal_templates:
@@ -752,6 +765,10 @@ pages:
     caption: "Ressourcegruppedisponering"
   fixed_asset_journal:
     caption: "Anlægskladde"
+    fields:
+      fa_description: "Anlægsbeskrivelse"
+  recurring_fixed_asset_journal:
+    caption: "Gentagelseskladde - anlægsaktiver"
     fields:
       fa_description: "Anlægsbeskrivelse"
   fa_journal_templates:

@@ -20,7 +20,8 @@ const maxPostingNoSeries = 10
 // renumbered from the posting number series, every line posted — and deletes the posted lines.
 // Open it on the posting's transaction; an error leaves everything to the caller's rollback.
 //
-// Not migrated yet: recurring FA journals.
+// A recurring journal (recurring.go) posts the lines that are due and keeps them, each moved
+// on by its Recurring Frequency.
 type FAJnlPostBatch struct {
 	src                ftables.Source
 	faJnlCheckLine     FAJnlCheckLine
@@ -63,6 +64,9 @@ func (b *FAJnlPostBatch) Run(rec *gtables.FAJournalLine) (PostBatchResult, error
 		return result, apperrors.JnlNameTooLong(gtables.FAJournalBatchTableName, "name", faJnlBatch.MaxStrLen("name"))
 	}
 
+	if faJnlTemplate.Recurring {
+		tables.SetRecurringFilters(faJnlLine, "fa_posting_date")
+	}
 	if !faJnlLine.FindFirst() {
 		return result, nil
 	}
@@ -79,6 +83,12 @@ func (b *FAJnlPostBatch) Run(rec *gtables.FAJournalLine) (PostBatchResult, error
 		window.Update(2, lineCount)
 		faJnlLine2 := gtables.NewFAJournalLine(b.src)
 		faJnlLine2.Copy(faJnlLine)
+		if faJnlLine2.Fa_no != "" {
+			err = tables.CheckRecurringLine(faJnlLine2, faJnlTemplate.Recurring, faJnlLine2.Recurring_method == gtables.FAJournalLine_Recurring_method.VVariable, "amount")
+			if err != nil {
+				return result, err
+			}
+		}
 		err = b.faJnlCheckLine.CheckFAJnlLine(faJnlLine2)
 		if err != nil {
 			return result, err
@@ -123,6 +133,10 @@ func (b *FAJnlPostBatch) Run(rec *gtables.FAJournalLine) (PostBatchResult, error
 			}
 		}
 		lastDocNo2 = faJnlLine3.Document_no
+		if faJnlLine3.Fa_no != "" && faJnlLine3.Recurring_method != 0 {
+			faJnlLine3.Document_no, faJnlLine3.Description = tables.RecurringText(b.src, faJnlLine3.Fa_posting_date, faJnlLine3.Document_no, faJnlLine3.Description,
+				faJnlLine3.MaxStrLen("document_no"), faJnlLine3.MaxStrLen("description"))
+		}
 		if faJnlLine3.Posting_no_series == "" {
 			faJnlLine3.Posting_no_series = faJnlBatch.No_series
 		} else {
@@ -161,7 +175,14 @@ func (b *FAJnlPostBatch) Run(rec *gtables.FAJournalLine) (PostBatchResult, error
 	result.RegisterNo = faRegNo
 
 	// Update/delete lines
-	if faRegNo != 0 {
+	// A recurring journal keeps its lines, the next date ahead
+	if faRegNo != 0 && faJnlTemplate.Recurring {
+		err = b.updateRecurringLines(faJnlLine)
+		if err != nil {
+			return result, err
+		}
+	}
+	if faRegNo != 0 && !faJnlTemplate.Recurring {
 		faJnlLine2 := gtables.NewFAJournalLine(b.src)
 		faJnlLine2.CopyFilters(faJnlLine)
 		faJnlLine2.SetFilter("fa_no", "<>''")

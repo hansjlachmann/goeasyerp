@@ -47,7 +47,8 @@ func (itemJournalTemplateLogic) OnValidate_Page_id(rec *gtables.ItemJournalTempl
 	return nil
 }
 
-// OnValidate_Type: the type's source code (Source Code Setup) and page
+// OnValidate_Type: the type's source code (Source Code Setup) and page (a recurring template:
+// the Recurring Item Jnl.)
 func (itemJournalTemplateLogic) OnValidate_Type(rec *gtables.ItemJournalTemplate) error {
 	sourceCodeSetup := gtables.GetSourceCodeSetup(rec)
 	switch rec.Type {
@@ -59,8 +60,14 @@ func (itemJournalTemplateLogic) OnValidate_Type(rec *gtables.ItemJournalTemplate
 		rec.Source_code = sourceCodeSetup.Phys_inventory_journal
 	}
 	rec.Page_id = itemJnlTemplatePages[rec.Type]
+	if rec.Recurring {
+		rec.Page_id = RecurringItemJnlPageID
+	}
 	return nil
 }
+
+// RecurringItemJnlPageID is page 286 Recurring Item Jnl., the page of every recurring item template
+const RecurringItemJnlPageID = 286
 
 // OnValidate_Source_code: the template's journal lines take the new source code
 func (itemJournalTemplateLogic) OnValidate_Source_code(rec *gtables.ItemJournalTemplate) error {

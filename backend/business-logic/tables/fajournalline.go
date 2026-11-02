@@ -213,6 +213,7 @@ func SetUpNewFAJnlLine(rec, lastFAJnlLine *gtables.FAJournalLine) error {
 			rec.Document_no = noSeriesMgt.TryGetNextNo(faJnlBatch.No_series, rec.Fa_posting_date)
 		}
 	}
+	rec.Recurring_method = lastFAJnlLine.Recurring_method
 	rec.Source_code = faJnlTemplate.Source_code
 	rec.Reason_code = faJnlBatch.Reason_code
 	rec.Posting_no_series = faJnlBatch.Posting_no_series

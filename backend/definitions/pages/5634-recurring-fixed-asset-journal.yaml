@@ -1,0 +1,136 @@
+page:
+  id: 5634
+  type: List
+  name: Recurring Fixed Asset Journal
+  source_table: FA_Journal_Line
+  caption: Recurring Fixed Asset Journal
+  editable: true
+  auto_split_key: true      # a new line gets Line No. 10000, 20000 … or halfway between its neighbours
+  delayed_insert: true      # inserted when the user leaves the line
+  # classic form 5634: the lines of a recurring FA template — posted they stay, dated ahead
+
+  # The batch the journal shows (classic Batch Name above the lines): the page's batch
+  # parameter; OnOpenPage (business-logic/pages/fajournal.go) turns template and batch into
+  # the list's filters
+  header_fields:
+    - param: batch
+      source: journal_batch_name
+      lookup_page: 5633
+      lookup_field: name
+      lookup_filters:
+        journal_template_name: journal_template_name
+
+  # Under the list for the cursor row (OnAfterGetRecord, business-logic/pages/fajournal.go)
+  footer:
+    - source: fa_description
+      calculated: true
+      type: types.Text
+
+  layout:
+    repeater:
+      fields:
+        - source: recurring_method
+          width: 110
+        - source: recurring_frequency
+          width: 90
+        - source: fa_posting_date
+          width: 100
+        - source: posting_date
+          width: 100
+          visible: false
+        - source: document_type
+          width: 110
+          visible: false
+        - source: document_no
+          width: 110
+        - source: fa_no
+          width: 110
+        - source: depreciation_book_code
+          width: 110
+        - source: fa_posting_type
+          width: 140
+        - source: description
+          width: 250
+        - source: department_code
+          width: 110
+          visible: false
+        - source: project_code
+          width: 110
+          visible: false
+        - source: amount
+          width: 120
+        - source: salvage_value
+          width: 120
+          visible: false
+        - source: quantity
+          width: 90
+          visible: false
+        - source: no_of_depreciation_days
+          width: 100
+          visible: false
+        - source: maintenance_code
+          width: 110
+          visible: false
+        - source: insurance_no
+          width: 110
+          visible: false
+        - source: fa_reclassification_entry
+          width: 90
+          visible: false
+        - source: fa_error_entry_no
+          width: 100
+          visible: false
+        - source: reason_code
+          width: 110
+          visible: false
+        - source: expiration_date
+          width: 100
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    # The line's fixed asset: its card and ledger entries
+    - name: Fixed Asset
+      caption: Fixed Asset
+      image: Card
+      promoted: true
+      items:
+        - name: Card
+          caption: Card
+          shortcut: Shift+F5
+          run_page: 5600
+          run_page_filter_field: "no"
+          run_page_filter_value: fa_no
+        - name: Ledger Entries
+          caption: Ledger Entries
+          shortcut: Ctrl+F5
+          run_page: 5604
+          run_page_filters:
+            - field: fa_no
+              value: fa_no
+            - field: depreciation_book_code
+              value: depreciation_book_code
+
+    # Posting: the batch (codeunit 5636 FA. Jnl.-Post, after asking; the list's filters say which batch)
+    - name: Post
+      caption: Post
+      image: Post
+      shortcut: F11
+      promoted: true
+      run_object: codeunit:5636

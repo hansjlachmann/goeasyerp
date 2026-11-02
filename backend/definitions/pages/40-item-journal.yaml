@@ -7,7 +7,7 @@ page:
   editable: true
   auto_split_key: true      # a new line gets Line No. 10000, 20000 … or halfway between its neighbours
   delayed_insert: true      # inserted when the user leaves the line
-  # classic form 40; recurring item journals come later
+  # classic form 40 (the recurring item journal is page 286)
 
   # The batch the journal shows (classic Batch Name above the lines): the page's batch
   # parameter; OnOpenPage (business-logic/pages/itemjournal.go) turns template and batch into

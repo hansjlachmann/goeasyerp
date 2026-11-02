@@ -28,6 +28,8 @@ import (
 //     Journals: an assembly of office kits (their pens are sold out: posted after the Item
 //     Journal);
 //   - a depreciation table and resource price changes;
+//   - Recurring Item Journals: the office kitchen's coffee each week; Recurring Resource Journals:
+//     the weekly team meeting (both fixed);
 //   - Bank Account Reconciliations: this month's statement of bank B010, its lines applied to the
 //     open entries as Suggest Lines makes them (not posted).
 
@@ -46,6 +48,7 @@ func insertDemoJournals(src ftables.Source, today time.Time, counts *Counts, p *
 	}{
 		{"general journals", j.generalJournals},
 		{"recurring journal", j.recurringJournal},
+		{"recurring item and resource journals", j.recurringItemResJournals},
 		{"bank reconciliation", j.bankReconciliation},
 		{"fixed asset journals", j.fixedAssetJournals},
 		{"item journals", j.itemJournals},
@@ -741,4 +744,51 @@ func (j *demoJournals) bankReconciliation() error {
 	}
 	recon.Statement_ending_balance = recon.Balance_last_statement.Add(total)
 	return recon.ModifyOrError(false)
+}
+
+// recurringItemResJournals: template RECURRING of the item journal — 2 kg of coffee beans for
+// the office kitchen each week (a negative adjustment) — and of the resource journal — Anna
+// Berg's two hours of team meeting each week; both fixed, document no. and description with the
+// week (%2)
+func (j *demoJournals) recurringItemResJournals() error {
+	l, err := j.itemJnlLine("RECURRING", 10000, nil)
+	if err != nil {
+		return err
+	}
+	l.Document_no = "KITCHEN-%2"
+	err = set(l, "recurring_method", gtables.ItemJournalLine_Recurring_method.Fixed, "entry_type", gtables.ItemJournalLine_Entry_type.NegativeAdjmt,
+		"item_no", types.Code("2000"), "location_code", types.Code("MAIN"), "quantity", types.NewDecimalFromInt(2))
+	if err != nil {
+		return err
+	}
+	l.Recurring_frequency = "1W"
+	l.Description = "Office kitchen, week %2"
+	err = l.InsertOrError(true)
+	if err != nil {
+		return err
+	}
+	j.lines++
+
+	r := gtables.NewResJournalLine(j.src)
+	r.Journal_template_name = "RECURRING"
+	r.Journal_batch_name = "DEFAULT"
+	r.Line_no = 10000
+	err = tables.SetUpNewResJnlLine(r, gtables.NewResJournalLine(j.src))
+	if err != nil {
+		return err
+	}
+	r.Posting_date = j.today
+	r.Document_no = "MEET-%2"
+	err = set(r, "recurring_method", gtables.ResJournalLine_Recurring_method.Fixed, "entry_type", gtables.ResJournalLine_Entry_type.Usage,
+		"resource_no", types.Code("R0010"), "work_type_code", types.Code("NORMAL"), "quantity", types.NewDecimalFromInt(2))
+	if err != nil {
+		return err
+	}
+	r.Recurring_frequency = "1W"
+	r.Description = "Team meeting, week %2"
+	err = r.InsertOrError(true)
+	if err == nil {
+		j.lines++
+	}
+	return err
 }

@@ -7,12 +7,13 @@ import (
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
 
-// The item journal pages 40 Item Journal, 393 Item Transfer Journal and 392 Phys. Inventory
-// Journal: OnOpenPage opens a template of the page's type and one of its batches
+// The item journal pages 40 Item Journal, 393 Item Transfer Journal, 392 Phys. Inventory
+// Journal and 286 Recurring Item Jnl.: OnOpenPage opens a template of the page's type and one of its batches
 // (ItemJnlManagement); a new line gets its values from the line above (SetUpNewLine); the
 // footer shows the line's item description.
 var itemJournalPages = map[int]gtables.ItemJournalTemplateType{
 	40:  gtables.ItemJournalTemplate_Type.Item,
+	286: gtables.ItemJournalTemplate_Type.Item, // Recurring Item Jnl.: the recurring item templates
 	393: gtables.ItemJournalTemplate_Type.Transfer,
 	392: gtables.ItemJournalTemplate_Type.PhysInventory,
 }
@@ -20,7 +21,7 @@ var itemJournalPages = map[int]gtables.ItemJournalTemplateType{
 func init() {
 	for pageID, templateType := range itemJournalPages {
 		pages.OnOpenPage(pageID, func(rec *gtables.ItemJournalLine, page *pages.Open) error {
-			return itemjnl.OpenJournalPage(rec, page, templateType)
+			return itemjnl.OpenJournalPage(rec, page, templateType, pageID == tables.RecurringItemJnlPageID)
 		})
 		pages.OnNewRecord(pageID, func(rec, xRec *gtables.ItemJournalLine, belowXRec bool) {
 			_ = tables.SetUpNewItemJnlLine(rec, xRec)

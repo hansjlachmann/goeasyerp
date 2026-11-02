@@ -1,0 +1,145 @@
+page:
+  id: 286
+  type: List
+  name: Recurring Item Jnl.
+  source_table: Item_Journal_Line
+  caption: Recurring Item Journal
+  editable: true
+  auto_split_key: true      # a new line gets Line No. 10000, 20000 … or halfway between its neighbours
+  delayed_insert: true      # inserted when the user leaves the line
+  # classic form 286: the lines of a recurring item template — each with its Recurring Method
+  # and Frequency; posted they stay, dated ahead
+
+  # The batch the journal shows (classic Batch Name above the lines): the page's batch
+  # parameter; OnOpenPage (business-logic/pages/itemjournal.go) turns template and batch into
+  # the list's filters
+  header_fields:
+    - param: batch
+      source: journal_batch_name
+      lookup_page: 262
+      lookup_field: name
+      lookup_filters:
+        journal_template_name: journal_template_name
+
+  # Under the list for the cursor row (OnAfterGetRecord, business-logic/pages/itemjournal.go)
+  footer:
+    - source: item_description
+      calculated: true
+      type: types.Text
+
+  layout:
+    repeater:
+      fields:
+        - source: recurring_method
+          width: 110
+        - source: recurring_frequency
+          width: 90
+        - source: posting_date
+          width: 100
+        - source: document_date
+          width: 100
+          visible: false
+        - source: entry_type
+          width: 130
+        - source: document_no
+          width: 110
+        - source: item_no
+          width: 110
+        - source: variant_code
+          width: 100
+          visible: false
+        - source: description
+          width: 250
+        - source: location_code
+          width: 100
+        - source: department_code
+          width: 110
+          visible: false
+        - source: project_code
+          width: 110
+          visible: false
+        - source: salespers_purch_code
+          width: 120
+          visible: false
+        - source: gen_bus_posting_group
+          width: 140
+          visible: false
+        - source: gen_prod_posting_group
+          width: 140
+          visible: false
+        - source: quantity
+          width: 100
+        - source: unit_of_measure_code
+          width: 110
+        - source: unit_amount
+          width: 120
+        - source: amount
+          width: 120
+        - source: indirect_cost_percent
+          width: 110
+          visible: false
+        - source: unit_cost
+          width: 120
+        - source: applies_to_entry
+          width: 110
+        - source: external_document_no
+          width: 130
+          visible: false
+        - source: reason_code
+          width: 110
+          visible: false
+        - source: expiration_date
+          width: 100
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    # The line's item: its card and its ledger entries
+    - name: Item
+      caption: Item
+      image: Card
+      promoted: true
+      items:
+        - name: Card
+          caption: Card
+          shortcut: Shift+F5
+          run_page: 30
+          run_page_filter_field: "no"
+          run_page_filter_value: item_no
+        - name: Ledger Entries
+          caption: Ledger Entries
+          shortcut: Ctrl+F5
+          run_page: 38
+          run_page_filter_field: item_no
+          run_page_filter_value: item_no
+
+    # The line's bill of materials becomes a line per component (codeunit 246)
+    - name: Explode BOM
+      caption: Explode BOM
+      image: Rows
+      promoted: true
+      run_object: table:Item_Journal_Line.ExplodeBOM
+
+    # Posting: the batch (codeunit 241 Item Jnl.-Post, after asking; the list's filters say which batch)
+    - name: Post
+      caption: Post
+      image: Post
+      shortcut: F11
+      promoted: true
+      run_object: codeunit:241

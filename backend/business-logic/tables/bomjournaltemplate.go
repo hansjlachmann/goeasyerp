@@ -54,6 +54,9 @@ func (bomJournalTemplateLogic) OnValidate_Source_code(rec *gtables.BOMJournalTem
 // code; recurring journals have no No. Series
 func (bomJournalTemplateLogic) OnValidate_Recurring(rec *gtables.BOMJournalTemplate) error {
 	rec.Page_id = bomJournalPageID
+	if rec.Recurring {
+		rec.Page_id = RecurringBOMJnlPageID
+	}
 	sourceCodeSetup := gtables.GetSourceCodeSetup(rec)
 	rec.Source_code = sourceCodeSetup.Bom_journal
 	if rec.Recurring {
@@ -82,3 +85,6 @@ func (bomJournalTemplateLogic) OnValidate_Posting_no_series(rec *gtables.BOMJour
 	}
 	return nil
 }
+
+// RecurringBOMJnlPageID is page 287 Recurring BOM Jnl., the page of a recurring template
+const RecurringBOMJnlPageID = 287

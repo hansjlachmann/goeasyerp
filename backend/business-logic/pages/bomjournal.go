@@ -7,21 +7,23 @@ import (
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
 
-// The BOM journal page 109 BOM Journal: OnOpenPage opens a template and one of its batches
+// The BOM journal pages 109 BOM Journal and 287 Recurring BOM Jnl.: OnOpenPage opens a template and one of its batches
 // (BOMJnlManagement); a new line gets its values from the line above (SetUpNewLine); the footer
 // shows the line's item description.
 const bomJournalPageID = 109
 
 func init() {
-	pages.OnOpenPage(bomJournalPageID, func(rec *gtables.BOMJournalLine, page *pages.Open) error {
-		return bomjnl.OpenJournalPage(rec, page)
-	})
-	pages.OnNewRecord(bomJournalPageID, func(rec, xRec *gtables.BOMJournalLine, belowXRec bool) {
-		_ = tables.SetUpNewBOMJnlLine(rec, xRec)
-	})
-	pages.OnAfterGetRecord(bomJournalPageID, func(rec *gtables.BOMJournalLine, page *pages.Control) {
-		page.SetValue("item_description", bomjnl.GetItem(rec))
-	})
+	for _, pageID := range []int{bomJournalPageID, tables.RecurringBOMJnlPageID} {
+		pages.OnOpenPage(pageID, func(rec *gtables.BOMJournalLine, page *pages.Open) error {
+			return bomjnl.OpenJournalPage(rec, page, pageID == tables.RecurringBOMJnlPageID)
+		})
+		pages.OnNewRecord(pageID, func(rec, xRec *gtables.BOMJournalLine, belowXRec bool) {
+			_ = tables.SetUpNewBOMJnlLine(rec, xRec)
+		})
+		pages.OnAfterGetRecord(pageID, func(rec *gtables.BOMJournalLine, page *pages.Control) {
+			page.SetValue("item_description", bomjnl.GetItem(rec))
+		})
+	}
 
 	// Page 265 BOM Journal Batches: a new batch takes the template's numbering and reason code
 	// (SetupNewBatch)

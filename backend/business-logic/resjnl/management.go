@@ -19,8 +19,8 @@ const TemplateListPageID = 271
 // OpenJournalPage opens the resource journal page (OnOpenPage of the Resource Journal): the
 // template (TemplateSelection) and its batch (OpenJnl), as the page's filters. It returns early
 // when the user must pick a template.
-func OpenJournalPage(rec *gtables.ResJournalLine, page *pages.Open) error {
-	jnlSelected, err := TemplateSelection(rec, page, false)
+func OpenJournalPage(rec *gtables.ResJournalLine, page *pages.Open, recurringJnl bool) error {
+	jnlSelected, err := TemplateSelection(rec, page, recurringJnl)
 	if err != nil {
 		return err
 	}
@@ -48,8 +48,13 @@ func TemplateSelection(rec *gtables.ResJournalLine, page *pages.Open, recurringJ
 		case 0:
 			resJnlTemplate.InitRecord()
 			resJnlTemplate.Recurring = recurringJnl
-			resJnlTemplate.Name = "RESOURCES"
-			resJnlTemplate.Description = types.Text(i18n.GetInstance().Message("RES_JNL_TEMPLATE_DESCRIPTION", fcodeunits.CurrentLanguage()))
+			if recurringJnl {
+				resJnlTemplate.Name = "RECURRING"
+				resJnlTemplate.Description = types.Text(i18n.GetInstance().Message("RECURRING_RES_JNL_TEMPLATE_DESCRIPTION", fcodeunits.CurrentLanguage()))
+			} else {
+				resJnlTemplate.Name = "RESOURCES"
+				resJnlTemplate.Description = types.Text(i18n.GetInstance().Message("RES_JNL_TEMPLATE_DESCRIPTION", fcodeunits.CurrentLanguage()))
+			}
 			err := resJnlTemplate.Validate("page_id", 0)
 			if err != nil {
 				return false, err

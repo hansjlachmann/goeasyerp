@@ -37,6 +37,9 @@
 //	OnValidate_Document_date(rec *gtables.ResJournalLine) error
 //	OnValidate_External_document_no(rec *gtables.ResJournalLine) error
 //	OnValidate_Posting_no_series(rec *gtables.ResJournalLine) error
+//	OnValidate_Recurring_method(rec *gtables.ResJournalLine) error
+//	OnValidate_Expiration_date(rec *gtables.ResJournalLine) error
+//	OnValidate_Recurring_frequency(rec *gtables.ResJournalLine) error
 
 package tables
 
@@ -77,37 +80,57 @@ func (o ResJournalLineEntry_type) IsValid() bool {
 	return o >= 0 && o < 2
 }
 
+// ResJournalLineRecurring_method represents the recurring_method option field
+type ResJournalLineRecurring_method int
+
+// String returns the text representation of ResJournalLineRecurring_method
+func (o ResJournalLineRecurring_method) String() string {
+	options := []string{" ", "Fixed", "Variable"}
+	if o >= 0 && int(o) < len(options) {
+		return options[o]
+	}
+	return ""
+}
+
+// IsValid checks if the ResJournalLineRecurring_method value is within valid range
+func (o ResJournalLineRecurring_method) IsValid() bool {
+	return o >= 0 && o < 3
+}
+
 // ResJournalLine represents Table 207: Res_Journal_Line
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterResJournalLineLogic.
 type ResJournalLine struct {
-	Journal_template_name  types.Code               `db:"journal_template_name,pk"`
-	Journal_batch_name     types.Code               `db:"journal_batch_name,pk"`
-	Line_no                int                      `db:"line_no,pk"`
-	Entry_type             ResJournalLineEntry_type `db:"entry_type"`
-	Document_no            types.Code               `db:"document_no"`
-	Posting_date           types.Date               `db:"posting_date"`
-	Resource_no            types.Code               `db:"resource_no"`
-	Resource_group_no      types.Code               `db:"resource_group_no"`
-	Description            types.Text               `db:"description"`
-	Work_type_code         types.Code               `db:"work_type_code"`
-	Unit_of_measure_code   types.Code               `db:"unit_of_measure_code"`
-	Quantity               types.Decimal            `db:"quantity"`
-	Direct_unit_cost       types.Decimal            `db:"direct_unit_cost"`
-	Unit_cost              types.Decimal            `db:"unit_cost"`
-	Total_cost             types.Decimal            `db:"total_cost"`
-	Unit_price             types.Decimal            `db:"unit_price"`
-	Total_price            types.Decimal            `db:"total_price"`
-	Department_code        types.Code               `db:"department_code"`
-	Project_code           types.Code               `db:"project_code"`
-	Source_code            types.Code               `db:"source_code"`
-	Chargeable             bool                     `db:"chargeable"`
-	Reason_code            types.Code               `db:"reason_code"`
-	Gen_bus_posting_group  types.Code               `db:"gen_bus_posting_group"`
-	Gen_prod_posting_group types.Code               `db:"gen_prod_posting_group"`
-	Document_date          types.Date               `db:"document_date"`
-	External_document_no   types.Code               `db:"external_document_no"`
-	Posting_no_series      types.Code               `db:"posting_no_series"`
+	Journal_template_name  types.Code                     `db:"journal_template_name,pk"`
+	Journal_batch_name     types.Code                     `db:"journal_batch_name,pk"`
+	Line_no                int                            `db:"line_no,pk"`
+	Entry_type             ResJournalLineEntry_type       `db:"entry_type"`
+	Document_no            types.Code                     `db:"document_no"`
+	Posting_date           types.Date                     `db:"posting_date"`
+	Resource_no            types.Code                     `db:"resource_no"`
+	Resource_group_no      types.Code                     `db:"resource_group_no"`
+	Description            types.Text                     `db:"description"`
+	Work_type_code         types.Code                     `db:"work_type_code"`
+	Unit_of_measure_code   types.Code                     `db:"unit_of_measure_code"`
+	Quantity               types.Decimal                  `db:"quantity"`
+	Direct_unit_cost       types.Decimal                  `db:"direct_unit_cost"`
+	Unit_cost              types.Decimal                  `db:"unit_cost"`
+	Total_cost             types.Decimal                  `db:"total_cost"`
+	Unit_price             types.Decimal                  `db:"unit_price"`
+	Total_price            types.Decimal                  `db:"total_price"`
+	Department_code        types.Code                     `db:"department_code"`
+	Project_code           types.Code                     `db:"project_code"`
+	Source_code            types.Code                     `db:"source_code"`
+	Chargeable             bool                           `db:"chargeable"`
+	Reason_code            types.Code                     `db:"reason_code"`
+	Gen_bus_posting_group  types.Code                     `db:"gen_bus_posting_group"`
+	Gen_prod_posting_group types.Code                     `db:"gen_prod_posting_group"`
+	Document_date          types.Date                     `db:"document_date"`
+	External_document_no   types.Code                     `db:"external_document_no"`
+	Posting_no_series      types.Code                     `db:"posting_no_series"`
+	Recurring_method       ResJournalLineRecurring_method `db:"recurring_method"`
+	Expiration_date        types.Date                     `db:"expiration_date"`
+	Recurring_frequency    types.Code                     `db:"recurring_frequency"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -180,6 +203,17 @@ var ResJournalLine_Entry_type = struct {
 	Sale:  1,
 }
 
+// ResJournalLine_Recurring_method provides named constants for the recurring_method option field (FieldName.OptionValue syntax)
+var ResJournalLine_Recurring_method = struct {
+	Blank    ResJournalLineRecurring_method
+	Fixed    ResJournalLineRecurring_method
+	Variable ResJournalLineRecurring_method
+}{
+	Blank:    0,
+	Fixed:    1,
+	Variable: 2,
+}
+
 // ========================================
 // Field numbers (field IDs)
 // ========================================
@@ -214,6 +248,9 @@ var ResJournalLine_FieldNo = struct {
 	Document_date          int
 	External_document_no   int
 	Posting_no_series      int
+	Recurring_method       int
+	Expiration_date        int
+	Recurring_frequency    int
 }{
 	Journal_template_name:  1,
 	Journal_batch_name:     23,
@@ -242,6 +279,9 @@ var ResJournalLine_FieldNo = struct {
 	Document_date:          30,
 	External_document_no:   31,
 	Posting_no_series:      32,
+	Recurring_method:       25,
+	Expiration_date:        26,
+	Recurring_frequency:    27,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -301,6 +341,12 @@ func (t *ResJournalLine) FieldNo(fieldName string) int {
 		return 31
 	case "posting_no_series":
 		return 32
+	case "recurring_method":
+		return 25
+	case "expiration_date":
+		return 26
+	case "recurring_frequency":
+		return 27
 	}
 	return 0
 }
@@ -362,6 +408,12 @@ func (t *ResJournalLine) FieldName(fieldNo int) string {
 		return "external_document_no"
 	case 32:
 		return "posting_no_series"
+	case 25:
+		return "recurring_method"
+	case 26:
+		return "expiration_date"
+	case 27:
+		return "recurring_frequency"
 	}
 	return ""
 }
@@ -544,6 +596,15 @@ type (
 	ResJournalLineOnValidate_Posting_no_series interface {
 		OnValidate_Posting_no_series(rec *ResJournalLine) error
 	}
+	ResJournalLineOnValidate_Recurring_method interface {
+		OnValidate_Recurring_method(rec *ResJournalLine) error
+	}
+	ResJournalLineOnValidate_Expiration_date interface {
+		OnValidate_Expiration_date(rec *ResJournalLine) error
+	}
+	ResJournalLineOnValidate_Recurring_frequency interface {
+		OnValidate_Recurring_frequency(rec *ResJournalLine) error
+	}
 )
 
 // resJournalLineLogic is the registered business logic of Res_Journal_Line, in
@@ -627,6 +688,12 @@ func resJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ResJournalLineOnValidate_External_document_no)
 	case "OnValidate_Posting_no_series":
 		_, ok = logic.(ResJournalLineOnValidate_Posting_no_series)
+	case "OnValidate_Recurring_method":
+		_, ok = logic.(ResJournalLineOnValidate_Recurring_method)
+	case "OnValidate_Expiration_date":
+		_, ok = logic.(ResJournalLineOnValidate_Expiration_date)
+	case "OnValidate_Recurring_frequency":
+		_, ok = logic.(ResJournalLineOnValidate_Recurring_frequency)
 	default:
 		return false, false
 	}
@@ -764,6 +831,12 @@ func (t *ResJournalLine) CheckFields() error {
 	if err := tables.CheckMaxLength(ResJournalLineTableName, "posting_no_series", string(t.Posting_no_series), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(ResJournalLineTableName, "recurring_frequency", string(t.Recurring_frequency), 20); err != nil {
+		return err
+	}
+	if err := tables.CheckDateFormula(ResJournalLineTableName, "recurring_frequency", string(t.Recurring_frequency)); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -818,6 +891,9 @@ func GetResJournalLineTableSchema() string {
 		document_date TEXT,
 		external_document_no TEXT(20),
 		posting_no_series TEXT(10),
+		recurring_method INTEGER CHECK (recurring_method >= 0 AND recurring_method <= 2),
+		expiration_date TEXT,
+		recurring_frequency TEXT(20),
 		PRIMARY KEY (journal_template_name, journal_batch_name, line_no)
 	`
 }
@@ -852,6 +928,9 @@ func GetResJournalLinePostgresTableSchema() string {
 		document_date DATE,
 		external_document_no VARCHAR(20),
 		posting_no_series VARCHAR(10),
+		recurring_method INTEGER CHECK (recurring_method >= 0 AND recurring_method <= 2),
+		expiration_date DATE,
+		recurring_frequency VARCHAR(20),
 		PRIMARY KEY (journal_template_name, journal_batch_name, line_no)
 	`
 }
@@ -1009,6 +1088,9 @@ func (t *ResJournalLine) StoreOldValues() {
 	t.oldValues["document_date"] = t.Document_date
 	t.oldValues["external_document_no"] = t.External_document_no
 	t.oldValues["posting_no_series"] = t.Posting_no_series
+	t.oldValues["recurring_method"] = t.Recurring_method
+	t.oldValues["expiration_date"] = t.Expiration_date
+	t.oldValues["recurring_frequency"] = t.Recurring_frequency
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1103,6 +1185,15 @@ func (t *ResJournalLine) XRec() *ResJournalLine {
 	}
 	if v, ok := t.oldValues["posting_no_series"].(types.Code); ok {
 		x.Posting_no_series = v
+	}
+	if v, ok := t.oldValues["recurring_method"].(ResJournalLineRecurring_method); ok {
+		x.Recurring_method = v
+	}
+	if v, ok := t.oldValues["expiration_date"].(types.Date); ok {
+		x.Expiration_date = v
+	}
+	if v, ok := t.oldValues["recurring_frequency"].(types.Code); ok {
+		x.Recurring_frequency = v
 	}
 	return x
 }
@@ -1210,6 +1301,9 @@ func (t *ResJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	var document_dateNull sql.NullString
 	var external_document_noNull sql.NullString
 	var posting_no_seriesNull sql.NullString
+	var recurring_methodInt int
+	var expiration_dateNull sql.NullString
+	var recurring_frequencyNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1219,7 +1313,7 @@ func (t *ResJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1253,6 +1347,9 @@ func (t *ResJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 		&document_dateNull,
 		&external_document_noNull,
 		&posting_no_seriesNull,
+		&recurring_methodInt,
+		&expiration_dateNull,
+		&recurring_frequencyNull,
 	)
 
 	if err != nil {
@@ -1293,6 +1390,9 @@ func (t *ResJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 	t.External_document_no = types.NewCode(external_document_noNull.String)
 	t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
+	t.Recurring_method = ResJournalLineRecurring_method(recurring_methodInt)
+	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
+	t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1342,11 +1442,14 @@ func (t *ResJournalLine) Insert(runTrigger bool) bool {
 		t.Document_date,
 		t.External_document_no,
 		t.Posting_no_series,
+		t.Recurring_method,
+		t.Expiration_date,
+		t.Recurring_frequency,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1411,10 +1514,13 @@ func (t *ResJournalLine) InsertAll(records []*ResJournalLine, runTrigger bool) e
 			r.Document_date,
 			r.External_document_no,
 			r.Posting_no_series,
+			r.Recurring_method,
+			r.Expiration_date,
+			r.Recurring_frequency,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ResJournalLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "entry_type", "document_no", "posting_date", "resource_no", "resource_group_no", "description", "work_type_code", "unit_of_measure_code", "quantity", "direct_unit_cost", "unit_cost", "total_cost", "unit_price", "total_price", "department_code", "project_code", "source_code", "chargeable", "reason_code", "gen_bus_posting_group", "gen_prod_posting_group", "document_date", "external_document_no", "posting_no_series"}
+	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "entry_type", "document_no", "posting_date", "resource_no", "resource_group_no", "description", "work_type_code", "unit_of_measure_code", "quantity", "direct_unit_cost", "unit_cost", "total_cost", "unit_price", "total_price", "department_code", "project_code", "source_code", "chargeable", "reason_code", "gen_bus_posting_group", "gen_prod_posting_group", "document_date", "external_document_no", "posting_no_series", "recurring_method", "expiration_date", "recurring_frequency"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1568,6 +1674,18 @@ func (t *ResJournalLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "posting_no_series = ?")
 			values = append(values, t.Posting_no_series)
 		}
+		if t.hasFieldChanged("recurring_method") {
+			setClauses = append(setClauses, "recurring_method = ?")
+			values = append(values, t.Recurring_method)
+		}
+		if t.hasFieldChanged("expiration_date") {
+			setClauses = append(setClauses, "expiration_date = ?")
+			values = append(values, t.Expiration_date)
+		}
+		if t.hasFieldChanged("recurring_frequency") {
+			setClauses = append(setClauses, "recurring_frequency = ?")
+			values = append(values, t.Recurring_frequency)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -1623,6 +1741,12 @@ func (t *ResJournalLine) Modify(runTrigger bool) bool {
 		values = append(values, t.External_document_no)
 		setClauses = append(setClauses, "posting_no_series = ?")
 		values = append(values, t.Posting_no_series)
+		setClauses = append(setClauses, "recurring_method = ?")
+		values = append(values, t.Recurring_method)
+		setClauses = append(setClauses, "expiration_date = ?")
+		values = append(values, t.Expiration_date)
+		setClauses = append(setClauses, "recurring_frequency = ?")
+		values = append(values, t.Recurring_frequency)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -1786,6 +1910,18 @@ func (t *ResJournalLine) hasFieldChanged(fieldName string) bool {
 	case "posting_no_series":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Posting_no_series.Equal(old)
+		}
+	case "recurring_method":
+		if old, ok := oldValue.(ResJournalLineRecurring_method); ok {
+			return t.Recurring_method != old
+		}
+	case "expiration_date":
+		if old, ok := oldValue.(types.Date); ok {
+			return !t.Expiration_date.Equal(old)
+		}
+	case "recurring_frequency":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Recurring_frequency.Equal(old)
 		}
 	}
 
@@ -2047,6 +2183,12 @@ func (t *ResJournalLine) columnName(fieldName string) (string, bool) {
 		return "external_document_no", true
 	case strings.ToLower("posting_no_series"):
 		return "posting_no_series", true
+	case strings.ToLower("recurring_method"):
+		return "recurring_method", true
+	case strings.ToLower("expiration_date"):
+		return "expiration_date", true
+	case strings.ToLower("recurring_frequency"):
+		return "recurring_frequency", true
 	}
 	return "", false
 }
@@ -2212,6 +2354,8 @@ func (t *ResJournalLine) isDateColumn(column string) bool {
 	case "posting_date":
 		return true
 	case "document_date":
+		return true
+	case "expiration_date":
 		return true
 	}
 	return false
@@ -2412,7 +2556,7 @@ func (t *ResJournalLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2443,6 +2587,9 @@ func (t *ResJournalLine) FindFirst() bool {
 	var document_dateNull sql.NullString
 	var external_document_noNull sql.NullString
 	var posting_no_seriesNull sql.NullString
+	var recurring_methodInt int
+	var expiration_dateNull sql.NullString
+	var recurring_frequencyNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&journal_template_nameNull,
@@ -2472,6 +2619,9 @@ func (t *ResJournalLine) FindFirst() bool {
 		&document_dateNull,
 		&external_document_noNull,
 		&posting_no_seriesNull,
+		&recurring_methodInt,
+		&expiration_dateNull,
+		&recurring_frequencyNull,
 	)
 
 	if err != nil {
@@ -2509,6 +2659,9 @@ func (t *ResJournalLine) FindFirst() bool {
 	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 	t.External_document_no = types.NewCode(external_document_noNull.String)
 	t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
+	t.Recurring_method = ResJournalLineRecurring_method(recurring_methodInt)
+	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
+	t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2529,7 +2682,7 @@ func (t *ResJournalLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2560,6 +2713,9 @@ func (t *ResJournalLine) FindLast() bool {
 	var document_dateNull sql.NullString
 	var external_document_noNull sql.NullString
 	var posting_no_seriesNull sql.NullString
+	var recurring_methodInt int
+	var expiration_dateNull sql.NullString
+	var recurring_frequencyNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&journal_template_nameNull,
@@ -2589,6 +2745,9 @@ func (t *ResJournalLine) FindLast() bool {
 		&document_dateNull,
 		&external_document_noNull,
 		&posting_no_seriesNull,
+		&recurring_methodInt,
+		&expiration_dateNull,
+		&recurring_frequencyNull,
 	)
 
 	if err != nil {
@@ -2626,6 +2785,9 @@ func (t *ResJournalLine) FindLast() bool {
 	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 	t.External_document_no = types.NewCode(external_document_noNull.String)
 	t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
+	t.Recurring_method = ResJournalLineRecurring_method(recurring_methodInt)
+	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
+	t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2676,7 +2838,7 @@ func (t *ResJournalLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2771,6 +2933,9 @@ func (t *ResJournalLine) Next(steps ...int) bool {
 		var document_dateNull sql.NullString
 		var external_document_noNull sql.NullString
 		var posting_no_seriesNull sql.NullString
+		var recurring_methodInt int
+		var expiration_dateNull sql.NullString
+		var recurring_frequencyNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&journal_template_nameNull,
@@ -2800,6 +2965,9 @@ func (t *ResJournalLine) Next(steps ...int) bool {
 			&document_dateNull,
 			&external_document_noNull,
 			&posting_no_seriesNull,
+			&recurring_methodInt,
+			&expiration_dateNull,
+			&recurring_frequencyNull,
 		)
 
 		if err != nil {
@@ -2836,6 +3004,9 @@ func (t *ResJournalLine) Next(steps ...int) bool {
 		t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 		t.External_document_no = types.NewCode(external_document_noNull.String)
 		t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
+		t.Recurring_method = ResJournalLineRecurring_method(recurring_methodInt)
+		t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
+		t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -2885,7 +3056,7 @@ func (t *ResJournalLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2933,6 +3104,9 @@ func (t *ResJournalLine) FindSetBuffered() bool {
 		var document_dateNull sql.NullString
 		var external_document_noNull sql.NullString
 		var posting_no_seriesNull sql.NullString
+		var recurring_methodInt int
+		var expiration_dateNull sql.NullString
+		var recurring_frequencyNull sql.NullString
 
 		err := rows.Scan(
 			&journal_template_nameNull,
@@ -2962,6 +3136,9 @@ func (t *ResJournalLine) FindSetBuffered() bool {
 			&document_dateNull,
 			&external_document_noNull,
 			&posting_no_seriesNull,
+			&recurring_methodInt,
+			&expiration_dateNull,
+			&recurring_frequencyNull,
 		)
 
 		if err != nil {
@@ -2996,6 +3173,9 @@ func (t *ResJournalLine) FindSetBuffered() bool {
 		record.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 		record.External_document_no = types.NewCode(external_document_noNull.String)
 		record.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
+		record.Recurring_method = ResJournalLineRecurring_method(recurring_methodInt)
+		record.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
+		record.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -3051,6 +3231,9 @@ func (t *ResJournalLine) copyFromBuffered(record *ResJournalLine) {
 	t.Document_date = record.Document_date
 	t.External_document_no = record.External_document_no
 	t.Posting_no_series = record.Posting_no_series
+	t.Recurring_method = record.Recurring_method
+	t.Expiration_date = record.Expiration_date
+	t.Recurring_frequency = record.Recurring_frequency
 	t.StoreOldValues()
 }
 
@@ -3836,6 +4019,100 @@ func (t *ResJournalLine) ValidateField(fieldName string, value interface{}) erro
 			}
 		}
 		return nil
+	case "recurring_method":
+		// Set field value
+		// Accept enum type directly
+		if v, ok := value.(ResJournalLineRecurring_method); ok {
+			t.Recurring_method = v
+			// Accept int (convert to enum)
+		} else if v, ok := value.(int); ok {
+			if v < 0 || v >= 3 {
+				return fmt.Errorf("invalid option value %d for field recurring_method (valid range: 0-%d)", v, 3-1)
+			}
+			t.Recurring_method = ResJournalLineRecurring_method(v)
+			// Accept float64 (JSON numbers decode as float64)
+		} else if v, ok := value.(float64); ok {
+			intVal := int(v)
+			if intVal < 0 || intVal >= 3 {
+				return fmt.Errorf("invalid option value %d for field recurring_method (valid range: 0-%d)", intVal, 3-1)
+			}
+			t.Recurring_method = ResJournalLineRecurring_method(intVal)
+			// Accept string (lookup in options and convert)
+		} else if v, ok := value.(string); ok {
+			if v == "" {
+				// Empty string defaults to first option (behavior)
+				t.Recurring_method = 0
+			} else {
+				options := []string{" ", "Fixed", "Variable"}
+				found := false
+				for i, opt := range options {
+					if opt == v {
+						t.Recurring_method = ResJournalLineRecurring_method(i)
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("invalid option '%s' for field recurring_method (valid options: %v)", v, options)
+				}
+			}
+		} else {
+			return fmt.Errorf("invalid type for field recurring_method (expected ResJournalLineRecurring_method, int, or string)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ResJournalLineOnValidate_Recurring_method); ok {
+				if err := trg.OnValidate_Recurring_method(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "expiration_date":
+		// Set field value
+		if v, ok := value.(types.Date); ok {
+			t.Expiration_date = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Expiration_date, err = types.NewDateFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid date value for field expiration_date: %w", err)
+			}
+		} else if v, ok := value.(time.Time); ok {
+			t.Expiration_date = types.NewDateFromTime(v)
+		} else {
+			return fmt.Errorf("invalid type for field expiration_date (expected Date, string, or time.Time)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ResJournalLineOnValidate_Expiration_date); ok {
+				if err := trg.OnValidate_Expiration_date(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "recurring_frequency":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Recurring_frequency = v
+		} else if v, ok := value.(string); ok {
+			t.Recurring_frequency = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field recurring_frequency")
+		}
+		if err := tables.CheckDateFormula(ResJournalLineTableName, "recurring_frequency", string(t.Recurring_frequency)); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ResJournalLineOnValidate_Recurring_frequency); ok {
+				if err := trg.OnValidate_Recurring_frequency(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -3902,6 +4179,12 @@ func (t *ResJournalLine) FieldValue(no int) (any, bool) {
 		return t.External_document_no, true
 	case 32:
 		return t.Posting_no_series, true
+	case 25:
+		return t.Recurring_method, true
+	case 26:
+		return t.Expiration_date, true
+	case 27:
+		return t.Recurring_frequency, true
 	}
 	return nil, false
 }
@@ -4114,6 +4397,25 @@ func (t *ResJournalLine) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.Posting_no_series = types.NewCode(v)
+			return true
+		}
+	case 25:
+		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
+			t.Recurring_method = ResJournalLineRecurring_method(i)
+			return true
+		}
+	case 26:
+		if v, ok := value.(types.Date); ok {
+			t.Expiration_date = v
+			return true
+		}
+	case 27:
+		if v, ok := value.(types.Code); ok {
+			t.Recurring_frequency = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Recurring_frequency = types.NewCode(v)
 			return true
 		}
 	}
@@ -4661,6 +4963,12 @@ func (t *ResJournalLine) columnValue(column string) (interface{}, bool) {
 		return t.External_document_no, true
 	case "posting_no_series":
 		return t.Posting_no_series, true
+	case "recurring_method":
+		return int(t.Recurring_method), true
+	case "expiration_date":
+		return t.Expiration_date, true
+	case "recurring_frequency":
+		return t.Recurring_frequency, true
 	}
 	return nil, false
 }
@@ -4747,6 +5055,9 @@ func (t *ResJournalLine) Init() {
 	t.Document_date = *new(types.Date)
 	t.External_document_no = *new(types.Code)
 	t.Posting_no_series = *new(types.Code)
+	t.Recurring_method = 0
+	t.Expiration_date = *new(types.Date)
+	t.Recurring_frequency = *new(types.Code)
 	t.applyDefaults()
 }
 
@@ -4808,6 +5119,9 @@ func (t *ResJournalLine) ToMap() map[string]interface{} {
 		"document_date":          t.Document_date.String(),
 		"external_document_no":   t.External_document_no.String(),
 		"posting_no_series":      t.Posting_no_series.String(),
+		"recurring_method":       int(t.Recurring_method),
+		"expiration_date":        t.Expiration_date.String(),
+		"recurring_frequency":    t.Recurring_frequency.String(),
 	}
 }
 
@@ -5008,6 +5322,33 @@ func (t *ResJournalLine) FromMap(data map[string]interface{}) {
 	if v, ok := data["posting_no_series"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Posting_no_series = types.NewCode(s)
+		}
+	}
+	if v, ok := data["recurring_method"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Recurring_method = ResJournalLineRecurring_method(int(val))
+		case int:
+			t.Recurring_method = ResJournalLineRecurring_method(val)
+		case string:
+			// Lookup string value in options
+			options := []string{" ", "Fixed", "Variable"}
+			for i, opt := range options {
+				if opt == val {
+					t.Recurring_method = ResJournalLineRecurring_method(i)
+					break
+				}
+			}
+		}
+	}
+	if v, ok := data["expiration_date"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Expiration_date, _ = types.NewDateFromString(s)
+		}
+	}
+	if v, ok := data["recurring_frequency"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Recurring_frequency = types.NewCode(s)
 		}
 	}
 }
@@ -5309,6 +5650,36 @@ func (t *ResJournalLine) GetFields() []tables.FieldInfo {
 			PrimaryKey: false,
 			FlowField:  false,
 		},
+		{
+			No:         25,
+			Name:       "recurring_method",
+			Type:       tables.FieldTypeOption,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         26,
+			Name:       "expiration_date",
+			Type:       tables.FieldTypeDate,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         27,
+			Name:       "recurring_frequency",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
 	}
 }
 
@@ -5333,7 +5704,8 @@ func (t *ResJournalLine) GetFlowFields() []string {
 // GetOptionFields returns Option field names mapped to their option values
 func (t *ResJournalLine) GetOptionFields() map[string][]string {
 	return map[string][]string{
-		"entry_type": {"Usage", "Sale"},
+		"entry_type":       {"Usage", "Sale"},
+		"recurring_method": {" ", "Fixed", "Variable"},
 	}
 }
 
