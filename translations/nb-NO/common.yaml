@@ -226,6 +226,10 @@ common:
 
   # Menu items
   menu:
+    trial_balance_previous_year: "Saldobalanse/forrige år"
+    bank_account_register: "Bankkontojournal"
+    customer_statement: "Kontoutdrag kunde"
+    item_register: "Varejournal"
     trial_balance: "Saldobalanse"
     detail_trial_balance: "Saldobalanse med poster"
     g_l_register: "Finansjournal"

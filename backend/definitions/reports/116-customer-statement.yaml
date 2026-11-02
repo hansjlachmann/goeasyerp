@@ -1,0 +1,76 @@
+# Report 116 Customer Statement: the printed layout (sections per data item, positions in mm from
+# the section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 116
+  name: Customer Statement
+  page:
+    size: A4
+    orientation: portrait
+    margins: {top: 12, bottom: 12, left: 15, right: 12}
+  font_size: 9
+  data_items:
+    - name: Customer
+      new_page_per_record: true
+
+    - name: StatementLine
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 86
+          elements:
+            # The company (Print Company Address) and its logo
+            - {lines: company_address, x: 0, y: 0, width: 95}
+            - {text: PHONE_NO, x: 0, y: 34, width: 22, print_if: company_phone_no}
+            - {value: company_phone_no, x: 22, y: 34, width: 70}
+            - {image: company_picture, x: 133, y: 0, width: 50, height: 20}
+            # The statement
+            - {text: STATEMENT, x: 93, y: 22, width: 90, align: right, size: 16, bold: true}
+            - {text: STATEMENT_DATE, x: 118, y: 31, width: 30}
+            - {value: statement_date, x: 148, y: 31, width: 35, align: right}
+            - {text: CUSTOMER_NO, x: 118, y: 35, width: 30}
+            - {field: Customer.no, x: 148, y: 35, width: 35, align: right}
+            - {text: CURRENCY, x: 118, y: 39, width: 30}
+            - {value: currency, x: 148, y: 39, width: 35, align: right}
+            - {text: PAGE, x: 118, y: 43, width: 30}
+            - {page_no: true, x: 148, y: 43, width: 35, align: right}
+            # The customer
+            - {lines: customer_address, x: 0, y: 46, width: 85}
+            # The columns
+            - {line: true, x: 0, y: 79}
+            - {text: DATE, x: 0, y: 81, width: 19, bold: true}
+            - {text: TYPE, x: 20, y: 81, width: 22, bold: true}
+            - {text: DOCUMENT_NO, x: 43, y: 81, width: 24, bold: true}
+            - {text: DUE_DATE, x: 68, y: 81, width: 19, bold: true}
+            - {text: DEBITS, x: 88, y: 81, width: 30, align: right, bold: true}
+            - {text: CREDITS, x: 119, y: 81, width: 30, align: right, bold: true}
+            - {text: BALANCE, x: 150, y: 81, width: 33, align: right, bold: true}
+            - {line: true, x: 0, y: 85.5}
+        - type: body
+          height: 4.6
+          elements:
+            - {value: line_date, x: 0, y: 0, width: 19}
+            - {value: line_document_type, x: 20, y: 0, width: 22}
+            - {value: line_document_no, x: 43, y: 0, width: 24}
+            - {value: line_due_date, x: 68, y: 0, width: 19}
+            - {value: line_debit, x: 88, y: 0, width: 30, align: right, blank_zero: true}
+            - {value: line_credit, x: 119, y: 0, width: 30, align: right, blank_zero: true}
+            - {value: line_balance, x: 150, y: 0, width: 33, align: right}
+            - {value: line_description, x: 20, y: 0, width: 66, print_if: line_description_only}
+        # The balance due and its aging
+        - type: footer
+          height: 30
+          elements:
+            - {line: true, x: 88, y: 1}
+            - {value: total_debit, x: 88, y: 2, width: 30, align: right, blank_zero: true}
+            - {value: total_credit, x: 119, y: 2, width: 30, align: right, blank_zero: true}
+            - {text: BALANCE_DUE, x: 88, y: 8, width: 60, align: right, bold: true}
+            - {value: balance_due, x: 150, y: 8, width: 33, align: right, bold: true}
+            - {line: true, x: 0, y: 15}
+            - {text: CURRENT, x: 0, y: 17, width: 44, align: right, bold: true}
+            - {text: DUE_1_30, x: 46, y: 17, width: 44, align: right, bold: true}
+            - {text: DUE_31_60, x: 92, y: 17, width: 44, align: right, bold: true}
+            - {text: DUE_OVER_60, x: 138, y: 17, width: 45, align: right, bold: true}
+            - {value: current, x: 0, y: 22, width: 44, align: right}
+            - {value: due_1_30, x: 46, y: 22, width: 44, align: right}
+            - {value: due_31_60, x: 92, y: 22, width: 44, align: right}
+            - {value: due_over_60, x: 138, y: 22, width: 45, align: right}
