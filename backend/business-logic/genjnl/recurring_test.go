@@ -84,7 +84,7 @@ func TestPostRecurringJournal(t *testing.T) {
 	allocation(t, fixed, 10000, "1230", func(a *gtables.GenJnlAllocation) { must(t, a.Validate("allocation_quantity", dec("1"))) })
 	allocation(t, fixed, 20000, "1250", func(a *gtables.GenJnlAllocation) { must(t, a.Validate("allocation_quantity", dec("2"))) })
 	variable := recurringLine(t, src, 20000, gtables.GenJournalLine_Recurring_method.RVReversingVariable, "1270", "300")
-	allocation(t, variable, 10000, "1230", func(a *gtables.GenJnlAllocation) { must(t, a.Validate("amount", dec("-300"))) })
+	allocation(t, variable, 10000, "1230", func(a *gtables.GenJnlAllocation) { must(t, a.Validate("allocation_percent", dec("100"))) })
 
 	alloc := gtables.NewGenJnlAllocation(src)
 	must(t, alloc.GetOrError(map[string]interface{}{"journal_template_name": "RECURRING", "journal_batch_name": "DEFAULT", "journal_line_no": 10000, "line_no": 20000}))
@@ -148,6 +148,12 @@ func TestPostRecurringJournal(t *testing.T) {
 	must(t, alloc.GetOrError(map[string]interface{}{"journal_template_name": "RECURRING", "journal_batch_name": "DEFAULT", "journal_line_no": 20000, "line_no": 10000}))
 	if !alloc.Amount.IsZero() {
 		t.Errorf("the variable line's allocation kept %s", alloc.Amount)
+	}
+	variable.Line_no = 20000
+	must(t, variable.GetOrError(map[string]interface{}{"journal_template_name": "RECURRING", "journal_batch_name": "DEFAULT", "line_no": 20000}))
+	variable.CalcFields("allocated_amt_lcy")
+	if !variable.Allocated_amt_lcy.IsZero() || !variable.Balance_lcy.IsZero() {
+		t.Errorf("variable line after posting: allocated %s, balance %s", variable.Allocated_amt_lcy, variable.Balance_lcy)
 	}
 }
 

@@ -123,3 +123,49 @@ func insertBankEntries(exec database.Executor, company string, dbType database.D
 	}
 	return nil
 }
+
+// closeDemoBankStatements: the bank entries posted through the general journal (the fixed
+// assets' payments and proceeds) are reconciled like the demo payments — before this month on
+// the month's statement, closed; each bank account's last statement and its balance follow
+// from all its closed entries
+func closeDemoBankStatements(src ftables.Source, today time.Time) error {
+	monthStart := types.NewDate(today.Year(), today.Month(), 1)
+	entry := gtables.NewBankAccountLedgerEntry(src)
+	entry.SetRange("open", true)
+	entry.SetRange("posting_date", types.Date{}, monthStart.AddDays(-1))
+	for found := entry.FindSetBuffered(); found; found = entry.Next() {
+		entry.Open = false
+		entry.Remaining_amount = types.Decimal{}
+		entry.Statement_status = gtables.BankAccountLedgerEntry_Statement_status.Closed
+		entry.Statement_no = types.NewCode(entry.Posting_date.Format("ST2006-01"))
+		err := entry.ModifyOrError(false)
+		if err != nil {
+			return err
+		}
+	}
+	bankAcc := gtables.NewBankAccount(src)
+	for found := bankAcc.FindSetBuffered(); found; found = bankAcc.Next() {
+		closed := gtables.NewBankAccountLedgerEntry(src)
+		closed.SetRange("bank_account_no", bankAcc.No)
+		closed.SetRange("statement_status", gtables.BankAccountLedgerEntry_Statement_status.Closed)
+		if !closed.FindLast() {
+			continue
+		}
+		err := closed.CalcSums("amount")
+		if err != nil {
+			return err
+		}
+		last := gtables.NewBankAccountLedgerEntry(src)
+		last.SetCurrentKey("bank_account_no", "posting_date")
+		last.SetRange("bank_account_no", bankAcc.No)
+		last.SetRange("statement_status", gtables.BankAccountLedgerEntry_Statement_status.Closed)
+		last.FindLast()
+		bankAcc.Last_statement_no = types.NewCode(last.Posting_date.Format("ST2006-01"))
+		bankAcc.Balance_last_statement = closed.Amount
+		err = bankAcc.ModifyOrError(false)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

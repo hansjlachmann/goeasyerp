@@ -243,6 +243,12 @@ func (b *GenJnlPostBatch) updateRecurringLines(genJnlLine *gtables.GenJournalLin
 		if l.Recurring_method != gtables.GenJournalLine_Recurring_method.FFixed &&
 			l.Recurring_method != gtables.GenJournalLine_Recurring_method.RFReversingFixed {
 			multiplyAmounts(l, types.Decimal{})
+			// the allocations by quantity or percentage follow the cleared amount (validating the
+			// posting date recalculated them from the old one)
+			err := tables.UpdateGenJnlAllocations(l)
+			if err != nil {
+				return err
+			}
 		}
 		err := l.ModifyOrError(false)
 		if err != nil {

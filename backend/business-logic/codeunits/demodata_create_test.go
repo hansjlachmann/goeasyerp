@@ -22,6 +22,7 @@ import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
 	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
+	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
 
@@ -115,6 +116,27 @@ func TestDemoDataFillsTheMainMenu(t *testing.T) {
 	}
 	if counts.JournalLines < 15 {
 		t.Errorf("%d journal lines", counts.JournalLines)
+	}
+	// the bank entries before this month are reconciled; the last statement's balance is the
+	// balance at last month's end (Last Statement No. is the open reconciliation's, ST2026-10)
+	src0 := ftables.DBSource(db, "demo", database.DBTypeSQLite)
+	openBank := gtables.NewBankAccountLedgerEntry(src0)
+	openBank.SetRange("open", true)
+	openBank.SetRange("posting_date", types.Date{}, types.NewDate(2026, 9, 30))
+	if n := openBank.Count(); n != 0 {
+		t.Errorf("%d bank entries before October still open", n)
+	}
+	b010 := gtables.NewBankAccount(src0)
+	if !b010.Get(types.Code("B010")) {
+		t.Fatal("no bank account B010")
+	}
+	if err := b010.SetFlowFilter("date_filter", "..2026-09-30"); err != nil {
+		t.Fatal(err)
+	}
+	b010.CalcFields("balance_at_date")
+	if b010.Last_statement_no != "ST2026-10" || !b010.Balance_last_statement.Equal(b010.Balance_at_date) {
+		t.Errorf("B010: last statement %s balance %s, want ST2026-10 and the balance at 30 September %s",
+			b010.Last_statement_no, b010.Balance_last_statement, b010.Balance_at_date)
 	}
 	if counts.ExchRateAdjmtRegs == 0 {
 		t.Error("no exchange rate adjustment registers")
