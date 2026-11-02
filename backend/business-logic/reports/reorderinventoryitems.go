@@ -91,7 +91,10 @@ func (r *reorderInventoryItems) onPreReport(run *Run) error {
 
 func (r *reorderInventoryItems) itemOnAfterGetRecord(item *gtables.Item, run *Run) error {
 	r.window.Update(1, item.No)
-	item.SetFlowFilter("date_filter", ".."+r.endingDate.String())
+	err := item.SetFlowFilter("date_filter", ".."+r.endingDate.String())
+	if err != nil {
+		return err
+	}
 	r.periodEndingDate = types.Date{}
 
 	if item.Reorder_cycle == "" {
