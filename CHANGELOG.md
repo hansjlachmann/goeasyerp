@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.126](https://github.com/hansjlachmann/openerp/compare/v0.1.125...v0.1.126) (2026-11-02)
+
+
+### Features
+
+* report selections, printer selections, item price changes and requisition worksheets ([#190](https://github.com/hansjlachmann/openerp/issues/190)) ([47a04a9](https://github.com/hansjlachmann/openerp/commit/47a04a9ea25bd1eeae7cc8aa624146dcbe5a7771))
+
 ## [0.1.125](https://github.com/hansjlachmann/openerp/compare/v0.1.124...v0.1.125) (2026-11-02)
 
 
