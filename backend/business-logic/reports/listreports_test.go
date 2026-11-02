@@ -74,6 +74,9 @@ func TestListReports(t *testing.T) {
 		{reports.BankAccountListID, nil, []string{"B010"}},
 		{reports.BankAccDetailTrialBalID, nil, []string{"B010"}},
 		{reports.AgedAccountsPayable, map[string]string{"aged_as_of": "2026-10-06", "print_details": "true"}, nil},
+		{reports.TrialBalancePrevYearID, nil, []string{"1210", "Land and Buildings"}},
+		{reports.BankAccountRegisterID, nil, []string{"B010"}},
+		{reports.ItemRegisterID, nil, []string{"1000"}},
 	}
 	for _, c := range cases {
 		texts := runList(t, src, c.id, c.options)
@@ -119,5 +122,35 @@ func TestListReports(t *testing.T) {
 	texts = runList(t, src, reports.CustomerListID, nil)
 	if !strings.Contains(texts, amountText(balance)) {
 		t.Errorf("customer list: no total %s", amountText(balance))
+	}
+}
+
+// Customer Statement (Open Item, the default): a page per customer with a balance; each page's
+// balance due is the customer's balance; Update Statement No. raises Last Statement No.
+func TestCustomerStatement(t *testing.T) {
+	src := listCompany(t)
+	cust := gtables.NewCustomer(src)
+	withBalance := map[string]types.Decimal{}
+	for found := cust.FindSetBuffered(); found; found = cust.Next() {
+		cust.CalcFields("balance_lcy")
+		if balance := cust.Balance_lcy.Round(2); !balance.IsZero() {
+			withBalance[cust.No.String()] = balance
+		}
+	}
+	result, err := reports.Execute(reports.CustomerStatementID, src.GetDB(), src.GetCompany(), src.GetDBType(), reports.RunOptions{
+		Output: reports.OutputPDF, Options: map[string]string{"update_statement_no": "true"}})
+	mustOK(t, err)
+	if result.Pages < len(withBalance) {
+		t.Errorf("%d pages for %d customers with a balance", result.Pages, len(withBalance))
+	}
+	texts := printedTexts(result, 0)
+	for no, balance := range withBalance {
+		if !strings.Contains(texts, no) || !strings.Contains(texts, amountText(balance)) {
+			t.Errorf("customer %s: no statement with the balance due %s", no, amountText(balance))
+		}
+	}
+	mustOK(t, cust.GetOrError(types.Code("C00010")))
+	if _, ok := withBalance["C00010"]; ok && cust.Last_statement_no != 1 {
+		t.Errorf("C00010 last statement no. %d, want 1", cust.Last_statement_no)
 	}
 }

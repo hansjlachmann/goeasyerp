@@ -1,0 +1,38 @@
+page:
+  id: 320
+  type: List
+  name: Tax Statement Names
+  source_table: Tax_Statement_Name
+  caption: Tax Statement Names
+  editable: true   # opened from a template (filtered on it)
+
+  layout:
+    repeater:
+      fields:
+        - source: statement_template_name
+          width: 110
+          visible: false
+        - source: name
+          width: 110
+        - source: description
+          width: 300
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+

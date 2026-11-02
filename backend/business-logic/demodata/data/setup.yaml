@@ -212,6 +212,24 @@ master_data:
       - {tax_jurisdiction_code: "NO", tax_group_code: TAXABLE, tax_type: 0, tax_below_maximum: 25}
       - {tax_jurisdiction_code: "NO", tax_group_code: REDUCED, tax_type: 0, tax_below_maximum: 15}
       - {tax_jurisdiction_code: "NO", tax_group_code: NONTAXABLE, tax_type: 0, tax_below_maximum: 0}
+  - table: Tax_Statement_Template   # the sales tax statement (report 12, page 317)
+    records:
+      - {name: TAX, description: Sales Tax Statement}
+  - table: Tax_Statement_Name
+    records:
+      - {statement_template_name: TAX, name: DEFAULT, description: Sales tax return}
+  - table: Tax_Statement_Line   # sales (credit amounts, printed with the opposite sign), purchases and the tax payable
+    records:
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 10000, row_no: "1", description: "Sales", type: 3}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 20000, row_no: "10", description: "Taxable sales, standard rate", tax_prod_posting_group: STANDARD, amount_type: 2, type: 1, gen_posting_type: 2, tax_bus_posting_group: DOMESTIC, tax_jurisdiction_code: "NO", print_with: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 30000, row_no: "11", description: "Sales tax, standard rate (25 %)", tax_prod_posting_group: STANDARD, amount_type: 1, type: 1, gen_posting_type: 2, tax_bus_posting_group: DOMESTIC, tax_jurisdiction_code: "NO", print_with: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 40000, row_no: "12", description: "Taxable sales, reduced rate", tax_prod_posting_group: REDUCED, amount_type: 2, type: 1, gen_posting_type: 2, tax_bus_posting_group: DOMESTIC, tax_jurisdiction_code: "NO", print_with: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 50000, row_no: "13", description: "Sales tax, reduced rate (15 %)", tax_prod_posting_group: REDUCED, amount_type: 1, type: 1, gen_posting_type: 2, tax_bus_posting_group: DOMESTIC, tax_jurisdiction_code: "NO", print_with: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 60000, row_no: "14", description: "Exempt sales", tax_prod_posting_group: EXEMPT, amount_type: 2, type: 1, gen_posting_type: 2, tax_bus_posting_group: DOMESTIC, tax_jurisdiction_code: "NO", print_with: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 70000, row_no: "2", description: "Purchases", type: 3}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 80000, row_no: "21", description: "Tax on purchases, standard rate", type: 1, gen_posting_type: 1, tax_bus_posting_group: DOMESTIC, tax_prod_posting_group: STANDARD, tax_jurisdiction_code: "NO", amount_type: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 90000, row_no: "30", description: "Tax payable", type: 2, row_totaling: "11|13|21", print_with: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 100000, row_no: "40", description: "Sales tax payable account (2330)", type: 0, account_totaling: "2330", print_with: 1}
   - table: Tax_Posting_Setup   # every combination of the demo's tax posting groups calculates sales tax
     records:
       - {tax_bus_posting_group: "", tax_prod_posting_group: "", tax_calculation_type: 3}

@@ -426,6 +426,8 @@ messages:
   DLG_PRINT_PREVIEW: "Vis udskrift"
   GEN_JNL_TEMPLATE_DESCRIPTION: "Kladde %1"
   GEN_JNL_RECURRING_TEMPLATE_DESCRIPTION: "Gentagelseskladde"
+  TAX_STMT_TEMPLATE_DESCRIPTION: "Momsangivelse"
+  TAX_STMT_DEFAULT_NAME: "Standardangivelse"
   RECURRING_ITEM_JNL_TEMPLATE_DESCRIPTION: "Gentagelseskladde - vare"
   RECURRING_BOM_JNL_TEMPLATE_DESCRIPTION: "Gentagelseskladde - stykliste"
   RECURRING_RES_JNL_TEMPLATE_DESCRIPTION: "Gentagelseskladde - ressource"

@@ -1,0 +1,175 @@
+table:
+  id: 256
+  name: "Tax_Statement_Line"
+  description: "Tax statement lines (table 256): the rows of a tax statement — G/L account totals, tax entry totals, totals of other rows, or text"
+  fields:
+    - name: statement_template_name
+      no: 1
+      type: types.Code
+      db_name: statement_template_name
+      length: 10
+      primary_key: true
+      required: true
+      table_relation:
+        table: Tax_Statement_Template
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: statement_name
+      no: 2
+      type: types.Code
+      db_name: statement_name
+      length: 10
+      primary_key: true
+      required: true
+      table_relation:
+        table: Tax_Statement_Name
+        field: name
+        filters:
+          statement_template_name: {field: statement_template_name}
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: line_no
+      no: 3
+      type: int
+      db_name: line_no
+      primary_key: true
+
+    - name: row_no
+      no: 4
+      type: types.Code
+      db_name: row_no
+      length: 10
+
+    - name: description
+      no: 5
+      type: types.Text
+      db_name: description
+      length: 50
+
+    - name: type
+      no: 6
+      type: Option
+      db_name: type
+      options: ["Account Totaling", "Tax Entry Totaling", "Row Totaling", "Description"]
+
+    - name: account_totaling
+      no: 7
+      type: types.Text
+      db_name: account_totaling
+      length: 30
+      table_relation:
+        table: G_L_Account
+        field: no
+        validate: false
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: gen_posting_type
+      no: 8
+      type: Option
+      db_name: gen_posting_type
+      options: [" ", "Purchase", "Sale", "Settlement"]
+
+    - name: tax_bus_posting_group
+      no: 9
+      type: types.Code
+      db_name: tax_bus_posting_group
+      length: 10
+      table_relation:
+        table: Tax_Business_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: tax_prod_posting_group
+      no: 10
+      type: types.Code
+      db_name: tax_prod_posting_group
+      length: 10
+      table_relation:
+        table: Tax_Product_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: row_totaling
+      no: 11
+      type: types.Text
+      db_name: row_totaling
+      length: 30
+
+    - name: amount_type
+      no: 12
+      type: Option
+      db_name: amount_type
+      options: [" ", "Amount", "Base", "Unrealized Amount", "Unrealized Base"]
+
+    - name: calculate_with
+      no: 13
+      type: Option
+      db_name: calculate_with
+      options: ["Sign", "Opposite Sign"]
+
+    - name: print
+      no: 14
+      type: bool
+      db_name: print
+      default: true
+
+    - name: print_with
+      no: 15
+      type: Option
+      db_name: print_with
+      options: ["Sign", "Opposite Sign"]
+
+    - name: date_filter
+      no: 16
+      type: types.Date
+      flow_filter: true
+
+    - name: new_page
+      no: 17
+      type: bool
+      db_name: new_page
+
+    - name: tax_jurisdiction_code
+      no: 18
+      type: types.Code
+      db_name: tax_jurisdiction_code
+      length: 10
+      table_relation:
+        table: Tax_Jurisdiction
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: use_tax
+      no: 19
+      type: bool
+      db_name: use_tax
+
+  keys:
+    - name: Primary
+      fields: [statement_template_name, statement_name, line_no]
+      clustered: true

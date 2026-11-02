@@ -1,0 +1,15 @@
+page:
+  id: 319
+  type: List
+  name: Tax Statement Template List
+  source_table: Tax_Statement_Template
+  caption: Tax Statement Template List
+  editable: false   # opened to pick the template of a tax statement
+
+  layout:
+    repeater:
+      fields:
+        - source: name
+          width: 110
+        - source: description
+          width: 300

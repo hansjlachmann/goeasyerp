@@ -1,0 +1,34 @@
+table:
+  id: 255
+  name: "Tax_Statement_Template"
+  description: "Tax statement templates (table 255): the kinds of tax statements — each has its statements (257) and their lines (256)"
+  lookup_page_id: 319
+  fields:
+    - name: name
+      no: 1
+      type: types.Code
+      db_name: name
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: description
+      no: 2
+      type: types.Text
+      db_name: description
+      length: 80
+
+    - name: page_id
+      no: 6
+      type: int
+      db_name: page_id
+
+    - name: tax_statement_report_id
+      no: 7
+      type: int
+      db_name: tax_statement_report_id
+
+  keys:
+    - name: Primary
+      fields: [name]
+      clustered: true

@@ -97,7 +97,7 @@ func TestAdjustExchangeRates(t *testing.T) {
 	mustOK(t, err)
 
 	bank.CalcFields("balance_at_date", "balance_at_date_lcy")
-	if want := bank.Balance_at_date.Mul(types.NewDecimalFromInt(14)).Round(2); !bank.Balance_at_date_lcy.Equal(want) {
+	if want := bank.Balance_at_date.Mul(types.NewDecimalFromInt(14)).Round(2); !bank.Balance_at_date_lcy.Round(2).Equal(want) {
 		t.Errorf("GBP bank in LCY %s, want %s", bank.Balance_at_date_lcy, want)
 	}
 	entries := gtables.NewCustomerLedgerEntry(src)

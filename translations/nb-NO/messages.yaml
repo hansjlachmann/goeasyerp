@@ -426,6 +426,8 @@ messages:
   DLG_PRINT_PREVIEW: "Forhåndsvisning"
   GEN_JNL_TEMPLATE_DESCRIPTION: "Kladd %1"
   GEN_JNL_RECURRING_TEMPLATE_DESCRIPTION: "Gjentakelseskladd"
+  TAX_STMT_TEMPLATE_DESCRIPTION: "Avgiftsoppgave"
+  TAX_STMT_DEFAULT_NAME: "Standardoppgave"
   RECURRING_ITEM_JNL_TEMPLATE_DESCRIPTION: "Gjentakelseskladd - vare"
   RECURRING_BOM_JNL_TEMPLATE_DESCRIPTION: "Gjentakelseskladd - stykkliste"
   RECURRING_RES_JNL_TEMPLATE_DESCRIPTION: "Gjentakelseskladd - ressurs"

@@ -3302,6 +3302,63 @@ tables:
       tax_type:
         sales_tax: "Sales Tax"
         excise_tax: "Excise Tax"
+  tax_statement_template:
+    caption: "Tax Statement Template"
+    fields:
+      name: "Name"
+      description: "Description"
+      page_id: "Page ID"
+      tax_statement_report_id: "Tax Statement Report ID"
+  tax_statement_name:
+    caption: "Tax Statement Name"
+    fields:
+      statement_template_name: "Statement Template Name"
+      name: "Name"
+      description: "Description"
+      date_filter: "Date Filter"
+  tax_statement_line:
+    caption: "Tax Statement Line"
+    fields:
+      statement_template_name: "Statement Template Name"
+      statement_name: "Statement Name"
+      line_no: "Line No."
+      row_no: "Row No."
+      description: "Description"
+      type: "Type"
+      account_totaling: "Account Totaling"
+      gen_posting_type: "Gen. Posting Type"
+      tax_bus_posting_group: "Tax Bus. Posting Group"
+      tax_prod_posting_group: "Tax Prod. Posting Group"
+      row_totaling: "Row Totaling"
+      amount_type: "Amount Type"
+      calculate_with: "Calculate with"
+      print: "Print"
+      print_with: "Print with"
+      date_filter: "Date Filter"
+      new_page: "New Page"
+      tax_jurisdiction_code: "Tax Jurisdiction Code"
+      use_tax: "Use Tax"
+    options:
+      type:
+        account_totaling: "Account Totaling"
+        tax_entry_totaling: "Tax Entry Totaling"
+        row_totaling: "Row Totaling"
+        description: "Description"
+      gen_posting_type:
+        purchase: "Purchase"
+        sale: "Sale"
+        settlement: "Settlement"
+      amount_type:
+        amount: "Amount"
+        base: "Base"
+        unrealized_amount: "Unrealized Amount"
+        unrealized_base: "Unrealized Base"
+      calculate_with:
+        sign: "Sign"
+        opposite_sign: "Opposite Sign"
+      print_with:
+        sign: "Sign"
+        opposite_sign: "Opposite Sign"
   tax_posting_setup:
     caption: "Tax Posting Setup"
     fields:

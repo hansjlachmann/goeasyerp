@@ -12,7 +12,9 @@ import (
 )
 
 // The demo fixed assets' ledgers, posted through codeunit 12 as Fixed Asset G/L Journal lines
-// (source code FAGLJNL) — per asset in date order:
+// (source code FAGLJNL) — first a bank loan that finances them (paid into the bank on the first
+// acquisition's day: the acquisitions' cost rounded up to 100,000, G/L 2210 Bank Loans), then
+// per asset in date order:
 //   - the acquisition invoice from the asset's vendor — the fixed asset line and the vendor line
 //     (insured assets with the insurance: the coverage is posted with it, FA Setup Automatic
 //     Insurance Posting) — and its payment from the bank two weeks later;
@@ -27,6 +29,10 @@ func postDemoFixedAssets(src ftables.Source, open func(src ftables.Source) GenJn
 	monthStart := time.Date(today.Year(), today.Month(), 1, 0, 0, 0, 0, today.Location())
 	disposalDate := time.Date(monthStart.Year(), monthStart.Month()-1, data.Disposal.Day, 0, 0, 0, 0, today.Location())
 	p.setTotal(len(data.FixedAssets))
+	err := postFALoan(src, genJnlPostLine, data, monthStart)
+	if err != nil {
+		return err
+	}
 	for _, a := range data.FixedAssets {
 		faNo := types.NewCode(a.No)
 		acquired := monthStart.AddDate(0, -a.MonthsAgo, 0)
@@ -235,4 +241,44 @@ func depreciationExpenseAccount(src ftables.Source, postingGroup types.Code) typ
 		return faPostingGroup.Depreciation_expense_acc
 	}
 	return ""
+}
+
+// postFALoan: the bank loan for the fixed assets — the acquisitions' cost rounded up to 100,000,
+// paid into the bank on the first acquisition's day against G/L 2210 Bank Loans
+func postFALoan(src ftables.Source, genJnlPostLine GenJnlPoster, data fixedAssetsFile, monthStart time.Time) error {
+	if len(data.FixedAssets) == 0 {
+		return nil
+	}
+	var cost float64
+	first := monthStart
+	for _, a := range data.FixedAssets {
+		cost += a.Cost
+		if acquired := monthStart.AddDate(0, -a.MonthsAgo, 0); acquired.Before(first) {
+			first = acquired
+		}
+	}
+	l := gtables.NewGenJournalLine(src)
+	l.Posting_date = types.NewDateFromTime(first)
+	l.Document_date = l.Posting_date
+	l.Document_no = "LOAN-FA"
+	l.Source_code = "GENJNL"
+	err := l.Validate("account_type", gtables.GenJournalLine_Account_type.BankAccount)
+	if err == nil {
+		err = l.Validate("account_no", demoBankAccount)
+	}
+	if err == nil {
+		err = l.Validate("amount", types.NewDecimal(math.Ceil(cost/100000)*100000))
+	}
+	if err == nil {
+		err = setBalAccount(l, gtables.GenJournalLine_Bal_account_type.GLAccount, types.Code(accBankLoans))
+	}
+	if err != nil {
+		return &InsertError{Table: gtables.GenJournalLineTableName, Key: "LOAN-FA", Err: err}
+	}
+	l.Description = "Bank loan for the fixed assets"
+	err = genJnlPostLine.Run(l)
+	if err != nil {
+		return fmt.Errorf("fixed asset loan: %w", err)
+	}
+	return nil
 }

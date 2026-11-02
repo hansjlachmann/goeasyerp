@@ -8,6 +8,9 @@ common:
 
   # Common actions
   actions:
+    calc_and_post_tax_settlement: "Beregn og bokfør mva.-oppgjør"
+    preview: "Forhåndsvis"
+    statement_names: "Oppgavenavn"
     suggest_lines: "Foreslå linjer"
     transfer_to_general_journal: "Overfør til finanskladd"
     apply: "Utlign"
@@ -223,6 +226,10 @@ common:
 
   # Menu items
   menu:
+    trial_balance_previous_year: "Saldobalanse/forrige år"
+    bank_account_register: "Bankkontojournal"
+    customer_statement: "Kontoutdrag kunde"
+    item_register: "Varejournal"
     trial_balance: "Saldobalanse"
     detail_trial_balance: "Saldobalanse med poster"
     g_l_register: "Finansjournal"

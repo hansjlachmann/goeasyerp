@@ -1,0 +1,45 @@
+table:
+  id: 257
+  name: "Tax_Statement_Name"
+  description: "Tax statement names (table 257): the statements of a template, each with its lines"
+  lookup_page_id: 320
+  fields:
+    - name: statement_template_name
+      no: 1
+      type: types.Code
+      db_name: statement_template_name
+      length: 10
+      primary_key: true
+      required: true
+      table_relation:
+        table: Tax_Statement_Template
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: name
+      no: 2
+      type: types.Code
+      db_name: name
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: description
+      no: 3
+      type: types.Text
+      db_name: description
+      length: 50
+
+    - name: date_filter
+      no: 4
+      type: types.Date
+      flow_filter: true
+
+  keys:
+    - name: Primary
+      fields: [statement_template_name, name]
+      clustered: true
