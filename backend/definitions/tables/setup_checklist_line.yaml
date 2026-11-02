@@ -1,0 +1,122 @@
+table:
+  id: 344
+  name: "Setup_Checklist_Line"
+  caption: Setup Checklist Line
+  description: "The setup tables of a new company in the order to set them up (table 344): made by the Setup Checklist (codeunit 406) for the tables of this installation, with each table's status, who is responsible and when"
+  lookup_page_id: 531
+  data_caption_fields: [table_name]
+  fields:
+    # the line's place in the checklist — the key, so the page lists the lines in their order
+    # (classic key Table ID, the page sorted by Line No.)
+    - name: line_no
+      no: 1
+      type: int
+      db_name: line_no
+      primary_key: true
+      editable: false
+
+    - name: table_id
+      no: 2
+      type: int
+      db_name: table_id
+      editable: false
+
+    - name: table_name
+      no: 3
+      type: types.Text
+      db_name: table_name
+      length: 80
+      editable: false
+
+    - name: copying_available
+      no: 13
+      type: bool
+      db_name: copying_available
+      editable: false
+
+    # the page the table is set up on (classic Form ID)
+    - name: page_id
+      no: 14
+      type: int
+      db_name: page_id
+      editable: false
+
+    - name: page_name
+      no: 15
+      type: types.Text
+      db_name: page_name
+      length: 80
+      editable: false
+
+    - name: starting_date
+      no: 18
+      type: types.Date
+      db_name: starting_date
+
+    - name: ending_date
+      no: 19
+      type: types.Date
+      db_name: ending_date
+
+    - name: responsible_id
+      no: 20
+      type: types.Code
+      db_name: responsible_id
+      length: 50
+      table_relation:
+        table: User
+        field: user_id
+        validate: false
+        lookup_columns:
+          - source: user_id
+            width: 120
+          - source: user_name
+            width: 200
+
+    - name: status
+      no: 21
+      type: Option
+      db_name: status
+      options: [" ", "Planning", "Started", "Completed", "Not Used"]
+
+    # FlowField: whether the table has comments
+    - name: comments
+      no: 22
+      type: bool
+      flow_field: true
+      calc_formula: Exist
+      source_table: SetupChecklistComment
+      source_field: line_no
+      flow_filters:
+        - field: table_id
+          type: field
+          value: table_id
+
+    - name: application_area_id
+      no: 23
+      type: int
+      db_name: application_area_id
+      editable: false
+
+    - name: application_area_name
+      no: 24
+      type: types.Text
+      length: 80
+      flow_field: true
+      calc_formula: Lookup
+      source_table: ApplicationAreaLine
+      source_field: name
+      flow_filters:
+        - field: id
+          type: field
+          value: application_area_id
+
+  keys:
+    - name: Primary
+      fields: [line_no]
+      clustered: true
+    - name: table
+      fields: [table_id]
+      unique: true
+    - name: table_name
+      fields: [table_name]

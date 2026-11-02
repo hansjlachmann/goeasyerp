@@ -6,7 +6,7 @@ table:
   description: General ledger entries, posted (table 17)
   lookup_page_id: 20
   # Not yet (TODO): 5600/5601 FA Entry Type / No. (field series), closing dates on the dates,
-  # relations of Job No., Business Unit Code, Journal Batch Name, No. Series
+  # relations of Job No., Journal Batch Name, No. Series
   fields:
     - name: entry_no
       no: 1
@@ -208,6 +208,15 @@ table:
       type: types.Code
       db_name: business_unit_code
       length: 10
+      table_relation:
+        table: Business_Unit
+        field: code
+        validate: false
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
 
     - name: journal_batch_name
       no: 46

@@ -906,6 +906,8 @@ tables:
   g_l_account:
     caption: "G/L Account"
     fields:
+      consol_currency_val_method: "Consol. Currency Val. Method"
+      business_unit_filter: "Business Unit Filter"
       comment: "Comment"
       no: "No."
       name: "Name"
@@ -957,6 +959,11 @@ tables:
 
     # Option field values
     options:
+      consol_currency_val_method:
+        automatic: "Automatic"
+        current_rate: "Current Rate"
+        historical_rate: "Historical Rate"
+        manual_rate: "Manual Rate"
       account_type:
         posting: "Posting"
         heading: "Heading"
@@ -3150,6 +3157,7 @@ tables:
   gen_journal_line:
     caption: "Gen. Journal Line"
     fields:
+      business_unit_code: "Business Unit Code"
       fa_posting_date: "FA Posting Date"
       fa_posting_type: "FA Posting Type"
       depreciation_book_code: "Depreciation Book Code"
@@ -3339,6 +3347,19 @@ tables:
   source_code_setup:
     caption: "Source Code Setup"
     fields:
+      consolidation: "Consolidation"
+      compress_g_l: "Compress G/L"
+      compress_tax_entries: "Compress Tax Entries"
+      compress_cust_ledger: "Compress Cust. Ledger"
+      compress_vend_ledger: "Compress Vend. Ledger"
+      compress_item_ledger: "Compress Item Ledger"
+      compress_bom_ledger: "Compress BOM Ledger"
+      compress_res_ledger: "Compress Res. Ledger"
+      compress_bank_acc_ledger: "Compress Bank Acc. Ledger"
+      compress_check_ledger: "Compress Check Ledger"
+      compress_fa_ledger: "Compress FA Ledger"
+      compress_maintenance_ledger: "Compress Maintenance Ledger"
+      compress_insurance_ledger: "Compress Insurance Ledger"
       fixed_asset_journal: "Fixed Asset Journal"
       fixed_asset_g_l_journal: "Fixed Asset G/L Journal"
       insurance_journal: "Insurance Journal"
@@ -5954,3 +5975,90 @@ tables:
         order: "Order"
         lot_for_lot: "Lot-for-Lot"
         discrete_lot_size: "Discrete Lot Size"
+  date_compr_register:
+    caption: "Date Compr. Register"
+    fields:
+      no: "No."
+      creation_date: "Creation Date"
+      table_caption: "Table Caption"
+      period_length: "Period Length"
+      ending_date: "Ending Date"
+      no_of_new_records: "No. of New Records"
+      no_records_deleted: "No. Records Deleted"
+      user_id: "User ID"
+      filter: "Filter"
+      starting_date: "Starting Date"
+      table_id: "Table ID"
+      register_no: "Register No."
+      source_code: "Source Code"
+      retain_field_contents: "Retain Field Contents"
+      retain_totals: "Retain Totals"
+    options:
+      period_length:
+        day: "Day"
+        week: "Week"
+        month: "Month"
+        quarter: "Quarter"
+        year: "Year"
+        period: "Period"
+  user_time_register:
+    caption: "User Time Register"
+    fields:
+      user_id: "User ID"
+      date: "Date"
+      minutes: "Minutes"
+  setup_checklist_line:
+    caption: "Setup Checklist Line"
+    fields:
+      no_of_records: "No. of Records"
+      line_no: "Line No."
+      table_id: "Table ID"
+      table_name: "Table Name"
+      copying_available: "Copying Available"
+      page_id: "Page ID"
+      page_name: "Page Name"
+      starting_date: "Starting Date"
+      ending_date: "Ending Date"
+      responsible_id: "Responsible ID"
+      status: "Status"
+      comments: "Comments"
+      application_area_id: "Application Area ID"
+      application_area_name: "Application Area Name"
+    options:
+      status:
+        planning: "Planning"
+        started: "Started"
+        completed: "Completed"
+        not_used: "Not Used"
+  setup_checklist_comment:
+    caption: "Setup Checklist Comment"
+    fields:
+      table_name: "Table Name"
+      table_id: "Table ID"
+      line_no: "Line No."
+      date: "Date"
+      code: "Code"
+      comment: "Comment"
+  application_area_line:
+    caption: "Application Area Line"
+    fields:
+      line_no: "Line No."
+      id: "ID"
+      name: "Name"
+  business_unit:
+    caption: "Business Unit"
+    fields:
+      code: "Code"
+      consolidate: "Consolidate"
+      consolidation_pct: "Consolidation %"
+      starting_date: "Starting Date"
+      ending_date: "Ending Date"
+      income_currency_factor: "Income Currency Factor"
+      balance_currency_factor: "Balance Currency Factor"
+      exch_rate_loss_acc: "Exch. Rate Loss Acc."
+      exch_rate_gains_acc: "Exch. Rate Gains Acc."
+      residual_account: "Residual Account"
+      last_balance_currency_factor: "Last Balance Currency Factor"
+      name: "Name"
+      company_name: "Company Name"
+      currency_code: "Currency Code"

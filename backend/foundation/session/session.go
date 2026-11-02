@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
 	"github.com/hansjlachmann/openerp/backend/foundation/tables"
@@ -54,6 +55,7 @@ type Session struct {
 	IsSuper     bool                       // True if user has SUPER role (bypasses all permission checks)
 	HasRoles    bool                       // True if user has any role memberships assigned
 	Permissions map[string]TablePermission // Effective permissions per table name
+	LoginTime   time.Time                  // When the user logged in to the company (the user time register)
 	transaction *sql.Tx                    // Active transaction (nil if not in transaction)
 }
 
@@ -122,6 +124,12 @@ func (s *Session) SetUser(userID, userName, language, menu string) {
 	s.Language = normalizeLanguage(language)
 	s.Menu = menu
 }
+
+// SetLoginTime sets when the user logged in to the session's company
+func (s *Session) SetLoginTime(t time.Time) { s.LoginTime = t }
+
+// GetLoginTime returns when the user logged in to the session's company (zero: not known)
+func (s *Session) GetLoginTime() time.Time { return s.LoginTime }
 
 // normalizeLanguage converts language codes to proper BCP-47 format
 // e.g., "NB-NO" → "nb-NO", "EN-US" → "en-US"

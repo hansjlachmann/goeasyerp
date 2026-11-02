@@ -2,6 +2,7 @@ package reports
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -130,6 +131,16 @@ func (r *Run) OptionBool(name string) bool {
 		return true
 	}
 	return false
+}
+
+// OptionFile returns the contents of a "file" option (the file the user picked, sent as base64;
+// nil when none or not base64)
+func (r *Run) OptionFile(name string) []byte {
+	data, err := base64.StdEncoding.DecodeString(strings.TrimSpace(r.options[name]))
+	if err != nil || len(data) == 0 {
+		return nil
+	}
+	return data
 }
 
 // OptionDecimal returns a number option as a decimal (0 when blank or not a number)
@@ -659,9 +670,20 @@ func Caption(id int, language string) string {
 	return caption
 }
 
-// translate returns reports.<id>.<key> in the user's language
+// translate returns reports.<id>.<key> in the user's language — else reports.shared.<key>, the
+// texts and options several reports share (the date compression reports' request page)
 func translate(id int, key string) string {
-	return i18n.GetInstance().Translate(fmt.Sprintf("reports.%d.%s", id, key), fcodeunits.CurrentLanguage())
+	language := fcodeunits.CurrentLanguage()
+	full := fmt.Sprintf("reports.%d.%s", id, key)
+	text := i18n.GetInstance().Translate(full, language)
+	if text == full {
+		shared := "reports.shared." + key
+		sharedText := i18n.GetInstance().Translate(shared, language)
+		if sharedText != shared {
+			return sharedText
+		}
+	}
+	return text
 }
 
 // GetDB, GetCompany and GetDBType: records a report opens are in its database and company

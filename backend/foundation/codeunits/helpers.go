@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hansjlachmann/openerp/backend/foundation/database"
 	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/openerp/backend/foundation/session"
 )
@@ -76,6 +77,45 @@ func CanRead(tableName string) bool {
 		return true
 	}
 	return ctx.Access.HasPermission(tableName, session.PermRead)
+}
+
+// HasPermission reports whether the current user has a permission on a table of the company
+// (session HasPermission); without a user (internal code, a run without permissions loaded) it
+// is allowed
+func HasPermission(tableName string, op session.PermissionOperation) bool {
+	ctx := GetCurrentContext()
+	if ctx == nil || ctx.Access == nil {
+		return true
+	}
+	return ctx.Access.HasPermission(tableName, op)
+}
+
+// CurrentAccess returns the current user's permissions in the company (nil: not loaded —
+// internal code)
+func CurrentAccess() *session.Session {
+	ctx := GetCurrentContext()
+	if ctx == nil {
+		return nil
+	}
+	return ctx.Access
+}
+
+// CanReadInCompany reports whether the current user may read a table of another company (code
+// that reads it with ChangeCompany): the user's roles there — without roles in it a user with
+// roles has no access to the company; without a user (internal code) or without roles at all
+// (permission system not configured for the user) it is allowed
+func CanReadInCompany(db database.Executor, dbType database.DBType, company, tableName string) bool {
+	access := CurrentAccess()
+	if access == nil || !access.HasRoles {
+		return true
+	}
+	hasRoles, isSuper, perms := session.LoadPermissions(db, dbType, CurrentUserID(), company)
+	if !hasRoles {
+		return false
+	}
+	other := &session.Session{}
+	other.SetPermissions(hasRoles, isSuper, perms)
+	return other.HasPermission(tableName, session.PermRead)
 }
 
 // GetCurrentContext returns the context for the current goroutine

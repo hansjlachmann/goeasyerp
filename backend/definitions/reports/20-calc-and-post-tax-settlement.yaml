@@ -1,0 +1,109 @@
+# Report 20 Calc. and Post Tax Settlement: the printed layout (sections per data item, positions
+# in mm from the section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 20
+  name: Calc. and Post Tax Settlement
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 15, right: 12}
+  font_size: 8
+  data_items:
+    - name: Tax_Posting_Setup
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 16
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 120, bold: true, size: 11}
+            - {value: period_text, x: 0, y: 5, width: 120}
+            - {value: company_name, x: 0, y: 9, width: 120}
+            - {value: today, x: 210, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 210, y: 4, width: 50, align: right}
+            - {page_no: true, x: 260, y: 4, width: 10, align: right}
+            - {value: user_id, x: 210, y: 8, width: 60, align: right}
+        - type: header
+          print_if: not_posted
+          height: 6
+          elements:
+            - {text: NOT_POSTED, x: 0, y: 0, width: 120, bold: true}
+        - type: header
+          height: 14
+          elements:
+            - {text: POSTING_DATE, x: 0, y: 0, width: 30}
+            - {value: posting_date, x: 32, y: 0, width: 30}
+            - {text: DOCUMENT_NO, x: 0, y: 4, width: 30}
+            - {value: document_no, x: 32, y: 4, width: 40}
+            - {text: SETTLEMENT_ACCOUNT, x: 0, y: 8, width: 30}
+            - {value: settlement_account, x: 32, y: 8, width: 40}
+        - type: header
+          print_if: filter_text
+          height: 6
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 270}
+        - type: header
+          height: 6
+          elements:
+            - {value: amounts_in, x: 0, y: 0, width: 120}
+        - type: header
+          print_on_every_page: true
+          height: 8
+          elements:
+            - {text: COL_POSTING_DATE, x: 0, y: 2, width: 18, bold: true}
+            - {text: COL_DOCUMENT_NO, x: 19, y: 2, width: 26, bold: true}
+            - {text: COL_DOCUMENT_TYPE, x: 46, y: 2, width: 20, bold: true}
+            - {text: COL_TYPE, x: 67, y: 2, width: 16, bold: true}
+            - {text: COL_BASE, x: 84, y: 2, width: 24, align: right, bold: true}
+            - {text: COL_AMOUNT, x: 109, y: 2, width: 24, align: right, bold: true}
+            - {text: COL_UNREALIZED_BASE, x: 134, y: 2, width: 24, align: right, bold: true}
+            - {text: COL_UNREALIZED_AMOUNT, x: 159, y: 2, width: 24, align: right, bold: true}
+            - {text: COL_TAX_CALCULATION_TYPE, x: 185, y: 2, width: 20, bold: true}
+            - {text: COL_SELL_TO_BUY_FROM, x: 206, y: 2, width: 24, bold: true}
+            - {text: COL_ENTRY_NO, x: 231, y: 2, width: 14, align: right, bold: true}
+            - {text: COL_USER_ID, x: 247, y: 2, width: 23, bold: true}
+            - {line: true, x: 0, y: 6.5}
+        - type: footer
+          height: 6
+          elements:
+            - {line: true, x: 84, y: 0.5, width: 49}
+            - {text: TOTAL, x: 40, y: 1.5, width: 40, bold: true}
+            - {value: tax_amount, x: 109, y: 1.5, width: 24, align: right, bold: true}
+
+    - name: Tax_Entry
+      sections:
+        - type: body
+          height: 4.5
+          elements:
+            - {field: posting_date, x: 0, y: 0.5, width: 18}
+            - {field: document_no, x: 19, y: 0.5, width: 26}
+            - {field: document_type, x: 46, y: 0.5, width: 20}
+            - {field: type, x: 67, y: 0.5, width: 16}
+            - {field: base, x: 84, y: 0.5, width: 24, align: right}
+            - {field: amount, x: 109, y: 0.5, width: 24, align: right}
+            - {field: unrealized_base, x: 134, y: 0.5, width: 24, align: right, blank_zero: true}
+            - {field: unrealized_amount, x: 159, y: 0.5, width: 24, align: right, blank_zero: true}
+            - {field: tax_calculation_type, x: 185, y: 0.5, width: 20}
+            - {field: sell_to_buy_from_no, x: 206, y: 0.5, width: 24}
+            - {field: entry_no, x: 231, y: 0.5, width: 14, align: right}
+            - {field: user_id, x: 247, y: 0.5, width: 23}
+
+    - name: Close_Tax_Entries
+      sections:
+        - type: body
+          height: 5
+          elements:
+            - {value: posting_date, x: 0, y: 0.5, width: 18, bold: true}
+            - {value: document_no, x: 19, y: 0.5, width: 26, bold: true}
+            - {text: SETTLEMENT, x: 67, y: 0.5, width: 16, bold: true}
+            - {value: settlement_base, x: 84, y: 0.5, width: 24, align: right, bold: true}
+            - {value: settlement_amount, x: 109, y: 0.5, width: 24, align: right, bold: true}
+            - {value: tax_calculation_type, x: 185, y: 0.5, width: 20, bold: true}
+            - {value: next_tax_entry_no, x: 231, y: 0.5, width: 14, align: right, bold: true}
+        - type: body
+          print_if: reversing_entry
+          height: 5
+          elements:
+            - {value: posting_date, x: 0, y: 0.5, width: 18, bold: true}
+            - {value: document_no, x: 19, y: 0.5, width: 26, bold: true}
+            - {text: SETTLEMENT, x: 67, y: 0.5, width: 16, bold: true}
+            - {value: reversing_amount, x: 109, y: 0.5, width: 24, align: right, bold: true}

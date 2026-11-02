@@ -8,6 +8,7 @@
 	import LookupDropdown from './pages/LookupDropdown.svelte';
 	import DateInput from './DateInput.svelte';
 	import ErrorDetailsDialog from './ErrorDetailsDialog.svelte';
+	import { readFileBase64 } from '$lib/utils/fileInput';
 	import type { ErrorDetails } from '$lib/services/jobs';
 
 	type InputField = RequestInputField;
@@ -222,6 +223,23 @@
 				</label>
 			{/each}
 		</div>
+	{:else if field.type === 'file'}
+	<div class="input-field">
+		<label class="input-label" for="input-{field.name}">
+			{field.label}
+			{#if field.required}<span class="required-mark">*</span>{/if}
+		</label>
+		<!-- the file's contents go as base64 (a report option of type file) -->
+		<input
+			id="input-{field.name}"
+			type="file"
+			class="input-control"
+			onchange={async (e) => {
+				const file = (e.currentTarget as HTMLInputElement).files?.[0];
+				inputValues[field.name] = file ? await readFileBase64(file) : '';
+			}}
+		/>
+	</div>
 	{:else if field.type === 'date'}
 	<div class="input-field">
 		<label class="input-label" for="input-{field.name}">

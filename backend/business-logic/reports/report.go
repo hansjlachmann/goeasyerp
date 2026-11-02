@@ -75,7 +75,7 @@ type Definition struct {
 // Option is a field of the request page
 type Option struct {
 	Name     string   // key (read with Run.Option); the label is reports.<id>.options.<name>
-	Type     string   // "text", "number", "date", "option" or "bool" (a check box: true/false)
+	Type     string   // "text", "number", "date", "option", "bool" (a check box: true/false) or "file" (a file to upload: Run.OptionFile)
 	Default  string   // initial value ("option": the number, 1-based)
 	Options  []string // the choices of an "option" field: text keys of the report (reports.<id>.texts.<key>)
 	Required bool

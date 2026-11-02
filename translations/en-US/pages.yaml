@@ -990,3 +990,13 @@ pages:
     caption: "Req. Wksh. Names"
   requisition_methods:
     caption: "Requisition Methods"
+  date_compr_registers:
+    caption: "Date Compr. Registers"
+  user_time_registers:
+    caption: "User Time Registers"
+  setup_checklist:
+    caption: "Setup Checklist"
+  setup_checklist_comment_sheet:
+    caption: "Setup Checklist Comment Sheet"
+  business_units:
+    caption: "Business Units"

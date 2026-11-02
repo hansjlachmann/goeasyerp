@@ -22,7 +22,22 @@ type Claims struct {
 	Company  string `json:"company"`
 	Language string `json:"language"`
 	Menu     string `json:"menu"`
+	// LoginAt: when the user logged in to the company (Unix seconds) — kept when the token is
+	// re-issued for the same company, for the user time register at log out
+	LoginAt int64 `json:"login_at,omitempty"`
 	jwt.RegisteredClaims
+}
+
+// LoginTime is when the user logged in to the token's company (tokens without login_at: when
+// the token was issued)
+func (c *Claims) LoginTime() time.Time {
+	if c.LoginAt != 0 {
+		return time.Unix(c.LoginAt, 0)
+	}
+	if c.IssuedAt != nil {
+		return c.IssuedAt.Time
+	}
+	return time.Time{}
 }
 
 // PermissionLoader loads permissions for a user in a company.
@@ -61,15 +76,20 @@ func DefaultJWTConfig() JWTConfig {
 	}
 }
 
-// GenerateToken creates a signed JWT with user claims
-func GenerateToken(config JWTConfig, userID, userName, company, language, menu string) (string, error) {
+// GenerateToken creates a signed JWT with user claims; loginAt is when the user logged in to the
+// company (zero: now)
+func GenerateToken(config JWTConfig, userID, userName, company, language, menu string, loginAt time.Time) (string, error) {
 	now := time.Now()
+	if loginAt.IsZero() {
+		loginAt = now
+	}
 	claims := &Claims{
 		UserID:   userID,
 		UserName: userName,
 		Company:  company,
 		Language: language,
 		Menu:     menu,
+		LoginAt:  loginAt.Unix(),
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(now.Add(config.TokenExpiry)),
 			IssuedAt:  jwt.NewNumericDate(now),
@@ -168,6 +188,7 @@ func AuthMiddleware(config JWTConfig, db *sql.DB, dbType database.DBType, cache 
 		dbWrapper := database.WrapConnection(db, dbType)
 		sess := session.NewSession(dbWrapper, claims.Company, nil)
 		sess.SetUser(claims.UserID, claims.UserName, claims.Language, claims.Menu)
+		sess.SetLoginTime(claims.LoginTime())
 
 		// Load permissions (e.g., after server restart when cache is empty)
 		if permLoader != nil {

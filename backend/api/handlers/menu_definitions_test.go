@@ -113,8 +113,8 @@ func TestGetMenuMarksAvailableEntries(t *testing.T) {
 		t.Errorf("Chart of Accounts not enabled: %v", chart)
 	}
 	setup := find(items, "Oppsett")
-	if checklist := find(setup["items"].([]interface{}), "Sjekkliste for oppsett"); checklist["enabled"] != false {
-		t.Errorf("Setup › Setup Checklist (no page yet) enabled: %v", checklist)
+	if checklist := find(setup["items"].([]interface{}), "Sjekkliste for oppsett"); checklist["enabled"] != true {
+		t.Errorf("Setup › Setup Checklist not enabled: %v", checklist)
 	}
 	activities := find(items, "Aktiviteter")
 	fiscal := find(activities["items"].([]interface{}), "Regnskapsår")
@@ -122,8 +122,13 @@ func TestGetMenuMarksAvailableEntries(t *testing.T) {
 		find(fiscal["items"].([]interface{}), "Avslutt resultatregnskap")["enabled"] != false {
 		t.Errorf("Activities › Fiscal Year: %v", fiscal)
 	}
-	consolidation := find(activities["items"].([]interface{}), "Konsolidering")
-	if consolidation["enabled"] != false {
-		t.Errorf("a sub-menu without anything built is enabled: %v", consolidation)
+	inventory := find(modules, "Lager")
+	inventorySetup := find(inventory["items"].([]interface{}), "Oppsett")
+	if reservation := find(inventorySetup["items"].([]interface{}), "Reservasjonsoppsett"); reservation["enabled"] != false {
+		t.Errorf("Inventory › Setup › Reservation Setup (no page yet) enabled: %v", reservation)
+	}
+	jobs := find(modules, "Jobber")
+	if jobsSetup := find(jobs["items"].([]interface{}), "Oppsett"); jobsSetup["enabled"] != false {
+		t.Errorf("a sub-menu without anything built is enabled: %v", jobsSetup)
 	}
 }

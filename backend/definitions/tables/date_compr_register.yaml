@@ -1,0 +1,223 @@
+table:
+  id: 87
+  name: "Date_Compr_Register"
+  caption: Date Compr. Register
+  description: "One row per date compression run (table 87): the table, period, the records deleted and made, and the register of the new entries"
+  posted: true
+  lookup_page_id: 107
+  data_caption_fields: ["no"]
+  fields:
+    - name: "no"
+      no: 1
+      type: int
+      db_name: "no"
+      primary_key: true
+
+    - name: creation_date
+      no: 2
+      type: types.Date
+      db_name: creation_date
+
+    - name: table_caption
+      no: 3
+      type: types.Text
+      length: 80
+      flow_field: true
+      calc_formula: Lookup
+      source_table: Object
+      source_field: name
+      flow_filters:
+        - field: type
+          type: const
+          value: 1
+        - field: id
+          type: field
+          value: table_id
+
+    - name: period_length
+      no: 4
+      type: Option
+      db_name: period_length
+      options: ["Day", "Week", "Month", "Quarter", "Year", "Period"]
+
+    - name: ending_date
+      no: 5
+      type: types.Date
+      db_name: ending_date
+
+    - name: no_of_new_records
+      no: 6
+      type: int
+      db_name: no_of_new_records
+
+    - name: no_records_deleted
+      no: 7
+      type: int
+      db_name: no_records_deleted
+
+    - name: user_id
+      no: 8
+      type: types.Code
+      db_name: user_id
+      length: 50
+      table_relation:
+        table: User
+        field: user_id
+        validate: false
+        lookup_columns:
+          - source: user_id
+            width: 120
+
+    - name: filter
+      no: 9
+      type: types.Text
+      db_name: filter
+      length: 250
+
+    - name: starting_date
+      no: 10
+      type: types.Date
+      db_name: starting_date
+
+    - name: table_id
+      no: 11
+      type: int
+      db_name: table_id
+      table_relation:
+        table: Object
+        field: id
+        filters:
+          type: {const: 1}
+        lookup_columns:
+          - source: id
+            width: 80
+          - source: name
+            width: 250
+
+    - name: register_no
+      no: 12
+      type: int
+      db_name: register_no
+      table_relation:
+        conditions:
+          - when: {field: table_id, equal: 17}
+            table: G_L_Register
+            field: "no"
+            lookup_columns:
+              - source: "no"
+                width: 80
+              - source: creation_date
+                width: 110
+          - when: {field: table_id, equal: 21}
+            table: G_L_Register
+            field: "no"
+            lookup_columns:
+              - source: "no"
+                width: 80
+              - source: creation_date
+                width: 110
+          - when: {field: table_id, equal: 25}
+            table: G_L_Register
+            field: "no"
+            lookup_columns:
+              - source: "no"
+                width: 80
+              - source: creation_date
+                width: 110
+          - when: {field: table_id, equal: 254}
+            table: G_L_Register
+            field: "no"
+            lookup_columns:
+              - source: "no"
+                width: 80
+              - source: creation_date
+                width: 110
+          - when: {field: table_id, equal: 271}
+            table: G_L_Register
+            field: "no"
+            lookup_columns:
+              - source: "no"
+                width: 80
+              - source: creation_date
+                width: 110
+          - when: {field: table_id, equal: 32}
+            table: Item_Register
+            field: "no"
+            lookup_columns:
+              - source: "no"
+                width: 80
+              - source: creation_date
+                width: 110
+          - when: {field: table_id, equal: 238}
+            table: BOM_Register
+            field: "no"
+            lookup_columns:
+              - source: "no"
+                width: 80
+              - source: creation_date
+                width: 110
+          - when: {field: table_id, equal: 203}
+            table: Resource_Register
+            field: "no"
+            lookup_columns:
+              - source: "no"
+                width: 80
+              - source: creation_date
+                width: 110
+          - when: {field: table_id, equal: 5601}
+            table: FA_Register
+            field: "no"
+            lookup_columns:
+              - source: "no"
+                width: 80
+              - source: creation_date
+                width: 110
+          - when: {field: table_id, equal: 5629}
+            table: Insurance_Register
+            field: "no"
+            lookup_columns:
+              - source: "no"
+                width: 80
+              - source: creation_date
+                width: 110
+          - when: {field: table_id, equal: 5625}
+            table: FA_Register
+            field: "no"
+            lookup_columns:
+              - source: "no"
+                width: 80
+              - source: creation_date
+                width: 110
+
+    - name: source_code
+      no: 13
+      type: types.Code
+      db_name: source_code
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: retain_field_contents
+      no: 14
+      type: types.Text
+      db_name: retain_field_contents
+      length: 250
+
+    - name: retain_totals
+      no: 15
+      type: types.Text
+      db_name: retain_totals
+      length: 250
+
+  keys:
+    - name: Primary
+      fields: ["no"]
+      clustered: true
+    - name: table
+      fields: [table_id]

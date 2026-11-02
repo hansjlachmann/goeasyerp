@@ -1,0 +1,75 @@
+# Report 17 Consolidated Trial Balance: the printed layout (sections per data item, positions in
+# mm from the section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 17
+  name: Consolidated Trial Balance
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: G_L_Account
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: period_text, x: 0, y: 4.5, width: 140}
+            - {value: company_name, x: 0, y: 9, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: in_thousands
+          height: 5
+          elements:
+            - {text: IN_THOUSANDS, x: 0, y: 0, width: 140}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 13
+          elements:
+            - {text: AMOUNT, x: 116, y: 1, width: 62, align: center, bold: true}
+            - {text: AMOUNT_INCL_ELIMINATIONS, x: 212, y: 1, width: 61, align: center, bold: true}
+            - {text: NO, x: 0, y: 6, width: 22, bold: true}
+            - {text: NAME, x: 24, y: 6, width: 90, bold: true}
+            - {text: NET_CHANGE, x: 116, y: 6, width: 30, align: right, bold: true}
+            - {text: BALANCE, x: 148, y: 6, width: 30, align: right, bold: true}
+            - {text: ELIMINATIONS, x: 180, y: 6, width: 30, align: right, bold: true}
+            - {text: NET_CHANGE, x: 212, y: 6, width: 30, align: right, bold: true}
+            - {text: BALANCE, x: 244, y: 6, width: 29, align: right, bold: true}
+            - {line: true, x: 0, y: 11}
+        - type: body
+          height: 4.5
+          elements:
+            - {field: "no", x: 0, y: 0.5, width: 22, bold: true}
+            - {value: name, x: 24, y: 0.5, width: 90, bold: true}
+
+    - name: Business_Unit_Line
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {value: bu_code, x: 24, y: 0.3, width: 90}
+            - {value: bu_net_change, x: 116, y: 0.3, width: 30, align: right, blank_zero: true}
+            - {value: bu_balance, x: 148, y: 0.3, width: 30, align: right, blank_zero: true}
+
+    - name: Consolidated_Total
+      sections:
+        - type: body
+          height: 6
+          elements:
+            - {line: true, x: 116, y: 0.3}
+            - {value: name, x: 24, y: 1, width: 90}
+            - {value: net_change, x: 116, y: 1, width: 30, align: right, blank_zero: true}
+            - {value: balance, x: 148, y: 1, width: 30, align: right, blank_zero: true}
+            - {value: eliminations, x: 180, y: 1, width: 30, align: right, blank_zero: true}
+            - {value: net_change_incl, x: 212, y: 1, width: 30, align: right, blank_zero: true}
+            - {value: balance_incl, x: 244, y: 1, width: 29, align: right, blank_zero: true}

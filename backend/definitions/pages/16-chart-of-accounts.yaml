@@ -79,6 +79,10 @@ page:
         - source: consol_credit_acc
           width: 160
 
+        - source: consol_currency_val_method
+          width: 160
+          visible: false
+
   actions:
     - name: New
       caption: New

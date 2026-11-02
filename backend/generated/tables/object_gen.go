@@ -938,7 +938,7 @@ func (t *Object) renameReferences(field string, oldValue, newValue interface{}) 
 		condValue  int
 	}
 	references := map[string][]reference{
-		"id": {{"Printer_Selection", true, "report_id", "", 0}, {"Report_Selections", false, "report_id", "", 0}},
+		"id": {{"Date_Compr_Register", false, "table_id", "", 0}, {"Printer_Selection", true, "report_id", "", 0}, {"Report_Selections", false, "report_id", "", 0}},
 	}
 	var companies []string
 	rows, err := t.db.Query(`SELECT name FROM "Company"`)

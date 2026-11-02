@@ -1,0 +1,48 @@
+page:
+  id: 532
+  type: List
+  name: Setup Checklist Comment Sheet
+  source_table: Setup_Checklist_Comment   # opened from the Setup Checklist (filters table_id)
+  caption: Setup Checklist Comment Sheet
+  editable: true
+  auto_split_key: true      # a new line gets Line No. 10000, 20000 … or halfway between its neighbours
+  delayed_insert: true      # inserted when the user leaves the line
+
+  layout:
+    repeater:
+      fields:
+        - source: table_id
+          width: 80
+          visible: false
+        - source: line_no
+          width: 100
+          visible: false
+        - source: date
+          width: 130
+        - source: comment
+          width: 500
+        - source: code
+          width: 100
+          visible: false
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+      enabled: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+      enabled: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+      enabled: true

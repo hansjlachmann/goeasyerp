@@ -596,6 +596,7 @@ func (p *GenJnlPostLine) initGLEntry(glAccNo types.Code, amount types.Decimal, s
 	p.glEntry.Document_no = genJnlLine.Document_no
 	p.glEntry.External_document_no = genJnlLine.External_document_no
 	p.glEntry.Description = genJnlLine.Description
+	p.glEntry.Business_unit_code = genJnlLine.Business_unit_code
 	p.glEntry.Department_code = genJnlLine.Department_code
 	p.glEntry.Project_code = genJnlLine.Project_code
 	p.glEntry.Source_code = genJnlLine.Source_code

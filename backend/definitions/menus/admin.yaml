@@ -91,7 +91,7 @@ menu:
                 page_id: 468
               - separator: true
               - name: "Copy Tax Setup"
-                page_id: 476
+                run_object: "codeunit:399"
           - name: "Trail Codes"
             items:
               - name: "Source Codes"
@@ -198,9 +198,6 @@ menu:
                 run_object: "report:91"
               - name: "Business Units"
                 page_id: 240
-          - name: "XBRL"
-            items:
-              - name: "Import Taxonomy"
           - separator: true
           - name: "G/L Balance Check"
             run_object: "codeunit:904"

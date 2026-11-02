@@ -27,6 +27,10 @@ page:
         - source: job_no
           width: 110
 
+        - source: business_unit_code
+          width: 120
+          visible: false
+
         - source: department_code
           width: 130
 

@@ -119,6 +119,8 @@ errors:
   ERR_REMINDER_NOTHING_TO_ISSUE: "There is nothing to issue."
   ERR_REMINDER_AMOUNT_NEGATIVE: "%1 must be positive or 0."
   ERR_REPORT_SELECTION_NONE: "There is no %2 within the filter.\n\nFilters: %1: %3"
+  ERR_DATE_COMPR_NO_PERIOD: "There is no %1 for the date %2: date compression works on the fiscal years of the accounting periods."
+  ERR_DATE_COMPR_ENDING_DATE: "%1 must be specified."
   ERR_JNL_ALLOC_GEN_POSTING_TYPE: "%1 cannot be used in allocations when it is filled in on the general journal line."
   ERR_JNL_ALLOC_RECURRING_ONLY: "Allocations can only be used with recurring journals."
   ERR_JNL_RECURRING_NO_BAL_ACCOUNT: "%1 cannot be specified when using recurring journals."

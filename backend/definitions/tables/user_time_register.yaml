@@ -1,0 +1,41 @@
+table:
+  id: 51
+  name: "User_Time_Register"
+  caption: User Time Register
+  description: "The minutes each user worked in the company per day (table 51), added up at log out when Register Time is set in the User Setup or General Ledger Setup"
+  lookup_page_id: 71
+  fields:
+    - name: user_id
+      no: 1
+      type: types.Code
+      db_name: user_id
+      length: 50
+      primary_key: true
+      required: true
+      table_relation:
+        table: User
+        field: user_id
+        validate: false
+        lookup_columns:
+          - source: user_id
+            width: 120
+          - source: user_name
+            width: 200
+
+    - name: date
+      no: 2
+      type: types.Date
+      db_name: date
+      primary_key: true
+
+    - name: minutes
+      no: 3
+      type: types.Decimal
+      db_name: minutes
+      decimal_places: "0:0"
+      validation: {min: 0}
+
+  keys:
+    - name: Primary
+      fields: [user_id, date]
+      clustered: true

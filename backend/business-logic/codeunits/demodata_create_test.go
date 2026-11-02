@@ -31,10 +31,14 @@ import (
 var demoDataNotNeeded = map[string]bool{
 	"Company": true, "Installed_App": true, "Language": true, "Menu": true, "Permission": true, "Theme": true,
 	"User": true, "User_Member": true, "User_Role": true, "Job_Queue": true, "SMTP_Setup": true,
-	"Document_Entry":    true, // Navigate (temporary)
-	"User_Setup":        true, // per user: the users are not part of a company's demo data
-	"Printer_Selection": true, // per user and global, like User Setup
-	"Object":            true, // written at startup
+	"Document_Entry":       true, // Navigate (temporary)
+	"User_Setup":           true, // per user: the users are not part of a company's demo data
+	"Printer_Selection":    true, // per user and global, like User Setup
+	"Object":               true, // written at startup
+	"Date_Compr_Register":  true, // written by date compressions, which need a closed year with entries
+	"User_Time_Register":   true, // written when users log out
+	"Setup_Checklist_Line": true, // made when the Setup Checklist opens
+	"Business_Unit":        true, // consolidation needs a second company
 }
 
 type menuEntry struct {

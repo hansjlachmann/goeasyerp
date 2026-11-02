@@ -1,6 +1,6 @@
 // Package glcheck checks the whole general ledger: every posting date and every transaction of
-// the G/L entries adds up to 0, the entry numbers have no gaps, and the G/L registers cover the
-// entries once each. The balance check of the posting (Consistent) keeps a posting from saving
+// the G/L entries adds up to 0, the entry numbers have no gaps (up to the last date compression:
+// it deletes entries), and the G/L registers cover the entries once each. The balance check of the posting (Consistent) keeps a posting from saving
 // G/L entries that do not balance; this check finds what reached the table some other way
 // (direct database changes, imports, restores, a fault in posting code).
 package glcheck
@@ -118,30 +118,51 @@ func Check(src ftables.Source, progress func(percent int)) *Result {
 			result.Transactions = append(result.Transactions, *transaction)
 		}
 	}
-	result.Gaps = gaps(entryNos)
-	result.RegisterList, result.Registers = checkRegisters(src, entryNos)
+	compressedUpTo := compressedEntryNos(src)
+	result.Gaps = gaps(entryNos, compressedUpTo)
+	result.RegisterList, result.Registers = checkRegisters(src, entryNos, compressedUpTo)
 	if progress != nil {
 		progress(100)
 	}
 	return result
 }
 
-// gaps: the entry numbers missing from 1 to the last entry (entryNos ascending)
-func gaps(entryNos []int) []Gap {
+// compressedEntryNos: the last entry number of the latest date compression of entries numbered
+// with the G/L entries (G/L, tax, customer, vendor and bank account entries: the new entries'
+// G/L register) — the entries up to it were compressed, their numbers are gone (0: none)
+func compressedEntryNos(src ftables.Source) int {
+	upTo := 0
+	dateComprReg := gtables.NewDateComprRegister(src)
+	dateComprReg.SetFilter("table_id", "17|21|25|254|271")
+	for found := dateComprReg.FindSet(); found; found = dateComprReg.Next() {
+		glReg := gtables.NewGLRegister(src)
+		if glReg.Get(dateComprReg.Register_no) && glReg.To_entry_no > upTo {
+			upTo = glReg.To_entry_no
+		}
+	}
+	return upTo
+}
+
+// gaps: the entry numbers missing from 1 to the last entry (entryNos ascending), those up to
+// compressedUpTo left out (date compression deleted them)
+func gaps(entryNos []int, compressedUpTo int) []Gap {
 	var result []Gap
-	next := 1
+	next := compressedUpTo + 1
 	for _, no := range entryNos {
 		if no > next {
 			result = append(result, Gap{From: next, To: no - 1})
 		}
-		next = no + 1
+		if no+1 > next {
+			next = no + 1
+		}
 	}
 	return result
 }
 
 // checkRegisters: registers whose range is reversed, overlaps another's or holds entry numbers
-// that do not exist, and the entries no register covers (entryNos ascending)
-func checkRegisters(src ftables.Source, entryNos []int) ([]RegisterProblem, int) {
+// that do not exist (up to compressedUpTo date compression deleted them), and the entries no
+// register covers (entryNos ascending)
+func checkRegisters(src ftables.Source, entryNos []int, compressedUpTo int) ([]RegisterProblem, int) {
 	exists := make(map[int]bool, len(entryNos))
 	for _, no := range entryNos {
 		exists[no] = true
@@ -165,7 +186,7 @@ func checkRegisters(src ftables.Source, entryNos []int) ([]RegisterProblem, int)
 		}
 		missing := false
 		for no := from; no <= to; no++ {
-			if !exists[no] {
+			if !exists[no] && no > compressedUpTo {
 				missing = true
 			}
 			covered[no] = true

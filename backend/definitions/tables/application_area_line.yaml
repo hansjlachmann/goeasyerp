@@ -1,0 +1,33 @@
+table:
+  id: 346
+  name: "Application_Area_Line"
+  caption: Application Area Line
+  description: "The application areas of the Setup Checklist (table 346): General Ledger, Sales & Receivables …, each named after its main table"
+  fields:
+    - name: line_no
+      no: 1
+      type: int
+      db_name: line_no
+      editable: false
+
+    # the area's main table (G/L Account, Customer …)
+    - name: id
+      no: 2
+      type: int
+      db_name: id
+      primary_key: true
+      editable: false
+
+    - name: name
+      no: 3
+      type: types.Text
+      db_name: name
+      length: 30
+      editable: false
+
+  keys:
+    - name: Primary
+      fields: [id]
+      clustered: true
+    - name: line
+      fields: [line_no]

@@ -1,0 +1,115 @@
+page:
+  id: 240
+  type: List
+  name: Business Units
+  source_table: Business_Unit
+  caption: Business Units
+  # classic form 240: the companies consolidated into this one — their company, currency,
+  # share and period, the accounts of exchange rate differences and residuals; the consolidation
+  # batch jobs and reports, the currency factors (Exch. Rates)
+  editable: true
+
+  layout:
+    repeater:
+      fields:
+        - source: code
+          width: 100
+        - source: company_name
+          width: 180
+        - source: name
+          width: 200
+        - source: currency_code
+          width: 90
+        - source: consolidate
+          width: 90
+        - source: consolidation_pct
+          width: 110
+        - source: exch_rate_gains_acc
+          width: 120
+        - source: exch_rate_loss_acc
+          width: 120
+        - source: residual_account
+          width: 120
+        - source: starting_date
+          width: 110
+        - source: ending_date
+          width: 110
+        - source: income_currency_factor
+          width: 130
+          visible: false
+        - source: balance_currency_factor
+          width: 130
+          visible: false
+        - source: last_balance_currency_factor
+          width: 130
+          visible: false
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+      enabled: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+      enabled: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+      enabled: true
+
+    - name: Exch. Rates
+      caption: Exch. Rates
+      image: Calculate
+      promoted: true
+      items:
+        - name: Income Statement
+          caption: Income Statement
+          run_object: table:Business_Unit.ChangeExchangeRate(1)
+        - name: Balance Sheet
+          caption: Balance Sheet
+          run_object: table:Business_Unit.ChangeExchangeRate(2)
+        - name: Last Balance Sheet
+          caption: Last Balance Sheet
+          run_object: table:Business_Unit.ChangeExchangeRate(3)
+
+    - name: Functions
+      caption: Functions
+      image: Calculate
+      promoted: true
+      items:
+        - name: Test Database
+          caption: Test Database
+          run_object: report:14
+        - name: Test File
+          caption: Test File
+          run_object: report:15
+        - name: Import Database
+          caption: Import Database
+          run_object: report:90
+        - name: Import File
+          caption: Import File
+          run_object: report:92
+
+    - name: Reports
+      caption: Reports
+      image: Print
+      promoted: true
+      items:
+        - name: Eliminations
+          caption: Eliminations
+          run_object: report:16
+        - name: Trial Balance
+          caption: Trial Balance
+          run_object: report:17
+        - name: Trial Balance (4)
+          caption: Trial Balance (4)
+          run_object: report:18

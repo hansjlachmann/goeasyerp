@@ -25,6 +25,7 @@ func TestEntryTablesArePosted(t *testing.T) {
 		"Document_Entry":     true, // Navigate's temporary lines
 		"Res_Capacity_Entry": true, // a resource's capacity, set by the user
 		"G_L_Budget_Entry":   true, // the budgets' amounts, entered in the budget matrix
+		"User_Time_Register": true, // the minutes worked, added at log out — the user can correct them
 	}
 	metadata := pages.GetTableMetadata()
 	for _, name := range gtables.ListTableNames() {

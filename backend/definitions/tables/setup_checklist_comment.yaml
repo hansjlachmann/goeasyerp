@@ -1,0 +1,61 @@
+table:
+  id: 345
+  name: "Setup_Checklist_Comment"
+  caption: Setup Checklist Comment
+  description: "Comments on a table of the Setup Checklist (table 345)"
+  lookup_page_id: 532
+  fields:
+    - name: table_name
+      no: 1
+      type: types.Text
+      length: 80
+      flow_field: true
+      calc_formula: Lookup
+      source_table: SetupChecklistLine
+      source_field: table_name
+      flow_filters:
+        - field: table_id
+          type: field
+          value: table_id
+
+    - name: table_id
+      no: 2
+      type: int
+      db_name: table_id
+      primary_key: true
+      table_relation:
+        table: Setup_Checklist_Line
+        field: table_id
+        lookup_columns:
+          - source: table_id
+            width: 80
+          - source: table_name
+            width: 250
+
+    - name: line_no
+      no: 3
+      type: int
+      db_name: line_no
+      primary_key: true
+
+    - name: date
+      no: 4
+      type: types.Date
+      db_name: date
+
+    - name: code
+      no: 5
+      type: types.Code
+      db_name: code
+      length: 10
+
+    - name: comment
+      no: 6
+      type: types.Text
+      db_name: comment
+      length: 80
+
+  keys:
+    - name: Primary
+      fields: [table_id, line_no]
+      clustered: true
