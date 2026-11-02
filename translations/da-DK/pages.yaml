@@ -780,6 +780,10 @@ pages:
     caption: "Finanskonto saldo/budget"
     fields:
       budget_pct: "Saldo/budget (%)"
+  resource_capacity:
+    caption: "Ressourcekapacitet"
+  res_group_capacity:
+    caption: "Ressourcegruppekapacitet"
   item_availability_by_periods:
     caption: "Varedisponering pr. periode"
     fields:

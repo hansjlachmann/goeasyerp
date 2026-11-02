@@ -58,6 +58,7 @@ export interface PageMetadata {
 export interface Layout {
 	sections?: Section[];
 	repeater?: Repeater;
+	matrix?: Matrix; // a matrix page: the source table's records against periods
 }
 
 export interface Section {

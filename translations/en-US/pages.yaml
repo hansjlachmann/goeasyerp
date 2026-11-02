@@ -780,6 +780,10 @@ pages:
     caption: "G/L Account Balance/Budget"
     fields:
       budget_pct: "Balance/Budget (%)"
+  resource_capacity:
+    caption: "Resource Capacity"
+  res_group_capacity:
+    caption: "Res. Group Capacity"
   item_availability_by_periods:
     caption: "Item Availability by Periods"
     fields:

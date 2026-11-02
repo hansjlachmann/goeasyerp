@@ -143,3 +143,56 @@ func TestSetGLAccBudgetedAmount(t *testing.T) {
 		t.Errorf("%d budget entries after deleting the budgets' accounts and budget", n)
 	}
 }
+
+// A capacity typed into Resource Capacity / Res. Group Capacity enters the difference as a
+// capacity entry on the period's first date (a resource's with its group)
+func TestSetResCapacity(t *testing.T) {
+	db := newTestDB(t)
+	if err := CreateCompanyTables(db, "c1", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	src := ftables.DBSource(db, "c1", database.DBTypeSQLite)
+	group := gtables.NewResourceGroup(src)
+	group.No = "G1"
+	mustNoErr(t, group.InsertOrError(false))
+	res := gtables.NewResource(src)
+	res.No, res.Resource_group_no = "R1", "G1"
+	mustNoErr(t, res.InsertOrError(false))
+
+	cell := func() *gtables.Resource {
+		r := gtables.NewResource(src)
+		r.Get(types.Code("R1"))
+		mustNoErr(t, r.SetFlowFilter("date_filter", "2026-03-02"))
+		return r
+	}
+	mustNoErr(t, SetResCapacity(cell(), types.NewDecimalFromInt(8)))
+	mustNoErr(t, SetResCapacity(cell(), types.NewDecimalFromInt(6)))
+	r := cell()
+	r.CalcFields("capacity")
+	if !r.Capacity.Equal(types.NewDecimalFromInt(6)) {
+		t.Errorf("capacity %s, want 6", r.Capacity)
+	}
+	entry := gtables.NewResCapacityEntry(src)
+	if n := entry.Count(); n != 2 {
+		t.Errorf("%d capacity entries, want 2", n)
+	}
+	entry.FindFirst()
+	if entry.Resource_group_no != "G1" || entry.Date != types.NewDate(2026, 3, 2) {
+		t.Errorf("entry: group %s date %s", entry.Resource_group_no, entry.Date)
+	}
+
+	g := gtables.NewResourceGroup(src)
+	g.Get(types.Code("G1"))
+	mustNoErr(t, g.SetFlowFilter("date_filter", "2026-03-02"))
+	mustNoErr(t, SetResGroupCapacity(g, types.NewDecimalFromInt(10)))
+	g.CalcFields("capacity")
+	if !g.Capacity.Equal(types.NewDecimalFromInt(10)) {
+		t.Errorf("group capacity %s, want 10", g.Capacity)
+	}
+	// no single date: refused
+	r = cell()
+	mustNoErr(t, r.SetFlowFilter("date_filter", "..2026-03-02"))
+	if SetResCapacity(r, types.NewDecimalFromInt(1)) == nil {
+		t.Error("a capacity without a date was entered")
+	}
+}

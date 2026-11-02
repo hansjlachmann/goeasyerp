@@ -126,6 +126,9 @@ func TestPageDefinitions(t *testing.T) {
 				checkMatrix(t, id, s.Matrix, fields, exists)
 			}
 		}
+		if p.Page.Layout.Matrix != nil {
+			checkMatrix(t, id, p.Page.Layout.Matrix, fields, exists)
+		}
 		for _, other := range []int{p.Page.CardPageID, p.Page.ListPageID} {
 			if other != 0 && !exists(other) {
 				t.Errorf("page %d: card/list page %d does not exist", id, other)

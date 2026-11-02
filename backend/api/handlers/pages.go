@@ -138,6 +138,23 @@ func (h *PagesHandler) GetPage(c *fiber.Ctx) error {
 
 	var captions *apitypes.CaptionData
 	if pageDef.Page.SourceTable != "" {
+		// A matrix's row fields and filters: captions of the rows' table; its cells can be
+		// entered only with the page's OnMatrixValidate trigger
+		matrixCaptions := func(mx *pages.Matrix) {
+			for _, fields := range [][]pages.Field{mx.Filters, mx.Fields} {
+				for j := range fields {
+					field := &fields[j]
+					if field.Caption == "" {
+						field.Caption = pageFieldCaption(ts, pageDef.Page.Name, mx.Table, field, lang)
+					}
+				}
+			}
+			mx.Editable = mx.Editable && pages.HasMatrixValidate(pageDef.Page.ID)
+		}
+		if pageDef.Page.Layout.Matrix != nil {
+			matrixCaptions(pageDef.Page.Layout.Matrix)
+		}
+
 		// Build field captions and types maps
 		fieldCaptions := make(map[string]string)
 		fieldTypes := make(map[string]string)
@@ -180,18 +197,8 @@ func (h *PagesHandler) GetPage(c *fiber.Ctx) error {
 					}
 				}
 			}
-			// A matrix's row fields and filters: captions of the rows' table; its cells can be
-			// entered only with the page's OnMatrixValidate trigger
 			if mx := pageDef.Page.Layout.Sections[i].Matrix; mx != nil {
-				for _, fields := range [][]pages.Field{mx.Filters, mx.Fields} {
-					for j := range fields {
-						field := &fields[j]
-						if field.Caption == "" {
-							field.Caption = pageFieldCaption(ts, pageDef.Page.Name, mx.Table, field, lang)
-						}
-					}
-				}
-				mx.Editable = mx.Editable && pages.HasMatrixValidate(pageDef.Page.ID)
+				matrixCaptions(mx)
 			}
 		}
 
