@@ -1,0 +1,25 @@
+table:
+  id: 258
+  name: "Transaction_Type"
+  caption: Transaction Type
+  description: "Intrastat transaction types (table 258)"
+  lookup_page_id: 308
+  fields:
+    - name: code
+      no: 1
+      type: types.Code
+      db_name: code
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: description
+      no: 2
+      type: types.Text
+      db_name: description
+      length: 80
+
+  keys:
+    - name: Primary
+      fields: [code]
+      clustered: true

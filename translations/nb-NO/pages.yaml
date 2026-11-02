@@ -780,6 +780,45 @@ pages:
     caption: "Finanskonto saldo/budsjett"
     fields:
       budget_pct: "Saldo/budsjett (%)"
+  resource_capacity:
+    caption: "Ressurskapasitet"
+  res_group_capacity:
+    caption: "Ressursgruppekapasitet"
+  blanket_sales_order:
+    caption: "Rammeordre"
+  blanket_sales_order_subform:
+    caption: "Linjer"
+  blanket_sales_orders:
+    caption: "Rammeordrer"
+  blanket_purchase_order:
+    caption: "Rammeinnkjøpsordre"
+  blanket_purchase_order_subform:
+    caption: "Linjer"
+  blanket_purchase_orders:
+    caption: "Rammeinnkjøpsordrer"
+  transaction_types:
+    caption: "Transaksjonstyper"
+  transport_methods:
+    caption: "Transportmåter"
+  tariff_numbers:
+    caption: "Varenumre (tolltariff)"
+  entry_exit_points:
+    caption: "Inn-/utførselssteder"
+  areas:
+    caption: "Områder"
+  transaction_specifications:
+    caption: "Transaksjonsspesifikasjoner"
+  intrastat_journal_templates:
+    caption: "Intrastat-kladdemaler"
+  intrastat_jnl_template_list:
+    caption: "Intrastat-kladdemalliste"
+  intrastat_jnl_batches:
+    caption: "Intrastat-kladdenavn"
+  intrastat_journal:
+    caption: "Intrastat-kladd"
+    fields:
+      statistical_value_to_line: "Statistisk verdi"
+      total_statistical_value: "Total statistisk verdi"
   item_availability_by_periods:
     caption: "Varetilgjengelighet per periode"
     fields:

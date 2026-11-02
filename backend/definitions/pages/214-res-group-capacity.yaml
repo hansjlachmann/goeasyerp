@@ -1,0 +1,25 @@
+page:
+  id: 214
+  type: List
+  name: Res. Group Capacity
+  source_table: Resource_Group
+  caption: Res. Group Capacity
+  # classic form 214: the resource groups' capacity per period — a matrix page; a value typed
+  # into a cell enters a capacity entry of the group with the difference (SetResGroupCapacity)
+
+  layout:
+    matrix:
+      table: Resource_Group
+      value: capacity
+      entry_table: Res_Capacity_Entry
+      date_filter: date_filter
+      view_by: 0
+      editable: true
+      fields:
+        - source: "no"
+          width: 90
+        - source: name
+          width: 240
+      drilldown: 224
+      drilldown_row_field: resource_group_no
+      drilldown_date_field: date

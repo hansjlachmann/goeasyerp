@@ -801,6 +801,91 @@ tables:
         "1": "1"
         "1000": "1000"
         "1000000": "1000000"
+  transaction_type:
+    caption: "Transaktionstype"
+    fields:
+      code: "Kode"
+      description: "Beskrivelse"
+  transport_method:
+    caption: "Transportmåde"
+    fields:
+      code: "Kode"
+      description: "Beskrivelse"
+  tariff_number:
+    caption: "Varekode"
+    fields:
+      no: "Nr."
+      description: "Beskrivelse"
+      supplementary_units: "Supplerende enheder"
+  entry_exit_point:
+    caption: "Indførsels-/udførselssted"
+    fields:
+      code: "Kode"
+      description: "Beskrivelse"
+  area:
+    caption: "Område"
+    fields:
+      code: "Kode"
+      text: "Tekst"
+  transaction_specification:
+    caption: "Transaktionsspecifikation"
+    fields:
+      code: "Kode"
+      text: "Tekst"
+  intrastat_jnl_template:
+    caption: "Intrastat-kladdeskabelon"
+    fields:
+      name: "Navn"
+      description: "Beskrivelse"
+      checklist_report_id: "Kontrollisterapport-id"
+      page_id: "Side-id"
+  intrastat_jnl_batch:
+    caption: "Intrastat-kladdenavn"
+    fields:
+      journal_template_name: "Kladdeskabelonnavn"
+      name: "Navn"
+      description: "Beskrivelse"
+      reported: "Indberettet"
+      statistics_period: "Statistikperiode"
+      currency_identifier: "Valuta-id"
+  intrastat_jnl_line:
+    caption: "Intrastat-kladdelinje"
+    fields:
+      journal_template_name: "Kladdeskabelonnavn"
+      journal_batch_name: "Kladdenavn"
+      line_no: "Linjenr."
+      type: "Type"
+      date: "Dato"
+      tariff_no: "Varekode"
+      item_description: "Varebeskrivelse"
+      country_code: "Landekode"
+      transaction_type: "Transaktionstype"
+      transport_method: "Transportmåde"
+      source_type: "Kildetype"
+      source_entry_no: "Kildeløbenr."
+      net_weight: "Nettovægt"
+      amount: "Beløb"
+      quantity: "Antal"
+      cost_regulation_percent: "Omkostningsregulering %"
+      indirect_cost: "Indirekte omkostning"
+      statistical_value: "Statistisk værdi"
+      document_no: "Bilagsnr."
+      item_no: "Varenr."
+      name: "Navn"
+      total_weight: "Totalvægt"
+      supplementary_units: "Supplerende enheder"
+      internal_ref_no: "Internt ref.nr."
+      country_of_origin_code: "Oprindelsesland"
+      entry_exit_point: "Indførsels-/udførselssted"
+      area: "Område"
+      transaction_specification: "Transaktionsspecifikation"
+    options:
+      type:
+        receipt: "Modtagelse"
+        shipment: "Levering"
+      source_type:
+        item_entry: "Varepost"
+        job_entry: "Sagspost"
   g_l_budget_name:
     caption: "Finansbudgetnavn"
     fields:
@@ -3560,6 +3645,7 @@ tables:
   item:
     caption: "Vare"
     fields:
+      tariff_no: "Varekode"
       bill_of_materials: "Stykliste"
       picture: "Billede"
       quantity_on_hand: "Beholdning"
@@ -3725,6 +3811,12 @@ tables:
   item_journal_line:
     caption: "Varekladdelinje"
     fields:
+      transaction_type: "Transaktionstype"
+      transport_method: "Transportmåde"
+      country_code: "Landekode"
+      entry_exit_point: "Indførsels-/udførselssted"
+      area: "Område"
+      transaction_specification: "Transaktionsspecifikation"
       recurring_method: "Gentagelsesmetode"
       expiration_date: "Udløbsdato"
       recurring_frequency: "Gentagelsesinterval"
@@ -3795,6 +3887,12 @@ tables:
   item_ledger_entry:
     caption: "Varepost"
     fields:
+      transaction_type: "Transaktionstype"
+      transport_method: "Transportmåde"
+      country_code: "Landekode"
+      entry_exit_point: "Indførsels-/udførselssted"
+      area: "Område"
+      transaction_specification: "Transaktionsspecifikation"
       entry_no: "Løbenr."
       item_no: "Varenr."
       posting_date: "Bogføringsdato"
@@ -4314,6 +4412,12 @@ tables:
   sales_header:
     caption: "Salgshoved"
     fields:
+      transaction_type: "Transaktionstype"
+      transport_method: "Transportmåde"
+      vat_country_code: "Momslandekode"
+      exit_point: "Udførselssted"
+      area: "Område"
+      transaction_specification: "Transaktionsspecifikation"
       document_type: "Dokumenttype"
       sell_to_customer_no: "Kundenr."
       no: "Nr."
@@ -4411,6 +4515,13 @@ tables:
   sales_line:
     caption: "Salgslinje"
     fields:
+      transaction_type: "Transaktionstype"
+      transport_method: "Transportmåde"
+      exit_point: "Udførselssted"
+      area: "Område"
+      transaction_specification: "Transaktionsspecifikation"
+      blanket_order_no: "Rammeordrenr."
+      blanket_order_line_no: "Rammeordrelinjenr."
       document_type: "Dokumenttype"
       sell_to_customer_no: "Kundenr."
       document_no: "Bilagsnr."
@@ -4950,6 +5061,12 @@ tables:
   purchase_header:
     caption: "Købshoved"
     fields:
+      transaction_type: "Transaktionstype"
+      transport_method: "Transportmåde"
+      vat_country_code: "Momslandekode"
+      entry_point: "Indførselssted"
+      area: "Område"
+      transaction_specification: "Transaktionsspecifikation"
       document_type: "Dokumenttype"
       buy_from_vendor_no: "Leverandørnr."
       no: "Nr."
@@ -5044,6 +5161,13 @@ tables:
   purchase_line:
     caption: "Købslinje"
     fields:
+      transaction_type: "Transaktionstype"
+      transport_method: "Transportmåde"
+      entry_point: "Indførselssted"
+      area: "Område"
+      transaction_specification: "Transaktionsspecifikation"
+      blanket_order_no: "Rammeordrenr."
+      blanket_order_line_no: "Rammeordrelinjenr."
       fa_posting_date: "Anlægsbogføringsdato"
       fa_posting_type: "Anlægsbogføringstype"
       depreciation_book_code: "Afskrivningsprofilkode"

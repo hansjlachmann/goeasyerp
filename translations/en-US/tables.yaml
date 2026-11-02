@@ -801,6 +801,91 @@ tables:
         "1": "1"
         "1000": "1000"
         "1000000": "1000000"
+  transaction_type:
+    caption: "Transaction Type"
+    fields:
+      code: "Code"
+      description: "Description"
+  transport_method:
+    caption: "Transport Method"
+    fields:
+      code: "Code"
+      description: "Description"
+  tariff_number:
+    caption: "Tariff Number"
+    fields:
+      no: "No."
+      description: "Description"
+      supplementary_units: "Supplementary Units"
+  entry_exit_point:
+    caption: "Entry/Exit Point"
+    fields:
+      code: "Code"
+      description: "Description"
+  area:
+    caption: "Area"
+    fields:
+      code: "Code"
+      text: "Text"
+  transaction_specification:
+    caption: "Transaction Specification"
+    fields:
+      code: "Code"
+      text: "Text"
+  intrastat_jnl_template:
+    caption: "Intrastat Jnl. Template"
+    fields:
+      name: "Name"
+      description: "Description"
+      checklist_report_id: "Checklist Report ID"
+      page_id: "Page ID"
+  intrastat_jnl_batch:
+    caption: "Intrastat Jnl. Batch"
+    fields:
+      journal_template_name: "Journal Template Name"
+      name: "Name"
+      description: "Description"
+      reported: "Reported"
+      statistics_period: "Statistics Period"
+      currency_identifier: "Currency Identifier"
+  intrastat_jnl_line:
+    caption: "Intrastat Jnl. Line"
+    fields:
+      journal_template_name: "Journal Template Name"
+      journal_batch_name: "Journal Batch Name"
+      line_no: "Line No."
+      type: "Type"
+      date: "Date"
+      tariff_no: "Tariff No."
+      item_description: "Item Description"
+      country_code: "Country Code"
+      transaction_type: "Transaction Type"
+      transport_method: "Transport Method"
+      source_type: "Source Type"
+      source_entry_no: "Source Entry No."
+      net_weight: "Net Weight"
+      amount: "Amount"
+      quantity: "Quantity"
+      cost_regulation_percent: "Cost Regulation %"
+      indirect_cost: "Indirect Cost"
+      statistical_value: "Statistical Value"
+      document_no: "Document No."
+      item_no: "Item No."
+      name: "Name"
+      total_weight: "Total Weight"
+      supplementary_units: "Supplementary Units"
+      internal_ref_no: "Internal Ref. No."
+      country_of_origin_code: "Country of Origin Code"
+      entry_exit_point: "Entry/Exit Point"
+      area: "Area"
+      transaction_specification: "Transaction Specification"
+    options:
+      type:
+        receipt: "Receipt"
+        shipment: "Shipment"
+      source_type:
+        item_entry: "Item entry"
+        job_entry: "Job entry"
   g_l_budget_name:
     caption: "G/L Budget Name"
     fields:
@@ -3560,6 +3645,7 @@ tables:
   item:
     caption: "Item"
     fields:
+      tariff_no: "Tariff No."
       bill_of_materials: "Bill of Materials"
       picture: "Picture"
       quantity_on_hand: "Quantity on Hand"
@@ -3725,6 +3811,12 @@ tables:
   item_journal_line:
     caption: "Item Journal Line"
     fields:
+      transaction_type: "Transaction Type"
+      transport_method: "Transport Method"
+      country_code: "Country Code"
+      entry_exit_point: "Entry/Exit Point"
+      area: "Area"
+      transaction_specification: "Transaction Specification"
       recurring_method: "Recurring Method"
       expiration_date: "Expiration Date"
       recurring_frequency: "Recurring Frequency"
@@ -3795,6 +3887,12 @@ tables:
   item_ledger_entry:
     caption: "Item Ledger Entry"
     fields:
+      transaction_type: "Transaction Type"
+      transport_method: "Transport Method"
+      country_code: "Country Code"
+      entry_exit_point: "Entry/Exit Point"
+      area: "Area"
+      transaction_specification: "Transaction Specification"
       entry_no: "Entry No."
       item_no: "Item No."
       posting_date: "Posting Date"
@@ -4314,6 +4412,12 @@ tables:
   sales_header:
     caption: "Sales Header"
     fields:
+      transaction_type: "Transaction Type"
+      transport_method: "Transport Method"
+      vat_country_code: "VAT Country Code"
+      exit_point: "Exit Point"
+      area: "Area"
+      transaction_specification: "Transaction Specification"
       document_type: "Document Type"
       sell_to_customer_no: "Sell-to Customer No."
       no: "No."
@@ -4411,6 +4515,13 @@ tables:
   sales_line:
     caption: "Sales Line"
     fields:
+      transaction_type: "Transaction Type"
+      transport_method: "Transport Method"
+      exit_point: "Exit Point"
+      area: "Area"
+      transaction_specification: "Transaction Specification"
+      blanket_order_no: "Blanket Order No."
+      blanket_order_line_no: "Blanket Order Line No."
       document_type: "Document Type"
       sell_to_customer_no: "Sell-to Customer No."
       document_no: "Document No."
@@ -4950,6 +5061,12 @@ tables:
   purchase_header:
     caption: "Purchase Header"
     fields:
+      transaction_type: "Transaction Type"
+      transport_method: "Transport Method"
+      vat_country_code: "VAT Country Code"
+      entry_point: "Entry Point"
+      area: "Area"
+      transaction_specification: "Transaction Specification"
       document_type: "Document Type"
       buy_from_vendor_no: "Buy-from Vendor No."
       no: "No."
@@ -5044,6 +5161,13 @@ tables:
   purchase_line:
     caption: "Purchase Line"
     fields:
+      transaction_type: "Transaction Type"
+      transport_method: "Transport Method"
+      entry_point: "Entry Point"
+      area: "Area"
+      transaction_specification: "Transaction Specification"
+      blanket_order_no: "Blanket Order No."
+      blanket_order_line_no: "Blanket Order Line No."
       fa_posting_date: "FA Posting Date"
       fa_posting_type: "FA Posting Type"
       depreciation_book_code: "Depreciation Book Code"

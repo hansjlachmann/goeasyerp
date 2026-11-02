@@ -169,6 +169,9 @@ type Counts struct {
 	LedgerEntries      int
 	GLEntries          int // demo G/L entries (monthly sales and costs against the bank)
 	GLBudgetEntries    int // the demo budget's monthly amounts (budgets.go)
+	SalesBlanketOrders int // blanket sales orders (sales.go)
+	PurchBlanketOrders int // blanket purchase orders (purchases.go)
+	IntrastatJnlLines  int // the Intrastat journal's lines of this month (intrastat.go)
 	AccScheduleLines   int // the demo account schedules' lines (accschedules.go)
 	AccSchedColumns    int // their column layouts' columns
 	ItemLedgerEntries  int // the demo items' opening stock, purchases and sales (posted)
@@ -224,6 +227,7 @@ type setupData struct {
 		Code          string `yaml:"code"`
 		Name          string `yaml:"name"`
 		EUCountryCode string `yaml:"eu_country_code"`
+		IntrastatCode string `yaml:"intrastat_code"`
 	} `yaml:"countries"`
 	PaymentTerms []struct {
 		Code        string `yaml:"code"`
@@ -541,6 +545,13 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 				return Counts{}, err
 			}
 		}
+		if opts.SalesPost != nil && opts.PurchPost != nil {
+			err = insertDemoIntrastat(ftables.DBSource(exec, company, dbType), today, &counts)
+			if err != nil {
+				rollback()
+				return Counts{}, err
+			}
+		}
 	}
 	if opts.GenJnlPostLine != nil {
 		p.phase(PhaseFixedAssets)
@@ -587,6 +598,7 @@ func insertSetup(exec database.Executor, company string, dbType database.DBType,
 			rec.Code = types.NewCode(c.Code)
 			rec.Name = types.NewText(c.Name)
 			rec.Eu_country_code = types.NewCode(c.EUCountryCode)
+			rec.Intrastat_code = types.NewCode(c.IntrastatCode)
 			err := rec.InsertOrError(true)
 			if err != nil {
 				return &InsertError{Table: gtables.CountryRegionTableName, Key: c.Code, Err: err}

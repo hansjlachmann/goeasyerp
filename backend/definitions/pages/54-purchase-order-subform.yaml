@@ -97,6 +97,12 @@ page:
         - source: maintenance_code
           width: 110
           visible: false
+        - source: blanket_order_no
+          width: 120
+          visible: false
+        - source: blanket_order_line_no
+          width: 110
+          visible: false
 
   actions:
     - name: New

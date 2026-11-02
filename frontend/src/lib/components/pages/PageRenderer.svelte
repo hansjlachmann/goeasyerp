@@ -15,6 +15,8 @@
 	import { t, MSG, ERR, DLG, BTN, PAGE_ERR, FILTER as FLT } from '$lib/services/i18n.svelte';
 	import Button from '../Button.svelte';
 	import CardPage from './CardPage.svelte';
+	import MatrixGrid from './MatrixGrid.svelte';
+	import { withReturn } from '$lib/utils/returnUrl';
 	import ListPage from './ListPage.svelte';
 	import PageRenderer from './PageRenderer.svelte';
 	import ListPageSkeleton from './ListPageSkeleton.svelte';
@@ -374,6 +376,9 @@
 				await loadCardData();
 				// Set breadcrumb for card page
 				await setBreadcrumbForCardPage();
+			} else if (page.page.type === 'List' && page.page.layout.matrix) {
+				// A matrix page loads its matrix itself (MatrixGrid)
+				if (!embedded && !subpage) breadcrumb.setListPage(page.page.id, page.page.caption, navigation.home);
 			} else if (page.page.type === 'List') {
 				// A page with an OnOpenPage trigger (a journal) gets its filters first
 				if (!(await runOpenTrigger())) return;
@@ -898,6 +903,15 @@
 		return () => clearTimeout(timer);
 	});
 
+	// Esc on a matrix page (not inside the matrix's cell or filters): back where it came from
+	function handleMatrixPageKey(e: KeyboardEvent) {
+		if (e.key !== 'Escape' || e.defaultPrevented || embedded || subpage) return;
+		if (page?.page.type !== 'List' || !page.page.layout.matrix) return;
+		const target = e.target as HTMLElement | null;
+		if (target?.closest('input, [role="dialog"]')) return;
+		goto(returnUrl ?? '/');
+	}
+
 	// Esc / close on a card page: back to the page that opened it (an action or drilldown of
 	// another card — that card again, on its record), else to the card's list
 	function handleCardClose() {
@@ -911,6 +925,8 @@
 		}
 	}
 </script>
+
+<svelte:window onkeydown={handleMatrixPageKey} />
 
 {#if pageLoading || (dataLoading && page)}
 	<!-- Loading: the skeleton only after skeletonDelay — a quick load shows no placeholder -->
@@ -964,6 +980,19 @@
 			onNavigateLast={navigationActions.navigateLast}
 			onrefresh={refreshCardTotals}
 		/>
+	{:else if page.page.type === 'List' && page.page.layout.matrix}
+		<!-- A matrix page (Resource Capacity): the records against periods; a cell's entries open
+		     as a page with the way back here; Esc goes back -->
+		<div class="matrix-page">
+			<h1 class="matrix-page-title">{page.page.caption}</h1>
+			<MatrixGrid
+				pageId={page.page.id}
+				section=""
+				matrix={page.page.layout.matrix}
+				record={{}}
+				ondrilldown={(pageId, filters) => goto(withReturn(`/pages/${pageId}?` + filters.map((f) => 'filter=' + encodeURIComponent(`${f.field}=${f.expression}`)).join('&')))}
+			/>
+		</div>
 	{:else if page.page.type === 'List'}
 		{#if embedded && lookupMode}
 			<!-- Lookup mode (RunModal): OK picks the cursor's record, Cancel closes without one -->
@@ -1120,6 +1149,21 @@
 />
 
 <style>
+	.matrix-page {
+		padding: 1rem 1.5rem;
+	}
+
+	.matrix-page-title {
+		font-size: 1.5rem;
+		font-weight: 600;
+		margin-bottom: 1rem;
+		color: rgb(var(--accent-600));
+	}
+
+	:global(.dark) .matrix-page-title {
+		color: rgb(var(--accent-400));
+	}
+
 	/* Header fields above a list (a journal's Batch Name) */
 	.page-header-fields {
 		display: flex;

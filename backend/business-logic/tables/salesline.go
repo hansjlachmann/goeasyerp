@@ -36,9 +36,12 @@ func (salesLineLogic) OnInsert(rec *gtables.SalesLine) error {
 // OnDelete: an order line shipped but not invoiced stays
 func (salesLineLogic) OnDelete(rec *gtables.SalesLine) error {
 	if rec.Document_type == gtables.SalesLine_Document_type.Order {
-		return rec.TestField("qty_shipped_not_invoiced", types.Decimal{})
+		err := rec.TestField("qty_shipped_not_invoiced", types.Decimal{})
+		if err != nil {
+			return err
+		}
 	}
-	return nil
+	return checkSalesBlanketOrderLineDelete(rec)
 }
 
 // OnRename: a sales line is never renamed
@@ -124,9 +127,14 @@ func (salesLineLogic) OnValidate_No(rec *gtables.SalesLine) error {
 	rec.Project_code = salesHeader.Project_code
 	rec.Location_code = salesHeader.Location_code
 	rec.Price_group_code = salesHeader.Price_group_code
+	rec.Transaction_type = salesHeader.Transaction_type
+	rec.Transport_method = salesHeader.Transport_method
 	rec.Bill_to_customer_no = salesHeader.Bill_to_customer_no
 	rec.Gen_bus_posting_group = salesHeader.Gen_bus_posting_group
 	rec.Tax_bus_posting_group = salesHeader.Tax_bus_posting_group
+	rec.Exit_point = salesHeader.Exit_point
+	rec.Area = salesHeader.Area
+	rec.Transaction_specification = salesHeader.Transaction_specification
 	rec.Tax_area_code = salesHeader.Tax_area_code
 	rec.Tax_liable = salesHeader.Tax_liable
 

@@ -55,7 +55,7 @@ page:
       caption: Make Order
       image: Document
       promoted: true
-      run_object: codeunit:97
+      run_object: codeunit:93
 
     - name: Print
       caption: Print

@@ -38,6 +38,9 @@
 //	OnValidate_Source_type(rec *gtables.ItemJournalLine) error
 //	OnValidate_Reason_code(rec *gtables.ItemJournalLine) error
 //	OnValidate_Drop_shipment(rec *gtables.ItemJournalLine) error
+//	OnValidate_Transaction_type(rec *gtables.ItemJournalLine) error
+//	OnValidate_Transport_method(rec *gtables.ItemJournalLine) error
+//	OnValidate_Country_code(rec *gtables.ItemJournalLine) error
 //	OnValidate_New_location_code(rec *gtables.ItemJournalLine) error
 //	OnValidate_New_department_code(rec *gtables.ItemJournalLine) error
 //	OnValidate_New_project_code(rec *gtables.ItemJournalLine) error
@@ -47,8 +50,11 @@
 //	OnValidate_Phys_inventory(rec *gtables.ItemJournalLine) error
 //	OnValidate_Gen_bus_posting_group(rec *gtables.ItemJournalLine) error
 //	OnValidate_Gen_prod_posting_group(rec *gtables.ItemJournalLine) error
+//	OnValidate_Entry_exit_point(rec *gtables.ItemJournalLine) error
 //	OnValidate_Document_date(rec *gtables.ItemJournalLine) error
 //	OnValidate_External_document_no(rec *gtables.ItemJournalLine) error
+//	OnValidate_Area(rec *gtables.ItemJournalLine) error
+//	OnValidate_Transaction_specification(rec *gtables.ItemJournalLine) error
 //	OnValidate_Posting_no_series(rec *gtables.ItemJournalLine) error
 //	OnValidate_Reserve(rec *gtables.ItemJournalLine) error
 //	OnValidate_Variant_code(rec *gtables.ItemJournalLine) error
@@ -182,6 +188,9 @@ type ItemJournalLine struct {
 	Source_type               ItemJournalLineSource_type      `db:"source_type"`
 	Reason_code               types.Code                      `db:"reason_code"`
 	Drop_shipment             bool                            `db:"drop_shipment"`
+	Transaction_type          types.Code                      `db:"transaction_type"`
+	Transport_method          types.Code                      `db:"transport_method"`
+	Country_code              types.Code                      `db:"country_code"`
 	New_location_code         types.Code                      `db:"new_location_code"`
 	New_department_code       types.Code                      `db:"new_department_code"`
 	New_project_code          types.Code                      `db:"new_project_code"`
@@ -191,8 +200,11 @@ type ItemJournalLine struct {
 	Phys_inventory            bool                            `db:"phys_inventory"`
 	Gen_bus_posting_group     types.Code                      `db:"gen_bus_posting_group"`
 	Gen_prod_posting_group    types.Code                      `db:"gen_prod_posting_group"`
+	Entry_exit_point          types.Code                      `db:"entry_exit_point"`
 	Document_date             types.Date                      `db:"document_date"`
 	External_document_no      types.Code                      `db:"external_document_no"`
+	Area                      types.Code                      `db:"area"`
+	Transaction_specification types.Code                      `db:"transaction_specification"`
 	Posting_no_series         types.Code                      `db:"posting_no_series"`
 	Reserve                   ItemJournalLineReserve          `db:"reserve"`
 	Variant_code              types.Code                      `db:"variant_code"`
@@ -351,6 +363,9 @@ var ItemJournalLine_FieldNo = struct {
 	Source_type               int
 	Reason_code               int
 	Drop_shipment             int
+	Transaction_type          int
+	Transport_method          int
+	Country_code              int
 	New_location_code         int
 	New_department_code       int
 	New_project_code          int
@@ -360,8 +375,11 @@ var ItemJournalLine_FieldNo = struct {
 	Phys_inventory            int
 	Gen_bus_posting_group     int
 	Gen_prod_posting_group    int
+	Entry_exit_point          int
 	Document_date             int
 	External_document_no      int
+	Area                      int
+	Transaction_specification int
 	Posting_no_series         int
 	Reserve                   int
 	Variant_code              int
@@ -401,6 +419,9 @@ var ItemJournalLine_FieldNo = struct {
 	Source_type:               39,
 	Reason_code:               42,
 	Drop_shipment:             46,
+	Transaction_type:          47,
+	Transport_method:          48,
+	Country_code:              49,
 	New_location_code:         50,
 	New_department_code:       51,
 	New_project_code:          52,
@@ -410,8 +431,11 @@ var ItemJournalLine_FieldNo = struct {
 	Phys_inventory:            56,
 	Gen_bus_posting_group:     57,
 	Gen_prod_posting_group:    58,
+	Entry_exit_point:          59,
 	Document_date:             60,
 	External_document_no:      62,
+	Area:                      63,
+	Transaction_specification: 64,
 	Posting_no_series:         65,
 	Reserve:                   70,
 	Variant_code:              5402,
@@ -483,6 +507,12 @@ func (t *ItemJournalLine) FieldNo(fieldName string) int {
 		return 42
 	case "drop_shipment":
 		return 46
+	case "transaction_type":
+		return 47
+	case "transport_method":
+		return 48
+	case "country_code":
+		return 49
 	case "new_location_code":
 		return 50
 	case "new_department_code":
@@ -501,10 +531,16 @@ func (t *ItemJournalLine) FieldNo(fieldName string) int {
 		return 57
 	case "gen_prod_posting_group":
 		return 58
+	case "entry_exit_point":
+		return 59
 	case "document_date":
 		return 60
 	case "external_document_no":
 		return 62
+	case "area":
+		return 63
+	case "transaction_specification":
+		return 64
 	case "posting_no_series":
 		return 65
 	case "reserve":
@@ -588,6 +624,12 @@ func (t *ItemJournalLine) FieldName(fieldNo int) string {
 		return "reason_code"
 	case 46:
 		return "drop_shipment"
+	case 47:
+		return "transaction_type"
+	case 48:
+		return "transport_method"
+	case 49:
+		return "country_code"
 	case 50:
 		return "new_location_code"
 	case 51:
@@ -606,10 +648,16 @@ func (t *ItemJournalLine) FieldName(fieldNo int) string {
 		return "gen_bus_posting_group"
 	case 58:
 		return "gen_prod_posting_group"
+	case 59:
+		return "entry_exit_point"
 	case 60:
 		return "document_date"
 	case 62:
 		return "external_document_no"
+	case 63:
+		return "area"
+	case 64:
+		return "transaction_specification"
 	case 65:
 		return "posting_no_series"
 	case 70:
@@ -815,6 +863,15 @@ type (
 	ItemJournalLineOnValidate_Drop_shipment interface {
 		OnValidate_Drop_shipment(rec *ItemJournalLine) error
 	}
+	ItemJournalLineOnValidate_Transaction_type interface {
+		OnValidate_Transaction_type(rec *ItemJournalLine) error
+	}
+	ItemJournalLineOnValidate_Transport_method interface {
+		OnValidate_Transport_method(rec *ItemJournalLine) error
+	}
+	ItemJournalLineOnValidate_Country_code interface {
+		OnValidate_Country_code(rec *ItemJournalLine) error
+	}
 	ItemJournalLineOnValidate_New_location_code interface {
 		OnValidate_New_location_code(rec *ItemJournalLine) error
 	}
@@ -842,11 +899,20 @@ type (
 	ItemJournalLineOnValidate_Gen_prod_posting_group interface {
 		OnValidate_Gen_prod_posting_group(rec *ItemJournalLine) error
 	}
+	ItemJournalLineOnValidate_Entry_exit_point interface {
+		OnValidate_Entry_exit_point(rec *ItemJournalLine) error
+	}
 	ItemJournalLineOnValidate_Document_date interface {
 		OnValidate_Document_date(rec *ItemJournalLine) error
 	}
 	ItemJournalLineOnValidate_External_document_no interface {
 		OnValidate_External_document_no(rec *ItemJournalLine) error
+	}
+	ItemJournalLineOnValidate_Area interface {
+		OnValidate_Area(rec *ItemJournalLine) error
+	}
+	ItemJournalLineOnValidate_Transaction_specification interface {
+		OnValidate_Transaction_specification(rec *ItemJournalLine) error
 	}
 	ItemJournalLineOnValidate_Posting_no_series interface {
 		OnValidate_Posting_no_series(rec *ItemJournalLine) error
@@ -963,6 +1029,12 @@ func itemJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemJournalLineOnValidate_Reason_code)
 	case "OnValidate_Drop_shipment":
 		_, ok = logic.(ItemJournalLineOnValidate_Drop_shipment)
+	case "OnValidate_Transaction_type":
+		_, ok = logic.(ItemJournalLineOnValidate_Transaction_type)
+	case "OnValidate_Transport_method":
+		_, ok = logic.(ItemJournalLineOnValidate_Transport_method)
+	case "OnValidate_Country_code":
+		_, ok = logic.(ItemJournalLineOnValidate_Country_code)
 	case "OnValidate_New_location_code":
 		_, ok = logic.(ItemJournalLineOnValidate_New_location_code)
 	case "OnValidate_New_department_code":
@@ -981,10 +1053,16 @@ func itemJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemJournalLineOnValidate_Gen_bus_posting_group)
 	case "OnValidate_Gen_prod_posting_group":
 		_, ok = logic.(ItemJournalLineOnValidate_Gen_prod_posting_group)
+	case "OnValidate_Entry_exit_point":
+		_, ok = logic.(ItemJournalLineOnValidate_Entry_exit_point)
 	case "OnValidate_Document_date":
 		_, ok = logic.(ItemJournalLineOnValidate_Document_date)
 	case "OnValidate_External_document_no":
 		_, ok = logic.(ItemJournalLineOnValidate_External_document_no)
+	case "OnValidate_Area":
+		_, ok = logic.(ItemJournalLineOnValidate_Area)
+	case "OnValidate_Transaction_specification":
+		_, ok = logic.(ItemJournalLineOnValidate_Transaction_specification)
 	case "OnValidate_Posting_no_series":
 		_, ok = logic.(ItemJournalLineOnValidate_Posting_no_series)
 	case "OnValidate_Reserve":
@@ -1130,6 +1208,15 @@ func (t *ItemJournalLine) CheckFields() error {
 	if err := tables.CheckMaxLength(ItemJournalLineTableName, "reason_code", string(t.Reason_code), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(ItemJournalLineTableName, "transaction_type", string(t.Transaction_type), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(ItemJournalLineTableName, "transport_method", string(t.Transport_method), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(ItemJournalLineTableName, "country_code", string(t.Country_code), 10); err != nil {
+		return err
+	}
 	if err := tables.CheckMaxLength(ItemJournalLineTableName, "new_location_code", string(t.New_location_code), 10); err != nil {
 		return err
 	}
@@ -1145,7 +1232,16 @@ func (t *ItemJournalLine) CheckFields() error {
 	if err := tables.CheckMaxLength(ItemJournalLineTableName, "gen_prod_posting_group", string(t.Gen_prod_posting_group), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(ItemJournalLineTableName, "entry_exit_point", string(t.Entry_exit_point), 10); err != nil {
+		return err
+	}
 	if err := tables.CheckMaxLength(ItemJournalLineTableName, "external_document_no", string(t.External_document_no), 20); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(ItemJournalLineTableName, "area", string(t.Area), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(ItemJournalLineTableName, "transaction_specification", string(t.Transaction_specification), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(ItemJournalLineTableName, "posting_no_series", string(t.Posting_no_series), 10); err != nil {
@@ -1218,6 +1314,9 @@ func GetItemJournalLineTableSchema() string {
 		source_type INTEGER CHECK (source_type >= 0 AND source_type <= 3),
 		reason_code TEXT(10),
 		drop_shipment INTEGER,
+		transaction_type TEXT(10),
+		transport_method TEXT(10),
+		country_code TEXT(10),
 		new_location_code TEXT(10),
 		new_department_code TEXT(10),
 		new_project_code TEXT(10),
@@ -1227,8 +1326,11 @@ func GetItemJournalLineTableSchema() string {
 		phys_inventory INTEGER,
 		gen_bus_posting_group TEXT(10),
 		gen_prod_posting_group TEXT(10),
+		entry_exit_point TEXT(10),
 		document_date TEXT,
 		external_document_no TEXT(20),
+		area TEXT(10),
+		transaction_specification TEXT(10),
 		posting_no_series TEXT(10),
 		reserve INTEGER CHECK (reserve >= 0 AND reserve <= 2),
 		variant_code TEXT(10),
@@ -1274,6 +1376,9 @@ func GetItemJournalLinePostgresTableSchema() string {
 		source_type INTEGER CHECK (source_type >= 0 AND source_type <= 3),
 		reason_code VARCHAR(10),
 		drop_shipment BOOLEAN,
+		transaction_type VARCHAR(10),
+		transport_method VARCHAR(10),
+		country_code VARCHAR(10),
 		new_location_code VARCHAR(10),
 		new_department_code VARCHAR(10),
 		new_project_code VARCHAR(10),
@@ -1283,8 +1388,11 @@ func GetItemJournalLinePostgresTableSchema() string {
 		phys_inventory BOOLEAN,
 		gen_bus_posting_group VARCHAR(10),
 		gen_prod_posting_group VARCHAR(10),
+		entry_exit_point VARCHAR(10),
 		document_date DATE,
 		external_document_no VARCHAR(20),
+		area VARCHAR(10),
+		transaction_specification VARCHAR(10),
 		posting_no_series VARCHAR(10),
 		reserve INTEGER CHECK (reserve >= 0 AND reserve <= 2),
 		variant_code VARCHAR(10),
@@ -1459,6 +1567,9 @@ func (t *ItemJournalLine) StoreOldValues() {
 	t.oldValues["source_type"] = t.Source_type
 	t.oldValues["reason_code"] = t.Reason_code
 	t.oldValues["drop_shipment"] = t.Drop_shipment
+	t.oldValues["transaction_type"] = t.Transaction_type
+	t.oldValues["transport_method"] = t.Transport_method
+	t.oldValues["country_code"] = t.Country_code
 	t.oldValues["new_location_code"] = t.New_location_code
 	t.oldValues["new_department_code"] = t.New_department_code
 	t.oldValues["new_project_code"] = t.New_project_code
@@ -1468,8 +1579,11 @@ func (t *ItemJournalLine) StoreOldValues() {
 	t.oldValues["phys_inventory"] = t.Phys_inventory
 	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
 	t.oldValues["gen_prod_posting_group"] = t.Gen_prod_posting_group
+	t.oldValues["entry_exit_point"] = t.Entry_exit_point
 	t.oldValues["document_date"] = t.Document_date
 	t.oldValues["external_document_no"] = t.External_document_no
+	t.oldValues["area"] = t.Area
+	t.oldValues["transaction_specification"] = t.Transaction_specification
 	t.oldValues["posting_no_series"] = t.Posting_no_series
 	t.oldValues["reserve"] = t.Reserve
 	t.oldValues["variant_code"] = t.Variant_code
@@ -1578,6 +1692,15 @@ func (t *ItemJournalLine) XRec() *ItemJournalLine {
 	if v, ok := t.oldValues["drop_shipment"].(bool); ok {
 		x.Drop_shipment = v
 	}
+	if v, ok := t.oldValues["transaction_type"].(types.Code); ok {
+		x.Transaction_type = v
+	}
+	if v, ok := t.oldValues["transport_method"].(types.Code); ok {
+		x.Transport_method = v
+	}
+	if v, ok := t.oldValues["country_code"].(types.Code); ok {
+		x.Country_code = v
+	}
 	if v, ok := t.oldValues["new_location_code"].(types.Code); ok {
 		x.New_location_code = v
 	}
@@ -1605,11 +1728,20 @@ func (t *ItemJournalLine) XRec() *ItemJournalLine {
 	if v, ok := t.oldValues["gen_prod_posting_group"].(types.Code); ok {
 		x.Gen_prod_posting_group = v
 	}
+	if v, ok := t.oldValues["entry_exit_point"].(types.Code); ok {
+		x.Entry_exit_point = v
+	}
 	if v, ok := t.oldValues["document_date"].(types.Date); ok {
 		x.Document_date = v
 	}
 	if v, ok := t.oldValues["external_document_no"].(types.Code); ok {
 		x.External_document_no = v
+	}
+	if v, ok := t.oldValues["area"].(types.Code); ok {
+		x.Area = v
+	}
+	if v, ok := t.oldValues["transaction_specification"].(types.Code); ok {
+		x.Transaction_specification = v
 	}
 	if v, ok := t.oldValues["posting_no_series"].(types.Code); ok {
 		x.Posting_no_series = v
@@ -1748,6 +1880,9 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 	var source_typeInt int
 	var reason_codeNull sql.NullString
 	var drop_shipmentBool sql.NullBool
+	var transaction_typeNull sql.NullString
+	var transport_methodNull sql.NullString
+	var country_codeNull sql.NullString
 	var new_location_codeNull sql.NullString
 	var new_department_codeNull sql.NullString
 	var new_project_codeNull sql.NullString
@@ -1757,8 +1892,11 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 	var phys_inventoryBool sql.NullBool
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
+	var entry_exit_pointNull sql.NullString
 	var document_dateNull sql.NullString
 	var external_document_noNull sql.NullString
+	var areaNull sql.NullString
+	var transaction_specificationNull sql.NullString
 	var posting_no_seriesNull sql.NullString
 	var reserveInt int
 	var variant_codeNull sql.NullString
@@ -1778,7 +1916,7 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1813,6 +1951,9 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 		&source_typeInt,
 		&reason_codeNull,
 		&drop_shipmentBool,
+		&transaction_typeNull,
+		&transport_methodNull,
+		&country_codeNull,
 		&new_location_codeNull,
 		&new_department_codeNull,
 		&new_project_codeNull,
@@ -1822,8 +1963,11 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 		&phys_inventoryBool,
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
+		&entry_exit_pointNull,
 		&document_dateNull,
 		&external_document_noNull,
+		&areaNull,
+		&transaction_specificationNull,
 		&posting_no_seriesNull,
 		&reserveInt,
 		&variant_codeNull,
@@ -1875,6 +2019,9 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 	t.Source_type = ItemJournalLineSource_type(source_typeInt)
 	t.Reason_code = types.NewCode(reason_codeNull.String)
 	t.Drop_shipment = drop_shipmentBool.Bool
+	t.Transaction_type = types.NewCode(transaction_typeNull.String)
+	t.Transport_method = types.NewCode(transport_methodNull.String)
+	t.Country_code = types.NewCode(country_codeNull.String)
 	t.New_location_code = types.NewCode(new_location_codeNull.String)
 	t.New_department_code = types.NewCode(new_department_codeNull.String)
 	t.New_project_code = types.NewCode(new_project_codeNull.String)
@@ -1884,8 +2031,11 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 	t.Phys_inventory = phys_inventoryBool.Bool
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
+	t.Entry_exit_point = types.NewCode(entry_exit_pointNull.String)
 	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 	t.External_document_no = types.NewCode(external_document_noNull.String)
+	t.Area = types.NewCode(areaNull.String)
+	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
 	t.Reserve = ItemJournalLineReserve(reserveInt)
 	t.Variant_code = types.NewCode(variant_codeNull.String)
@@ -1946,6 +2096,9 @@ func (t *ItemJournalLine) Insert(runTrigger bool) bool {
 		t.Source_type,
 		t.Reason_code,
 		t.Drop_shipment,
+		t.Transaction_type,
+		t.Transport_method,
+		t.Country_code,
 		t.New_location_code,
 		t.New_department_code,
 		t.New_project_code,
@@ -1955,8 +2108,11 @@ func (t *ItemJournalLine) Insert(runTrigger bool) bool {
 		t.Phys_inventory,
 		t.Gen_bus_posting_group,
 		t.Gen_prod_posting_group,
+		t.Entry_exit_point,
 		t.Document_date,
 		t.External_document_no,
+		t.Area,
+		t.Transaction_specification,
 		t.Posting_no_series,
 		t.Reserve,
 		t.Variant_code,
@@ -1971,7 +2127,7 @@ func (t *ItemJournalLine) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2037,6 +2193,9 @@ func (t *ItemJournalLine) InsertAll(records []*ItemJournalLine, runTrigger bool)
 			r.Source_type,
 			r.Reason_code,
 			r.Drop_shipment,
+			r.Transaction_type,
+			r.Transport_method,
+			r.Country_code,
 			r.New_location_code,
 			r.New_department_code,
 			r.New_project_code,
@@ -2046,8 +2205,11 @@ func (t *ItemJournalLine) InsertAll(records []*ItemJournalLine, runTrigger bool)
 			r.Phys_inventory,
 			r.Gen_bus_posting_group,
 			r.Gen_prod_posting_group,
+			r.Entry_exit_point,
 			r.Document_date,
 			r.External_document_no,
+			r.Area,
+			r.Transaction_specification,
 			r.Posting_no_series,
 			r.Reserve,
 			r.Variant_code,
@@ -2061,7 +2223,7 @@ func (t *ItemJournalLine) InsertAll(records []*ItemJournalLine, runTrigger bool)
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ItemJournalLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "source_code", "applies_to_entry", "item_shpt_entry_no", "department_code", "project_code", "indirect_cost_percent", "source_type", "reason_code", "drop_shipment", "new_location_code", "new_department_code", "new_project_code", "qty_calculated", "qty_phys_inventory", "last_item_ledger_entry_no", "phys_inventory", "gen_bus_posting_group", "gen_prod_posting_group", "document_date", "external_document_no", "posting_no_series", "reserve", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "invoiced_qty_base", "recurring_method", "expiration_date", "recurring_frequency"}
+	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "source_code", "applies_to_entry", "item_shpt_entry_no", "department_code", "project_code", "indirect_cost_percent", "source_type", "reason_code", "drop_shipment", "transaction_type", "transport_method", "country_code", "new_location_code", "new_department_code", "new_project_code", "qty_calculated", "qty_phys_inventory", "last_item_ledger_entry_no", "phys_inventory", "gen_bus_posting_group", "gen_prod_posting_group", "entry_exit_point", "document_date", "external_document_no", "area", "transaction_specification", "posting_no_series", "reserve", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "invoiced_qty_base", "recurring_method", "expiration_date", "recurring_frequency"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2219,6 +2381,18 @@ func (t *ItemJournalLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "drop_shipment = ?")
 			values = append(values, t.Drop_shipment)
 		}
+		if t.hasFieldChanged("transaction_type") {
+			setClauses = append(setClauses, "transaction_type = ?")
+			values = append(values, t.Transaction_type)
+		}
+		if t.hasFieldChanged("transport_method") {
+			setClauses = append(setClauses, "transport_method = ?")
+			values = append(values, t.Transport_method)
+		}
+		if t.hasFieldChanged("country_code") {
+			setClauses = append(setClauses, "country_code = ?")
+			values = append(values, t.Country_code)
+		}
 		if t.hasFieldChanged("new_location_code") {
 			setClauses = append(setClauses, "new_location_code = ?")
 			values = append(values, t.New_location_code)
@@ -2255,6 +2429,10 @@ func (t *ItemJournalLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "gen_prod_posting_group = ?")
 			values = append(values, t.Gen_prod_posting_group)
 		}
+		if t.hasFieldChanged("entry_exit_point") {
+			setClauses = append(setClauses, "entry_exit_point = ?")
+			values = append(values, t.Entry_exit_point)
+		}
 		if t.hasFieldChanged("document_date") {
 			setClauses = append(setClauses, "document_date = ?")
 			values = append(values, t.Document_date)
@@ -2262,6 +2440,14 @@ func (t *ItemJournalLine) Modify(runTrigger bool) bool {
 		if t.hasFieldChanged("external_document_no") {
 			setClauses = append(setClauses, "external_document_no = ?")
 			values = append(values, t.External_document_no)
+		}
+		if t.hasFieldChanged("area") {
+			setClauses = append(setClauses, "area = ?")
+			values = append(values, t.Area)
+		}
+		if t.hasFieldChanged("transaction_specification") {
+			setClauses = append(setClauses, "transaction_specification = ?")
+			values = append(values, t.Transaction_specification)
 		}
 		if t.hasFieldChanged("posting_no_series") {
 			setClauses = append(setClauses, "posting_no_series = ?")
@@ -2360,6 +2546,12 @@ func (t *ItemJournalLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Reason_code)
 		setClauses = append(setClauses, "drop_shipment = ?")
 		values = append(values, t.Drop_shipment)
+		setClauses = append(setClauses, "transaction_type = ?")
+		values = append(values, t.Transaction_type)
+		setClauses = append(setClauses, "transport_method = ?")
+		values = append(values, t.Transport_method)
+		setClauses = append(setClauses, "country_code = ?")
+		values = append(values, t.Country_code)
 		setClauses = append(setClauses, "new_location_code = ?")
 		values = append(values, t.New_location_code)
 		setClauses = append(setClauses, "new_department_code = ?")
@@ -2378,10 +2570,16 @@ func (t *ItemJournalLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Gen_bus_posting_group)
 		setClauses = append(setClauses, "gen_prod_posting_group = ?")
 		values = append(values, t.Gen_prod_posting_group)
+		setClauses = append(setClauses, "entry_exit_point = ?")
+		values = append(values, t.Entry_exit_point)
 		setClauses = append(setClauses, "document_date = ?")
 		values = append(values, t.Document_date)
 		setClauses = append(setClauses, "external_document_no = ?")
 		values = append(values, t.External_document_no)
+		setClauses = append(setClauses, "area = ?")
+		values = append(values, t.Area)
+		setClauses = append(setClauses, "transaction_specification = ?")
+		values = append(values, t.Transaction_specification)
 		setClauses = append(setClauses, "posting_no_series = ?")
 		values = append(values, t.Posting_no_series)
 		setClauses = append(setClauses, "reserve = ?")
@@ -2572,6 +2770,18 @@ func (t *ItemJournalLine) hasFieldChanged(fieldName string) bool {
 			return t.Drop_shipment != old
 		}
 		return true // Type mismatch, assume changed
+	case "transaction_type":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Transaction_type.Equal(old)
+		}
+	case "transport_method":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Transport_method.Equal(old)
+		}
+	case "country_code":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Country_code.Equal(old)
+		}
 	case "new_location_code":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.New_location_code.Equal(old)
@@ -2610,6 +2820,10 @@ func (t *ItemJournalLine) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Gen_prod_posting_group.Equal(old)
 		}
+	case "entry_exit_point":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Entry_exit_point.Equal(old)
+		}
 	case "document_date":
 		if old, ok := oldValue.(types.Date); ok {
 			return !t.Document_date.Equal(old)
@@ -2617,6 +2831,14 @@ func (t *ItemJournalLine) hasFieldChanged(fieldName string) bool {
 	case "external_document_no":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.External_document_no.Equal(old)
+		}
+	case "area":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Area.Equal(old)
+		}
+	case "transaction_specification":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Transaction_specification.Equal(old)
 		}
 	case "posting_no_series":
 		if old, ok := oldValue.(types.Code); ok {
@@ -2920,6 +3142,12 @@ func (t *ItemJournalLine) columnName(fieldName string) (string, bool) {
 		return "reason_code", true
 	case strings.ToLower("drop_shipment"):
 		return "drop_shipment", true
+	case strings.ToLower("transaction_type"):
+		return "transaction_type", true
+	case strings.ToLower("transport_method"):
+		return "transport_method", true
+	case strings.ToLower("country_code"):
+		return "country_code", true
 	case strings.ToLower("new_location_code"):
 		return "new_location_code", true
 	case strings.ToLower("new_department_code"):
@@ -2938,10 +3166,16 @@ func (t *ItemJournalLine) columnName(fieldName string) (string, bool) {
 		return "gen_bus_posting_group", true
 	case strings.ToLower("gen_prod_posting_group"):
 		return "gen_prod_posting_group", true
+	case strings.ToLower("entry_exit_point"):
+		return "entry_exit_point", true
 	case strings.ToLower("document_date"):
 		return "document_date", true
 	case strings.ToLower("external_document_no"):
 		return "external_document_no", true
+	case strings.ToLower("area"):
+		return "area", true
+	case strings.ToLower("transaction_specification"):
+		return "transaction_specification", true
 	case strings.ToLower("posting_no_series"):
 		return "posting_no_series", true
 	case strings.ToLower("reserve"):
@@ -3343,7 +3577,7 @@ func (t *ItemJournalLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3373,6 +3607,9 @@ func (t *ItemJournalLine) FindFirst() bool {
 	var source_typeInt int
 	var reason_codeNull sql.NullString
 	var drop_shipmentBool sql.NullBool
+	var transaction_typeNull sql.NullString
+	var transport_methodNull sql.NullString
+	var country_codeNull sql.NullString
 	var new_location_codeNull sql.NullString
 	var new_department_codeNull sql.NullString
 	var new_project_codeNull sql.NullString
@@ -3381,8 +3618,11 @@ func (t *ItemJournalLine) FindFirst() bool {
 	var phys_inventoryBool sql.NullBool
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
+	var entry_exit_pointNull sql.NullString
 	var document_dateNull sql.NullString
 	var external_document_noNull sql.NullString
+	var areaNull sql.NullString
+	var transaction_specificationNull sql.NullString
 	var posting_no_seriesNull sql.NullString
 	var reserveInt int
 	var variant_codeNull sql.NullString
@@ -3423,6 +3663,9 @@ func (t *ItemJournalLine) FindFirst() bool {
 		&source_typeInt,
 		&reason_codeNull,
 		&drop_shipmentBool,
+		&transaction_typeNull,
+		&transport_methodNull,
+		&country_codeNull,
 		&new_location_codeNull,
 		&new_department_codeNull,
 		&new_project_codeNull,
@@ -3432,8 +3675,11 @@ func (t *ItemJournalLine) FindFirst() bool {
 		&phys_inventoryBool,
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
+		&entry_exit_pointNull,
 		&document_dateNull,
 		&external_document_noNull,
+		&areaNull,
+		&transaction_specificationNull,
 		&posting_no_seriesNull,
 		&reserveInt,
 		&variant_codeNull,
@@ -3480,6 +3726,9 @@ func (t *ItemJournalLine) FindFirst() bool {
 	t.Source_type = ItemJournalLineSource_type(source_typeInt)
 	t.Reason_code = types.NewCode(reason_codeNull.String)
 	t.Drop_shipment = drop_shipmentBool.Bool
+	t.Transaction_type = types.NewCode(transaction_typeNull.String)
+	t.Transport_method = types.NewCode(transport_methodNull.String)
+	t.Country_code = types.NewCode(country_codeNull.String)
 	t.New_location_code = types.NewCode(new_location_codeNull.String)
 	t.New_department_code = types.NewCode(new_department_codeNull.String)
 	t.New_project_code = types.NewCode(new_project_codeNull.String)
@@ -3488,8 +3737,11 @@ func (t *ItemJournalLine) FindFirst() bool {
 	t.Phys_inventory = phys_inventoryBool.Bool
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
+	t.Entry_exit_point = types.NewCode(entry_exit_pointNull.String)
 	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 	t.External_document_no = types.NewCode(external_document_noNull.String)
+	t.Area = types.NewCode(areaNull.String)
+	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
 	t.Reserve = ItemJournalLineReserve(reserveInt)
 	t.Variant_code = types.NewCode(variant_codeNull.String)
@@ -3520,7 +3772,7 @@ func (t *ItemJournalLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3550,6 +3802,9 @@ func (t *ItemJournalLine) FindLast() bool {
 	var source_typeInt int
 	var reason_codeNull sql.NullString
 	var drop_shipmentBool sql.NullBool
+	var transaction_typeNull sql.NullString
+	var transport_methodNull sql.NullString
+	var country_codeNull sql.NullString
 	var new_location_codeNull sql.NullString
 	var new_department_codeNull sql.NullString
 	var new_project_codeNull sql.NullString
@@ -3558,8 +3813,11 @@ func (t *ItemJournalLine) FindLast() bool {
 	var phys_inventoryBool sql.NullBool
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
+	var entry_exit_pointNull sql.NullString
 	var document_dateNull sql.NullString
 	var external_document_noNull sql.NullString
+	var areaNull sql.NullString
+	var transaction_specificationNull sql.NullString
 	var posting_no_seriesNull sql.NullString
 	var reserveInt int
 	var variant_codeNull sql.NullString
@@ -3600,6 +3858,9 @@ func (t *ItemJournalLine) FindLast() bool {
 		&source_typeInt,
 		&reason_codeNull,
 		&drop_shipmentBool,
+		&transaction_typeNull,
+		&transport_methodNull,
+		&country_codeNull,
 		&new_location_codeNull,
 		&new_department_codeNull,
 		&new_project_codeNull,
@@ -3609,8 +3870,11 @@ func (t *ItemJournalLine) FindLast() bool {
 		&phys_inventoryBool,
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
+		&entry_exit_pointNull,
 		&document_dateNull,
 		&external_document_noNull,
+		&areaNull,
+		&transaction_specificationNull,
 		&posting_no_seriesNull,
 		&reserveInt,
 		&variant_codeNull,
@@ -3657,6 +3921,9 @@ func (t *ItemJournalLine) FindLast() bool {
 	t.Source_type = ItemJournalLineSource_type(source_typeInt)
 	t.Reason_code = types.NewCode(reason_codeNull.String)
 	t.Drop_shipment = drop_shipmentBool.Bool
+	t.Transaction_type = types.NewCode(transaction_typeNull.String)
+	t.Transport_method = types.NewCode(transport_methodNull.String)
+	t.Country_code = types.NewCode(country_codeNull.String)
 	t.New_location_code = types.NewCode(new_location_codeNull.String)
 	t.New_department_code = types.NewCode(new_department_codeNull.String)
 	t.New_project_code = types.NewCode(new_project_codeNull.String)
@@ -3665,8 +3932,11 @@ func (t *ItemJournalLine) FindLast() bool {
 	t.Phys_inventory = phys_inventoryBool.Bool
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
+	t.Entry_exit_point = types.NewCode(entry_exit_pointNull.String)
 	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 	t.External_document_no = types.NewCode(external_document_noNull.String)
+	t.Area = types.NewCode(areaNull.String)
+	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
 	t.Reserve = ItemJournalLineReserve(reserveInt)
 	t.Variant_code = types.NewCode(variant_codeNull.String)
@@ -3727,7 +3997,7 @@ func (t *ItemJournalLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3821,6 +4091,9 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 		var source_typeInt int
 		var reason_codeNull sql.NullString
 		var drop_shipmentBool sql.NullBool
+		var transaction_typeNull sql.NullString
+		var transport_methodNull sql.NullString
+		var country_codeNull sql.NullString
 		var new_location_codeNull sql.NullString
 		var new_department_codeNull sql.NullString
 		var new_project_codeNull sql.NullString
@@ -3829,8 +4102,11 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 		var phys_inventoryBool sql.NullBool
 		var gen_bus_posting_groupNull sql.NullString
 		var gen_prod_posting_groupNull sql.NullString
+		var entry_exit_pointNull sql.NullString
 		var document_dateNull sql.NullString
 		var external_document_noNull sql.NullString
+		var areaNull sql.NullString
+		var transaction_specificationNull sql.NullString
 		var posting_no_seriesNull sql.NullString
 		var reserveInt int
 		var variant_codeNull sql.NullString
@@ -3871,6 +4147,9 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 			&source_typeInt,
 			&reason_codeNull,
 			&drop_shipmentBool,
+			&transaction_typeNull,
+			&transport_methodNull,
+			&country_codeNull,
 			&new_location_codeNull,
 			&new_department_codeNull,
 			&new_project_codeNull,
@@ -3880,8 +4159,11 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 			&phys_inventoryBool,
 			&gen_bus_posting_groupNull,
 			&gen_prod_posting_groupNull,
+			&entry_exit_pointNull,
 			&document_dateNull,
 			&external_document_noNull,
+			&areaNull,
+			&transaction_specificationNull,
 			&posting_no_seriesNull,
 			&reserveInt,
 			&variant_codeNull,
@@ -3927,6 +4209,9 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 		t.Source_type = ItemJournalLineSource_type(source_typeInt)
 		t.Reason_code = types.NewCode(reason_codeNull.String)
 		t.Drop_shipment = drop_shipmentBool.Bool
+		t.Transaction_type = types.NewCode(transaction_typeNull.String)
+		t.Transport_method = types.NewCode(transport_methodNull.String)
+		t.Country_code = types.NewCode(country_codeNull.String)
 		t.New_location_code = types.NewCode(new_location_codeNull.String)
 		t.New_department_code = types.NewCode(new_department_codeNull.String)
 		t.New_project_code = types.NewCode(new_project_codeNull.String)
@@ -3935,8 +4220,11 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 		t.Phys_inventory = phys_inventoryBool.Bool
 		t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 		t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
+		t.Entry_exit_point = types.NewCode(entry_exit_pointNull.String)
 		t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 		t.External_document_no = types.NewCode(external_document_noNull.String)
+		t.Area = types.NewCode(areaNull.String)
+		t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 		t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
 		t.Reserve = ItemJournalLineReserve(reserveInt)
 		t.Variant_code = types.NewCode(variant_codeNull.String)
@@ -3996,7 +4284,7 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4043,6 +4331,9 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 		var source_typeInt int
 		var reason_codeNull sql.NullString
 		var drop_shipmentBool sql.NullBool
+		var transaction_typeNull sql.NullString
+		var transport_methodNull sql.NullString
+		var country_codeNull sql.NullString
 		var new_location_codeNull sql.NullString
 		var new_department_codeNull sql.NullString
 		var new_project_codeNull sql.NullString
@@ -4051,8 +4342,11 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 		var phys_inventoryBool sql.NullBool
 		var gen_bus_posting_groupNull sql.NullString
 		var gen_prod_posting_groupNull sql.NullString
+		var entry_exit_pointNull sql.NullString
 		var document_dateNull sql.NullString
 		var external_document_noNull sql.NullString
+		var areaNull sql.NullString
+		var transaction_specificationNull sql.NullString
 		var posting_no_seriesNull sql.NullString
 		var reserveInt int
 		var variant_codeNull sql.NullString
@@ -4093,6 +4387,9 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 			&source_typeInt,
 			&reason_codeNull,
 			&drop_shipmentBool,
+			&transaction_typeNull,
+			&transport_methodNull,
+			&country_codeNull,
 			&new_location_codeNull,
 			&new_department_codeNull,
 			&new_project_codeNull,
@@ -4102,8 +4399,11 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 			&phys_inventoryBool,
 			&gen_bus_posting_groupNull,
 			&gen_prod_posting_groupNull,
+			&entry_exit_pointNull,
 			&document_dateNull,
 			&external_document_noNull,
+			&areaNull,
+			&transaction_specificationNull,
 			&posting_no_seriesNull,
 			&reserveInt,
 			&variant_codeNull,
@@ -4147,6 +4447,9 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 		record.Source_type = ItemJournalLineSource_type(source_typeInt)
 		record.Reason_code = types.NewCode(reason_codeNull.String)
 		record.Drop_shipment = drop_shipmentBool.Bool
+		record.Transaction_type = types.NewCode(transaction_typeNull.String)
+		record.Transport_method = types.NewCode(transport_methodNull.String)
+		record.Country_code = types.NewCode(country_codeNull.String)
 		record.New_location_code = types.NewCode(new_location_codeNull.String)
 		record.New_department_code = types.NewCode(new_department_codeNull.String)
 		record.New_project_code = types.NewCode(new_project_codeNull.String)
@@ -4155,8 +4458,11 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 		record.Phys_inventory = phys_inventoryBool.Bool
 		record.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 		record.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
+		record.Entry_exit_point = types.NewCode(entry_exit_pointNull.String)
 		record.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 		record.External_document_no = types.NewCode(external_document_noNull.String)
+		record.Area = types.NewCode(areaNull.String)
+		record.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 		record.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
 		record.Reserve = ItemJournalLineReserve(reserveInt)
 		record.Variant_code = types.NewCode(variant_codeNull.String)
@@ -4223,6 +4529,9 @@ func (t *ItemJournalLine) copyFromBuffered(record *ItemJournalLine) {
 	t.Source_type = record.Source_type
 	t.Reason_code = record.Reason_code
 	t.Drop_shipment = record.Drop_shipment
+	t.Transaction_type = record.Transaction_type
+	t.Transport_method = record.Transport_method
+	t.Country_code = record.Country_code
 	t.New_location_code = record.New_location_code
 	t.New_department_code = record.New_department_code
 	t.New_project_code = record.New_project_code
@@ -4232,8 +4541,11 @@ func (t *ItemJournalLine) copyFromBuffered(record *ItemJournalLine) {
 	t.Phys_inventory = record.Phys_inventory
 	t.Gen_bus_posting_group = record.Gen_bus_posting_group
 	t.Gen_prod_posting_group = record.Gen_prod_posting_group
+	t.Entry_exit_point = record.Entry_exit_point
 	t.Document_date = record.Document_date
 	t.External_document_no = record.External_document_no
+	t.Area = record.Area
+	t.Transaction_specification = record.Transaction_specification
 	t.Posting_no_series = record.Posting_no_series
 	t.Reserve = record.Reserve
 	t.Variant_code = record.Variant_code
@@ -5100,6 +5412,72 @@ func (t *ItemJournalLine) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
+	case "transaction_type":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Transaction_type = v
+		} else if v, ok := value.(string); ok {
+			t.Transaction_type = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field transaction_type")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transaction_type"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemJournalLineOnValidate_Transaction_type); ok {
+				if err := trg.OnValidate_Transaction_type(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "transport_method":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Transport_method = v
+		} else if v, ok := value.(string); ok {
+			t.Transport_method = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field transport_method")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transport_method"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemJournalLineOnValidate_Transport_method); ok {
+				if err := trg.OnValidate_Transport_method(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "country_code":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Country_code = v
+		} else if v, ok := value.(string); ok {
+			t.Country_code = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field country_code")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "country_code"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemJournalLineOnValidate_Country_code); ok {
+				if err := trg.OnValidate_Country_code(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	case "new_location_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
@@ -5312,6 +5690,28 @@ func (t *ItemJournalLine) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
+	case "entry_exit_point":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Entry_exit_point = v
+		} else if v, ok := value.(string); ok {
+			t.Entry_exit_point = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field entry_exit_point")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "entry_exit_point"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemJournalLineOnValidate_Entry_exit_point); ok {
+				if err := trg.OnValidate_Entry_exit_point(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	case "document_date":
 		// Set field value
 		if v, ok := value.(types.Date); ok {
@@ -5349,6 +5749,50 @@ func (t *ItemJournalLine) ValidateField(fieldName string, value interface{}) err
 		for _, l := range t.registeredLogic() {
 			if trg, ok := l.(ItemJournalLineOnValidate_External_document_no); ok {
 				if err := trg.OnValidate_External_document_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "area":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Area = v
+		} else if v, ok := value.(string); ok {
+			t.Area = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field area")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "area"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemJournalLineOnValidate_Area); ok {
+				if err := trg.OnValidate_Area(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "transaction_specification":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Transaction_specification = v
+		} else if v, ok := value.(string); ok {
+			t.Transaction_specification = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field transaction_specification")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transaction_specification"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemJournalLineOnValidate_Transaction_specification); ok {
+				if err := trg.OnValidate_Transaction_specification(t); err != nil {
 					return err
 				}
 			}
@@ -5715,6 +6159,12 @@ func (t *ItemJournalLine) FieldValue(no int) (any, bool) {
 		return t.Reason_code, true
 	case 46:
 		return t.Drop_shipment, true
+	case 47:
+		return t.Transaction_type, true
+	case 48:
+		return t.Transport_method, true
+	case 49:
+		return t.Country_code, true
 	case 50:
 		return t.New_location_code, true
 	case 51:
@@ -5733,10 +6183,16 @@ func (t *ItemJournalLine) FieldValue(no int) (any, bool) {
 		return t.Gen_bus_posting_group, true
 	case 58:
 		return t.Gen_prod_posting_group, true
+	case 59:
+		return t.Entry_exit_point, true
 	case 60:
 		return t.Document_date, true
 	case 62:
 		return t.External_document_no, true
+	case 63:
+		return t.Area, true
+	case 64:
+		return t.Transaction_specification, true
 	case 65:
 		return t.Posting_no_series, true
 	case 70:
@@ -5968,6 +6424,33 @@ func (t *ItemJournalLine) SetFieldValue(no int, value any) bool {
 			t.Drop_shipment = v
 			return true
 		}
+	case 47:
+		if v, ok := value.(types.Code); ok {
+			t.Transaction_type = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Transaction_type = types.NewCode(v)
+			return true
+		}
+	case 48:
+		if v, ok := value.(types.Code); ok {
+			t.Transport_method = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Transport_method = types.NewCode(v)
+			return true
+		}
+	case 49:
+		if v, ok := value.(types.Code); ok {
+			t.Country_code = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Country_code = types.NewCode(v)
+			return true
+		}
 	case 50:
 		if v, ok := value.(types.Code); ok {
 			t.New_location_code = v
@@ -6033,6 +6516,15 @@ func (t *ItemJournalLine) SetFieldValue(no int, value any) bool {
 			t.Gen_prod_posting_group = types.NewCode(v)
 			return true
 		}
+	case 59:
+		if v, ok := value.(types.Code); ok {
+			t.Entry_exit_point = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Entry_exit_point = types.NewCode(v)
+			return true
+		}
 	case 60:
 		if v, ok := value.(types.Date); ok {
 			t.Document_date = v
@@ -6045,6 +6537,24 @@ func (t *ItemJournalLine) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.External_document_no = types.NewCode(v)
+			return true
+		}
+	case 63:
+		if v, ok := value.(types.Code); ok {
+			t.Area = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Area = types.NewCode(v)
+			return true
+		}
+	case 64:
+		if v, ok := value.(types.Code); ok {
+			t.Transaction_specification = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Transaction_specification = types.NewCode(v)
 			return true
 		}
 	case 65:
@@ -6732,6 +7242,12 @@ func (t *ItemJournalLine) columnValue(column string) (interface{}, bool) {
 		return t.Reason_code, true
 	case "drop_shipment":
 		return t.Drop_shipment, true
+	case "transaction_type":
+		return t.Transaction_type, true
+	case "transport_method":
+		return t.Transport_method, true
+	case "country_code":
+		return t.Country_code, true
 	case "new_location_code":
 		return t.New_location_code, true
 	case "new_department_code":
@@ -6750,10 +7266,16 @@ func (t *ItemJournalLine) columnValue(column string) (interface{}, bool) {
 		return t.Gen_bus_posting_group, true
 	case "gen_prod_posting_group":
 		return t.Gen_prod_posting_group, true
+	case "entry_exit_point":
+		return t.Entry_exit_point, true
 	case "document_date":
 		return t.Document_date, true
 	case "external_document_no":
 		return t.External_document_no, true
+	case "area":
+		return t.Area, true
+	case "transaction_specification":
+		return t.Transaction_specification, true
 	case "posting_no_series":
 		return t.Posting_no_series, true
 	case "reserve":
@@ -6861,6 +7383,9 @@ func (t *ItemJournalLine) Init() {
 	t.Source_type = 0
 	t.Reason_code = *new(types.Code)
 	t.Drop_shipment = *new(bool)
+	t.Transaction_type = *new(types.Code)
+	t.Transport_method = *new(types.Code)
+	t.Country_code = *new(types.Code)
 	t.New_location_code = *new(types.Code)
 	t.New_department_code = *new(types.Code)
 	t.New_project_code = *new(types.Code)
@@ -6870,8 +7395,11 @@ func (t *ItemJournalLine) Init() {
 	t.Phys_inventory = *new(bool)
 	t.Gen_bus_posting_group = *new(types.Code)
 	t.Gen_prod_posting_group = *new(types.Code)
+	t.Entry_exit_point = *new(types.Code)
 	t.Document_date = *new(types.Date)
 	t.External_document_no = *new(types.Code)
+	t.Area = *new(types.Code)
+	t.Transaction_specification = *new(types.Code)
 	t.Posting_no_series = *new(types.Code)
 	t.Reserve = 0
 	t.Variant_code = *new(types.Code)
@@ -6944,6 +7472,9 @@ func (t *ItemJournalLine) ToMap() map[string]interface{} {
 		"source_type":               int(t.Source_type),
 		"reason_code":               t.Reason_code.String(),
 		"drop_shipment":             t.Drop_shipment,
+		"transaction_type":          t.Transaction_type.String(),
+		"transport_method":          t.Transport_method.String(),
+		"country_code":              t.Country_code.String(),
 		"new_location_code":         t.New_location_code.String(),
 		"new_department_code":       t.New_department_code.String(),
 		"new_project_code":          t.New_project_code.String(),
@@ -6953,8 +7484,11 @@ func (t *ItemJournalLine) ToMap() map[string]interface{} {
 		"phys_inventory":            t.Phys_inventory,
 		"gen_bus_posting_group":     t.Gen_bus_posting_group.String(),
 		"gen_prod_posting_group":    t.Gen_prod_posting_group.String(),
+		"entry_exit_point":          t.Entry_exit_point.String(),
 		"document_date":             t.Document_date.String(),
 		"external_document_no":      t.External_document_no.String(),
+		"area":                      t.Area.String(),
+		"transaction_specification": t.Transaction_specification.String(),
 		"posting_no_series":         t.Posting_no_series.String(),
 		"reserve":                   int(t.Reserve),
 		"variant_code":              t.Variant_code.String(),
@@ -7207,6 +7741,21 @@ func (t *ItemJournalLine) FromMap(data map[string]interface{}) {
 			t.Drop_shipment = b
 		}
 	}
+	if v, ok := data["transaction_type"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Transaction_type = types.NewCode(s)
+		}
+	}
+	if v, ok := data["transport_method"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Transport_method = types.NewCode(s)
+		}
+	}
+	if v, ok := data["country_code"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Country_code = types.NewCode(s)
+		}
+	}
 	if v, ok := data["new_location_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.New_location_code = types.NewCode(s)
@@ -7274,6 +7823,11 @@ func (t *ItemJournalLine) FromMap(data map[string]interface{}) {
 			t.Gen_prod_posting_group = types.NewCode(s)
 		}
 	}
+	if v, ok := data["entry_exit_point"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Entry_exit_point = types.NewCode(s)
+		}
+	}
 	if v, ok := data["document_date"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Document_date, _ = types.NewDateFromString(s)
@@ -7282,6 +7836,16 @@ func (t *ItemJournalLine) FromMap(data map[string]interface{}) {
 	if v, ok := data["external_document_no"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.External_document_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["area"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Area = types.NewCode(s)
+		}
+	}
+	if v, ok := data["transaction_specification"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Transaction_specification = types.NewCode(s)
 		}
 	}
 	if v, ok := data["posting_no_series"]; ok && v != nil {
@@ -7697,6 +8261,36 @@ func (t *ItemJournalLine) GetFields() []tables.FieldInfo {
 			ReadOnly:   true,
 		},
 		{
+			No:         47,
+			Name:       "transaction_type",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         48,
+			Name:       "transport_method",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         49,
+			Name:       "country_code",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
 			No:         50,
 			Name:       "new_location_code",
 			Type:       tables.FieldTypeCode,
@@ -7792,6 +8386,16 @@ func (t *ItemJournalLine) GetFields() []tables.FieldInfo {
 			FlowField:  false,
 		},
 		{
+			No:         59,
+			Name:       "entry_exit_point",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
 			No:         60,
 			Name:       "document_date",
 			Type:       tables.FieldTypeDate,
@@ -7806,6 +8410,26 @@ func (t *ItemJournalLine) GetFields() []tables.FieldInfo {
 			Name:       "external_document_no",
 			Type:       tables.FieldTypeCode,
 			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         63,
+			Name:       "area",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         64,
+			Name:       "transaction_specification",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
 			Required:   false,
 			Editable:   true,
 			PrimaryKey: false,
@@ -8109,6 +8733,36 @@ func (t *ItemJournalLine) GetTableRelationFields() map[string]tables.TableRelati
 			},
 			SearchTimeout: 0,
 		},
+		"transaction_type": {
+			Table:        "Transaction_Type",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"transport_method": {
+			Table:        "Transport_Method",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"country_code": {
+			Table:        "Country_Region",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "name", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
 		"new_location_code": {
 			Table:        "Location",
 			Field:        "code",
@@ -8156,6 +8810,36 @@ func (t *ItemJournalLine) GetTableRelationFields() map[string]tables.TableRelati
 			LookupColumns: []tables.LookupColumnInfo{
 				{Source: "code", Width: 100},
 				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"entry_exit_point": {
+			Table:        "Entry_Exit_Point",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"area": {
+			Table:        "Area",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "text", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"transaction_specification": {
+			Table:        "Transaction_Specification",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "text", Width: 250},
 			},
 			SearchTimeout: 0,
 		},

@@ -268,6 +268,7 @@ func (purchaseHeaderLogic) OnValidate_Buy_from_vendor_no(rec *gtables.PurchaseHe
 	rec.Buy_from_post_code = vend.Post_code
 	rec.Buy_from_state = vend.State
 	rec.Buy_from_country_code = vend.Country_code
+	rec.Vat_country_code = vend.Country_code
 	rec.Buy_from_contact = vend.Contact
 	rec.Gen_bus_posting_group = vend.Gen_bus_posting_group
 	rec.Tax_bus_posting_group = vend.Tax_bus_posting_group
@@ -385,6 +386,7 @@ func (purchaseHeaderLogic) OnValidate_Order_address_code(rec *gtables.PurchaseHe
 		rec.Buy_from_post_code = orderAddr.Post_code
 		rec.Buy_from_state = orderAddr.State
 		rec.Buy_from_country_code = orderAddr.Country_code
+		rec.Vat_country_code = orderAddr.Country_code
 	} else {
 		vend := gtables.NewVendor(rec)
 		err := vend.GetOrError(rec.Buy_from_vendor_no)
@@ -400,6 +402,7 @@ func (purchaseHeaderLogic) OnValidate_Order_address_code(rec *gtables.PurchaseHe
 		rec.Buy_from_post_code = vend.Post_code
 		rec.Buy_from_state = vend.State
 		rec.Buy_from_country_code = vend.Country_code
+		rec.Vat_country_code = vend.Country_code
 		rec.Vat_registration_no = vend.Vat_registration_no
 		return rec.Validate("gen_bus_posting_group", vend.Gen_bus_posting_group)
 	}
@@ -646,6 +649,28 @@ func RecreatePurchLines(rec *gtables.PurchaseHeader) error {
 	return nil
 }
 
+// OnValidate_Transaction_type, _Transport_method, _Entry_point, _Area, _Transaction_specification:
+// the foreign trade statistics fields go to the lines
+func (purchaseHeaderLogic) OnValidate_Transaction_type(rec *gtables.PurchaseHeader) error {
+	return updatePurchLines(rec, "transaction_type")
+}
+
+func (purchaseHeaderLogic) OnValidate_Transport_method(rec *gtables.PurchaseHeader) error {
+	return updatePurchLines(rec, "transport_method")
+}
+
+func (purchaseHeaderLogic) OnValidate_Entry_point(rec *gtables.PurchaseHeader) error {
+	return updatePurchLines(rec, "entry_point")
+}
+
+func (purchaseHeaderLogic) OnValidate_Area(rec *gtables.PurchaseHeader) error {
+	return updatePurchLines(rec, "area")
+}
+
+func (purchaseHeaderLogic) OnValidate_Transaction_specification(rec *gtables.PurchaseHeader) error {
+	return updatePurchLines(rec, "transaction_specification")
+}
+
 // updatePurchLines (UpdatePurchLines): a header field to every line (expected receipt date,
 // department, project) or the lines' costs again in a new currency factor. The header is saved
 // first.
@@ -673,6 +698,16 @@ func updatePurchLines(rec *gtables.PurchaseHeader, changedField string) error {
 			err = purchLine.Validate("department_code", rec.Department_code)
 		case "project_code":
 			err = purchLine.Validate("project_code", rec.Project_code)
+		case "transaction_type":
+			err = purchLine.Validate("transaction_type", rec.Transaction_type)
+		case "transport_method":
+			err = purchLine.Validate("transport_method", rec.Transport_method)
+		case "entry_point":
+			err = purchLine.Validate("entry_point", rec.Entry_point)
+		case "area":
+			err = purchLine.Validate("area", rec.Area)
+		case "transaction_specification":
+			err = purchLine.Validate("transaction_specification", rec.Transaction_specification)
 		}
 		if err != nil {
 			return err

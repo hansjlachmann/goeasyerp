@@ -1,0 +1,46 @@
+page:
+  id: 325
+  type: List
+  name: Intrastat Journal Templates
+  source_table: Intrastat_Jnl_Template
+  caption: Intrastat Journal Templates
+  editable: true
+
+  layout:
+    repeater:
+      fields:
+        - source: name
+          width: 110
+        - source: description
+          width: 250
+        - source: page_id
+          width: 100
+        - source: checklist_report_id
+          width: 160
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    - name: Batches
+      caption: Batches
+      image: Lines
+      promoted: true
+      run_page: 327
+      run_page_filter_field: journal_template_name
+      run_page_filter_value: name

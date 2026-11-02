@@ -48,11 +48,17 @@
 //	OnValidate_Drop_shipment(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Invt_qty_not_adjusted(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Adjust_invoice_cost(rec *gtables.ItemLedgerEntry) error
+//	OnValidate_Transaction_type(rec *gtables.ItemLedgerEntry) error
+//	OnValidate_Transport_method(rec *gtables.ItemLedgerEntry) error
+//	OnValidate_Country_code(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Transferred_from_entry_no(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Gen_bus_posting_group(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Gen_prod_posting_group(rec *gtables.ItemLedgerEntry) error
+//	OnValidate_Entry_exit_point(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Document_date(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_External_document_no(rec *gtables.ItemLedgerEntry) error
+//	OnValidate_Area(rec *gtables.ItemLedgerEntry) error
+//	OnValidate_Transaction_specification(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_No_series(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Reserved_quantity(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Variant_code(rec *gtables.ItemLedgerEntry) error
@@ -157,11 +163,17 @@ type ItemLedgerEntry struct {
 	Drop_shipment              bool                       `db:"drop_shipment"`
 	Invt_qty_not_adjusted      types.Decimal              `db:"invt_qty_not_adjusted"`
 	Adjust_invoice_cost        bool                       `db:"adjust_invoice_cost"`
+	Transaction_type           types.Code                 `db:"transaction_type"`
+	Transport_method           types.Code                 `db:"transport_method"`
+	Country_code               types.Code                 `db:"country_code"`
 	Transferred_from_entry_no  int                        `db:"transferred_from_entry_no"`
 	Gen_bus_posting_group      types.Code                 `db:"gen_bus_posting_group"`
 	Gen_prod_posting_group     types.Code                 `db:"gen_prod_posting_group"`
+	Entry_exit_point           types.Code                 `db:"entry_exit_point"`
 	Document_date              types.Date                 `db:"document_date"`
 	External_document_no       types.Code                 `db:"external_document_no"`
+	Area                       types.Code                 `db:"area"`
+	Transaction_specification  types.Code                 `db:"transaction_specification"`
 	No_series                  types.Code                 `db:"no_series"`
 	Reserved_quantity          types.Decimal              `db:"reserved_quantity"`
 	Variant_code               types.Code                 `db:"variant_code"`
@@ -303,11 +315,17 @@ var ItemLedgerEntry_FieldNo = struct {
 	Drop_shipment              int
 	Invt_qty_not_adjusted      int
 	Adjust_invoice_cost        int
+	Transaction_type           int
+	Transport_method           int
+	Country_code               int
 	Transferred_from_entry_no  int
 	Gen_bus_posting_group      int
 	Gen_prod_posting_group     int
+	Entry_exit_point           int
 	Document_date              int
 	External_document_no       int
+	Area                       int
+	Transaction_specification  int
 	No_series                  int
 	Reserved_quantity          int
 	Variant_code               int
@@ -352,11 +370,17 @@ var ItemLedgerEntry_FieldNo = struct {
 	Drop_shipment:              47,
 	Invt_qty_not_adjusted:      48,
 	Adjust_invoice_cost:        49,
+	Transaction_type:           50,
+	Transport_method:           51,
+	Country_code:               52,
 	Transferred_from_entry_no:  53,
 	Gen_bus_posting_group:      57,
 	Gen_prod_posting_group:     58,
+	Entry_exit_point:           59,
 	Document_date:              60,
 	External_document_no:       61,
+	Area:                       62,
+	Transaction_specification:  63,
 	No_series:                  64,
 	Reserved_quantity:          70,
 	Variant_code:               5402,
@@ -443,16 +467,28 @@ func (t *ItemLedgerEntry) FieldNo(fieldName string) int {
 		return 48
 	case "adjust_invoice_cost":
 		return 49
+	case "transaction_type":
+		return 50
+	case "transport_method":
+		return 51
+	case "country_code":
+		return 52
 	case "transferred_from_entry_no":
 		return 53
 	case "gen_bus_posting_group":
 		return 57
 	case "gen_prod_posting_group":
 		return 58
+	case "entry_exit_point":
+		return 59
 	case "document_date":
 		return 60
 	case "external_document_no":
 		return 61
+	case "area":
+		return 62
+	case "transaction_specification":
+		return 63
 	case "no_series":
 		return 64
 	case "reserved_quantity":
@@ -546,16 +582,28 @@ func (t *ItemLedgerEntry) FieldName(fieldNo int) string {
 		return "invt_qty_not_adjusted"
 	case 49:
 		return "adjust_invoice_cost"
+	case 50:
+		return "transaction_type"
+	case 51:
+		return "transport_method"
+	case 52:
+		return "country_code"
 	case 53:
 		return "transferred_from_entry_no"
 	case 57:
 		return "gen_bus_posting_group"
 	case 58:
 		return "gen_prod_posting_group"
+	case 59:
+		return "entry_exit_point"
 	case 60:
 		return "document_date"
 	case 61:
 		return "external_document_no"
+	case 62:
+		return "area"
+	case 63:
+		return "transaction_specification"
 	case 64:
 		return "no_series"
 	case 70:
@@ -781,6 +829,15 @@ type (
 	ItemLedgerEntryOnValidate_Adjust_invoice_cost interface {
 		OnValidate_Adjust_invoice_cost(rec *ItemLedgerEntry) error
 	}
+	ItemLedgerEntryOnValidate_Transaction_type interface {
+		OnValidate_Transaction_type(rec *ItemLedgerEntry) error
+	}
+	ItemLedgerEntryOnValidate_Transport_method interface {
+		OnValidate_Transport_method(rec *ItemLedgerEntry) error
+	}
+	ItemLedgerEntryOnValidate_Country_code interface {
+		OnValidate_Country_code(rec *ItemLedgerEntry) error
+	}
 	ItemLedgerEntryOnValidate_Transferred_from_entry_no interface {
 		OnValidate_Transferred_from_entry_no(rec *ItemLedgerEntry) error
 	}
@@ -790,11 +847,20 @@ type (
 	ItemLedgerEntryOnValidate_Gen_prod_posting_group interface {
 		OnValidate_Gen_prod_posting_group(rec *ItemLedgerEntry) error
 	}
+	ItemLedgerEntryOnValidate_Entry_exit_point interface {
+		OnValidate_Entry_exit_point(rec *ItemLedgerEntry) error
+	}
 	ItemLedgerEntryOnValidate_Document_date interface {
 		OnValidate_Document_date(rec *ItemLedgerEntry) error
 	}
 	ItemLedgerEntryOnValidate_External_document_no interface {
 		OnValidate_External_document_no(rec *ItemLedgerEntry) error
+	}
+	ItemLedgerEntryOnValidate_Area interface {
+		OnValidate_Area(rec *ItemLedgerEntry) error
+	}
+	ItemLedgerEntryOnValidate_Transaction_specification interface {
+		OnValidate_Transaction_specification(rec *ItemLedgerEntry) error
 	}
 	ItemLedgerEntryOnValidate_No_series interface {
 		OnValidate_No_series(rec *ItemLedgerEntry) error
@@ -916,16 +982,28 @@ func itemLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemLedgerEntryOnValidate_Invt_qty_not_adjusted)
 	case "OnValidate_Adjust_invoice_cost":
 		_, ok = logic.(ItemLedgerEntryOnValidate_Adjust_invoice_cost)
+	case "OnValidate_Transaction_type":
+		_, ok = logic.(ItemLedgerEntryOnValidate_Transaction_type)
+	case "OnValidate_Transport_method":
+		_, ok = logic.(ItemLedgerEntryOnValidate_Transport_method)
+	case "OnValidate_Country_code":
+		_, ok = logic.(ItemLedgerEntryOnValidate_Country_code)
 	case "OnValidate_Transferred_from_entry_no":
 		_, ok = logic.(ItemLedgerEntryOnValidate_Transferred_from_entry_no)
 	case "OnValidate_Gen_bus_posting_group":
 		_, ok = logic.(ItemLedgerEntryOnValidate_Gen_bus_posting_group)
 	case "OnValidate_Gen_prod_posting_group":
 		_, ok = logic.(ItemLedgerEntryOnValidate_Gen_prod_posting_group)
+	case "OnValidate_Entry_exit_point":
+		_, ok = logic.(ItemLedgerEntryOnValidate_Entry_exit_point)
 	case "OnValidate_Document_date":
 		_, ok = logic.(ItemLedgerEntryOnValidate_Document_date)
 	case "OnValidate_External_document_no":
 		_, ok = logic.(ItemLedgerEntryOnValidate_External_document_no)
+	case "OnValidate_Area":
+		_, ok = logic.(ItemLedgerEntryOnValidate_Area)
+	case "OnValidate_Transaction_specification":
+		_, ok = logic.(ItemLedgerEntryOnValidate_Transaction_specification)
 	case "OnValidate_No_series":
 		_, ok = logic.(ItemLedgerEntryOnValidate_No_series)
 	case "OnValidate_Reserved_quantity":
@@ -1052,13 +1130,31 @@ func (t *ItemLedgerEntry) CheckFields() error {
 	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "reason_code", string(t.Reason_code), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "transaction_type", string(t.Transaction_type), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "transport_method", string(t.Transport_method), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "country_code", string(t.Country_code), 10); err != nil {
+		return err
+	}
 	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "gen_bus_posting_group", string(t.Gen_bus_posting_group), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "gen_prod_posting_group", string(t.Gen_prod_posting_group), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "entry_exit_point", string(t.Entry_exit_point), 10); err != nil {
+		return err
+	}
 	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "external_document_no", string(t.External_document_no), 20); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "area", string(t.Area), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "transaction_specification", string(t.Transaction_specification), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "no_series", string(t.No_series), 10); err != nil {
@@ -1135,11 +1231,17 @@ func GetItemLedgerEntryTableSchema() string {
 		drop_shipment INTEGER,
 		invt_qty_not_adjusted TEXT,
 		adjust_invoice_cost INTEGER,
+		transaction_type TEXT(10),
+		transport_method TEXT(10),
+		country_code TEXT(10),
 		transferred_from_entry_no INTEGER,
 		gen_bus_posting_group TEXT(10),
 		gen_prod_posting_group TEXT(10),
+		entry_exit_point TEXT(10),
 		document_date TEXT,
 		external_document_no TEXT(20),
+		area TEXT(10),
+		transaction_specification TEXT(10),
 		no_series TEXT(10),
 		reserved_quantity TEXT,
 		variant_code TEXT(10),
@@ -1189,11 +1291,17 @@ func GetItemLedgerEntryPostgresTableSchema() string {
 		drop_shipment BOOLEAN,
 		invt_qty_not_adjusted NUMERIC,
 		adjust_invoice_cost BOOLEAN,
+		transaction_type VARCHAR(10),
+		transport_method VARCHAR(10),
+		country_code VARCHAR(10),
 		transferred_from_entry_no INTEGER,
 		gen_bus_posting_group VARCHAR(10),
 		gen_prod_posting_group VARCHAR(10),
+		entry_exit_point VARCHAR(10),
 		document_date DATE,
 		external_document_no VARCHAR(20),
+		area VARCHAR(10),
+		transaction_specification VARCHAR(10),
 		no_series VARCHAR(10),
 		reserved_quantity NUMERIC,
 		variant_code VARCHAR(10),
@@ -1424,11 +1532,17 @@ func (t *ItemLedgerEntry) StoreOldValues() {
 	t.oldValues["drop_shipment"] = t.Drop_shipment
 	t.oldValues["invt_qty_not_adjusted"] = t.Invt_qty_not_adjusted
 	t.oldValues["adjust_invoice_cost"] = t.Adjust_invoice_cost
+	t.oldValues["transaction_type"] = t.Transaction_type
+	t.oldValues["transport_method"] = t.Transport_method
+	t.oldValues["country_code"] = t.Country_code
 	t.oldValues["transferred_from_entry_no"] = t.Transferred_from_entry_no
 	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
 	t.oldValues["gen_prod_posting_group"] = t.Gen_prod_posting_group
+	t.oldValues["entry_exit_point"] = t.Entry_exit_point
 	t.oldValues["document_date"] = t.Document_date
 	t.oldValues["external_document_no"] = t.External_document_no
+	t.oldValues["area"] = t.Area
+	t.oldValues["transaction_specification"] = t.Transaction_specification
 	t.oldValues["no_series"] = t.No_series
 	t.oldValues["reserved_quantity"] = t.Reserved_quantity
 	t.oldValues["variant_code"] = t.Variant_code
@@ -1562,6 +1676,15 @@ func (t *ItemLedgerEntry) XRec() *ItemLedgerEntry {
 	if v, ok := t.oldValues["adjust_invoice_cost"].(bool); ok {
 		x.Adjust_invoice_cost = v
 	}
+	if v, ok := t.oldValues["transaction_type"].(types.Code); ok {
+		x.Transaction_type = v
+	}
+	if v, ok := t.oldValues["transport_method"].(types.Code); ok {
+		x.Transport_method = v
+	}
+	if v, ok := t.oldValues["country_code"].(types.Code); ok {
+		x.Country_code = v
+	}
 	if v, ok := t.oldValues["transferred_from_entry_no"].(int); ok {
 		x.Transferred_from_entry_no = v
 	}
@@ -1571,11 +1694,20 @@ func (t *ItemLedgerEntry) XRec() *ItemLedgerEntry {
 	if v, ok := t.oldValues["gen_prod_posting_group"].(types.Code); ok {
 		x.Gen_prod_posting_group = v
 	}
+	if v, ok := t.oldValues["entry_exit_point"].(types.Code); ok {
+		x.Entry_exit_point = v
+	}
 	if v, ok := t.oldValues["document_date"].(types.Date); ok {
 		x.Document_date = v
 	}
 	if v, ok := t.oldValues["external_document_no"].(types.Code); ok {
 		x.External_document_no = v
+	}
+	if v, ok := t.oldValues["area"].(types.Code); ok {
+		x.Area = v
+	}
+	if v, ok := t.oldValues["transaction_specification"].(types.Code); ok {
+		x.Transaction_specification = v
 	}
 	if v, ok := t.oldValues["no_series"].(types.Code); ok {
 		x.No_series = v
@@ -1701,11 +1833,17 @@ func (t *ItemLedgerEntry) GetByPK(entry_no int) bool {
 	var drop_shipmentBool sql.NullBool
 	var invt_qty_not_adjustedNull sql.NullString
 	var adjust_invoice_costBool sql.NullBool
+	var transaction_typeNull sql.NullString
+	var transport_methodNull sql.NullString
+	var country_codeNull sql.NullString
 	var transferred_from_entry_noVal int
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
+	var entry_exit_pointNull sql.NullString
 	var document_dateNull sql.NullString
 	var external_document_noNull sql.NullString
+	var areaNull sql.NullString
+	var transaction_specificationNull sql.NullString
 	var no_seriesNull sql.NullString
 	var reserved_quantityNull sql.NullString
 	var variant_codeNull sql.NullString
@@ -1718,7 +1856,7 @@ func (t *ItemLedgerEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1763,11 +1901,17 @@ func (t *ItemLedgerEntry) GetByPK(entry_no int) bool {
 		&drop_shipmentBool,
 		&invt_qty_not_adjustedNull,
 		&adjust_invoice_costBool,
+		&transaction_typeNull,
+		&transport_methodNull,
+		&country_codeNull,
 		&transferred_from_entry_noVal,
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
+		&entry_exit_pointNull,
 		&document_dateNull,
 		&external_document_noNull,
+		&areaNull,
+		&transaction_specificationNull,
 		&no_seriesNull,
 		&reserved_quantityNull,
 		&variant_codeNull,
@@ -1824,11 +1968,17 @@ func (t *ItemLedgerEntry) GetByPK(entry_no int) bool {
 	t.Drop_shipment = drop_shipmentBool.Bool
 	t.Invt_qty_not_adjusted, _ = types.NewDecimalFromString(invt_qty_not_adjustedNull.String)
 	t.Adjust_invoice_cost = adjust_invoice_costBool.Bool
+	t.Transaction_type = types.NewCode(transaction_typeNull.String)
+	t.Transport_method = types.NewCode(transport_methodNull.String)
+	t.Country_code = types.NewCode(country_codeNull.String)
 	t.Transferred_from_entry_no = transferred_from_entry_noVal
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
+	t.Entry_exit_point = types.NewCode(entry_exit_pointNull.String)
 	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 	t.External_document_no = types.NewCode(external_document_noNull.String)
+	t.Area = types.NewCode(areaNull.String)
+	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.No_series = types.NewCode(no_seriesNull.String)
 	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
 	t.Variant_code = types.NewCode(variant_codeNull.String)
@@ -1894,11 +2044,17 @@ func (t *ItemLedgerEntry) Insert(runTrigger bool) bool {
 		t.Drop_shipment,
 		t.Invt_qty_not_adjusted,
 		t.Adjust_invoice_cost,
+		t.Transaction_type,
+		t.Transport_method,
+		t.Country_code,
 		t.Transferred_from_entry_no,
 		t.Gen_bus_posting_group,
 		t.Gen_prod_posting_group,
+		t.Entry_exit_point,
 		t.Document_date,
 		t.External_document_no,
+		t.Area,
+		t.Transaction_specification,
 		t.No_series,
 		t.Reserved_quantity,
 		t.Variant_code,
@@ -1908,7 +2064,7 @@ func (t *ItemLedgerEntry) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1984,11 +2140,17 @@ func (t *ItemLedgerEntry) InsertAll(records []*ItemLedgerEntry, runTrigger bool)
 			r.Drop_shipment,
 			r.Invt_qty_not_adjusted,
 			r.Adjust_invoice_cost,
+			r.Transaction_type,
+			r.Transport_method,
+			r.Country_code,
 			r.Transferred_from_entry_no,
 			r.Gen_bus_posting_group,
 			r.Gen_prod_posting_group,
+			r.Entry_exit_point,
 			r.Document_date,
 			r.External_document_no,
+			r.Area,
+			r.Transaction_specification,
 			r.No_series,
 			r.Reserved_quantity,
 			r.Variant_code,
@@ -1997,7 +2159,7 @@ func (t *ItemLedgerEntry) InsertAll(records []*ItemLedgerEntry, runTrigger bool)
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ItemLedgerEntryTableName)
-	columns := []string{"entry_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "remaining_quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "user_id", "source_code", "applies_to_entry", "open", "cost_is_adjusted", "department_code", "project_code", "positive", "closed_by_entry_no", "closed_at_date", "closed_by_quantity", "source_type", "adjusted_cost_qty", "adjusted_cost_invoiced_qty", "cost_posted_to_gl", "journal_batch_name", "reason_code", "drop_shipment", "invt_qty_not_adjusted", "adjust_invoice_cost", "transferred_from_entry_no", "gen_bus_posting_group", "gen_prod_posting_group", "document_date", "external_document_no", "no_series", "reserved_quantity", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code"}
+	columns := []string{"entry_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "remaining_quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "user_id", "source_code", "applies_to_entry", "open", "cost_is_adjusted", "department_code", "project_code", "positive", "closed_by_entry_no", "closed_at_date", "closed_by_quantity", "source_type", "adjusted_cost_qty", "adjusted_cost_invoiced_qty", "cost_posted_to_gl", "journal_batch_name", "reason_code", "drop_shipment", "invt_qty_not_adjusted", "adjust_invoice_cost", "transaction_type", "transport_method", "country_code", "transferred_from_entry_no", "gen_bus_posting_group", "gen_prod_posting_group", "entry_exit_point", "document_date", "external_document_no", "area", "transaction_specification", "no_series", "reserved_quantity", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2189,6 +2351,18 @@ func (t *ItemLedgerEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "adjust_invoice_cost = ?")
 			values = append(values, t.Adjust_invoice_cost)
 		}
+		if t.hasFieldChanged("transaction_type") {
+			setClauses = append(setClauses, "transaction_type = ?")
+			values = append(values, t.Transaction_type)
+		}
+		if t.hasFieldChanged("transport_method") {
+			setClauses = append(setClauses, "transport_method = ?")
+			values = append(values, t.Transport_method)
+		}
+		if t.hasFieldChanged("country_code") {
+			setClauses = append(setClauses, "country_code = ?")
+			values = append(values, t.Country_code)
+		}
 		if t.hasFieldChanged("transferred_from_entry_no") {
 			setClauses = append(setClauses, "transferred_from_entry_no = ?")
 			values = append(values, t.Transferred_from_entry_no)
@@ -2201,6 +2375,10 @@ func (t *ItemLedgerEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "gen_prod_posting_group = ?")
 			values = append(values, t.Gen_prod_posting_group)
 		}
+		if t.hasFieldChanged("entry_exit_point") {
+			setClauses = append(setClauses, "entry_exit_point = ?")
+			values = append(values, t.Entry_exit_point)
+		}
 		if t.hasFieldChanged("document_date") {
 			setClauses = append(setClauses, "document_date = ?")
 			values = append(values, t.Document_date)
@@ -2208,6 +2386,14 @@ func (t *ItemLedgerEntry) Modify(runTrigger bool) bool {
 		if t.hasFieldChanged("external_document_no") {
 			setClauses = append(setClauses, "external_document_no = ?")
 			values = append(values, t.External_document_no)
+		}
+		if t.hasFieldChanged("area") {
+			setClauses = append(setClauses, "area = ?")
+			values = append(values, t.Area)
+		}
+		if t.hasFieldChanged("transaction_specification") {
+			setClauses = append(setClauses, "transaction_specification = ?")
+			values = append(values, t.Transaction_specification)
 		}
 		if t.hasFieldChanged("no_series") {
 			setClauses = append(setClauses, "no_series = ?")
@@ -2310,16 +2496,28 @@ func (t *ItemLedgerEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.Invt_qty_not_adjusted)
 		setClauses = append(setClauses, "adjust_invoice_cost = ?")
 		values = append(values, t.Adjust_invoice_cost)
+		setClauses = append(setClauses, "transaction_type = ?")
+		values = append(values, t.Transaction_type)
+		setClauses = append(setClauses, "transport_method = ?")
+		values = append(values, t.Transport_method)
+		setClauses = append(setClauses, "country_code = ?")
+		values = append(values, t.Country_code)
 		setClauses = append(setClauses, "transferred_from_entry_no = ?")
 		values = append(values, t.Transferred_from_entry_no)
 		setClauses = append(setClauses, "gen_bus_posting_group = ?")
 		values = append(values, t.Gen_bus_posting_group)
 		setClauses = append(setClauses, "gen_prod_posting_group = ?")
 		values = append(values, t.Gen_prod_posting_group)
+		setClauses = append(setClauses, "entry_exit_point = ?")
+		values = append(values, t.Entry_exit_point)
 		setClauses = append(setClauses, "document_date = ?")
 		values = append(values, t.Document_date)
 		setClauses = append(setClauses, "external_document_no = ?")
 		values = append(values, t.External_document_no)
+		setClauses = append(setClauses, "area = ?")
+		values = append(values, t.Area)
+		setClauses = append(setClauses, "transaction_specification = ?")
+		values = append(values, t.Transaction_specification)
 		setClauses = append(setClauses, "no_series = ?")
 		values = append(values, t.No_series)
 		setClauses = append(setClauses, "reserved_quantity = ?")
@@ -2556,6 +2754,18 @@ func (t *ItemLedgerEntry) hasFieldChanged(fieldName string) bool {
 			return t.Adjust_invoice_cost != old
 		}
 		return true // Type mismatch, assume changed
+	case "transaction_type":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Transaction_type.Equal(old)
+		}
+	case "transport_method":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Transport_method.Equal(old)
+		}
+	case "country_code":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Country_code.Equal(old)
+		}
 	case "transferred_from_entry_no":
 		if old, ok := oldValue.(int); ok {
 			return t.Transferred_from_entry_no != old
@@ -2569,6 +2779,10 @@ func (t *ItemLedgerEntry) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Gen_prod_posting_group.Equal(old)
 		}
+	case "entry_exit_point":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Entry_exit_point.Equal(old)
+		}
 	case "document_date":
 		if old, ok := oldValue.(types.Date); ok {
 			return !t.Document_date.Equal(old)
@@ -2576,6 +2790,14 @@ func (t *ItemLedgerEntry) hasFieldChanged(fieldName string) bool {
 	case "external_document_no":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.External_document_no.Equal(old)
+		}
+	case "area":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Area.Equal(old)
+		}
+	case "transaction_specification":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Transaction_specification.Equal(old)
 		}
 	case "no_series":
 		if old, ok := oldValue.(types.Code); ok {
@@ -2917,16 +3139,28 @@ func (t *ItemLedgerEntry) columnName(fieldName string) (string, bool) {
 		return "invt_qty_not_adjusted", true
 	case strings.ToLower("adjust_invoice_cost"):
 		return "adjust_invoice_cost", true
+	case strings.ToLower("transaction_type"):
+		return "transaction_type", true
+	case strings.ToLower("transport_method"):
+		return "transport_method", true
+	case strings.ToLower("country_code"):
+		return "country_code", true
 	case strings.ToLower("transferred_from_entry_no"):
 		return "transferred_from_entry_no", true
 	case strings.ToLower("gen_bus_posting_group"):
 		return "gen_bus_posting_group", true
 	case strings.ToLower("gen_prod_posting_group"):
 		return "gen_prod_posting_group", true
+	case strings.ToLower("entry_exit_point"):
+		return "entry_exit_point", true
 	case strings.ToLower("document_date"):
 		return "document_date", true
 	case strings.ToLower("external_document_no"):
 		return "external_document_no", true
+	case strings.ToLower("area"):
+		return "area", true
+	case strings.ToLower("transaction_specification"):
+		return "transaction_specification", true
 	case strings.ToLower("no_series"):
 		return "no_series", true
 	case strings.ToLower("reserved_quantity"):
@@ -3328,7 +3562,7 @@ func (t *ItemLedgerEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3368,10 +3602,16 @@ func (t *ItemLedgerEntry) FindFirst() bool {
 	var drop_shipmentBool sql.NullBool
 	var invt_qty_not_adjustedNull sql.NullString
 	var adjust_invoice_costBool sql.NullBool
+	var transaction_typeNull sql.NullString
+	var transport_methodNull sql.NullString
+	var country_codeNull sql.NullString
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
+	var entry_exit_pointNull sql.NullString
 	var document_dateNull sql.NullString
 	var external_document_noNull sql.NullString
+	var areaNull sql.NullString
+	var transaction_specificationNull sql.NullString
 	var no_seriesNull sql.NullString
 	var reserved_quantityNull sql.NullString
 	var variant_codeNull sql.NullString
@@ -3417,11 +3657,17 @@ func (t *ItemLedgerEntry) FindFirst() bool {
 		&drop_shipmentBool,
 		&invt_qty_not_adjustedNull,
 		&adjust_invoice_costBool,
+		&transaction_typeNull,
+		&transport_methodNull,
+		&country_codeNull,
 		&t.Transferred_from_entry_no,
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
+		&entry_exit_pointNull,
 		&document_dateNull,
 		&external_document_noNull,
+		&areaNull,
+		&transaction_specificationNull,
 		&no_seriesNull,
 		&reserved_quantityNull,
 		&variant_codeNull,
@@ -3473,10 +3719,16 @@ func (t *ItemLedgerEntry) FindFirst() bool {
 	t.Drop_shipment = drop_shipmentBool.Bool
 	t.Invt_qty_not_adjusted, _ = types.NewDecimalFromString(invt_qty_not_adjustedNull.String)
 	t.Adjust_invoice_cost = adjust_invoice_costBool.Bool
+	t.Transaction_type = types.NewCode(transaction_typeNull.String)
+	t.Transport_method = types.NewCode(transport_methodNull.String)
+	t.Country_code = types.NewCode(country_codeNull.String)
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
+	t.Entry_exit_point = types.NewCode(entry_exit_pointNull.String)
 	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 	t.External_document_no = types.NewCode(external_document_noNull.String)
+	t.Area = types.NewCode(areaNull.String)
+	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.No_series = types.NewCode(no_seriesNull.String)
 	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
 	t.Variant_code = types.NewCode(variant_codeNull.String)
@@ -3502,7 +3754,7 @@ func (t *ItemLedgerEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3542,10 +3794,16 @@ func (t *ItemLedgerEntry) FindLast() bool {
 	var drop_shipmentBool sql.NullBool
 	var invt_qty_not_adjustedNull sql.NullString
 	var adjust_invoice_costBool sql.NullBool
+	var transaction_typeNull sql.NullString
+	var transport_methodNull sql.NullString
+	var country_codeNull sql.NullString
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
+	var entry_exit_pointNull sql.NullString
 	var document_dateNull sql.NullString
 	var external_document_noNull sql.NullString
+	var areaNull sql.NullString
+	var transaction_specificationNull sql.NullString
 	var no_seriesNull sql.NullString
 	var reserved_quantityNull sql.NullString
 	var variant_codeNull sql.NullString
@@ -3591,11 +3849,17 @@ func (t *ItemLedgerEntry) FindLast() bool {
 		&drop_shipmentBool,
 		&invt_qty_not_adjustedNull,
 		&adjust_invoice_costBool,
+		&transaction_typeNull,
+		&transport_methodNull,
+		&country_codeNull,
 		&t.Transferred_from_entry_no,
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
+		&entry_exit_pointNull,
 		&document_dateNull,
 		&external_document_noNull,
+		&areaNull,
+		&transaction_specificationNull,
 		&no_seriesNull,
 		&reserved_quantityNull,
 		&variant_codeNull,
@@ -3647,10 +3911,16 @@ func (t *ItemLedgerEntry) FindLast() bool {
 	t.Drop_shipment = drop_shipmentBool.Bool
 	t.Invt_qty_not_adjusted, _ = types.NewDecimalFromString(invt_qty_not_adjustedNull.String)
 	t.Adjust_invoice_cost = adjust_invoice_costBool.Bool
+	t.Transaction_type = types.NewCode(transaction_typeNull.String)
+	t.Transport_method = types.NewCode(transport_methodNull.String)
+	t.Country_code = types.NewCode(country_codeNull.String)
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
+	t.Entry_exit_point = types.NewCode(entry_exit_pointNull.String)
 	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 	t.External_document_no = types.NewCode(external_document_noNull.String)
+	t.Area = types.NewCode(areaNull.String)
+	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.No_series = types.NewCode(no_seriesNull.String)
 	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
 	t.Variant_code = types.NewCode(variant_codeNull.String)
@@ -3706,7 +3976,7 @@ func (t *ItemLedgerEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3810,10 +4080,16 @@ func (t *ItemLedgerEntry) Next(steps ...int) bool {
 		var drop_shipmentBool sql.NullBool
 		var invt_qty_not_adjustedNull sql.NullString
 		var adjust_invoice_costBool sql.NullBool
+		var transaction_typeNull sql.NullString
+		var transport_methodNull sql.NullString
+		var country_codeNull sql.NullString
 		var gen_bus_posting_groupNull sql.NullString
 		var gen_prod_posting_groupNull sql.NullString
+		var entry_exit_pointNull sql.NullString
 		var document_dateNull sql.NullString
 		var external_document_noNull sql.NullString
+		var areaNull sql.NullString
+		var transaction_specificationNull sql.NullString
 		var no_seriesNull sql.NullString
 		var reserved_quantityNull sql.NullString
 		var variant_codeNull sql.NullString
@@ -3859,11 +4135,17 @@ func (t *ItemLedgerEntry) Next(steps ...int) bool {
 			&drop_shipmentBool,
 			&invt_qty_not_adjustedNull,
 			&adjust_invoice_costBool,
+			&transaction_typeNull,
+			&transport_methodNull,
+			&country_codeNull,
 			&t.Transferred_from_entry_no,
 			&gen_bus_posting_groupNull,
 			&gen_prod_posting_groupNull,
+			&entry_exit_pointNull,
 			&document_dateNull,
 			&external_document_noNull,
+			&areaNull,
+			&transaction_specificationNull,
 			&no_seriesNull,
 			&reserved_quantityNull,
 			&variant_codeNull,
@@ -3914,10 +4196,16 @@ func (t *ItemLedgerEntry) Next(steps ...int) bool {
 		t.Drop_shipment = drop_shipmentBool.Bool
 		t.Invt_qty_not_adjusted, _ = types.NewDecimalFromString(invt_qty_not_adjustedNull.String)
 		t.Adjust_invoice_cost = adjust_invoice_costBool.Bool
+		t.Transaction_type = types.NewCode(transaction_typeNull.String)
+		t.Transport_method = types.NewCode(transport_methodNull.String)
+		t.Country_code = types.NewCode(country_codeNull.String)
 		t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 		t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
+		t.Entry_exit_point = types.NewCode(entry_exit_pointNull.String)
 		t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 		t.External_document_no = types.NewCode(external_document_noNull.String)
+		t.Area = types.NewCode(areaNull.String)
+		t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 		t.No_series = types.NewCode(no_seriesNull.String)
 		t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
 		t.Variant_code = types.NewCode(variant_codeNull.String)
@@ -3972,7 +4260,7 @@ func (t *ItemLedgerEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4029,10 +4317,16 @@ func (t *ItemLedgerEntry) FindSetBuffered() bool {
 		var drop_shipmentBool sql.NullBool
 		var invt_qty_not_adjustedNull sql.NullString
 		var adjust_invoice_costBool sql.NullBool
+		var transaction_typeNull sql.NullString
+		var transport_methodNull sql.NullString
+		var country_codeNull sql.NullString
 		var gen_bus_posting_groupNull sql.NullString
 		var gen_prod_posting_groupNull sql.NullString
+		var entry_exit_pointNull sql.NullString
 		var document_dateNull sql.NullString
 		var external_document_noNull sql.NullString
+		var areaNull sql.NullString
+		var transaction_specificationNull sql.NullString
 		var no_seriesNull sql.NullString
 		var reserved_quantityNull sql.NullString
 		var variant_codeNull sql.NullString
@@ -4078,11 +4372,17 @@ func (t *ItemLedgerEntry) FindSetBuffered() bool {
 			&drop_shipmentBool,
 			&invt_qty_not_adjustedNull,
 			&adjust_invoice_costBool,
+			&transaction_typeNull,
+			&transport_methodNull,
+			&country_codeNull,
 			&record.Transferred_from_entry_no,
 			&gen_bus_posting_groupNull,
 			&gen_prod_posting_groupNull,
+			&entry_exit_pointNull,
 			&document_dateNull,
 			&external_document_noNull,
+			&areaNull,
+			&transaction_specificationNull,
 			&no_seriesNull,
 			&reserved_quantityNull,
 			&variant_codeNull,
@@ -4131,10 +4431,16 @@ func (t *ItemLedgerEntry) FindSetBuffered() bool {
 		record.Drop_shipment = drop_shipmentBool.Bool
 		record.Invt_qty_not_adjusted, _ = types.NewDecimalFromString(invt_qty_not_adjustedNull.String)
 		record.Adjust_invoice_cost = adjust_invoice_costBool.Bool
+		record.Transaction_type = types.NewCode(transaction_typeNull.String)
+		record.Transport_method = types.NewCode(transport_methodNull.String)
+		record.Country_code = types.NewCode(country_codeNull.String)
 		record.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 		record.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
+		record.Entry_exit_point = types.NewCode(entry_exit_pointNull.String)
 		record.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 		record.External_document_no = types.NewCode(external_document_noNull.String)
+		record.Area = types.NewCode(areaNull.String)
+		record.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 		record.No_series = types.NewCode(no_seriesNull.String)
 		record.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
 		record.Variant_code = types.NewCode(variant_codeNull.String)
@@ -4206,11 +4512,17 @@ func (t *ItemLedgerEntry) copyFromBuffered(record *ItemLedgerEntry) {
 	t.Drop_shipment = record.Drop_shipment
 	t.Invt_qty_not_adjusted = record.Invt_qty_not_adjusted
 	t.Adjust_invoice_cost = record.Adjust_invoice_cost
+	t.Transaction_type = record.Transaction_type
+	t.Transport_method = record.Transport_method
+	t.Country_code = record.Country_code
 	t.Transferred_from_entry_no = record.Transferred_from_entry_no
 	t.Gen_bus_posting_group = record.Gen_bus_posting_group
 	t.Gen_prod_posting_group = record.Gen_prod_posting_group
+	t.Entry_exit_point = record.Entry_exit_point
 	t.Document_date = record.Document_date
 	t.External_document_no = record.External_document_no
+	t.Area = record.Area
+	t.Transaction_specification = record.Transaction_specification
 	t.No_series = record.No_series
 	t.Reserved_quantity = record.Reserved_quantity
 	t.Variant_code = record.Variant_code
@@ -5304,6 +5616,72 @@ func (t *ItemLedgerEntry) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
+	case "transaction_type":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Transaction_type = v
+		} else if v, ok := value.(string); ok {
+			t.Transaction_type = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field transaction_type")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transaction_type"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemLedgerEntryOnValidate_Transaction_type); ok {
+				if err := trg.OnValidate_Transaction_type(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "transport_method":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Transport_method = v
+		} else if v, ok := value.(string); ok {
+			t.Transport_method = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field transport_method")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transport_method"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemLedgerEntryOnValidate_Transport_method); ok {
+				if err := trg.OnValidate_Transport_method(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "country_code":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Country_code = v
+		} else if v, ok := value.(string); ok {
+			t.Country_code = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field country_code")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "country_code"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemLedgerEntryOnValidate_Country_code); ok {
+				if err := trg.OnValidate_Country_code(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	case "transferred_from_entry_no":
 		// Set field value
 		switch v := value.(type) {
@@ -5375,6 +5753,28 @@ func (t *ItemLedgerEntry) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
+	case "entry_exit_point":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Entry_exit_point = v
+		} else if v, ok := value.(string); ok {
+			t.Entry_exit_point = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field entry_exit_point")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "entry_exit_point"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemLedgerEntryOnValidate_Entry_exit_point); ok {
+				if err := trg.OnValidate_Entry_exit_point(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	case "document_date":
 		// Set field value
 		if v, ok := value.(types.Date); ok {
@@ -5412,6 +5812,50 @@ func (t *ItemLedgerEntry) ValidateField(fieldName string, value interface{}) err
 		for _, l := range t.registeredLogic() {
 			if trg, ok := l.(ItemLedgerEntryOnValidate_External_document_no); ok {
 				if err := trg.OnValidate_External_document_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "area":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Area = v
+		} else if v, ok := value.(string); ok {
+			t.Area = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field area")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "area"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemLedgerEntryOnValidate_Area); ok {
+				if err := trg.OnValidate_Area(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "transaction_specification":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Transaction_specification = v
+		} else if v, ok := value.(string); ok {
+			t.Transaction_specification = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field transaction_specification")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transaction_specification"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemLedgerEntryOnValidate_Transaction_specification); ok {
+				if err := trg.OnValidate_Transaction_specification(t); err != nil {
 					return err
 				}
 			}
@@ -5623,16 +6067,28 @@ func (t *ItemLedgerEntry) FieldValue(no int) (any, bool) {
 		return t.Invt_qty_not_adjusted, true
 	case 49:
 		return t.Adjust_invoice_cost, true
+	case 50:
+		return t.Transaction_type, true
+	case 51:
+		return t.Transport_method, true
+	case 52:
+		return t.Country_code, true
 	case 53:
 		return t.Transferred_from_entry_no, true
 	case 57:
 		return t.Gen_bus_posting_group, true
 	case 58:
 		return t.Gen_prod_posting_group, true
+	case 59:
+		return t.Entry_exit_point, true
 	case 60:
 		return t.Document_date, true
 	case 61:
 		return t.External_document_no, true
+	case 62:
+		return t.Area, true
+	case 63:
+		return t.Transaction_specification, true
 	case 64:
 		return t.No_series, true
 	case 70:
@@ -5904,6 +6360,33 @@ func (t *ItemLedgerEntry) SetFieldValue(no int, value any) bool {
 			t.Adjust_invoice_cost = v
 			return true
 		}
+	case 50:
+		if v, ok := value.(types.Code); ok {
+			t.Transaction_type = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Transaction_type = types.NewCode(v)
+			return true
+		}
+	case 51:
+		if v, ok := value.(types.Code); ok {
+			t.Transport_method = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Transport_method = types.NewCode(v)
+			return true
+		}
+	case 52:
+		if v, ok := value.(types.Code); ok {
+			t.Country_code = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Country_code = types.NewCode(v)
+			return true
+		}
 	case 53:
 		if v, ok := value.(int); ok {
 			t.Transferred_from_entry_no = v
@@ -5927,6 +6410,15 @@ func (t *ItemLedgerEntry) SetFieldValue(no int, value any) bool {
 			t.Gen_prod_posting_group = types.NewCode(v)
 			return true
 		}
+	case 59:
+		if v, ok := value.(types.Code); ok {
+			t.Entry_exit_point = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Entry_exit_point = types.NewCode(v)
+			return true
+		}
 	case 60:
 		if v, ok := value.(types.Date); ok {
 			t.Document_date = v
@@ -5939,6 +6431,24 @@ func (t *ItemLedgerEntry) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.External_document_no = types.NewCode(v)
+			return true
+		}
+	case 62:
+		if v, ok := value.(types.Code); ok {
+			t.Area = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Area = types.NewCode(v)
+			return true
+		}
+	case 63:
+		if v, ok := value.(types.Code); ok {
+			t.Transaction_specification = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Transaction_specification = types.NewCode(v)
 			return true
 		}
 	case 64:
@@ -6631,16 +7141,28 @@ func (t *ItemLedgerEntry) columnValue(column string) (interface{}, bool) {
 		return t.Invt_qty_not_adjusted, true
 	case "adjust_invoice_cost":
 		return t.Adjust_invoice_cost, true
+	case "transaction_type":
+		return t.Transaction_type, true
+	case "transport_method":
+		return t.Transport_method, true
+	case "country_code":
+		return t.Country_code, true
 	case "transferred_from_entry_no":
 		return t.Transferred_from_entry_no, true
 	case "gen_bus_posting_group":
 		return t.Gen_bus_posting_group, true
 	case "gen_prod_posting_group":
 		return t.Gen_prod_posting_group, true
+	case "entry_exit_point":
+		return t.Entry_exit_point, true
 	case "document_date":
 		return t.Document_date, true
 	case "external_document_no":
 		return t.External_document_no, true
+	case "area":
+		return t.Area, true
+	case "transaction_specification":
+		return t.Transaction_specification, true
 	case "no_series":
 		return t.No_series, true
 	case "reserved_quantity":
@@ -6742,11 +7264,17 @@ func (t *ItemLedgerEntry) Init() {
 	t.Drop_shipment = *new(bool)
 	t.Invt_qty_not_adjusted = *new(types.Decimal)
 	t.Adjust_invoice_cost = *new(bool)
+	t.Transaction_type = *new(types.Code)
+	t.Transport_method = *new(types.Code)
+	t.Country_code = *new(types.Code)
 	t.Transferred_from_entry_no = *new(int)
 	t.Gen_bus_posting_group = *new(types.Code)
 	t.Gen_prod_posting_group = *new(types.Code)
+	t.Entry_exit_point = *new(types.Code)
 	t.Document_date = *new(types.Date)
 	t.External_document_no = *new(types.Code)
+	t.Area = *new(types.Code)
+	t.Transaction_specification = *new(types.Code)
 	t.No_series = *new(types.Code)
 	t.Reserved_quantity = *new(types.Decimal)
 	t.Variant_code = *new(types.Code)
@@ -6824,11 +7352,17 @@ func (t *ItemLedgerEntry) ToMap() map[string]interface{} {
 		"drop_shipment":              t.Drop_shipment,
 		"invt_qty_not_adjusted":      t.Invt_qty_not_adjusted.String(),
 		"adjust_invoice_cost":        t.Adjust_invoice_cost,
+		"transaction_type":           t.Transaction_type.String(),
+		"transport_method":           t.Transport_method.String(),
+		"country_code":               t.Country_code.String(),
 		"transferred_from_entry_no":  t.Transferred_from_entry_no,
 		"gen_bus_posting_group":      t.Gen_bus_posting_group.String(),
 		"gen_prod_posting_group":     t.Gen_prod_posting_group.String(),
+		"entry_exit_point":           t.Entry_exit_point.String(),
 		"document_date":              t.Document_date.String(),
 		"external_document_no":       t.External_document_no.String(),
+		"area":                       t.Area.String(),
+		"transaction_specification":  t.Transaction_specification.String(),
 		"no_series":                  t.No_series.String(),
 		"reserved_quantity":          t.Reserved_quantity.String(),
 		"variant_code":               t.Variant_code.String(),
@@ -7161,6 +7695,21 @@ func (t *ItemLedgerEntry) FromMap(data map[string]interface{}) {
 			t.Adjust_invoice_cost = b
 		}
 	}
+	if v, ok := data["transaction_type"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Transaction_type = types.NewCode(s)
+		}
+	}
+	if v, ok := data["transport_method"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Transport_method = types.NewCode(s)
+		}
+	}
+	if v, ok := data["country_code"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Country_code = types.NewCode(s)
+		}
+	}
 	if v, ok := data["transferred_from_entry_no"]; ok && v != nil {
 		switch val := v.(type) {
 		case float64:
@@ -7184,6 +7733,11 @@ func (t *ItemLedgerEntry) FromMap(data map[string]interface{}) {
 			t.Gen_prod_posting_group = types.NewCode(s)
 		}
 	}
+	if v, ok := data["entry_exit_point"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Entry_exit_point = types.NewCode(s)
+		}
+	}
 	if v, ok := data["document_date"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Document_date, _ = types.NewDateFromString(s)
@@ -7192,6 +7746,16 @@ func (t *ItemLedgerEntry) FromMap(data map[string]interface{}) {
 	if v, ok := data["external_document_no"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.External_document_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["area"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Area = types.NewCode(s)
+		}
+	}
+	if v, ok := data["transaction_specification"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Transaction_specification = types.NewCode(s)
 		}
 	}
 	if v, ok := data["no_series"]; ok && v != nil {
@@ -7647,6 +8211,36 @@ func (t *ItemLedgerEntry) GetFields() []tables.FieldInfo {
 			FlowField:  false,
 		},
 		{
+			No:         50,
+			Name:       "transaction_type",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         51,
+			Name:       "transport_method",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         52,
+			Name:       "country_code",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
 			No:         53,
 			Name:       "transferred_from_entry_no",
 			Type:       tables.FieldTypeInteger,
@@ -7677,6 +8271,16 @@ func (t *ItemLedgerEntry) GetFields() []tables.FieldInfo {
 			FlowField:  false,
 		},
 		{
+			No:         59,
+			Name:       "entry_exit_point",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
 			No:         60,
 			Name:       "document_date",
 			Type:       tables.FieldTypeDate,
@@ -7691,6 +8295,26 @@ func (t *ItemLedgerEntry) GetFields() []tables.FieldInfo {
 			Name:       "external_document_no",
 			Type:       tables.FieldTypeCode,
 			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         62,
+			Name:       "area",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         63,
+			Name:       "transaction_specification",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
 			Required:   false,
 			Editable:   true,
 			PrimaryKey: false,
@@ -7909,6 +8533,36 @@ func (t *ItemLedgerEntry) GetTableRelationFields() map[string]tables.TableRelati
 			},
 			SearchTimeout: 0,
 		},
+		"transaction_type": {
+			Table:        "Transaction_Type",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"transport_method": {
+			Table:        "Transport_Method",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"country_code": {
+			Table:        "Country_Region",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "name", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
 		"gen_bus_posting_group": {
 			Table:        "Gen_Business_Posting_Group",
 			Field:        "code",
@@ -7926,6 +8580,36 @@ func (t *ItemLedgerEntry) GetTableRelationFields() map[string]tables.TableRelati
 			LookupColumns: []tables.LookupColumnInfo{
 				{Source: "code", Width: 100},
 				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"entry_exit_point": {
+			Table:        "Entry_Exit_Point",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"area": {
+			Table:        "Area",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "text", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"transaction_specification": {
+			Table:        "Transaction_Specification",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "text", Width: 250},
 			},
 			SearchTimeout: 0,
 		},

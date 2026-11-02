@@ -143,3 +143,87 @@ func TestSetGLAccBudgetedAmount(t *testing.T) {
 		t.Errorf("%d budget entries after deleting the budgets' accounts and budget", n)
 	}
 }
+
+// A capacity typed into Resource Capacity / Res. Group Capacity enters the difference as a
+// capacity entry on the period's first date (a resource's with its group)
+func TestSetResCapacity(t *testing.T) {
+	db := newTestDB(t)
+	if err := CreateCompanyTables(db, "c1", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	src := ftables.DBSource(db, "c1", database.DBTypeSQLite)
+	group := gtables.NewResourceGroup(src)
+	group.No = "G1"
+	mustNoErr(t, group.InsertOrError(false))
+	res := gtables.NewResource(src)
+	res.No, res.Resource_group_no = "R1", "G1"
+	mustNoErr(t, res.InsertOrError(false))
+
+	cell := func() *gtables.Resource {
+		r := gtables.NewResource(src)
+		r.Get(types.Code("R1"))
+		mustNoErr(t, r.SetFlowFilter("date_filter", "2026-03-02"))
+		return r
+	}
+	mustNoErr(t, SetResCapacity(cell(), types.NewDecimalFromInt(8)))
+	mustNoErr(t, SetResCapacity(cell(), types.NewDecimalFromInt(6)))
+	r := cell()
+	r.CalcFields("capacity")
+	if !r.Capacity.Equal(types.NewDecimalFromInt(6)) {
+		t.Errorf("capacity %s, want 6", r.Capacity)
+	}
+	entry := gtables.NewResCapacityEntry(src)
+	if n := entry.Count(); n != 2 {
+		t.Errorf("%d capacity entries, want 2", n)
+	}
+	entry.FindFirst()
+	if entry.Resource_group_no != "G1" || entry.Date != types.NewDate(2026, 3, 2) {
+		t.Errorf("entry: group %s date %s", entry.Resource_group_no, entry.Date)
+	}
+
+	g := gtables.NewResourceGroup(src)
+	g.Get(types.Code("G1"))
+	mustNoErr(t, g.SetFlowFilter("date_filter", "2026-03-02"))
+	mustNoErr(t, SetResGroupCapacity(g, types.NewDecimalFromInt(10)))
+	g.CalcFields("capacity")
+	if !g.Capacity.Equal(types.NewDecimalFromInt(10)) {
+		t.Errorf("group capacity %s, want 10", g.Capacity)
+	}
+	// no single date: refused
+	r = cell()
+	mustNoErr(t, r.SetFlowFilter("date_filter", "..2026-03-02"))
+	if SetResCapacity(r, types.NewDecimalFromInt(1)) == nil {
+		t.Error("a capacity without a date was entered")
+	}
+}
+
+// An Intrastat batch's Statistics Period is YYMM; a line's statistical value is the amount and
+// the indirect cost (or the cost regulation % of the amount), its total weight the net weight of
+// the quantity
+func TestIntrastatJnl(t *testing.T) {
+	db := newTestDB(t)
+	if err := CreateCompanyTables(db, "c1", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	src := ftables.DBSource(db, "c1", database.DBTypeSQLite)
+	batch := gtables.NewIntrastatJnlBatch(src)
+	for period, ok := range map[string]bool{"2610": true, "261": false, "2613": false, "26AB": false} {
+		err := batch.Validate("statistics_period", types.Code(period))
+		if (err == nil) != ok {
+			t.Errorf("statistics period %s: %v", period, err)
+		}
+	}
+	line := gtables.NewIntrastatJnlLine(src)
+	mustNoErr(t, line.Validate("net_weight", types.MustDecimal("2.5")))
+	mustNoErr(t, line.Validate("quantity", types.NewDecimalFromInt(4)))
+	mustNoErr(t, line.Validate("amount", types.NewDecimalFromInt(1000)))
+	mustNoErr(t, line.Validate("cost_regulation_percent", types.NewDecimalFromInt(5)))
+	if !line.Total_weight.Equal(types.NewDecimalFromInt(10)) || !line.Indirect_cost.Equal(types.NewDecimalFromInt(50)) ||
+		!line.Statistical_value.Equal(types.NewDecimalFromInt(1050)) {
+		t.Errorf("weight %s, indirect cost %s, statistical value %s", line.Total_weight, line.Indirect_cost, line.Statistical_value)
+	}
+	mustNoErr(t, line.Validate("indirect_cost", types.NewDecimalFromInt(20)))
+	if !line.Cost_regulation_percent.IsZero() || !line.Statistical_value.Equal(types.NewDecimalFromInt(1020)) {
+		t.Errorf("own indirect cost: %% %s, value %s", line.Cost_regulation_percent, line.Statistical_value)
+	}
+}

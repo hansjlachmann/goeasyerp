@@ -1,0 +1,95 @@
+page:
+  id: 508
+  type: List
+  name: Blanket Sales Order Subform
+  source_table: Sales_Line   # the lines of the Sales Order card (42), linked by Document Type and No.
+  caption: Lines
+  editable: true
+  delayed_insert: true      # a line is inserted when the user leaves it
+  auto_split_key: true      # a new line gets Line No. 10000, 20000 … or halfway between its neighbours
+
+  layout:
+    repeater:
+      fields:
+        - source: document_type
+          width: 100
+          visible: false
+        - source: document_no
+          width: 100
+          visible: false
+        - source: line_no
+          width: 90
+          visible: false
+        - source: type
+          width: 110
+        - source: "no"
+          width: 120
+        - source: variant_code
+          width: 100
+          visible: false
+        - source: description
+          width: 260
+        - source: location_code
+          width: 100
+          visible: false
+        - source: quantity
+          width: 100
+        - source: unit_of_measure_code
+          width: 110
+        - source: unit_price
+          width: 120
+        - source: line_discount_percent
+          width: 110
+        - source: line_discount_amount
+          width: 130
+          visible: false
+        - source: amount
+          width: 120
+        - source: qty_to_ship
+          width: 110
+        - source: quantity_shipped
+          width: 120
+        - source: quantity_invoiced
+          width: 120
+        - source: amount_including_tax
+          width: 150
+          visible: false
+        - source: tax_group_code
+          width: 110
+        - source: allow_invoice_disc
+          width: 120
+          visible: false
+        - source: inv_discount_amount
+          width: 130
+          visible: false
+        - source: unit_cost_lcy
+          width: 120
+          visible: false
+        - source: work_type_code
+          width: 110
+          visible: false
+        - source: department_code
+          width: 110
+          visible: false
+        - source: project_code
+          width: 110
+          visible: false
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

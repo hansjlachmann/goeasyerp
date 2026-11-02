@@ -371,6 +371,20 @@ table:
       db_name: freight_type
       length: 10
 
+    - name: tariff_no
+      no: 47
+      type: types.Code
+      db_name: tariff_no
+      length: 10
+      table_relation:
+        table: Tariff_Number
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
+
     - name: duty_unit_conversion
       no: 48
       type: types.Decimal

@@ -4,8 +4,8 @@ table:
   description: "Sales Header (table 36): quotes, orders, invoices, credit memos and blanket orders"
   data_caption_fields: [no, sell_to_customer_name]
   auto_key: true   # OnInsert gives a document without No. the next number of its type's series
-  # Left out until their steps: 118 Applies-to ID, 55/94 Bal. Account, 56 Job, 71 Combine Shipments, 75-78/97/101/102 foreign trade
-  # statistics, 98 Correction, 117 Reserve, 119 VAT Base Discount %, 45 Order Class, 51 On Hold,
+  # Left out until their steps: 118 Applies-to ID, 55/94 Bal. Account, 56 Job, 71 Combine Shipments, 75 EU 3-Party Trade,
+  # 98 Correction, 117 Reserve, 119 VAT Base Discount %, 45 Order Class, 51 On Hold,
   # 106 Package Tracking No., 10005 Ship-to UPS Zone, 10009 Outstanding Amount (LCY)
   fields:
     - name: document_type
@@ -536,6 +536,48 @@ table:
           - source: description
             width: 250
 
+    - name: transaction_type
+      no: 76
+      type: types.Code
+      db_name: transaction_type
+      length: 10
+      table_relation:
+        table: Transaction_Type
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: transport_method
+      no: 77
+      type: types.Code
+      db_name: transport_method
+      length: 10
+      table_relation:
+        table: Transport_Method
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: vat_country_code
+      no: 78
+      type: types.Code
+      db_name: vat_country_code
+      length: 10
+      table_relation:
+        table: Country_Region
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
     - name: sell_to_customer_name
       no: 79
       type: types.Text
@@ -677,6 +719,20 @@ table:
           - source: name
             width: 250
 
+    - name: exit_point
+      no: 97
+      type: types.Code
+      db_name: exit_point
+      length: 10
+      table_relation:
+        table: Entry_Exit_Point
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
     - name: document_date
       no: 99
       type: types.Date
@@ -687,6 +743,34 @@ table:
       type: types.Code
       db_name: external_document_no
       length: 20
+
+    - name: area
+      no: 101
+      type: types.Code
+      db_name: area
+      length: 10
+      table_relation:
+        table: Area
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: text
+            width: 250
+
+    - name: transaction_specification
+      no: 102
+      type: types.Code
+      db_name: transaction_specification
+      length: 10
+      table_relation:
+        table: Transaction_Specification
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: text
+            width: 250
 
     - name: payment_method_code
       no: 104

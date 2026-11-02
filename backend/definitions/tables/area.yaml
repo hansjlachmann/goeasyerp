@@ -1,0 +1,25 @@
+table:
+  id: 284
+  name: "Area"
+  caption: Area
+  description: "The areas (regions) of the Intrastat declaration (table 284)"
+  lookup_page_id: 405
+  fields:
+    - name: code
+      no: 1
+      type: types.Code
+      db_name: code
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: text
+      no: 2
+      type: types.Text
+      db_name: text
+      length: 50
+
+  keys:
+    - name: Primary
+      fields: [code]
+      clustered: true

@@ -1,0 +1,44 @@
+page:
+  id: 327
+  type: List
+  name: Intrastat Jnl. Batches
+  source_table: Intrastat_Jnl_Batch
+  caption: Intrastat Jnl. Batches
+  editable: true
+  # opened from a template (filtered on it); a batch is a statistics period (YYMM)
+
+  layout:
+    repeater:
+      fields:
+        - source: journal_template_name
+          width: 110
+          visible: false
+        - source: name
+          width: 110
+        - source: description
+          width: 250
+        - source: statistics_period
+          width: 130
+        - source: currency_identifier
+          width: 130
+        - source: reported
+          width: 90
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

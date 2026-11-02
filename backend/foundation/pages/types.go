@@ -102,6 +102,9 @@ type FlowFilterField struct {
 type Layout struct {
 	Sections []Section `yaml:"sections,omitempty" json:"sections,omitempty"` // For Card pages
 	Repeater *Repeater `yaml:"repeater,omitempty" json:"repeater,omitempty"` // For List pages
+	// Matrix: a page that is a matrix of the source table's records against periods (classic
+	// matrix forms on a table: Resource Capacity) — the page's matrix section "" (no card record)
+	Matrix *Matrix `yaml:"matrix,omitempty" json:"matrix,omitempty"`
 }
 
 // Section represents a section/group on a Card page
@@ -376,6 +379,12 @@ func (p *PageDefinition) Clone() *PageDefinition {
 			s.Matrix = &mx
 		}
 		m.Layout.Sections[i] = s
+	}
+	if p.Page.Layout.Matrix != nil {
+		mx := *p.Page.Layout.Matrix
+		mx.Filters = append([]Field{}, mx.Filters...)
+		mx.Fields = append([]Field{}, mx.Fields...)
+		m.Layout.Matrix = &mx
 	}
 	if p.Page.Layout.Repeater != nil {
 		r := *p.Page.Layout.Repeater

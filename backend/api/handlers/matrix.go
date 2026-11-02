@@ -101,6 +101,9 @@ func (h *PageTriggersHandler) openMatrix(c *fiber.Ctx) (*matrixContext, error) {
 			matrix = s.Matrix
 		}
 	}
+	if req.Section == "" {
+		matrix = page.Page.Layout.Matrix // a matrix page
+	}
 	if matrix == nil {
 		return nil, c.Status(fiber.StatusNotFound).JSON(apitypes.NewErrorResponse(apperrors.InvalidFields().Message(language)))
 	}

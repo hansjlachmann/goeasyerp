@@ -200,3 +200,49 @@ func TestCalculatedMatrix(t *testing.T) {
 		t.Errorf("February: %v (%v), want blank", v, period)
 	}
 }
+
+// A matrix page (Resource Capacity 213): the matrix of the page itself (section ""), a capacity
+// typed into a day enters a capacity entry
+func TestMatrixPage(t *testing.T) {
+	if err := pages.GetRegistry().LoadPages(); err != nil {
+		t.Skipf("pages: %v", err)
+	}
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db.SetMaxOpenConns(1)
+	t.Cleanup(func() { _ = db.Close() })
+	if err := tables.CreateCompanyTables(db, "TEST", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	src := ftables.DBSource(db, "TEST", database.DBTypeSQLite)
+	res := gtables.NewResource(src)
+	res.No, res.Name = "R1", "Resource 1"
+	if err := res.InsertOrError(false); err != nil {
+		t.Fatal(err)
+	}
+	app := fiber.New()
+	app.Use(func(c *fiber.Ctx) error {
+		c.Locals("session", &session.Session{Company: "TEST", Language: "en-US"})
+		return c.Next()
+	})
+	h := NewPageTriggersHandler(db, database.DBTypeSQLite)
+	app.Post("/api/pages/:id/matrix", h.Matrix)
+	app.Post("/api/pages/:id/matrix/validate", h.MatrixValidate)
+	request := `"section": "", "record": {}, "view_by": 0, "view_as": 0, "date": "2026-03-02", "columns": 5`
+	status, out := sendJSON(t, app, "POST", "/api/pages/213/matrix/validate", `{`+request+`, "key": "R1", "start": "2026-03-03", "end": "2026-03-03", "value": "7.5"}`)
+	if status != 200 {
+		t.Fatalf("enter capacity: %d %v", status, out)
+	}
+	status, out = sendJSON(t, app, "POST", "/api/pages/213/matrix", `{`+request+`}`)
+	if status != 200 {
+		t.Fatalf("matrix: %d %v", status, out)
+	}
+	row := out["data"].(map[string]interface{})["rows"].([]interface{})[0].(map[string]interface{})
+	values := row["values"].([]interface{})
+	got, _ := types.NewDecimalFromString(fmt.Sprint(values[1]))
+	if row["key"] != "R1" || !got.Equal(types.MustDecimal("7.5")) || fmt.Sprint(values[0]) != "0" {
+		t.Errorf("row %v", row)
+	}
+}

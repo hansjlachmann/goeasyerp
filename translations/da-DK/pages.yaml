@@ -780,6 +780,45 @@ pages:
     caption: "Finanskonto saldo/budget"
     fields:
       budget_pct: "Saldo/budget (%)"
+  resource_capacity:
+    caption: "Ressourcekapacitet"
+  res_group_capacity:
+    caption: "Ressourcegruppekapacitet"
+  blanket_sales_order:
+    caption: "Rammesalgsordre"
+  blanket_sales_order_subform:
+    caption: "Linjer"
+  blanket_sales_orders:
+    caption: "Rammesalgsordrer"
+  blanket_purchase_order:
+    caption: "Rammekøbsordre"
+  blanket_purchase_order_subform:
+    caption: "Linjer"
+  blanket_purchase_orders:
+    caption: "Rammekøbsordrer"
+  transaction_types:
+    caption: "Transaktionstyper"
+  transport_methods:
+    caption: "Transportmåder"
+  tariff_numbers:
+    caption: "Varekoder"
+  entry_exit_points:
+    caption: "Indførsels-/udførselssteder"
+  areas:
+    caption: "Områder"
+  transaction_specifications:
+    caption: "Transaktionsspecifikationer"
+  intrastat_journal_templates:
+    caption: "Intrastat-kladdeskabeloner"
+  intrastat_jnl_template_list:
+    caption: "Intrastat-kladdeskabelonliste"
+  intrastat_jnl_batches:
+    caption: "Intrastat-kladdenavne"
+  intrastat_journal:
+    caption: "Intrastat-kladde"
+    fields:
+      statistical_value_to_line: "Statistisk værdi"
+      total_statistical_value: "Statistisk værdi i alt"
   item_availability_by_periods:
     caption: "Varedisponering pr. periode"
     fields:

@@ -1,0 +1,36 @@
+page:
+  id: 310
+  type: List
+  name: Tariff Numbers
+  source_table: Tariff_Number
+  caption: Tariff Numbers
+  editable: true
+
+  layout:
+    repeater:
+      fields:
+        - source: no
+          width: 120
+        - source: description
+          width: 320
+        - source: supplementary_units
+          width: 160
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

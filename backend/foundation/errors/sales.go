@@ -1,5 +1,7 @@
 package errors
 
+import "strconv"
+
 // Sales documents
 const (
 	ErrSalesQtyLessThan         ErrorCode = "ERR_SALES_QTY_LESS_THAN"
@@ -51,4 +53,48 @@ func SalesCannotInvoiceMore(qty string, base bool) *AppError {
 		return &AppError{Code: ErrSalesCannotInvoiceMoreBs, Params: []string{qty}}
 	}
 	return &AppError{Code: ErrSalesCannotInvoiceMore, Params: []string{qty}}
+}
+
+// ErrBlanketOrderQtyTooHigh: a blanket order line would ship / receive or invoice more than its
+// quantity (Field: the shipped/received quantity, Field2: Quantity)
+const ErrBlanketOrderQtyTooHigh ErrorCode = "ERR_BLANKET_ORDER_QTY_TOO_HIGH"
+
+// BlanketOrderQtyTooHigh: the field of the blanket order line would be greater than field2
+func BlanketOrderQtyTooHigh(table, field, field2 string) *AppError {
+	return &AppError{Code: ErrBlanketOrderQtyTooHigh, Table: table, Field: field, Field2: field2}
+}
+
+// ErrBlanketOrderQtyToMake: a blanket order line's quantity to ship / receive is more than is
+// left of it after the orders made from it (params: the line no., what is outstanding, on
+// orders, possible)
+const ErrBlanketOrderQtyToMake ErrorCode = "ERR_BLANKET_ORDER_QTY_TO_MAKE"
+
+// BlanketOrderQtyToMake: the field (Qty. to Ship/Receive (Base)) of a blanket line is too high
+func BlanketOrderQtyToMake(table, field string, lineNo int, outstanding, onOrders, possible string) *AppError {
+	return &AppError{Code: ErrBlanketOrderQtyToMake, Table: table, Field: field,
+		Params: []string{strconv.Itoa(lineNo), outstanding, onOrders, possible}}
+}
+
+// ErrBlanketOrderNoLines: Make Order on a blanket order with nothing to make
+const ErrBlanketOrderNoLines ErrorCode = "ERR_BLANKET_ORDER_NO_LINES"
+
+// BlanketOrderNoLines: there are no lines to create
+func BlanketOrderNoLines() *AppError {
+	return &AppError{Code: ErrBlanketOrderNoLines}
+}
+
+// ErrIntrastatStatisticsPeriod: an Intrastat batch's Statistics Period is not YYMM (Field)
+const ErrIntrastatStatisticsPeriod ErrorCode = "ERR_INTRASTAT_STATISTICS_PERIOD"
+
+// ErrIntrastatMonth: the month of a Statistics Period is not 1-12
+const ErrIntrastatMonth ErrorCode = "ERR_INTRASTAT_MONTH"
+
+// IntrastatStatisticsPeriod: the batch's Statistics Period must be 4 characters
+func IntrastatStatisticsPeriod(table string) *AppError {
+	return &AppError{Code: ErrIntrastatStatisticsPeriod, Table: table, Field: "statistics_period"}
+}
+
+// IntrastatMonth: the Statistics Period's month is not a month
+func IntrastatMonth() *AppError {
+	return &AppError{Code: ErrIntrastatMonth}
 }
