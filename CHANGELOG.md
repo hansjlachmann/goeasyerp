@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.125](https://github.com/hansjlachmann/openerp/compare/v0.1.124...v0.1.125) (2026-11-02)
+
+
+### Features
+
+* account schedules with overview and printout ([#187](https://github.com/hansjlachmann/openerp/issues/187)) ([7dee7c1](https://github.com/hansjlachmann/openerp/commit/7dee7c16221ecfab9dc9e71c983a1e355cb54c9f))
+
 ## [0.1.124](https://github.com/hansjlachmann/openerp/compare/v0.1.123...v0.1.124) (2026-11-02)
 
 
