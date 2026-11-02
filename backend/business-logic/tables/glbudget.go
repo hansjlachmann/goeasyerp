@@ -4,45 +4,12 @@ import (
 	"strings"
 
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
 
-// G/L budgets: table 95 G/L Budget Name, 96 G/L Budget Entry, the G/L Account's Budgeted Amount
-// (codeunit 7 GLBudget-Open, entering a budgeted amount in the budget matrix)
-
-type gLBudgetNameLogic struct{}
-
-type gLBudgetEntryLogic struct{}
-
-func init() {
-	gtables.RegisterGLBudgetNameLogic(gLBudgetNameLogic{})
-	gtables.RegisterGLBudgetEntryLogic(gLBudgetEntryLogic{})
-}
-
-// OnDelete deletes the budget's entries
-func (gLBudgetNameLogic) OnDelete(rec *gtables.GLBudgetName) error {
-	glBudgetEntry := gtables.NewGLBudgetEntry(rec)
-	glBudgetEntry.SetCurrentKey("budget_name", "gl_account_no", "date")
-	glBudgetEntry.SetRange("budget_name", rec.Name)
-	glBudgetEntry.DeleteAll()
-	return nil
-}
-
-// OnInsert: an entry has a date and a budget; the user who entered it
-func (gLBudgetEntryLogic) OnInsert(rec *gtables.GLBudgetEntry) error {
-	err := rec.TestField("date")
-	if err != nil {
-		return err
-	}
-	err = rec.TestField("budget_name")
-	if err != nil {
-		return err
-	}
-	rec.User_id = types.Code(system.UserId())
-	return nil
-}
+// G/L budgets: the G/L Account's Budgeted Amount (codeunit 7 GLBudget-Open, entering a budgeted
+// amount in the budget matrix); the tables' triggers are in glbudgetname.go and glbudgetentry.go
 
 // GLBudgetOpen is codeunit 7 GLBudget-Open: the budget the account's Budget Filter names, else
 // the first budget — DEFAULT created when there is none — goes into the Budget Filter
