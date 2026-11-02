@@ -63,7 +63,7 @@ func TestDemoSales(t *testing.T) {
 		t.Errorf("posted invoices %d, counted %d", salesInvHeader.Count(), counts.PostedSalesInvoices)
 	}
 	salesHeader := gtables.NewSalesHeader(src)
-	if salesHeader.Count() != counts.SalesQuotes+counts.SalesOrders+counts.SalesInvoices {
+	if salesHeader.Count() != counts.SalesQuotes+counts.SalesOrders+counts.SalesInvoices+counts.SalesBlanketOrders {
 		t.Errorf("open documents %d", salesHeader.Count())
 	}
 	glEntry := gtables.NewGLEntry(src)

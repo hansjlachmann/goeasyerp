@@ -784,6 +784,18 @@ pages:
     caption: "Resource Capacity"
   res_group_capacity:
     caption: "Res. Group Capacity"
+  blanket_sales_order:
+    caption: "Blanket Sales Order"
+  blanket_sales_order_subform:
+    caption: "Lines"
+  blanket_sales_orders:
+    caption: "Blanket Sales Orders"
+  blanket_purchase_order:
+    caption: "Blanket Purchase Order"
+  blanket_purchase_order_subform:
+    caption: "Lines"
+  blanket_purchase_orders:
+    caption: "Blanket Purchase Orders"
   item_availability_by_periods:
     caption: "Item Availability by Periods"
     fields:

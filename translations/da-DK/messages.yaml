@@ -441,6 +441,8 @@ messages:
   GEN_JNL_DEFAULT_BATCH: "Standardkladde"
   GEN_JNL_POST_CONFIRM: "Vil du bogføre kladdelinjerne?"
   SALES_CALC_INV_DISC_CONFIRM: "Vil du beregne fakturarabatten?"
+  BLANKET_ORDER_TO_ORDER_CONFIRM: "Vil du oprette en ordre fra rammeordren?"
+  BLANKET_ORDER_CHANGED_TO_ORDER: "Ordre %1 er oprettet fra rammeordre %2."
   SALES_QUOTE_TO_ORDER_CONFIRM: "Vil du konvertere tilbuddet til en ordre?"
   SALES_QUOTE_CHANGED_TO_ORDER: "Tilbud %1 er konverteret til ordre %2."
   PURCH_CALC_INV_DISC_CONFIRM: "Vil du beregne fakturarabatten?"

@@ -784,6 +784,18 @@ pages:
     caption: "Ressourcekapacitet"
   res_group_capacity:
     caption: "Ressourcegruppekapacitet"
+  blanket_sales_order:
+    caption: "Rammesalgsordre"
+  blanket_sales_order_subform:
+    caption: "Linjer"
+  blanket_sales_orders:
+    caption: "Rammesalgsordrer"
+  blanket_purchase_order:
+    caption: "Rammekøbsordre"
+  blanket_purchase_order_subform:
+    caption: "Linjer"
+  blanket_purchase_orders:
+    caption: "Rammekøbsordrer"
   item_availability_by_periods:
     caption: "Varedisponering pr. periode"
     fields:

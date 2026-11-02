@@ -440,6 +440,10 @@ func (p *PurchPost) postLines() error {
 		if err != nil {
 			return err
 		}
+		err = p.updateBlanketOrderLine(purchLine, qtyToReceive, qtyToReceiveBase, qtyToInvoice, qtyToInvoiceBase)
+		if err != nil {
+			return err
+		}
 		if purchHeader.Document_type == gtables.PurchaseHeader_Document_type.Order {
 			err = p.updateOrderLine(purchLine, qtyToReceive, qtyToReceiveBase, qtyToInvoice, qtyToInvoiceBase)
 			if err != nil {
@@ -1028,6 +1032,62 @@ func (p *PurchPost) insertPostedLines(purchLine *gtables.PurchaseLine, qtyToRece
 		purchInvLine.Receipt_line_no = purchLine.Line_no
 	}
 	return purchInvLine.InsertOrError(false)
+}
+
+// updateBlanketOrderLine (UpdateBlanketOrderLine): a line taken from a blanket order line adds
+// what it receives and invoices (a credit memo: sends back) to the blanket order line, in the
+// blanket line's unit of measure; the blanket line cannot receive more than its quantity
+func (p *PurchPost) updateBlanketOrderLine(purchLine *gtables.PurchaseLine, qtyToReceive, qtyToReceiveBase, qtyToInvoice, qtyToInvoiceBase types.Decimal) error {
+	if purchLine.Blanket_order_no == "" || purchLine.Blanket_order_line_no == 0 || (qtyToReceive.IsZero() && qtyToInvoice.IsZero()) {
+		return nil
+	}
+	blanketOrderPurchLine := gtables.NewPurchaseLine(purchLine)
+	if !blanketOrderPurchLine.Get(map[string]interface{}{"document_type": int(gtables.PurchaseLine_Document_type.BlanketOrder),
+		"document_no": purchLine.Blanket_order_no, "line_no": purchLine.Blanket_order_line_no}) {
+		return nil
+	}
+	err := blanketOrderPurchLine.TestField("type", purchLine.Type)
+	if err == nil {
+		err = blanketOrderPurchLine.TestField("no", purchLine.No)
+	}
+	if err == nil {
+		err = blanketOrderPurchLine.TestField("buy_from_vendor_no", purchLine.Buy_from_vendor_no)
+	}
+	if err != nil {
+		return err
+	}
+	sign := types.NewDecimalFromInt(1)
+	if purchLine.Document_type == gtables.PurchaseLine_Document_type.CreditMemo {
+		sign = sign.Neg()
+	}
+	// a quantity in the blanket line's unit of measure
+	inBlanketUnit := func(qty types.Decimal) types.Decimal {
+		if blanketOrderPurchLine.Qty_per_unit_of_measure.Equal(purchLine.Qty_per_unit_of_measure) || blanketOrderPurchLine.Qty_per_unit_of_measure.IsZero() {
+			return qty
+		}
+		return system.Round(purchLine.Qty_per_unit_of_measure.Div(blanketOrderPurchLine.Qty_per_unit_of_measure).Mul(qty), types.MustDecimal("0.00001"))
+	}
+	if !qtyToReceive.IsZero() {
+		blanketOrderPurchLine.Quantity_received = blanketOrderPurchLine.Quantity_received.Add(sign.Mul(inBlanketUnit(qtyToReceive)))
+		blanketOrderPurchLine.Qty_received_base = blanketOrderPurchLine.Qty_received_base.Add(sign.Mul(qtyToReceiveBase))
+	}
+	if !qtyToInvoice.IsZero() {
+		blanketOrderPurchLine.Quantity_invoiced = blanketOrderPurchLine.Quantity_invoiced.Add(sign.Mul(inBlanketUnit(qtyToInvoice)))
+		blanketOrderPurchLine.Qty_invoiced_base = blanketOrderPurchLine.Qty_invoiced_base.Add(sign.Mul(qtyToInvoiceBase))
+	}
+	err = tables.InitPurchLineOutstanding(blanketOrderPurchLine)
+	if err != nil {
+		return err
+	}
+	if blanketOrderPurchLine.Quantity.Mul(blanketOrderPurchLine.Quantity_received).IsNegative() ||
+		blanketOrderPurchLine.Quantity.Abs().LessThan(blanketOrderPurchLine.Quantity_received.Abs()) {
+		return apperrors.BlanketOrderQtyTooHigh(gtables.PurchaseLineTableName, "quantity_received", "quantity")
+	}
+	if blanketOrderPurchLine.Quantity_base.Mul(blanketOrderPurchLine.Qty_received_base).IsNegative() ||
+		blanketOrderPurchLine.Quantity_base.Abs().LessThan(blanketOrderPurchLine.Qty_received_base.Abs()) {
+		return apperrors.BlanketOrderQtyTooHigh(gtables.PurchaseLineTableName, "qty_received_base", "quantity_base")
+	}
+	return blanketOrderPurchLine.ModifyOrError(false)
 }
 
 // updateOrderLine: the order line's received and invoiced quantities grow by what was posted;

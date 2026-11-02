@@ -31,7 +31,11 @@ func (purchaseLineLogic) OnInsert(rec *gtables.PurchaseLine) error {
 
 // OnDelete: a line received but not invoiced stays
 func (purchaseLineLogic) OnDelete(rec *gtables.PurchaseLine) error {
-	return rec.TestField("qty_rcd_not_invoiced", types.Decimal{})
+	err := rec.TestField("qty_rcd_not_invoiced", types.Decimal{})
+	if err != nil {
+		return err
+	}
+	return checkPurchBlanketOrderLineDelete(rec)
 }
 
 // OnRename: a purchase line is never renamed

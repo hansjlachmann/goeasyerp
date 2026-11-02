@@ -236,7 +236,7 @@ menu:
       - name: "Quotes"
         page_id: 9300
       - name: "Blanket Orders"
-        page_id: 507
+        page_id: 9303
       - name: "Orders"
         page_id: 9305
       - name: "Invoices"
@@ -353,7 +353,7 @@ menu:
       - name: "Quotes"
         page_id: 9306
       - name: "Blanket Orders"
-        page_id: 509
+        page_id: 9310
       - name: "Orders"
         page_id: 9307
       - name: "Invoices"

@@ -2,6 +2,7 @@ package demodata
 
 import (
 	"fmt"
+	"github.com/hansjlachmann/openerp/backend/business-logic/blanketorder"
 	"math/rand"
 	"sort"
 	"time"
@@ -269,7 +270,38 @@ func postDemoPurchases(src ftables.Source, open func(src ftables.Source) PurchPo
 		return err
 	}
 	counts.PurchaseInvoices++
-	return nil
+
+	// a blanket order called off in part: an order of half of each line (Make Order), received
+	// and invoiced — the blanket lines show it
+	blanket, err := newDocument(gtables.PurchaseHeader_Document_type.BlanketOrder, today.AddDate(0, -1, 0), "")
+	if err != nil {
+		return err
+	}
+	counts.PurchBlanketOrders++
+	purchLine := gtables.NewPurchaseLine(src)
+	purchLine.SetRange("document_type", gtables.PurchaseLine_Document_type.BlanketOrder)
+	purchLine.SetRange("document_no", blanket.No)
+	var blanketLines []*gtables.PurchaseLine
+	for found := purchLine.FindSetBuffered(); found; found = purchLine.Next() {
+		line := gtables.NewPurchaseLine(src)
+		line.Copy(purchLine)
+		blanketLines = append(blanketLines, line)
+	}
+	for _, line := range blanketLines {
+		half := types.NewDecimalFromInt(int64(line.Quantity.Float64())/2 + 1)
+		err = line.Validate("qty_to_receive", half)
+		if err == nil {
+			err = line.ModifyOrError(true)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	order, err := blanketorder.PurchToOrder(blanket)
+	if err != nil {
+		return err
+	}
+	return post(order, true, true, today.AddDate(0, 0, -7))
 }
 
 // demoPurchaseMasters: the domestic vendors that supply items (Vendor No. on the item) and their

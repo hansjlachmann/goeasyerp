@@ -1,0 +1,172 @@
+page:
+  id: 507
+  type: Card
+  name: Blanket Sales Order
+  source_table: Sales_Header   # opened from Blanket Sales Orders (9303); OnNewRecord: Document Type = Blanket Order
+  caption: Blanket Sales Order
+  list_page_id: 9303
+  enable_navigation: true
+  editable: true
+  focus_field: "no"
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+            importance: Promoted
+            assist_edit: "table:Sales_Header.AssistEdit"
+          - source: sell_to_customer_no
+            importance: Promoted
+          - source: sell_to_customer_name
+          - source: sell_to_address
+          - source: sell_to_address_2
+          - source: sell_to_post_code
+          - source: sell_to_city
+          - source: sell_to_state
+          - source: sell_to_contact
+          - source: your_reference
+          - source: posting_date
+          - source: order_date
+          - source: document_date
+          - source: salesperson_code
+          - source: external_document_no
+
+      # The blanket order's lines (Sales Line), in their line order
+      - name: Lines
+        caption: Lines
+        subpage:
+          page_id: 508
+          link:
+            document_type: document_type
+            document_no: "no"
+
+      - name: Invoicing
+        caption: Invoicing
+        fields:
+          - source: bill_to_customer_no
+          - source: bill_to_name
+          - source: bill_to_address
+          - source: bill_to_address_2
+          - source: bill_to_post_code
+          - source: bill_to_city
+          - source: bill_to_state
+          - source: bill_to_contact
+          - source: payment_terms_code
+          - source: due_date
+          - source: payment_discount_percent
+          - source: pmt_discount_date
+          - source: payment_method_code
+          - source: department_code
+          - source: project_code
+          - source: customer_posting_group
+          - source: gen_bus_posting_group
+          - source: tax_area_code
+          - source: tax_liable
+          - source: prices_including_tax
+          - source: price_group_code
+          - source: cust_item_disc_gr
+          - source: invoice_disc_code
+          - source: allow_quantity_disc
+
+      - name: Shipping
+        caption: Shipping
+        fields:
+          - source: ship_to_code
+          - source: ship_to_name
+          - source: ship_to_address
+          - source: ship_to_address_2
+          - source: ship_to_post_code
+          - source: ship_to_city
+          - source: ship_to_state
+          - source: ship_to_contact
+          - source: location_code
+          - source: shipment_method_code
+          - source: shipping_agent_code
+          - source: shipment_date
+
+      - name: Foreign Trade
+        caption: Foreign Trade
+        fields:
+          - source: currency_code
+          - source: currency_factor
+          - source: language_code
+          - source: vat_registration_no
+
+  actions:
+    - name: Back to List
+      caption: Back to List
+      image: Back
+      shortcut: Esc
+      promoted: true
+      run_page: 9303
+
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    - name: Print
+      caption: Print
+      image: Print
+      promoted: true
+      run_object: report:210
+
+    # an order of the lines' quantities to ship (the blanket order stays)
+    - name: Make Order
+      caption: Make Order
+      image: Document
+      promoted: true
+      run_object: codeunit:84
+
+    - name: Statistics
+      caption: Statistics
+      image: Statistics
+      shortcut: F9
+      promoted: true
+      run_page: 160
+      run_page_filters:
+        - field: document_type
+          value: document_type
+        - field: "no"
+          value: "no"
+
+    - name: Customer
+      caption: Customer
+      image: Customer
+      shortcut: Shift+F5
+      promoted: true
+      run_page: 21
+      run_page_filter_field: "no"
+      run_page_filter_value: sell_to_customer_no
+
+    - name: Comments
+      caption: Comments
+      image: Document
+      promoted: true
+      run_page: 67
+      run_page_filters:
+        - field: document_type
+          value: document_type
+        - field: "no"
+          value: "no"
+
+    - name: Calculate Invoice Discount
+      caption: Calculate Invoice Discount
+      image: Calculate
+      promoted: true
+      run_object: codeunit:61

@@ -4411,6 +4411,8 @@ tables:
   sales_line:
     caption: "Salgslinje"
     fields:
+      blanket_order_no: "Rammeordrenr."
+      blanket_order_line_no: "Rammeordrelinjenr."
       document_type: "Dokumenttype"
       sell_to_customer_no: "Salg til-kundenr."
       document_no: "Dokumentnr."
@@ -5044,6 +5046,8 @@ tables:
   purchase_line:
     caption: "Kjøpslinje"
     fields:
+      blanket_order_no: "Rammeordrenr."
+      blanket_order_line_no: "Rammeordrelinjenr."
       fa_posting_date: "Anleggsbokføringsdato"
       fa_posting_type: "Anleggsbokføringstype"
       depreciation_book_code: "Avskrivningsprofilkode"

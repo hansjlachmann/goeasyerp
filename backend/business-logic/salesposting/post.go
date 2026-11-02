@@ -422,6 +422,10 @@ func (p *SalesPost) postLines() error {
 		if err != nil {
 			return err
 		}
+		err = p.updateBlanketOrderLine(salesLine, qtyToShip, qtyToShipBase, qtyToInvoice, qtyToInvoiceBase)
+		if err != nil {
+			return err
+		}
 		if salesHeader.Document_type == gtables.SalesHeader_Document_type.Order {
 			err = p.updateOrderLine(salesLine, qtyToShip, qtyToShipBase, qtyToInvoice, qtyToInvoiceBase)
 			if err != nil {
@@ -988,6 +992,62 @@ func (p *SalesPost) insertPostedLines(salesLine *gtables.SalesLine, qtyToShip, q
 		salesInvLine.Shipment_line_no = salesLine.Line_no
 	}
 	return salesInvLine.InsertOrError(false)
+}
+
+// updateBlanketOrderLine (UpdateBlanketOrderLine): a line taken from a blanket order line adds
+// what it ships and invoices (a credit memo: takes back) to the blanket order line, in the
+// blanket line's unit of measure; the blanket line cannot ship more than its quantity
+func (p *SalesPost) updateBlanketOrderLine(salesLine *gtables.SalesLine, qtyToShip, qtyToShipBase, qtyToInvoice, qtyToInvoiceBase types.Decimal) error {
+	if salesLine.Blanket_order_no == "" || salesLine.Blanket_order_line_no == 0 || (qtyToShip.IsZero() && qtyToInvoice.IsZero()) {
+		return nil
+	}
+	blanketOrderSalesLine := gtables.NewSalesLine(salesLine)
+	if !blanketOrderSalesLine.Get(map[string]interface{}{"document_type": int(gtables.SalesLine_Document_type.BlanketOrder),
+		"document_no": salesLine.Blanket_order_no, "line_no": salesLine.Blanket_order_line_no}) {
+		return nil
+	}
+	err := blanketOrderSalesLine.TestField("type", salesLine.Type)
+	if err == nil {
+		err = blanketOrderSalesLine.TestField("no", salesLine.No)
+	}
+	if err == nil {
+		err = blanketOrderSalesLine.TestField("sell_to_customer_no", salesLine.Sell_to_customer_no)
+	}
+	if err != nil {
+		return err
+	}
+	sign := types.NewDecimalFromInt(1)
+	if salesLine.Document_type == gtables.SalesLine_Document_type.CreditMemo {
+		sign = sign.Neg()
+	}
+	// a quantity in the blanket line's unit of measure
+	inBlanketUnit := func(qty types.Decimal) types.Decimal {
+		if blanketOrderSalesLine.Qty_per_unit_of_measure.Equal(salesLine.Qty_per_unit_of_measure) || blanketOrderSalesLine.Qty_per_unit_of_measure.IsZero() {
+			return qty
+		}
+		return system.Round(salesLine.Qty_per_unit_of_measure.Div(blanketOrderSalesLine.Qty_per_unit_of_measure).Mul(qty), types.MustDecimal("0.00001"))
+	}
+	if !qtyToShip.IsZero() {
+		blanketOrderSalesLine.Quantity_shipped = blanketOrderSalesLine.Quantity_shipped.Add(sign.Mul(inBlanketUnit(qtyToShip)))
+		blanketOrderSalesLine.Qty_shipped_base = blanketOrderSalesLine.Qty_shipped_base.Add(sign.Mul(qtyToShipBase))
+	}
+	if !qtyToInvoice.IsZero() {
+		blanketOrderSalesLine.Quantity_invoiced = blanketOrderSalesLine.Quantity_invoiced.Add(sign.Mul(inBlanketUnit(qtyToInvoice)))
+		blanketOrderSalesLine.Qty_invoiced_base = blanketOrderSalesLine.Qty_invoiced_base.Add(sign.Mul(qtyToInvoiceBase))
+	}
+	err = tables.InitSalesLineOutstanding(blanketOrderSalesLine)
+	if err != nil {
+		return err
+	}
+	if blanketOrderSalesLine.Quantity.Mul(blanketOrderSalesLine.Quantity_shipped).IsNegative() ||
+		blanketOrderSalesLine.Quantity.Abs().LessThan(blanketOrderSalesLine.Quantity_shipped.Abs()) {
+		return apperrors.BlanketOrderQtyTooHigh(gtables.SalesLineTableName, "quantity_shipped", "quantity")
+	}
+	if blanketOrderSalesLine.Quantity_base.Mul(blanketOrderSalesLine.Qty_shipped_base).IsNegative() ||
+		blanketOrderSalesLine.Quantity_base.Abs().LessThan(blanketOrderSalesLine.Qty_shipped_base.Abs()) {
+		return apperrors.BlanketOrderQtyTooHigh(gtables.SalesLineTableName, "qty_shipped_base", "quantity_base")
+	}
+	return blanketOrderSalesLine.ModifyOrError(false)
 }
 
 // updateOrderLine: the order line's shipped and invoiced quantities grow by what was posted;

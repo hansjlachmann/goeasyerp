@@ -2,6 +2,7 @@ package demodata
 
 import (
 	"fmt"
+	"github.com/hansjlachmann/openerp/backend/business-logic/blanketorder"
 	"math/rand"
 	"time"
 
@@ -268,7 +269,38 @@ func postDemoSales(src ftables.Source, open func(src ftables.Source) SalesPoster
 		return err
 	}
 	counts.SalesInvoices++
-	return nil
+
+	// a blanket order called off in part: an order of half of each line (Make Order), shipped
+	// and invoiced — the blanket lines show it
+	blanket, err := newDocument(gtables.SalesHeader_Document_type.BlanketOrder, today.AddDate(0, -1, 0))
+	if err != nil {
+		return err
+	}
+	counts.SalesBlanketOrders++
+	salesLine := gtables.NewSalesLine(src)
+	salesLine.SetRange("document_type", gtables.SalesLine_Document_type.BlanketOrder)
+	salesLine.SetRange("document_no", blanket.No)
+	var blanketLines []*gtables.SalesLine
+	for found := salesLine.FindSetBuffered(); found; found = salesLine.Next() {
+		line := gtables.NewSalesLine(src)
+		line.Copy(salesLine)
+		blanketLines = append(blanketLines, line)
+	}
+	for _, line := range blanketLines {
+		half := types.NewDecimalFromInt(int64(line.Quantity.Float64())/2 + 1)
+		err = line.Validate("qty_to_ship", half)
+		if err == nil {
+			err = line.ModifyOrError(true)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	order, err := blanketorder.SalesToOrder(blanket)
+	if err != nil {
+		return err
+	}
+	return post(order, true, true, today.AddDate(0, 0, -7))
 }
 
 // demoSalesMasters: the domestic customers, the items on inventory at the main warehouse and the

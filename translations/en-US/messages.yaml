@@ -441,6 +441,8 @@ messages:
   GEN_JNL_DEFAULT_BATCH: "Default Journal"
   GEN_JNL_POST_CONFIRM: "Do you want to post the journal lines?"
   SALES_CALC_INV_DISC_CONFIRM: "Do you want to calculate the invoice discount?"
+  BLANKET_ORDER_TO_ORDER_CONFIRM: "Do you want to create an order from the blanket order?"
+  BLANKET_ORDER_CHANGED_TO_ORDER: "Order %1 has been created from blanket order %2."
   SALES_QUOTE_TO_ORDER_CONFIRM: "Do you want to convert the quote to an order?"
   SALES_QUOTE_CHANGED_TO_ORDER: "Quote %1 has been changed to order %2."
   PURCH_CALC_INV_DISC_CONFIRM: "Do you want to calculate the invoice discount?"

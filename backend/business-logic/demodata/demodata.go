@@ -169,6 +169,8 @@ type Counts struct {
 	LedgerEntries      int
 	GLEntries          int // demo G/L entries (monthly sales and costs against the bank)
 	GLBudgetEntries    int // the demo budget's monthly amounts (budgets.go)
+	SalesBlanketOrders int // blanket sales orders (sales.go)
+	PurchBlanketOrders int // blanket purchase orders (purchases.go)
 	AccScheduleLines   int // the demo account schedules' lines (accschedules.go)
 	AccSchedColumns    int // their column layouts' columns
 	ItemLedgerEntries  int // the demo items' opening stock, purchases and sales (posted)

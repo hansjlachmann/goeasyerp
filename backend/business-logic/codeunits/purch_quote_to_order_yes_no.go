@@ -13,10 +13,10 @@ import (
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
 
-// PurchQuoteToOrderYesNo - Codeunit 97 "Purch.-Quote to Order (Yes/No)": a quote's Make Order.
+// PurchQuoteToOrderYesNo - Codeunit 93 "Purch.-Quote to Order (Yes/No)": a quote's Make Order.
 // After asking, the quote becomes an order (Purch.-Quote to Order, codeunit 96) in one
 // transaction; the message names both, and the page opens the order (Purchase Order card 50).
-const PurchQuoteToOrderYesNoID = 97
+const PurchQuoteToOrderYesNoID = 93
 const PurchQuoteToOrderYesNoName = "purch-quote-to-order-yes-no"
 
 // purchOrderCardID: the Purchase Order card the new order opens on
@@ -49,7 +49,7 @@ func (c *PurchQuoteToOrderYesNo) GetDBType() database.DBType { return c.dbType }
 func (c *PurchQuoteToOrderYesNo) Run(record interface{}) (fcodeunits.Result, error) {
 	rec, ok := record.(*gtables.PurchaseHeader)
 	if !ok {
-		return fcodeunits.Result{}, errors.New("codeunit 97 runs on a purchase header")
+		return fcodeunits.Result{}, errors.New("codeunit 93 runs on a purchase header")
 	}
 	result, err := c.code(rec)
 	return result, err
