@@ -43,6 +43,18 @@ master_data:
   - table: Source_Code
     records:
       - {code: GENJNL, description: General journal}
+      - {code: COMPRGL, description: G/L date compression}
+      - {code: COMPRTAX, description: Tax entry date compression}
+      - {code: COMPRCUST, description: Customer ledger date compression}
+      - {code: COMPRVEND, description: Vendor ledger date compression}
+      - {code: COMPRBANK, description: Bank account ledger date compression}
+      - {code: COMPRCHECK, description: Check ledger date compression}
+      - {code: COMPRITEM, description: Item ledger date compression}
+      - {code: COMPRBOM, description: BOM ledger date compression}
+      - {code: COMPRRES, description: Resource ledger date compression}
+      - {code: COMPRFA, description: FA ledger date compression}
+      - {code: COMPRMAINT, description: Maintenance ledger date compression}
+      - {code: COMPRINS, description: Insurance ledger date compression}
       - {code: SALES, description: Sales}
       - {code: PURCHASES, description: Purchases}
       - {code: SALESJNL, description: Sales journal}
@@ -730,7 +742,7 @@ master_data:
       - {code: PROPERTY, description: Property insurance}
   - table: Source_Code_Setup   # the single setup record (blank key): the journals' source codes
     records:
-      - {general_journal: GENJNL, sales_journal: SALESJNL, purchase_journal: PURCHJNL, cash_receipt_journal: CASHRECJNL, payment_journal: PAYMENTJNL, sales: SALES, purchases: PURCHASES, sales_entry_application: SALESAPPL, purchase_entry_application: PURCHAPPL, item_journal: ITEMJNL, item_transfer_journal: TRANSFER, phys_inventory_journal: PHYSINVJNL, inventory_post_cost: INVTPCOST, resource_journal: RESJNL, bom_journal: BOMJNL, fixed_asset_journal: FAJNL, fixed_asset_g_l_journal: FAGLJNL, insurance_journal: INSJNL, reminder: REMINDER, finance_charge_memo: FINCHRG, exchange_rate_adjmt: EXCHRATADJ}
+      - {general_journal: GENJNL, sales_journal: SALESJNL, purchase_journal: PURCHJNL, cash_receipt_journal: CASHRECJNL, payment_journal: PAYMENTJNL, sales: SALES, purchases: PURCHASES, sales_entry_application: SALESAPPL, purchase_entry_application: PURCHAPPL, item_journal: ITEMJNL, item_transfer_journal: TRANSFER, phys_inventory_journal: PHYSINVJNL, inventory_post_cost: INVTPCOST, resource_journal: RESJNL, bom_journal: BOMJNL, fixed_asset_journal: FAJNL, fixed_asset_g_l_journal: FAGLJNL, insurance_journal: INSJNL, reminder: REMINDER, finance_charge_memo: FINCHRG, exchange_rate_adjmt: EXCHRATADJ, compress_g_l: COMPRGL, compress_tax_entries: COMPRTAX, compress_cust_ledger: COMPRCUST, compress_vend_ledger: COMPRVEND, compress_bank_acc_ledger: COMPRBANK, compress_check_ledger: COMPRCHECK, compress_item_ledger: COMPRITEM, compress_bom_ledger: COMPRBOM, compress_res_ledger: COMPRRES, compress_fa_ledger: COMPRFA, compress_maintenance_ledger: COMPRMAINT, compress_insurance_ledger: COMPRINS}
   - table: Gen_Journal_Template   # one per journal type (type 0 General … 4 Payments); page and source code come from the type
     records:
       - {name: GENERAL, description: General Journal, type: 0, no_series: GJNL-GEN}

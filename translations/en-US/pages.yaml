@@ -990,3 +990,5 @@ pages:
     caption: "Req. Wksh. Names"
   requisition_methods:
     caption: "Requisition Methods"
+  date_compr_registers:
+    caption: "Date Compr. Registers"

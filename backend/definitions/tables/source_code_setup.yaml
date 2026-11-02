@@ -348,6 +348,174 @@ table:
           - source: description
             width: 250
 
+    - name: compress_g_l
+      no: 24
+      type: types.Code
+      db_name: compress_g_l
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: compress_tax_entries
+      no: 25
+      type: types.Code
+      db_name: compress_tax_entries
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: compress_cust_ledger
+      no: 26
+      type: types.Code
+      db_name: compress_cust_ledger
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: compress_vend_ledger
+      no: 27
+      type: types.Code
+      db_name: compress_vend_ledger
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: compress_item_ledger
+      no: 28
+      type: types.Code
+      db_name: compress_item_ledger
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: compress_bom_ledger
+      no: 29
+      type: types.Code
+      db_name: compress_bom_ledger
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: compress_res_ledger
+      no: 31
+      type: types.Code
+      db_name: compress_res_ledger
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: compress_bank_acc_ledger
+      no: 35
+      type: types.Code
+      db_name: compress_bank_acc_ledger
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: compress_check_ledger
+      no: 36
+      type: types.Code
+      db_name: compress_check_ledger
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: compress_fa_ledger
+      no: 5603
+      type: types.Code
+      db_name: compress_fa_ledger
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: compress_maintenance_ledger
+      no: 5604
+      type: types.Code
+      db_name: compress_maintenance_ledger
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: compress_insurance_ledger
+      no: 5605
+      type: types.Code
+      db_name: compress_insurance_ledger
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
   keys:
     - name: Primary
       fields: [primary_key]

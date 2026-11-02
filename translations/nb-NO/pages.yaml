@@ -990,3 +990,5 @@ pages:
     caption: "Innkjøpskladdenavn"
   requisition_methods:
     caption: "Innkjøpsmetoder"
+  date_compr_registers:
+    caption: "Datokomprimeringsjournaler"

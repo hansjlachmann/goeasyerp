@@ -54,6 +54,143 @@ reports:
       WINDOW: "Processing items  #1##########"
       NO_WORKSHEET: "Reorder Inventory Items runs from a requisition worksheet."
       ENTER_ENDING_DATE: "You must enter the Ending Date."
+  shared:
+    options:
+      starting_date: "Starting Date"
+      ending_date: "Ending Date"
+      period_length: "Period Length"
+      description: "Posting Description"
+      only_index_entries: "Only Index Entries"
+      retain_document_type: "Retain Document Type"
+      retain_document_no: "Retain Document No."
+      retain_job_no: "Retain Job No."
+      retain_business_unit_code: "Retain Business Unit Code"
+      retain_department_code: "Retain Department Code"
+      retain_project_code: "Retain Project Code"
+      retain_sell_to_buy_from_no: "Retain Sell-to/Buy-from No."
+      retain_eu_3_party_trade: "Retain EU 3-Party Trade"
+      retain_country_code: "Retain Country Code"
+      retain_internal_ref_no: "Retain Internal Ref. No."
+      retain_sell_to_customer_no: "Retain Sell-to Customer No."
+      retain_salesperson_code: "Retain Salesperson Code"
+      retain_buy_from_vendor_no: "Retain Buy-from Vendor No."
+      retain_purchaser_code: "Retain Purchaser Code"
+      retain_our_contact_code: "Retain Our Contact Code"
+      retain_entry_type: "Retain Entry Type"
+      retain_reference_type: "Retain Reference Type"
+      retain_work_type_code: "Retain Work Type Code"
+      retain_unit_of_measure_code: "Retain Unit of Measure Code"
+      retain_chargeable: "Retain Chargeable"
+      retain_location_code: "Retain Location Code"
+      retain_source_type: "Retain Source Type"
+      retain_source_no: "Retain Source No."
+      retain_source_posting_group: "Retain Source Posting Group"
+      retain_salespers_purch_code: "Retain Salespers./Purch. Code"
+      retain_transaction_type: "Retain Transaction Type"
+      retain_transport_method: "Retain Transport Method"
+      retain_variant_code: "Retain Variant Code"
+      retain_reclassification_entry: "Retain Reclassification Entry"
+      retain_index_entry: "Retain Index Entry"
+      retain_maintenance_code: "Retain Maintenance Code"
+      retain_quantity: "Retain Totals: Quantity"
+    texts:
+      OPTIONS: "Options"
+      DAY: "Day"
+      WEEK: "Week"
+      MONTH: "Month"
+      QUARTER: "Quarter"
+      YEAR: "Year"
+      PERIOD: "Period"
+      DATE_COMPRESSED: "Date Compressed"
+      CONFIRM: "This batch job deletes entries. Therefore, it is important that you make a backup of the database before you run the batch job.\n\nDo you want to date compress the entries?"
+      ALL_RECORDS_DELETED: "All records deleted"
+  "98":
+    caption: "Date Compress General Ledger"
+    texts:
+      WINDOW: "Date compressing G/L entries...\n\nG/L Account No.      #1##########\nDate                 #2######\n\nNo. of new entries   #3######\nNo. of entries del.  #4######"
+  "95":
+    caption: "Date Compress Tax Entries"
+    texts:
+      WINDOW: "Date compressing tax entries...\n\nType                     #1##########\nTax Bus. Posting Group   #2##########\nTax Prod. Posting Group  #3##########\nTax Jurisdiction         #4##########\nUse Tax                  #5##########\nDate                     #6######\n\nNo. of new entries       #7######\nNo. of entries deleted   #8######"
+  "97":
+    caption: "Date Compr. G/L Budget Entries"
+    texts:
+      WINDOW: "Date compressing G/L budget entries...\n\nBudget Name          #1##########\nG/L Account No.      #2##########\nDate                 #3######\n\nNo. of new entries   #4######\nNo. of entries del.  #5######"
+  "198":
+    caption: "Date Compress Customer Ledger"
+    texts:
+      WINDOW: "Date compressing customer ledger entries...\n\nCustomer No.         #1##########\nDate                 #2######\n\nNo. of new entries   #3######\nNo. of entries del.  #4######"
+  "398":
+    caption: "Date Compress Vendor Ledger"
+    texts:
+      WINDOW: "Date compressing vendor ledger entries...\n\nVendor No.           #1##########\nDate                 #2######\n\nNo. of new entries   #3######\nNo. of entries del.  #4######"
+  "1498":
+    caption: "Date Compress Bank Acc. Ledger"
+    texts:
+      WINDOW: "Date compressing bank account ledger entries...\n\nBank Account No.     #1##########\nDate                 #2######\n\nNo. of new entries   #3######\nNo. of entries del.  #4######"
+  "1495":
+    caption: "Delete Check Ledger Entries"
+    texts:
+      WINDOW: "Date compressing check ledger entries...\n\nBank Account No.       #1##########\nNo. of entries deleted #4######"
+  "798":
+    caption: "Date Compress Item Ledger"
+    texts:
+      WINDOW: "Date compressing item ledger entries...\n\nItem No.             #1##########\nDate                 #2######\n\nNo. of new entries   #3######\nNo. of entries del.  #4######"
+  "789":
+    caption: "Delete Phys. Inventory Ledger"
+    texts:
+      WINDOW: "Deleting phys. inventory ledger entries...\n\nItem No.             #1##########\nDate                 #2######\n\nNo. of entries del.  #3######"
+      CONFIRM: "This batch job deletes entries. Therefore, it is important that you make a backup of the database before you run the batch job.\n\nDo you want to delete the entries?"
+  "898":
+    caption: "Date Compress BOM Ledger"
+    texts:
+      WINDOW: "Date compressing BOM ledger entries...\n\nDate                 #1######\n\nNo. of new entries   #2######\nNo. of entries del.  #3######"
+  "1198":
+    caption: "Date Compress Resource Ledger"
+    texts:
+      WINDOW: "Date compressing resource ledger entries...\n\nResource No.         #1##########\nDate                 #2######\n\nNo. of new entries   #3######\nNo. of entries del.  #4######"
+  "5696":
+    caption: "Date Compress FA Ledger"
+    texts:
+      WINDOW: "Date compressing FA ledger entries...\n\nFA No.               #1##########\nDate                 #2######\n\nNo. of new entries   #3######"
+  "5698":
+    caption: "Date Compress Maint. Ledger"
+    texts:
+      WINDOW: "Date compressing maintenance ledger entries...\n\nFA No.               #1##########\nDate                 #2######\n\nNo. of new entries   #3######"
+  "5697":
+    caption: "Date Compress Insurance Ledger"
+    texts:
+      WINDOW: "Date compressing insurance ledger entries...\n\nInsurance No.        #1##########\nDate                 #2######\n\nNo. of new entries   #3######\nNo. of entries del.  #4######"
+  "99":
+    caption: "Delete Empty G/L Registers"
+    texts:
+      CONFIRM: "Do you want to delete the registers?"
+      WINDOW: "Deleting empty G/L registers...\n\nNo.                      #1######\nPosted on                #2######\n\nNo. of registers deleted #3######"
+  "799":
+    caption: "Delete Empty Item Registers"
+    texts:
+      CONFIRM: "Do you want to delete the registers?"
+      WINDOW: "Deleting empty item registers...\n\nNo.                      #1######\nPosted on                #2######\n\nNo. of registers deleted #3######"
+  "899":
+    caption: "Delete Empty BOM Registers"
+    texts:
+      CONFIRM: "Do you want to delete the registers?"
+      WINDOW: "Deleting empty BOM registers...\n\nNo.                      #1######\nPosted on                #2######\n\nNo. of registers deleted #3######"
+  "1199":
+    caption: "Delete Empty Res. Registers"
+    texts:
+      CONFIRM: "Do you want to delete the registers?"
+      WINDOW: "Deleting empty resource registers...\n\nNo.                      #1######\nPosted on                #2######\n\nNo. of registers deleted #3######"
+  "5693":
+    caption: "Delete Empty FA Registers"
+    texts:
+      CONFIRM: "Do you want to delete the registers?"
+      WINDOW: "Deleting empty FA registers...\n\nNo.                      #1######\nPosted on                #2######\n\nNo. of registers deleted #3######"
+  "5695":
+    caption: "Delete Empty Insurance Reg."
+    texts:
+      CONFIRM: "Do you want to delete the registers?"
+      WINDOW: "Deleting empty insurance registers...\n\nNo.                      #1######\nPosted on                #2######\n\nNo. of registers deleted #3######"
   "791":
     caption: "Suggest Item Price Chg. (Item)"
     options:

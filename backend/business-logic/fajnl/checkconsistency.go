@@ -299,3 +299,15 @@ func setFAPostingDate(entry *gtables.FALedgerEntry, faDeprBook *gtables.FADeprec
 	}
 	return faDeprBook.ModifyOrError(false)
 }
+
+// SetFAPostingDate (FA Check Consistency SetFAPostingDate, from outside the posting): the FA
+// depreciation book's dates of the entry's posting type again — after a date compression made
+// the entry
+func SetFAPostingDate(entry *gtables.FALedgerEntry) error {
+	faDeprBook := gtables.NewFADepreciationBook(entry)
+	err := faDeprBook.GetOrError(map[string]interface{}{"fa_no": entry.Fa_no, "depreciation_book_code": entry.Depreciation_book_code})
+	if err != nil {
+		return err
+	}
+	return setFAPostingDate(entry, faDeprBook)
+}

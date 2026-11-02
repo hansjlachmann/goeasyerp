@@ -54,6 +54,143 @@ reports:
       WINDOW: "Behandler varer  #1##########"
       NO_WORKSHEET: "Genbestil lagervarer køres fra en indkøbskladde."
       ENTER_ENDING_DATE: "Du skal angive slutdatoen."
+  shared:
+    options:
+      starting_date: "Startdato"
+      ending_date: "Slutdato"
+      period_length: "Periodelængde"
+      description: "Bogføringsbeskrivelse"
+      only_index_entries: "Kun indekseringsposter"
+      retain_document_type: "Bevar Bilagstype"
+      retain_document_no: "Bevar Bilagsnr."
+      retain_job_no: "Bevar Sagsnr."
+      retain_business_unit_code: "Bevar Koncernvirksomhedskode"
+      retain_department_code: "Bevar Afdelingskode"
+      retain_project_code: "Bevar Projektkode"
+      retain_sell_to_buy_from_no: "Bevar Faktureres til/købt fra-nr."
+      retain_eu_3_party_trade: "Bevar EU-trekantshandel"
+      retain_country_code: "Bevar Landekode"
+      retain_internal_ref_no: "Bevar Intern ref.nr."
+      retain_sell_to_customer_no: "Bevar Kundenr."
+      retain_salesperson_code: "Bevar Sælgerkode"
+      retain_buy_from_vendor_no: "Bevar Leverandørnr."
+      retain_purchaser_code: "Bevar Indkøberkode"
+      retain_our_contact_code: "Bevar Vores kontaktkode"
+      retain_entry_type: "Bevar Posttype"
+      retain_reference_type: "Bevar Referencetype"
+      retain_work_type_code: "Bevar Arbejdstypekode"
+      retain_unit_of_measure_code: "Bevar Enhedskode"
+      retain_chargeable: "Bevar Fakturerbar"
+      retain_location_code: "Bevar Lokationskode"
+      retain_source_type: "Bevar Kildetype"
+      retain_source_no: "Bevar Kildenr."
+      retain_source_posting_group: "Bevar Kildebogføringsgruppe"
+      retain_salespers_purch_code: "Bevar Sælger-/indkøberkode"
+      retain_transaction_type: "Bevar Transaktionsart"
+      retain_transport_method: "Bevar Transportmåde"
+      retain_variant_code: "Bevar Variantkode"
+      retain_reclassification_entry: "Bevar Ompostering"
+      retain_index_entry: "Bevar Indekseringspost"
+      retain_maintenance_code: "Bevar Vedligeholdelseskode"
+      retain_quantity: "Bevar totaler: Antal"
+    texts:
+      OPTIONS: "Indstillinger"
+      DAY: "Dag"
+      WEEK: "Uge"
+      MONTH: "Måned"
+      QUARTER: "Kvartal"
+      YEAR: "År"
+      PERIOD: "Periode"
+      DATE_COMPRESSED: "Datokomprimeret"
+      CONFIRM: "Denne kørsel sletter poster. Det er derfor vigtigt, at du tager en sikkerhedskopi af databasen, før du kører den.\n\nVil du datokomprimere posterne?"
+      ALL_RECORDS_DELETED: "Alle poster slettet"
+  "98":
+    caption: "Datokomprimer finans"
+    texts:
+      WINDOW: "Datokomprimerer finansposter...\n\nFinanskontonr.       #1##########\nDato                 #2######\n\nAntal nye poster     #3######\nAntal slettet        #4######"
+  "95":
+    caption: "Datokomprimer momsposter"
+    texts:
+      WINDOW: "Datokomprimerer momsposter...\n\nType                     #1##########\nMomsvirks.bogf.gruppe    #2##########\nMomsprod.bogf.gruppe     #3##########\nSkattejurisdiktion       #4##########\nUse Tax                  #5##########\nDato                     #6######\n\nAntal nye poster         #7######\nAntal slettet            #8######"
+  "97":
+    caption: "Datokomprimer budgetposter"
+    texts:
+      WINDOW: "Datokomprimerer budgetposter...\n\nBudgetnavn           #1##########\nFinanskontonr.       #2##########\nDato                 #3######\n\nAntal nye poster     #4######\nAntal slettet        #5######"
+  "198":
+    caption: "Datokomprimer debitorposter"
+    texts:
+      WINDOW: "Datokomprimerer debitorposter...\n\nDebitornr.           #1##########\nDato                 #2######\n\nAntal nye poster     #3######\nAntal slettet        #4######"
+  "398":
+    caption: "Datokomprimer kreditorposter"
+    texts:
+      WINDOW: "Datokomprimerer kreditorposter...\n\nKreditornr.          #1##########\nDato                 #2######\n\nAntal nye poster     #3######\nAntal slettet        #4######"
+  "1498":
+    caption: "Datokomprimer bankkontoposter"
+    texts:
+      WINDOW: "Datokomprimerer bankkontoposter...\n\nBankkontonr.         #1##########\nDato                 #2######\n\nAntal nye poster     #3######\nAntal slettet        #4######"
+  "1495":
+    caption: "Slet checkposter"
+    texts:
+      WINDOW: "Datokomprimerer checkposter...\n\nBankkontonr.           #1##########\nAntal slettet          #4######"
+  "798":
+    caption: "Datokomprimer vareposter"
+    texts:
+      WINDOW: "Datokomprimerer vareposter...\n\nVarenr.              #1##########\nDato                 #2######\n\nAntal nye poster     #3######\nAntal slettet        #4######"
+  "789":
+    caption: "Slet lageroptællingsposter"
+    texts:
+      WINDOW: "Sletter lageroptællingsposter...\n\nVarenr.              #1##########\nDato                 #2######\n\nAntal slettet        #3######"
+      CONFIRM: "Denne kørsel sletter poster. Det er derfor vigtigt, at du tager en sikkerhedskopi af databasen, før du kører den.\n\nVil du slette posterne?"
+  "898":
+    caption: "Datokomprimer styklisteposter"
+    texts:
+      WINDOW: "Datokomprimerer styklisteposter...\n\nDato                 #1######\n\nAntal nye poster     #2######\nAntal slettet        #3######"
+  "1198":
+    caption: "Datokomprimer ressourceposter"
+    texts:
+      WINDOW: "Datokomprimerer ressourceposter...\n\nRessourcenr.         #1##########\nDato                 #2######\n\nAntal nye poster     #3######\nAntal slettet        #4######"
+  "5696":
+    caption: "Datokomprimer anlægsposter"
+    texts:
+      WINDOW: "Datokomprimerer anlægsposter...\n\nAnlægsnr.            #1##########\nDato                 #2######\n\nAntal nye poster     #3######"
+  "5698":
+    caption: "Datokomprimer vedligeholdelsesposter"
+    texts:
+      WINDOW: "Datokomprimerer vedligeholdelsesposter...\n\nAnlægsnr.            #1##########\nDato                 #2######\n\nAntal nye poster     #3######"
+  "5697":
+    caption: "Datokomprimer forsikringsposter"
+    texts:
+      WINDOW: "Datokomprimerer forsikringsposter...\n\nForsikringsnr.       #1##########\nDato                 #2######\n\nAntal nye poster     #3######\nAntal slettet        #4######"
+  "99":
+    caption: "Slet tomme finansjournaler"
+    texts:
+      CONFIRM: "Vil du slette journalerne?"
+      WINDOW: "Sletter tomme journaler (G/L)...\n\nNr.                      #1######\nBogført                  #2######\n\nAntal journaler slettet  #3######"
+  "799":
+    caption: "Slet tomme varejournaler"
+    texts:
+      CONFIRM: "Vil du slette journalerne?"
+      WINDOW: "Sletter tomme journaler (item)...\n\nNr.                      #1######\nBogført                  #2######\n\nAntal journaler slettet  #3######"
+  "899":
+    caption: "Slet tomme styklistejournaler"
+    texts:
+      CONFIRM: "Vil du slette journalerne?"
+      WINDOW: "Sletter tomme journaler (BOM)...\n\nNr.                      #1######\nBogført                  #2######\n\nAntal journaler slettet  #3######"
+  "1199":
+    caption: "Slet tomme ressourcejournaler"
+    texts:
+      CONFIRM: "Vil du slette journalerne?"
+      WINDOW: "Sletter tomme journaler (resource)...\n\nNr.                      #1######\nBogført                  #2######\n\nAntal journaler slettet  #3######"
+  "5693":
+    caption: "Slet tomme anlægsjournaler"
+    texts:
+      CONFIRM: "Vil du slette journalerne?"
+      WINDOW: "Sletter tomme journaler (FA)...\n\nNr.                      #1######\nBogført                  #2######\n\nAntal journaler slettet  #3######"
+  "5695":
+    caption: "Slet tomme forsikringsjournaler"
+    texts:
+      CONFIRM: "Vil du slette journalerne?"
+      WINDOW: "Sletter tomme journaler (insurance)...\n\nNr.                      #1######\nBogført                  #2######\n\nAntal journaler slettet  #3######"
   "791":
     caption: "Foreslå vareprisænd. (vare)"
     options:

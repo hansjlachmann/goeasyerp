@@ -1091,7 +1091,7 @@ func (t *GLRegister) renameReferences(field string, oldValue, newValue interface
 		condValue  int
 	}
 	references := map[string][]reference{
-		"no": {{"FA_Register", false, "g_l_register_no", "", 0}},
+		"no": {{"Date_Compr_Register", false, "register_no", "table_id", 17}, {"Date_Compr_Register", false, "register_no", "table_id", 21}, {"Date_Compr_Register", false, "register_no", "table_id", 25}, {"Date_Compr_Register", false, "register_no", "table_id", 254}, {"Date_Compr_Register", false, "register_no", "table_id", 271}, {"FA_Register", false, "g_l_register_no", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

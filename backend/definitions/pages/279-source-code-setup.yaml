@@ -17,10 +17,22 @@ page:
           - source: close_income_statement
             editable: true
 
+          - source: compress_g_l
+            editable: true
+
           - source: tax_settlement
             editable: true
 
+          - source: compress_tax_entries
+            editable: true
+
           - source: exchange_rate_adjmt
+            editable: true
+
+          - source: compress_bank_acc_ledger
+            editable: true
+
+          - source: compress_check_ledger
             editable: true
 
           - source: financially_voided_check
@@ -40,6 +52,9 @@ page:
             editable: true
 
           - source: sales_entry_application
+            editable: true
+
+          - source: compress_cust_ledger
             editable: true
 
           - source: finance_charge_memo
@@ -64,6 +79,9 @@ page:
           - source: purchase_entry_application
             editable: true
 
+          - source: compress_vend_ledger
+            editable: true
+
 
       - name: Inventory
         caption: Inventory
@@ -80,9 +98,27 @@ page:
           - source: inventory_post_cost
             editable: true
 
+          - source: compress_item_ledger
+            editable: true
+
+          - source: compress_bom_ledger
+            editable: true
+
+          - source: compress_res_ledger
+            editable: true
+
       - name: Fixed Assets
         caption: Fixed Assets
         fields:
+          - source: compress_insurance_ledger
+            editable: true
+
+          - source: compress_maintenance_ledger
+            editable: true
+
+          - source: compress_fa_ledger
+            editable: true
+
           - source: fixed_asset_g_l_journal
             editable: true
 

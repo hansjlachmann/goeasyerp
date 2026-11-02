@@ -539,16 +539,7 @@ func (p *FAJnlPostLine) insertMaintenance(entry *gtables.MaintenanceLedgerEntry,
 	if err != nil {
 		return err
 	}
-	// SetMaintenanceLastDate
-	maintenanceLedgEntry := gtables.NewMaintenanceLedgerEntry(p.src)
-	maintenanceLedgEntry.SetCurrentKey("fa_no", "depreciation_book_code", "fa_posting_date")
-	maintenanceLedgEntry.SetRange("fa_no", entry.Fa_no)
-	maintenanceLedgEntry.SetRange("depreciation_book_code", entry.Depreciation_book_code)
-	faDeprBook.Last_maintenance_date = types.Date{}
-	if maintenanceLedgEntry.FindLast() {
-		faDeprBook.Last_maintenance_date = maintenanceLedgEntry.Fa_posting_date
-	}
-	err = faDeprBook.ModifyOrError(false)
+	err = setMaintenanceLastDate(entry, faDeprBook)
 	if err != nil {
 		return err
 	}
@@ -966,4 +957,29 @@ func (p *FAJnlPostLine) postGLBalAcc(entry *gtables.FALedgerEntry, allocatedPct 
 	}
 	e.Correction = !e.Correction
 	return p.glAcc.insertBalAcc(p.src, e)
+}
+
+// setMaintenanceLastDate (SetMaintenanceLastDate): the FA depreciation book's Last Maintenance
+// Date — the last maintenance entry's FA posting date
+func setMaintenanceLastDate(entry *gtables.MaintenanceLedgerEntry, faDeprBook *gtables.FADepreciationBook) error {
+	maintenanceLedgEntry := gtables.NewMaintenanceLedgerEntry(entry)
+	maintenanceLedgEntry.SetCurrentKey("fa_no", "depreciation_book_code", "fa_posting_date")
+	maintenanceLedgEntry.SetRange("fa_no", entry.Fa_no)
+	maintenanceLedgEntry.SetRange("depreciation_book_code", entry.Depreciation_book_code)
+	faDeprBook.Last_maintenance_date = types.Date{}
+	if maintenanceLedgEntry.FindLast() {
+		faDeprBook.Last_maintenance_date = maintenanceLedgEntry.Fa_posting_date
+	}
+	return faDeprBook.ModifyOrError(false)
+}
+
+// SetMaintenanceLastDate (FA Insert Ledger Entry SetMaintenanceLastDate, from outside the
+// posting): the asset's Last Maintenance Date in the book again — after a date compression
+func SetMaintenanceLastDate(entry *gtables.MaintenanceLedgerEntry) error {
+	faDeprBook := gtables.NewFADepreciationBook(entry)
+	err := faDeprBook.GetOrError(map[string]interface{}{"fa_no": entry.Fa_no, "depreciation_book_code": entry.Depreciation_book_code})
+	if err != nil {
+		return err
+	}
+	return setMaintenanceLastDate(entry, faDeprBook)
 }

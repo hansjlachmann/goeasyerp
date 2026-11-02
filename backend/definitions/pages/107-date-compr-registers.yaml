@@ -1,0 +1,42 @@
+page:
+  id: 107
+  type: List
+  name: Date Compr. Registers
+  source_table: Date_Compr_Register
+  caption: Date Compr. Registers
+  # classic form 107: one line per date compression run — the table, the period, the records
+  # deleted and made, the fields kept and the register of the new entries
+
+  layout:
+    repeater:
+      fields:
+        - source: "no"
+          width: 70
+        - source: creation_date
+          width: 100
+        - source: table_id
+          width: 80
+        - source: table_caption
+          width: 200
+        - source: starting_date
+          width: 100
+        - source: ending_date
+          width: 100
+        - source: period_length
+          width: 100
+        - source: register_no
+          width: 90
+        - source: no_of_new_records
+          width: 110
+        - source: no_records_deleted
+          width: 110
+        - source: filter
+          width: 200
+        - source: retain_field_contents
+          width: 220
+        - source: retain_totals
+          width: 160
+        - source: user_id
+          width: 110
+        - source: source_code
+          width: 100
