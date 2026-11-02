@@ -708,6 +708,23 @@ tables:
       description: "Beskrivelse"
 
   # G/L Account (Table 15)
+  g_l_budget_name:
+    caption: "Finansbudgetnavn"
+    fields:
+      name: "Navn"
+      description: "Beskrivelse"
+  g_l_budget_entry:
+    caption: "Finansbudgetpost"
+    fields:
+      entry_no: "Løbenr."
+      budget_name: "Budgetnavn"
+      gl_account_no: "Finanskontonr."
+      date: "Dato"
+      department_code: "Afdelingskode"
+      project_code: "Projektkode"
+      amount: "Beløb"
+      description: "Beskrivelse"
+      user_id: "Bruger-id"
   g_l_account:
     caption: "Finanskonto"
     fields:
@@ -748,6 +765,9 @@ tables:
       project_filter: "Projektfilter"
       balance_at_date: "Saldo til dato"
       net_change: "Bevægelse"
+      budgeted_amount: "Budgetteret beløb"
+      budget_filter: "Budgetfilter"
+      budget_at_date: "Budget pr. dato"
       balance: "Saldo"
       debit_amount: "Debetbeløb"
       credit_amount: "Kreditbeløb"

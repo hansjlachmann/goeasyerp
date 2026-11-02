@@ -5,7 +5,7 @@ table:
   description: General ledger accounts, the chart of accounts (table 15)
   data_caption_fields: [no, name]
   lookup_page_id: 18   # G/L Account List (classic LookupFormID)
-  # Not yet (TODO): 12 Comment, the budget FlowFields/Filter, Business Unit Filter, 46 Picture, 10000
+  # Not yet (TODO): 12 Comment, Business Unit Filter, 46 Picture, 10000
   fields:
     - name: no
       no: 1
@@ -202,6 +202,79 @@ table:
         - field: posting_date
           type: filter
           value: date_filter
+
+    # FlowFields: totals of the G/L budget entries of the budget in Budget Filter; the budget
+    # matrix enters the Budgeted Amount (tables.SetGLAccBudgetedAmount)
+    - name: budgeted_amount
+      no: 33
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"   # an amount (classic AutoFormatType=1)
+      calc_formula: Sum
+      source_table: GLBudgetEntry
+      source_field: amount
+      flow_filters:
+        - field: gl_account_no
+          type: field
+          value: no
+        - field: gl_account_no
+          type: field_filter   # a total account sums the accounts of its Totaling
+          value: totaling
+        - field: department_code
+          type: filter
+          value: department_filter
+        - field: project_code
+          type: filter
+          value: project_filter
+        - field: date
+          type: filter
+          value: date_filter
+        - field: budget_name
+          type: filter
+          value: budget_filter
+
+    - name: budget_filter
+      no: 35
+      type: types.Code
+      length: 10
+      flow_filter: true
+      table_relation:
+        table: G_L_Budget_Name
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: budget_at_date
+      no: 37
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"   # an amount (classic AutoFormatType=1)
+      calc_formula: Sum
+      source_table: GLBudgetEntry
+      source_field: amount
+      flow_filters:
+        - field: gl_account_no
+          type: field
+          value: no
+        - field: gl_account_no
+          type: field_filter   # a total account sums the accounts of its Totaling
+          value: totaling
+        - field: department_code
+          type: filter
+          value: department_filter
+        - field: project_code
+          type: filter
+          value: project_filter
+        - field: date
+          type: filter
+          value: date_filter
+          upper_limit: true
+        - field: budget_name
+          type: filter
+          value: budget_filter
 
     - name: balance
       no: 36

@@ -1,0 +1,81 @@
+page:
+  id: 113
+  type: Card
+  name: G/L Budget by Periods
+  source_table: G_L_Budget_Name
+  caption: G/L Budget by Periods
+  list_page_id: 121
+  enable_navigation: true
+  editable: true
+  # classic form 113: the G/L accounts' Budgeted Amount per period in a matrix — here on the
+  # budget's card (classic: the Budget Filter of the form); a value typed into a cell enters a
+  # budget entry with the difference (OnMatrixValidate → SetGLAccBudgetedAmount)
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: name
+            importance: Promoted
+          - source: description
+
+      - name: Budget
+        caption: Budget
+        matrix:
+          table: G_L_Account
+          value: budgeted_amount
+          entry_table: G_L_Budget_Entry
+          date_filter: date_filter
+          record_filters:
+            budget_filter: name
+          view_by: 2
+          editable: true
+          filters:
+            - source: department_filter
+              drilldown_filter_field: department_code
+            - source: project_filter
+              drilldown_filter_field: project_code
+          fields:
+            - source: "no"
+              width: 90
+              style_expr: {field: account_type, not_equal: 0, style: Strong}
+            - source: name
+              width: 260
+              indent_field: indentation
+              style_expr: {field: account_type, not_equal: 0, style: Strong}
+          drilldown: 120
+          drilldown_row_field: gl_account_no
+          drilldown_row_value: totaling   # a total account: the accounts it totals
+          drilldown_date_field: date
+          drilldown_record_filters:
+            budget_name: name
+
+  actions:
+    - name: Back to List
+      caption: Back to List
+      image: Back
+      shortcut: Esc
+      promoted: true
+      run_page: 121
+
+    - name: Entries
+      caption: Entries
+      image: Entries
+      shortcut: Ctrl+F7
+      promoted: true
+      run_page: 120
+      run_page_filter_field: budget_name
+      run_page_filter_value: name
+
+    - name: Copy Budget
+      caption: Copy Budget
+      image: Copy
+      promoted: true
+      run_object: report:96
+
+    - name: Trial Balance/Budget
+      caption: Trial Balance/Budget
+      image: Print
+      promoted: true
+      run_object: report:9

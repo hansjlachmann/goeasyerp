@@ -745,6 +745,16 @@ pages:
     caption: "BOM Registers"
   bom_ledger_entries:
     caption: "BOM Ledger Entries"
+  g_l_budget_by_periods:
+    caption: "G/L Budget by Periods"
+  g_l_budget_entries:
+    caption: "G/L Budget Entries"
+  g_l_budget_names:
+    caption: "G/L Budget Names"
+  g_l_account_balance_budget:
+    caption: "G/L Account Balance/Budget"
+    fields:
+      budget_pct: "Balance/Budget (%)"
   item_availability_by_periods:
     caption: "Item Availability by Periods"
     fields:

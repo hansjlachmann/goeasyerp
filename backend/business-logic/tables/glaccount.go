@@ -14,8 +14,7 @@ import (
 // (required, length, range) are checked after OnInsert and OnModify.
 //
 // Not migrated yet (their tables come later): OnDelete moves the account's G/L entries
-// (codeunit 361) and deletes its budget entries and extended texts; changing
-// Account Type away from Posting is refused while ledger or budget entries exist.
+// (codeunit 361) and deletes its extended texts.
 type gLAccountLogic struct{}
 
 func init() { gtables.RegisterGLAccountLogic(gLAccountLogic{}) }
@@ -31,8 +30,13 @@ func (gLAccountLogic) OnModify(rec *gtables.GLAccount) error {
 	return nil
 }
 
-// OnDelete deletes the account's comment lines
+// OnDelete deletes the account's budget entries and comment lines
 func (gLAccountLogic) OnDelete(rec *gtables.GLAccount) error {
+	glBudgetEntry := gtables.NewGLBudgetEntry(rec)
+	glBudgetEntry.SetCurrentKey("budget_name", "gl_account_no", "date")
+	glBudgetEntry.SetRange("gl_account_no", rec.No)
+	glBudgetEntry.DeleteAll()
+
 	DeleteComments(rec, gtables.CommentLine_Table_name.GLAccount, rec.No)
 	return nil
 }
@@ -52,11 +56,26 @@ func (gLAccountLogic) OnValidate_Name(rec *gtables.GLAccount) error {
 	return nil
 }
 
-// OnValidate_Account_type clears Totaling; a posting account allows direct posting, other
-// types do not
+// OnValidate_Account_type: a posting account with ledger or budget entries stays one; clears
+// Totaling; a posting account allows direct posting, other types do not
 func (gLAccountLogic) OnValidate_Account_type(rec *gtables.GLAccount) error {
-	rec.Totaling = ""
 	xRec := rec.XRec()
+	if rec.Account_type != gtables.GLAccount_Account_type.Posting &&
+		xRec.Account_type == gtables.GLAccount_Account_type.Posting {
+		glEntry := gtables.NewGLEntry(rec)
+		glEntry.SetCurrentKey("gl_account_no")
+		glEntry.SetRange("gl_account_no", rec.No)
+		if glEntry.FindFirst() {
+			return apperrors.GLAccHasLedgerEntries(gtables.GLAccountTableName)
+		}
+		glBudgetEntry := gtables.NewGLBudgetEntry(rec)
+		glBudgetEntry.SetCurrentKey("budget_name", "gl_account_no")
+		glBudgetEntry.SetRange("gl_account_no", rec.No)
+		if glBudgetEntry.FindFirst() {
+			return apperrors.GLAccHasBudgetEntries(gtables.GLAccountTableName)
+		}
+	}
+	rec.Totaling = ""
 	if rec.Account_type == gtables.GLAccount_Account_type.Posting {
 		if rec.Account_type != xRec.Account_type {
 			rec.Direct_posting = true

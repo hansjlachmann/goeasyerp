@@ -1,0 +1,118 @@
+table:
+  id: 96
+  name: "G_L_Budget_Entry"
+  caption: G/L Budget Entry
+  description: "The budgeted amounts of the G/L accounts (table 96): per budget, account, date, department and project"
+  lookup_page_id: 120   # G/L Budget Entries
+  # Not migrated: 10 Business Unit Code (no business units)
+  fields:
+    - name: entry_no
+      no: 1
+      type: int
+      db_name: entry_no
+      primary_key: true
+
+    - name: budget_name
+      no: 2
+      type: types.Code
+      db_name: budget_name
+      length: 10
+      table_relation:
+        table: G_L_Budget_Name
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: gl_account_no
+      no: 3
+      type: types.Code
+      db_name: gl_account_no
+      length: 20
+      table_relation:
+        table: G_L_Account
+        field: no
+        filters:
+          account_type: {const: 0}   # Posting accounts only
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: date
+      no: 4
+      type: types.Date
+      db_name: date
+
+    - name: department_code
+      no: 5
+      type: types.Code
+      db_name: department_code
+      length: 10
+      table_relation:
+        table: Department
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: project_code
+      no: 6
+      type: types.Code
+      db_name: project_code
+      length: 10
+      table_relation:
+        table: Project
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: amount
+      no: 7
+      type: types.Decimal
+      db_name: amount
+      decimal_places: "2:2"
+
+    - name: description
+      no: 9
+      type: types.Text
+      db_name: description
+      length: 50
+
+    - name: user_id
+      no: 11
+      type: types.Code
+      db_name: user_id
+      length: 20
+      editable: false
+      table_relation:
+        table: User
+        field: user_id
+        validate: false   # the user who entered it; not checked
+        lookup_columns:
+          - source: user_id
+            width: 120
+
+  keys:
+    - name: Primary
+      fields: [entry_no]
+      clustered: true
+    # SIFT keys: the G/L Account's Budgeted Amount / Budget at Date read the totals
+    - name: budget_account_date
+      fields: [budget_name, gl_account_no, date]
+      sum_index_fields:
+        - amount
+    - name: budget_account_dimensions
+      fields: [budget_name, gl_account_no, department_code, project_code, date]
+      sum_index_fields:
+        - amount
+    - name: account_date
+      fields: [gl_account_no, date]

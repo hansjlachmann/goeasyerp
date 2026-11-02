@@ -66,6 +66,40 @@ export interface Section {
 	fields: Field[];
 	subpage?: Subpage; // instead of fields: a list page linked to the card's record
 	period_grid?: PeriodGrid; // instead of fields: the record's FlowFields per period
+	matrix?: Matrix; // instead of fields: a table's records against periods
+}
+
+/** A card section of a table's records (rows) against periods (columns): a FlowField per cell */
+export interface Matrix {
+	table: string;
+	value: string;
+	entry_table?: string;
+	date_filter: string;
+	record_filters?: Record<string, string>; // row FlowFilter → card record field
+	filters?: Field[]; // FlowFilter fields of the rows the user filters by (captions set)
+	fields: Field[]; // the row's fields before the cells (captions set)
+	view_by: number; // 0 Day … 4 Year, 5 Accounting Period
+	editable?: boolean;
+	drilldown?: number;
+	drilldown_row_field?: string;
+	drilldown_row_value?: string;
+	drilldown_date_field?: string;
+	drilldown_record_filters?: Record<string, string>; // drilldown page field → card record field
+}
+
+/** A period (column) of a matrix */
+export interface MatrixColumn {
+	start: string;
+	end: string;
+	name?: string;
+}
+
+/** A record (row) of a matrix: its key, fields, drilldown value and cells (decimals as text) */
+export interface MatrixRow {
+	key: string;
+	fields: Record<string, any>;
+	drilldown?: string;
+	values: string[];
 }
 
 /** A card section of periods (or of a table's records) with the record's FlowFields per row */

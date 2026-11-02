@@ -745,6 +745,16 @@ pages:
     caption: "Stykklistejournaler"
   bom_ledger_entries:
     caption: "Stykklisteposter"
+  g_l_budget_by_periods:
+    caption: "Finansbudsjett per periode"
+  g_l_budget_entries:
+    caption: "Finansbudsjettposter"
+  g_l_budget_names:
+    caption: "Finansbudsjettnavn"
+  g_l_account_balance_budget:
+    caption: "Finanskonto saldo/budsjett"
+    fields:
+      budget_pct: "Saldo/budsjett (%)"
   item_availability_by_periods:
     caption: "Varetilgjengelighet per periode"
     fields:

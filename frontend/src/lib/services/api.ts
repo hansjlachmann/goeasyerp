@@ -1,5 +1,5 @@
 import type { NavigationQuery } from '$lib/utils/recordNavigation';
-import type { FieldState, PeriodGridRow } from '$lib/types/pages';
+import type { FieldState, MatrixColumn, MatrixRow, PeriodGridRow } from '$lib/types/pages';
 import type {
 	ApiResponse,
 	ListResponse,
@@ -16,6 +16,18 @@ import { handleApiResponse, handleApiResponseVoid, handleApiResponseFull, handle
 import type { CompanyInfo } from '$lib/utils/company';
 
 const API_BASE = '/api';
+
+/** What the matrix endpoints take: the card section, its record, the user's filters and the view */
+export interface MatrixRequest {
+	section: string;
+	record: TableRecord;
+	filters: { field: string; expression: string }[];
+	view_by: number;
+	view_as: number;
+	date: string;
+	step: number;
+	columns: number;
+}
 
 // Builds a record endpoint URL. An empty id (a setup table's single
 // record has a blank primary key) omits the id segment so it matches the no-id
@@ -303,6 +315,32 @@ export const api = {
 		});
 		const data = await handleApiResponse<{ rows: PeriodGridRow[]; date: string }>(response, `period grid of page ${pageId}`);
 		return { rows: data.rows ?? [], date: data.date ?? '' };
+	},
+
+	async matrix(
+		pageId: number,
+		request: MatrixRequest
+	): Promise<{ columns: MatrixColumn[]; rows: MatrixRow[]; date: string }> {
+		const response = await fetch(`${API_BASE}/pages/${pageId}/matrix`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(request)
+		});
+		const data = await handleApiResponse<{ columns: MatrixColumn[]; rows: MatrixRow[]; date: string }>(response, `matrix of page ${pageId}`);
+		return { columns: data.columns ?? [], rows: data.rows ?? [], date: data.date ?? '' };
+	},
+
+	// A value typed into a matrix cell (the row's key, the column's period)
+	async matrixValidate(
+		pageId: number,
+		request: MatrixRequest & { key: string; start: string; end: string; value: string; rounding_factor: number }
+	): Promise<void> {
+		const response = await fetch(`${API_BASE}/pages/${pageId}/matrix/validate`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(request)
+		});
+		await handleApiResponse<unknown>(response, `matrix cell of page ${pageId}`);
 	},
 
 	async validateField(

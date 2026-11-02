@@ -276,6 +276,10 @@ messages:
   PERIOD_CODE: "Code"
   PERIOD_DESCRIPTION: "Name"
   PERIOD_NO_PERIODS: "There are no periods to show."
+  PERIOD_ROUNDING_FACTOR: "Rounding Factor"
+  PERIOD_ROUNDING_NONE: "None"
+  PERIOD_NO_ROWS: "There are no records to show."
+  PERIOD_SHOW_ENTRIES: "Show Entries"
   CARD_SAVE_FIRST: "Save the record first to add lines here."
 
   # List Page

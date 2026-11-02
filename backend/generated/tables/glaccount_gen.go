@@ -209,6 +209,10 @@ type GLAccount struct {
 	Balance_at_date types.Decimal
 	// FlowField: Sum(GLEntry.amount)
 	Net_change types.Decimal
+	// FlowField: Sum(GLBudgetEntry.amount)
+	Budgeted_amount types.Decimal
+	// FlowField: Sum(GLBudgetEntry.amount)
+	Budget_at_date types.Decimal
 	// FlowField: Sum(GLEntry.amount)
 	Balance types.Decimal
 	// FlowField: Sum(GLEntry.debit_amount)
@@ -247,6 +251,8 @@ type GLAccount struct {
 	Department_filter string
 	// FlowFilter project_filter (types.Code): the filter expression FlowFields apply — not stored
 	Project_filter string
+	// FlowFilter budget_filter (types.Code): the filter expression FlowFields apply — not stored
+	Budget_filter string
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -419,6 +425,8 @@ var GLAccount_FieldNo = struct {
 	Totaling                       int
 	Balance_at_date                int
 	Net_change                     int
+	Budgeted_amount                int
+	Budget_at_date                 int
 	Balance                        int
 	Debit_amount                   int
 	Credit_amount                  int
@@ -445,6 +453,7 @@ var GLAccount_FieldNo = struct {
 	Date_filter                    int
 	Department_filter              int
 	Project_filter                 int
+	Budget_filter                  int
 }{
 	No:                             1,
 	Name:                           2,
@@ -465,6 +474,8 @@ var GLAccount_FieldNo = struct {
 	Totaling:                       34,
 	Balance_at_date:                31,
 	Net_change:                     32,
+	Budgeted_amount:                33,
+	Budget_at_date:                 37,
 	Balance:                        36,
 	Debit_amount:                   47,
 	Credit_amount:                  48,
@@ -491,6 +502,7 @@ var GLAccount_FieldNo = struct {
 	Date_filter:                    28,
 	Department_filter:              29,
 	Project_filter:                 30,
+	Budget_filter:                  35,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -534,6 +546,10 @@ func (t *GLAccount) FieldNo(fieldName string) int {
 		return 31
 	case "net_change":
 		return 32
+	case "budgeted_amount":
+		return 33
+	case "budget_at_date":
+		return 37
 	case "balance":
 		return 36
 	case "debit_amount":
@@ -586,6 +602,8 @@ func (t *GLAccount) FieldNo(fieldName string) int {
 		return 29
 	case "project_filter":
 		return 30
+	case "budget_filter":
+		return 35
 	}
 	return 0
 }
@@ -631,6 +649,10 @@ func (t *GLAccount) FieldName(fieldNo int) string {
 		return "balance_at_date"
 	case 32:
 		return "net_change"
+	case 33:
+		return "budgeted_amount"
+	case 37:
+		return "budget_at_date"
 	case 36:
 		return "balance"
 	case 47:
@@ -683,6 +705,8 @@ func (t *GLAccount) FieldName(fieldNo int) string {
 		return "department_filter"
 	case 30:
 		return "project_filter"
+	case 35:
+		return "budget_filter"
 	}
 	return ""
 }
@@ -1072,6 +1096,8 @@ func GetGLAccountTableSchema() string {
 		totaling TEXT(30),
 		balance_at_date TEXT,
 		net_change TEXT,
+		budgeted_amount TEXT,
+		budget_at_date TEXT,
 		balance TEXT,
 		debit_amount TEXT,
 		credit_amount TEXT,
@@ -1120,6 +1146,8 @@ func GetGLAccountPostgresTableSchema() string {
 		totaling VARCHAR(30),
 		balance_at_date NUMERIC,
 		net_change NUMERIC,
+		budgeted_amount NUMERIC,
+		budget_at_date NUMERIC,
 		balance NUMERIC,
 		debit_amount NUMERIC,
 		credit_amount NUMERIC,
@@ -2197,7 +2225,7 @@ func (t *GLAccount) renameReferences(field string, oldValue, newValue interface{
 		condValue  int
 	}
 	references := map[string][]reference{
-		"no": {{"Bank_Account_Posting_Group", false, "g_l_bank_account_no", "", 0}, {"Bank_Account_Ledger_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Check_Ledger_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Comment_Line", false, "no", "table_name", 0}, {"Currency", false, "unrealized_gains_acc", "", 0}, {"Currency", false, "realized_gains_acc", "", 0}, {"Currency", false, "unrealized_losses_acc", "", 0}, {"Currency", false, "realized_losses_acc", "", 0}, {"Currency", false, "realized_gl_gains_account", "", 0}, {"Currency", false, "realized_gl_losses_account", "", 0}, {"Currency", false, "residual_gains_account", "", 0}, {"Currency", false, "residual_losses_account", "", 0}, {"Currency", false, "conv_lcy_rndg_debit_acc", "", 0}, {"Currency", false, "conv_lcy_rndg_credit_acc", "", 0}, {"Customer Ledger Entry", false, "bal_account_no", "bal_account_type", 0}, {"Customer_Posting_Group", false, "receivables_account", "", 0}, {"Customer_Posting_Group", false, "service_charge_acc", "", 0}, {"Customer_Posting_Group", false, "payment_disc_acc", "", 0}, {"Customer_Posting_Group", false, "invoice_rounding_account", "", 0}, {"Customer_Posting_Group", false, "additional_fee_account", "", 0}, {"Customer_Posting_Group", false, "interest_account", "", 0}, {"Customer_Posting_Group", false, "curr_appln_rounding_account", "", 0}, {"FA_Allocation", false, "account_no", "", 0}, {"FA_Posting_Group", false, "acquisition_cost_account", "", 0}, {"FA_Posting_Group", false, "accum_depreciation_account", "", 0}, {"FA_Posting_Group", false, "write_down_account", "", 0}, {"FA_Posting_Group", false, "appreciation_account", "", 0}, {"FA_Posting_Group", false, "custom_1_account", "", 0}, {"FA_Posting_Group", false, "custom_2_account", "", 0}, {"FA_Posting_Group", false, "acq_cost_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "accum_depr_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "write_down_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "appreciation_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "custom_1_account_on_disposal", "", 0}, {"FA_Posting_Group", false, "custom_2_account_on_disposal", "", 0}, {"FA_Posting_Group", false, "gains_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "losses_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "book_value_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "sales_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "write_down_bal_acc_on_disp", "", 0}, {"FA_Posting_Group", false, "apprec_bal_acc_on_disp", "", 0}, {"FA_Posting_Group", false, "custom_1_bal_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "custom_2_bal_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "maintenance_expense_account", "", 0}, {"FA_Posting_Group", false, "maintenance_bal_acc", "", 0}, {"FA_Posting_Group", false, "acquisition_cost_bal_acc", "", 0}, {"FA_Posting_Group", false, "depreciation_expense_acc", "", 0}, {"FA_Posting_Group", false, "write_down_expense_acc", "", 0}, {"FA_Posting_Group", false, "appreciation_bal_account", "", 0}, {"FA_Posting_Group", false, "custom_1_expense_acc", "", 0}, {"FA_Posting_Group", false, "custom_2_expense_acc", "", 0}, {"FA_Posting_Group", false, "sales_bal_acc", "", 0}, {"FA_Ledger_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Finance_Charge_Memo_Line", false, "no", "type", 1}, {"Gen_Jnl_Allocation", false, "account_no", "", 0}, {"Gen_Journal_Batch", false, "bal_account_no", "bal_account_type", 0}, {"Gen_Journal_Line", false, "account_no", "account_type", 0}, {"Gen_Journal_Line", false, "bal_account_no", "bal_account_type", 0}, {"Gen_Journal_Template", false, "bal_account_no", "bal_account_type", 0}, {"General_Posting_Setup", false, "sales_account", "", 0}, {"General_Posting_Setup", false, "sales_line_disc_account", "", 0}, {"General_Posting_Setup", false, "sales_inv_disc_account", "", 0}, {"General_Posting_Setup", false, "sales_payment_disc_account", "", 0}, {"General_Posting_Setup", false, "purch_account", "", 0}, {"General_Posting_Setup", false, "purch_line_disc_account", "", 0}, {"General_Posting_Setup", false, "purch_inv_disc_account", "", 0}, {"General_Posting_Setup", false, "purch_payment_disc_account", "", 0}, {"General_Posting_Setup", false, "cogs_account", "", 0}, {"General_Posting_Setup", false, "inventory_adjmt_account", "", 0}, {"General_Posting_Setup", false, "job_sales_adjmt_account", "", 0}, {"General_Posting_Setup", false, "job_cost_adjmt_account", "", 0}, {"General_Posting_Setup", false, "sales_credit_memo_account", "", 0}, {"General_Posting_Setup", false, "purch_credit_memo_account", "", 0}, {"G_L_Account", false, "totaling", "", 0}, {"G_L_Entry", false, "gl_account_no", "", 0}, {"G_L_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Inventory_Posting_Group", false, "inventory_account", "", 0}, {"Issued_Fin_Charge_Memo_Line", false, "no", "type", 1}, {"Issued_Reminder_Line", false, "no", "type", 1}, {"Maintenance_Ledger_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Payment_Method", false, "bal_account_no", "bal_account_type", 0}, {"Purch_Cr_Memo_Line", false, "no", "type", 1}, {"Purch_Inv_Line", false, "no", "type", 1}, {"Purch_Rcpt_Line", false, "no", "type", 1}, {"Purchase_Line", false, "no", "type", 1}, {"Reminder_Line", false, "no", "type", 1}, {"Sales_Cr_Memo_Line", false, "no", "type", 1}, {"Sales_Invoice_Line", false, "no", "type", 1}, {"Sales_Line", false, "no", "type", 1}, {"Sales_Shipment_Line", false, "no", "type", 1}, {"Tax_Jurisdiction", false, "tax_account_sales", "", 0}, {"Tax_Jurisdiction", false, "tax_account_purchases", "", 0}, {"Tax_Jurisdiction", false, "unreal_tax_acc_sales", "", 0}, {"Tax_Jurisdiction", false, "unreal_tax_acc_purchases", "", 0}, {"Tax_Jurisdiction", false, "reverse_charge_purchases", "", 0}, {"Tax_Jurisdiction", false, "unreal_rev_charge_purch", "", 0}, {"Tax_Posting_Setup", false, "sales_vat_account", "", 0}, {"Tax_Posting_Setup", false, "sales_vat_unreal_account", "", 0}, {"Tax_Posting_Setup", false, "purchase_vat_account", "", 0}, {"Tax_Posting_Setup", false, "purch_vat_unreal_account", "", 0}, {"Tax_Posting_Setup", false, "reverse_chrg_vat_acc", "", 0}, {"Tax_Posting_Setup", false, "reverse_chrg_vat_unreal_acc", "", 0}, {"Vendor_Posting_Group", false, "payables_account", "", 0}, {"Vendor_Posting_Group", false, "service_charge_acc", "", 0}, {"Vendor_Posting_Group", false, "payment_disc_acc", "", 0}, {"Vendor_Posting_Group", false, "invoice_rounding_account", "", 0}, {"Vendor_Posting_Group", false, "curr_appln_rounding_account", "", 0}, {"Vendor Ledger Entry", false, "bal_account_no", "bal_account_type", 0}},
+		"no": {{"Bank_Account_Posting_Group", false, "g_l_bank_account_no", "", 0}, {"Bank_Account_Ledger_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Check_Ledger_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Comment_Line", false, "no", "table_name", 0}, {"Currency", false, "unrealized_gains_acc", "", 0}, {"Currency", false, "realized_gains_acc", "", 0}, {"Currency", false, "unrealized_losses_acc", "", 0}, {"Currency", false, "realized_losses_acc", "", 0}, {"Currency", false, "realized_gl_gains_account", "", 0}, {"Currency", false, "realized_gl_losses_account", "", 0}, {"Currency", false, "residual_gains_account", "", 0}, {"Currency", false, "residual_losses_account", "", 0}, {"Currency", false, "conv_lcy_rndg_debit_acc", "", 0}, {"Currency", false, "conv_lcy_rndg_credit_acc", "", 0}, {"Customer Ledger Entry", false, "bal_account_no", "bal_account_type", 0}, {"Customer_Posting_Group", false, "receivables_account", "", 0}, {"Customer_Posting_Group", false, "service_charge_acc", "", 0}, {"Customer_Posting_Group", false, "payment_disc_acc", "", 0}, {"Customer_Posting_Group", false, "invoice_rounding_account", "", 0}, {"Customer_Posting_Group", false, "additional_fee_account", "", 0}, {"Customer_Posting_Group", false, "interest_account", "", 0}, {"Customer_Posting_Group", false, "curr_appln_rounding_account", "", 0}, {"FA_Allocation", false, "account_no", "", 0}, {"FA_Posting_Group", false, "acquisition_cost_account", "", 0}, {"FA_Posting_Group", false, "accum_depreciation_account", "", 0}, {"FA_Posting_Group", false, "write_down_account", "", 0}, {"FA_Posting_Group", false, "appreciation_account", "", 0}, {"FA_Posting_Group", false, "custom_1_account", "", 0}, {"FA_Posting_Group", false, "custom_2_account", "", 0}, {"FA_Posting_Group", false, "acq_cost_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "accum_depr_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "write_down_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "appreciation_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "custom_1_account_on_disposal", "", 0}, {"FA_Posting_Group", false, "custom_2_account_on_disposal", "", 0}, {"FA_Posting_Group", false, "gains_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "losses_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "book_value_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "sales_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "write_down_bal_acc_on_disp", "", 0}, {"FA_Posting_Group", false, "apprec_bal_acc_on_disp", "", 0}, {"FA_Posting_Group", false, "custom_1_bal_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "custom_2_bal_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "maintenance_expense_account", "", 0}, {"FA_Posting_Group", false, "maintenance_bal_acc", "", 0}, {"FA_Posting_Group", false, "acquisition_cost_bal_acc", "", 0}, {"FA_Posting_Group", false, "depreciation_expense_acc", "", 0}, {"FA_Posting_Group", false, "write_down_expense_acc", "", 0}, {"FA_Posting_Group", false, "appreciation_bal_account", "", 0}, {"FA_Posting_Group", false, "custom_1_expense_acc", "", 0}, {"FA_Posting_Group", false, "custom_2_expense_acc", "", 0}, {"FA_Posting_Group", false, "sales_bal_acc", "", 0}, {"FA_Ledger_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Finance_Charge_Memo_Line", false, "no", "type", 1}, {"G_L_Budget_Entry", false, "gl_account_no", "", 0}, {"Gen_Jnl_Allocation", false, "account_no", "", 0}, {"Gen_Journal_Batch", false, "bal_account_no", "bal_account_type", 0}, {"Gen_Journal_Line", false, "account_no", "account_type", 0}, {"Gen_Journal_Line", false, "bal_account_no", "bal_account_type", 0}, {"Gen_Journal_Template", false, "bal_account_no", "bal_account_type", 0}, {"General_Posting_Setup", false, "sales_account", "", 0}, {"General_Posting_Setup", false, "sales_line_disc_account", "", 0}, {"General_Posting_Setup", false, "sales_inv_disc_account", "", 0}, {"General_Posting_Setup", false, "sales_payment_disc_account", "", 0}, {"General_Posting_Setup", false, "purch_account", "", 0}, {"General_Posting_Setup", false, "purch_line_disc_account", "", 0}, {"General_Posting_Setup", false, "purch_inv_disc_account", "", 0}, {"General_Posting_Setup", false, "purch_payment_disc_account", "", 0}, {"General_Posting_Setup", false, "cogs_account", "", 0}, {"General_Posting_Setup", false, "inventory_adjmt_account", "", 0}, {"General_Posting_Setup", false, "job_sales_adjmt_account", "", 0}, {"General_Posting_Setup", false, "job_cost_adjmt_account", "", 0}, {"General_Posting_Setup", false, "sales_credit_memo_account", "", 0}, {"General_Posting_Setup", false, "purch_credit_memo_account", "", 0}, {"G_L_Account", false, "totaling", "", 0}, {"G_L_Entry", false, "gl_account_no", "", 0}, {"G_L_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Inventory_Posting_Group", false, "inventory_account", "", 0}, {"Issued_Fin_Charge_Memo_Line", false, "no", "type", 1}, {"Issued_Reminder_Line", false, "no", "type", 1}, {"Maintenance_Ledger_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Payment_Method", false, "bal_account_no", "bal_account_type", 0}, {"Purch_Cr_Memo_Line", false, "no", "type", 1}, {"Purch_Inv_Line", false, "no", "type", 1}, {"Purch_Rcpt_Line", false, "no", "type", 1}, {"Purchase_Line", false, "no", "type", 1}, {"Reminder_Line", false, "no", "type", 1}, {"Sales_Cr_Memo_Line", false, "no", "type", 1}, {"Sales_Invoice_Line", false, "no", "type", 1}, {"Sales_Line", false, "no", "type", 1}, {"Sales_Shipment_Line", false, "no", "type", 1}, {"Tax_Jurisdiction", false, "tax_account_sales", "", 0}, {"Tax_Jurisdiction", false, "tax_account_purchases", "", 0}, {"Tax_Jurisdiction", false, "unreal_tax_acc_sales", "", 0}, {"Tax_Jurisdiction", false, "unreal_tax_acc_purchases", "", 0}, {"Tax_Jurisdiction", false, "reverse_charge_purchases", "", 0}, {"Tax_Jurisdiction", false, "unreal_rev_charge_purch", "", 0}, {"Tax_Posting_Setup", false, "sales_vat_account", "", 0}, {"Tax_Posting_Setup", false, "sales_vat_unreal_account", "", 0}, {"Tax_Posting_Setup", false, "purchase_vat_account", "", 0}, {"Tax_Posting_Setup", false, "purch_vat_unreal_account", "", 0}, {"Tax_Posting_Setup", false, "reverse_chrg_vat_acc", "", 0}, {"Tax_Posting_Setup", false, "reverse_chrg_vat_unreal_acc", "", 0}, {"Vendor_Posting_Group", false, "payables_account", "", 0}, {"Vendor_Posting_Group", false, "service_charge_acc", "", 0}, {"Vendor_Posting_Group", false, "payment_disc_acc", "", 0}, {"Vendor_Posting_Group", false, "invoice_rounding_account", "", 0}, {"Vendor_Posting_Group", false, "curr_appln_rounding_account", "", 0}, {"Vendor Ledger Entry", false, "bal_account_no", "bal_account_type", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
@@ -2270,6 +2298,8 @@ func (t *GLAccount) CalcFields(fieldNames ...string) {
 	if len(fieldNames) == 0 {
 		t.calcFlowField_balance_at_date()
 		t.calcFlowField_net_change()
+		t.calcFlowField_budgeted_amount()
+		t.calcFlowField_budget_at_date()
 		t.calcFlowField_balance()
 		t.calcFlowField_debit_amount()
 		t.calcFlowField_credit_amount()
@@ -2289,6 +2319,10 @@ func (t *GLAccount) CalcFields(fieldNames ...string) {
 			t.calcFlowField_balance_at_date()
 		case "net_change":
 			t.calcFlowField_net_change()
+		case "budgeted_amount":
+			t.calcFlowField_budgeted_amount()
+		case "budget_at_date":
+			t.calcFlowField_budget_at_date()
 		case "balance":
 			t.calcFlowField_balance()
 		case "debit_amount":
@@ -2321,6 +2355,18 @@ func (t *GLAccount) calcFlowField_balance_at_date() {
 // CalcFormula: Sum(GLEntry.amount)
 func (t *GLAccount) calcFlowField_net_change() {
 	t.Net_change = t.calcSum_net_change()
+}
+
+// calcFlowField_budgeted_amount calculates the budgeted_amount FlowField
+// CalcFormula: Sum(GLBudgetEntry.amount)
+func (t *GLAccount) calcFlowField_budgeted_amount() {
+	t.Budgeted_amount = t.calcSum_budgeted_amount()
+}
+
+// calcFlowField_budget_at_date calculates the budget_at_date FlowField
+// CalcFormula: Sum(GLBudgetEntry.amount)
+func (t *GLAccount) calcFlowField_budget_at_date() {
+	t.Budget_at_date = t.calcSum_budget_at_date()
 }
 
 // calcFlowField_balance calculates the balance FlowField
@@ -2394,6 +2440,10 @@ func (t *GLAccount) CalcFieldsForRecords(records []map[string]interface{}, field
 			t.calcForRecords_balance_at_date(records)
 		case "net_change":
 			t.calcForRecords_net_change(records)
+		case "budgeted_amount":
+			t.calcForRecords_budgeted_amount(records)
+		case "budget_at_date":
+			t.calcForRecords_budget_at_date(records)
 		case "balance":
 			t.calcForRecords_balance(records)
 		case "debit_amount":
@@ -2432,6 +2482,7 @@ func (t *GLAccount) calcForRecords_balance_at_date(records []map[string]interfac
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["balance_at_date"] = one.calcSum_balance_at_date().String()
 	}
@@ -2545,6 +2596,7 @@ func (t *GLAccount) calcForRecords_net_change(records []map[string]interface{}) 
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["net_change"] = one.calcSum_net_change().String()
 	}
@@ -2642,6 +2694,248 @@ func (t *GLAccount) calcForRecords_net_change(records []map[string]interface{}) 
 	}
 }
 
+// calcForRecords_budgeted_amount calculates the budgeted_amount FlowField for a set of records
+// CalcFormula: Sum(GLBudgetEntry.amount)
+func (t *GLAccount) calcForRecords_budgeted_amount(records []map[string]interface{}) {
+	// Records whose totaling holds a filter (total accounts) are calculated one by
+	// one, with this record's FlowFilters; the others in the grouped query below
+	var grouped []map[string]interface{}
+	for _, rec := range records {
+		if s := strings.TrimSpace(fmt.Sprint(rec["totaling"])); s == "" || s == "<nil>" {
+			grouped = append(grouped, rec)
+			continue
+		}
+		one := &GLAccount{}
+		one.InitWithDBType(t.db, t.company, t.dbType)
+		one.Date_filter = t.Date_filter
+		one.Department_filter = t.Department_filter
+		one.Project_filter = t.Project_filter
+		one.Budget_filter = t.Budget_filter
+		one.FromMap(rec)
+		rec["budgeted_amount"] = one.calcSum_budgeted_amount().String()
+	}
+	records = grouped
+	if len(records) == 0 {
+		return
+	}
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLBudgetEntryTableName), false
+	tableName, useSIFT = sift.TableName(t.company, GLBudgetEntryTableName, "budget_account_date"), true
+	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Budget_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = sift.TableName(t.company, GLBudgetEntryTableName, "budget_account_dimensions"), true
+	}
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["no"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["no"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		if t.Department_filter != "" {
+			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Project_filter != "" {
+			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Budget_filter != "" {
+			// FlowFilter budget_filter applied to budget_name (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("budget_name", flowfilter.KindCode, t.Budget_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if chunk != nil {
+			whereClauses = append(whereClauses, "gl_account_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT gl_account_no, COALESCE(SUM(amount), 0) FROM "%s" WHERE %s GROUP BY gl_account_no`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate budgeted_amount: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["no"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["budgeted_amount"] = v.String()
+	}
+}
+
+// calcForRecords_budget_at_date calculates the budget_at_date FlowField for a set of records
+// CalcFormula: Sum(GLBudgetEntry.amount)
+func (t *GLAccount) calcForRecords_budget_at_date(records []map[string]interface{}) {
+	// Records whose totaling holds a filter (total accounts) are calculated one by
+	// one, with this record's FlowFilters; the others in the grouped query below
+	var grouped []map[string]interface{}
+	for _, rec := range records {
+		if s := strings.TrimSpace(fmt.Sprint(rec["totaling"])); s == "" || s == "<nil>" {
+			grouped = append(grouped, rec)
+			continue
+		}
+		one := &GLAccount{}
+		one.InitWithDBType(t.db, t.company, t.dbType)
+		one.Date_filter = t.Date_filter
+		one.Department_filter = t.Department_filter
+		one.Project_filter = t.Project_filter
+		one.Budget_filter = t.Budget_filter
+		one.FromMap(rec)
+		rec["budget_at_date"] = one.calcSum_budget_at_date().String()
+	}
+	records = grouped
+	if len(records) == 0 {
+		return
+	}
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLBudgetEntryTableName), false
+	tableName, useSIFT = sift.TableName(t.company, GLBudgetEntryTableName, "budget_account_date"), true
+	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Budget_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = sift.TableName(t.company, GLBudgetEntryTableName, "budget_account_dimensions"), true
+	}
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["no"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["no"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		if t.Department_filter != "" {
+			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Project_filter != "" {
+			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// The upper end of FlowFilter date_filter applied to date (UpperLimit)
+			if clause, filterArgs, _ := flowfilter.Clause("date", flowfilter.KindDate, flowfilter.UpperLimit(flowfilter.KindDate, t.Date_filter)); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Budget_filter != "" {
+			// FlowFilter budget_filter applied to budget_name (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("budget_name", flowfilter.KindCode, t.Budget_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if chunk != nil {
+			whereClauses = append(whereClauses, "gl_account_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT gl_account_no, COALESCE(SUM(amount), 0) FROM "%s" WHERE %s GROUP BY gl_account_no`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate budget_at_date: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["no"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["budget_at_date"] = v.String()
+	}
+}
+
 // calcForRecords_balance calculates the balance FlowField for a set of records
 // CalcFormula: Sum(GLEntry.amount)
 func (t *GLAccount) calcForRecords_balance(records []map[string]interface{}) {
@@ -2658,6 +2952,7 @@ func (t *GLAccount) calcForRecords_balance(records []map[string]interface{}) {
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["balance"] = one.calcSum_balance().String()
 	}
@@ -2764,6 +3059,7 @@ func (t *GLAccount) calcForRecords_debit_amount(records []map[string]interface{}
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["debit_amount"] = one.calcSum_debit_amount().String()
 	}
@@ -2877,6 +3173,7 @@ func (t *GLAccount) calcForRecords_credit_amount(records []map[string]interface{
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["credit_amount"] = one.calcSum_credit_amount().String()
 	}
@@ -2990,6 +3287,7 @@ func (t *GLAccount) calcForRecords_additional_currency_net_change(records []map[
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["additional_currency_net_change"] = one.calcSum_additional_currency_net_change().String()
 	}
@@ -3103,6 +3401,7 @@ func (t *GLAccount) calcForRecords_add_currency_balance_at_date(records []map[st
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["add_currency_balance_at_date"] = one.calcSum_add_currency_balance_at_date().String()
 	}
@@ -3216,6 +3515,7 @@ func (t *GLAccount) calcForRecords_additional_currency_balance(records []map[str
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["additional_currency_balance"] = one.calcSum_additional_currency_balance().String()
 	}
@@ -3322,6 +3622,7 @@ func (t *GLAccount) calcForRecords_add_currency_debit_amount(records []map[strin
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["add_currency_debit_amount"] = one.calcSum_add_currency_debit_amount().String()
 	}
@@ -3435,6 +3736,7 @@ func (t *GLAccount) calcForRecords_add_currency_credit_amount(records []map[stri
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["add_currency_credit_amount"] = one.calcSum_add_currency_credit_amount().String()
 	}
@@ -3732,6 +4034,156 @@ func (t *GLAccount) calcSum_net_change() types.Decimal {
 	err := t.db.QueryRow(query, args...).Scan(&sumStr)
 	if err != nil {
 		fmt.Printf("Error: Failed to calculate sum for net_change: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *GLAccount) calcSum_budgeted_amount() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLBudgetEntryTableName), false
+	tableName, useSIFT = sift.TableName(t.company, GLBudgetEntryTableName, "budget_account_date"), true
+	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Budget_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = sift.TableName(t.company, GLBudgetEntryTableName, "budget_account_dimensions"), true
+	}
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	if s := strings.TrimSpace(t.Totaling.String()); s != "" {
+		// Totaling holds a filter of gl_account_no (a total account sums its range)
+		if clause, filterArgs, err := flowfilter.Clause("gl_account_no", flowfilter.KindCode, s); err == nil && clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		} else {
+			whereClauses = append(whereClauses, "1=0")
+		}
+	} else {
+		whereClauses = append(whereClauses, "gl_account_no = ?")
+		args = append(args, t.No)
+	}
+	if t.Department_filter != "" {
+		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Project_filter != "" {
+		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Date_filter != "" {
+		// FlowFilter date_filter applied to date (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("date", flowfilter.KindDate, t.Date_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Budget_filter != "" {
+		// FlowFilter budget_filter applied to budget_name (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("budget_name", flowfilter.KindCode, t.Budget_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for budgeted_amount: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *GLAccount) calcSum_budget_at_date() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLBudgetEntryTableName), false
+	tableName, useSIFT = sift.TableName(t.company, GLBudgetEntryTableName, "budget_account_date"), true
+	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Budget_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = sift.TableName(t.company, GLBudgetEntryTableName, "budget_account_dimensions"), true
+	}
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	if s := strings.TrimSpace(t.Totaling.String()); s != "" {
+		// Totaling holds a filter of gl_account_no (a total account sums its range)
+		if clause, filterArgs, err := flowfilter.Clause("gl_account_no", flowfilter.KindCode, s); err == nil && clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		} else {
+			whereClauses = append(whereClauses, "1=0")
+		}
+	} else {
+		whereClauses = append(whereClauses, "gl_account_no = ?")
+		args = append(args, t.No)
+	}
+	if t.Department_filter != "" {
+		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Project_filter != "" {
+		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Date_filter != "" {
+		// The upper end of FlowFilter date_filter applied to date (UpperLimit)
+		if clause, filterArgs, _ := flowfilter.Clause("date", flowfilter.KindDate, flowfilter.UpperLimit(flowfilter.KindDate, t.Date_filter)); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Budget_filter != "" {
+		// FlowFilter budget_filter applied to budget_name (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("budget_name", flowfilter.KindCode, t.Budget_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for budget_at_date: %v\n", err)
 		return types.ZeroDecimal()
 	}
 
@@ -5551,6 +6003,8 @@ func (t *GLAccount) copyFromBuffered(record *GLAccount) {
 	t.Totaling = record.Totaling
 	t.Balance_at_date = record.Balance_at_date
 	t.Net_change = record.Net_change
+	t.Budgeted_amount = record.Budgeted_amount
+	t.Budget_at_date = record.Budget_at_date
 	t.Balance = record.Balance
 	t.Debit_amount = record.Debit_amount
 	t.Credit_amount = record.Credit_amount
@@ -6634,6 +7088,10 @@ func (t *GLAccount) flowFieldValue(no int) (any, bool) {
 		return t.Balance_at_date, true
 	case 32:
 		return t.Net_change, true
+	case 33:
+		return t.Budgeted_amount, true
+	case 37:
+		return t.Budget_at_date, true
 	case 36:
 		return t.Balance, true
 	case 47:
@@ -7525,6 +7983,10 @@ func (t *GLAccount) ToMap() map[string]interface{} {
 		"balance_at_date": t.Balance_at_date.String(),
 		// FlowField: net_change
 		"net_change": t.Net_change.String(),
+		// FlowField: budgeted_amount
+		"budgeted_amount": t.Budgeted_amount.String(),
+		// FlowField: budget_at_date
+		"budget_at_date": t.Budget_at_date.String(),
 		// FlowField: balance
 		"balance": t.Balance.String(),
 		// FlowField: debit_amount
@@ -8032,6 +8494,28 @@ func (t *GLAccount) GetFields() []tables.FieldInfo {
 			DecimalPlaces: "2:2",
 		},
 		{
+			No:            33,
+			Name:          "budgeted_amount",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "2:2",
+		},
+		{
+			No:            37,
+			Name:          "budget_at_date",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "2:2",
+		},
+		{
 			No:            36,
 			Name:          "balance",
 			Type:          tables.FieldTypeDecimal,
@@ -8294,6 +8778,12 @@ func (t *GLAccount) SetFlowFilter(field, expr string) error {
 		}
 		t.Project_filter = expr
 		return nil
+	case "budget_filter":
+		if err := flowfilter.Validate(flowfilter.KindCode, expr); err != nil {
+			return err
+		}
+		t.Budget_filter = expr
+		return nil
 	}
 	return fmt.Errorf("%q is not a FlowFilter field of G_L_Account", field)
 }
@@ -8304,6 +8794,7 @@ func (t *GLAccount) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 		{Name: "date_filter", Kind: string(flowfilter.KindDate)},
 		{Name: "department_filter", Kind: string(flowfilter.KindCode)},
 		{Name: "project_filter", Kind: string(flowfilter.KindCode)},
+		{Name: "budget_filter", Kind: string(flowfilter.KindCode)},
 	}
 }
 
@@ -8312,6 +8803,8 @@ func (t *GLAccount) GetFlowFields() []string {
 	return []string{
 		"balance_at_date",
 		"net_change",
+		"budgeted_amount",
+		"budget_at_date",
 		"balance",
 		"debit_amount",
 		"credit_amount",

@@ -4,9 +4,61 @@ import (
 	"path/filepath"
 	"testing"
 
+	_ "github.com/hansjlachmann/openerp/backend/business-logic/pages"
 	"github.com/hansjlachmann/openerp/backend/foundation/pages"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
+
+// checkMatrix: a matrix section's rows table has its value FlowField, row fields and filters;
+// its record filters are FlowFilters of the rows set from fields of the card's table
+func checkMatrix(t *testing.T, id int, mx *pages.Matrix, cardFields map[string]bool, exists func(int) bool) {
+	t.Helper()
+	factory, ok := gtables.GetTableFactory(mx.Table)
+	if !ok {
+		t.Errorf("page %d: matrix table %q does not exist", id, mx.Table)
+		return
+	}
+	rec := factory()
+	fields := map[string]bool{}
+	for _, f := range rec.GetFields() {
+		fields[f.Name] = true
+	}
+	flowFields := map[string]bool{}
+	for _, f := range rec.GetFlowFields() {
+		flowFields[f] = true
+	}
+	flowFilters := map[string]bool{}
+	for _, f := range rec.GetFlowFilterFields() {
+		flowFilters[f.Name] = true
+	}
+	if !flowFields[mx.Value] {
+		t.Errorf("page %d: matrix value %q is not a FlowField of %s", id, mx.Value, mx.Table)
+	}
+	if !flowFilters[mx.DateFilter] {
+		t.Errorf("page %d: matrix date filter %q is not a FlowFilter of %s", id, mx.DateFilter, mx.Table)
+	}
+	for rowField, cardField := range mx.RecordFilters {
+		if !flowFilters[rowField] || !cardFields[cardField] {
+			t.Errorf("page %d: matrix record filter %s: %s", id, rowField, cardField)
+		}
+	}
+	for _, f := range mx.Filters {
+		if !flowFilters[f.Source] {
+			t.Errorf("page %d: matrix filter %q is not a FlowFilter of %s", id, f.Source, mx.Table)
+		}
+	}
+	for _, f := range mx.Fields {
+		if !fields[f.Source] {
+			t.Errorf("page %d: matrix field %q is not a field of %s", id, f.Source, mx.Table)
+		}
+	}
+	if mx.Drilldown != 0 && !exists(mx.Drilldown) {
+		t.Errorf("page %d: matrix drills down to page %d, which does not exist", id, mx.Drilldown)
+	}
+	if mx.Editable && !pages.HasMatrixValidate(id) {
+		t.Errorf("page %d: an editable matrix without an OnMatrixValidate trigger", id)
+	}
+}
 
 // Every page definition loads; its source table exists, its fields are fields of that table
 // (or calculated or virtual masked page fields), and the pages it opens (card, list, drilldowns, actions) exist
@@ -58,6 +110,11 @@ func TestPageDefinitions(t *testing.T) {
 			}
 			if f.DrilldownPageField != "" && !fields[f.DrilldownPageField] {
 				t.Errorf("page %d: field %s drills down to the page in %q, not a field of %s", id, f.Source, f.DrilldownPageField, p.Page.SourceTable)
+			}
+		}
+		for _, s := range p.Page.Layout.Sections {
+			if s.Matrix != nil {
+				checkMatrix(t, id, s.Matrix, fields, exists)
 			}
 		}
 		for _, other := range []int{p.Page.CardPageID, p.Page.ListPageID} {

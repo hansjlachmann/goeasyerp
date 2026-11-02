@@ -115,6 +115,41 @@ type Section struct {
 	// PeriodGrid: instead of fields, the section shows the record's FlowFields per period
 	// (classic matrix-by-periods forms: Item Availability by Periods, Item Turnover)
 	PeriodGrid *PeriodGrid `yaml:"period_grid,omitempty" json:"period_grid,omitempty"`
+	// Matrix: instead of fields, the section shows a table's records against periods (classic
+	// matrix forms: G/L Budget by Periods)
+	Matrix *Matrix `yaml:"matrix,omitempty" json:"matrix,omitempty"`
+}
+
+// Matrix is a card section of a table's records (rows) against periods (columns): each cell is
+// the row record's FlowField Value with the column's period in its FlowFilter DateFilter (View
+// as Net Change: the period, Balance at Date: up to its end), RecordFilters (a FlowFilter of
+// the row → a field of the card record: the budget) and the Filters the user sets above the
+// matrix. With Editable (and the page's OnMatrixValidate trigger) a value typed into a cell is
+// handed to the trigger with the row's record so filtered.
+type Matrix struct {
+	Table string `yaml:"table" json:"table"`
+	Value string `yaml:"value" json:"value"`
+	// EntryTable: the table a value entered writes to (the user needs Insert permission on it)
+	EntryTable    string            `yaml:"entry_table,omitempty" json:"entry_table,omitempty"`
+	DateFilter    string            `yaml:"date_filter" json:"date_filter"`
+	RecordFilters map[string]string `yaml:"record_filters,omitempty" json:"record_filters,omitempty"`
+	// Filters: FlowFilter fields of the rows the user filters the matrix by (Department Filter);
+	// drilldown_filter_field: the field of the drilldown page they filter
+	Filters []Field `yaml:"filters,omitempty" json:"filters,omitempty"`
+	// Fields: the row's fields before the cells (indent_field / style_expr as on lists)
+	Fields []Field `yaml:"fields" json:"fields"`
+	// ViewBy: the period length the matrix starts with (0 Day … 4 Year, 5 Accounting Period)
+	ViewBy   int  `yaml:"view_by" json:"view_by"`
+	Editable bool `yaml:"editable,omitempty" json:"editable,omitempty"`
+	// Drilldown: a cell opens this page filtered to the row (DrilldownRowField = the row's
+	// DrilldownRowValue field — when blank its key: a total account's Totaling), the column's
+	// dates (DrilldownDateField), the card record (DrilldownRecordFilters: drilldown page field
+	// → card field) and the user's filters
+	Drilldown              int               `yaml:"drilldown,omitempty" json:"drilldown,omitempty"`
+	DrilldownRowField      string            `yaml:"drilldown_row_field,omitempty" json:"drilldown_row_field,omitempty"`
+	DrilldownRowValue      string            `yaml:"drilldown_row_value,omitempty" json:"drilldown_row_value,omitempty"`
+	DrilldownDateField     string            `yaml:"drilldown_date_field,omitempty" json:"drilldown_date_field,omitempty"`
+	DrilldownRecordFilters map[string]string `yaml:"drilldown_record_filters,omitempty" json:"drilldown_record_filters,omitempty"`
 }
 
 // PeriodGrid is a card section listing periods (days … years, accounting periods) — or, with
@@ -327,6 +362,12 @@ func (p *PageDefinition) Clone() *PageDefinition {
 			g.Filters = append([]Field{}, g.Filters...)
 			g.Columns = append([]Field{}, g.Columns...)
 			s.PeriodGrid = &g
+		}
+		if s.Matrix != nil {
+			mx := *s.Matrix
+			mx.Filters = append([]Field{}, mx.Filters...)
+			mx.Fields = append([]Field{}, mx.Fields...)
+			s.Matrix = &mx
 		}
 		m.Layout.Sections[i] = s
 	}

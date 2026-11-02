@@ -112,8 +112,8 @@ func TestGetMenuMarksAvailableEntries(t *testing.T) {
 	if chart := find(items, "Kontoplan"); chart["enabled"] != true {
 		t.Errorf("Chart of Accounts not enabled: %v", chart)
 	}
-	if budgets := find(items, "Budsjetter"); budgets["enabled"] != false {
-		t.Errorf("Budgets (no page yet) enabled: %v", budgets)
+	if schedules := find(items, "Kontoskjemaer"); schedules["enabled"] != false {
+		t.Errorf("Account Schedules (no page yet) enabled: %v", schedules)
 	}
 	activities := find(items, "Aktiviteter")
 	fiscal := find(activities["items"].([]interface{}), "Regnskapsår")

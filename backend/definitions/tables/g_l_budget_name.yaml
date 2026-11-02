@@ -1,0 +1,26 @@
+table:
+  id: 95
+  name: "G_L_Budget_Name"
+  caption: G/L Budget Name
+  description: "The G/L budgets (table 95): a budget's entries are G/L Budget Entries of its name"
+  lookup_page_id: 121   # G/L Budget Names
+  data_caption_fields: [name, description]
+  fields:
+    - name: name
+      no: 1
+      type: types.Code
+      db_name: name
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: description
+      no: 2
+      type: types.Text
+      db_name: description
+      length: 80
+
+  keys:
+    - name: Primary
+      fields: [name]
+      clustered: true

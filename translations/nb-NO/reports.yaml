@@ -244,6 +244,34 @@ reports:
       PAGE: "Side"
       PERIOD: "Periode: %1"
       POSTING_DATE: "Bokføringsdato"
+  "9":
+    caption: "Saldobalanse/budsjett"
+    texts:
+      TITLE: "Saldobalanse/budsjett"
+      NET_CHANGE: "Bevegelse"
+      BALANCE: "Saldo"
+      DEBIT: "Debet"
+      CREDIT: "Kredit"
+      PCT_OF_BUDGET: "% av budsjett"
+      BUDGET: "Budsjett"
+      BUDGET_FILTER: "Budsjettfilter"
+      NAME: "Navn"
+      NO: "Nr."
+      PAGE: "Side"
+      PERIOD: "Periode: %1"
+  "96":
+    caption: "Kopier finansbudsjett"
+    options:
+      budget_name: "Budsjettnavn"
+      gl_account_no: "Finanskontonr."
+      department_code: "Avdelingskode"
+      project_code: "Prosjektkode"
+      date_change_formula: "Datoendringsformel"
+      amount_change_factor: "Beløpsendringsfaktor"
+    texts:
+      COPY_TO: "Kopier til..."
+      CONFIRM_COPY: "Vil du kopiere budsjettet?"
+      COPIED: "%1 budsjettposter ble kopiert."
   "6":
     caption: "Saldobalanse"
     texts:

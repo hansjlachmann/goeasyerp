@@ -23,6 +23,7 @@
 	import { t, ERR, MSG, LIST, CARD } from '$lib/services/i18n.svelte';
 	import PictureField from './PictureField.svelte';
 	import PeriodGrid from './PeriodGrid.svelte';
+	import MatrixGrid from './MatrixGrid.svelte';
 	import { handleFieldEnterKey, getFieldControls, arrowLeavesField, fieldInDirection, focusField, type ArrowDirection } from '$lib/utils/fieldNavigation';
 	import { getJson, setJson } from '$lib/utils/storage';
 	import PageRenderer from './PageRenderer.svelte';
@@ -151,7 +152,7 @@
 		if (page?.page?.setup_table) return false;
 		const keyFields = getPrimaryKeyFields(page);
 		if (keyFields.length > 1) return keyFields.some((f) => record?.[f] === undefined || record?.[f] === null || record?.[f] === '');
-		return isNewRecord(record);
+		return isNewRecord(record, keyFields[0]);
 	}
 
 	// Edit mode state - start in edit mode for new records or if initialEditMode is true
@@ -693,7 +694,7 @@
 					.sort((a: any, b: any) => a.order - b.order)
 					.map((item: any) => item.field)
 			}))
-			.filter(section => section.fields.length > 0 || !!section.subpage || !!section.period_grid);
+			.filter(section => section.fields.length > 0 || !!section.subpage || !!section.period_grid || !!section.matrix);
 	});
 
 	// Open customize modal
@@ -837,6 +838,19 @@
 								grid={section.period_grid}
 								{record}
 								{captions}
+								ondrilldown={(pageId, filters) => { drilldown = { pageId, filters }; }}
+							/>
+						{:else}
+							<p class="subpage-empty">{t(CARD.SAVE_FIRST)}</p>
+						{/if}
+					{:else if section.matrix}
+						<!-- A table's records against periods (the card record filters the cells) -->
+						{#if !checkIsNewRecord()}
+							<MatrixGrid
+								pageId={page.page.id}
+								section={section.name}
+								matrix={section.matrix}
+								{record}
 								ondrilldown={(pageId, filters) => { drilldown = { pageId, filters }; }}
 							/>
 						{:else}

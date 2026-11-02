@@ -8,6 +8,9 @@ common:
 
   # Common actions
   actions:
+    copy_budget: "Kopier budget"
+    trial_balance_budget: "Saldobalance/budget"
+    balance_budget: "Saldo/budget"
     suggest_lines: "Foreslå linjer"
     transfer_to_general_journal: "Overfør til finanskladde"
     apply: "Udlign"
@@ -165,6 +168,7 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    budget: "Budget"
     fixed_assets: "Anlægsaktiver"
     locations: "Lokationer"
     variants: "Varianter"

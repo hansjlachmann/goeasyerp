@@ -244,6 +244,34 @@ reports:
       PAGE: "Page"
       PERIOD: "Period: %1"
       POSTING_DATE: "Posting Date"
+  "9":
+    caption: "Trial Balance/Budget"
+    texts:
+      TITLE: "Trial Balance/Budget"
+      NET_CHANGE: "Net Change"
+      BALANCE: "Balance"
+      DEBIT: "Debit"
+      CREDIT: "Credit"
+      PCT_OF_BUDGET: "% of Budget"
+      BUDGET: "Budget"
+      BUDGET_FILTER: "Budget Filter"
+      NAME: "Name"
+      NO: "No."
+      PAGE: "Page"
+      PERIOD: "Period: %1"
+  "96":
+    caption: "Copy G/L Budget"
+    options:
+      budget_name: "Budget Name"
+      gl_account_no: "G/L Account No."
+      department_code: "Department Code"
+      project_code: "Project Code"
+      date_change_formula: "Date Change Formula"
+      amount_change_factor: "Amount Change Factor"
+    texts:
+      COPY_TO: "Copy to..."
+      CONFIRM_COPY: "Do you want to copy the budget?"
+      COPIED: "%1 budget entries were copied."
   "6":
     caption: "Trial Balance"
     texts:

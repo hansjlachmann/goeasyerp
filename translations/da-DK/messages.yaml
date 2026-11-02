@@ -276,6 +276,10 @@ messages:
   PERIOD_CODE: "Kode"
   PERIOD_DESCRIPTION: "Navn"
   PERIOD_NO_PERIODS: "Der er ingen perioder at vise."
+  PERIOD_ROUNDING_FACTOR: "Afrundingsfaktor"
+  PERIOD_ROUNDING_NONE: "Ingen"
+  PERIOD_NO_ROWS: "Der er ingen poster at vise."
+  PERIOD_SHOW_ENTRIES: "Vis poster"
   CARD_SAVE_FIRST: "Gem posten først for at tilføje linjer her."
 
   # List Page
