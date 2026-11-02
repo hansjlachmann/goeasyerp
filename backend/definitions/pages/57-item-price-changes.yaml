@@ -1,0 +1,73 @@
+page:
+  id: 57
+  type: List
+  name: Item Price Changes
+  source_table: Item_Price_Change
+  caption: Item Price Changes
+  editable: true
+  # classic form 57: the item price change worksheet — new prices suggested from the items
+  # (report 791) or from the item prices (792), next to the price in effect on their starting
+  # date; Implement Price Change (793) makes them the item prices
+
+  layout:
+    repeater:
+      fields:
+        - source: item_no
+          width: 110
+        - source: price_group_code
+          width: 110
+        - source: unit_of_measure_code
+          width: 110
+        - source: currency_code
+          width: 100
+        - source: starting_date
+          width: 110
+        - source: current_unit_price
+          width: 130
+        - source: new_unit_price
+          width: 130
+        - source: price_includes_tax
+          width: 110
+        - source: allow_quantity_disc
+          width: 110
+        - source: allow_cust_item_disc
+          width: 120
+        - source: allow_invoice_disc
+          width: 110
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    - name: Suggest Item Price Chg. (Item)
+      caption: Suggest Item Price Chg. (Item)
+      image: Calculate
+      promoted: true
+      run_object: report:791
+
+    - name: Suggest Item Price Chg. (Price)
+      caption: Suggest Item Price Chg. (Price)
+      image: Calculate
+      promoted: true
+      run_object: report:792
+
+    - name: Implement Price Change
+      caption: Implement Price Change
+      image: Approve
+      promoted: true
+      run_object: report:793

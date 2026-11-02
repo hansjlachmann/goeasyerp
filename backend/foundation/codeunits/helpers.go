@@ -252,14 +252,15 @@ func RunPage(pageID int, filters interface{}, selectKey string, lookupMode bool,
 
 // RequestPage shows a report's request page (options and the data items' filters) and waits
 // for the answer (see Dialog.RequestPage); nil without a dialog or on cancel. A printed
-// report's request page (printed) has Preview, Print and PDF instead of OK: the answer's
+// report's request page (output: the output chosen first — "preview", "print" or "pdf"; ""
+// for a report that does not print) has Preview, Print and PDF instead of OK: the answer's
 // OutputKey says which was chosen
-func RequestPage(title string, fields []InputField, dataItems []RequestDataItem, optionsCaption string, printed bool) map[string]string {
+func RequestPage(title string, fields []InputField, dataItems []RequestDataItem, optionsCaption string, output string) map[string]string {
 	dialog := GetCurrentDialog()
 	if dialog == nil {
 		return nil
 	}
-	return dialog.RequestPage(title, fields, dataItems, optionsCaption, printed)
+	return dialog.RequestPage(title, fields, dataItems, optionsCaption, output)
 }
 
 // SetCurrentPageParams sets the parameters of the page the current goroutine's code runs for

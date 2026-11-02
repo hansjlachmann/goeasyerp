@@ -40,6 +40,10 @@ type Run struct {
 	// A report that writes a file (a declaration to send): its name and contents
 	file    []byte
 	fileOut string
+	// The printouts of the reports a processing report printed (AddPrintouts) and the page it
+	// opens afterwards (OpenPage)
+	printouts []Result
+	openPage  *fcodeunits.PageLink
 }
 
 // SetValue sets a value the layout prints (value, lines, image elements; print_if) — the
@@ -91,6 +95,14 @@ func (r *Run) WriteFile(name string, data []byte) {
 	r.fileOut = name
 	r.file = data
 }
+
+// AddPrintouts adds the printouts of reports the report printed (Make Orders printing the
+// purchase orders it made): the browser shows, prints or downloads them after the report
+func (r *Run) AddPrintouts(printouts ...Result) { r.printouts = append(r.printouts, printouts...) }
+
+// OpenPage: the page the browser opens after the report (a worksheet the report moved the user
+// to)
+func (r *Run) OpenPage(link *fcodeunits.PageLink) { r.openPage = link }
 
 // Context is what the caller gave the report to work on (RunOptions.Context) — e.g. the item
 // journal line whose batch Calculate Inventory fills (classic SetItemJnlLine before RUNMODAL)
@@ -187,6 +199,10 @@ type Result struct {
 	Texts    []pdf.PlacedText
 	// A processing report's file (Run.WriteFile): its contents (FileName its name)
 	File []byte
+	// The printouts of the reports a processing report printed (Run.AddPrintouts) and the page
+	// to open afterwards (Run.OpenPage)
+	Printouts []Result
+	OpenPage  *fcodeunits.PageLink
 }
 
 // Execute runs a report (Report.Run): request page, OnPreReport, the data items, OnPostReport
@@ -287,7 +303,7 @@ func Execute(id int, db database.Executor, company string, dbType database.DBTyp
 	if err != nil {
 		return Result{}, err
 	}
-	result := Result{Message: run.message}
+	result := Result{Message: run.message, Printouts: run.printouts, OpenPage: run.openPage}
 	if run.file != nil {
 		result.File = run.file
 		result.FileName = run.fileOut
@@ -381,7 +397,11 @@ func requestPage(run *Run, def *Definition, printed bool) bool {
 	if def.OptionsCaption != "" {
 		optionsCaption = run.Text(def.OptionsCaption)
 	}
-	values := fcodeunits.RequestPage(translate(run.ID, "caption"), fields, items, optionsCaption, printed)
+	output := ""
+	if printed {
+		output = PrinterOutput(run, run.ID, OutputPreview)
+	}
+	values := fcodeunits.RequestPage(translate(run.ID, "caption"), fields, items, optionsCaption, output)
 	if len(values) == 0 {
 		return false
 	}

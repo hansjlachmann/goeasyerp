@@ -1,0 +1,54 @@
+page:
+  id: 306
+  type: List
+  name: Report Selection - Sales
+  source_table: Report_Selections
+  caption: Report Selection - Sales
+  editable: true
+  # classic form 306: the reports a document prints with, in their sequence — the usage chosen
+  # above the list (OnOpenPage, business-logic/pages/reportselection.go); a new line takes the
+  # next sequence no. (NewRecord)
+
+  header_fields:
+    - param: usage
+      source: usage
+      options:
+        - {value: "0", caption: "Quote"}
+        - {value: "20", caption: "Blanket Order"}
+        - {value: "1", caption: "Order"}
+        - {value: "2", caption: "Invoice"}
+        - {value: "3", caption: "Credit Memo"}
+        - {value: "4", caption: "Shipment"}
+        - {value: "5", caption: "Sales Document - Test"}
+  layout:
+    repeater:
+      fields:
+        - source: usage
+          width: 110
+          visible: false
+        - source: sequence
+          width: 90
+        - source: report_id
+          width: 100
+          table_relation: Object
+        - source: report_name
+          width: 320
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

@@ -422,6 +422,9 @@ func (h *JobsHandler) CancelJob(c *fiber.Ctx) error {
 func runPermissionError(sess *session.Session, codeunitID, reportID int, function, language string) *apperrors.AppError {
 	switch {
 	case function != "":
+		if fn, ok := functions.Lookup(function); ok && fn.Print {
+			return nil // it checks Execute on the reports it prints
+		}
 		kind, rest, _ := strings.Cut(function, ":")
 		object, _, _ := strings.Cut(rest, ".")
 		switch kind {

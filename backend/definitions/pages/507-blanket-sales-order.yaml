@@ -124,7 +124,7 @@ page:
       caption: Print
       image: Print
       promoted: true
-      run_object: report:210
+      run_object: codeunit:229.PrintSalesHeader
 
     # an order of the lines' quantities to ship (the blanket order stays)
     - name: Make Order

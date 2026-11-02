@@ -929,3 +929,64 @@ pages:
     caption: "Avskrivningstabellkort"
   depreciation_table_lines:
     caption: "Linjer"
+  objects:
+    caption: "Objekter"
+  report_selection_sales:
+    caption: "Rapportvalg - salg"
+    options:
+      usage:
+        quote: "Tilbud"
+        blanket_order: "Rammeordre"
+        order: "Ordre"
+        invoice: "Faktura"
+        credit_memo: "Kreditnota"
+        shipment: "Følgeseddel"
+        sales_document_test: "Salgsdokument - test"
+  report_selection_purchase:
+    caption: "Rapportvalg - kjøp"
+    options:
+      usage:
+        quote: "Tilbud"
+        blanket_order: "Rammeordre"
+        order: "Ordre"
+        invoice: "Faktura"
+        credit_memo: "Kreditnota"
+        receipt: "Mottak"
+        purchase_document_test: "Kjøpsdokument - test"
+  report_selection_reminder:
+    caption: "Rapportvalg - purring"
+    options:
+      usage:
+        reminder: "Purring"
+        fin_charge: "Rentenota"
+        reminder_test: "Purring - test"
+        fin_charge_test: "Rentenota - test"
+  report_selection_bank_acc:
+    caption: "Rapportvalg - bankkonto"
+    options:
+      usage:
+        statement: "Kontoutdrag"
+        reconciliation_test: "Avstemming - test"
+        check: "Sjekk"
+  printer_selections:
+    caption: "Skrivervalg"
+  item_price_changes:
+    caption: "Vareprisendringer"
+  req_worksheet:
+    caption: "Innkjøpskladd"
+    fields:
+      no_description: "Beskrivelse"
+      buy_from_vendor_name: "Leverandørnavn"
+  recurring_req_worksheet:
+    caption: "Gjentakelseskladd - innkjøp"
+    fields:
+      no_description: "Beskrivelse"
+      buy_from_vendor_name: "Leverandørnavn"
+  req_worksheet_template_list:
+    caption: "Innkjøpskladdemaler - liste"
+  req_worksheet_templates:
+    caption: "Innkjøpskladdemaler"
+  req_wksh_names:
+    caption: "Innkjøpskladdenavn"
+  requisition_methods:
+    caption: "Innkjøpsmetoder"

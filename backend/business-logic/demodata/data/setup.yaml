@@ -306,6 +306,29 @@ master_data:
       - {"no": "22011011", description: "Mineral waters"}
       - {"no": "19053199", description: "Sweet biscuits"}
       - {"no": "96050000", description: "Travel sets"}
+  # The reports the documents print with (codeunit 2 Company-Initialize's defaults; the test
+  # reports, bank statement and check are not migrated)
+  - table: Report_Selections
+    records:
+      - {usage: 0, sequence: "1", report_id: 204}    # S.Quote: Sales - Quote
+      - {usage: 20, sequence: "1", report_id: 210}   # S.Blanket: Blanket Sales Order
+      - {usage: 1, sequence: "1", report_id: 205}    # S.Order: Order Confirmation
+      - {usage: 2, sequence: "1", report_id: 206}    # S.Invoice: Sales - Invoice
+      - {usage: 3, sequence: "1", report_id: 207}    # S.Cr.Memo: Sales - Credit Memo
+      - {usage: 4, sequence: "1", report_id: 208}    # S.Shipment: Sales - Shipment
+      - {usage: 6, sequence: "1", report_id: 404}    # P.Quote: Purchase - Quote
+      - {usage: 21, sequence: "1", report_id: 410}   # P.Blanket: Blanket Purchase Order
+      - {usage: 7, sequence: "1", report_id: 405}    # P.Order: Order
+      - {usage: 8, sequence: "1", report_id: 406}    # P.Invoice: Purchase - Invoice
+      - {usage: 9, sequence: "1", report_id: 407}    # P.Cr.Memo: Purchase - Credit Memo
+      - {usage: 10, sequence: "1", report_id: 408}   # P.Receipt: Purchase - Receipt
+      - {usage: 15, sequence: "1", report_id: 117}   # Reminder
+      - {usage: 16, sequence: "1", report_id: 118}   # Fin.Charge: Finance Charge Memo
+  # How Reorder Inventory Items calculates the quantity to buy (the items' Requisition Method Code)
+  - table: Requisition_Method
+    records:
+      - {code: FIXED, name: Fixed reorder quantity, reordering_policy: 1, calc_below_reorder_point: true}
+      - {code: MAXQTY, name: Up to the maximum inventory, reordering_policy: 2, calc_below_reorder_point: true}
   - table: Transaction_Type
     records:
       - {code: "11", description: Outright purchase or sale}
@@ -330,9 +353,9 @@ master_data:
       - {code: "42", text: Agder}
   - table: Item   # costing method 0 FIFO, 3 Average, 4 Standard; unit cost = average/standard cost
     records:
-      - {"no": "1000", description: "Copy paper A4, 500 sheets", search_description: "COPY PAPER A4, 500 SHEETS", base_unit_of_measure: PACK, sales_unit_of_measure: PACK, purch_unit_of_measure: PACK, inventory_posting_group: RESALE, gen_prod_posting_group: RETAIL, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, costing_method: 0, average_cost: "45", unit_cost: "45", last_direct_cost: "45", unit_price: "79", profit_percent: "43.03797", vendor_no: V00010, vendor_item_no: "NP-A4-80", sales_qty_disc_code: "1000", item_cust_disc_gr: PAPER, tariff_no: "48025610", net_weight: 0.75}
+      - {"no": "1000", description: "Copy paper A4, 500 sheets", search_description: "COPY PAPER A4, 500 SHEETS", base_unit_of_measure: PACK, sales_unit_of_measure: PACK, purch_unit_of_measure: PACK, inventory_posting_group: RESALE, gen_prod_posting_group: RETAIL, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, costing_method: 0, average_cost: "45", unit_cost: "45", last_direct_cost: "45", unit_price: "79", profit_percent: "43.03797", vendor_no: V00010, vendor_item_no: "NP-A4-80", reorder_point: 400, reorder_quantity: 200, sales_qty_disc_code: "1000", item_cust_disc_gr: PAPER, tariff_no: "48025610", net_weight: 0.75}
       - {"no": "1010", description: "Copy paper A3, 500 sheets", search_description: "COPY PAPER A3, 500 SHEETS", base_unit_of_measure: PACK, sales_unit_of_measure: PACK, purch_unit_of_measure: PACK, inventory_posting_group: RESALE, gen_prod_posting_group: RETAIL, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, costing_method: 0, average_cost: "89", unit_cost: "89", last_direct_cost: "89", unit_price: "149", profit_percent: "40.26846", vendor_no: V00010, vendor_item_no: "NP-A3-80", sales_qty_disc_code: "1010", item_cust_disc_gr: PAPER, tariff_no: "48025610", net_weight: 1.5}
-      - {"no": "1020", description: "Envelopes C5, 500", search_description: "ENVELOPES C5, 500", base_unit_of_measure: BOX, sales_unit_of_measure: BOX, purch_unit_of_measure: BOX, inventory_posting_group: RESALE, gen_prod_posting_group: RETAIL, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, costing_method: 0, average_cost: "120", unit_cost: "120", last_direct_cost: "120", unit_price: "199", profit_percent: "39.69849", vendor_no: V00010, vendor_item_no: "NP-C5-500", sales_qty_disc_code: "1020", item_cust_disc_gr: PAPER, tariff_no: "48171000", net_weight: 2.2}
+      - {"no": "1020", description: "Envelopes C5, 500", search_description: "ENVELOPES C5, 500", base_unit_of_measure: BOX, sales_unit_of_measure: BOX, purch_unit_of_measure: BOX, inventory_posting_group: RESALE, gen_prod_posting_group: RETAIL, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, costing_method: 0, average_cost: "120", unit_cost: "120", last_direct_cost: "120", unit_price: "199", profit_percent: "39.69849", vendor_no: V00010, vendor_item_no: "NP-C5-500", reorder_point: 100, maximum_inventory: 300, requisition_method_code: MAXQTY, sales_qty_disc_code: "1020", item_cust_disc_gr: PAPER, tariff_no: "48171000", net_weight: 2.2}
       - {"no": "1100", description: "Ballpoint pen", search_description: "BALLPOINT PEN", base_unit_of_measure: PCS, sales_unit_of_measure: PCS, purch_unit_of_measure: PCS, inventory_posting_group: RESALE, gen_prod_posting_group: RETAIL, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, costing_method: 0, average_cost: "4", unit_cost: "4", last_direct_cost: "4", unit_price: "9", profit_percent: "55.55556", vendor_no: V00040, vendor_item_no: "RR-PEN", sales_qty_disc_code: "1100", item_cust_disc_gr: SUPPLIES, tariff_no: "96081010", net_weight: 0.01}
       - {"no": "1110", description: "Marker set, 4 colours", search_description: "MARKER SET, 4 COLOURS", base_unit_of_measure: SET, sales_unit_of_measure: SET, purch_unit_of_measure: SET, inventory_posting_group: RESALE, gen_prod_posting_group: RETAIL, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, costing_method: 0, average_cost: "35", unit_cost: "35", last_direct_cost: "35", unit_price: "69", profit_percent: "49.27536", vendor_no: V00040, vendor_item_no: "RR-MRK4", sales_qty_disc_code: "1110", item_cust_disc_gr: SUPPLIES, tariff_no: "96082000", net_weight: 0.08}
       - {"no": "1120", description: "Notebook A5, lined", search_description: "NOTEBOOK A5, LINED", base_unit_of_measure: PCS, sales_unit_of_measure: PCS, purch_unit_of_measure: PCS, inventory_posting_group: RESALE, gen_prod_posting_group: RETAIL, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, costing_method: 0, average_cost: "18", unit_cost: "18", last_direct_cost: "18", unit_price: "39", profit_percent: "53.84615", vendor_no: V00010, vendor_item_no: "NP-NB-A5", sales_qty_disc_code: "1120", item_cust_disc_gr: SUPPLIES, tariff_no: "48202000", net_weight: 0.2}

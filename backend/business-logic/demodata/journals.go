@@ -6,6 +6,7 @@ import (
 
 	"github.com/hansjlachmann/openerp/backend/business-logic/fadepr"
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/openerp/backend/foundation/system"
 	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
@@ -27,7 +28,9 @@ import (
 //     Oslo store; Phys. Inventory Journals: counted quantities; Resource Journals: usage; BOM
 //     Journals: an assembly of office kits (their pens are sold out: posted after the Item
 //     Journal);
-//   - a depreciation table and resource price changes;
+//   - a depreciation table, resource price changes and item price changes;
+//   - Requisition Worksheets: copy paper and envelopes from their vendor and an item of another
+//     vendor, to be made into purchase orders; Recurring Req. Worksheets: copy paper each month;
 //   - Recurring Item Journals: the office kitchen's coffee each week; Recurring Resource Journals:
 //     the weekly team meeting (both fixed);
 //   - Bank Account Reconciliations: this month's statement of bank B010, its lines applied to the
@@ -56,6 +59,8 @@ func insertDemoJournals(src ftables.Source, today time.Time, counts *Counts, p *
 		{"BOM journal", j.bomJournal},
 		{"depreciation table", j.depreciationTable},
 		{"resource price changes", j.resourcePriceChanges},
+		{"item price changes", j.itemPriceChanges},
+		{"requisition worksheets", j.requisitionWorksheets},
 	}
 	p.setTotal(len(steps))
 	for _, step := range steps {
@@ -600,6 +605,96 @@ func (j *demoJournals) resourcePriceChanges() error {
 		err = change.InsertOrError(true)
 		if err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+// itemPriceChanges: the first five items' prices 5 % up from the first of next month (as
+// Suggest Item Price Chg. (Item) with Create New Prices and an Adjustment Factor of 1.05 makes
+// them), to be implemented
+func (j *demoJournals) itemPriceChanges() error {
+	startingDate, err := system.CalcDate("CM+1D", j.today)
+	if err != nil {
+		return err
+	}
+	item := gtables.NewItem(j.src)
+	n := 0
+	for found := item.FindSet(); found && n < 5; found = item.Next() {
+		change := gtables.NewItemPriceChange(j.src)
+		change.Item_no = item.No
+		change.Starting_date = startingDate
+		change.Current_unit_price = item.Unit_price
+		change.New_unit_price = system.Round(item.Unit_price.Mul(types.MustDecimal("1.05")), types.MustDecimal("0.01"))
+		change.Tax_bus_posting_gr_price = item.Tax_bus_posting_gr_price
+		err = change.InsertOrError(true)
+		if err != nil {
+			return err
+		}
+		n++
+	}
+	return nil
+}
+
+// requisitionWorksheets: template REQ. (worksheet DEFAULT) with lines of copy paper, envelopes
+// and the first item of another vendor; template RECURRING with the monthly copy paper (Fixed)
+func (j *demoJournals) requisitionWorksheets() error {
+	other := gtables.NewItem(j.src)
+	other.SetFilter("vendor_no", "<>V00010")
+	found := other.FindSet()
+	for found && other.Vendor_no == "" {
+		found = other.Next()
+	}
+	if !found {
+		other.No = "1000"
+	}
+	type reqDemoLine struct {
+		item     types.Code
+		quantity int64
+	}
+	for _, w := range []struct {
+		template    types.Code
+		description string
+		recurring   bool
+		lines       []reqDemoLine
+	}{
+		{"REQ.", "Req. Worksheet", false, []reqDemoLine{{"1000", 200}, {"1020", 50}, {other.No, 10}}},
+		{"RECURRING", "Recurring Requisition Worksheet", true, []reqDemoLine{{"1000", 100}}},
+	} {
+		reqTemplate := gtables.NewReqWkshTemplate(j.src)
+		reqTemplate.Name = w.template
+		reqTemplate.Description = types.Text(w.description)
+		reqTemplate.Recurring = w.recurring
+		err := reqTemplate.InsertOrError(true)
+		if err != nil {
+			return err
+		}
+		reqWkshName := gtables.NewRequisitionWkshName(j.src)
+		reqWkshName.Worksheet_template_name = w.template
+		reqWkshName.Name = "DEFAULT"
+		reqWkshName.Description = "Default Journal"
+		err = reqWkshName.InsertOrError(true)
+		if err != nil {
+			return err
+		}
+		for i, l := range w.lines {
+			reqLine := gtables.NewRequisitionLine(j.src)
+			reqLine.Worksheet_template_name = w.template
+			reqLine.Journal_batch_name = "DEFAULT"
+			reqLine.Line_no = (i + 1) * 10000
+			err = set(reqLine, "order_date", j.today, "type", gtables.RequisitionLine_Type.Item, "no", l.item, "quantity", types.NewDecimalFromInt(l.quantity))
+			if err != nil {
+				return err
+			}
+			if w.recurring {
+				reqLine.Recurring_method = gtables.RequisitionLine_Recurring_method.Fixed
+				reqLine.Recurring_frequency = "1M"
+			}
+			err = reqLine.InsertOrError(true)
+			if err != nil {
+				return err
+			}
+			j.lines++
 		}
 	}
 	return nil

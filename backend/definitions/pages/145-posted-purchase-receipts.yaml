@@ -32,7 +32,7 @@ page:
       caption: Print
       image: Print
       promoted: true
-      run_object: report:408
+      run_object: table:Purch_Rcpt_Header.PrintRecords
 
     - name: Navigate
       caption: Navigate

@@ -31,6 +31,9 @@
 		// A printed report's request page: Preview, Print and PDF instead of OK (the answer's
 		// _output says which)
 		printed?: boolean;
+		// the output chosen first on a printed report's request page (its Printer Selection):
+		// Enter takes it, its button is the primary one
+		defaultOutput?: string;
 		onInputResponse?: (values: Record<string, string> | null) => void;
 		showCancel?: boolean;
 		onCancel?: () => void;
@@ -52,6 +55,7 @@
 		inputDataItems = [],
 		optionsCaption = '',
 		printed = false,
+		defaultOutput = 'preview',
 		onInputResponse,
 		showCancel = false,
 		onCancel
@@ -74,13 +78,13 @@
 		}, 0);
 	});
 
-	// Enter in the input form is OK — Preview on a printed report's request page — (when the
+	// Enter in the input form is OK — the first output on a printed report's request page — (when the
 	// values are valid), Esc is Cancel
 	function handleInputKeydown(event: KeyboardEvent) {
 		if (event.defaultPrevented) return; // a field kept the key (a date that is not one)
 		if (event.key === 'Enter') {
 			event.preventDefault();
-			if (inputValid()) handleInputOk(printed ? 'preview' : undefined);
+			if (inputValid()) handleInputOk(printed ? firstOutput : undefined);
 		} else if (event.key === 'Escape') {
 			event.preventDefault();
 			handleInputCancel();
@@ -144,6 +148,8 @@
 	function handleCancel() {
 		onCancel?.();
 	}
+
+	const firstOutput = $derived<'preview' | 'print' | 'pdf'>(defaultOutput === 'print' || defaultOutput === 'pdf' ? defaultOutput : 'preview');
 
 	function handleInputOk(output?: 'preview' | 'print' | 'pdf') {
 		// Values go as text (number inputs bind numbers); locale-formatted dates back to ISO
@@ -210,7 +216,7 @@
 						name="input-{field.name}"
 						value={String(i + 1)}
 						bind:group={inputValues[field.name]}
-						ondblclick={() => { inputValues[field.name] = String(i + 1); handleInputOk(printed ? 'preview' : undefined); }}
+						ondblclick={() => { inputValues[field.name] = String(i + 1); handleInputOk(printed ? firstOutput : undefined); }}
 					/>
 					<span>{option}</span>
 				</label>
@@ -289,9 +295,9 @@
 				<div class="confirm-buttons">
 					<Button variant="secondary" onclick={handleInputCancel}>{t(BTN.CANCEL)}</Button>
 					{#if printed}
-						<Button variant="secondary" onclick={() => handleInputOk('pdf')} disabled={!inputValid()}>{t(BTN.PDF)}</Button>
-						<Button variant="secondary" onclick={() => handleInputOk('print')} disabled={!inputValid()}>{t(BTN.PRINT)}</Button>
-						<Button variant="primary" onclick={() => handleInputOk('preview')} disabled={!inputValid()}>{t(BTN.PREVIEW)}</Button>
+						<Button variant={firstOutput === 'pdf' ? 'primary' : 'secondary'} onclick={() => handleInputOk('pdf')} disabled={!inputValid()}>{t(BTN.PDF)}</Button>
+						<Button variant={firstOutput === 'print' ? 'primary' : 'secondary'} onclick={() => handleInputOk('print')} disabled={!inputValid()}>{t(BTN.PRINT)}</Button>
+						<Button variant={firstOutput === 'preview' ? 'primary' : 'secondary'} onclick={() => handleInputOk('preview')} disabled={!inputValid()}>{t(BTN.PREVIEW)}</Button>
 					{:else}
 						<Button variant="primary" onclick={() => handleInputOk()} disabled={!inputValid()}>{t(BTN.OK)}</Button>
 					{/if}

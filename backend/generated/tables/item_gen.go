@@ -41,6 +41,9 @@
 //	OnValidate_Reorder_point(rec *gtables.Item) error
 //	OnValidate_Maximum_inventory(rec *gtables.Item) error
 //	OnValidate_Reorder_quantity(rec *gtables.Item) error
+//	OnValidate_Requisition_method_code(rec *gtables.Item) error
+//	OnValidate_Order_multiple(rec *gtables.Item) error
+//	OnValidate_Reorder_cycle(rec *gtables.Item) error
 //	OnValidate_Alternative_item_no(rec *gtables.Item) error
 //	OnValidate_Unit_list_price(rec *gtables.Item) error
 //	OnValidate_Duty_due_percent(rec *gtables.Item) error
@@ -185,6 +188,9 @@ type Item struct {
 	Reorder_point            types.Decimal                `db:"reorder_point"`
 	Maximum_inventory        types.Decimal                `db:"maximum_inventory"`
 	Reorder_quantity         types.Decimal                `db:"reorder_quantity"`
+	Requisition_method_code  types.Code                   `db:"requisition_method_code"`
+	Order_multiple           types.Decimal                `db:"order_multiple"`
+	Reorder_cycle            types.Code                   `db:"reorder_cycle"`
 	Alternative_item_no      types.Code                   `db:"alternative_item_no"`
 	Unit_list_price          types.Decimal                `db:"unit_list_price"`
 	Duty_due_percent         types.Decimal                `db:"duty_due_percent"`
@@ -207,6 +213,10 @@ type Item struct {
 	Last_date_modified types.Date `db:"last_date_modified"`
 	// FlowField: Sum(ItemLedgerEntry.quantity)
 	Quantity_on_hand types.Decimal
+	// FlowField: Sum(PurchaseLine.outstanding_qty_base)
+	Qty_on_purch_order types.Decimal
+	// FlowField: Sum(SalesLine.outstanding_qty_base)
+	Qty_on_sales_order types.Decimal
 	// FlowField: Sum(ItemLedgerEntry.invoiced_quantity)
 	Net_invoiced_qty types.Decimal
 	// FlowField: Sum(ItemLedgerEntry.quantity)
@@ -397,6 +407,9 @@ var Item_FieldNo = struct {
 	Reorder_point            int
 	Maximum_inventory        int
 	Reorder_quantity         int
+	Requisition_method_code  int
+	Order_multiple           int
+	Reorder_cycle            int
 	Alternative_item_no      int
 	Unit_list_price          int
 	Duty_due_percent         int
@@ -417,6 +430,8 @@ var Item_FieldNo = struct {
 	Blocked                  int
 	Last_date_modified       int
 	Quantity_on_hand         int
+	Qty_on_purch_order       int
+	Qty_on_sales_order       int
 	Net_invoiced_qty         int
 	Net_change               int
 	Purchases_qty            int
@@ -482,6 +497,9 @@ var Item_FieldNo = struct {
 	Reorder_point:            34,
 	Maximum_inventory:        35,
 	Reorder_quantity:         36,
+	Requisition_method_code:  5408,
+	Order_multiple:           5414,
+	Reorder_cycle:            5428,
 	Alternative_item_no:      37,
 	Unit_list_price:          38,
 	Duty_due_percent:         39,
@@ -502,6 +520,8 @@ var Item_FieldNo = struct {
 	Blocked:                  54,
 	Last_date_modified:       62,
 	Quantity_on_hand:         68,
+	Qty_on_purch_order:       84,
+	Qty_on_sales_order:       85,
 	Net_invoiced_qty:         69,
 	Net_change:               70,
 	Purchases_qty:            71,
@@ -603,6 +623,12 @@ func (t *Item) FieldNo(fieldName string) int {
 		return 35
 	case "reorder_quantity":
 		return 36
+	case "requisition_method_code":
+		return 5408
+	case "order_multiple":
+		return 5414
+	case "reorder_cycle":
+		return 5428
 	case "alternative_item_no":
 		return 37
 	case "unit_list_price":
@@ -643,6 +669,10 @@ func (t *Item) FieldNo(fieldName string) int {
 		return 62
 	case "quantity_on_hand":
 		return 68
+	case "qty_on_purch_order":
+		return 84
+	case "qty_on_sales_order":
+		return 85
 	case "net_invoiced_qty":
 		return 69
 	case "net_change":
@@ -778,6 +808,12 @@ func (t *Item) FieldName(fieldNo int) string {
 		return "maximum_inventory"
 	case 36:
 		return "reorder_quantity"
+	case 5408:
+		return "requisition_method_code"
+	case 5414:
+		return "order_multiple"
+	case 5428:
+		return "reorder_cycle"
 	case 37:
 		return "alternative_item_no"
 	case 38:
@@ -818,6 +854,10 @@ func (t *Item) FieldName(fieldNo int) string {
 		return "last_date_modified"
 	case 68:
 		return "quantity_on_hand"
+	case 84:
+		return "qty_on_purch_order"
+	case 85:
+		return "qty_on_sales_order"
 	case 69:
 		return "net_invoiced_qty"
 	case 70:
@@ -1006,6 +1046,9 @@ type (
 	ItemOnValidate_Reorder_point            interface{ OnValidate_Reorder_point(rec *Item) error }
 	ItemOnValidate_Maximum_inventory        interface{ OnValidate_Maximum_inventory(rec *Item) error }
 	ItemOnValidate_Reorder_quantity         interface{ OnValidate_Reorder_quantity(rec *Item) error }
+	ItemOnValidate_Requisition_method_code  interface{ OnValidate_Requisition_method_code(rec *Item) error }
+	ItemOnValidate_Order_multiple           interface{ OnValidate_Order_multiple(rec *Item) error }
+	ItemOnValidate_Reorder_cycle            interface{ OnValidate_Reorder_cycle(rec *Item) error }
 	ItemOnValidate_Alternative_item_no      interface{ OnValidate_Alternative_item_no(rec *Item) error }
 	ItemOnValidate_Unit_list_price          interface{ OnValidate_Unit_list_price(rec *Item) error }
 	ItemOnValidate_Duty_due_percent         interface{ OnValidate_Duty_due_percent(rec *Item) error }
@@ -1128,6 +1171,12 @@ func itemTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemOnValidate_Maximum_inventory)
 	case "OnValidate_Reorder_quantity":
 		_, ok = logic.(ItemOnValidate_Reorder_quantity)
+	case "OnValidate_Requisition_method_code":
+		_, ok = logic.(ItemOnValidate_Requisition_method_code)
+	case "OnValidate_Order_multiple":
+		_, ok = logic.(ItemOnValidate_Order_multiple)
+	case "OnValidate_Reorder_cycle":
+		_, ok = logic.(ItemOnValidate_Reorder_cycle)
 	case "OnValidate_Alternative_item_no":
 		_, ok = logic.(ItemOnValidate_Alternative_item_no)
 	case "OnValidate_Unit_list_price":
@@ -1333,6 +1382,18 @@ func (t *Item) CheckFields() error {
 	if err := tables.CheckDateFormula(ItemTableName, "lead_time_calculation", string(t.Lead_time_calculation)); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(ItemTableName, "requisition_method_code", string(t.Requisition_method_code), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckDecimalRange(ItemTableName, "order_multiple", t.Order_multiple, "0", ""); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(ItemTableName, "reorder_cycle", string(t.Reorder_cycle), 20); err != nil {
+		return err
+	}
+	if err := tables.CheckDateFormula(ItemTableName, "reorder_cycle", string(t.Reorder_cycle)); err != nil {
+		return err
+	}
 	if err := tables.CheckMaxLength(ItemTableName, "alternative_item_no", string(t.Alternative_item_no), 20); err != nil {
 		return err
 	}
@@ -1452,6 +1513,9 @@ func GetItemTableSchema() string {
 		reorder_point TEXT,
 		maximum_inventory TEXT,
 		reorder_quantity TEXT,
+		requisition_method_code TEXT(10),
+		order_multiple TEXT,
+		reorder_cycle TEXT(20),
 		alternative_item_no TEXT(20),
 		unit_list_price TEXT,
 		duty_due_percent TEXT,
@@ -1472,6 +1536,8 @@ func GetItemTableSchema() string {
 		blocked INTEGER,
 		last_date_modified TEXT,
 		quantity_on_hand TEXT,
+		qty_on_purch_order TEXT,
+		qty_on_sales_order TEXT,
 		net_invoiced_qty TEXT,
 		net_change TEXT,
 		purchases_qty TEXT,
@@ -1536,6 +1602,9 @@ func GetItemPostgresTableSchema() string {
 		reorder_point NUMERIC,
 		maximum_inventory NUMERIC,
 		reorder_quantity NUMERIC,
+		requisition_method_code VARCHAR(10),
+		order_multiple NUMERIC,
+		reorder_cycle VARCHAR(20),
 		alternative_item_no VARCHAR(20),
 		unit_list_price NUMERIC,
 		duty_due_percent NUMERIC,
@@ -1556,6 +1625,8 @@ func GetItemPostgresTableSchema() string {
 		blocked BOOLEAN,
 		last_date_modified DATE,
 		quantity_on_hand NUMERIC,
+		qty_on_purch_order NUMERIC,
+		qty_on_sales_order NUMERIC,
 		net_invoiced_qty NUMERIC,
 		net_change NUMERIC,
 		purchases_qty NUMERIC,
@@ -1774,6 +1845,9 @@ func (t *Item) StoreOldValues() {
 	t.oldValues["reorder_point"] = t.Reorder_point
 	t.oldValues["maximum_inventory"] = t.Maximum_inventory
 	t.oldValues["reorder_quantity"] = t.Reorder_quantity
+	t.oldValues["requisition_method_code"] = t.Requisition_method_code
+	t.oldValues["order_multiple"] = t.Order_multiple
+	t.oldValues["reorder_cycle"] = t.Reorder_cycle
 	t.oldValues["alternative_item_no"] = t.Alternative_item_no
 	t.oldValues["unit_list_price"] = t.Unit_list_price
 	t.oldValues["duty_due_percent"] = t.Duty_due_percent
@@ -1911,6 +1985,15 @@ func (t *Item) XRec() *Item {
 	}
 	if v, ok := t.oldValues["reorder_quantity"].(types.Decimal); ok {
 		x.Reorder_quantity = v
+	}
+	if v, ok := t.oldValues["requisition_method_code"].(types.Code); ok {
+		x.Requisition_method_code = v
+	}
+	if v, ok := t.oldValues["order_multiple"].(types.Decimal); ok {
+		x.Order_multiple = v
+	}
+	if v, ok := t.oldValues["reorder_cycle"].(types.Code); ok {
+		x.Reorder_cycle = v
 	}
 	if v, ok := t.oldValues["alternative_item_no"].(types.Code); ok {
 		x.Alternative_item_no = v
@@ -2097,6 +2180,9 @@ func (t *Item) GetByPK(no types.Code) bool {
 	var reorder_pointNull sql.NullString
 	var maximum_inventoryNull sql.NullString
 	var reorder_quantityNull sql.NullString
+	var requisition_method_codeNull sql.NullString
+	var order_multipleNull sql.NullString
+	var reorder_cycleNull sql.NullString
 	var alternative_item_noNull sql.NullString
 	var unit_list_priceNull sql.NullString
 	var duty_due_percentNull sql.NullString
@@ -2135,7 +2221,7 @@ func (t *Item) GetByPK(no types.Code) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure FROM "%s" WHERE 1=1 AND no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure FROM "%s" WHERE 1=1 AND no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2173,6 +2259,9 @@ func (t *Item) GetByPK(no types.Code) bool {
 		&reorder_pointNull,
 		&maximum_inventoryNull,
 		&reorder_quantityNull,
+		&requisition_method_codeNull,
+		&order_multipleNull,
+		&reorder_cycleNull,
 		&alternative_item_noNull,
 		&unit_list_priceNull,
 		&duty_due_percentNull,
@@ -2248,6 +2337,9 @@ func (t *Item) GetByPK(no types.Code) bool {
 	t.Reorder_point, _ = types.NewDecimalFromString(reorder_pointNull.String)
 	t.Maximum_inventory, _ = types.NewDecimalFromString(maximum_inventoryNull.String)
 	t.Reorder_quantity, _ = types.NewDecimalFromString(reorder_quantityNull.String)
+	t.Requisition_method_code = types.NewCode(requisition_method_codeNull.String)
+	t.Order_multiple, _ = types.NewDecimalFromString(order_multipleNull.String)
+	t.Reorder_cycle = types.NewCode(reorder_cycleNull.String)
 	t.Alternative_item_no = types.NewCode(alternative_item_noNull.String)
 	t.Unit_list_price, _ = types.NewDecimalFromString(unit_list_priceNull.String)
 	t.Duty_due_percent, _ = types.NewDecimalFromString(duty_due_percentNull.String)
@@ -2332,6 +2424,9 @@ func (t *Item) Insert(runTrigger bool) bool {
 		t.Reorder_point,
 		t.Maximum_inventory,
 		t.Reorder_quantity,
+		t.Requisition_method_code,
+		t.Order_multiple,
+		t.Reorder_cycle,
 		t.Alternative_item_no,
 		t.Unit_list_price,
 		t.Duty_due_percent,
@@ -2367,7 +2462,7 @@ func (t *Item) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2436,6 +2531,9 @@ func (t *Item) InsertAll(records []*Item, runTrigger bool) error {
 			r.Reorder_point,
 			r.Maximum_inventory,
 			r.Reorder_quantity,
+			r.Requisition_method_code,
+			r.Order_multiple,
+			r.Reorder_cycle,
 			r.Alternative_item_no,
 			r.Unit_list_price,
 			r.Duty_due_percent,
@@ -2470,7 +2568,7 @@ func (t *Item) InsertAll(records []*Item, runTrigger bool) error {
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ItemTableName)
-	columns := []string{"no", "no_2", "description", "search_description", "description_2", "class", "base_unit_of_measure", "price_unit_conversion", "inventory_posting_group", "shelf_bin_no", "sales_qty_disc_code", "item_cust_disc_gr", "allow_invoice_disc", "statistics_group", "commission_group", "unit_price", "price_profit_calculation", "profit_percent", "costing_method", "unit_cost", "standard_cost", "last_direct_cost", "average_cost", "minimum_unit_price", "indirect_cost_percent", "vendor_no", "vendor_item_no", "lead_time_calculation", "reorder_point", "maximum_inventory", "reorder_quantity", "alternative_item_no", "unit_list_price", "duty_due_percent", "duty_code", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "durability", "freight_type", "tariff_no", "duty_unit_conversion", "country_purchased_code", "budget_quantity", "budgeted_amount", "budget_profit", "blocked", "last_date_modified", "price_includes_tax", "tax_bus_posting_gr_price", "gen_prod_posting_group", "picture", "country_of_origin_code", "no_series", "tax_group_code", "tax_prod_posting_group", "reserve", "inventory_value_zero", "rounding_precision", "sales_unit_of_measure", "purch_unit_of_measure"}
+	columns := []string{"no", "no_2", "description", "search_description", "description_2", "class", "base_unit_of_measure", "price_unit_conversion", "inventory_posting_group", "shelf_bin_no", "sales_qty_disc_code", "item_cust_disc_gr", "allow_invoice_disc", "statistics_group", "commission_group", "unit_price", "price_profit_calculation", "profit_percent", "costing_method", "unit_cost", "standard_cost", "last_direct_cost", "average_cost", "minimum_unit_price", "indirect_cost_percent", "vendor_no", "vendor_item_no", "lead_time_calculation", "reorder_point", "maximum_inventory", "reorder_quantity", "requisition_method_code", "order_multiple", "reorder_cycle", "alternative_item_no", "unit_list_price", "duty_due_percent", "duty_code", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "durability", "freight_type", "tariff_no", "duty_unit_conversion", "country_purchased_code", "budget_quantity", "budgeted_amount", "budget_profit", "blocked", "last_date_modified", "price_includes_tax", "tax_bus_posting_gr_price", "gen_prod_posting_group", "picture", "country_of_origin_code", "no_series", "tax_group_code", "tax_prod_posting_group", "reserve", "inventory_value_zero", "rounding_precision", "sales_unit_of_measure", "purch_unit_of_measure"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2633,6 +2731,18 @@ func (t *Item) Modify(runTrigger bool) bool {
 		if t.hasFieldChanged("reorder_quantity") {
 			setClauses = append(setClauses, "reorder_quantity = ?")
 			values = append(values, t.Reorder_quantity)
+		}
+		if t.hasFieldChanged("requisition_method_code") {
+			setClauses = append(setClauses, "requisition_method_code = ?")
+			values = append(values, t.Requisition_method_code)
+		}
+		if t.hasFieldChanged("order_multiple") {
+			setClauses = append(setClauses, "order_multiple = ?")
+			values = append(values, t.Order_multiple)
+		}
+		if t.hasFieldChanged("reorder_cycle") {
+			setClauses = append(setClauses, "reorder_cycle = ?")
+			values = append(values, t.Reorder_cycle)
 		}
 		if t.hasFieldChanged("alternative_item_no") {
 			setClauses = append(setClauses, "alternative_item_no = ?")
@@ -2825,6 +2935,12 @@ func (t *Item) Modify(runTrigger bool) bool {
 		values = append(values, t.Maximum_inventory)
 		setClauses = append(setClauses, "reorder_quantity = ?")
 		values = append(values, t.Reorder_quantity)
+		setClauses = append(setClauses, "requisition_method_code = ?")
+		values = append(values, t.Requisition_method_code)
+		setClauses = append(setClauses, "order_multiple = ?")
+		values = append(values, t.Order_multiple)
+		setClauses = append(setClauses, "reorder_cycle = ?")
+		values = append(values, t.Reorder_cycle)
 		setClauses = append(setClauses, "alternative_item_no = ?")
 		values = append(values, t.Alternative_item_no)
 		setClauses = append(setClauses, "unit_list_price = ?")
@@ -3081,6 +3197,18 @@ func (t *Item) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Decimal); ok {
 			return !t.Reorder_quantity.Equal(old)
 		}
+	case "requisition_method_code":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Requisition_method_code.Equal(old)
+		}
+	case "order_multiple":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Order_multiple.Equal(old)
+		}
+	case "reorder_cycle":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Reorder_cycle.Equal(old)
+		}
 	case "alternative_item_no":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Alternative_item_no.Equal(old)
@@ -3231,7 +3359,7 @@ func (t *Item) renameReferences(field string, oldValue, newValue interface{}) er
 		condValue  int
 	}
 	references := map[string][]reference{
-		"no": {{"BOM_Component", false, "parent_item_no", "", 0}, {"BOM_Component", false, "no", "type", 1}, {"BOM_Journal_Line", false, "item_no", "", 0}, {"Intrastat_Jnl_Line", false, "item_no", "", 0}, {"Item", false, "sales_qty_disc_code", "", 0}, {"Item", false, "alternative_item_no", "", 0}, {"Item_Application_Entry", false, "item_no", "", 0}, {"Item_Journal_Line", false, "item_no", "", 0}, {"Item_Journal_Line", false, "source_no", "source_type", 3}, {"Item_Ledger_Entry", false, "item_no", "", 0}, {"Item_Ledger_Entry", false, "source_no", "source_type", 3}, {"Item_Price", false, "item_no", "", 0}, {"Item_Translation", false, "item_no", "", 0}, {"Item_Unit_of_Measure", false, "item_no", "", 0}, {"Item_Variant", false, "item_no", "", 0}, {"Item_Vendor", false, "item_no", "", 0}, {"Phys_Inventory_Ledger_Entry", false, "item_no", "", 0}, {"Purch_Cr_Memo_Line", false, "no", "type", 2}, {"Purch_Inv_Line", false, "no", "type", 2}, {"Purch_Rcpt_Line", false, "no", "type", 2}, {"Purchase_Line", false, "no", "type", 2}, {"Sales_Cr_Memo_Line", false, "no", "type", 2}, {"Sales_Invoice_Line", false, "no", "type", 2}, {"Sales_Line", false, "no", "type", 2}, {"Sales_Shipment_Line", false, "no", "type", 2}},
+		"no": {{"BOM_Component", false, "parent_item_no", "", 0}, {"BOM_Component", false, "no", "type", 1}, {"BOM_Journal_Line", false, "item_no", "", 0}, {"Intrastat_Jnl_Line", false, "item_no", "", 0}, {"Item", false, "sales_qty_disc_code", "", 0}, {"Item", false, "alternative_item_no", "", 0}, {"Item_Application_Entry", false, "item_no", "", 0}, {"Item_Journal_Line", false, "item_no", "", 0}, {"Item_Journal_Line", false, "source_no", "source_type", 3}, {"Item_Ledger_Entry", false, "item_no", "", 0}, {"Item_Ledger_Entry", false, "source_no", "source_type", 3}, {"Item_Price", false, "item_no", "", 0}, {"Item_Price_Change", false, "item_no", "", 0}, {"Item_Translation", false, "item_no", "", 0}, {"Item_Unit_of_Measure", false, "item_no", "", 0}, {"Item_Variant", false, "item_no", "", 0}, {"Item_Vendor", false, "item_no", "", 0}, {"Phys_Inventory_Ledger_Entry", false, "item_no", "", 0}, {"Purch_Cr_Memo_Line", false, "no", "type", 2}, {"Purch_Inv_Line", false, "no", "type", 2}, {"Purch_Rcpt_Line", false, "no", "type", 2}, {"Purchase_Line", false, "no", "type", 2}, {"Requisition_Line", false, "no", "type", 2}, {"Sales_Cr_Memo_Line", false, "no", "type", 2}, {"Sales_Invoice_Line", false, "no", "type", 2}, {"Sales_Line", false, "no", "type", 2}, {"Sales_Shipment_Line", false, "no", "type", 2}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
@@ -3305,6 +3433,8 @@ func (t *Item) CalcFields(fieldNames ...string) {
 		t.calcFlowField_bill_of_materials()
 		t.calcFlowField_comment()
 		t.calcFlowField_quantity_on_hand()
+		t.calcFlowField_qty_on_purch_order()
+		t.calcFlowField_qty_on_sales_order()
 		t.calcFlowField_net_invoiced_qty()
 		t.calcFlowField_net_change()
 		t.calcFlowField_purchases_qty()
@@ -3330,6 +3460,10 @@ func (t *Item) CalcFields(fieldNames ...string) {
 			t.calcFlowField_comment()
 		case "quantity_on_hand":
 			t.calcFlowField_quantity_on_hand()
+		case "qty_on_purch_order":
+			t.calcFlowField_qty_on_purch_order()
+		case "qty_on_sales_order":
+			t.calcFlowField_qty_on_sales_order()
 		case "net_invoiced_qty":
 			t.calcFlowField_net_invoiced_qty()
 		case "net_change":
@@ -3376,6 +3510,18 @@ func (t *Item) calcFlowField_comment() {
 // CalcFormula: Sum(ItemLedgerEntry.quantity)
 func (t *Item) calcFlowField_quantity_on_hand() {
 	t.Quantity_on_hand = t.calcSum_quantity_on_hand()
+}
+
+// calcFlowField_qty_on_purch_order calculates the qty_on_purch_order FlowField
+// CalcFormula: Sum(PurchaseLine.outstanding_qty_base)
+func (t *Item) calcFlowField_qty_on_purch_order() {
+	t.Qty_on_purch_order = t.calcSum_qty_on_purch_order()
+}
+
+// calcFlowField_qty_on_sales_order calculates the qty_on_sales_order FlowField
+// CalcFormula: Sum(SalesLine.outstanding_qty_base)
+func (t *Item) calcFlowField_qty_on_sales_order() {
+	t.Qty_on_sales_order = t.calcSum_qty_on_sales_order()
 }
 
 // calcFlowField_net_invoiced_qty calculates the net_invoiced_qty FlowField
@@ -3475,6 +3621,10 @@ func (t *Item) CalcFieldsForRecords(records []map[string]interface{}, fieldNames
 			t.calcForRecords_comment(records)
 		case "quantity_on_hand":
 			t.calcForRecords_quantity_on_hand(records)
+		case "qty_on_purch_order":
+			t.calcForRecords_qty_on_purch_order(records)
+		case "qty_on_sales_order":
+			t.calcForRecords_qty_on_sales_order(records)
 		case "net_invoiced_qty":
 			t.calcForRecords_net_invoiced_qty(records)
 		case "net_change":
@@ -3745,6 +3895,226 @@ func (t *Item) calcForRecords_quantity_on_hand(records []map[string]interface{})
 			v = types.ZeroDecimal()
 		}
 		rec["quantity_on_hand"] = v.String()
+	}
+}
+
+// calcForRecords_qty_on_purch_order calculates the qty_on_purch_order FlowField for a set of records
+// CalcFormula: Sum(PurchaseLine.outstanding_qty_base)
+func (t *Item) calcForRecords_qty_on_purch_order(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+	if t.Department_filter != "" || t.Project_filter != "" || t.Location_filter != "" || t.Variant_filter != "" || t.Date_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+	}
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["no"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["no"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "document_type = ?")
+		args = append(args, 1)
+		whereClauses = append(whereClauses, "type = ?")
+		args = append(args, 2)
+		if t.Department_filter != "" {
+			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Project_filter != "" {
+			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Location_filter != "" {
+			// FlowFilter location_filter applied to location_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("location_code", flowfilter.KindCode, t.Location_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Variant_filter != "" {
+			// FlowFilter variant_filter applied to variant_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("variant_code", flowfilter.KindCode, t.Variant_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to expected_receipt_date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("expected_receipt_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if chunk != nil {
+			whereClauses = append(whereClauses, "no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT no, COALESCE(SUM(outstanding_qty_base), 0) FROM "%s" WHERE %s GROUP BY no`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate qty_on_purch_order: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["no"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["qty_on_purch_order"] = v.String()
+	}
+}
+
+// calcForRecords_qty_on_sales_order calculates the qty_on_sales_order FlowField for a set of records
+// CalcFormula: Sum(SalesLine.outstanding_qty_base)
+func (t *Item) calcForRecords_qty_on_sales_order(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+	if t.Department_filter != "" || t.Project_filter != "" || t.Location_filter != "" || t.Variant_filter != "" || t.Date_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+	}
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["no"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["no"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "document_type = ?")
+		args = append(args, 1)
+		whereClauses = append(whereClauses, "type = ?")
+		args = append(args, 2)
+		if t.Department_filter != "" {
+			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Project_filter != "" {
+			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Location_filter != "" {
+			// FlowFilter location_filter applied to location_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("location_code", flowfilter.KindCode, t.Location_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Variant_filter != "" {
+			// FlowFilter variant_filter applied to variant_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("variant_code", flowfilter.KindCode, t.Variant_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to shipment_date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("shipment_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if chunk != nil {
+			whereClauses = append(whereClauses, "no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT no, COALESCE(SUM(outstanding_qty_base), 0) FROM "%s" WHERE %s GROUP BY no`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate qty_on_sales_order: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["no"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["qty_on_sales_order"] = v.String()
 	}
 }
 
@@ -5391,6 +5761,156 @@ func (t *Item) calcSum_quantity_on_hand() types.Decimal {
 	return sum
 }
 
+func (t *Item) calcSum_qty_on_purch_order() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+	if t.Department_filter != "" || t.Project_filter != "" || t.Location_filter != "" || t.Variant_filter != "" || t.Date_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+	}
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "document_type = ?")
+	args = append(args, 1)
+	whereClauses = append(whereClauses, "type = ?")
+	args = append(args, 2)
+	whereClauses = append(whereClauses, "no = ?")
+	args = append(args, t.No)
+	if t.Department_filter != "" {
+		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Project_filter != "" {
+		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Location_filter != "" {
+		// FlowFilter location_filter applied to location_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("location_code", flowfilter.KindCode, t.Location_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Variant_filter != "" {
+		// FlowFilter variant_filter applied to variant_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("variant_code", flowfilter.KindCode, t.Variant_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Date_filter != "" {
+		// FlowFilter date_filter applied to expected_receipt_date (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("expected_receipt_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(outstanding_qty_base), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for qty_on_purch_order: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *Item) calcSum_qty_on_sales_order() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+	if t.Department_filter != "" || t.Project_filter != "" || t.Location_filter != "" || t.Variant_filter != "" || t.Date_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+	}
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "document_type = ?")
+	args = append(args, 1)
+	whereClauses = append(whereClauses, "type = ?")
+	args = append(args, 2)
+	whereClauses = append(whereClauses, "no = ?")
+	args = append(args, t.No)
+	if t.Department_filter != "" {
+		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Project_filter != "" {
+		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Location_filter != "" {
+		// FlowFilter location_filter applied to location_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("location_code", flowfilter.KindCode, t.Location_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Variant_filter != "" {
+		// FlowFilter variant_filter applied to variant_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("variant_code", flowfilter.KindCode, t.Variant_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Date_filter != "" {
+		// FlowFilter date_filter applied to shipment_date (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("shipment_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(outstanding_qty_base), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for qty_on_sales_order: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
 func (t *Item) calcSum_net_invoiced_qty() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ItemLedgerEntryTableName), false
@@ -6553,6 +7073,10 @@ func (t *Item) FlowFieldFilterKind(field string) (flowfilter.Kind, bool) {
 	switch strings.ToLower(field) {
 	case "quantity_on_hand":
 		return flowfilter.KindDecimal, true
+	case "qty_on_purch_order":
+		return flowfilter.KindDecimal, true
+	case "qty_on_sales_order":
+		return flowfilter.KindDecimal, true
 	case "net_invoiced_qty":
 		return flowfilter.KindDecimal, true
 	case "net_change":
@@ -6642,6 +7166,118 @@ func (t *Item) flowFieldExpr(field string) (string, []interface{}) {
 			where = strings.Join(whereClauses, " AND ")
 		}
 		agg := "COALESCE(SUM(quantity), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "qty_on_purch_order":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+		if t.Department_filter != "" || t.Project_filter != "" || t.Location_filter != "" || t.Variant_filter != "" || t.Date_filter != "" {
+			// A FlowFilter is set: the key must contain the filtered fields too
+			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+		}
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "document_type = ?")
+		args = append(args, 1)
+		whereClauses = append(whereClauses, "type = ?")
+		args = append(args, 2)
+		whereClauses = append(whereClauses, "no = "+outer+".no")
+		if t.Department_filter != "" {
+			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Project_filter != "" {
+			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Location_filter != "" {
+			// FlowFilter location_filter applied to location_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("location_code", flowfilter.KindCode, t.Location_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Variant_filter != "" {
+			// FlowFilter variant_filter applied to variant_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("variant_code", flowfilter.KindCode, t.Variant_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to expected_receipt_date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("expected_receipt_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(outstanding_qty_base), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "qty_on_sales_order":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+		if t.Department_filter != "" || t.Project_filter != "" || t.Location_filter != "" || t.Variant_filter != "" || t.Date_filter != "" {
+			// A FlowFilter is set: the key must contain the filtered fields too
+			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+		}
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "document_type = ?")
+		args = append(args, 1)
+		whereClauses = append(whereClauses, "type = ?")
+		args = append(args, 2)
+		whereClauses = append(whereClauses, "no = "+outer+".no")
+		if t.Department_filter != "" {
+			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Project_filter != "" {
+			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Location_filter != "" {
+			// FlowFilter location_filter applied to location_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("location_code", flowfilter.KindCode, t.Location_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Variant_filter != "" {
+			// FlowFilter variant_filter applied to variant_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("variant_code", flowfilter.KindCode, t.Variant_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to shipment_date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("shipment_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(outstanding_qty_base), 0)"
 		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
 	case "net_invoiced_qty":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
@@ -7557,6 +8193,12 @@ func (t *Item) columnName(fieldName string) (string, bool) {
 		return "maximum_inventory", true
 	case strings.ToLower("reorder_quantity"):
 		return "reorder_quantity", true
+	case strings.ToLower("requisition_method_code"):
+		return "requisition_method_code", true
+	case strings.ToLower("order_multiple"):
+		return "order_multiple", true
+	case strings.ToLower("reorder_cycle"):
+		return "reorder_cycle", true
 	case strings.ToLower("alternative_item_no"):
 		return "alternative_item_no", true
 	case strings.ToLower("unit_list_price"):
@@ -7830,6 +8472,8 @@ func (t *Item) isDecimalColumn(column string) bool {
 		return true
 	case "reorder_quantity":
 		return true
+	case "order_multiple":
+		return true
 	case "unit_list_price":
 		return true
 	case "duty_due_percent":
@@ -8038,7 +8682,7 @@ func (t *Item) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -8071,6 +8715,9 @@ func (t *Item) FindFirst() bool {
 	var reorder_pointNull sql.NullString
 	var maximum_inventoryNull sql.NullString
 	var reorder_quantityNull sql.NullString
+	var requisition_method_codeNull sql.NullString
+	var order_multipleNull sql.NullString
+	var reorder_cycleNull sql.NullString
 	var alternative_item_noNull sql.NullString
 	var unit_list_priceNull sql.NullString
 	var duty_due_percentNull sql.NullString
@@ -8134,6 +8781,9 @@ func (t *Item) FindFirst() bool {
 		&reorder_pointNull,
 		&maximum_inventoryNull,
 		&reorder_quantityNull,
+		&requisition_method_codeNull,
+		&order_multipleNull,
+		&reorder_cycleNull,
 		&alternative_item_noNull,
 		&unit_list_priceNull,
 		&duty_due_percentNull,
@@ -8204,6 +8854,9 @@ func (t *Item) FindFirst() bool {
 	t.Reorder_point, _ = types.NewDecimalFromString(reorder_pointNull.String)
 	t.Maximum_inventory, _ = types.NewDecimalFromString(maximum_inventoryNull.String)
 	t.Reorder_quantity, _ = types.NewDecimalFromString(reorder_quantityNull.String)
+	t.Requisition_method_code = types.NewCode(requisition_method_codeNull.String)
+	t.Order_multiple, _ = types.NewDecimalFromString(order_multipleNull.String)
+	t.Reorder_cycle = types.NewCode(reorder_cycleNull.String)
 	t.Alternative_item_no = types.NewCode(alternative_item_noNull.String)
 	t.Unit_list_price, _ = types.NewDecimalFromString(unit_list_priceNull.String)
 	t.Duty_due_percent, _ = types.NewDecimalFromString(duty_due_percentNull.String)
@@ -8254,7 +8907,7 @@ func (t *Item) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -8287,6 +8940,9 @@ func (t *Item) FindLast() bool {
 	var reorder_pointNull sql.NullString
 	var maximum_inventoryNull sql.NullString
 	var reorder_quantityNull sql.NullString
+	var requisition_method_codeNull sql.NullString
+	var order_multipleNull sql.NullString
+	var reorder_cycleNull sql.NullString
 	var alternative_item_noNull sql.NullString
 	var unit_list_priceNull sql.NullString
 	var duty_due_percentNull sql.NullString
@@ -8350,6 +9006,9 @@ func (t *Item) FindLast() bool {
 		&reorder_pointNull,
 		&maximum_inventoryNull,
 		&reorder_quantityNull,
+		&requisition_method_codeNull,
+		&order_multipleNull,
+		&reorder_cycleNull,
 		&alternative_item_noNull,
 		&unit_list_priceNull,
 		&duty_due_percentNull,
@@ -8420,6 +9079,9 @@ func (t *Item) FindLast() bool {
 	t.Reorder_point, _ = types.NewDecimalFromString(reorder_pointNull.String)
 	t.Maximum_inventory, _ = types.NewDecimalFromString(maximum_inventoryNull.String)
 	t.Reorder_quantity, _ = types.NewDecimalFromString(reorder_quantityNull.String)
+	t.Requisition_method_code = types.NewCode(requisition_method_codeNull.String)
+	t.Order_multiple, _ = types.NewDecimalFromString(order_multipleNull.String)
+	t.Reorder_cycle = types.NewCode(reorder_cycleNull.String)
 	t.Alternative_item_no = types.NewCode(alternative_item_noNull.String)
 	t.Unit_list_price, _ = types.NewDecimalFromString(unit_list_priceNull.String)
 	t.Duty_due_percent, _ = types.NewDecimalFromString(duty_due_percentNull.String)
@@ -8500,7 +9162,7 @@ func (t *Item) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -8597,6 +9259,9 @@ func (t *Item) Next(steps ...int) bool {
 		var reorder_pointNull sql.NullString
 		var maximum_inventoryNull sql.NullString
 		var reorder_quantityNull sql.NullString
+		var requisition_method_codeNull sql.NullString
+		var order_multipleNull sql.NullString
+		var reorder_cycleNull sql.NullString
 		var alternative_item_noNull sql.NullString
 		var unit_list_priceNull sql.NullString
 		var duty_due_percentNull sql.NullString
@@ -8660,6 +9325,9 @@ func (t *Item) Next(steps ...int) bool {
 			&reorder_pointNull,
 			&maximum_inventoryNull,
 			&reorder_quantityNull,
+			&requisition_method_codeNull,
+			&order_multipleNull,
+			&reorder_cycleNull,
 			&alternative_item_noNull,
 			&unit_list_priceNull,
 			&duty_due_percentNull,
@@ -8729,6 +9397,9 @@ func (t *Item) Next(steps ...int) bool {
 		t.Reorder_point, _ = types.NewDecimalFromString(reorder_pointNull.String)
 		t.Maximum_inventory, _ = types.NewDecimalFromString(maximum_inventoryNull.String)
 		t.Reorder_quantity, _ = types.NewDecimalFromString(reorder_quantityNull.String)
+		t.Requisition_method_code = types.NewCode(requisition_method_codeNull.String)
+		t.Order_multiple, _ = types.NewDecimalFromString(order_multipleNull.String)
+		t.Reorder_cycle = types.NewCode(reorder_cycleNull.String)
 		t.Alternative_item_no = types.NewCode(alternative_item_noNull.String)
 		t.Unit_list_price, _ = types.NewDecimalFromString(unit_list_priceNull.String)
 		t.Duty_due_percent, _ = types.NewDecimalFromString(duty_due_percentNull.String)
@@ -8808,7 +9479,7 @@ func (t *Item) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -8858,6 +9529,9 @@ func (t *Item) FindSetBuffered() bool {
 		var reorder_pointNull sql.NullString
 		var maximum_inventoryNull sql.NullString
 		var reorder_quantityNull sql.NullString
+		var requisition_method_codeNull sql.NullString
+		var order_multipleNull sql.NullString
+		var reorder_cycleNull sql.NullString
 		var alternative_item_noNull sql.NullString
 		var unit_list_priceNull sql.NullString
 		var duty_due_percentNull sql.NullString
@@ -8921,6 +9595,9 @@ func (t *Item) FindSetBuffered() bool {
 			&reorder_pointNull,
 			&maximum_inventoryNull,
 			&reorder_quantityNull,
+			&requisition_method_codeNull,
+			&order_multipleNull,
+			&reorder_cycleNull,
 			&alternative_item_noNull,
 			&unit_list_priceNull,
 			&duty_due_percentNull,
@@ -8988,6 +9665,9 @@ func (t *Item) FindSetBuffered() bool {
 		record.Reorder_point, _ = types.NewDecimalFromString(reorder_pointNull.String)
 		record.Maximum_inventory, _ = types.NewDecimalFromString(maximum_inventoryNull.String)
 		record.Reorder_quantity, _ = types.NewDecimalFromString(reorder_quantityNull.String)
+		record.Requisition_method_code = types.NewCode(requisition_method_codeNull.String)
+		record.Order_multiple, _ = types.NewDecimalFromString(order_multipleNull.String)
+		record.Reorder_cycle = types.NewCode(reorder_cycleNull.String)
 		record.Alternative_item_no = types.NewCode(alternative_item_noNull.String)
 		record.Unit_list_price, _ = types.NewDecimalFromString(unit_list_priceNull.String)
 		record.Duty_due_percent, _ = types.NewDecimalFromString(duty_due_percentNull.String)
@@ -9078,6 +9758,9 @@ func (t *Item) copyFromBuffered(record *Item) {
 	t.Reorder_point = record.Reorder_point
 	t.Maximum_inventory = record.Maximum_inventory
 	t.Reorder_quantity = record.Reorder_quantity
+	t.Requisition_method_code = record.Requisition_method_code
+	t.Order_multiple = record.Order_multiple
+	t.Reorder_cycle = record.Reorder_cycle
 	t.Alternative_item_no = record.Alternative_item_no
 	t.Unit_list_price = record.Unit_list_price
 	t.Duty_due_percent = record.Duty_due_percent
@@ -9098,6 +9781,8 @@ func (t *Item) copyFromBuffered(record *Item) {
 	t.Blocked = record.Blocked
 	t.Last_date_modified = record.Last_date_modified
 	t.Quantity_on_hand = record.Quantity_on_hand
+	t.Qty_on_purch_order = record.Qty_on_purch_order
+	t.Qty_on_sales_order = record.Qty_on_sales_order
 	t.Net_invoiced_qty = record.Net_invoiced_qty
 	t.Net_change = record.Net_change
 	t.Purchases_qty = record.Purchases_qty
@@ -10039,6 +10724,77 @@ func (t *Item) ValidateField(fieldName string, value interface{}) error {
 			}
 		}
 		return nil
+	case "requisition_method_code":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Requisition_method_code = v
+		} else if v, ok := value.(string); ok {
+			t.Requisition_method_code = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field requisition_method_code")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "requisition_method_code"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemOnValidate_Requisition_method_code); ok {
+				if err := trg.OnValidate_Requisition_method_code(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "order_multiple":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Order_multiple = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Order_multiple, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field order_multiple: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Order_multiple = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Order_multiple = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Order_multiple = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field order_multiple (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemOnValidate_Order_multiple); ok {
+				if err := trg.OnValidate_Order_multiple(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "reorder_cycle":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Reorder_cycle = v
+		} else if v, ok := value.(string); ok {
+			t.Reorder_cycle = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field reorder_cycle")
+		}
+		if err := tables.CheckDateFormula(ItemTableName, "reorder_cycle", string(t.Reorder_cycle)); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemOnValidate_Reorder_cycle); ok {
+				if err := trg.OnValidate_Reorder_cycle(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	case "alternative_item_no":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
@@ -10877,6 +11633,12 @@ func (t *Item) FieldValue(no int) (any, bool) {
 		return t.Maximum_inventory, true
 	case 36:
 		return t.Reorder_quantity, true
+	case 5408:
+		return t.Requisition_method_code, true
+	case 5414:
+		return t.Order_multiple, true
+	case 5428:
+		return t.Reorder_cycle, true
 	case 37:
 		return t.Alternative_item_no, true
 	case 38:
@@ -10952,6 +11714,10 @@ func (t *Item) flowFieldValue(no int) (any, bool) {
 		return t.Comment, true
 	case 68:
 		return t.Quantity_on_hand, true
+	case 84:
+		return t.Qty_on_purch_order, true
+	case 85:
+		return t.Qty_on_sales_order, true
 	case 69:
 		return t.Net_invoiced_qty, true
 	case 70:
@@ -11195,6 +11961,29 @@ func (t *Item) SetFieldValue(no int, value any) bool {
 	case 36:
 		if v, ok := value.(types.Decimal); ok {
 			t.Reorder_quantity = v
+			return true
+		}
+	case 5408:
+		if v, ok := value.(types.Code); ok {
+			t.Requisition_method_code = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Requisition_method_code = types.NewCode(v)
+			return true
+		}
+	case 5414:
+		if v, ok := value.(types.Decimal); ok {
+			t.Order_multiple = v
+			return true
+		}
+	case 5428:
+		if v, ok := value.(types.Code); ok {
+			t.Reorder_cycle = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Reorder_cycle = types.NewCode(v)
 			return true
 		}
 	case 37:
@@ -11509,6 +12298,8 @@ func (t *Item) CalcSums(fieldNames ...string) error {
 			column = "maximum_inventory"
 		case "reorder_quantity":
 			column = "reorder_quantity"
+		case "order_multiple":
+			column = "order_multiple"
 		case "unit_list_price":
 			column = "unit_list_price"
 		case "duty_due_percent":
@@ -11624,6 +12415,12 @@ func (t *Item) CalcSums(fieldNames ...string) error {
 				return fmt.Errorf("CalcSums Item.%s: %w", column, err)
 			}
 			t.Reorder_quantity = d
+		case "order_multiple":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Item.%s: %w", column, err)
+			}
+			t.Order_multiple = d
 		case "unit_list_price":
 			d, err := types.NewDecimalFromString(total)
 			if err != nil {
@@ -12106,6 +12903,12 @@ func (t *Item) columnValue(column string) (interface{}, bool) {
 		return t.Maximum_inventory, true
 	case "reorder_quantity":
 		return t.Reorder_quantity, true
+	case "requisition_method_code":
+		return t.Requisition_method_code, true
+	case "order_multiple":
+		return t.Order_multiple, true
+	case "reorder_cycle":
+		return t.Reorder_cycle, true
 	case "alternative_item_no":
 		return t.Alternative_item_no, true
 	case "unit_list_price":
@@ -12252,6 +13055,9 @@ func (t *Item) Init() {
 	t.Reorder_point = *new(types.Decimal)
 	t.Maximum_inventory = *new(types.Decimal)
 	t.Reorder_quantity = *new(types.Decimal)
+	t.Requisition_method_code = *new(types.Code)
+	t.Order_multiple = *new(types.Decimal)
+	t.Reorder_cycle = *new(types.Code)
 	t.Alternative_item_no = *new(types.Code)
 	t.Unit_list_price = *new(types.Decimal)
 	t.Duty_due_percent = *new(types.Decimal)
@@ -12350,6 +13156,9 @@ func (t *Item) ToMap() map[string]interface{} {
 		"reorder_point":            t.Reorder_point.String(),
 		"maximum_inventory":        t.Maximum_inventory.String(),
 		"reorder_quantity":         t.Reorder_quantity.String(),
+		"requisition_method_code":  t.Requisition_method_code.String(),
+		"order_multiple":           t.Order_multiple.String(),
+		"reorder_cycle":            t.Reorder_cycle.String(),
 		"alternative_item_no":      t.Alternative_item_no.String(),
 		"unit_list_price":          t.Unit_list_price.String(),
 		"duty_due_percent":         t.Duty_due_percent.String(),
@@ -12372,6 +13181,10 @@ func (t *Item) ToMap() map[string]interface{} {
 		"last_date_modified": t.Last_date_modified.String(),
 		// FlowField: quantity_on_hand
 		"quantity_on_hand": t.Quantity_on_hand.String(),
+		// FlowField: qty_on_purch_order
+		"qty_on_purch_order": t.Qty_on_purch_order.String(),
+		// FlowField: qty_on_sales_order
+		"qty_on_sales_order": t.Qty_on_sales_order.String(),
 		// FlowField: net_invoiced_qty
 		"net_invoiced_qty": t.Net_invoiced_qty.String(),
 		// FlowField: net_change
@@ -12694,6 +13507,28 @@ func (t *Item) FromMap(data map[string]interface{}) {
 			t.Reorder_quantity = types.NewDecimalFromInt(int64(val))
 		case int64:
 			t.Reorder_quantity = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["requisition_method_code"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Requisition_method_code = types.NewCode(s)
+		}
+	}
+	if v, ok := data["order_multiple"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Order_multiple, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Order_multiple = types.NewDecimal(val)
+		case int:
+			t.Order_multiple = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Order_multiple = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["reorder_cycle"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Reorder_cycle = types.NewCode(s)
 		}
 	}
 	if v, ok := data["alternative_item_no"]; ok && v != nil {
@@ -13291,6 +14126,37 @@ func (t *Item) GetFields() []tables.FieldInfo {
 			DecimalPlaces: "0:5",
 		},
 		{
+			No:         5408,
+			Name:       "requisition_method_code",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:            5414,
+			Name:          "order_multiple",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     false,
+			DecimalPlaces: "0:5",
+		},
+		{
+			No:         5428,
+			Name:       "reorder_cycle",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
 			No:         37,
 			Name:       "alternative_item_no",
 			Type:       tables.FieldTypeCode,
@@ -13494,6 +14360,28 @@ func (t *Item) GetFields() []tables.FieldInfo {
 		{
 			No:            68,
 			Name:          "quantity_on_hand",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "0:5",
+		},
+		{
+			No:            84,
+			Name:          "qty_on_purch_order",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "0:5",
+		},
+		{
+			No:            85,
+			Name:          "qty_on_sales_order",
 			Type:          tables.FieldTypeDecimal,
 			Length:        0,
 			Required:      false,
@@ -13842,6 +14730,8 @@ func (t *Item) GetFlowFields() []string {
 		"bill_of_materials",
 		"comment",
 		"quantity_on_hand",
+		"qty_on_purch_order",
+		"qty_on_sales_order",
 		"net_invoiced_qty",
 		"net_change",
 		"purchases_qty",
@@ -13924,6 +14814,16 @@ func (t *Item) GetTableRelationFields() map[string]tables.TableRelationInfo {
 			},
 			SearchTimeout: 0,
 			NoValidate:    true,
+		},
+		"requisition_method_code": {
+			Table:        "Requisition_Method",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "name", Width: 250},
+			},
+			SearchTimeout: 0,
 		},
 		"alternative_item_no": {
 			Table:        "Item",

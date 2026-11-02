@@ -185,6 +185,9 @@ func main() {
 	if err := blapps.SyncInstalledApps(db.GetConnection(), secretsDBType, installedApps); err != nil {
 		log.Printf("WARNING: installed apps: %v", err)
 	}
+	if err := blapps.SyncObjects(db.GetConnection(), secretsDBType); err != nil {
+		log.Printf("WARNING: objects: %v", err)
+	}
 	fmt.Println()
 
 	// Create and setup API server

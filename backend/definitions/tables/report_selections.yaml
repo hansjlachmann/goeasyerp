@@ -1,0 +1,57 @@
+table:
+  id: 77
+  name: Report_Selections
+  caption: Report Selections
+  description: "The reports a document prints with, per usage in sequence (table 77)"
+  fields:
+    - name: usage
+      no: 1
+      type: Option
+      db_name: usage
+      primary_key: true
+      options: ["S.Quote", "S.Order", "S.Invoice", "S.Cr.Memo", "S.Shipment", "S.Test", "P.Quote", "P.Order",
+        "P.Invoice", "P.Cr.Memo", "P.Receipt", "P.Test", "B.Stmt", "B.Recon.Test", "B.Check", "Reminder",
+        "Fin.Charge", "Rem.Test", "F.C.Test", "Prod. Order", "S.Blanket", "P.Blanket"]
+
+    - name: sequence
+      no: 2
+      type: types.Code
+      db_name: sequence
+      length: 10
+      primary_key: true
+
+    - name: report_id
+      no: 3
+      type: int
+      db_name: report_id
+      table_relation:
+        table: Object
+        field: id
+        filters:
+          type: {const: 3}
+        lookup_columns:
+          - source: id
+            width: 80
+          - source: name
+            width: 250
+
+    - name: report_name
+      no: 4
+      type: types.Text
+      length: 80
+      flow_field: true
+      calc_formula: Lookup
+      source_table: Object
+      source_field: name
+      flow_filters:
+        - field: type
+          type: const
+          value: 3
+        - field: id
+          type: field
+          value: report_id
+
+  keys:
+    - name: Primary
+      fields: [usage, sequence]
+      clustered: true

@@ -1,0 +1,18 @@
+page:
+  id: 358
+  type: List
+  name: Objects
+  source_table: Object
+  caption: Objects
+  # classic form 358: the objects of this installation (written at startup, read-only) — the
+  # lookup of the fields holding a report number (Report Selections, Printer Selections)
+
+  layout:
+    repeater:
+      fields:
+        - source: type
+          width: 110
+        - source: id
+          width: 90
+        - source: name
+          width: 320

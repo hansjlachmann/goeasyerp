@@ -1,0 +1,342 @@
+table:
+  id: 246
+  name: "Requisition_Line"
+  caption: Requisition Line
+  description: "The lines of the requisition worksheets (table 246): what to buy from which vendor"
+  # Left out: 23-27 drop shipment (Sales Order No./Line No., Sell-to Customer No., Ship-to Code —
+  # Get Sales Orders), 27/5400 serial/lot, 31/32/5431 reservations, 5401 Prod. Order No.,
+  # 5403 Bin Code
+  data_caption_fields: [journal_batch_name, line_no]
+  fields:
+    - name: worksheet_template_name
+      no: 1
+      type: types.Code
+      db_name: worksheet_template_name
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Req_Wksh_Template
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: journal_batch_name
+      no: 2
+      type: types.Code
+      db_name: journal_batch_name
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Requisition_Wksh_Name
+        field: name
+        filters:
+          worksheet_template_name: {field: worksheet_template_name}
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: line_no
+      no: 3
+      type: int
+      db_name: line_no
+      primary_key: true
+
+    # classic 3 Resource cannot be purchased
+    - name: type
+      no: 4
+      type: Option
+      db_name: type
+      options: [" ", "Account (G/L)", "Item"]
+
+    - name: no
+      no: 5
+      type: types.Code
+      db_name: no
+      length: 20
+      table_relation:
+        conditions:
+          - when: {field: type, equal: 1}
+            table: G_L_Account
+            field: no
+            filters:
+              account_type: {const: 0}   # Posting accounts only
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: name
+                width: 250
+          - when: {field: type, equal: 2}
+            table: Item
+            field: no
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: description
+                width: 250
+
+    - name: description
+      no: 6
+      type: types.Text
+      db_name: description
+      length: 50
+
+    - name: description_2
+      no: 7
+      type: types.Text
+      db_name: description_2
+      length: 50
+
+    - name: quantity
+      no: 8
+      type: types.Decimal
+      db_name: quantity
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+
+    - name: vendor_no
+      no: 9
+      type: types.Code
+      db_name: vendor_no
+      length: 20
+      table_relation:
+        table: Vendor
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+          - source: city
+            width: 250
+
+    - name: direct_unit_cost
+      no: 10
+      type: types.Decimal
+      db_name: direct_unit_cost
+      decimal_places: "2:5"
+      precision: 18
+      scale: 5
+
+    - name: quantity_disc_percent
+      no: 11
+      type: types.Decimal
+      db_name: quantity_disc_percent
+      decimal_places: "0:5"
+      validation: {min: 0, max: 100}
+      precision: 18
+      scale: 5
+
+    - name: expected_receipt_date
+      no: 12
+      type: types.Date
+      db_name: expected_receipt_date
+
+    - name: requester_id
+      no: 13
+      type: types.Code
+      db_name: requester_id
+      length: 50
+      table_relation:
+        table: User_Setup
+        field: user_id
+        lookup_columns:
+          - source: user_id
+            width: 120
+
+    - name: confirmed
+      no: 14
+      type: bool
+      db_name: confirmed
+
+    - name: department_code
+      no: 15
+      type: types.Code
+      db_name: department_code
+      length: 10
+      table_relation:
+        table: Department
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: project_code
+      no: 16
+      type: types.Code
+      db_name: project_code
+      length: 10
+      table_relation:
+        table: Project
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: location_code
+      no: 17
+      type: types.Code
+      db_name: location_code
+      length: 10
+      table_relation:
+        table: Location
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: recurring_method
+      no: 18
+      type: Option
+      db_name: recurring_method
+      options: [" ", "Fixed", "Variable"]
+
+    - name: expiration_date
+      no: 19
+      type: types.Date
+      db_name: expiration_date
+
+    - name: recurring_frequency
+      no: 20
+      type: types.Code
+      db_name: recurring_frequency
+      length: 20
+      date_formula: true
+
+    - name: order_date
+      no: 21
+      type: types.Date
+      db_name: order_date
+
+    - name: vendor_item_no
+      no: 22
+      type: types.Text
+      db_name: vendor_item_no
+      length: 20
+
+    - name: order_address_code
+      no: 28
+      type: types.Code
+      db_name: order_address_code
+      length: 10
+      table_relation:
+        table: Order_Address
+        field: code
+        filters:
+          vendor_no: {field: vendor_no}
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: currency_code
+      no: 29
+      type: types.Code
+      db_name: currency_code
+      length: 10
+      table_relation:
+        table: Currency
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: currency_factor
+      no: 30
+      type: types.Decimal
+      db_name: currency_factor
+      decimal_places: "0:15"
+      validation: {min: 0}
+      precision: 18
+      scale: 15
+
+    - name: variant_code
+      no: 5402
+      type: types.Code
+      db_name: variant_code
+      length: 10
+      table_relation:
+        conditions:
+          - when: {field: type, equal: 2}
+            table: Item_Variant
+            field: code
+            filters:
+              item_no: {field: "no"}
+            lookup_columns:
+              - source: code
+                width: 100
+              - source: description
+                width: 250
+
+    - name: qty_per_unit_of_measure
+      no: 5404
+      type: types.Decimal
+      db_name: qty_per_unit_of_measure
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+      editable: false
+      default: 1
+
+    - name: unit_of_measure_code
+      no: 5407
+      type: types.Code
+      db_name: unit_of_measure_code
+      length: 10
+      table_relation:
+        conditions:
+          - when: {field: type, equal: 2}
+            table: Item_Unit_of_Measure
+            field: code
+            filters:
+              item_no: {field: "no"}
+            lookup_columns:
+              - source: code
+                width: 100
+              - source: qty_per_unit_of_measure
+                width: 120
+          - when: {field: type, equal: 1}
+            table: Unit_of_Measure
+            field: code
+            lookup_columns:
+              - source: code
+                width: 100
+              - source: description
+                width: 250
+          - when: {field: type, equal: 0}
+            table: Unit_of_Measure
+            field: code
+            lookup_columns:
+              - source: code
+                width: 100
+              - source: description
+                width: 250
+
+    - name: quantity_base
+      no: 5408
+      type: types.Decimal
+      db_name: quantity_base
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+
+  keys:
+    - name: Primary
+      fields: [worksheet_template_name, journal_batch_name, line_no]
+      clustered: true
+    - name: vendor
+      fields: [worksheet_template_name, journal_batch_name, vendor_no, order_address_code, currency_code]

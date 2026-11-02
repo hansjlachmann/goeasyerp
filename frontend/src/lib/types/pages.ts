@@ -13,6 +13,8 @@ export interface HeaderField {
 	lookup_page?: number;
 	lookup_field?: string;
 	lookup_filters?: Record<string, string>;
+	// a choice of values instead of typed text (the parameter is the chosen value)
+	options?: { value: string; caption: string }[];
 }
 
 export interface PageMetadata {

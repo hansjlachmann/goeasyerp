@@ -33,7 +33,7 @@ page:
       caption: Print
       image: Print
       promoted: true
-      run_object: report:208
+      run_object: table:Sales_Shipment_Header.PrintRecords
 
     - name: Navigate
       caption: Navigate

@@ -1,0 +1,18 @@
+page:
+  id: 295
+  type: List
+  name: Req. Wksh. Names
+  source_table: Requisition_Wksh_Name
+  caption: Req. Wksh. Names
+  editable: true   # opened from a template (filtered on it), or as the worksheet's lookup
+
+  layout:
+    repeater:
+      fields:
+        - source: worksheet_template_name
+          width: 110
+          visible: false
+        - source: name
+          width: 110
+        - source: description
+          width: 250

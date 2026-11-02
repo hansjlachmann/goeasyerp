@@ -1,0 +1,133 @@
+page:
+  id: 291
+  type: List
+  name: Req. Worksheet
+  source_table: Requisition_Line
+  caption: Req. Worksheet
+  editable: true
+  auto_split_key: true
+  delayed_insert: true
+  # classic form 291: what to buy from which vendor — lines entered, or suggested for the items
+  # below their reorder point (Reorder Inventory Items, report 699); Make Orders (493) turns
+  # them into purchase orders per vendor
+
+  # The worksheet the page shows; OnOpenPage (business-logic/pages/reqworksheet.go) turns
+  # template and worksheet into the list's filters
+  header_fields:
+    - param: batch
+      source: journal_batch_name
+      lookup_page: 295
+      lookup_field: name
+      lookup_filters:
+        worksheet_template_name: worksheet_template_name
+
+  # Under the list for the cursor row (OnAfterGetRecord: GetDescriptionAndRcptName)
+  footer:
+    - source: no_description
+      calculated: true
+      type: types.Text
+    - source: buy_from_vendor_name
+      calculated: true
+      type: types.Text
+
+  layout:
+    repeater:
+      fields:
+        - source: worksheet_template_name
+          width: 100
+          visible: false
+        - source: journal_batch_name
+          width: 100
+          visible: false
+        - source: line_no
+          width: 80
+          visible: false
+        - source: type
+          width: 110
+        - source: "no"
+          width: 100
+        - source: variant_code
+          width: 90
+          visible: false
+        - source: description
+          width: 220
+        - source: description_2
+          width: 160
+          visible: false
+        - source: department_code
+          width: 100
+          visible: false
+        - source: project_code
+          width: 100
+          visible: false
+        - source: location_code
+          width: 100
+        - source: quantity
+          width: 90
+        - source: unit_of_measure_code
+          width: 100
+        - source: vendor_no
+          width: 100
+        - source: order_address_code
+          width: 100
+          visible: false
+        - source: vendor_item_no
+          width: 110
+        - source: currency_code
+          width: 90
+        - source: direct_unit_cost
+          width: 110
+        - source: quantity_disc_percent
+          width: 100
+          visible: false
+        - source: order_date
+          width: 100
+        - source: expected_receipt_date
+          width: 110
+        - source: requester_id
+          width: 110
+          visible: false
+        - source: confirmed
+          width: 90
+          visible: false
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    # the line's item (codeunit 335 Req. Wksh.-Show Card)
+    - name: Card
+      caption: Card
+      image: Card
+      shortcut: Shift+F5
+      promoted: true
+      run_page: 30
+      run_page_filter_field: "no"
+      run_page_filter_value: "no"
+
+    - name: Reorder Inventory Items
+      caption: Reorder Inventory Items
+      image: Calculate
+      promoted: true
+      run_object: report:699
+
+    - name: Make Orders
+      caption: Make Orders
+      image: Document
+      promoted: true
+      run_object: report:493

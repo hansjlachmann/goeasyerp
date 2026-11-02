@@ -973,7 +973,7 @@ func (t *PriceGroup) renameReferences(field string, oldValue, newValue interface
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Customer", false, "price_group_code", "", 0}, {"Item_Price", false, "price_group_code", "", 0}, {"Sales_Cr_Memo_Header", false, "price_group_code", "", 0}, {"Sales_Cr_Memo_Line", false, "price_group_code", "", 0}, {"Sales_Header", false, "price_group_code", "", 0}, {"Sales_Invoice_Header", false, "price_group_code", "", 0}, {"Sales_Invoice_Line", false, "price_group_code", "", 0}, {"Sales_Line", false, "price_group_code", "", 0}, {"Sales_Shipment_Header", false, "price_group_code", "", 0}, {"Sales_Shipment_Line", false, "price_group_code", "", 0}},
+		"code": {{"Customer", false, "price_group_code", "", 0}, {"Item_Price", false, "price_group_code", "", 0}, {"Item_Price_Change", false, "price_group_code", "", 0}, {"Sales_Cr_Memo_Header", false, "price_group_code", "", 0}, {"Sales_Cr_Memo_Line", false, "price_group_code", "", 0}, {"Sales_Header", false, "price_group_code", "", 0}, {"Sales_Invoice_Header", false, "price_group_code", "", 0}, {"Sales_Invoice_Line", false, "price_group_code", "", 0}, {"Sales_Line", false, "price_group_code", "", 0}, {"Sales_Shipment_Header", false, "price_group_code", "", 0}, {"Sales_Shipment_Line", false, "price_group_code", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

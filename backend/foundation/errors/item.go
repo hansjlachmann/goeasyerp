@@ -6,7 +6,14 @@ const (
 	ErrItemPriceInclTaxSalesTax ErrorCode = "ERR_ITEM_PRICE_INCL_TAX_SALES_TAX"
 	ErrItemOpenEntriesChange    ErrorCode = "ERR_ITEM_OPEN_ENTRIES_CHANGE"
 	ErrItemHasEntriesChange     ErrorCode = "ERR_ITEM_HAS_ENTRIES_CHANGE"
+	ErrItemAdjustAverageCost    ErrorCode = "ERR_ITEM_ADJUST_AVERAGE_COST"
 )
+
+// ItemAdjustAverageCost: Adjust Item Costs/Prices cannot change the Average Cost of an item (no.)
+// with the Costing Method (value) Average once it has ledger entries
+func ItemAdjustAverageCost(no string, value any) *AppError {
+	return &AppError{Code: ErrItemAdjustAverageCost, Table: "Item", Field: "average_cost", Field2: "costing_method", Params: []string{no}, Value: value}
+}
 
 // ItemUoMQtyNotPositive: Qty. per Unit of Measure must be greater than 0
 func ItemUoMQtyNotPositive(table, field string) *AppError {

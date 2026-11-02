@@ -1,0 +1,49 @@
+page:
+  id: 293
+  type: List
+  name: Req. Worksheet Templates
+  source_table: Req_Wksh_Template
+  caption: Req. Worksheet Templates
+  editable: true
+  # classic form 293: the requisition worksheet templates — Recurring gives the page (291 or 296)
+
+  layout:
+    repeater:
+      fields:
+        - source: name
+          width: 110
+        - source: description
+          width: 250
+        - source: recurring
+          width: 90
+        - source: page_id
+          width: 90
+        - source: page_name
+          width: 220
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    - name: Names
+      caption: Names
+      image: Lines
+      promoted: true
+      run_page: 295
+      run_page_filter_field: worksheet_template_name
+      run_page_filter_value: name

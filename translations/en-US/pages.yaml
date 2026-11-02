@@ -929,3 +929,64 @@ pages:
     caption: "Depreciation Table Card"
   depreciation_table_lines:
     caption: "Lines"
+  objects:
+    caption: "Objects"
+  report_selection_sales:
+    caption: "Report Selection - Sales"
+    options:
+      usage:
+        quote: "Quote"
+        blanket_order: "Blanket Order"
+        order: "Order"
+        invoice: "Invoice"
+        credit_memo: "Credit Memo"
+        shipment: "Shipment"
+        sales_document_test: "Sales Document - Test"
+  report_selection_purchase:
+    caption: "Report Selection - Purchase"
+    options:
+      usage:
+        quote: "Quote"
+        blanket_order: "Blanket Order"
+        order: "Order"
+        invoice: "Invoice"
+        credit_memo: "Credit Memo"
+        receipt: "Receipt"
+        purchase_document_test: "Purchase Document - Test"
+  report_selection_reminder:
+    caption: "Report Selection - Reminder"
+    options:
+      usage:
+        reminder: "Reminder"
+        fin_charge: "Fin. Charge"
+        reminder_test: "Reminder Test"
+        fin_charge_test: "Fin. Charge Test"
+  report_selection_bank_acc:
+    caption: "Report Selection - Bank Acc."
+    options:
+      usage:
+        statement: "Statement"
+        reconciliation_test: "Reconciliation - Test"
+        check: "Check"
+  printer_selections:
+    caption: "Printer Selections"
+  item_price_changes:
+    caption: "Item Price Changes"
+  req_worksheet:
+    caption: "Req. Worksheet"
+    fields:
+      no_description: "Description"
+      buy_from_vendor_name: "Buy-from Vendor Name"
+  recurring_req_worksheet:
+    caption: "Recurring Req. Worksheet"
+    fields:
+      no_description: "Description"
+      buy_from_vendor_name: "Buy-from Vendor Name"
+  req_worksheet_template_list:
+    caption: "Req. Worksheet Template List"
+  req_worksheet_templates:
+    caption: "Req. Worksheet Templates"
+  req_wksh_names:
+    caption: "Req. Wksh. Names"
+  requisition_methods:
+    caption: "Requisition Methods"

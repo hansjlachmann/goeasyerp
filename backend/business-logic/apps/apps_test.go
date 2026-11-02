@@ -9,6 +9,7 @@ import (
 
 	fapps "github.com/hansjlachmann/openerp/backend/foundation/apps"
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
+	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
@@ -63,5 +64,58 @@ func TestSyncInstalledApps(t *testing.T) {
 	}
 	if n := rec.Count(); n != 1 {
 		t.Errorf("%d rows, want 1", n)
+	}
+}
+
+func TestSyncObjects(t *testing.T) {
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if err := (&gtables.Object{}).CreateTableWithDBType(db, "", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	// an object that is no longer there, and one whose caption changed
+	for _, o := range []struct {
+		objectType gtables.ObjectType
+		id         int
+		name       string
+	}{{gtables.Object_Type.Report, 99999, "Gone"}, {gtables.Object_Type.Report, 204, "Old caption"}} {
+		obj := gtables.NewObject(ftables.DBSource(db, "", database.DBTypeSQLite))
+		obj.Type, obj.Id, obj.Name = o.objectType, o.id, types.NewText(o.name)
+		if err := obj.InsertOrError(false); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for run := 1; run <= 2; run++ {
+		if err := SyncObjects(db, database.DBTypeSQLite); err != nil {
+			t.Fatalf("run %d: %v", run, err)
+		}
+	}
+	obj := gtables.NewObject(ftables.DBSource(db, "", database.DBTypeSQLite))
+	if n := obj.Count(); n != len(Objects()) {
+		t.Errorf("%d objects, want %d", n, len(Objects()))
+	}
+	get := func(objectType gtables.ObjectType, id int) string {
+		obj.Reset()
+		obj.SetRange("type", objectType)
+		obj.SetRange("id", id)
+		if !obj.FindFirst() {
+			return ""
+		}
+		return obj.Name.String()
+	}
+	if got := get(gtables.Object_Type.Report, 99999); got != "" {
+		t.Errorf("report 99999 still there (%q)", got)
+	}
+	if got := get(gtables.Object_Type.Report, 204); got == "" || got == "Old caption" {
+		t.Errorf("report 204 %q, want its caption", got)
+	}
+	if got := get(gtables.Object_Type.Table, 77); got != "Report Selections" {
+		t.Errorf("table 77 %q, want Report Selections", got)
+	}
+	if got := get(gtables.Object_Type.Page, 306); got == "" {
+		t.Error("page 306 missing")
 	}
 }

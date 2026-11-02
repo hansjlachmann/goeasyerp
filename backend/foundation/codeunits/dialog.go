@@ -379,20 +379,20 @@ func (d *Dialog) RespondToConfirm(confirmID string, response bool) bool {
 // RequestInput shows an input dialog with arbitrary fields and waits for user response
 // Returns a map of field name → value, or nil on cancel/timeout
 func (d *Dialog) RequestInput(title string, fields []InputField) map[string]string {
-	return d.requestInput(title, fields, nil, "", false)
+	return d.requestInput(title, fields, nil, "", "")
 }
 
 // RequestPage is RequestInput with the data items of a report: the answer has the options
 // ("option" fields as in RequestInput) and, per data item, "filters:<name>" — a JSON list of
 // {field, expression}. The options come below the filters, under optionsCaption ("": the
-// standard "Options"). A printed report's (printed) has Preview, Print and PDF instead of OK,
-// and the answer's OutputKey holds the choice ("preview", "print", "pdf"). nil on
-// cancel/timeout.
-func (d *Dialog) RequestPage(title string, fields []InputField, dataItems []RequestDataItem, optionsCaption string, printed bool) map[string]string {
-	return d.requestInput(title, fields, dataItems, optionsCaption, printed)
+// standard "Options"). A printed report's (output: the output chosen first, its printer —
+// "preview", "print" or "pdf"; "" for a report that does not print) has Preview, Print and PDF
+// instead of OK, and the answer's OutputKey holds the choice. nil on cancel/timeout.
+func (d *Dialog) RequestPage(title string, fields []InputField, dataItems []RequestDataItem, optionsCaption string, output string) map[string]string {
+	return d.requestInput(title, fields, dataItems, optionsCaption, output)
 }
 
-func (d *Dialog) requestInput(title string, fields []InputField, dataItems []RequestDataItem, optionsCaption string, printed bool) map[string]string {
+func (d *Dialog) requestInput(title string, fields []InputField, dataItems []RequestDataItem, optionsCaption string, output string) map[string]string {
 	d.mu.Lock()
 	if d.closed {
 		d.mu.Unlock()
@@ -431,7 +431,8 @@ func (d *Dialog) requestInput(title string, fields []InputField, dataItems []Req
 			"fields":          fields,
 			"data_items":      dataItems,
 			"options_caption": optionsCaption,
-			"printed":         printed,
+			"printed":         output != "",
+			"default_output":  output,
 		},
 	}:
 	case <-d.ctx.Done():

@@ -1,0 +1,132 @@
+table:
+  id: 40
+  name: "Item_Price_Change"
+  caption: Item Price Change
+  description: "Suggested new sales prices of the items per price group, unit of measure, currency and starting date — the item price change worksheet (table 40)"
+  fields:
+    - name: item_no
+      no: 1
+      type: types.Code
+      db_name: item_no
+      length: 20
+      primary_key: true
+      required: true
+      table_relation:
+        table: Item
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
+
+    - name: price_group_code
+      no: 2
+      type: types.Code
+      db_name: price_group_code
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Price_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+
+    - name: unit_of_measure_code
+      no: 5400
+      type: types.Code
+      db_name: unit_of_measure_code
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Item_Unit_of_Measure
+        field: code
+        filters:
+          item_no: {field: item_no}
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: qty_per_unit_of_measure
+            width: 120
+
+    - name: currency_code
+      no: 3
+      type: types.Code
+      db_name: currency_code
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Currency
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: starting_date
+      no: 4
+      type: types.Date
+      db_name: starting_date
+      primary_key: true
+
+    - name: current_unit_price
+      no: 5
+      type: types.Decimal
+      db_name: current_unit_price
+      decimal_places: "2:5"
+      validation: {min: 0}
+      precision: 18
+      scale: 5
+
+    - name: new_unit_price
+      no: 6
+      type: types.Decimal
+      db_name: new_unit_price
+      decimal_places: "2:5"
+      validation: {min: 0}
+      precision: 18
+      scale: 5
+
+    - name: price_includes_tax
+      no: 7
+      type: bool
+      db_name: price_includes_tax
+
+    - name: allow_quantity_disc
+      no: 8
+      type: bool
+      db_name: allow_quantity_disc
+      default: true
+
+    - name: allow_cust_item_disc
+      no: 9
+      type: bool
+      db_name: allow_cust_item_disc
+      default: true
+
+    - name: allow_invoice_disc
+      no: 10
+      type: bool
+      db_name: allow_invoice_disc
+      default: true
+
+    - name: tax_bus_posting_gr_price
+      no: 11
+      type: types.Code
+      db_name: tax_bus_posting_gr_price
+      length: 10
+      table_relation:
+        table: Tax_Business_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+  keys:
+    - name: Primary
+      fields: [item_no, price_group_code, unit_of_measure_code, currency_code, starting_date]
+      clustered: true

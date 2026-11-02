@@ -1,0 +1,44 @@
+page:
+  id: 64
+  type: List
+  name: Printer Selections
+  source_table: Printer_Selection
+  caption: Printer Selections
+  editable: true
+  # classic form 64: where a report prints, per user (blank: every user) and report (0: every
+  # report). The printers are the outputs of a printout — the preview on the screen, the
+  # browser's print dialog, a PDF file: a printed report's request page starts on it, and a
+  # document printed without a request page (Post and Print) goes to it.
+
+  layout:
+    repeater:
+      fields:
+        - source: user_id
+          width: 140
+          table_relation: User
+        - source: report_id
+          width: 100
+          table_relation: Object
+        - source: report_name
+          width: 300
+        - source: printer_name
+          width: 200
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

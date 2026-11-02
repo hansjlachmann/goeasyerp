@@ -5,14 +5,13 @@
 	import Modal from './Modal.svelte';
 	import Button from './Button.svelte';
 	import { t, BTN, DLG } from '$lib/services/i18n.svelte';
-	import { printPreview, printPdf, downloadPdf } from '$lib/utils/printout';
+	import { printPreview, printPdf, downloadPdf, closePreview } from '$lib/utils/printout';
 
 	const preview = $derived($printPreview);
 
+	// the next preview waiting (a document printed with several reports) comes up
 	function close() {
-		const current = $printPreview;
-		printPreview.set(null);
-		if (current) setTimeout(() => URL.revokeObjectURL(current.url), 1000);
+		closePreview();
 	}
 </script>
 

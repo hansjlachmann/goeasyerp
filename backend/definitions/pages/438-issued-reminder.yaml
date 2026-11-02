@@ -71,7 +71,7 @@ page:
       caption: Print
       image: Print
       promoted: true
-      run_object: report:117
+      run_object: table:Issued_Reminder_Header.PrintRecords
 
     - name: Customer
       caption: Customer

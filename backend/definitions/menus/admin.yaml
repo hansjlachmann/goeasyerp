@@ -351,6 +351,7 @@ menu:
         page_id: 256
       - separator: true
       - name: "Requisition Worksheets"
+        page_id: 291
       - name: "Quotes"
         page_id: 9306
       - name: "Blanket Orders"
@@ -420,6 +421,7 @@ menu:
           - name: "Recurring Journals"
             page_id: 283
           - name: "Recurring Req. Worksheets"
+            page_id: 296
           - separator: true
           - name: "Delete Invoiced Purch. Orders"
             run_object: "report:499"

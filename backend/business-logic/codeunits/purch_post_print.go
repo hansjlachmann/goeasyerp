@@ -1,7 +1,6 @@
 package codeunits
 
 import (
-	"encoding/base64"
 	"errors"
 
 	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
@@ -12,9 +11,10 @@ import (
 )
 
 // PurchPostPrint - Codeunit 92 "Purch.-Post + Print": Post and Print (Shift+F11) of a purchase
-// document — posts it as Purch.-Post (Yes/No) does, then prints the posted invoice or credit memo
-// (report 406, 407), or the receipt when the order was only received (408), to the browser's print
-// dialog.
+// document — posts it as Purch.-Post (Yes/No) does, then prints what was posted with the reports of
+// Report Selections: an order's receipt (P.Receipt) and invoice (P.Invoice), an invoice
+// (P.Invoice), a credit memo (P.Cr.Memo) — without request pages, to the output of the reports'
+// Printer Selection (the browser's print dialog by default).
 const PurchPostPrintID = 92
 const PurchPostPrintName = "purch-post-print"
 
@@ -58,36 +58,38 @@ func (c *PurchPostPrint) code(record interface{}) (fcodeunits.Result, error) {
 		return result, err
 	}
 	src := ftables.DBSource(c.db, c.company, c.dbType)
-	var reportID int
-	var context interface{}
-	switch {
-	case purchPost.InvoiceNo != "":
-		reportID = reports.PurchaseInvoiceID
-		purchInvHeader := gtables.NewPurchInvHeader(src)
-		purchInvHeader.No = purchPost.InvoiceNo
-		context = purchInvHeader
-	case purchPost.CrMemoNo != "":
-		reportID = reports.PurchaseCrMemoID
-		purchCrMemoHeader := gtables.NewPurchCrMemoHdr(src)
-		purchCrMemoHeader.No = purchPost.CrMemoNo
-		context = purchCrMemoHeader
-	case purchPost.ReceiptNo != "":
-		reportID = reports.PurchaseReceiptID
+	var printouts []reports.Result
+	printReport := func(usage gtables.ReportSelectionsUsage, context ftables.Source) error {
+		printout, err := reports.PrintDocuments(context, usage, false)
+		if err != nil {
+			return err
+		}
+		printouts = append(printouts, printout...)
+		return nil
+	}
+	if rec.Document_type == gtables.PurchaseHeader_Document_type.Order && purchPost.ReceiptNo != "" {
 		purchRcptHeader := gtables.NewPurchRcptHeader(src)
 		purchRcptHeader.No = purchPost.ReceiptNo
-		context = purchRcptHeader
-	default:
-		return result, nil
+		err = printReport(gtables.ReportSelections_Usage.PReceipt, purchRcptHeader)
+		if err != nil {
+			return fcodeunits.Result{}, err
+		}
 	}
-	printout, err := reports.Execute(reportID, c.db, c.company, c.dbType, reports.RunOptions{Output: reports.OutputPrint, Context: context})
-	if err != nil {
-		return fcodeunits.Result{}, err
+	if purchPost.InvoiceNo != "" {
+		purchInvHeader := gtables.NewPurchInvHeader(src)
+		purchInvHeader.No = purchPost.InvoiceNo
+		err = printReport(gtables.ReportSelections_Usage.PInvoice, purchInvHeader)
+		if err != nil {
+			return fcodeunits.Result{}, err
+		}
 	}
-	if result.Data == nil {
-		result.Data = map[string]interface{}{}
+	if purchPost.CrMemoNo != "" {
+		purchCrMemoHeader := gtables.NewPurchCrMemoHdr(src)
+		purchCrMemoHeader.No = purchPost.CrMemoNo
+		err = printReport(gtables.ReportSelections_Usage.PCrMemo, purchCrMemoHeader)
+		if err != nil {
+			return fcodeunits.Result{}, err
+		}
 	}
-	result.Data["pdf"] = base64.StdEncoding.EncodeToString(printout.PDF)
-	result.Data["filename"] = printout.FileName
-	result.Data["output"] = printout.Output
-	return result, nil
+	return reports.WithPrintouts(result, printouts), nil
 }
