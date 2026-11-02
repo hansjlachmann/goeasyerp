@@ -110,11 +110,11 @@ func (r *postInventoryCostToGL) onPreReport(run *Run) error {
 	switch r.postLevel {
 	case postLevelPerPostingGroup:
 		if r.postingDocNo == "" {
-			return system.Error(run.Text("ENTER_DOCUMENT_NO"), documentNoCaption, run.Text("PER_POSTING_GROUP"))
+			return system.Error(run.Text("ENTER_DOCUMENT_NO", documentNoCaption, run.Text("PER_POSTING_GROUP")))
 		}
 	case postLevelPerEntry:
 		if r.postingDocNo != "" {
-			return system.Error(run.Text("NO_DOCUMENT_NO"), documentNoCaption, run.Text("PER_ENTRY"))
+			return system.Error(run.Text("NO_DOCUMENT_NO", documentNoCaption, run.Text("PER_ENTRY")))
 		}
 	}
 	return nil
@@ -158,7 +158,7 @@ func (r *postInventoryCostToGL) itemLedgEntryOnAfterGetRecord(itemLedgEntry *gta
 	if r.postLevel == postLevelPerEntry {
 		language := fcodeunits.CurrentLanguage()
 		entryType := i18n.GetInstance().OptionCaption(gtables.ItemLedgerEntryTableName, "entry_type", i18n.Key(itemLedgEntry.Entry_type.String()), language)
-		description := system.StrSubstNo(run.Text("ENTRY_DESCRIPTION"), entryType, itemLedgEntry.Source_no, itemLedgEntry.Posting_date)
+		description := run.Text("ENTRY_DESCRIPTION", entryType, itemLedgEntry.Source_no, itemLedgEntry.Posting_date)
 		return r.postInvtPostingBuffer(run, itemLedgEntry.Document_no, description)
 	}
 	return nil
@@ -176,7 +176,7 @@ func (r *postInventoryCostToGL) onPostReport(run *Run) error {
 	if err != nil {
 		return err
 	}
-	run.Message(run.Text("POSTED"), r.totalUsage.Neg(), r.totalAdjAmount.Neg())
+	run.Message(run.Text("POSTED", r.totalUsage.Neg(), r.totalAdjAmount.Neg()))
 	return nil
 }
 
@@ -220,9 +220,9 @@ func (r *postInventoryCostToGL) postInvtPostingBuffer(run *Run, documentNo types
 			genJnlLine.Account_no = invtPostingGr.Inventory_account
 			if r.postLevel == postLevelPerPostingGroup {
 				if key.entryType == bufEntrySale {
-					genJnlLine.Description = types.Text(system.StrSubstNo(run.Text("COGS_POSTING_GROUP"), key.postingGroup))
+					genJnlLine.Description = types.Text(run.Text("COGS_POSTING_GROUP", key.postingGroup))
 				} else {
-					genJnlLine.Description = types.Text(system.StrSubstNo(run.Text("ADJ_POSTING_GROUP"), key.postingGroup))
+					genJnlLine.Description = types.Text(run.Text("ADJ_POSTING_GROUP", key.postingGroup))
 				}
 			}
 		case bufTypeMatrix:
@@ -239,7 +239,7 @@ func (r *postInventoryCostToGL) postInvtPostingBuffer(run *Run, documentNo types
 				}
 				genJnlLine.Account_no = genPostingSetup.Inventory_adjmt_account
 				if r.postLevel == postLevelPerPostingGroup {
-					genJnlLine.Description = types.Text(system.StrSubstNo(run.Text("ADJ_GEN_SETUP"), key.genBusPostingGroup, key.genProdPostingGroup))
+					genJnlLine.Description = types.Text(run.Text("ADJ_GEN_SETUP", key.genBusPostingGroup, key.genProdPostingGroup))
 				}
 			case bufEntryCOGS:
 				err = genPostingSetup.TestField("cogs_account")
@@ -248,7 +248,7 @@ func (r *postInventoryCostToGL) postInvtPostingBuffer(run *Run, documentNo types
 				}
 				genJnlLine.Account_no = genPostingSetup.Cogs_account
 				if r.postLevel == postLevelPerPostingGroup {
-					genJnlLine.Description = types.Text(system.StrSubstNo(run.Text("COGS_GEN_SETUP"), key.genBusPostingGroup, key.genProdPostingGroup))
+					genJnlLine.Description = types.Text(run.Text("COGS_GEN_SETUP", key.genBusPostingGroup, key.genProdPostingGroup))
 				}
 			}
 		}
