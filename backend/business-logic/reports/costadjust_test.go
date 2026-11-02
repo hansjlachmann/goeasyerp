@@ -2,6 +2,8 @@ package reports_test
 
 import (
 	"database/sql"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -121,15 +123,28 @@ func TestAdjustCostAndPostInventoryCost(t *testing.T) {
 		t.Errorf("adjusted sale: %s / %s, adjusted %v; want -400, adjusted", sale.Adjusted_cost_qty, sale.Adjusted_cost_invoiced_qty, sale.Cost_is_adjusted)
 	}
 
-	postT1 := func() {
+	postT1 := func() reports.Result {
 		t.Helper()
 		t1Entries := gtables.NewItemLedgerEntry(src)
 		t1Entries.SetRange("item_no", types.Code("T1"))
-		_, err := reports.Execute(reports.PostInventoryCostToGLID, src.GetDB(), src.GetCompany(), src.GetDBType(), reports.RunOptions{
+		result, err := reports.Execute(reports.PostInventoryCostToGLID, src.GetDB(), src.GetCompany(), src.GetDBType(), reports.RunOptions{
 			Record: t1Entries, Options: map[string]string{"post_level": "2", "posting_date": "2026-10-06"}})
 		mustOK(t, err)
+		return result
 	}
-	postT1()
+	firstGLEntry := gtables.NewGLEntry(src).Count() + 1
+	result := postT1()
+	// the texts keep their values: the message's amounts, the entries' descriptions
+	if !strings.Contains(result.Message, "COGS -40, inventory adjustments 0.") {
+		t.Errorf("message %q without the posted amounts", result.Message)
+	}
+	posted := gtables.NewGLEntry(src)
+	posted.SetFilter("entry_no", strconv.Itoa(firstGLEntry)+"..")
+	for found := posted.FindSet(); found; found = posted.Next() {
+		if !strings.HasPrefix(posted.Description.String(), "Sale ") || !strings.HasSuffix(posted.Description.String(), " on 2026-10-05") {
+			t.Errorf("G/L entry %d description %q lost its values", posted.Entry_no, posted.Description)
+		}
+	}
 	sale = lastEntry(t, src)
 	if !sale.Cost_posted_to_gl.Equal(types.MustDecimal("-400")) {
 		t.Errorf("cost posted to G/L %s, want -400", sale.Cost_posted_to_gl)
@@ -159,12 +174,12 @@ func TestPostInventoryCostDocumentNo(t *testing.T) {
 	src := resPriceCompany(t)
 	_, err := reports.Execute(reports.PostInventoryCostToGLID, src.GetDB(), src.GetCompany(), src.GetDBType(), reports.RunOptions{
 		Options: map[string]string{"post_level": "1", "posting_date": "2026-10-06"}})
-	if err == nil {
-		t.Error("per posting group without document no. accepted")
+	if err == nil || !strings.Contains(err.Error(), "Document No.") || !strings.Contains(err.Error(), "per Inventory Posting Group") {
+		t.Errorf("per posting group without document no.: %v", err)
 	}
 	_, err = reports.Execute(reports.PostInventoryCostToGLID, src.GetDB(), src.GetCompany(), src.GetDBType(), reports.RunOptions{
 		Options: map[string]string{"post_level": "2", "posting_date": "2026-10-06", "document_no": "X"}})
-	if err == nil {
-		t.Error("per entry with document no. accepted")
+	if err == nil || !strings.Contains(err.Error(), "Document No.") || !strings.Contains(err.Error(), "per Item Ledger Entry") {
+		t.Errorf("per entry with document no.: %v", err)
 	}
 }
