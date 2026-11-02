@@ -385,3 +385,51 @@ func RunMatrixValidate(pageID int, rec any, value types.Decimal) error {
 	}
 	return fn(rec, value)
 }
+
+// MatrixColumn is a column of a calculated matrix: its caption and how its values show
+// (DecimalPlaces "min:max"; Percent: a percent sign after the value)
+type MatrixColumn struct {
+	Name          string `json:"name"`
+	DecimalPlaces string `json:"decimal_places,omitempty"`
+	Percent       bool   `json:"percent,omitempty"`
+}
+
+var matrixCalculate = map[int]func(card, rows any) ([]MatrixColumn, map[string][]string, error){}
+
+// OnMatrixCalculate registers how a page's calculated matrix gets its columns and cells: card
+// is the card's record (as shown), rows the rows' table record with the matrix's filters and
+// FlowFilters set (the period, the user's filters); it returns the columns and, by the rows'
+// key (ftables.KeyString), each row's values (decimals as text, or a text shown as it is). One
+// per page.
+func OnMatrixCalculate[C, R any](pageID int, fn func(card C, rows R) ([]MatrixColumn, map[string][]string, error)) {
+	triggersMu.Lock()
+	defer triggersMu.Unlock()
+	matrixCalculate[pageID] = func(card, rows any) ([]MatrixColumn, map[string][]string, error) {
+		c, ok1 := card.(C)
+		r, ok2 := rows.(R)
+		if !ok1 || !ok2 {
+			var wantC C
+			var wantR R
+			return nil, nil, fmt.Errorf("page %d: OnMatrixCalculate takes %T and %T, got %T and %T", pageID, wantC, wantR, card, rows)
+		}
+		return fn(c, r)
+	}
+}
+
+// HasMatrixCalculate reports whether a page has an OnMatrixCalculate trigger
+func HasMatrixCalculate(pageID int) bool {
+	triggersMu.RLock()
+	defer triggersMu.RUnlock()
+	return matrixCalculate[pageID] != nil
+}
+
+// RunMatrixCalculate runs a page's OnMatrixCalculate trigger
+func RunMatrixCalculate(pageID int, card, rows any) ([]MatrixColumn, map[string][]string, error) {
+	triggersMu.RLock()
+	fn := matrixCalculate[pageID]
+	triggersMu.RUnlock()
+	if fn == nil {
+		return nil, nil, fmt.Errorf("page %d has no OnMatrixCalculate trigger", pageID)
+	}
+	return fn(card, rows)
+}

@@ -1,0 +1,123 @@
+table:
+  id: 334
+  name: "Acc_Sched_Column"
+  caption: Acc. Sched. Column
+  description: "The columns of a column layout (table 334): the period and ledger a column calculates, or a formula of other columns"
+  fields:
+    - name: column_layout_name
+      no: 1
+      type: types.Code
+      db_name: column_layout_name
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Acc_Sched_Column_Layout_Name
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: line_no
+      no: 2
+      type: int
+      db_name: line_no
+      primary_key: true
+
+    - name: column_no
+      no: 3
+      type: types.Code
+      db_name: column_no
+      length: 10
+
+    - name: column_header
+      no: 4
+      type: types.Text
+      db_name: column_header
+      length: 30
+
+    - name: column_type
+      no: 5
+      type: Option
+      db_name: column_type
+      options: ["Formula", "Net Change", "Balance at Date", "Beginning Balance", "Year to Date", "Rest of Fiscal Year", "Entire Fiscal Year"]
+      default: 1
+
+    - name: ledger_entry_type
+      no: 6
+      type: Option
+      db_name: ledger_entry_type
+      options: ["G/L Entries", "G/L Budget Entries"]
+
+    - name: amount_type
+      no: 7
+      type: Option
+      db_name: amount_type
+      options: ["Net Amount", "Debit Amount", "Credit Amount"]
+
+    - name: formula
+      no: 8
+      type: types.Code
+      db_name: formula
+      length: 80
+
+    # a date formula (-1Y) or a number of accounting periods (-1P)
+    - name: comparison_period_formula
+      no: 9
+      type: types.Code
+      db_name: comparison_period_formula
+      length: 10
+
+    - name: show_opposite_sign
+      no: 10
+      type: bool
+      db_name: show_opposite_sign
+
+    - name: show
+      no: 11
+      type: Option
+      db_name: show
+      options: ["Always", "Never", "When Positive", "When Negative"]
+
+    - name: rounding_factor
+      no: 12
+      type: Option
+      db_name: rounding_factor
+      options: ["None", "1", "1000", "1000000"]
+
+    # 900-901: the classic local fields Department Filter and Project Filter (of the column)
+    - name: department_filter
+      no: 900
+      type: types.Text
+      db_name: department_filter
+      length: 80
+      table_relation:
+        table: Department
+        field: code
+        validate: false   # a filter (A|B, A..C)
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: project_filter
+      no: 901
+      type: types.Text
+      db_name: project_filter
+      length: 80
+      table_relation:
+        table: Project
+        field: code
+        validate: false   # a filter (A|B, A..C)
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+  keys:
+    - name: Primary
+      fields: [column_layout_name, line_no]
+      clustered: true

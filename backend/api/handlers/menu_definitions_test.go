@@ -112,8 +112,9 @@ func TestGetMenuMarksAvailableEntries(t *testing.T) {
 	if chart := find(items, "Kontoplan"); chart["enabled"] != true {
 		t.Errorf("Chart of Accounts not enabled: %v", chart)
 	}
-	if schedules := find(items, "Kontoskjemaer"); schedules["enabled"] != false {
-		t.Errorf("Account Schedules (no page yet) enabled: %v", schedules)
+	setup := find(items, "Oppsett")
+	if checklist := find(setup["items"].([]interface{}), "Sjekkliste for oppsett"); checklist["enabled"] != false {
+		t.Errorf("Setup › Setup Checklist (no page yet) enabled: %v", checklist)
 	}
 	activities := find(items, "Aktiviteter")
 	fiscal := find(activities["items"].([]interface{}), "Regnskapsår")
@@ -121,7 +122,6 @@ func TestGetMenuMarksAvailableEntries(t *testing.T) {
 		find(fiscal["items"].([]interface{}), "Avslutt resultatregnskap")["enabled"] != false {
 		t.Errorf("Activities › Fiscal Year: %v", fiscal)
 	}
-	setup := find(items, "Oppsett")
 	intrastat := find(setup["items"].([]interface{}), "Intrastat")
 	if intrastat["enabled"] != false {
 		t.Errorf("a sub-menu without anything built is enabled: %v", intrastat)

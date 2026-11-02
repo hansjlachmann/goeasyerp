@@ -1,0 +1,59 @@
+page:
+  id: 103
+  type: List
+  name: Account Schedule Names
+  source_table: Acc_Schedule_Name
+  caption: Account Schedule Names
+  editable: true
+
+  layout:
+    repeater:
+      fields:
+        - source: name
+          width: 110
+        - source: description
+          width: 300
+        - source: default_column_layout
+          width: 170
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    # the schedule's lines (page 104 on the schedule)
+    - name: Edit Account Schedule
+      caption: Edit Account Schedule
+      image: Lines
+      promoted: true
+      run_page: 104
+      run_page_params:
+        schedule: name
+
+    - name: Overview
+      caption: Overview
+      image: Statistics
+      promoted: true
+      run_page: 490
+      run_page_filter_field: name
+      run_page_filter_value: name
+
+    - name: Print
+      caption: Print
+      image: Print
+      promoted: true
+      run_object: report:25

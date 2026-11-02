@@ -320,14 +320,14 @@ export const api = {
 	async matrix(
 		pageId: number,
 		request: MatrixRequest
-	): Promise<{ columns: MatrixColumn[]; rows: MatrixRow[]; date: string }> {
+	): Promise<{ columns: MatrixColumn[]; rows: MatrixRow[]; date: string; period?: MatrixColumn }> {
 		const response = await fetch(`${API_BASE}/pages/${pageId}/matrix`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(request)
 		});
-		const data = await handleApiResponse<{ columns: MatrixColumn[]; rows: MatrixRow[]; date: string }>(response, `matrix of page ${pageId}`);
-		return { columns: data.columns ?? [], rows: data.rows ?? [], date: data.date ?? '' };
+		const data = await handleApiResponse<{ columns: MatrixColumn[]; rows: MatrixRow[]; date: string; period?: MatrixColumn }>(response, `matrix of page ${pageId}`);
+		return { columns: data.columns ?? [], rows: data.rows ?? [], date: data.date ?? '', period: data.period };
 	},
 
 	// A value typed into a matrix cell (the row's key, the column's period)

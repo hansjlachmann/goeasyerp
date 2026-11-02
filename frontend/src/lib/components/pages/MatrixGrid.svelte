@@ -36,6 +36,7 @@
 	let date = $state(''); // the first column's start (blank: the work date)
 	let filterValues = $state<Record<string, string>>({});
 	let columns = $state<MatrixColumn[]>([]);
+	let period = $state<MatrixColumn | undefined>(); // a calculated matrix: its one period
 	let rows = $state<MatrixRow[]>([]);
 	let loading = $state(false);
 	let error = $state('');
@@ -94,6 +95,7 @@
 			columns = result.columns;
 			rows = result.rows;
 			date = result.date;
+			period = result.period;
 			if (selRow >= rows.length) selRow = rows.length - 1;
 			if (selCol >= columns.length) selCol = columns.length - 1;
 		} catch (e) {
@@ -118,12 +120,14 @@
 		load();
 	}
 
+	// Previous / next: a set of periods (a calculated matrix: one period)
 	function move(direction: number) {
-		load(direction * columnCount);
+		load(direction * (matrix.calculated ? 1 : columnCount));
 	}
 
 	function periodName(column: MatrixColumn): string {
 		if (column.name) return column.name;
+		if (!column.start) return '';
 		const d = new Date(column.start + 'T00:00:00');
 		switch (viewBy) {
 			case 2:
@@ -131,11 +135,19 @@
 			case 4:
 				return String(d.getFullYear());
 			default:
-				return formatDate(column.start, locale);
+				return matrix.calculated && column.end && column.end !== column.start
+					? `${formatDate(column.start, locale)}..${formatDate(column.end, locale)}`
+					: formatDate(column.start, locale);
 		}
 	}
 
-	function cellText(value: string): string {
+	function cellText(value: string, column: MatrixColumn): string {
+		if (matrix.calculated) {
+			// as calculated (rounded by the column), a text (an underline) as it is
+			const text = (value ?? '').trim();
+			if (!/^-?\d+(\.\d+)?$/.test(text)) return text;
+			return formatDecimal(text, column.decimal_places ?? '2:2') + (column.percent ? ' %' : '');
+		}
 		const shown = matrixCellValue(value, roundingFactor);
 		return shown ? formatDecimal(shown.value, shown.places) : '';
 	}
@@ -199,8 +211,8 @@
 				await api.matrixValidate(pageId, {
 					...request(),
 					key: row.key,
-					start: column.start,
-					end: column.end,
+					start: column.start ?? '',
+					end: column.end ?? '',
 					value: text === '' ? '0' : fromDecimalInput(text, locale),
 					rounding_factor: roundingFactor
 				});
@@ -327,6 +339,7 @@
 				</button>
 			{/each}
 		</div>
+		{#if !matrix.calculated}
 		<div class="control-group" role="radiogroup" aria-label={t(PERIOD.VIEW_AS)}>
 			<span class="control-label">{t(PERIOD.VIEW_AS)}</span>
 			<button type="button" class="choice" class:active={viewAs === 0} aria-pressed={viewAs === 0} onclick={() => (viewAs = 0)}>
@@ -344,8 +357,12 @@
 				</button>
 			{/each}
 		</div>
+		{/if}
 		<div class="control-group">
 			<button type="button" class="choice" title={t(PERIOD.PREVIOUS)} aria-label={t(PERIOD.PREVIOUS)} onclick={() => move(-1)}>‹</button>
+			{#if matrix.calculated && period}
+				<span class="current-period">{periodName(period)}</span>
+			{/if}
 			<button type="button" class="choice" title={t(PERIOD.NEXT)} aria-label={t(PERIOD.NEXT)} onclick={() => move(1)}>›</button>
 		</div>
 		{#if matrix.drilldown && ondrilldown}
@@ -396,8 +413,8 @@
 					{#each matrix.fields as field (field.source)}
 						<th class="row-field" style:min-width={field.width ? `${field.width}px` : undefined}>{field.caption ?? field.source}</th>
 					{/each}
-					{#each columns as column (column.start)}
-						<th class="num">{periodName(column)}</th>
+					{#each columns as column, c (c)}
+						<th class="num">{matrix.calculated ? column.name : periodName(column)}</th>
 					{/each}
 				</tr>
 			</thead>
@@ -408,7 +425,7 @@
 							{@const cs = cellStyle(field, row.fields)}
 							<td class="row-field {cs.classes}" style={cs.style}>{rowField(row, field.source)}</td>
 						{/each}
-						{#each columns as column, c (column.start)}
+						{#each columns as column, c (c)}
 							{@const strong = cellStyle(matrix.fields[0], row.fields).classes}
 							<td
 								class="num cell {strong}"
@@ -438,7 +455,7 @@
 										}}
 									/>
 								{:else}
-									{cellText(row.values[c])}
+									{cellText(row.values[c], column)}
 								{/if}
 							</td>
 						{/each}
@@ -506,6 +523,12 @@
 	.choice.active,
 	:global(.dark) .choice.active {
 		@apply bg-primary-600 border-primary-600 text-white;
+	}
+
+	.current-period {
+		font-size: 0.875rem;
+		min-width: 8rem;
+		text-align: center;
 	}
 
 	.grid-filters {

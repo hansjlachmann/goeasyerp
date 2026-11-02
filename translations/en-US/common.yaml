@@ -8,6 +8,11 @@ common:
 
   # Common actions
   actions:
+    edit_account_schedule: "Edit Account Schedule"
+    insert_accounts: "Insert Accounts"
+    set_up_column_layouts: "Set Up Column Layouts"
+    edit_column_layout_setup: "Edit Column Layout Setup"
+    overview: "Overview"
     copy_budget: "Copy Budget"
     trial_balance_budget: "Trial Balance/Budget"
     balance_budget: "Balance/Budget"
@@ -171,6 +176,7 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    overview: "Overview"
     budget: "Budget"
     fixed_assets: "Fixed Assets"
     locations: "Locations"

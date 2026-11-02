@@ -272,6 +272,23 @@ reports:
       COPY_TO: "Kopier til..."
       CONFIRM_COPY: "Vil du kopiere budsjettet?"
       COPIED: "%1 budsjettposter ble kopiert."
+  "25":
+    caption: "Kontoskjema"
+    options:
+      column_layout_name: "Kolonneoppsettnavn"
+      show_division_by_zero: "Vis divisjon med null"
+    texts:
+      PAGE: "Side"
+      PERIOD_FROM_TO: "For perioden fra %1 til %2"
+      INCLUDES_DEPARTMENTS: "(Inkluderer avdelinger: %1)"
+      INCLUDES_PROJECTS: "(Inkluderer prosjekter: %1)"
+      INCLUDES_BUDGETS: "(Inkluderer budsjetter: %1)"
+      THOUSANDS: "(Tusener)"
+      MILLIONS: "(Millioner)"
+  "900":
+    caption: "Sett inn kontoer"
+    texts:
+      INSERTED: "%1 linjer ble satt inn."
   "6":
     caption: "Saldobalanse"
     texts:

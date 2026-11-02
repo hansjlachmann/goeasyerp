@@ -760,6 +760,16 @@ pages:
     caption: "BOM Registers"
   bom_ledger_entries:
     caption: "BOM Ledger Entries"
+  account_schedule_names:
+    caption: "Account Schedule Names"
+  account_schedule:
+    caption: "Account Schedule"
+  acc_sched_column_layout_names:
+    caption: "Acc. Sched. Column Layout Names"
+  account_schedule_column_layout:
+    caption: "Account Schedule Column Layout"
+  acc_schedule_overview:
+    caption: "Acc. Schedule Overview"
   g_l_budget_by_periods:
     caption: "G/L Budget by Periods"
   g_l_budget_entries:

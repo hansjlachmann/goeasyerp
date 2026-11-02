@@ -1,0 +1,43 @@
+page:
+  id: 488
+  type: List
+  name: Acc. Sched. Column Layout Names
+  source_table: Acc_Sched_Column_Layout_Name
+  caption: Acc. Sched. Column Layout Names
+  editable: true
+
+  layout:
+    repeater:
+      fields:
+        - source: name
+          width: 110
+        - source: description
+          width: 300
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    # the layout's columns (page 489 on the layout)
+    - name: Edit Column Layout Setup
+      caption: Edit Column Layout Setup
+      image: Lines
+      promoted: true
+      run_page: 489
+      run_page_params:
+        layout: name

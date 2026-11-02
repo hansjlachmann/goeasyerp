@@ -1,0 +1,81 @@
+# Report 25 Account Schedule: the printed layout (sections per data item, positions in mm from the
+# section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 25
+  name: Account Schedule
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: AccScheduleName
+      new_page_per_record: true
+      sections: []
+    - name: AccScheduleLine
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 22
+          elements:
+            - {value: company_name, x: 0, y: 0, width: 273, align: center, bold: true, size: 10}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: schedule_description, x: 0, y: 5, width: 273, align: center, bold: true}
+            - {value: column_layout_description, x: 0, y: 10, width: 273, align: center}
+            - {value: period_text, x: 0, y: 15, width: 273, align: center}
+        - type: header
+          print_if: department_text
+          height: 4.5
+          elements:
+            - {value: department_text, x: 0, y: 0, width: 273, align: center}
+        - type: header
+          print_if: project_text
+          height: 4.5
+          elements:
+            - {value: project_text, x: 0, y: 0, width: 273, align: center}
+        - type: header
+          print_if: budget_text
+          height: 4.5
+          elements:
+            - {value: budget_text, x: 0, y: 0, width: 273, align: center}
+        - type: header
+          print_on_every_page: true
+          height: 15
+          elements:
+            - {value: header1, x: 108, y: 0, width: 26, align: right, bold: true, wrap: true}
+            - {value: rounding1, x: 108, y: 8, width: 26, align: right}
+            - {value: header2, x: 136, y: 0, width: 26, align: right, bold: true, wrap: true}
+            - {value: rounding2, x: 136, y: 8, width: 26, align: right}
+            - {value: header3, x: 164, y: 0, width: 26, align: right, bold: true, wrap: true}
+            - {value: rounding3, x: 164, y: 8, width: 26, align: right}
+            - {value: header4, x: 192, y: 0, width: 26, align: right, bold: true, wrap: true}
+            - {value: rounding4, x: 192, y: 8, width: 26, align: right}
+            - {value: header5, x: 220, y: 0, width: 26, align: right, bold: true, wrap: true}
+            - {value: rounding5, x: 220, y: 8, width: 26, align: right}
+            - {value: header6, x: 248, y: 0, width: 26, align: right, bold: true, wrap: true}
+            - {value: rounding6, x: 248, y: 8, width: 26, align: right}
+            - {line: true, x: 0, y: 13}
+        - type: body
+          print_if: is_bold
+          height: 4.2
+          elements:
+            - {field: description, x: 0, y: 0, width: 105, bold: true}
+            - {value: col1, x: 108, y: 0, width: 26, align: right, bold: true}
+            - {value: col2, x: 136, y: 0, width: 26, align: right, bold: true}
+            - {value: col3, x: 164, y: 0, width: 26, align: right, bold: true}
+            - {value: col4, x: 192, y: 0, width: 26, align: right, bold: true}
+            - {value: col5, x: 220, y: 0, width: 26, align: right, bold: true}
+            - {value: col6, x: 248, y: 0, width: 26, align: right, bold: true}
+        - type: body
+          print_unless: is_bold
+          height: 4.2
+          elements:
+            - {field: description, x: 0, y: 0, width: 105}
+            - {value: col1, x: 108, y: 0, width: 26, align: right}
+            - {value: col2, x: 136, y: 0, width: 26, align: right}
+            - {value: col3, x: 164, y: 0, width: 26, align: right}
+            - {value: col4, x: 192, y: 0, width: 26, align: right}
+            - {value: col5, x: 220, y: 0, width: 26, align: right}
+            - {value: col6, x: 248, y: 0, width: 26, align: right}

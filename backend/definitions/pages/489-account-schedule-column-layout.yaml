@@ -1,0 +1,72 @@
+page:
+  id: 489
+  type: List
+  name: Account Schedule Column Layout
+  source_table: Acc_Sched_Column
+  caption: Account Schedule Column Layout
+  editable: true
+  auto_split_key: true
+  delayed_insert: true
+  # classic form 489: the columns of a column layout — a period of G/L or budget entries (Column
+  # Type, Comparison Period Formula) or a formula of column numbers
+
+  header_fields:
+    - param: layout
+      source: column_layout_name
+      lookup_page: 488
+      lookup_field: name
+
+  layout:
+    repeater:
+      fields:
+        - source: column_layout_name
+          width: 100
+          visible: false
+        - source: line_no
+          width: 80
+          visible: false
+        - source: column_no
+          width: 90
+        - source: column_header
+          width: 180
+        - source: column_type
+          width: 160
+        - source: ledger_entry_type
+          width: 160
+        - source: amount_type
+          width: 130
+        - source: formula
+          width: 160
+        - source: comparison_period_formula
+          width: 170
+        - source: show_opposite_sign
+          width: 120
+        - source: show
+          width: 130
+        - source: rounding_factor
+          width: 120
+        - source: department_filter
+          width: 140
+          table_relation: Department
+        - source: project_filter
+          width: 140
+          table_relation: Project
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

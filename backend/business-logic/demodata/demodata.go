@@ -169,6 +169,8 @@ type Counts struct {
 	LedgerEntries      int
 	GLEntries          int // demo G/L entries (monthly sales and costs against the bank)
 	GLBudgetEntries    int // the demo budget's monthly amounts (budgets.go)
+	AccScheduleLines   int // the demo account schedules' lines (accschedules.go)
+	AccSchedColumns    int // their column layouts' columns
 	ItemLedgerEntries  int // the demo items' opening stock, purchases and sales (posted)
 	BOMLedgerEntries   int // the demo assemblies of the bills of materials (posted)
 	ResCapacityEntries int // the demo resources' capacity per working day
@@ -486,6 +488,11 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 		return Counts{}, err
 	}
 	err = insertDemoBudget(ftables.DBSource(exec, company, dbType), today, &counts)
+	if err != nil {
+		rollback()
+		return Counts{}, err
+	}
+	err = insertDemoAccSchedules(ftables.DBSource(exec, company, dbType), &counts)
 	if err != nil {
 		rollback()
 		return Counts{}, err

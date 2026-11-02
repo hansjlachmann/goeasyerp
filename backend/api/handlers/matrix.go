@@ -67,6 +67,7 @@ type matrixRequest struct {
 // with the card record's and the user's FlowFilters set
 type matrixContext struct {
 	pageID   int
+	page     *pages.PageDefinition
 	matrix   *pages.Matrix
 	req      matrixRequest
 	language string
@@ -111,7 +112,7 @@ func (h *PageTriggersHandler) openMatrix(c *fiber.Ctx) (*matrixContext, error) {
 	if _, ok := gtables.GetTableFactory(matrix.Table); !ok {
 		return nil, c.Status(fiber.StatusNotFound).JSON(apitypes.NewErrorResponse(apperrors.TableNotFound(matrix.Table).Message(language)))
 	}
-	return &matrixContext{pageID: pageID, matrix: matrix, req: req, language: language, sess: sess,
+	return &matrixContext{pageID: pageID, page: page, matrix: matrix, req: req, language: language, sess: sess,
 		src: ftables.DBSource(h.db, sess.GetCompany(), h.dbType)}, nil
 }
 
@@ -120,6 +121,9 @@ func (m *matrixContext) rowRecord(db ftables.Source) (ftables.Table, error) {
 	factory, _ := gtables.GetTableFactory(m.matrix.Table)
 	rec := factory()
 	rec.InitWithDBType(db.GetDB(), db.GetCompany(), db.GetDBType())
+	for rowField, recordField := range m.matrix.RowFilters {
+		rec.SetFilter(rowField, fmt.Sprint(m.req.Record[recordField]))
+	}
 	for rowField, recordField := range m.matrix.RecordFilters {
 		value := fmt.Sprint(m.req.Record[recordField])
 		if m.req.Record[recordField] == nil || value == "" {
@@ -169,6 +173,9 @@ func (h *PageTriggersHandler) Matrix(c *fiber.Ctx) error {
 	}
 	fcodeunits.SetCurrentContext(m.sess.GetUserID(), m.sess.GetUserName(), m.sess.GetCompany(), m.language)
 	defer fcodeunits.ClearCurrentContext()
+	if m.matrix.Calculated {
+		return m.calculated(c)
+	}
 
 	// the columns: the periods from the date
 	viewBy := periods.PeriodType(m.req.ViewBy)
@@ -323,4 +330,69 @@ func (h *PageTriggersHandler) MatrixValidate(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(apitypes.NewErrorResponse(errorMessage(err, m.language)))
 	}
 	return c.JSON(apitypes.NewSuccessResponse(map[string]interface{}{}))
+}
+
+// calculated answers a calculated matrix (an account schedule's overview): the period of the
+// view containing the date (blank: the work date) moved by Step goes into the rows' date filter,
+// the rows are the records in the row filters, and the page's OnMatrixCalculate trigger gives
+// the columns and the cells. It returns {"columns": [{name, decimal_places, percent}], "rows",
+// "period": {start, end, name}, "date"}.
+func (m *matrixContext) calculated(c *fiber.Ctx) error {
+	viewBy := periods.PeriodType(m.req.ViewBy)
+	if viewBy < periods.Day || viewBy > periods.AccountingPeriod {
+		viewBy = periods.Month
+	}
+	date, _ := types.NewDateFromString(m.req.Date)
+	if date.IsZero() {
+		date = system.WorkDate()
+	}
+	period, found := periods.FindDate(m.src, "", date, viewBy)
+	if found && m.req.Step != 0 {
+		period, _ = periods.NextDate(m.src, m.req.Step, period, viewBy)
+	}
+	empty := map[string]interface{}{"columns": []pages.MatrixColumn{}, "rows": []matrixRow{}, "date": ""}
+	if !found {
+		return c.JSON(apitypes.NewSuccessResponse(empty))
+	}
+	rec, err := m.rowRecord(m.src)
+	if err == nil {
+		err = rec.SetFlowFilter(m.matrix.DateFilter, period.Start.String()+".."+period.End.String())
+	}
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(apitypes.NewErrorResponse(errorMessage(err, m.language)))
+	}
+	factory, _ := gtables.GetTableFactory(m.page.Page.SourceTable)
+	card := factory()
+	card.InitWithDBType(m.src.GetDB(), m.src.GetCompany(), m.src.GetDBType())
+	card.FromMap(m.req.Record)
+
+	rows := []matrixRow{}
+	for found := rec.FindSet(); found && len(rows) < matrixMaxRows; found = rec.Next() {
+		data := rec.ToMap()
+		fields := map[string]interface{}{}
+		for _, f := range m.matrix.Fields {
+			fields[f.Source] = data[f.Source]
+			if f.IndentField != "" {
+				fields[f.IndentField] = data[f.IndentField]
+			}
+			if f.StyleExpr != nil {
+				fields[f.StyleExpr.Field] = data[f.StyleExpr.Field]
+			}
+		}
+		rows = append(rows, matrixRow{Key: ftables.KeyString(rec), Fields: fields})
+	}
+	columns, values, err := pages.RunMatrixCalculate(m.pageID, card, rec)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(apitypes.NewErrorResponse(errorMessage(err, m.language)))
+	}
+	for i := range rows {
+		rows[i].Values = values[rows[i].Key]
+		if rows[i].Values == nil {
+			rows[i].Values = make([]string, len(columns))
+		}
+	}
+	return c.JSON(apitypes.NewSuccessResponse(map[string]interface{}{
+		"columns": columns, "rows": rows, "date": period.Start.String(),
+		"period": matrixColumn{Start: period.Start.String(), End: period.End.String(), Name: period.Name},
+	}))
 }

@@ -1,0 +1,86 @@
+page:
+  id: 104
+  type: List
+  name: Account Schedule
+  source_table: Acc_Schedule_Line
+  caption: Account Schedule
+  editable: true
+  auto_split_key: true
+  delayed_insert: true
+  # classic form 104: the lines of an account schedule — G/L accounts (Posting/Total Accounts:
+  # a filter of account numbers), formulas of row numbers, underlines, percent bases
+
+  # The schedule the page shows (classic Name above the lines): the page's schedule parameter;
+  # OnOpenPage (business-logic/pages/accschedule.go) turns it into the lines' filter
+  header_fields:
+    - param: schedule
+      source: schedule_name
+      lookup_page: 103
+      lookup_field: name
+
+  layout:
+    repeater:
+      fields:
+        - source: schedule_name
+          width: 100
+          visible: false
+        - source: line_no
+          width: 80
+          visible: false
+        - source: row_no
+          width: 80
+        - source: description
+          width: 280
+        - source: totaling_type
+          width: 160
+        - source: totaling
+          width: 200
+          table_relation: G_L_Account
+        - source: sign_control
+          width: 110
+        - source: calculate
+          width: 140
+        - source: show
+          width: 170
+        - source: new_page
+          width: 90
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    # G/L accounts of a filter as lines, before the current line (classic Insert Accounts)
+    - name: Insert Accounts
+      caption: Insert Accounts
+      image: Rows
+      promoted: true
+      run_object: report:900
+
+    - name: Set Up Column Layouts
+      caption: Set Up Column Layouts
+      image: Setup
+      promoted: true
+      run_page: 489
+
+    - name: Overview
+      caption: Overview
+      image: Statistics
+      promoted: true
+      run_page: 490
+      run_page_filter_field: name
+      run_page_filter_value: schedule_name

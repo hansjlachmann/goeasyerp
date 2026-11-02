@@ -8,6 +8,11 @@ common:
 
   # Common actions
   actions:
+    edit_account_schedule: "Rediger kontoskema"
+    insert_accounts: "Indsæt konti"
+    set_up_column_layouts: "Opsæt kolonner"
+    edit_column_layout_setup: "Rediger kolonneopsætning"
+    overview: "Oversigt"
     copy_budget: "Kopier budget"
     trial_balance_budget: "Saldobalance/budget"
     balance_budget: "Saldo/budget"
@@ -171,6 +176,7 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    overview: "Oversigt"
     budget: "Budget"
     fixed_assets: "Anlægsaktiver"
     locations: "Lokationer"

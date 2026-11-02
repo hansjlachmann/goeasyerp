@@ -1,0 +1,136 @@
+table:
+  id: 85
+  name: "Acc_Schedule_Line"
+  caption: Acc. Schedule Line
+  description: "The lines of an account schedule (table 85): G/L accounts, totals of other rows (formulas), underlines and percent bases"
+  fields:
+    - name: schedule_name
+      no: 1
+      type: types.Code
+      db_name: schedule_name
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Acc_Schedule_Name
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: line_no
+      no: 2
+      type: int
+      db_name: line_no
+      primary_key: true
+
+    - name: row_no
+      no: 3
+      type: types.Code
+      db_name: row_no
+      length: 10
+
+    - name: description
+      no: 4
+      type: types.Text
+      db_name: description
+      length: 80
+
+    - name: totaling
+      no: 5
+      type: types.Text
+      db_name: totaling
+      length: 80
+      table_relation:
+        table: G_L_Account
+        field: no
+        validate: false   # a filter of accounts (1000..1999|3000) or a formula of row numbers: the lookup only
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: totaling_type
+      no: 6
+      type: Option
+      db_name: totaling_type
+      options: ["Posting Accounts", "Total Accounts", "Formula", "Underline", "Double Underline", "Set Base for Percent"]
+
+    - name: new_page
+      no: 7
+      type: bool
+      db_name: new_page
+
+    # FlowFilters: the period and the dimensions the lines are calculated for
+    - name: date_filter
+      no: 11
+      type: types.Date
+      flow_filter: true
+
+    - name: department_filter
+      no: 12
+      type: types.Code
+      length: 10
+      flow_filter: true
+      table_relation:
+        table: Department
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: project_filter
+      no: 13
+      type: types.Code
+      length: 10
+      flow_filter: true
+      table_relation:
+        table: Project
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: budget_filter
+      no: 14
+      type: types.Code
+      length: 10
+      flow_filter: true
+      table_relation:
+        table: G_L_Budget_Name
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: show
+      no: 16
+      type: Option
+      db_name: show
+      options: ["Yes", "No", "If Any Column Not Zero", "Bold"]
+
+    # 900-901: the classic local fields Calculate and Sign Control
+    - name: calculate
+      no: 900
+      type: Option
+      db_name: calculate
+      options: ["Net Change", "Beginning Balance", "Ending Balance", "Debits Only", "Credits Only"]
+
+    - name: sign_control
+      no: 901
+      type: Option
+      db_name: sign_control
+      options: ["Normal", "Reverse"]
+
+  keys:
+    - name: Primary
+      fields: [schedule_name, line_no]
+      clustered: true
