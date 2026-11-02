@@ -612,15 +612,15 @@ func GetDateComprRegisterTableSchema() string {
 func GetDateComprRegisterPostgresTableSchema() string {
 	return `
 		no INTEGER PRIMARY KEY,
-		creation_date DATE,
+		creation_date TIMESTAMP,
 		table_caption VARCHAR(80),
 		period_length INTEGER CHECK (period_length >= 0 AND period_length <= 5),
-		ending_date DATE,
+		ending_date TIMESTAMP,
 		no_of_new_records INTEGER,
 		no_records_deleted INTEGER,
 		user_id VARCHAR(50),
 		filter VARCHAR(250),
-		starting_date DATE,
+		starting_date TIMESTAMP,
 		table_id INTEGER,
 		register_no INTEGER,
 		source_code VARCHAR(10),
@@ -1889,6 +1889,16 @@ func (t *DateComprRegister) parseFilterExpression(fieldName, expr string) (strin
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

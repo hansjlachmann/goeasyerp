@@ -399,8 +399,23 @@ func TestClosingDate(t *testing.T) {
 	if Date2DMY(c, 1) != 31 || Date2DMY(c, 3) != 2026 {
 		t.Error("Date2DMY of a closing date")
 	}
-	if _, err := c.Value(); err == nil {
-		t.Error("a closing date was stored in a date field")
+	// stored as the date at 23:59:59: after the date, before the next day, read back closing
+	if v, err := c.Value(); err != nil || v != "2026-12-31 23:59:59" {
+		t.Errorf("closing date stored as %v (%v)", v, err)
+	}
+	var back types.Date
+	for _, stored := range []interface{}{"2026-12-31 23:59:59", "2026-12-31T23:59:59Z", time.Date(2026, 12, 31, 23, 59, 59, 0, time.UTC)} {
+		if err := back.Scan(stored); err != nil || !back.Equal(c) {
+			t.Errorf("read back %v as %v (%v)", stored, back, err)
+		}
+	}
+	for _, stored := range []interface{}{"2026-12-31", "2026-12-31T00:00:00Z", time.Date(2026, 12, 31, 0, 0, 0, 0, time.UTC)} {
+		if err := back.Scan(stored); err != nil || !back.Equal(d) {
+			t.Errorf("read back %v as %v (%v)", stored, back, err)
+		}
+	}
+	if types.FilterArg("C2026-12-31") != "2026-12-31 23:59:59" || types.FilterArg("2026-12-31") != "2026-12-31" || types.FilterArg("x") != "x" {
+		t.Error("FilterArg")
 	}
 }
 

@@ -748,7 +748,7 @@ func GetUserPersonalizationPostgresTableSchema() string {
 		updated_at TIMESTAMP,
 		date_format INTEGER CHECK (date_format >= 0 AND date_format <= 5),
 		number_format INTEGER CHECK (number_format >= 0 AND number_format <= 4),
-		work_date DATE
+		work_date TIMESTAMP
 	`
 }
 
@@ -1936,6 +1936,16 @@ func (t *UserPersonalization) parseFilterExpression(fieldName, expr string) (str
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

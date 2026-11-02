@@ -55,9 +55,11 @@ export function dateOrder(locale: string): DateOrder {
 	return intlDateParts(locale).order;
 }
 
-/** A date (ISO, also with a time) shown in the user's format */
+/** A date (ISO, also with a time) shown in the user's format; a closing date (C2026-12-31) with
+ * its C in front */
 export function formatDateRegional(isoDate: string, locale: string): string {
 	if (!isoDate) return '';
+	if (/^C\d{4}-\d{2}-\d{2}$/.test(isoDate)) return 'C' + formatDateRegional(isoDate.slice(1), locale);
 	const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDate);
 	if (!m) return isoDate;
 	const [, y, mo, d] = m;

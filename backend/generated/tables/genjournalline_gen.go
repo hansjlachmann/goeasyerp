@@ -2349,7 +2349,7 @@ func GetGenJournalLinePostgresTableSchema() string {
 		line_no INTEGER,
 		account_type INTEGER CHECK (account_type >= 0 AND account_type <= 4),
 		account_no VARCHAR(20),
-		posting_date DATE,
+		posting_date TIMESTAMP,
 		document_type INTEGER CHECK (document_type >= 0 AND document_type <= 5),
 		document_no VARCHAR(20),
 		description VARCHAR(50),
@@ -2375,8 +2375,8 @@ func GetGenJournalLinePostgresTableSchema() string {
 		on_hold VARCHAR(3),
 		applies_to_doc_type INTEGER CHECK (applies_to_doc_type >= 0 AND applies_to_doc_type <= 5),
 		applies_to_doc_no VARCHAR(20),
-		due_date DATE,
-		pmt_discount_date DATE,
+		due_date TIMESTAMP,
+		pmt_discount_date TIMESTAMP,
 		payment_discount_percent NUMERIC,
 		quantity NUMERIC,
 		tax_amount NUMERIC,
@@ -2385,7 +2385,7 @@ func GetGenJournalLinePostgresTableSchema() string {
 		applies_to_id VARCHAR(20),
 		reason_code VARCHAR(10),
 		recurring_method INTEGER CHECK (recurring_method >= 0 AND recurring_method <= 6),
-		expiration_date DATE,
+		expiration_date TIMESTAMP,
 		recurring_frequency VARCHAR(20),
 		allocated_amt_lcy NUMERIC,
 		gen_posting_type INTEGER CHECK (gen_posting_type >= 0 AND gen_posting_type <= 3),
@@ -2405,7 +2405,7 @@ func GetGenJournalLinePostgresTableSchema() string {
 		bal_tax_base_amount NUMERIC,
 		correction BOOLEAN,
 		check_printed BOOLEAN,
-		document_date DATE,
+		document_date TIMESTAMP,
 		external_document_no VARCHAR(20),
 		source_type INTEGER CHECK (source_type >= 0 AND source_type <= 5),
 		source_no VARCHAR(20),
@@ -2431,7 +2431,7 @@ func GetGenJournalLinePostgresTableSchema() string {
 		bal_tax_amount_lcy NUMERIC,
 		bal_tax_base_amount_lcy NUMERIC,
 		reversing_entry BOOLEAN,
-		fa_posting_date DATE,
+		fa_posting_date TIMESTAMP,
 		fa_posting_type INTEGER CHECK (fa_posting_type >= 0 AND fa_posting_type <= 8),
 		depreciation_book_code VARCHAR(10),
 		salvage_value NUMERIC,
@@ -5743,6 +5743,16 @@ func (t *GenJournalLine) parseFilterExpression(fieldName, expr string) (string, 
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

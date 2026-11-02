@@ -19,6 +19,11 @@ describe('toApiFlowFilter', () => {
 		expect(toApiFlowFilter('<>t', 'date', 'nb-NO', today)).toEqual({ value: '<>2026-10-06' });
 	});
 
+	it('keeps closing dates', () => {
+		expect(toApiFlowFilter('01.01.26..C31.12.26', 'date', 'nb-NO', today)).toEqual({ value: '2026-01-01..C2026-12-31' });
+		expect(toApiFlowFilter('C311226', 'date', 'nb-NO', today)).toEqual({ value: 'C2026-12-31' });
+	});
+
 	it('reads en-US month/day order and ISO input', () => {
 		expect(toApiFlowFilter('01/02/26..03/31/26', 'date', 'en-US', today)).toEqual({ value: '2026-01-02..2026-03-31' });
 		expect(toApiFlowFilter('2026-01-01..2026-03-31', 'date', 'nb-NO', today)).toEqual({ value: '2026-01-01..2026-03-31' });

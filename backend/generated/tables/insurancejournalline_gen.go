@@ -699,9 +699,9 @@ func GetInsuranceJournalLinePostgresTableSchema() string {
 		insurance_no VARCHAR(20),
 		fa_no VARCHAR(20),
 		fa_description VARCHAR(30),
-		posting_date DATE,
+		posting_date TIMESTAMP,
 		document_type INTEGER CHECK (document_type >= 0 AND document_type <= 3),
-		document_date DATE,
+		document_date TIMESTAMP,
 		document_no VARCHAR(20),
 		external_document_no VARCHAR(20),
 		amount NUMERIC,
@@ -2028,6 +2028,16 @@ func (t *InsuranceJournalLine) parseFilterExpression(fieldName, expr string) (st
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

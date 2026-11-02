@@ -1463,7 +1463,7 @@ func getSQLType(f Field) string {
 	case "types.Decimal":
 		return "TEXT" // Store as TEXT for exact decimal representation
 	case "types.Date":
-		return "TEXT" // Store as TEXT in "YYYY-MM-DD" format
+		return "TEXT" // Store as TEXT: "YYYY-MM-DD", a closing date "YYYY-MM-DD 23:59:59"
 	case "types.DateTime":
 		return "TEXT" // Store as TEXT in ISO 8601 format
 	case "BLOB", "[]byte":
@@ -1493,7 +1493,7 @@ func getPostgresSQLType(f Field) string {
 	case "types.Decimal":
 		return "NUMERIC" // PostgreSQL NUMERIC for exact decimal representation
 	case "types.Date":
-		return "DATE"
+		return "TIMESTAMP" // a closing date is the date at 23:59:59 (types.Date)
 	case "types.DateTime":
 		return "TIMESTAMP"
 	case "BLOB", "[]byte":
@@ -4056,6 +4056,16 @@ func (t *{{ .StructName }}) parseFilterExpression(fieldName, expr string) (strin
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

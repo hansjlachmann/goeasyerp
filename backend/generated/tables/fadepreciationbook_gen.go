@@ -1198,7 +1198,7 @@ func GetFADepreciationBookPostgresTableSchema() string {
 		fa_no VARCHAR(20),
 		depreciation_book_code VARCHAR(10),
 		depreciation_method INTEGER CHECK (depreciation_method >= 0 AND depreciation_method <= 6),
-		depreciation_starting_date DATE,
+		depreciation_starting_date TIMESTAMP,
 		straight_line_percent NUMERIC,
 		no_of_depreciation_years NUMERIC,
 		no_of_depreciation_months NUMERIC,
@@ -1208,7 +1208,7 @@ func GetFADepreciationBookPostgresTableSchema() string {
 		final_rounding_amount NUMERIC,
 		ending_book_value NUMERIC,
 		fa_posting_group VARCHAR(10),
-		depreciation_ending_date DATE,
+		depreciation_ending_date TIMESTAMP,
 		acquisition_cost NUMERIC,
 		depreciation NUMERIC,
 		book_value NUMERIC,
@@ -1222,27 +1222,27 @@ func GetFADepreciationBookPostgresTableSchema() string {
 		salvage_value NUMERIC,
 		book_value_on_disposal NUMERIC,
 		maintenance NUMERIC,
-		acquisition_date DATE,
-		g_l_acquisition_date DATE,
-		disposal_date DATE,
-		last_acquisition_cost_date DATE,
-		last_depreciation_date DATE,
-		last_write_down_date DATE,
-		last_appreciation_date DATE,
-		last_custom_1_date DATE,
-		last_custom_2_date DATE,
-		last_salvage_value_date DATE,
+		acquisition_date TIMESTAMP,
+		g_l_acquisition_date TIMESTAMP,
+		disposal_date TIMESTAMP,
+		last_acquisition_cost_date TIMESTAMP,
+		last_depreciation_date TIMESTAMP,
+		last_write_down_date TIMESTAMP,
+		last_appreciation_date TIMESTAMP,
+		last_custom_1_date TIMESTAMP,
+		last_custom_2_date TIMESTAMP,
+		last_salvage_value_date TIMESTAMP,
 		fa_exchange_rate NUMERIC,
 		fixed_depr_amount_below_zero NUMERIC,
-		last_date_modified DATE,
-		first_user_defined_depr_date DATE,
+		last_date_modified TIMESTAMP,
+		first_user_defined_depr_date TIMESTAMP,
 		use_fa_ledger_check BOOLEAN DEFAULT true,
-		last_maintenance_date DATE,
+		last_maintenance_date TIMESTAMP,
 		depr_below_zero_percent NUMERIC,
-		projected_disposal_date DATE,
+		projected_disposal_date TIMESTAMP,
 		projected_proceeds_on_disposal NUMERIC,
-		depr_starting_date_custom_1 DATE,
-		depr_ending_date_custom_1 DATE,
+		depr_starting_date_custom_1 TIMESTAMP,
+		depr_ending_date_custom_1 TIMESTAMP,
 		accum_depr_percent_custom_1 NUMERIC,
 		depr_this_year_percent_custom_1 NUMERIC,
 		property_class_custom_1 INTEGER CHECK (property_class_custom_1 >= 0 AND property_class_custom_1 <= 2),
@@ -4538,6 +4538,16 @@ func (t *FADepreciationBook) parseFilterExpression(fieldName, expr string) (stri
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

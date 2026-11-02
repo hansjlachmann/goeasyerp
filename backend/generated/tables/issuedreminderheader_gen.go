@@ -1040,9 +1040,9 @@ func GetIssuedReminderHeaderPostgresTableSchema() string {
 		gen_bus_posting_group VARCHAR(10),
 		vat_registration_no VARCHAR(20),
 		reason_code VARCHAR(10),
-		posting_date DATE,
-		document_date DATE,
-		due_date DATE,
+		posting_date TIMESTAMP,
+		document_date TIMESTAMP,
+		due_date TIMESTAMP,
 		reminder_terms_code VARCHAR(10),
 		fin_charge_terms_code VARCHAR(10),
 		interest_posted BOOLEAN,
@@ -3513,6 +3513,16 @@ func (t *IssuedReminderHeader) parseFilterExpression(fieldName, expr string) (st
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

@@ -958,6 +958,27 @@ reports:
       E_LINE_INCONSISTENT: "E-linjen for konto %1 (linje %2) følger ikke A-linjen."
       DIFFERENT_METHODS: "Én %1 har en anden %2 end en anden, i regnskabet %3. Kontrollér %4 og %5. Begge konsolideres til %6."
       WINDOW: "Konsoliderer regnskab...\n\nKoncernenhedskode    #1##########\nLinjenummer          #4######\nFinanskontonr.       #2##########\nDato                 #3######"
+  "94":
+    caption: "Luk resultatopgørelse"
+    options:
+      fiscal_year_ending_date: "Slutdato for regnskabsår"
+      journal_template: "Finanskladdetype"
+      journal_batch: "Finanskladdenavn"
+      document_no: "Bilagsnr."
+      retained_earnings_acc: "Konto for overført resultat"
+      posting_description: "Bogføringsbeskrivelse"
+      close_by_business_unit: "Luk pr. koncernenhedskode"
+      close_by_department: "Luk pr. afdelingskode"
+      close_by_project: "Luk pr. projektkode"
+    texts:
+      OPTIONS: "Indstillinger"
+      TITLE: "Luk resultatopgørelse"
+      ENTER_ENDING_DATE: "Angiv slutdatoen for regnskabsåret."
+      NO_FISCAL_YEAR: "Regnskabsåret findes ikke."
+      YEAR_NOT_CLOSED: "Regnskabsåret skal lukkes, før resultatopgørelsen kan lukkes."
+      ENTER_DOCUMENT_NO: "Angiv et bilagsnummer."
+      WINDOW: "Opretter finanskladdelinjer...\n\nKontonr.             #1##########\nBeløb                #2##########\nKoncernenhedskode    #3##########\nAfdelingskode        #4##########\nProjektkode          #5##########"
+      DONE: "Lukkeposterne er i finanskladden %1 %2. Bogfør dem der."
   "20":
     caption: "Beregn og bogfør afgiftsafregning"
     options:

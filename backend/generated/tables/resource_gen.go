@@ -992,7 +992,7 @@ func GetResourcePostgresTableSchema() string {
 		title VARCHAR(30),
 		education VARCHAR(30),
 		contract_class VARCHAR(30),
-		employment_date DATE,
+		employment_date TIMESTAMP,
 		resource_group_no VARCHAR(20),
 		department_code VARCHAR(10),
 		project_code VARCHAR(10),
@@ -1004,7 +1004,7 @@ func GetResourcePostgresTableSchema() string {
 		price_profit_calculation INTEGER CHECK (price_profit_calculation >= 0 AND price_profit_calculation <= 2),
 		unit_price NUMERIC,
 		vendor_no VARCHAR(20),
-		last_date_modified DATE,
+		last_date_modified TIMESTAMP,
 		comment BOOLEAN,
 		blocked BOOLEAN,
 		capacity NUMERIC,
@@ -4217,6 +4217,16 @@ func (t *Resource) parseFilterExpression(fieldName, expr string) (string, []inte
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

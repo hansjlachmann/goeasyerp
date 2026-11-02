@@ -979,7 +979,7 @@ func GetTaxEntryPostgresTableSchema() string {
 		entry_no INTEGER PRIMARY KEY,
 		gen_bus_posting_group VARCHAR(10),
 		gen_prod_posting_group VARCHAR(10),
-		posting_date DATE,
+		posting_date TIMESTAMP,
 		document_no VARCHAR(20),
 		document_type INTEGER CHECK (document_type >= 0 AND document_type <= 5),
 		type INTEGER CHECK (type >= 0 AND type <= 3),
@@ -2746,6 +2746,16 @@ func (t *TaxEntry) parseFilterExpression(fieldName, expr string) (string, []inte
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

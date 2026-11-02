@@ -127,3 +127,18 @@ func TestUpperLimit(t *testing.T) {
 		}
 	}
 }
+
+// A closing date filters as the database keeps it: after its date, before the next day
+func TestClosingDateFilter(t *testing.T) {
+	clause, args, err := Clause("d", KindDate, "2026-01-01..C2026-12-31|C2025-12-31")
+	if err != nil || clause != "(d BETWEEN ? AND ? OR d = ?)" || len(args) != 3 ||
+		args[0] != "2026-01-01" || args[1] != "2026-12-31 23:59:59" || args[2] != "2025-12-31 23:59:59" {
+		t.Errorf("clause %q args %v err %v", clause, args, err)
+	}
+	if UpperLimit(KindDate, "2026-01-01..C2026-12-31") != "..C2026-12-31" {
+		t.Errorf("upper limit %q", UpperLimit(KindDate, "2026-01-01..C2026-12-31"))
+	}
+	if Validate(KindDate, "C") == nil || Validate(KindDate, "C2026-13-01") == nil {
+		t.Error("an invalid closing date accepted")
+	}
+}

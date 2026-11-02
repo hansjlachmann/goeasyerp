@@ -119,7 +119,7 @@ func TestGetMenuMarksAvailableEntries(t *testing.T) {
 	activities := find(items, "Aktiviteter")
 	fiscal := find(activities["items"].([]interface{}), "Regnskapsår")
 	if fiscal["enabled"] != true || find(fiscal["items"].([]interface{}), "Opprett år")["enabled"] != true ||
-		find(fiscal["items"].([]interface{}), "Avslutt resultatregnskap")["enabled"] != false {
+		find(fiscal["items"].([]interface{}), "Avslutt resultatregnskap")["enabled"] != true {
 		t.Errorf("Activities › Fiscal Year: %v", fiscal)
 	}
 	inventory := find(modules, "Lager")

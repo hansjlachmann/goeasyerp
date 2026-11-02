@@ -1707,10 +1707,10 @@ func GetFALedgerEntryPostgresTableSchema() string {
 		entry_no INTEGER PRIMARY KEY,
 		g_l_entry_no INTEGER,
 		fa_no VARCHAR(20),
-		fa_posting_date DATE,
-		posting_date DATE,
+		fa_posting_date TIMESTAMP,
+		posting_date TIMESTAMP,
 		document_type INTEGER CHECK (document_type >= 0 AND document_type <= 5),
-		document_date DATE,
+		document_date TIMESTAMP,
 		document_no VARCHAR(20),
 		external_document_no VARCHAR(20),
 		description VARCHAR(100),
@@ -1736,7 +1736,7 @@ func GetFALedgerEntryPostgresTableSchema() string {
 		location_code VARCHAR(10),
 		user_id VARCHAR(20),
 		depreciation_method INTEGER CHECK (depreciation_method >= 0 AND depreciation_method <= 6),
-		depreciation_starting_date DATE,
+		depreciation_starting_date TIMESTAMP,
 		straight_line_percent NUMERIC,
 		no_of_depreciation_years NUMERIC,
 		fixed_depr_amount NUMERIC,
@@ -1759,11 +1759,11 @@ func GetFALedgerEntryPostgresTableSchema() string {
 		correction BOOLEAN,
 		index_entry BOOLEAN,
 		canceled_from_fa_no VARCHAR(20),
-		depreciation_ending_date DATE,
+		depreciation_ending_date TIMESTAMP,
 		use_fa_ledger_check BOOLEAN,
 		automatic_entry BOOLEAN,
-		depr_starting_date_custom_1 DATE,
-		depr_ending_date_custom_1 DATE,
+		depr_starting_date_custom_1 TIMESTAMP,
+		depr_ending_date_custom_1 TIMESTAMP,
 		accum_depr_percent_custom_1 NUMERIC,
 		depr_percent_this_year_custom_1 NUMERIC,
 		property_class_custom_1 INTEGER CHECK (property_class_custom_1 >= 0 AND property_class_custom_1 <= 2),
@@ -4328,6 +4328,16 @@ func (t *FALedgerEntry) parseFilterExpression(fieldName, expr string) (string, [
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

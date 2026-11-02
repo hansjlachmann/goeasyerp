@@ -72,6 +72,24 @@ describe('date formulas', () => {
 	});
 });
 
+describe('closing dates', () => {
+	afterEach(() => setRegional({}));
+	it('reads C and a date as its closing date, not the formulas CM, CW', () => {
+		expect(dmy('C311226')).toBe('C2026-12-31');
+		expect(dmy('c 31.12.26')).toBe('C2026-12-31');
+		expect(dmy('ct')).toBe('C2026-10-29');
+		expect(mdy('C12/31/2026')).toBe('C2026-12-31');
+		expect(dmy('CM')).toBe('2026-10-31');
+		expect(dmy('C')).toBeNull();
+		expect(dmy('C99')).toBeNull();
+	});
+	it('shows a closing date with its C', () => {
+		setRegional({ date_format: 'dd.mm.yy' });
+		expect(formatDateRegional('C2026-12-31', 'en-US')).toBe('C31.12.26');
+		expect(formatDateRegional('C2026-12-31', 'nb-NO')).toBe('C31.12.26');
+	});
+});
+
 describe('regional formats', () => {
 	afterEach(() => setRegional({}));
 	it('shows dates and numbers in the user format', () => {

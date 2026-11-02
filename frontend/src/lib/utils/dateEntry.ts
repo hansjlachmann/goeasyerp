@@ -2,7 +2,8 @@
 // filled from the work date (05 = the 5th of the work date's month, 0509, 050926, 05092026), any
 // separator (5.9, 5/9/26, 2026-09-05), t = today, w = the work date, weekdays (mo, tu … — also
 // Norwegian and Danish) of the work date's week, and date formulas from the work date (+1W, -3D,
-// CM, -1M+CM). Day and month follow the user's date order (My Settings).
+// CM, -1M+CM). Day and month follow the user's date order (My Settings). A C before a date is
+// its closing date (C311226 = C2026-12-31: the period end closing entries are posted on).
 
 import { applyDateFormula } from './dateFormula';
 import { dateOrder, getWorkDate, type DateOrder } from './regional';
@@ -112,9 +113,16 @@ export function isoDate(d: Date): string {
 	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-/** The ISO date of an entry, '' for a blank entry, null when it cannot be read */
+/** The ISO date of an entry, '' for a blank entry, null when it cannot be read; a closing date
+ * as C2026-12-31 */
 export function dateEntryToIso(input: string, options: { locale?: string; order?: DateOrder; workDate?: Date; today?: Date } = {}): string | null {
 	if (input.trim() === '') return '';
+	// C and a date (digits, t or workdate — not CM, CW … the formulas): the date's closing date
+	const closing = /^c\s*(\d.*|t|today|workdate)$/i.exec(input.trim());
+	if (closing) {
+		const d = parseDateEntry(closing[1], options);
+		return d ? 'C' + isoDate(d) : null;
+	}
 	const d = parseDateEntry(input, options);
 	return d ? isoDate(d) : null;
 }

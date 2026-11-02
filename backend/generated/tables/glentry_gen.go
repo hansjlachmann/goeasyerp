@@ -1090,7 +1090,7 @@ func GetGLEntryPostgresTableSchema() string {
 	return `
 		entry_no INTEGER PRIMARY KEY,
 		gl_account_no VARCHAR(20),
-		posting_date DATE,
+		posting_date TIMESTAMP,
 		document_type INTEGER CHECK (document_type >= 0 AND document_type <= 5),
 		document_no VARCHAR(20),
 		description VARCHAR(50),
@@ -1115,7 +1115,7 @@ func GetGLEntryPostgresTableSchema() string {
 		transaction_no INTEGER,
 		debit_amount NUMERIC,
 		credit_amount NUMERIC,
-		document_date DATE,
+		document_date TIMESTAMP,
 		external_document_no VARCHAR(20),
 		source_type INTEGER CHECK (source_type >= 0 AND source_type <= 5),
 		source_no VARCHAR(20),
@@ -2980,6 +2980,16 @@ func (t *GLEntry) parseFilterExpression(fieldName, expr string) (string, []inter
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

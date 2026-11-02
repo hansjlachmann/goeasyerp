@@ -958,6 +958,27 @@ reports:
       E_LINE_INCONSISTENT: "The E line of account %1 (line %2) does not follow its A line."
       DIFFERENT_METHODS: "One %1 has a different %2 than another, in company %3. Check %4 and %5. They both consolidate to %6."
       WINDOW: "Consolidating company...\n\nBusiness Unit Code   #1##########\nLine Number          #4######\nG/L Account No.      #2##########\nDate                 #3######"
+  "94":
+    caption: "Close Income Statement"
+    options:
+      fiscal_year_ending_date: "Fiscal Year Ending Date"
+      journal_template: "Gen. Journal Template"
+      journal_batch: "Gen. Journal Batch"
+      document_no: "Document No."
+      retained_earnings_acc: "Retained Earnings Acc."
+      posting_description: "Posting Description"
+      close_by_business_unit: "Close by Business Unit Code"
+      close_by_department: "Close by Department Code"
+      close_by_project: "Close by Project Code"
+    texts:
+      OPTIONS: "Options"
+      TITLE: "Close Income Statement"
+      ENTER_ENDING_DATE: "Please enter the ending date for the fiscal year."
+      NO_FISCAL_YEAR: "The fiscal year does not exist."
+      YEAR_NOT_CLOSED: "The fiscal year must be closed before the income statement can be closed."
+      ENTER_DOCUMENT_NO: "Please enter a Document No."
+      WINDOW: "Creating general journal lines...\n\nAccount No.          #1##########\nAmount               #2##########\nBusiness Unit Code   #3##########\nDepartment Code      #4##########\nProject Code         #5##########"
+      DONE: "The closing entries are in the general journal %1 %2. Post them there."
   "20":
     caption: "Calc. and Post Tax Settlement"
     options:

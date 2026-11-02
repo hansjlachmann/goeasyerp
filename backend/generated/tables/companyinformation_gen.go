@@ -983,7 +983,7 @@ func GetCompanyInformationPostgresTableSchema() string {
 		bank_account_no VARCHAR(20),
 		payment_routing_no VARCHAR(20),
 		customs_permit_no VARCHAR(10),
-		customs_permit_date DATE,
+		customs_permit_date TIMESTAMP,
 		vat_registration_no VARCHAR(20),
 		registration_no VARCHAR(20),
 		telex_answer_back VARCHAR(20),
@@ -2620,6 +2620,16 @@ func (t *CompanyInformation) parseFilterExpression(fieldName, expr string) (stri
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

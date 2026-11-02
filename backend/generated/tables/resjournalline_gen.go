@@ -906,7 +906,7 @@ func GetResJournalLinePostgresTableSchema() string {
 		line_no INTEGER,
 		entry_type INTEGER CHECK (entry_type >= 0 AND entry_type <= 1),
 		document_no VARCHAR(20),
-		posting_date DATE,
+		posting_date TIMESTAMP,
 		resource_no VARCHAR(20),
 		resource_group_no VARCHAR(20),
 		description VARCHAR(50),
@@ -925,11 +925,11 @@ func GetResJournalLinePostgresTableSchema() string {
 		reason_code VARCHAR(10),
 		gen_bus_posting_group VARCHAR(10),
 		gen_prod_posting_group VARCHAR(10),
-		document_date DATE,
+		document_date TIMESTAMP,
 		external_document_no VARCHAR(20),
 		posting_no_series VARCHAR(10),
 		recurring_method INTEGER CHECK (recurring_method >= 0 AND recurring_method <= 2),
-		expiration_date DATE,
+		expiration_date TIMESTAMP,
 		recurring_frequency VARCHAR(20),
 		PRIMARY KEY (journal_template_name, journal_batch_name, line_no)
 	`
@@ -2485,6 +2485,16 @@ func (t *ResJournalLine) parseFilterExpression(fieldName, expr string) (string, 
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}
