@@ -1,6 +1,9 @@
 package tables
 
 import (
+	"fmt"
+	"strings"
+
 	"strconv"
 
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
@@ -247,3 +250,16 @@ type dbSource struct {
 func (s dbSource) GetDB() database.Executor   { return s.db }
 func (s dbSource) GetCompany() string         { return s.company }
 func (s dbSource) GetDBType() database.DBType { return s.dbType }
+
+// KeyString is a record's whole primary key as text: the key fields' values joined by commas
+// (the form of the API's record ids)
+func KeyString(table Table) string {
+	values := table.ToMap()
+	var parts []string
+	for _, f := range table.GetFields() {
+		if f.PrimaryKey {
+			parts = append(parts, fmt.Sprint(values[f.Name]))
+		}
+	}
+	return strings.Join(parts, ",")
+}

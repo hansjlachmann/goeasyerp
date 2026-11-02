@@ -760,6 +760,16 @@ pages:
     caption: "Styklistejournaler"
   bom_ledger_entries:
     caption: "Styklisteposter"
+  account_schedule_names:
+    caption: "Kontoskemanavne"
+  account_schedule:
+    caption: "Kontoskema"
+  acc_sched_column_layout_names:
+    caption: "Kolonneopsætningsnavne"
+  account_schedule_column_layout:
+    caption: "Kolonneopsætning for kontoskema"
+  acc_schedule_overview:
+    caption: "Kontoskemaoversigt"
   g_l_budget_by_periods:
     caption: "Finansbudget pr. periode"
   g_l_budget_entries:

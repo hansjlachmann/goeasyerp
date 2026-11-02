@@ -1,0 +1,41 @@
+table:
+  id: 84
+  name: "Acc_Schedule_Name"
+  caption: Acc. Schedule Name
+  description: "The account schedules (table 84): a schedule's lines are Acc. Schedule Lines of its name"
+  lookup_page_id: 103
+  data_caption_fields: [name, description]
+  fields:
+    - name: name
+      no: 1
+      type: types.Code
+      db_name: name
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: description
+      no: 2
+      type: types.Text
+      db_name: description
+      length: 80
+
+    # the column layout the overview and the printout start with
+    - name: default_column_layout
+      no: 3
+      type: types.Code
+      db_name: default_column_layout
+      length: 10
+      table_relation:
+        table: Acc_Sched_Column_Layout_Name
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+  keys:
+    - name: Primary
+      fields: [name]
+      clustered: true

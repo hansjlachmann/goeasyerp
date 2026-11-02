@@ -145,6 +145,12 @@ type Matrix struct {
 	// DrilldownRowValue field — when blank its key: a total account's Totaling), the column's
 	// dates (DrilldownDateField), the card record (DrilldownRecordFilters: drilldown page field
 	// → card field) and the user's filters
+	// Calculated: the columns and the cells come from the page's OnMatrixCalculate trigger
+	// (an account schedule's column layout) for one period chosen above the matrix (View by,
+	// previous/next) — the period goes into DateFilter; RowFilters (a field of the rows → a
+	// field of the card record) select the rows (the schedule's lines)
+	Calculated             bool              `yaml:"calculated,omitempty" json:"calculated,omitempty"`
+	RowFilters             map[string]string `yaml:"row_filters,omitempty" json:"row_filters,omitempty"`
 	Drilldown              int               `yaml:"drilldown,omitempty" json:"drilldown,omitempty"`
 	DrilldownRowField      string            `yaml:"drilldown_row_field,omitempty" json:"drilldown_row_field,omitempty"`
 	DrilldownRowValue      string            `yaml:"drilldown_row_value,omitempty" json:"drilldown_row_value,omitempty"`

@@ -708,6 +708,99 @@ tables:
       description: "Beskrivelse"
 
   # G/L Account (Table 15)
+  acc_schedule_name:
+    caption: "Kontoskjemanavn"
+    fields:
+      name: "Navn"
+      description: "Beskrivelse"
+      default_column_layout: "Standard kolonneoppsett"
+  acc_schedule_line:
+    caption: "Kontoskjemalinje"
+    fields:
+      schedule_name: "Skjemanavn"
+      line_no: "Linjenr."
+      row_no: "Radnr."
+      description: "Beskrivelse"
+      totaling: "Sammentelling"
+      totaling_type: "Sammentellingstype"
+      new_page: "Ny side"
+      date_filter: "Datofilter"
+      department_filter: "Avdelingsfilter"
+      project_filter: "Prosjektfilter"
+      budget_filter: "Budsjettfilter"
+      show: "Vis"
+      calculate: "Beregn"
+      sign_control: "Fortegnskontroll"
+    options:
+      totaling_type:
+        posting_accounts: "Bokføringskontoer"
+        total_accounts: "Sumkontoer"
+        formula: "Formel"
+        underline: "Understreking"
+        double_underline: "Dobbel understreking"
+        set_base_for_percent: "Angi basis for prosent"
+      show:
+        yes: "Ja"
+        no: "Nei"
+        if_any_column_not_zero: "Hvis en kolonne ikke er null"
+        bold: "Fet"
+      calculate:
+        net_change: "Bevegelse"
+        beginning_balance: "Inngående saldo"
+        ending_balance: "Utgående saldo"
+        debits_only: "Kun debet"
+        credits_only: "Kun kredit"
+      sign_control:
+        normal: "Normal"
+        reverse: "Omvendt"
+  acc_sched_column_layout_name:
+    caption: "Kolonneoppsettnavn"
+    fields:
+      name: "Navn"
+      description: "Beskrivelse"
+  acc_sched_column:
+    caption: "Kontoskjemakolonne"
+    fields:
+      column_layout_name: "Kolonneoppsettnavn"
+      line_no: "Linjenr."
+      column_no: "Kolonnenr."
+      column_header: "Kolonneoverskrift"
+      column_type: "Kolonnetype"
+      ledger_entry_type: "Posttype"
+      amount_type: "Beløpstype"
+      formula: "Formel"
+      comparison_period_formula: "Sammenligningsperiodeformel"
+      show_opposite_sign: "Vis motsatt fortegn"
+      show: "Vis"
+      rounding_factor: "Avrundingsfaktor"
+      department_filter: "Avdelingsfilter"
+      project_filter: "Prosjektfilter"
+    options:
+      column_type:
+        formula: "Formel"
+        net_change: "Bevegelse"
+        balance_at_date: "Saldo til dato"
+        beginning_balance: "Inngående saldo"
+        year_to_date: "Hittil i år"
+        rest_of_fiscal_year: "Resten av regnskapsåret"
+        entire_fiscal_year: "Hele regnskapsåret"
+      ledger_entry_type:
+        g_l_entries: "Finansposter"
+        g_l_budget_entries: "Finansbudsjettposter"
+      amount_type:
+        net_amount: "Nettobeløp"
+        debit_amount: "Debetbeløp"
+        credit_amount: "Kreditbeløp"
+      show:
+        always: "Alltid"
+        never: "Aldri"
+        when_positive: "Når positiv"
+        when_negative: "Når negativ"
+      rounding_factor:
+        none: "Ingen"
+        "1": "1"
+        "1000": "1000"
+        "1000000": "1000000"
   g_l_budget_name:
     caption: "Finansbudsjettnavn"
     fields:

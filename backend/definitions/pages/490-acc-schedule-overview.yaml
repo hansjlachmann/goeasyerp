@@ -1,0 +1,66 @@
+page:
+  id: 490
+  type: Card
+  name: Acc. Schedule Overview
+  source_table: Acc_Schedule_Name
+  caption: Acc. Schedule Overview
+  list_page_id: 103
+  enable_navigation: true
+  editable: true
+  # classic form 490: the schedule's lines against its column layout's columns for a period —
+  # on the schedule's card (classic: Account Schedule Name and Column Layout Name above the
+  # matrix); the cells come from codeunit 8 (OnMatrixCalculate → accsched.Overview)
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: name
+            importance: Promoted
+          - source: description
+          - source: default_column_layout
+            table_relation: Acc_Sched_Column_Layout_Name
+
+      - name: Overview
+        caption: Overview
+        matrix:
+          table: Acc_Schedule_Line
+          calculated: true
+          row_filters:
+            schedule_name: name
+          date_filter: date_filter
+          view_by: 2
+          filters:
+            - source: department_filter
+            - source: project_filter
+            - source: budget_filter
+          fields:
+            - source: row_no
+              width: 80
+              style_expr: {field: show, equal: 3, style: Strong}
+            - source: description
+              width: 280
+              style_expr: {field: show, equal: 3, style: Strong}
+
+  actions:
+    - name: Back to List
+      caption: Back to List
+      image: Back
+      shortcut: Esc
+      promoted: true
+      run_page: 103
+
+    - name: Edit Account Schedule
+      caption: Edit Account Schedule
+      image: Lines
+      promoted: true
+      run_page: 104
+      run_page_params:
+        schedule: name
+
+    - name: Print
+      caption: Print
+      image: Print
+      promoted: true
+      run_object: report:25

@@ -85,13 +85,17 @@ export interface Matrix {
 	drilldown_row_value?: string;
 	drilldown_date_field?: string;
 	drilldown_record_filters?: Record<string, string>; // drilldown page field → card record field
+	calculated?: boolean; // columns and cells from the page's trigger, for one period
+	row_filters?: Record<string, string>; // row field → card record field
 }
 
 /** A period (column) of a matrix */
 export interface MatrixColumn {
-	start: string;
-	end: string;
+	start?: string; // a period (period columns)
+	end?: string;
 	name?: string;
+	decimal_places?: string; // calculated columns: how the values show
+	percent?: boolean;
 }
 
 /** A record (row) of a matrix: its key, fields, drilldown value and cells (decimals as text) */

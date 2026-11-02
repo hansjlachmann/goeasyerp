@@ -123,3 +123,80 @@ func TestMatrix(t *testing.T) {
 		t.Errorf("%d budget entries, want 2", n)
 	}
 }
+
+// The overview of an account schedule (490): a calculated matrix — the schedule's lines against
+// its column layout's columns, for the period chosen (View by, previous/next)
+func TestCalculatedMatrix(t *testing.T) {
+	if err := pages.GetRegistry().LoadPages(); err != nil {
+		t.Skipf("pages: %v", err)
+	}
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db.SetMaxOpenConns(1)
+	t.Cleanup(func() { _ = db.Close() })
+	if err := tables.CreateCompanyTables(db, "TEST", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	src := ftables.DBSource(db, "TEST", database.DBTypeSQLite)
+	must := func(err error) {
+		t.Helper()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	acc := gtables.NewGLAccount(src)
+	acc.No = "3100"
+	must(acc.InsertOrError(false))
+	entry := gtables.NewGLEntry(src)
+	entry.Entry_no, entry.Gl_account_no, entry.Posting_date, entry.Amount = 1, "3100", types.NewDate(2026, 3, 10), types.NewDecimalFromInt(-1000)
+	must(entry.InsertOrError(false))
+	layout := gtables.NewAccSchedColumnLayoutName(src)
+	layout.Name = "L"
+	must(layout.InsertOrError(true))
+	column := gtables.NewAccSchedColumn(src)
+	column.InitRecord()
+	column.Column_layout_name, column.Line_no, column.Column_no, column.Column_header = "L", 10000, "A", "Actual"
+	must(column.InsertOrError(true))
+	name := gtables.NewAccScheduleName(src)
+	name.Name, name.Default_column_layout = "S", "L"
+	must(name.InsertOrError(true))
+	line := gtables.NewAccScheduleLine(src)
+	line.InitRecord()
+	line.Schedule_name, line.Line_no, line.Row_no, line.Description, line.Totaling = "S", 10000, "R10", "Revenue", "3100"
+	line.Sign_control = gtables.AccScheduleLine_Sign_control.Reverse
+	must(line.InsertOrError(true))
+
+	app := fiber.New()
+	app.Use(func(c *fiber.Ctx) error {
+		c.Locals("session", &session.Session{Company: "TEST", Language: "en-US"})
+		return c.Next()
+	})
+	app.Post("/api/pages/:id/matrix", NewPageTriggersHandler(db, database.DBTypeSQLite).Matrix)
+	overview := func(step int) (columns []interface{}, rows []interface{}, period map[string]interface{}) {
+		t.Helper()
+		status, out := sendJSON(t, app, "POST", "/api/pages/490/matrix", fmt.Sprintf(
+			`{"section": "Overview", "record": {"name": "S", "default_column_layout": "L"}, "view_by": 2, "date": "2026-03-15", "step": %d}`, step))
+		if status != 200 {
+			t.Fatalf("overview: %d %v", status, out)
+		}
+		data := out["data"].(map[string]interface{})
+		return data["columns"].([]interface{}), data["rows"].([]interface{}), data["period"].(map[string]interface{})
+	}
+	columns, rows, period := overview(0)
+	if len(columns) != 1 || columns[0].(map[string]interface{})["name"] != "Actual" || period["start"] != "2026-03-01" {
+		t.Fatalf("columns %v, period %v", columns, period)
+	}
+	row := rows[0].(map[string]interface{})
+	if row["key"] != "S,10000" || row["fields"].(map[string]interface{})["description"] != "Revenue" {
+		t.Fatalf("row %v", row)
+	}
+	if v := row["values"].([]interface{})[0]; v != "1000" {
+		t.Errorf("March: %v, want 1000", v)
+	}
+	_, rows, period = overview(-1)
+	if v := rows[0].(map[string]interface{})["values"].([]interface{})[0]; v != "" || period["start"] != "2026-02-01" {
+		t.Errorf("February: %v (%v), want blank", v, period)
+	}
+}

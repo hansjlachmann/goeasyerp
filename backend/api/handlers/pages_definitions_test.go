@@ -31,7 +31,16 @@ func checkMatrix(t *testing.T, id int, mx *pages.Matrix, cardFields map[string]b
 	for _, f := range rec.GetFlowFilterFields() {
 		flowFilters[f.Name] = true
 	}
-	if !flowFields[mx.Value] {
+	if mx.Calculated {
+		if !pages.HasMatrixCalculate(id) {
+			t.Errorf("page %d: a calculated matrix without an OnMatrixCalculate trigger", id)
+		}
+		for rowField, cardField := range mx.RowFilters {
+			if !fields[rowField] || !cardFields[cardField] {
+				t.Errorf("page %d: matrix row filter %s: %s", id, rowField, cardField)
+			}
+		}
+	} else if !flowFields[mx.Value] {
 		t.Errorf("page %d: matrix value %q is not a FlowField of %s", id, mx.Value, mx.Table)
 	}
 	if !flowFilters[mx.DateFilter] {

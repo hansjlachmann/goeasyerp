@@ -14,6 +14,10 @@ import (
 
 // tableRegistry holds the factory of every table by name
 var tableRegistry = map[string]tables.TableFactory{
+	"Acc_Sched_Column":              func() tables.Table { return &AccSchedColumn{} },
+	"Acc_Sched_Column_Layout_Name":  func() tables.Table { return &AccSchedColumnLayoutName{} },
+	"Acc_Schedule_Line":             func() tables.Table { return &AccScheduleLine{} },
+	"Acc_Schedule_Name":             func() tables.Table { return &AccScheduleName{} },
 	"Accounting_Period":             func() tables.Table { return &AccountingPeriod{} },
 	"Bank_Acc_Reconciliation":       func() tables.Table { return &BankAccReconciliation{} },
 	"Bank_Acc_Reconciliation_Line":  func() tables.Table { return &BankAccReconciliationLine{} },
@@ -216,6 +220,10 @@ var tableRegistry = map[string]tables.TableFactory{
 // NewRecords returns a new record of every table by table ID (the object registry)
 func NewRecords() map[int]tables.Table {
 	return map[int]tables.Table{
+		AccSchedColumnTableID:            &AccSchedColumn{},
+		AccSchedColumnLayoutNameTableID:  &AccSchedColumnLayoutName{},
+		AccScheduleLineTableID:           &AccScheduleLine{},
+		AccScheduleNameTableID:           &AccScheduleName{},
 		AccountingPeriodTableID:          &AccountingPeriod{},
 		BankAccReconciliationTableID:     &BankAccReconciliation{},
 		BankAccReconciliationLineTableID: &BankAccReconciliationLine{},

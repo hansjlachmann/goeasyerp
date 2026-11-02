@@ -708,6 +708,99 @@ tables:
       description: "Description"
 
   # G/L Account (Table 15)
+  acc_schedule_name:
+    caption: "Acc. Schedule Name"
+    fields:
+      name: "Name"
+      description: "Description"
+      default_column_layout: "Default Column Layout"
+  acc_schedule_line:
+    caption: "Acc. Schedule Line"
+    fields:
+      schedule_name: "Schedule Name"
+      line_no: "Line No."
+      row_no: "Row No."
+      description: "Description"
+      totaling: "Totaling"
+      totaling_type: "Totaling Type"
+      new_page: "New Page"
+      date_filter: "Date Filter"
+      department_filter: "Department Filter"
+      project_filter: "Project Filter"
+      budget_filter: "Budget Filter"
+      show: "Show"
+      calculate: "Calculate"
+      sign_control: "Sign Control"
+    options:
+      totaling_type:
+        posting_accounts: "Posting Accounts"
+        total_accounts: "Total Accounts"
+        formula: "Formula"
+        underline: "Underline"
+        double_underline: "Double Underline"
+        set_base_for_percent: "Set Base for Percent"
+      show:
+        yes: "Yes"
+        no: "No"
+        if_any_column_not_zero: "If Any Column Not Zero"
+        bold: "Bold"
+      calculate:
+        net_change: "Net Change"
+        beginning_balance: "Beginning Balance"
+        ending_balance: "Ending Balance"
+        debits_only: "Debits Only"
+        credits_only: "Credits Only"
+      sign_control:
+        normal: "Normal"
+        reverse: "Reverse"
+  acc_sched_column_layout_name:
+    caption: "Acc. Sched. Column Layout Name"
+    fields:
+      name: "Name"
+      description: "Description"
+  acc_sched_column:
+    caption: "Acc. Sched. Column"
+    fields:
+      column_layout_name: "Column Layout Name"
+      line_no: "Line No."
+      column_no: "Column No."
+      column_header: "Column Header"
+      column_type: "Column Type"
+      ledger_entry_type: "Ledger Entry Type"
+      amount_type: "Amount Type"
+      formula: "Formula"
+      comparison_period_formula: "Comparison Period Formula"
+      show_opposite_sign: "Show Opposite Sign"
+      show: "Show"
+      rounding_factor: "Rounding Factor"
+      department_filter: "Department Filter"
+      project_filter: "Project Filter"
+    options:
+      column_type:
+        formula: "Formula"
+        net_change: "Net Change"
+        balance_at_date: "Balance at Date"
+        beginning_balance: "Beginning Balance"
+        year_to_date: "Year to Date"
+        rest_of_fiscal_year: "Rest of Fiscal Year"
+        entire_fiscal_year: "Entire Fiscal Year"
+      ledger_entry_type:
+        g_l_entries: "G/L Entries"
+        g_l_budget_entries: "G/L Budget Entries"
+      amount_type:
+        net_amount: "Net Amount"
+        debit_amount: "Debit Amount"
+        credit_amount: "Credit Amount"
+      show:
+        always: "Always"
+        never: "Never"
+        when_positive: "When Positive"
+        when_negative: "When Negative"
+      rounding_factor:
+        none: "None"
+        "1": "1"
+        "1000": "1000"
+        "1000000": "1000000"
   g_l_budget_name:
     caption: "G/L Budget Name"
     fields:
