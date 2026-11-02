@@ -402,6 +402,21 @@ pages:
     caption: "Bankkontoudtog"
   exch_rate_adjmt_registers:
     caption: "Valutareguleringsjournaler"
+  tax_statement:
+    caption: "Momsangivelse"
+    fields:
+      statement_name: "Navn"
+  tax_statement_preview:
+    caption: "Momsangivelse - eksempel"
+    fields:
+      column_amount: "Kolonnebeløb"
+      date_filter: "Datofilter"
+  tax_statement_templates:
+    caption: "Momsangivelsesskabeloner"
+  tax_statement_template_list:
+    caption: "Oversigt over momsangivelsesskabeloner"
+  tax_statement_names:
+    caption: "Momsangivelsesnavne"
   sales_journal:
     caption: "Salgskladde"
     fields:  # the batch above the lines and the footer (calculated)

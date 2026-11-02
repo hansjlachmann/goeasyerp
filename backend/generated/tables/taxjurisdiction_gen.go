@@ -1284,7 +1284,7 @@ func (t *TaxJurisdiction) renameReferences(field string, oldValue, newValue inte
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Tax_Area_Line", false, "tax_jurisdiction_code", "", 0}, {"Tax_Detail", false, "tax_jurisdiction_code", "", 0}, {"Tax_Entry", false, "tax_jurisdiction_code", "", 0}, {"Tax_Jurisdiction", false, "report_to_jurisdiction", "", 0}},
+		"code": {{"Tax_Area_Line", false, "tax_jurisdiction_code", "", 0}, {"Tax_Detail", false, "tax_jurisdiction_code", "", 0}, {"Tax_Entry", false, "tax_jurisdiction_code", "", 0}, {"Tax_Jurisdiction", false, "report_to_jurisdiction", "", 0}, {"Tax_Statement_Line", false, "tax_jurisdiction_code", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

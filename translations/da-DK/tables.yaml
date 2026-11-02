@@ -3322,6 +3322,63 @@ tables:
       tax_type:
         sales_tax: "Salgsafgift"
         excise_tax: "Punktafgift"
+  tax_statement_template:
+    caption: "Momsangivelsesskabelon"
+    fields:
+      name: "Navn"
+      description: "Beskrivelse"
+      page_id: "Side-id"
+      tax_statement_report_id: "Rapport-id"
+  tax_statement_name:
+    caption: "Momsangivelsesnavn"
+    fields:
+      statement_template_name: "Angivelsesskabelonnavn"
+      name: "Navn"
+      description: "Beskrivelse"
+      date_filter: "Datofilter"
+  tax_statement_line:
+    caption: "Momsangivelseslinje"
+    fields:
+      statement_template_name: "Angivelsesskabelonnavn"
+      statement_name: "Angivelsesnavn"
+      line_no: "Linjenr."
+      row_no: "Rækkenr."
+      description: "Beskrivelse"
+      type: "Type"
+      account_totaling: "Kontosammentælling"
+      gen_posting_type: "Bogføringstype"
+      tax_bus_posting_group: "Momsvirksomhedsbogf.gruppe"
+      tax_prod_posting_group: "Momsproduktbogf.gruppe"
+      row_totaling: "Rækkesammentælling"
+      amount_type: "Beløbstype"
+      calculate_with: "Beregn med"
+      print: "Udskriv"
+      print_with: "Udskriv med"
+      date_filter: "Datofilter"
+      new_page: "Ny side"
+      tax_jurisdiction_code: "Skattejurisdiktionskode"
+      use_tax: "Forbrugsskat"
+    options:
+      type:
+        account_totaling: "Kontosammentælling"
+        tax_entry_totaling: "Momspostsammentælling"
+        row_totaling: "Rækkesammentælling"
+        description: "Beskrivelse"
+      gen_posting_type:
+        purchase: "Køb"
+        sale: "Salg"
+        settlement: "Afregning"
+      amount_type:
+        amount: "Beløb"
+        base: "Grundlag"
+        unrealized_amount: "Urealiseret beløb"
+        unrealized_base: "Urealiseret grundlag"
+      calculate_with:
+        sign: "Fortegn"
+        opposite_sign: "Modsat fortegn"
+      print_with:
+        sign: "Fortegn"
+        opposite_sign: "Modsat fortegn"
   tax_posting_setup:
     caption: "Momsbogføringsopsætning"
     fields:

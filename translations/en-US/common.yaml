@@ -11,6 +11,9 @@ common:
     copy_budget: "Copy Budget"
     trial_balance_budget: "Trial Balance/Budget"
     balance_budget: "Balance/Budget"
+    calc_and_post_tax_settlement: "Calc. and Post Tax Settlement"
+    preview: "Preview"
+    statement_names: "Statement Names"
     suggest_lines: "Suggest Lines"
     transfer_to_general_journal: "Transfer to General Journal"
     apply: "Apply"
@@ -227,6 +230,10 @@ common:
 
   # Menu items
   menu:
+    trial_balance_previous_year: "Trial Balance/Previous Year"
+    bank_account_register: "Bank Account Register"
+    customer_statement: "Customer Statement"
+    item_register: "Item Register"
     trial_balance: "Trial Balance"
     detail_trial_balance: "Detail Trial Balance"
     g_l_register: "G/L Register"

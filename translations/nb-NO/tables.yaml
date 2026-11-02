@@ -3322,6 +3322,63 @@ tables:
       tax_type:
         sales_tax: "Salgsavgift"
         excise_tax: "Særavgift"
+  tax_statement_template:
+    caption: "Avgiftsoppgavemal"
+    fields:
+      name: "Navn"
+      description: "Beskrivelse"
+      page_id: "Side-ID"
+      tax_statement_report_id: "Rapport-ID"
+  tax_statement_name:
+    caption: "Avgiftsoppgavenavn"
+    fields:
+      statement_template_name: "Oppgavemalnavn"
+      name: "Navn"
+      description: "Beskrivelse"
+      date_filter: "Datofilter"
+  tax_statement_line:
+    caption: "Avgiftsoppgavelinje"
+    fields:
+      statement_template_name: "Oppgavemalnavn"
+      statement_name: "Oppgavenavn"
+      line_no: "Linjenr."
+      row_no: "Radnr."
+      description: "Beskrivelse"
+      type: "Type"
+      account_totaling: "Kontosammentelling"
+      gen_posting_type: "Bokføringstype"
+      tax_bus_posting_group: "Avgiftsbokføringsgruppe - forretning"
+      tax_prod_posting_group: "Avgiftsbokføringsgruppe - produkt"
+      row_totaling: "Radsammentelling"
+      amount_type: "Beløpstype"
+      calculate_with: "Beregn med"
+      print: "Skriv ut"
+      print_with: "Skriv ut med"
+      date_filter: "Datofilter"
+      new_page: "Ny side"
+      tax_jurisdiction_code: "Avgiftsmyndighetskode"
+      use_tax: "Forbruksavgift"
+    options:
+      type:
+        account_totaling: "Kontosammentelling"
+        tax_entry_totaling: "Avgiftspostsammentelling"
+        row_totaling: "Radsammentelling"
+        description: "Beskrivelse"
+      gen_posting_type:
+        purchase: "Kjøp"
+        sale: "Salg"
+        settlement: "Oppgjør"
+      amount_type:
+        amount: "Beløp"
+        base: "Grunnlag"
+        unrealized_amount: "Urealisert beløp"
+        unrealized_base: "Urealisert grunnlag"
+      calculate_with:
+        sign: "Fortegn"
+        opposite_sign: "Motsatt fortegn"
+      print_with:
+        sign: "Fortegn"
+        opposite_sign: "Motsatt fortegn"
   tax_posting_setup:
     caption: "Mva.-bokføringsoppsett"
     fields:

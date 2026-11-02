@@ -1,0 +1,51 @@
+page:
+  id: 474
+  type: List
+  name: Tax Statement Preview
+  source_table: Tax_Statement_Line
+  caption: Tax Statement Preview
+  editable: false   # opened from a tax statement (Preview): its rows with their amounts
+  # classic forms 474/475: Column Amount is the row's amount for the Date Filter (Find calculates
+  # again) — open tax entries before and within the period, the classic default; the printed
+  # statement (report 12) offers the other choices
+
+  header_fields:
+    - param: date_filter
+      source: date_filter
+
+  layout:
+    repeater:
+      fields:
+        - source: row_no
+          width: 80
+        - source: description
+          width: 300
+        - source: type
+          width: 140
+        - source: amount_type
+          width: 130
+        - source: tax_bus_posting_group
+          width: 110
+          visible: false
+        - source: tax_prod_posting_group
+          width: 110
+          visible: false
+        - source: tax_jurisdiction_code
+          width: 110
+          visible: false
+        - source: use_tax
+          width: 70
+          visible: false
+        # the row's amount (OnAfterGetRecord, business-logic/pages/taxstatement.go)
+        - source: column_amount
+          calculated: true
+          type: types.Decimal
+          decimal_places: "2:2"
+          width: 140
+
+  actions:
+    - name: Find
+      caption: Find
+      image: Search
+      promoted: true
+      apply_header_fields: true   # calculates again for the Date Filter as typed

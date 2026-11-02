@@ -402,6 +402,21 @@ pages:
     caption: "Bank Account Statements"
   exch_rate_adjmt_registers:
     caption: "Exch. Rate Adjmt. Registers"
+  tax_statement:
+    caption: "Tax Statement"
+    fields:
+      statement_name: "Name"
+  tax_statement_preview:
+    caption: "Tax Statement Preview"
+    fields:
+      column_amount: "Column Amount"
+      date_filter: "Date Filter"
+  tax_statement_templates:
+    caption: "Tax Statement Templates"
+  tax_statement_template_list:
+    caption: "Tax Statement Template List"
+  tax_statement_names:
+    caption: "Tax Statement Names"
   sales_journal:
     caption: "Sales Journal"
     fields:  # the batch above the lines and the footer (calculated)

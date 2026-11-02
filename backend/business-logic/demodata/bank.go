@@ -14,7 +14,8 @@ import (
 )
 
 // Demo bank entries: every demo payment of a customer or vendor has its entry on the bank
-// account it went through (B010, or B030 for the payments in pounds). Entries before this
+// account it went through (B010, or B030 for the payments in pounds — the bank account's
+// currency: its amount in pounds at the day's rate, the LCY amount as paid). Entries before this
 // month are reconciled (a monthly statement, closed); this month's are still open. The bank
 // accounts (setup.yaml) get their last statement.
 
@@ -60,6 +61,18 @@ func insertBankEntries(exec database.Executor, company string, dbType database.D
 	if last.FindLast() {
 		entryNo = last.Entry_no
 	}
+	src := ftables.DBSource(exec, company, dbType)
+	currencies := map[string]types.Code{}
+	currencyOf := func(no string) types.Code {
+		if c, ok := currencies[no]; ok {
+			return c
+		}
+		bankAcc := gtables.NewBankAccount(src)
+		if bankAcc.Get(types.Code(no)) {
+			currencies[no] = bankAcc.Currency_code
+		}
+		return currencies[no]
+	}
 	batch := make([]*gtables.BankAccountLedgerEntry, 0, len(entries))
 	for _, e := range entries {
 		entryNo++
@@ -71,8 +84,16 @@ func insertBankEntries(exec database.Executor, company string, dbType database.D
 		rec.Document_type = gtables.BankAccountLedgerEntry_Document_type.Payment
 		rec.Document_no = types.NewCode(e.docNo)
 		rec.Description = types.NewText(e.description)
-		rec.Amount = types.NewDecimal(round2(e.amount))
-		rec.Amount_lcy = rec.Amount
+		rec.Amount_lcy = types.NewDecimal(round2(e.amount))
+		rec.Amount = rec.Amount_lcy
+		if currencyCode := currencyOf(e.bankAccount); currencyCode != "" {
+			amount, err := bankAmountFCY(src, rec.Posting_date, currencyCode, rec.Amount_lcy)
+			if err != nil {
+				return err
+			}
+			rec.Currency_code = currencyCode
+			rec.Amount = amount
+		}
 		tables.SetBankDebitCredit(rec)
 		rec.Bank_acc_posting_group = "CHECKING"
 		rec.Bal_account_type = e.balType
@@ -89,7 +110,7 @@ func insertBankEntries(exec database.Executor, company string, dbType database.D
 				statements[e.bankAccount] = s
 			}
 			s.no = statementNo(e.date)
-			s.balance = round2(s.balance + e.amount)
+			s.balance = round2(s.balance + rec.Amount.Float64())
 		} else {
 			rec.Open = true
 			rec.Remaining_amount = rec.Amount
@@ -168,4 +189,18 @@ func closeDemoBankStatements(src ftables.Source, today time.Time) error {
 		}
 	}
 	return nil
+}
+
+// bankAmountFCY: an LCY amount in the bank account's currency at the day's exchange rate
+func bankAmountFCY(src ftables.Source, date types.Date, currencyCode types.Code, amountLCY types.Decimal) (types.Decimal, error) {
+	rates := tables.ExchangeRates(src)
+	factor, err := rates.ExchangeRate(date, currencyCode)
+	if err != nil {
+		return types.Decimal{}, err
+	}
+	amount, err := rates.ExchangeAmtLCYToFCY(date, currencyCode, amountLCY, factor)
+	if err != nil {
+		return types.Decimal{}, err
+	}
+	return amount.Round(2), nil
 }

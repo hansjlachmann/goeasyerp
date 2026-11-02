@@ -134,6 +134,7 @@ errors:
   ERR_BANK_REC_ENDING_BALANCE: "%1 is not equal to Total Balance."
   ERR_BANK_REC_APPLICATION: "The application is not correct. The total amount applied is %1; it should be %2."
   ERR_BANK_REC_TOTAL_DIFFERENCE: "The total difference is %1. It must be %2."
+  ERR_TAX_STMT_ROW_LOOP: "%1 %2: the row totaling goes in a circle or is nested too deep: %3"
   ERR_RENAME_NOT_ALLOWED: "You cannot rename a %1."
   ERR_DATE_LATER: "%1 is later than %2."
 

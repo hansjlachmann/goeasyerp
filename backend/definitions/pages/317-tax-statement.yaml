@@ -1,0 +1,111 @@
+page:
+  id: 317
+  type: List
+  name: Tax Statement
+  source_table: Tax_Statement_Line
+  caption: Tax Statement
+  editable: true
+  auto_split_key: true
+  delayed_insert: true
+  # classic form 317: the rows of a tax statement — G/L account totals, tax entry totals, totals
+  # of other rows; Print (report 12) and Preview (page 474) calculate them
+
+  # The statement the page shows (classic Name above the lines): the page's statement parameter;
+  # OnOpenPage (business-logic/pages/taxstatement.go) turns template and statement into filters
+  header_fields:
+    - param: statement
+      source: statement_name
+      lookup_page: 320
+      lookup_field: name
+      lookup_filters:
+        statement_template_name: statement_template_name
+
+  layout:
+    repeater:
+      fields:
+        - source: statement_template_name
+          width: 100
+          visible: false
+        - source: statement_name
+          width: 100
+          visible: false
+        - source: line_no
+          width: 80
+          visible: false
+        - source: row_no
+          width: 80
+        - source: description
+          width: 280
+        - source: type
+          width: 140
+        - source: account_totaling
+          width: 140
+        - source: gen_posting_type
+          width: 110
+        - source: tax_bus_posting_group
+          width: 110
+        - source: tax_prod_posting_group
+          width: 110
+        - source: tax_jurisdiction_code
+          width: 110
+        - source: use_tax
+          width: 70
+        - source: amount_type
+          width: 130
+        - source: row_totaling
+          width: 120
+        - source: calculate_with
+          width: 110
+          visible: false
+        - source: print
+          width: 60
+        - source: print_with
+          width: 110
+          visible: false
+        - source: new_page
+          width: 80
+          visible: false
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    # the statement's amounts for a period (page 474)
+    - name: Preview
+      caption: Preview
+      image: Search
+      promoted: true
+      run_page: 474
+      run_page_filters:
+        - field: statement_template_name
+          value: statement_template_name
+        - field: statement_name
+          value: statement_name
+
+    # the printed statement (report 12): period, entries, whole numbers
+    - name: Print
+      caption: Print
+      image: Print
+      promoted: true
+      run_object: report:12
+
+    - name: Calc. and Post Tax Settlement
+      caption: Calc. and Post Tax Settlement
+      image: Post
+      promoted: true
+      run_object: report:20
