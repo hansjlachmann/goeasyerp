@@ -138,6 +138,36 @@ func TestDemoDataFillsTheMainMenu(t *testing.T) {
 		t.Errorf("B010: last statement %s balance %s, want ST2026-10 and the balance at 30 September %s",
 			b010.Last_statement_no, b010.Balance_last_statement, b010.Balance_at_date)
 	}
+	// the demo bank is not overdrawn (a loan finances the fixed assets); the GBP account's
+	// entries are in pounds, so its exchange rate adjustment is a small part of its balance
+	bankGL := gtables.NewGLAccount(src0)
+	if !bankGL.Get(types.Code("1520")) {
+		t.Fatal("no G/L account 1520")
+	}
+	bankGL.CalcFields("balance")
+	if err := b010.SetFlowFilter("date_filter", ""); err != nil {
+		t.Fatal(err)
+	}
+	b010.CalcFields("balance")
+	if !bankGL.Balance.IsPositive() || !b010.Balance.IsPositive() {
+		t.Errorf("bank overdrawn: G/L 1520 %s, B010 %s", bankGL.Balance, b010.Balance)
+	}
+	gbp := gtables.NewBankAccountLedgerEntry(src0)
+	gbp.SetRange("bank_account_no", types.Code("B030"))
+	gbp.SetRange("source_code", types.Code("GENJNL"))
+	for found := gbp.FindSetBuffered(); found; found = gbp.Next() {
+		if gbp.Currency_code != "GBP" || !gbp.Amount_lcy.Abs().GreaterThan(gbp.Amount.Abs()) {
+			t.Errorf("B030 entry %d: %s %s, LCY %s", gbp.Entry_no, gbp.Amount, gbp.Currency_code, gbp.Amount_lcy)
+			break
+		}
+	}
+	adjReg := gtables.NewExchRateAdjmtReg(src0)
+	adjReg.SetRange("account_type", gtables.ExchRateAdjmtReg_Account_type.BankAccount)
+	for found := adjReg.FindSetBuffered(); found; found = adjReg.Next() {
+		if adjReg.Adjusted_amt_lcy.Abs().GreaterThan(adjReg.Adjusted_base_lcy.Abs().Mul(types.MustDecimal("0.05"))) {
+			t.Errorf("exchange rate adjustment %s of a balance of %s LCY", adjReg.Adjusted_amt_lcy, adjReg.Adjusted_base_lcy)
+		}
+	}
 	if counts.ExchRateAdjmtRegs == 0 {
 		t.Error("no exchange rate adjustment registers")
 	}
