@@ -1,0 +1,54 @@
+table:
+  id: 244
+  name: "Req_Wksh_Template"
+  caption: Req. Wksh. Template
+  description: "The requisition worksheet templates (table 244): the worksheet's page, recurring or not"
+  lookup_page_id: 292
+  data_caption_fields: [name, description]
+  fields:
+    - name: name
+      no: 1
+      type: types.Code
+      db_name: name
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: description
+      no: 2
+      type: types.Text
+      db_name: description
+      length: 80
+
+    # Form ID: the worksheet page of the template (set by Recurring: 291 or 296)
+    - name: page_id
+      no: 6
+      type: int
+      db_name: page_id
+
+    - name: recurring
+      no: 12
+      type: bool
+      db_name: recurring
+
+    # Form Name
+    - name: page_name
+      no: 16
+      type: types.Text
+      length: 80
+      flow_field: true
+      calc_formula: Lookup
+      source_table: Object
+      source_field: name
+      flow_filters:
+        - field: type
+          type: const
+          value: 2
+        - field: id
+          type: field
+          value: page_id
+
+  keys:
+    - name: Primary
+      fields: [name]
+      clustered: true

@@ -3645,6 +3645,11 @@ tables:
   item:
     caption: "Item"
     fields:
+      qty_on_purch_order: "Qty. on Purch. Order"
+      qty_on_sales_order: "Qty. on Sales Order"
+      requisition_method_code: "Requisition Method Code"
+      order_multiple: "Order Multiple"
+      reorder_cycle: "Reorder Cycle"
       tariff_no: "Tariff No."
       bill_of_materials: "Bill of Materials"
       picture: "Picture"
@@ -5804,3 +5809,148 @@ tables:
       home_page: "Home Page"
       federal_id_no: "Federal ID No."
       country_code: "Country/Region Code"
+  object:
+    caption: "Object"
+    fields:
+      type: "Type"
+      id: "ID"
+      name: "Name"
+    options:
+      type:
+        tabledata: "Table Data"
+        table: "Table"
+        page: "Page"
+        report: "Report"
+        dataport: "Dataport"
+        codeunit: "Codeunit"
+  report_selections:
+    caption: "Report Selections"
+    fields:
+      usage: "Usage"
+      sequence: "Sequence"
+      report_id: "Report ID"
+      report_name: "Report Name"
+    options:
+      usage:
+        s_quote: "S.Quote"
+        s_order: "S.Order"
+        s_invoice: "S.Invoice"
+        s_cr_memo: "S.Cr.Memo"
+        s_shipment: "S.Shipment"
+        s_test: "S.Test"
+        p_quote: "P.Quote"
+        p_order: "P.Order"
+        p_invoice: "P.Invoice"
+        p_cr_memo: "P.Cr.Memo"
+        p_receipt: "P.Receipt"
+        p_test: "P.Test"
+        b_stmt: "B.Stmt"
+        b_recon_test: "B.Recon.Test"
+        b_check: "B.Check"
+        reminder: "Reminder"
+        fin_charge: "Fin.Charge"
+        rem_test: "Rem.Test"
+        f_c_test: "F.C.Test"
+        prod_order: "Prod. Order"
+        s_blanket: "S.Blanket"
+        p_blanket: "P.Blanket"
+  printer_selection:
+    caption: "Printer Selection"
+    fields:
+      user_id: "User ID"
+      report_id: "Report ID"
+      printer_name: "Printer Name"
+      report_name: "Report Name"
+    options:
+      printer_name:
+        preview: "Preview (screen)"
+        print: "Print dialog"
+        pdf: "PDF file"
+  item_price_change:
+    caption: "Item Price Change"
+    fields:
+      item_no: "Item No."
+      price_group_code: "Price Group Code"
+      unit_of_measure_code: "Unit of Measure Code"
+      currency_code: "Currency Code"
+      starting_date: "Starting Date"
+      current_unit_price: "Current Unit Price"
+      new_unit_price: "New Unit Price"
+      price_includes_tax: "Price Includes Tax"
+      allow_quantity_disc: "Allow Quantity Disc."
+      allow_cust_item_disc: "Allow Cust./Item Disc."
+      allow_invoice_disc: "Allow Invoice Disc."
+      tax_bus_posting_gr_price: "Tax Bus. Posting Gr. (Price)"
+  req_wksh_template:
+    caption: "Req. Wksh. Template"
+    fields:
+      name: "Name"
+      description: "Description"
+      page_id: "Page ID"
+      recurring: "Recurring"
+      page_name: "Page Name"
+  requisition_wksh_name:
+    caption: "Requisition Wksh. Name"
+    fields:
+      worksheet_template_name: "Worksheet Template Name"
+      name: "Name"
+      description: "Description"
+  requisition_line:
+    caption: "Requisition Line"
+    fields:
+      worksheet_template_name: "Worksheet Template Name"
+      journal_batch_name: "Journal Batch Name"
+      line_no: "Line No."
+      type: "Type"
+      no: "No."
+      description: "Description"
+      description_2: "Description 2"
+      quantity: "Quantity"
+      vendor_no: "Vendor No."
+      direct_unit_cost: "Direct Unit Cost"
+      quantity_disc_percent: "Quantity Disc. %"
+      expected_receipt_date: "Expected Receipt Date"
+      requester_id: "Requester ID"
+      confirmed: "Confirmed"
+      department_code: "Department Code"
+      project_code: "Project Code"
+      location_code: "Location Code"
+      recurring_method: "Recurring Method"
+      expiration_date: "Expiration Date"
+      recurring_frequency: "Recurring Frequency"
+      order_date: "Order Date"
+      vendor_item_no: "Vendor Item No."
+      order_address_code: "Order Address Code"
+      currency_code: "Currency Code"
+      currency_factor: "Currency Factor"
+      variant_code: "Variant Code"
+      qty_per_unit_of_measure: "Qty. per Unit of Measure"
+      unit_of_measure_code: "Unit of Measure Code"
+      quantity_base: "Quantity (Base)"
+    options:
+      type:
+        account_g_l: "Account (G/L)"
+        item: "Item"
+      recurring_method:
+        fixed: "Fixed"
+        variable: "Variable"
+  requisition_method:
+    caption: "Requisition Method"
+    fields:
+      code: "Code"
+      name: "Name"
+      manufacturing_policy: "Manufacturing Policy"
+      calc_below_reorder_point: "Calc. below Reorder Point"
+      reordering_policy: "Reordering Policy"
+      calc_with_inventory: "Calc. with Inventory"
+    options:
+      manufacturing_policy:
+        make_to_stock: "Make-to-Stock"
+        make_to_order: "Make-to-Order"
+        assemble_to_order: "Assemble-to-Order"
+      reordering_policy:
+        fixed_reorder_qty: "Fixed Reorder Qty."
+        maximum_qty: "Maximum Qty."
+        order: "Order"
+        lot_for_lot: "Lot-for-Lot"
+        discrete_lot_size: "Discrete Lot Size"

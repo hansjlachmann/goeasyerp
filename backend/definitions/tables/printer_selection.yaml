@@ -1,0 +1,70 @@
+table:
+  id: 78
+  name: Printer_Selection
+  caption: Printer Selection
+  description: "The printer (output) a report prints to, per user and report (table 78)"
+  global: true
+  lookup_page_id: 64
+  fields:
+    # blank: every user
+    - name: user_id
+      no: 1
+      type: types.Code
+      db_name: user_id
+      length: 50
+      primary_key: true
+      table_relation:
+        table: User
+        field: user_id
+        validate: false
+        lookup_columns:
+          - source: user_id
+            width: 120
+          - source: user_name
+            width: 200
+
+    # 0: every report
+    - name: report_id
+      no: 2
+      type: int
+      db_name: report_id
+      primary_key: true
+      table_relation:
+        table: Object
+        field: id
+        filters:
+          type: {const: 3}
+        lookup_columns:
+          - source: id
+            width: 80
+          - source: name
+            width: 250
+
+    # The printers are the outputs of a printout: the preview on the screen, the browser's
+    # print dialog, a PDF file
+    - name: printer_name
+      no: 3
+      type: Option
+      db_name: printer_name
+      options: ["Preview", "Print", "PDF"]
+
+    - name: report_name
+      no: 4
+      type: types.Text
+      length: 80
+      flow_field: true
+      calc_formula: Lookup
+      source_table: Object
+      source_field: name
+      flow_filters:
+        - field: type
+          type: const
+          value: 3
+        - field: id
+          type: field
+          value: report_id
+
+  keys:
+    - name: Primary
+      fields: [user_id, report_id]
+      clustered: true

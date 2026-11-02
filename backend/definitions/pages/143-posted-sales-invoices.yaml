@@ -37,7 +37,7 @@ page:
       caption: Print
       image: Print
       promoted: true
-      run_object: report:206
+      run_object: table:Sales_Invoice_Header.PrintRecords
 
     - name: Navigate
       caption: Navigate

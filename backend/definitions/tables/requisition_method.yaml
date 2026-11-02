@@ -1,0 +1,48 @@
+table:
+  id: 5408
+  name: "Requisition_Method"
+  caption: Requisition Method
+  description: "How a reorder quantity is calculated for an item (table 5408)"
+  lookup_page_id: 5408
+  data_caption_fields: [code, name]
+  fields:
+    - name: code
+      no: 1
+      type: types.Code
+      db_name: code
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: name
+      no: 2
+      type: types.Text
+      db_name: name
+      length: 50
+
+    - name: manufacturing_policy
+      no: 10
+      type: Option
+      db_name: manufacturing_policy
+      options: ["Make-to-Stock", "Make-to-Order", "Assemble-to-Order"]
+
+    - name: calc_below_reorder_point
+      no: 11
+      type: bool
+      db_name: calc_below_reorder_point
+
+    - name: reordering_policy
+      no: 12
+      type: Option
+      db_name: reordering_policy
+      options: [" ", "Fixed Reorder Qty.", "Maximum Qty.", "Order", "Lot-for-Lot", "Discrete Lot Size"]
+
+    - name: calc_with_inventory
+      no: 13
+      type: bool
+      db_name: calc_with_inventory
+
+  keys:
+    - name: Primary
+      fields: [code]
+      clustered: true

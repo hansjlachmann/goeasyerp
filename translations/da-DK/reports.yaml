@@ -29,6 +29,79 @@ reports:
       ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
       ENTER_DOCUMENT_NO: "Angiv bilagsnummeret."
       WINDOW: "Behandler varer    #1##########"
+  "493":
+    caption: "Opret ordrer"
+    options:
+      end_order_date: "Udløbsdato"
+      order_date: "Ordredato"
+      posting_date: "Bogføringsdato"
+      expected_receipt_date: "Forventet modt.dato"
+      your_reference: "Deres reference"
+      print_purch_orders: "Udskriv købsordrer"
+    texts:
+      COPY_TO: "Kopiér til købsordre..."
+      NO_WORKSHEET: "Opret ordrer køres fra en indkøbskladde."
+      ORDER_DATE_FILTERED: "kan ikke filtreres, når du opretter købsordrer"
+      NOTHING_TO_CREATE: "Der er intet at oprette."
+      ORDERS_CREATED: "Købsordrerne er oprettet."
+      ORDERS_CREATED_NEW_WORKSHEET: "Købsordrerne er oprettet. Du er nu i kladde %1."
+  "699":
+    caption: "Genbestil lagervarer"
+    options:
+      ending_date: "Slutdato"
+    texts:
+      OPTIONS: "Indstillinger"
+      WINDOW: "Behandler varer  #1##########"
+      NO_WORKSHEET: "Genbestil lagervarer køres fra en indkøbskladde."
+      ENTER_ENDING_DATE: "Du skal angive slutdatoen."
+  "791":
+    caption: "Foreslå vareprisænd. (vare)"
+    options:
+      price_group_code: "Prisgruppekode"
+      unit_of_measure_code: "Enhedskode"
+      currency_code: "Valutakode"
+      starting_date: "Startdato"
+      price_lower_limit: "Kun priser over"
+      unit_price_factor: "Justeringsfaktor"
+      rounding_method: "Afrundingsmetode"
+      create_new_prices: "Opret nye priser"
+    texts:
+      COPY_TO: "Kopiér til vareprisændring..."
+      WINDOW: "Behandler varer  #1##########"
+  "792":
+    caption: "Foreslå vareprisænd. (pris)"
+    options:
+      price_group_code: "Prisgruppekode"
+      unit_of_measure_code: "Enhedskode"
+      currency_code: "Valutakode"
+      starting_date: "Startdato (blank: prisens egen)"
+      price_lower_limit: "Kun priser over"
+      unit_price_factor: "Justeringsfaktor"
+      rounding_method: "Afrundingsmetode"
+      create_new_prices: "Opret nye priser"
+    texts:
+      COPY_TO: "Kopiér til vareprisændring..."
+      WINDOW: "Behandler varer  #1##########"
+  "793":
+    caption: "Implementer vareprisændring"
+    texts:
+      WINDOW: "Opdaterer enhedspriser...\n\nVarenr.          #1##########\nPrisgruppekode   #2##########\nValutakode       #3##########\nStartdato        #4######"
+      DELETE_SUGGESTIONS: "Varepriserne er nu opdateret i henhold til de foreslåede prisændringer.\n\nVil du slette de foreslåede prisændringer?"
+  "794":
+    caption: "Juster varekost/-priser"
+    options:
+      adjust_field: "Juster felt"
+      adjustment_factor: "Justeringsfaktor"
+      rounding_method: "Afrundingsmetode"
+    texts:
+      OPTIONS: "Indstillinger"
+      WINDOW: "Behandler varer  #1##########"
+      UNIT_PRICE: "Enhedspris"
+      PROFIT_PERCENT: "Avance %"
+      INDIRECT_COST_PERCENT: "Indirekte omkost. %"
+      AVERAGE_COST: "Gennemsnitskostpris"
+      LAST_DIRECT_COST: "Sidste købspris"
+      STANDARD_COST: "Standardkostpris"
   "1191":
     caption: "Foreslå ressourceprisændr. (ress.)"
     options:

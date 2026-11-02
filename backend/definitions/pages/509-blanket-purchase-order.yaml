@@ -123,7 +123,7 @@ page:
       caption: Print
       image: Print
       promoted: true
-      run_object: report:410
+      run_object: codeunit:229.PrintPurchHeader
 
     # an order of the lines' quantities to receive (the blanket order stays)
     - name: Make Order

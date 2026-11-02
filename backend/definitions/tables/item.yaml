@@ -285,6 +285,36 @@ table:
       precision: 18
       scale: 5
 
+    - name: requisition_method_code
+      no: 5408
+      type: types.Code
+      db_name: requisition_method_code
+      length: 10
+      table_relation:
+        table: Requisition_Method
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: order_multiple
+      no: 5414
+      type: types.Decimal
+      db_name: order_multiple
+      decimal_places: "0:5"
+      validation: {min: 0}
+      precision: 18
+      scale: 5
+
+    - name: reorder_cycle
+      no: 5428
+      type: types.Code
+      db_name: reorder_cycle
+      length: 20
+      date_formula: true
+
     - name: alternative_item_no
       no: 37
       type: types.Code
@@ -534,6 +564,76 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+
+    - name: qty_on_purch_order
+      no: 84
+      type: types.Decimal
+      db_name: qty_on_purch_order
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: PurchaseLine
+      source_field: outstanding_qty_base
+      flow_filters:
+        - field: document_type
+          type: const
+          value: 1
+        - field: type
+          type: const
+          value: 2
+        - field: "no"
+          type: field
+          value: "no"
+        - field: department_code
+          type: filter
+          value: department_filter
+        - field: project_code
+          type: filter
+          value: project_filter
+        - field: location_code
+          type: filter
+          value: location_filter
+        - field: variant_code
+          type: filter
+          value: variant_filter
+        - field: expected_receipt_date
+          type: filter
+          value: date_filter
+
+    - name: qty_on_sales_order
+      no: 85
+      type: types.Decimal
+      db_name: qty_on_sales_order
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: SalesLine
+      source_field: outstanding_qty_base
+      flow_filters:
+        - field: document_type
+          type: const
+          value: 1
+        - field: type
+          type: const
+          value: 2
+        - field: "no"
+          type: field
+          value: "no"
+        - field: department_code
+          type: filter
+          value: department_filter
+        - field: project_code
+          type: filter
+          value: project_filter
+        - field: location_code
+          type: filter
+          value: location_filter
+        - field: variant_code
+          type: filter
+          value: variant_filter
+        - field: shipment_date
+          type: filter
+          value: date_filter
 
     - name: net_invoiced_qty
       no: 69

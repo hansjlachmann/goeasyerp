@@ -35,6 +35,7 @@
 	let inputDataItems = $state<RequestDataItem[]>([]);
 	let optionsCaption = $state('');
 	let printed = $state(false); // a printed report's request page
+	let defaultOutput = $state('preview'); // its first output (Printer Selection)
 	let inputCallback = $state<((v: Record<string, string> | null) => void) | undefined>(undefined);
 	let runPage = $state<{
 		pageId: number;
@@ -140,6 +141,7 @@
 						inputDataItems = (event.data?.data_items as RequestDataItem[]) || [];
 						optionsCaption = (event.data?.options_caption as string) || '';
 						printed = event.data?.printed === true;
+						defaultOutput = (event.data?.default_output as string) || 'preview';
 						if (event.message) progressTitle = event.message;
 						inputCallback = (values: Record<string, string> | null) => {
 							inputMode = false;
@@ -215,6 +217,7 @@
 	{inputDataItems}
 	{optionsCaption}
 	{printed}
+	{defaultOutput}
 	onInputResponse={inputCallback}
 />
 

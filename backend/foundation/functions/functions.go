@@ -228,7 +228,11 @@ type Function struct {
 	// AssistEdit: a field's "…" function — it gets the record as the page has it (also a new,
 	// unsaved one), and runs with a dialog (it may open a page with RunModal)
 	AssistEdit bool
-	Fn         Func
+	// Print: the function prints (Document-Print, PrintRecords) — it runs with a dialog for the
+	// request pages, needs no Modify/Execute permission of its own (whoever reads the record may
+	// print it) and checks Execute on each report it runs
+	Print bool
+	Fn    Func
 }
 
 // Option changes how a function is registered
@@ -240,6 +244,9 @@ func OnTable(table string) Option { return func(f *Function) { f.Table = table }
 // WithDialog runs the function with a codeunit dialog, so it can ask (Confirm, StrMenu) and
 // show progress
 func WithDialog() Option { return func(f *Function) { f.Dialog = true } }
+
+// WithPrint registers a function that prints the record (see Function.Print)
+func WithPrint() Option { return func(f *Function) { f.Print, f.Dialog = true, true } }
 
 // WithAssistEdit registers a field's AssistEdit function (made with ForAssistEdit)
 func WithAssistEdit() Option {

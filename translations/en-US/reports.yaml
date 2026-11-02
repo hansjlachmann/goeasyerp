@@ -29,6 +29,79 @@ reports:
       ENTER_POSTING_DATE: "Please enter the posting date."
       ENTER_DOCUMENT_NO: "Please enter the document no."
       WINDOW: "Processing items    #1##########"
+  "493":
+    caption: "Make Orders"
+    options:
+      end_order_date: "Expiration Date"
+      order_date: "Order Date"
+      posting_date: "Posting Date"
+      expected_receipt_date: "Expected Receipt Date"
+      your_reference: "Your Reference"
+      print_purch_orders: "Print Purchase Orders"
+    texts:
+      COPY_TO: "Copy to Purchase Order..."
+      NO_WORKSHEET: "Make Orders runs from a requisition worksheet."
+      ORDER_DATE_FILTERED: "cannot be filtered when you create purchase orders"
+      NOTHING_TO_CREATE: "There is nothing to create."
+      ORDERS_CREATED: "The purchase orders have been created."
+      ORDERS_CREATED_NEW_WORKSHEET: "The purchase orders were created. You are now in worksheet %1."
+  "699":
+    caption: "Reorder Inventory Items"
+    options:
+      ending_date: "Ending Date"
+    texts:
+      OPTIONS: "Options"
+      WINDOW: "Processing items  #1##########"
+      NO_WORKSHEET: "Reorder Inventory Items runs from a requisition worksheet."
+      ENTER_ENDING_DATE: "You must enter the Ending Date."
+  "791":
+    caption: "Suggest Item Price Chg. (Item)"
+    options:
+      price_group_code: "Price Group Code"
+      unit_of_measure_code: "Unit of Measure Code"
+      currency_code: "Currency Code"
+      starting_date: "Starting Date"
+      price_lower_limit: "Only Prices Above"
+      unit_price_factor: "Adjustment Factor"
+      rounding_method: "Rounding Method"
+      create_new_prices: "Create New Prices"
+    texts:
+      COPY_TO: "Copy to Item Price Change..."
+      WINDOW: "Processing items  #1##########"
+  "792":
+    caption: "Suggest Item Price Chg.(Price)"
+    options:
+      price_group_code: "Price Group Code"
+      unit_of_measure_code: "Unit of Measure Code"
+      currency_code: "Currency Code"
+      starting_date: "Starting Date (blank: each price's own)"
+      price_lower_limit: "Only Prices Above"
+      unit_price_factor: "Adjustment Factor"
+      rounding_method: "Rounding Method"
+      create_new_prices: "Create New Prices"
+    texts:
+      COPY_TO: "Copy to Item Price Change..."
+      WINDOW: "Processing items  #1##########"
+  "793":
+    caption: "Implement Item Price Change"
+    texts:
+      WINDOW: "Updating Unit Prices...\n\nItem No.         #1##########\nPrice Group Code #2##########\nCurrency Code    #3##########\nStarting Date    #4######"
+      DELETE_SUGGESTIONS: "The item prices have now been updated in accordance with the suggested price changes.\n\nDo you want to delete the suggested price changes?"
+  "794":
+    caption: "Adjust Item Costs/Prices"
+    options:
+      adjust_field: "Adjust Field"
+      adjustment_factor: "Adjustment Factor"
+      rounding_method: "Rounding Method"
+    texts:
+      OPTIONS: "Options"
+      WINDOW: "Processing items  #1##########"
+      UNIT_PRICE: "Unit Price"
+      PROFIT_PERCENT: "Profit %"
+      INDIRECT_COST_PERCENT: "Indirect Cost %"
+      AVERAGE_COST: "Average Cost"
+      LAST_DIRECT_COST: "Last Direct Cost"
+      STANDARD_COST: "Standard Cost"
   "1191":
     caption: "Suggest Res. Price Chg. (Res.)"
     options:

@@ -79,8 +79,10 @@ func (c *reportCodeunit) Run(record interface{}) (fcodeunits.Result, error) {
 		res.Data["filename"] = result.FileName
 		return res, nil
 	}
+	res := fcodeunits.Result{Success: true}
 	if result.Message != "" {
-		return fcodeunits.Message(result.Message), nil
+		res = fcodeunits.Message(result.Message)
 	}
-	return fcodeunits.Result{Success: true}, nil
+	res.OpenPage = result.OpenPage
+	return WithPrintouts(res, result.Printouts), nil
 }

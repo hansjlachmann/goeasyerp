@@ -80,7 +80,7 @@ page:
       caption: Print
       image: Print
       promoted: true
-      run_object: report:405
+      run_object: codeunit:229.PrintPurchHeader
 
     - name: Statistics
       caption: Statistics

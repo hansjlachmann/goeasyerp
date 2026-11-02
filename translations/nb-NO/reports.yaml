@@ -29,6 +29,79 @@ reports:
       ENTER_POSTING_DATE: "Angi bokføringsdato."
       ENTER_DOCUMENT_NO: "Angi bilagsnummer."
       WINDOW: "Behandler varer    #1##########"
+  "493":
+    caption: "Opprett ordrer"
+    options:
+      end_order_date: "Utløpsdato"
+      order_date: "Ordredato"
+      posting_date: "Bokføringsdato"
+      expected_receipt_date: "Forventet mottaksdato"
+      your_reference: "Deres referanse"
+      print_purch_orders: "Skriv ut innkjøpsordrer"
+    texts:
+      COPY_TO: "Kopier til innkjøpsordre..."
+      NO_WORKSHEET: "Opprett ordrer kjøres fra en innkjøpskladd."
+      ORDER_DATE_FILTERED: "kan ikke filtreres når du oppretter innkjøpsordrer"
+      NOTHING_TO_CREATE: "Det er ingenting å opprette."
+      ORDERS_CREATED: "Innkjøpsordrene er opprettet."
+      ORDERS_CREATED_NEW_WORKSHEET: "Innkjøpsordrene er opprettet. Du er nå i kladd %1."
+  "699":
+    caption: "Bestill lagervarer"
+    options:
+      ending_date: "Sluttdato"
+    texts:
+      OPTIONS: "Alternativer"
+      WINDOW: "Behandler varer  #1##########"
+      NO_WORKSHEET: "Bestill lagervarer kjøres fra en innkjøpskladd."
+      ENTER_ENDING_DATE: "Du må angi sluttdatoen."
+  "791":
+    caption: "Foreslå vareprisendr. (vare)"
+    options:
+      price_group_code: "Prisgruppekode"
+      unit_of_measure_code: "Enhetskode"
+      currency_code: "Valutakode"
+      starting_date: "Startdato"
+      price_lower_limit: "Bare priser over"
+      unit_price_factor: "Justeringsfaktor"
+      rounding_method: "Avrundingsmetode"
+      create_new_prices: "Opprett nye priser"
+    texts:
+      COPY_TO: "Kopier til vareprisendring..."
+      WINDOW: "Behandler varer  #1##########"
+  "792":
+    caption: "Foreslå vareprisendr. (pris)"
+    options:
+      price_group_code: "Prisgruppekode"
+      unit_of_measure_code: "Enhetskode"
+      currency_code: "Valutakode"
+      starting_date: "Startdato (blank: prisens egen)"
+      price_lower_limit: "Bare priser over"
+      unit_price_factor: "Justeringsfaktor"
+      rounding_method: "Avrundingsmetode"
+      create_new_prices: "Opprett nye priser"
+    texts:
+      COPY_TO: "Kopier til vareprisendring..."
+      WINDOW: "Behandler varer  #1##########"
+  "793":
+    caption: "Implementer vareprisendring"
+    texts:
+      WINDOW: "Oppdaterer enhetspriser...\n\nVarenr.          #1##########\nPrisgruppekode   #2##########\nValutakode       #3##########\nStartdato        #4######"
+      DELETE_SUGGESTIONS: "Vareprisene er nå oppdatert i samsvar med de foreslåtte prisendringene.\n\nVil du slette de foreslåtte prisendringene?"
+  "794":
+    caption: "Juster varekost/-priser"
+    options:
+      adjust_field: "Juster felt"
+      adjustment_factor: "Justeringsfaktor"
+      rounding_method: "Avrundingsmetode"
+    texts:
+      OPTIONS: "Alternativer"
+      WINDOW: "Behandler varer  #1##########"
+      UNIT_PRICE: "Enhetspris"
+      PROFIT_PERCENT: "Avanse %"
+      INDIRECT_COST_PERCENT: "Indirekte kost %"
+      AVERAGE_COST: "Gjennomsnittskost"
+      LAST_DIRECT_COST: "Siste direkte kost"
+      STANDARD_COST: "Standardkost"
   "1191":
     caption: "Foreslå ressursprisendr. (ress.)"
     options:

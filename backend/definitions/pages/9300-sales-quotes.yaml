@@ -55,7 +55,7 @@ page:
       caption: Print
       image: Print
       promoted: true
-      run_object: report:204
+      run_object: codeunit:229.PrintSalesHeader
 
     - name: Make Order
       caption: Make Order

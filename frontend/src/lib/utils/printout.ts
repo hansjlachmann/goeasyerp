@@ -1,6 +1,6 @@
 // A printed report's printout (the job result's data: pdf base64, filename, output) — shown
 // in the preview, sent to the browser's print dialog, or downloaded as a PDF file.
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 
 export type PrintOutput = 'preview' | 'print' | 'pdf';
 
@@ -16,6 +16,17 @@ export function printoutOf(data: Record<string, unknown> | undefined | null): Pr
 	const output = data.output === 'preview' || data.output === 'print' ? data.output : 'pdf';
 	const filename = typeof data.filename === 'string' && data.filename !== '' ? data.filename : 'document.pdf';
 	return { pdf: data.pdf, filename, output };
+}
+
+/**
+ * Every printout in a job result's data: the first one (pdf …) and the others printed with it
+ * (printouts: a document printed with several reports, Post and Print's shipment and invoice)
+ */
+export function printoutsOf(data: Record<string, unknown> | undefined | null): Printout[] {
+	const first = printoutOf(data);
+	if (!first) return [];
+	const others = Array.isArray(data?.printouts) ? data.printouts : [];
+	return [first, ...others.map((p) => printoutOf(p as Record<string, unknown>)).filter((p): p is Printout => p !== null)];
 }
 
 /** The PDF of a base64 text (with or without a data URL prefix) */
@@ -67,14 +78,36 @@ export function printPdf(blob: Blob) {
 	document.body.appendChild(frame);
 }
 
+export interface PreviewItem {
+	url: string;
+	blob: Blob;
+	filename: string;
+}
+
 /** The preview shown over the page (PrintPreview.svelte in the root layout) */
-export const printPreview = writable<{ url: string; blob: Blob; filename: string } | null>(null);
+export const printPreview = writable<PreviewItem | null>(null);
+
+// previews waiting for the one shown to be closed
+const previewQueue: PreviewItem[] = [];
+
+/** Shows a preview, after the one shown is closed */
+export function showPreview(item: PreviewItem) {
+	if (get(printPreview)) previewQueue.push(item);
+	else printPreview.set(item);
+}
+
+/** Closes the preview shown; the next one waiting comes up */
+export function closePreview() {
+	const current = get(printPreview);
+	if (current) setTimeout(() => URL.revokeObjectURL(current.url), 1000);
+	printPreview.set(previewQueue.shift() ?? null);
+}
 
 /** Shows, prints or downloads a printout as chosen */
 export function handlePrintout(printout: Printout) {
 	const blob = pdfBlob(printout.pdf);
 	if (printout.output === 'preview') {
-		printPreview.set({ url: URL.createObjectURL(blob), blob, filename: printout.filename });
+		showPreview({ url: URL.createObjectURL(blob), blob, filename: printout.filename });
 	} else if (printout.output === 'print') {
 		printPdf(blob);
 	} else {

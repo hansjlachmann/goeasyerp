@@ -251,6 +251,7 @@
 	let progressInputDataItems = $state<RequestDataItem[]>([]); // a report's request page
 	let progressOptionsCaption = $state(''); // … and the heading of its options
 	let progressPrinted = $state(false); // a printed report's request page
+	let progressDefaultOutput = $state('preview'); // its first output (Printer Selection)
 	let progressInputFields = $state<RequestInputField[]>([]);
 	let inputResponseCallback: ((values: Record<string, string> | null) => void) | undefined = $state(undefined);
 
@@ -744,6 +745,7 @@
 					progressInputDataItems = (event.data?.data_items as RequestDataItem[]) || [];
 					progressOptionsCaption = (event.data?.options_caption as string) || '';
 					progressPrinted = event.data?.printed === true;
+					progressDefaultOutput = (event.data?.default_output as string) || 'preview';
 					if (event.message) progressTitle = event.message;
 					inputResponseCallback = (values: Record<string, string> | null) => {
 						progressInputMode = false;
@@ -3750,6 +3752,7 @@
 	inputDataItems={progressInputDataItems}
 	optionsCaption={progressOptionsCaption}
 	printed={progressPrinted}
+	defaultOutput={progressDefaultOutput}
 	onInputResponse={inputResponseCallback}
 />
 

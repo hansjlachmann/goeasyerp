@@ -35,7 +35,7 @@ page:
       caption: Print
       image: Print
       promoted: true
-      run_object: report:207
+      run_object: table:Sales_Cr_Memo_Header.PrintRecords
 
     - name: Navigate
       caption: Navigate

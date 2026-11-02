@@ -7,7 +7,7 @@ import { t, ERR, MSG } from '$lib/services/i18n.svelte';
 import { toast } from '$lib/stores/toast';
 import { buildQueryString } from '$lib/services/api';
 import type { ListOptions } from '$lib/types/api';
-import { downloadBlob, downloadPdf, handlePrintout, pdfBlob, printoutOf, resultFileOf } from '$lib/utils/printout';
+import { downloadBlob, downloadPdf, handlePrintout, pdfBlob, printoutsOf, resultFileOf } from '$lib/utils/printout';
 
 /** An answer to a codeunit's question was refused by the server: show why */
 async function answerRefused(res: Response): Promise<void> {
@@ -179,9 +179,8 @@ export async function startJob(
 							if (event.data) {
 								callbacks.onData?.(event.data);
 
-								// A printed report's printout: preview, print or download
-								const printout = printoutOf(event.data);
-								if (printout) handlePrintout(printout);
+								// A printed report's printouts: preview, print or download each
+								for (const printout of printoutsOf(event.data)) handlePrintout(printout);
 								// A processing report's file (a declaration): downloaded
 								const file = resultFileOf(event.data);
 								if (file) downloadBlob(file.blob, file.filename);

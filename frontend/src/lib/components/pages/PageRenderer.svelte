@@ -16,6 +16,7 @@
 	import Button from '../Button.svelte';
 	import CardPage from './CardPage.svelte';
 	import MatrixGrid from './MatrixGrid.svelte';
+	import OptionDropdown from './OptionDropdown.svelte';
 	import { withReturn } from '$lib/utils/returnUrl';
 	import ListPage from './ListPage.svelte';
 	import PageRenderer from './PageRenderer.svelte';
@@ -1046,6 +1047,18 @@
 					{#each page.page.header_fields as header (header.param)}
 						<label class="header-field">
 							<span class="header-caption">{header.caption ?? header.source}</span>
+							{#if header.options?.length}
+								<span class="header-input-wrap header-option">
+									<OptionDropdown
+										options={Object.fromEntries(header.options.map((o, i) => [String(i), o.caption]))}
+										value={Math.max(0, header.options.findIndex((o) => o.value === (pageParams[header.param] ?? '')))}
+										onselect={(i) => {
+											const next = header.options?.[i]?.value ?? '';
+											if (next !== (pageParams[header.param] ?? '')) reopenWith(header.param, next);
+										}}
+									/>
+								</span>
+							{:else}
 							<span class="header-input-wrap">
 								<input
 									class="header-input"
@@ -1073,6 +1086,7 @@
 									<button type="button" class="header-lookup" tabindex="-1" aria-label={header.caption} onclick={() => openHeaderLookup(header)}>▼</button>
 								{/if}
 							</span>
+							{/if}
 						</label>
 					{/each}
 				</div>
@@ -1196,6 +1210,10 @@
 	}
 	.header-input-wrap:focus-within {
 		border-color: rgb(var(--accent-500));
+	}
+	/* a header field with options (Report Selection's Usage) */
+	.header-option {
+		min-width: 14rem;
 	}
 	/* a date header field holds a date filter (a range) */
 	.header-input.header-input-date {

@@ -1,0 +1,18 @@
+page:
+  id: 292
+  type: List
+  name: Req. Worksheet Template List
+  source_table: Req_Wksh_Template
+  caption: Req. Worksheet Template List
+  editable: false
+  # The template to open a requisition worksheet with (lookup)
+
+  layout:
+    repeater:
+      fields:
+        - source: name
+          width: 110
+        - source: description
+          width: 250
+        - source: recurring
+          width: 80

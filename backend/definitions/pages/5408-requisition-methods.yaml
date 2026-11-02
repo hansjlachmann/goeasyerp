@@ -1,0 +1,44 @@
+page:
+  id: 5408
+  type: List
+  name: Requisition Methods
+  source_table: Requisition_Method
+  caption: Requisition Methods
+  editable: true
+  # classic form 5408: how Reorder Inventory Items calculates an item's reorder quantity (the
+  # item's Requisition Method Code)
+
+  layout:
+    repeater:
+      fields:
+        - source: code
+          width: 100
+        - source: name
+          width: 220
+        - source: reordering_policy
+          width: 160
+        - source: calc_below_reorder_point
+          width: 140
+        - source: calc_with_inventory
+          width: 120
+        - source: manufacturing_policy
+          width: 150
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

@@ -242,6 +242,14 @@ func (h *PagesHandler) GetPage(c *fiber.Ctx) error {
 		for i := range pageDef.Page.HeaderFields {
 			header := &pageDef.Page.HeaderFields[i]
 			header.Caption = pageFieldCaption(ts, pageDef.Page.Name, pageDef.Page.SourceTable, &pages.Field{Source: header.Source}, lang)
+			for j := range header.Options {
+				option := &header.Options[j]
+				key := "pages." + normalizePageName(pageDef.Page.Name) + ".options." + header.Param + "." + i18n.Key(option.Caption)
+				caption := ts.Translate(key, lang)
+				if caption != key {
+					option.Caption = caption
+				}
+			}
 			// the type of the field it stands for (a Code in upper case, a date filter)
 			if ft := tableMeta.GetFieldType(pageDef.Page.SourceTable, header.Source); ft != "" {
 				fieldTypes[header.Source] = ft

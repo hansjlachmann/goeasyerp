@@ -3645,6 +3645,11 @@ tables:
   item:
     caption: "Vare"
     fields:
+      qty_on_purch_order: "Antal i købsordre"
+      qty_on_sales_order: "Antal i salgsordre"
+      requisition_method_code: "Indkøbsmetodekode"
+      order_multiple: "Ordremultiplum"
+      reorder_cycle: "Genbestillingscyklus"
       tariff_no: "Varekode"
       bill_of_materials: "Stykliste"
       picture: "Billede"
@@ -5804,3 +5809,148 @@ tables:
       home_page: "Hjemmeside"
       federal_id_no: "Føderalt ID-nr."
       country_code: "Lande-/områdekode"
+  object:
+    caption: "Objekt"
+    fields:
+      type: "Type"
+      id: "ID"
+      name: "Navn"
+    options:
+      type:
+        tabledata: "Tabeldata"
+        table: "Tabel"
+        page: "Side"
+        report: "Rapport"
+        dataport: "Dataport"
+        codeunit: "Codeunit"
+  report_selections:
+    caption: "Rapportvalg"
+    fields:
+      usage: "Anvendelse"
+      sequence: "Rækkefølge"
+      report_id: "Rapport-id"
+      report_name: "Rapportnavn"
+    options:
+      usage:
+        s_quote: "S.Tilbud"
+        s_order: "S.Ordre"
+        s_invoice: "S.Faktura"
+        s_cr_memo: "S.Kreditnota"
+        s_shipment: "S.Følgeseddel"
+        s_test: "S.Test"
+        p_quote: "K.Tilbud"
+        p_order: "K.Ordre"
+        p_invoice: "K.Faktura"
+        p_cr_memo: "K.Kreditnota"
+        p_receipt: "K.Modtagelse"
+        p_test: "K.Test"
+        b_stmt: "B.Kontoudtog"
+        b_recon_test: "B.Afst.Test"
+        b_check: "B.Check"
+        reminder: "Rykker"
+        fin_charge: "Rentenota"
+        rem_test: "Rykk.Test"
+        f_c_test: "R.N.Test"
+        prod_order: "Prod.ordre"
+        s_blanket: "S.Rammeordre"
+        p_blanket: "K.Rammeordre"
+  printer_selection:
+    caption: "Printervalg"
+    fields:
+      user_id: "Bruger-id"
+      report_id: "Rapport-id"
+      printer_name: "Printernavn"
+      report_name: "Rapportnavn"
+    options:
+      printer_name:
+        preview: "Vis udskrift (skærm)"
+        print: "Udskriftsdialog"
+        pdf: "PDF-fil"
+  item_price_change:
+    caption: "Vareprisændring"
+    fields:
+      item_no: "Varenr."
+      price_group_code: "Prisgruppekode"
+      unit_of_measure_code: "Enhedskode"
+      currency_code: "Valutakode"
+      starting_date: "Startdato"
+      current_unit_price: "Aktuel enhedspris"
+      new_unit_price: "Ny enhedspris"
+      price_includes_tax: "Pris inkl. moms"
+      allow_quantity_disc: "Tillad antalsrabat"
+      allow_cust_item_disc: "Tillad debitor-/varerabat"
+      allow_invoice_disc: "Tillad fakturarabat"
+      tax_bus_posting_gr_price: "Momsvirksomhedsbogf.gruppe (pris)"
+  req_wksh_template:
+    caption: "Indkøbskladdeskabelon"
+    fields:
+      name: "Navn"
+      description: "Beskrivelse"
+      page_id: "Side-id"
+      recurring: "Gentagelse"
+      page_name: "Sidenavn"
+  requisition_wksh_name:
+    caption: "Indkøbskladdenavn"
+    fields:
+      worksheet_template_name: "Kladdeskabelonnavn"
+      name: "Navn"
+      description: "Beskrivelse"
+  requisition_line:
+    caption: "Indkøbskladdelinje"
+    fields:
+      worksheet_template_name: "Kladdeskabelonnavn"
+      journal_batch_name: "Kladdenavn"
+      line_no: "Linjenr."
+      type: "Type"
+      no: "Nr."
+      description: "Beskrivelse"
+      description_2: "Beskrivelse 2"
+      quantity: "Antal"
+      vendor_no: "Kreditornr."
+      direct_unit_cost: "Købspris"
+      quantity_disc_percent: "Antalsrabat %"
+      expected_receipt_date: "Forventet modt.dato"
+      requester_id: "Rekvirent-id"
+      confirmed: "Bekræftet"
+      department_code: "Afdelingskode"
+      project_code: "Projektkode"
+      location_code: "Lokationskode"
+      recurring_method: "Gentagelsesmetode"
+      expiration_date: "Udløbsdato"
+      recurring_frequency: "Gentagelsesinterval"
+      order_date: "Ordredato"
+      vendor_item_no: "Kreditors varenr."
+      order_address_code: "Bestillingsadressekode"
+      currency_code: "Valutakode"
+      currency_factor: "Valutafaktor"
+      variant_code: "Variantkode"
+      qty_per_unit_of_measure: "Antal pr. enhed"
+      unit_of_measure_code: "Enhedskode"
+      quantity_base: "Antal (basis)"
+    options:
+      type:
+        account_g_l: "Konto (finans)"
+        item: "Vare"
+      recurring_method:
+        fixed: "Fast"
+        variable: "Variabel"
+  requisition_method:
+    caption: "Indkøbsmetode"
+    fields:
+      code: "Kode"
+      name: "Navn"
+      manufacturing_policy: "Produktionsprincip"
+      calc_below_reorder_point: "Beregn under genbestillingspunkt"
+      reordering_policy: "Genbestillingsprincip"
+      calc_with_inventory: "Beregn med lager"
+    options:
+      manufacturing_policy:
+        make_to_stock: "Produktion til lager"
+        make_to_order: "Produktion til ordre"
+        assemble_to_order: "Montage til ordre"
+      reordering_policy:
+        fixed_reorder_qty: "Fast genbestillingsantal"
+        maximum_qty: "Maks. antal"
+        order: "Ordre"
+        lot_for_lot: "Lot-for-lot"
+        discrete_lot_size: "Diskret lotstørrelse"

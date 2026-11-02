@@ -89,6 +89,16 @@ type HeaderField struct {
 	LookupPage    int               `yaml:"lookup_page,omitempty" json:"lookup_page,omitempty"`
 	LookupField   string            `yaml:"lookup_field,omitempty" json:"lookup_field,omitempty"`
 	LookupFilters map[string]string `yaml:"lookup_filters,omitempty" json:"lookup_filters,omitempty"`
+	// Options (optional): the header field is a choice of these values instead of typed text
+	// (a classic option page variable: Report Selection's Usage) — the parameter is the chosen
+	// option's Value; its Caption is translated as pages.<page>.options.<param>.<caption key>
+	Options []HeaderOption `yaml:"options,omitempty" json:"options,omitempty"`
+}
+
+// HeaderOption is a value of a header field with options
+type HeaderOption struct {
+	Value   string `yaml:"value" json:"value"`
+	Caption string `yaml:"caption" json:"caption"`
 }
 
 // FlowFilterField is a FlowFilter field as the page sends it: name, kind and caption
@@ -393,6 +403,9 @@ func (p *PageDefinition) Clone() *PageDefinition {
 	}
 	m.Actions = cloneActions(p.Page.Actions)
 	m.HeaderFields = append([]HeaderField(nil), p.Page.HeaderFields...)
+	for i := range m.HeaderFields {
+		m.HeaderFields[i].Options = append([]HeaderOption(nil), m.HeaderFields[i].Options...)
+	}
 	m.Footer = append([]Field(nil), p.Page.Footer...)
 	m.PrimaryKeyFields = append([]string(nil), p.Page.PrimaryKeyFields...)
 	m.FlowFields = append([]string(nil), p.Page.FlowFields...)

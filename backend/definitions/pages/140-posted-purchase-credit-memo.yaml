@@ -97,7 +97,7 @@ page:
       caption: Print
       image: Print
       promoted: true
-      run_object: report:407
+      run_object: table:Purch_Cr_Memo_Hdr.PrintRecords
 
     - name: Navigate
       caption: Navigate

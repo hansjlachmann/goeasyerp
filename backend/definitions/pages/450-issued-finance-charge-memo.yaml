@@ -69,7 +69,7 @@ page:
       caption: Print
       image: Print
       promoted: true
-      run_object: report:118
+      run_object: table:Issued_Fin_Charge_Memo_Header.PrintRecords
 
     - name: Customer
       caption: Customer

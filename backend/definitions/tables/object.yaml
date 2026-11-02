@@ -1,0 +1,36 @@
+table:
+  id: 2000000001
+  name: Object
+  caption: Object
+  description: The objects of this installation (tables, pages, reports, codeunits), written at startup
+  global: true
+  lookup_page_id: 358
+  data_caption_fields: [type, id, name]
+  fields:
+    - name: type
+      no: 1
+      type: Option
+      db_name: type
+      caption: Type
+      primary_key: true
+      options: ["TableData", "Table", "Page", "Report", "Dataport", "Codeunit"]
+
+    - name: id
+      no: 3
+      type: int
+      db_name: id
+      caption: ID
+      primary_key: true
+
+    # the object's caption (English)
+    - name: name
+      no: 4
+      type: types.Text
+      db_name: name
+      caption: Name
+      length: 80
+
+  keys:
+    - name: Primary
+      fields: [type, id]
+      clustered: true
