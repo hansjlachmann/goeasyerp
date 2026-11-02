@@ -515,6 +515,11 @@ pages:
     fields:
       journal_batch_name: "Kladdenavn"
       item_description: "Varebeskrivelse"
+  recurring_item_jnl:
+    caption: "Gjentakelseskladd - vare"
+    fields:
+      journal_batch_name: "Kladdenavn"
+      item_description: "Varebeskrivelse"
   item_journal_templates:
     caption: "Varekladdemaler"
   item_journal_template_list:
@@ -706,6 +711,10 @@ pages:
     caption: "Ressurskladd"
     fields:
       resource_name: "Ressursnavn"
+  recurring_resource_jnl:
+    caption: "Gjentakelseskladd - ressurs"
+    fields:
+      resource_name: "Ressursnavn"
   resource_journal_templates:
     caption: "Ressurskladdemaler"
   res_journal_template_list:
@@ -720,6 +729,10 @@ pages:
     caption: "Stykkliste"
   bom_journal:
     caption: "Stykklistekladd"
+    fields:
+      item_description: "Varebeskrivelse"
+  recurring_bom_jnl:
+    caption: "Gjentakelseskladd - stykkliste"
     fields:
       item_description: "Varebeskrivelse"
   bom_journal_templates:
@@ -752,6 +765,10 @@ pages:
     caption: "Ressursgruppetilgjengelighet"
   fixed_asset_journal:
     caption: "Anleggskladd"
+    fields:
+      fa_description: "Anleggsbeskrivelse"
+  recurring_fixed_asset_journal:
+    caption: "Gjentakelseskladd - anleggsmidler"
     fields:
       fa_description: "Anleggsbeskrivelse"
   fa_journal_templates:

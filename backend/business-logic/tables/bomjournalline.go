@@ -153,6 +153,7 @@ func SetUpNewBOMJnlLine(rec, lastBOMJnlLine *gtables.BOMJournalLine) error {
 			rec.Document_no = noSeriesMgt.TryGetNextNo(bomJnlBatch.No_series, rec.Posting_date)
 		}
 	}
+	rec.Recurring_method = lastBOMJnlLine.Recurring_method
 	rec.Source_code = bomJnlTemplate.Source_code
 	rec.Reason_code = bomJnlBatch.Reason_code
 	rec.Posting_no_series = bomJnlBatch.Posting_no_series

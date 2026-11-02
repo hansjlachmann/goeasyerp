@@ -483,7 +483,9 @@ menu:
       - name: "Activities"
         items:
           - name: "Recurring Item Journals"
+            page_id: 286
           - name: "Recurring BOM Journals"
+            page_id: 287
           - separator: true
           - name: "Adjust Cost - Item Entries"
             run_object: "report:795"
@@ -566,6 +568,7 @@ menu:
       - name: "Activities"
         items:
           - name: "Recurring Journals"
+            page_id: 290
           - separator: true
           - name: "Adjust Resource Costs/Prices"
             run_object: "report:1195"
@@ -723,6 +726,7 @@ menu:
           - name: "Recurring General Journals"
             page_id: 283
           - name: "Recurring Fixed Asset Journals"
+            page_id: 5634
           - separator: true
           - name: "Calculate Depreciation"
             run_object: "report:5692"

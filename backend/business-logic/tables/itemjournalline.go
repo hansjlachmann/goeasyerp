@@ -409,6 +409,7 @@ func SetUpNewItemJnlLine(rec, lastItemJnlLine *gtables.ItemJournalLine) error {
 		}
 	}
 	rec.Entry_type = lastItemJnlLine.Entry_type
+	rec.Recurring_method = lastItemJnlLine.Recurring_method
 	rec.Source_code = itemJnlTemplate.Source_code
 	rec.Reason_code = itemJnlBatch.Reason_code
 	rec.Posting_no_series = itemJnlBatch.Posting_no_series

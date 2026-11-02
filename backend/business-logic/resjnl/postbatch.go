@@ -20,7 +20,8 @@ const maxPostingNoSeries = 10
 // renumbered from the posting number series, every line posted — and deletes the posted lines.
 // Open it on the posting's transaction; an error leaves everything to the caller's rollback.
 //
-// Not migrated yet: recurring resource journals.
+// A recurring journal (recurring.go) posts the lines that are due and keeps them, each moved
+// on by its Recurring Frequency.
 type ResJnlPostBatch struct {
 	src                ftables.Source
 	resJnlCheckLine    ResJnlCheckLine
@@ -63,6 +64,9 @@ func (b *ResJnlPostBatch) Run(rec *gtables.ResJournalLine) (PostBatchResult, err
 		return result, apperrors.JnlNameTooLong(gtables.ResJournalBatchTableName, "name", resJnlBatch.MaxStrLen("name"))
 	}
 
+	if resJnlTemplate.Recurring {
+		tables.SetRecurringFilters(resJnlLine, "posting_date")
+	}
 	if !resJnlLine.FindFirst() {
 		return result, nil
 	}
@@ -79,6 +83,12 @@ func (b *ResJnlPostBatch) Run(rec *gtables.ResJournalLine) (PostBatchResult, err
 		window.Update(2, lineCount)
 		resJnlLine2 := gtables.NewResJournalLine(b.src)
 		resJnlLine2.Copy(resJnlLine)
+		if resJnlLine2.Resource_no != "" {
+			err = tables.CheckRecurringLine(resJnlLine2, resJnlTemplate.Recurring, resJnlLine2.Recurring_method == gtables.ResJournalLine_Recurring_method.Variable, "quantity")
+			if err != nil {
+				return result, err
+			}
+		}
 		err = b.resJnlCheckLine.RunCheck(resJnlLine2)
 		if err != nil {
 			return result, err
@@ -125,6 +135,10 @@ func (b *ResJnlPostBatch) Run(rec *gtables.ResJournalLine) (PostBatchResult, err
 			}
 		}
 		lastDocNo2 = resJnlLine3.Document_no
+		if resJnlLine3.Resource_no != "" && resJnlLine3.Recurring_method != 0 {
+			resJnlLine3.Document_no, resJnlLine3.Description = tables.RecurringText(b.src, resJnlLine3.Posting_date, resJnlLine3.Document_no, resJnlLine3.Description,
+				resJnlLine3.MaxStrLen("document_no"), resJnlLine3.MaxStrLen("description"))
+		}
 		if resJnlLine3.Posting_no_series == "" {
 			resJnlLine3.Posting_no_series = resJnlBatch.No_series
 		} else {
@@ -163,7 +177,14 @@ func (b *ResJnlPostBatch) Run(rec *gtables.ResJournalLine) (PostBatchResult, err
 	result.RegisterNo = resRegNo
 
 	// Update/delete lines
-	if resRegNo != 0 {
+	// A recurring journal keeps its lines, the next date ahead
+	if resRegNo != 0 && resJnlTemplate.Recurring {
+		err = b.updateRecurringLines(resJnlLine)
+		if err != nil {
+			return result, err
+		}
+	}
+	if resRegNo != 0 && !resJnlTemplate.Recurring {
 		resJnlLine2 := gtables.NewResJournalLine(b.src)
 		resJnlLine2.CopyFilters(resJnlLine)
 		resJnlLine2.SetFilter("resource_no", "<>''")

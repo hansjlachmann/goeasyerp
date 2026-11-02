@@ -515,6 +515,11 @@ pages:
     fields:
       journal_batch_name: "Batch Name"
       item_description: "Item Description"
+  recurring_item_jnl:
+    caption: "Recurring Item Journal"
+    fields:
+      journal_batch_name: "Batch Name"
+      item_description: "Item Description"
   item_journal_templates:
     caption: "Item Journal Templates"
   item_journal_template_list:
@@ -706,6 +711,10 @@ pages:
     caption: "Resource Journal"
     fields:
       resource_name: "Resource Name"
+  recurring_resource_jnl:
+    caption: "Recurring Resource Journal"
+    fields:
+      resource_name: "Resource Name"
   resource_journal_templates:
     caption: "Resource Journal Templates"
   res_journal_template_list:
@@ -720,6 +729,10 @@ pages:
     caption: "Bill of Materials"
   bom_journal:
     caption: "BOM Journal"
+    fields:
+      item_description: "Item Description"
+  recurring_bom_jnl:
+    caption: "Recurring BOM Journal"
     fields:
       item_description: "Item Description"
   bom_journal_templates:
@@ -752,6 +765,10 @@ pages:
     caption: "Res. Group Availability"
   fixed_asset_journal:
     caption: "Fixed Asset Journal"
+    fields:
+      fa_description: "FA Description"
+  recurring_fixed_asset_journal:
+    caption: "Recurring Fixed Asset Journal"
     fields:
       fa_description: "FA Description"
   fa_journal_templates:

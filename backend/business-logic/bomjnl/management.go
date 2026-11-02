@@ -20,8 +20,8 @@ const TemplateListPageID = 264
 // OpenJournalPage opens the BOM journal page (OnOpenPage of the BOM Journal): the
 // template (TemplateSelection) and its batch (OpenJnl), as the page's filters. It returns early
 // when the user must pick a template.
-func OpenJournalPage(rec *gtables.BOMJournalLine, page *pages.Open) error {
-	jnlSelected, err := TemplateSelection(rec, page, false)
+func OpenJournalPage(rec *gtables.BOMJournalLine, page *pages.Open, recurringJnl bool) error {
+	jnlSelected, err := TemplateSelection(rec, page, recurringJnl)
 	if err != nil {
 		return err
 	}
@@ -49,8 +49,13 @@ func TemplateSelection(rec *gtables.BOMJournalLine, page *pages.Open, recurringJ
 		case 0:
 			bomJnlTemplate.InitRecord()
 			bomJnlTemplate.Recurring = recurringJnl
-			bomJnlTemplate.Name = "BOM"
-			bomJnlTemplate.Description = types.Text(i18n.GetInstance().Message("BOM_JNL_TEMPLATE_DESCRIPTION", fcodeunits.CurrentLanguage()))
+			if recurringJnl {
+				bomJnlTemplate.Name = "RECURRING"
+				bomJnlTemplate.Description = types.Text(i18n.GetInstance().Message("RECURRING_BOM_JNL_TEMPLATE_DESCRIPTION", fcodeunits.CurrentLanguage()))
+			} else {
+				bomJnlTemplate.Name = "BOM"
+				bomJnlTemplate.Description = types.Text(i18n.GetInstance().Message("BOM_JNL_TEMPLATE_DESCRIPTION", fcodeunits.CurrentLanguage()))
+			}
 			err := bomJnlTemplate.Validate("page_id", 0)
 			if err != nil {
 				return false, err

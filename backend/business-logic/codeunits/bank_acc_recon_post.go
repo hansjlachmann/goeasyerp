@@ -14,9 +14,12 @@ import (
 
 // BankAccReconPost - Codeunit 371 "Bank Acc. Recon. Post (Yes/No)": Post (F11) on the Bank
 // Acc. Reconciliation card. After asking, it posts the reconciliation (codeunit 370) in one
-// transaction.
+// transaction and opens the statement it became.
 const BankAccReconPostID = 371
 const BankAccReconPostName = "bank-acc-recon-post"
+
+// bankAccountStatementCardID is page 383 Bank Account Statement
+const bankAccountStatementCardID = 383
 
 func init() {
 	Register(BankAccReconPostID, BankAccReconPostName, NewBankAccReconPost)
@@ -75,7 +78,8 @@ func (c *BankAccReconPost) Run(record interface{}) (fcodeunits.Result, error) {
 	if !posted {
 		return system.Message(ts.Message("BANK_REC_NOTHING_TO_POST", lang)), nil
 	}
+	// the reconciliation is gone: the card shows the posted statement instead
 	result := system.Message(ts.Message("BANK_REC_POSTED", lang), rec.Statement_no)
-	result.Refresh = true
+	result.OpenPage = &fcodeunits.PageLink{PageID: bankAccountStatementCardID, Key: rec.Bank_account_no.String() + "," + rec.Statement_no.String()}
 	return result, nil
 }

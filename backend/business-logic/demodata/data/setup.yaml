@@ -667,11 +667,13 @@ master_data:
       - {name: ITEM, description: Item Journal, type: 0, no_series: IJNL-GEN}
       - {name: TRANSFER, description: Transfer Journal, type: 1, no_series: IJNL-TRANS}
       - {name: PHYS. INV., description: Phys. Inventory Journal, type: 2, no_series: IJNL-PHYS}
+      - {name: RECURRING, description: Recurring Item Journal, type: 0, recurring: true}
   - table: Item_Journal_Batch
     records:
       - {journal_template_name: ITEM, name: DEFAULT, description: Default Journal, no_series: IJNL-GEN}
       - {journal_template_name: TRANSFER, name: DEFAULT, description: Default Journal, no_series: IJNL-TRANS}
       - {journal_template_name: PHYS. INV., name: DEFAULT, description: Default Journal, no_series: IJNL-PHYS}
+      - {journal_template_name: RECURRING, name: DEFAULT, description: Default Journal}
   - table: Unit_of_Measure   # the resources' units
     records:
       - {code: DAY, description: Day}
@@ -686,21 +688,27 @@ master_data:
   - table: Res_Journal_Template
     records:
       - {name: RESOURCES, description: Resource Journals, page_id: 207, source_code: RESJNL}
+      - {name: RECURRING, description: Recurring Resource Journal, recurring: true, source_code: RESJNL}
   - table: Res_Journal_Batch
     records:
       - {journal_template_name: RESOURCES, name: DEFAULT, description: Default Journal}
+      - {journal_template_name: RECURRING, name: DEFAULT, description: Default Journal}
   - table: BOM_Journal_Template
     records:
       - {name: BOM, description: BOM Journal, page_id: 109, source_code: BOMJNL}
+      - {name: RECURRING, description: Recurring BOM Journal, recurring: true, source_code: BOMJNL}
   - table: BOM_Journal_Batch
     records:
       - {journal_template_name: BOM, name: DEFAULT, description: Default Journal, no_series: BJNL}
+      - {journal_template_name: RECURRING, name: DEFAULT, description: Default Journal}
   - table: FA_Journal_Template
     records:
       - {name: ASSETS, description: Fixed Asset Journal, page_id: 5629, source_code: FAJNL}
+      - {name: RECURRING, description: Recurring Fixed Asset Journal, recurring: true, source_code: FAJNL}
   - table: FA_Journal_Batch
     records:
       - {journal_template_name: ASSETS, name: DEFAULT, description: Default Journal}
+      - {journal_template_name: RECURRING, name: DEFAULT, description: Default Journal}
   - table: FA_Reclass_Journal_Template
     records:
       - {name: RECLASSIFY, description: FA Reclass. Journal, page_id: 5636}

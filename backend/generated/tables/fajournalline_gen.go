@@ -45,6 +45,9 @@
 //	OnValidate_Source_code(rec *gtables.FAJournalLine) error
 //	OnValidate_Index_entry(rec *gtables.FAJournalLine) error
 //	OnValidate_Posting_no_series(rec *gtables.FAJournalLine) error
+//	OnValidate_Recurring_method(rec *gtables.FAJournalLine) error
+//	OnValidate_Expiration_date(rec *gtables.FAJournalLine) error
+//	OnValidate_Recurring_frequency(rec *gtables.FAJournalLine) error
 
 package tables
 
@@ -102,45 +105,65 @@ func (o FAJournalLineDocument_type) IsValid() bool {
 	return o >= 0 && o < 4
 }
 
+// FAJournalLineRecurring_method represents the recurring_method option field
+type FAJournalLineRecurring_method int
+
+// String returns the text representation of FAJournalLineRecurring_method
+func (o FAJournalLineRecurring_method) String() string {
+	options := []string{" ", "F Fixed", "V Variable"}
+	if o >= 0 && int(o) < len(options) {
+		return options[o]
+	}
+	return ""
+}
+
+// IsValid checks if the FAJournalLineRecurring_method value is within valid range
+func (o FAJournalLineRecurring_method) IsValid() bool {
+	return o >= 0 && o < 3
+}
+
 // FAJournalLine represents Table 5621: FA_Journal_Line
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterFAJournalLineLogic.
 type FAJournalLine struct {
-	Journal_template_name          types.Code                   `db:"journal_template_name,pk"`
-	Journal_batch_name             types.Code                   `db:"journal_batch_name,pk"`
-	Line_no                        int                          `db:"line_no,pk"`
-	Depreciation_book_code         types.Code                   `db:"depreciation_book_code"`
-	Fa_posting_type                FAJournalLineFa_posting_type `db:"fa_posting_type"`
-	Fa_no                          types.Code                   `db:"fa_no"`
-	Fa_posting_date                types.Date                   `db:"fa_posting_date"`
-	Posting_date                   types.Date                   `db:"posting_date"`
-	Document_type                  FAJournalLineDocument_type   `db:"document_type"`
-	Document_date                  types.Date                   `db:"document_date"`
-	Document_no                    types.Code                   `db:"document_no"`
-	External_document_no           types.Code                   `db:"external_document_no"`
-	Description                    types.Text                   `db:"description"`
-	Amount                         types.Decimal                `db:"amount"`
-	Debit_amount                   types.Decimal                `db:"debit_amount"`
-	Credit_amount                  types.Decimal                `db:"credit_amount"`
-	Salvage_value                  types.Decimal                `db:"salvage_value"`
-	Quantity                       types.Decimal                `db:"quantity"`
-	Correction                     bool                         `db:"correction"`
-	No_of_depreciation_days        int                          `db:"no_of_depreciation_days"`
-	Depr_until_fa_posting_date     bool                         `db:"depr_until_fa_posting_date"`
-	Depr_acquisition_cost          bool                         `db:"depr_acquisition_cost"`
-	Fa_posting_group               types.Code                   `db:"fa_posting_group"`
-	Maintenance_code               types.Code                   `db:"maintenance_code"`
-	Department_code                types.Code                   `db:"department_code"`
-	Project_code                   types.Code                   `db:"project_code"`
-	Insurance_no                   types.Code                   `db:"insurance_no"`
-	Use_duplication_list           bool                         `db:"use_duplication_list"`
-	Duplicate_in_depreciation_book types.Code                   `db:"duplicate_in_depreciation_book"`
-	Fa_reclassification_entry      bool                         `db:"fa_reclassification_entry"`
-	Fa_error_entry_no              int                          `db:"fa_error_entry_no"`
-	Reason_code                    types.Code                   `db:"reason_code"`
-	Source_code                    types.Code                   `db:"source_code"`
-	Index_entry                    bool                         `db:"index_entry"`
-	Posting_no_series              types.Code                   `db:"posting_no_series"`
+	Journal_template_name          types.Code                    `db:"journal_template_name,pk"`
+	Journal_batch_name             types.Code                    `db:"journal_batch_name,pk"`
+	Line_no                        int                           `db:"line_no,pk"`
+	Depreciation_book_code         types.Code                    `db:"depreciation_book_code"`
+	Fa_posting_type                FAJournalLineFa_posting_type  `db:"fa_posting_type"`
+	Fa_no                          types.Code                    `db:"fa_no"`
+	Fa_posting_date                types.Date                    `db:"fa_posting_date"`
+	Posting_date                   types.Date                    `db:"posting_date"`
+	Document_type                  FAJournalLineDocument_type    `db:"document_type"`
+	Document_date                  types.Date                    `db:"document_date"`
+	Document_no                    types.Code                    `db:"document_no"`
+	External_document_no           types.Code                    `db:"external_document_no"`
+	Description                    types.Text                    `db:"description"`
+	Amount                         types.Decimal                 `db:"amount"`
+	Debit_amount                   types.Decimal                 `db:"debit_amount"`
+	Credit_amount                  types.Decimal                 `db:"credit_amount"`
+	Salvage_value                  types.Decimal                 `db:"salvage_value"`
+	Quantity                       types.Decimal                 `db:"quantity"`
+	Correction                     bool                          `db:"correction"`
+	No_of_depreciation_days        int                           `db:"no_of_depreciation_days"`
+	Depr_until_fa_posting_date     bool                          `db:"depr_until_fa_posting_date"`
+	Depr_acquisition_cost          bool                          `db:"depr_acquisition_cost"`
+	Fa_posting_group               types.Code                    `db:"fa_posting_group"`
+	Maintenance_code               types.Code                    `db:"maintenance_code"`
+	Department_code                types.Code                    `db:"department_code"`
+	Project_code                   types.Code                    `db:"project_code"`
+	Insurance_no                   types.Code                    `db:"insurance_no"`
+	Use_duplication_list           bool                          `db:"use_duplication_list"`
+	Duplicate_in_depreciation_book types.Code                    `db:"duplicate_in_depreciation_book"`
+	Fa_reclassification_entry      bool                          `db:"fa_reclassification_entry"`
+	Fa_error_entry_no              int                           `db:"fa_error_entry_no"`
+	Reason_code                    types.Code                    `db:"reason_code"`
+	Source_code                    types.Code                    `db:"source_code"`
+	Index_entry                    bool                          `db:"index_entry"`
+	Posting_no_series              types.Code                    `db:"posting_no_series"`
+	Recurring_method               FAJournalLineRecurring_method `db:"recurring_method"`
+	Expiration_date                types.Date                    `db:"expiration_date"`
+	Recurring_frequency            types.Code                    `db:"recurring_frequency"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -240,6 +263,17 @@ var FAJournalLine_Document_type = struct {
 	CreditMemo: 3,
 }
 
+// FAJournalLine_Recurring_method provides named constants for the recurring_method option field (FieldName.OptionValue syntax)
+var FAJournalLine_Recurring_method = struct {
+	Blank     FAJournalLineRecurring_method
+	FFixed    FAJournalLineRecurring_method
+	VVariable FAJournalLineRecurring_method
+}{
+	Blank:     0,
+	FFixed:    1,
+	VVariable: 2,
+}
+
 // ========================================
 // Field numbers (field IDs)
 // ========================================
@@ -282,6 +316,9 @@ var FAJournalLine_FieldNo = struct {
 	Source_code                    int
 	Index_entry                    int
 	Posting_no_series              int
+	Recurring_method               int
+	Expiration_date                int
+	Recurring_frequency            int
 }{
 	Journal_template_name:          1,
 	Journal_batch_name:             2,
@@ -318,6 +355,9 @@ var FAJournalLine_FieldNo = struct {
 	Source_code:                    37,
 	Index_entry:                    42,
 	Posting_no_series:              43,
+	Recurring_method:               38,
+	Expiration_date:                41,
+	Recurring_frequency:            39,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -393,6 +433,12 @@ func (t *FAJournalLine) FieldNo(fieldName string) int {
 		return 42
 	case "posting_no_series":
 		return 43
+	case "recurring_method":
+		return 38
+	case "expiration_date":
+		return 41
+	case "recurring_frequency":
+		return 39
 	}
 	return 0
 }
@@ -470,6 +516,12 @@ func (t *FAJournalLine) FieldName(fieldNo int) string {
 		return "index_entry"
 	case 43:
 		return "posting_no_series"
+	case 38:
+		return "recurring_method"
+	case 41:
+		return "expiration_date"
+	case 39:
+		return "recurring_frequency"
 	}
 	return ""
 }
@@ -676,6 +728,15 @@ type (
 	FAJournalLineOnValidate_Posting_no_series interface {
 		OnValidate_Posting_no_series(rec *FAJournalLine) error
 	}
+	FAJournalLineOnValidate_Recurring_method interface {
+		OnValidate_Recurring_method(rec *FAJournalLine) error
+	}
+	FAJournalLineOnValidate_Expiration_date interface {
+		OnValidate_Expiration_date(rec *FAJournalLine) error
+	}
+	FAJournalLineOnValidate_Recurring_frequency interface {
+		OnValidate_Recurring_frequency(rec *FAJournalLine) error
+	}
 )
 
 // fAJournalLineLogic is the registered business logic of FA_Journal_Line, in
@@ -775,6 +836,12 @@ func fAJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FAJournalLineOnValidate_Index_entry)
 	case "OnValidate_Posting_no_series":
 		_, ok = logic.(FAJournalLineOnValidate_Posting_no_series)
+	case "OnValidate_Recurring_method":
+		_, ok = logic.(FAJournalLineOnValidate_Recurring_method)
+	case "OnValidate_Expiration_date":
+		_, ok = logic.(FAJournalLineOnValidate_Expiration_date)
+	case "OnValidate_Recurring_frequency":
+		_, ok = logic.(FAJournalLineOnValidate_Recurring_frequency)
 	default:
 		return false, false
 	}
@@ -903,6 +970,12 @@ func (t *FAJournalLine) CheckFields() error {
 	if err := tables.CheckMaxLength(FAJournalLineTableName, "posting_no_series", string(t.Posting_no_series), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(FAJournalLineTableName, "recurring_frequency", string(t.Recurring_frequency), 20); err != nil {
+		return err
+	}
+	if err := tables.CheckDateFormula(FAJournalLineTableName, "recurring_frequency", string(t.Recurring_frequency)); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -965,6 +1038,9 @@ func GetFAJournalLineTableSchema() string {
 		source_code TEXT(10),
 		index_entry INTEGER,
 		posting_no_series TEXT(10),
+		recurring_method INTEGER CHECK (recurring_method >= 0 AND recurring_method <= 2),
+		expiration_date TEXT,
+		recurring_frequency TEXT(20),
 		PRIMARY KEY (journal_template_name, journal_batch_name, line_no)
 	`
 }
@@ -1007,6 +1083,9 @@ func GetFAJournalLinePostgresTableSchema() string {
 		source_code VARCHAR(10),
 		index_entry BOOLEAN,
 		posting_no_series VARCHAR(10),
+		recurring_method INTEGER CHECK (recurring_method >= 0 AND recurring_method <= 2),
+		expiration_date DATE,
+		recurring_frequency VARCHAR(20),
 		PRIMARY KEY (journal_template_name, journal_batch_name, line_no)
 	`
 }
@@ -1177,6 +1256,9 @@ func (t *FAJournalLine) StoreOldValues() {
 	t.oldValues["source_code"] = t.Source_code
 	t.oldValues["index_entry"] = t.Index_entry
 	t.oldValues["posting_no_series"] = t.Posting_no_series
+	t.oldValues["recurring_method"] = t.Recurring_method
+	t.oldValues["expiration_date"] = t.Expiration_date
+	t.oldValues["recurring_frequency"] = t.Recurring_frequency
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1296,6 +1378,15 @@ func (t *FAJournalLine) XRec() *FAJournalLine {
 	if v, ok := t.oldValues["posting_no_series"].(types.Code); ok {
 		x.Posting_no_series = v
 	}
+	if v, ok := t.oldValues["recurring_method"].(FAJournalLineRecurring_method); ok {
+		x.Recurring_method = v
+	}
+	if v, ok := t.oldValues["expiration_date"].(types.Date); ok {
+		x.Expiration_date = v
+	}
+	if v, ok := t.oldValues["recurring_frequency"].(types.Code); ok {
+		x.Recurring_frequency = v
+	}
 	return x
 }
 
@@ -1410,6 +1501,9 @@ func (t *FAJournalLine) GetByPK(journal_template_name types.Code, journal_batch_
 	var source_codeNull sql.NullString
 	var index_entryBool sql.NullBool
 	var posting_no_seriesNull sql.NullString
+	var recurring_methodInt int
+	var expiration_dateNull sql.NullString
+	var recurring_frequencyNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1419,7 +1513,7 @@ func (t *FAJournalLine) GetByPK(journal_template_name types.Code, journal_batch_
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, department_code, project_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, department_code, project_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1461,6 +1555,9 @@ func (t *FAJournalLine) GetByPK(journal_template_name types.Code, journal_batch_
 		&source_codeNull,
 		&index_entryBool,
 		&posting_no_seriesNull,
+		&recurring_methodInt,
+		&expiration_dateNull,
+		&recurring_frequencyNull,
 	)
 
 	if err != nil {
@@ -1509,6 +1606,9 @@ func (t *FAJournalLine) GetByPK(journal_template_name types.Code, journal_batch_
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.Index_entry = index_entryBool.Bool
 	t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
+	t.Recurring_method = FAJournalLineRecurring_method(recurring_methodInt)
+	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
+	t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1566,11 +1666,14 @@ func (t *FAJournalLine) Insert(runTrigger bool) bool {
 		t.Source_code,
 		t.Index_entry,
 		t.Posting_no_series,
+		t.Recurring_method,
+		t.Expiration_date,
+		t.Recurring_frequency,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, department_code, project_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, department_code, project_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1643,10 +1746,13 @@ func (t *FAJournalLine) InsertAll(records []*FAJournalLine, runTrigger bool) err
 			r.Source_code,
 			r.Index_entry,
 			r.Posting_no_series,
+			r.Recurring_method,
+			r.Expiration_date,
+			r.Recurring_frequency,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "depreciation_book_code", "fa_posting_type", "fa_no", "fa_posting_date", "posting_date", "document_type", "document_date", "document_no", "external_document_no", "description", "amount", "debit_amount", "credit_amount", "salvage_value", "quantity", "correction", "no_of_depreciation_days", "depr_until_fa_posting_date", "depr_acquisition_cost", "fa_posting_group", "maintenance_code", "department_code", "project_code", "insurance_no", "use_duplication_list", "duplicate_in_depreciation_book", "fa_reclassification_entry", "fa_error_entry_no", "reason_code", "source_code", "index_entry", "posting_no_series"}
+	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "depreciation_book_code", "fa_posting_type", "fa_no", "fa_posting_date", "posting_date", "document_type", "document_date", "document_no", "external_document_no", "description", "amount", "debit_amount", "credit_amount", "salvage_value", "quantity", "correction", "no_of_depreciation_days", "depr_until_fa_posting_date", "depr_acquisition_cost", "fa_posting_group", "maintenance_code", "department_code", "project_code", "insurance_no", "use_duplication_list", "duplicate_in_depreciation_book", "fa_reclassification_entry", "fa_error_entry_no", "reason_code", "source_code", "index_entry", "posting_no_series", "recurring_method", "expiration_date", "recurring_frequency"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1832,6 +1938,18 @@ func (t *FAJournalLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "posting_no_series = ?")
 			values = append(values, t.Posting_no_series)
 		}
+		if t.hasFieldChanged("recurring_method") {
+			setClauses = append(setClauses, "recurring_method = ?")
+			values = append(values, t.Recurring_method)
+		}
+		if t.hasFieldChanged("expiration_date") {
+			setClauses = append(setClauses, "expiration_date = ?")
+			values = append(values, t.Expiration_date)
+		}
+		if t.hasFieldChanged("recurring_frequency") {
+			setClauses = append(setClauses, "recurring_frequency = ?")
+			values = append(values, t.Recurring_frequency)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -1903,6 +2021,12 @@ func (t *FAJournalLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Index_entry)
 		setClauses = append(setClauses, "posting_no_series = ?")
 		values = append(values, t.Posting_no_series)
+		setClauses = append(setClauses, "recurring_method = ?")
+		values = append(values, t.Recurring_method)
+		setClauses = append(setClauses, "expiration_date = ?")
+		values = append(values, t.Expiration_date)
+		setClauses = append(setClauses, "recurring_frequency = ?")
+		values = append(values, t.Recurring_frequency)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -2105,6 +2229,18 @@ func (t *FAJournalLine) hasFieldChanged(fieldName string) bool {
 	case "posting_no_series":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Posting_no_series.Equal(old)
+		}
+	case "recurring_method":
+		if old, ok := oldValue.(FAJournalLineRecurring_method); ok {
+			return t.Recurring_method != old
+		}
+	case "expiration_date":
+		if old, ok := oldValue.(types.Date); ok {
+			return !t.Expiration_date.Equal(old)
+		}
+	case "recurring_frequency":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Recurring_frequency.Equal(old)
 		}
 	}
 
@@ -2382,6 +2518,12 @@ func (t *FAJournalLine) columnName(fieldName string) (string, bool) {
 		return "index_entry", true
 	case strings.ToLower("posting_no_series"):
 		return "posting_no_series", true
+	case strings.ToLower("recurring_method"):
+		return "recurring_method", true
+	case strings.ToLower("expiration_date"):
+		return "expiration_date", true
+	case strings.ToLower("recurring_frequency"):
+		return "recurring_frequency", true
 	}
 	return "", false
 }
@@ -2559,6 +2701,8 @@ func (t *FAJournalLine) isDateColumn(column string) bool {
 	case "posting_date":
 		return true
 	case "document_date":
+		return true
+	case "expiration_date":
 		return true
 	}
 	return false
@@ -2757,7 +2901,7 @@ func (t *FAJournalLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, department_code, project_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, department_code, project_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2794,6 +2938,9 @@ func (t *FAJournalLine) FindFirst() bool {
 	var source_codeNull sql.NullString
 	var index_entryBool sql.NullBool
 	var posting_no_seriesNull sql.NullString
+	var recurring_methodInt int
+	var expiration_dateNull sql.NullString
+	var recurring_frequencyNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&journal_template_nameNull,
@@ -2831,6 +2978,9 @@ func (t *FAJournalLine) FindFirst() bool {
 		&source_codeNull,
 		&index_entryBool,
 		&posting_no_seriesNull,
+		&recurring_methodInt,
+		&expiration_dateNull,
+		&recurring_frequencyNull,
 	)
 
 	if err != nil {
@@ -2874,6 +3024,9 @@ func (t *FAJournalLine) FindFirst() bool {
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.Index_entry = index_entryBool.Bool
 	t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
+	t.Recurring_method = FAJournalLineRecurring_method(recurring_methodInt)
+	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
+	t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2894,7 +3047,7 @@ func (t *FAJournalLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, department_code, project_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, department_code, project_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2931,6 +3084,9 @@ func (t *FAJournalLine) FindLast() bool {
 	var source_codeNull sql.NullString
 	var index_entryBool sql.NullBool
 	var posting_no_seriesNull sql.NullString
+	var recurring_methodInt int
+	var expiration_dateNull sql.NullString
+	var recurring_frequencyNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&journal_template_nameNull,
@@ -2968,6 +3124,9 @@ func (t *FAJournalLine) FindLast() bool {
 		&source_codeNull,
 		&index_entryBool,
 		&posting_no_seriesNull,
+		&recurring_methodInt,
+		&expiration_dateNull,
+		&recurring_frequencyNull,
 	)
 
 	if err != nil {
@@ -3011,6 +3170,9 @@ func (t *FAJournalLine) FindLast() bool {
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.Index_entry = index_entryBool.Bool
 	t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
+	t.Recurring_method = FAJournalLineRecurring_method(recurring_methodInt)
+	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
+	t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -3061,7 +3223,7 @@ func (t *FAJournalLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, department_code, project_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, department_code, project_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3162,6 +3324,9 @@ func (t *FAJournalLine) Next(steps ...int) bool {
 		var source_codeNull sql.NullString
 		var index_entryBool sql.NullBool
 		var posting_no_seriesNull sql.NullString
+		var recurring_methodInt int
+		var expiration_dateNull sql.NullString
+		var recurring_frequencyNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&journal_template_nameNull,
@@ -3199,6 +3364,9 @@ func (t *FAJournalLine) Next(steps ...int) bool {
 			&source_codeNull,
 			&index_entryBool,
 			&posting_no_seriesNull,
+			&recurring_methodInt,
+			&expiration_dateNull,
+			&recurring_frequencyNull,
 		)
 
 		if err != nil {
@@ -3241,6 +3409,9 @@ func (t *FAJournalLine) Next(steps ...int) bool {
 		t.Source_code = types.NewCode(source_codeNull.String)
 		t.Index_entry = index_entryBool.Bool
 		t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
+		t.Recurring_method = FAJournalLineRecurring_method(recurring_methodInt)
+		t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
+		t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -3290,7 +3461,7 @@ func (t *FAJournalLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, department_code, project_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, department_code, project_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3344,6 +3515,9 @@ func (t *FAJournalLine) FindSetBuffered() bool {
 		var source_codeNull sql.NullString
 		var index_entryBool sql.NullBool
 		var posting_no_seriesNull sql.NullString
+		var recurring_methodInt int
+		var expiration_dateNull sql.NullString
+		var recurring_frequencyNull sql.NullString
 
 		err := rows.Scan(
 			&journal_template_nameNull,
@@ -3381,6 +3555,9 @@ func (t *FAJournalLine) FindSetBuffered() bool {
 			&source_codeNull,
 			&index_entryBool,
 			&posting_no_seriesNull,
+			&recurring_methodInt,
+			&expiration_dateNull,
+			&recurring_frequencyNull,
 		)
 
 		if err != nil {
@@ -3421,6 +3598,9 @@ func (t *FAJournalLine) FindSetBuffered() bool {
 		record.Source_code = types.NewCode(source_codeNull.String)
 		record.Index_entry = index_entryBool.Bool
 		record.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
+		record.Recurring_method = FAJournalLineRecurring_method(recurring_methodInt)
+		record.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
+		record.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -3484,6 +3664,9 @@ func (t *FAJournalLine) copyFromBuffered(record *FAJournalLine) {
 	t.Source_code = record.Source_code
 	t.Index_entry = record.Index_entry
 	t.Posting_no_series = record.Posting_no_series
+	t.Recurring_method = record.Recurring_method
+	t.Expiration_date = record.Expiration_date
+	t.Recurring_frequency = record.Recurring_frequency
 	t.StoreOldValues()
 }
 
@@ -4467,6 +4650,100 @@ func (t *FAJournalLine) ValidateField(fieldName string, value interface{}) error
 			}
 		}
 		return nil
+	case "recurring_method":
+		// Set field value
+		// Accept enum type directly
+		if v, ok := value.(FAJournalLineRecurring_method); ok {
+			t.Recurring_method = v
+			// Accept int (convert to enum)
+		} else if v, ok := value.(int); ok {
+			if v < 0 || v >= 3 {
+				return fmt.Errorf("invalid option value %d for field recurring_method (valid range: 0-%d)", v, 3-1)
+			}
+			t.Recurring_method = FAJournalLineRecurring_method(v)
+			// Accept float64 (JSON numbers decode as float64)
+		} else if v, ok := value.(float64); ok {
+			intVal := int(v)
+			if intVal < 0 || intVal >= 3 {
+				return fmt.Errorf("invalid option value %d for field recurring_method (valid range: 0-%d)", intVal, 3-1)
+			}
+			t.Recurring_method = FAJournalLineRecurring_method(intVal)
+			// Accept string (lookup in options and convert)
+		} else if v, ok := value.(string); ok {
+			if v == "" {
+				// Empty string defaults to first option (behavior)
+				t.Recurring_method = 0
+			} else {
+				options := []string{" ", "F Fixed", "V Variable"}
+				found := false
+				for i, opt := range options {
+					if opt == v {
+						t.Recurring_method = FAJournalLineRecurring_method(i)
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("invalid option '%s' for field recurring_method (valid options: %v)", v, options)
+				}
+			}
+		} else {
+			return fmt.Errorf("invalid type for field recurring_method (expected FAJournalLineRecurring_method, int, or string)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(FAJournalLineOnValidate_Recurring_method); ok {
+				if err := trg.OnValidate_Recurring_method(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "expiration_date":
+		// Set field value
+		if v, ok := value.(types.Date); ok {
+			t.Expiration_date = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Expiration_date, err = types.NewDateFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid date value for field expiration_date: %w", err)
+			}
+		} else if v, ok := value.(time.Time); ok {
+			t.Expiration_date = types.NewDateFromTime(v)
+		} else {
+			return fmt.Errorf("invalid type for field expiration_date (expected Date, string, or time.Time)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(FAJournalLineOnValidate_Expiration_date); ok {
+				if err := trg.OnValidate_Expiration_date(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "recurring_frequency":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Recurring_frequency = v
+		} else if v, ok := value.(string); ok {
+			t.Recurring_frequency = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field recurring_frequency")
+		}
+		if err := tables.CheckDateFormula(FAJournalLineTableName, "recurring_frequency", string(t.Recurring_frequency)); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(FAJournalLineOnValidate_Recurring_frequency); ok {
+				if err := trg.OnValidate_Recurring_frequency(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -4549,6 +4826,12 @@ func (t *FAJournalLine) FieldValue(no int) (any, bool) {
 		return t.Index_entry, true
 	case 43:
 		return t.Posting_no_series, true
+	case 38:
+		return t.Recurring_method, true
+	case 41:
+		return t.Expiration_date, true
+	case 39:
+		return t.Recurring_frequency, true
 	}
 	return nil, false
 }
@@ -4801,6 +5084,25 @@ func (t *FAJournalLine) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.Posting_no_series = types.NewCode(v)
+			return true
+		}
+	case 38:
+		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
+			t.Recurring_method = FAJournalLineRecurring_method(i)
+			return true
+		}
+	case 41:
+		if v, ok := value.(types.Date); ok {
+			t.Expiration_date = v
+			return true
+		}
+	case 39:
+		if v, ok := value.(types.Code); ok {
+			t.Recurring_frequency = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Recurring_frequency = types.NewCode(v)
 			return true
 		}
 	}
@@ -5372,6 +5674,12 @@ func (t *FAJournalLine) columnValue(column string) (interface{}, bool) {
 		return t.Index_entry, true
 	case "posting_no_series":
 		return t.Posting_no_series, true
+	case "recurring_method":
+		return int(t.Recurring_method), true
+	case "expiration_date":
+		return t.Expiration_date, true
+	case "recurring_frequency":
+		return t.Recurring_frequency, true
 	}
 	return nil, false
 }
@@ -5466,6 +5774,9 @@ func (t *FAJournalLine) Init() {
 	t.Source_code = *new(types.Code)
 	t.Index_entry = *new(bool)
 	t.Posting_no_series = *new(types.Code)
+	t.Recurring_method = 0
+	t.Expiration_date = *new(types.Date)
+	t.Recurring_frequency = *new(types.Code)
 	t.applyDefaults()
 }
 
@@ -5535,6 +5846,9 @@ func (t *FAJournalLine) ToMap() map[string]interface{} {
 		"source_code":                    t.Source_code.String(),
 		"index_entry":                    t.Index_entry,
 		"posting_no_series":              t.Posting_no_series.String(),
+		"recurring_method":               int(t.Recurring_method),
+		"expiration_date":                t.Expiration_date.String(),
+		"recurring_frequency":            t.Recurring_frequency.String(),
 	}
 }
 
@@ -5796,6 +6110,33 @@ func (t *FAJournalLine) FromMap(data map[string]interface{}) {
 	if v, ok := data["posting_no_series"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Posting_no_series = types.NewCode(s)
+		}
+	}
+	if v, ok := data["recurring_method"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Recurring_method = FAJournalLineRecurring_method(int(val))
+		case int:
+			t.Recurring_method = FAJournalLineRecurring_method(val)
+		case string:
+			// Lookup string value in options
+			options := []string{" ", "F Fixed", "V Variable"}
+			for i, opt := range options {
+				if opt == val {
+					t.Recurring_method = FAJournalLineRecurring_method(i)
+					break
+				}
+			}
+		}
+	}
+	if v, ok := data["expiration_date"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Expiration_date, _ = types.NewDateFromString(s)
+		}
+	}
+	if v, ok := data["recurring_frequency"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Recurring_frequency = types.NewCode(s)
 		}
 	}
 }
@@ -6174,6 +6515,36 @@ func (t *FAJournalLine) GetFields() []tables.FieldInfo {
 			PrimaryKey: false,
 			FlowField:  false,
 		},
+		{
+			No:         38,
+			Name:       "recurring_method",
+			Type:       tables.FieldTypeOption,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         41,
+			Name:       "expiration_date",
+			Type:       tables.FieldTypeDate,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         39,
+			Name:       "recurring_frequency",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
 	}
 }
 
@@ -6198,8 +6569,9 @@ func (t *FAJournalLine) GetFlowFields() []string {
 // GetOptionFields returns Option field names mapped to their option values
 func (t *FAJournalLine) GetOptionFields() map[string][]string {
 	return map[string][]string{
-		"fa_posting_type": {"Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance", "Salvage Value"},
-		"document_type":   {" ", "", "Invoice", "Credit Memo"},
+		"fa_posting_type":  {"Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance", "Salvage Value"},
+		"document_type":    {" ", "", "Invoice", "Credit Memo"},
+		"recurring_method": {" ", "F Fixed", "V Variable"},
 	}
 }
 

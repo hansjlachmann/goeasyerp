@@ -2696,6 +2696,9 @@ tables:
   fa_journal_line:
     caption: "Anleggskladdelinje"
     fields:
+      recurring_method: "Gjentakelsesmetode"
+      expiration_date: "Utløpsdato"
+      recurring_frequency: "Gjentakelsesfrekvens"
       journal_template_name: "Kladdemalnavn"
       journal_batch_name: "Kladdenavn"
       line_no: "Linjenr."
@@ -2732,6 +2735,9 @@ tables:
       index_entry: "Indekspost"
       posting_no_series: "Bokføringsnummerserie"
     options:
+      recurring_method:
+        f_fixed: "F Fast"
+        v_variable: "V Variabel"
       fa_posting_type:
         acquisition_cost: "Anskaffelseskost"
         depreciation: "Avskrivning"
@@ -3549,6 +3555,9 @@ tables:
   item_journal_line:
     caption: "Varekladdelinje"
     fields:
+      recurring_method: "Gjentakelsesmetode"
+      expiration_date: "Utløpsdato"
+      recurring_frequency: "Gjentakelsesfrekvens"
       journal_template_name: "Kladdemalnavn"
       journal_batch_name: "Kladdenavn"
       line_no: "Linjenr."
@@ -3596,6 +3605,9 @@ tables:
       quantity_base: "Antall (basis)"
       invoiced_qty_base: "Fakturert antall (basis)"
     options:
+      recurring_method:
+        fixed: "Fast"
+        variable: "Variabel"
       entry_type:
         purchase: "Kjøp"
         sale: "Salg"
@@ -3944,6 +3956,9 @@ tables:
   res_journal_line:
     caption: "Ressurskladdelinje"
     fields:
+      recurring_method: "Gjentakelsesmetode"
+      expiration_date: "Utløpsdato"
+      recurring_frequency: "Gjentakelsesfrekvens"
       journal_template_name: "Kladdemalnavn"
       journal_batch_name: "Kladdenavn"
       line_no: "Linjenr."
@@ -3972,6 +3987,9 @@ tables:
       external_document_no: "Eksternt bilagsnr."
       posting_no_series: "Bokføringsnummerserie"
     options:
+      recurring_method:
+        fixed: "Fast"
+        variable: "Variabel"
       entry_type:
         usage: "Forbruk"
         sale: "Salg"
@@ -4067,6 +4085,9 @@ tables:
   bom_journal_line:
     caption: "Stykklistekladdelinje"
     fields:
+      recurring_method: "Gjentakelsesmetode"
+      expiration_date: "Utløpsdato"
+      recurring_frequency: "Gjentakelsesfrekvens"
       journal_template_name: "Kladdemalnavn"
       journal_batch_name: "Kladdenavn"
       line_no: "Linjenr."
@@ -4090,6 +4111,10 @@ tables:
       qty_per_unit_of_measure: "Antall per enhet"
       unit_of_measure_code: "Enhetskode"
       quantity_base: "Antall (basis)"
+    options:
+      recurring_method:
+        fixed: "Fast"
+        variable: "Variabel"
   bom_ledger_entry:
     caption: "Stykklistepost"
     fields:

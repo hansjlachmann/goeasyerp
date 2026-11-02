@@ -54,6 +54,9 @@ func (resJournalTemplateLogic) OnValidate_Source_code(rec *gtables.ResJournalTem
 // code; recurring journals have no No. Series
 func (resJournalTemplateLogic) OnValidate_Recurring(rec *gtables.ResJournalTemplate) error {
 	rec.Page_id = resJournalPageID
+	if rec.Recurring {
+		rec.Page_id = RecurringResJnlPageID
+	}
 	sourceCodeSetup := gtables.GetSourceCodeSetup(rec)
 	rec.Source_code = sourceCodeSetup.Resource_journal
 	if rec.Recurring {
@@ -82,3 +85,6 @@ func (resJournalTemplateLogic) OnValidate_Posting_no_series(rec *gtables.ResJour
 	}
 	return nil
 }
+
+// RecurringResJnlPageID is page 290 Recurring Resource Jnl., the page of a recurring template
+const RecurringResJnlPageID = 290

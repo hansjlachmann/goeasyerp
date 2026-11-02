@@ -20,8 +20,8 @@ const TemplateListPageID = 261
 // OpenJournalPage opens an item journal page (OnOpenPage of the Item, Item Transfer and Phys.
 // Inventory Journal): the template of the page's type (TemplateSelection) and its batch
 // (OpenJnl), as the page's filters. It returns early when the user must pick a template.
-func OpenJournalPage(rec *gtables.ItemJournalLine, page *pages.Open, pageTemplate gtables.ItemJournalTemplateType) error {
-	jnlSelected, err := TemplateSelection(rec, page, pageTemplate)
+func OpenJournalPage(rec *gtables.ItemJournalLine, page *pages.Open, pageTemplate gtables.ItemJournalTemplateType, recurringJnl bool) error {
+	jnlSelected, err := TemplateSelection(rec, page, pageTemplate, recurringJnl)
 	if err != nil {
 		return err
 	}
@@ -36,7 +36,7 @@ func OpenJournalPage(rec *gtables.ItemJournalLine, page *pages.Open, pageTemplat
 // page's parameters, the only template of the type, a new one when there is none — or asks
 // the user to pick one (page 261); the template's name becomes the page's filter and parameter.
 // It reports whether a template was selected.
-func TemplateSelection(rec *gtables.ItemJournalLine, page *pages.Open, pageTemplate gtables.ItemJournalTemplateType) (bool, error) {
+func TemplateSelection(rec *gtables.ItemJournalLine, page *pages.Open, pageTemplate gtables.ItemJournalTemplateType, recurringJnl bool) (bool, error) {
 	itemJnlTemplate := gtables.NewItemJournalTemplate(rec)
 	if page.Param("template") != "" {
 		err := itemJnlTemplate.GetOrError(types.Code(page.Param("template")))
@@ -44,12 +44,12 @@ func TemplateSelection(rec *gtables.ItemJournalLine, page *pages.Open, pageTempl
 			return false, err
 		}
 	} else {
-		itemJnlTemplate.SetRange("recurring", false)
+		itemJnlTemplate.SetRange("recurring", recurringJnl)
 		itemJnlTemplate.SetRange("type", pageTemplate)
 		switch itemJnlTemplate.Count() {
 		case 0:
 			itemJnlTemplate.InitRecord()
-			itemJnlTemplate.Recurring = false
+			itemJnlTemplate.Recurring = recurringJnl
 			err := itemJnlTemplate.Validate("type", pageTemplate)
 			if err != nil {
 				return false, err
@@ -62,6 +62,10 @@ func TemplateSelection(rec *gtables.ItemJournalLine, page *pages.Open, pageTempl
 			language := fcodeunits.CurrentLanguage()
 			typeCaption := i18n.GetInstance().OptionCaption(gtables.ItemJournalTemplateTableName, "type", i18n.Key(pageTemplate.String()), language)
 			itemJnlTemplate.Description = types.Text(i18n.GetInstance().MessageWithParams("GEN_JNL_TEMPLATE_DESCRIPTION", language, typeCaption))
+			if recurringJnl {
+				itemJnlTemplate.Name = "RECURRING"
+				itemJnlTemplate.Description = types.Text(i18n.GetInstance().Message("RECURRING_ITEM_JNL_TEMPLATE_DESCRIPTION", language))
+			}
 			err = itemJnlTemplate.InsertOrError(false)
 			if err != nil {
 				return false, err
@@ -69,7 +73,7 @@ func TemplateSelection(rec *gtables.ItemJournalLine, page *pages.Open, pageTempl
 		case 1:
 			itemJnlTemplate.FindFirst()
 		default:
-			page.SelectRecord(TemplateListPageID, "template", "name", pages.FixedFilter{Field: "type", Value: int(pageTemplate)}, pages.FixedFilter{Field: "recurring", Value: false})
+			page.SelectRecord(TemplateListPageID, "template", "name", pages.FixedFilter{Field: "type", Value: int(pageTemplate)}, pages.FixedFilter{Field: "recurring", Value: recurringJnl})
 			return false, nil
 		}
 	}

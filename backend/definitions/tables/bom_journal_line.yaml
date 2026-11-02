@@ -263,6 +263,25 @@ table:
       precision: 18
       scale: 5
 
+    # Recurring journals (a template with Recurring): how the line recurs and when it expires
+    - name: recurring_method
+      no: 17
+      type: Option
+      db_name: recurring_method
+      options: [" ", "Fixed", "Variable"]
+
+    - name: expiration_date
+      no: 18
+      type: types.Date
+      db_name: expiration_date
+
+    - name: recurring_frequency
+      no: 19
+      type: types.Code
+      db_name: recurring_frequency
+      length: 20
+      date_formula: true
+
   keys:
     - name: Primary
       fields: [journal_template_name, journal_batch_name, line_no]

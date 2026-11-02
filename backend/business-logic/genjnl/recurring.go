@@ -109,21 +109,8 @@ func (b *GenJnlPostBatch) makeRecurringText(genJnlLine2 *gtables.GenJournalLine)
 	if genJnlLine2.Account_no == "" || genJnlLine2.Recurring_method == gtables.GenJournalLine_Recurring_method.Blank {
 		return
 	}
-	postingDate := genJnlLine2.Posting_date
-	day := system.Date2DMY(postingDate, 1)
-	week := system.Date2DWY(postingDate, 2)
-	month := system.Date2DMY(postingDate, 2)
-	monthText := postingDate.Month().String()
-	accountingPeriod := gtables.NewAccountingPeriod(b.src)
-	accountingPeriod.SetRange("starting_date", types.Date{}, postingDate)
-	periodName := ""
-	if accountingPeriod.FindLast() {
-		periodName = accountingPeriod.Name.String()
-	}
-	genJnlLine2.Document_no = types.Code(system.CopyStr(
-		system.StrSubstNo(genJnlLine2.Document_no.String(), day, week, month, monthText, periodName), 1, genJnlLine2.MaxStrLen("document_no")))
-	genJnlLine2.Description = types.Text(system.CopyStr(
-		system.StrSubstNo(genJnlLine2.Description.String(), day, week, month, monthText, periodName), 1, genJnlLine2.MaxStrLen("description")))
+	genJnlLine2.Document_no, genJnlLine2.Description = tables.RecurringText(b.src, genJnlLine2.Posting_date,
+		genJnlLine2.Document_no, genJnlLine2.Description, genJnlLine2.MaxStrLen("document_no"), genJnlLine2.MaxStrLen("description"))
 }
 
 // postAllocations: each allocation posts as a G/L account line of the line's document — the
@@ -231,7 +218,7 @@ func (b *GenJnlPostBatch) updateRecurringLines(genJnlLine *gtables.GenJournalLin
 		b.window.Update(9, i+1)
 		b.window.Update(10, system.Round(types.NewDecimalFromInt(int64((i+1)*10000/noOfRecords)), 1))
 		if !l.Posting_date.IsZero() {
-			nextDate, err := system.CalcDate(l.Recurring_frequency.String(), l.Posting_date)
+			nextDate, err := tables.NextRecurringDate(l.Posting_date, l.Recurring_frequency)
 			if err != nil {
 				return err
 			}
@@ -243,6 +230,12 @@ func (b *GenJnlPostBatch) updateRecurringLines(genJnlLine *gtables.GenJournalLin
 		if l.Recurring_method != gtables.GenJournalLine_Recurring_method.FFixed &&
 			l.Recurring_method != gtables.GenJournalLine_Recurring_method.RFReversingFixed {
 			multiplyAmounts(l, types.Decimal{})
+			// the allocations by quantity or percentage follow the cleared amount (validating the
+			// posting date recalculated them from the old one)
+			err := tables.UpdateGenJnlAllocations(l)
+			if err != nil {
+				return err
+			}
 		}
 		err := l.ModifyOrError(false)
 		if err != nil {

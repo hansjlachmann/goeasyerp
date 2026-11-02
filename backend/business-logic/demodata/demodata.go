@@ -532,6 +532,9 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 	if opts.GenJnlPostLine != nil {
 		p.phase(PhaseFixedAssets)
 		err = postDemoFixedAssets(ftables.DBSource(exec, company, dbType), opts.GenJnlPostLine, fixedAssets, today, &counts, p)
+		if err == nil {
+			err = closeDemoBankStatements(ftables.DBSource(exec, company, dbType), today)
+		}
 		if err != nil {
 			rollback()
 			return Counts{}, err

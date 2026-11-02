@@ -195,6 +195,7 @@ func SetUpNewResJnlLine(rec, lastResJnlLine *gtables.ResJournalLine) error {
 			rec.Document_no = noSeriesMgt.TryGetNextNo(resJnlBatch.No_series, rec.Posting_date)
 		}
 	}
+	rec.Recurring_method = lastResJnlLine.Recurring_method
 	rec.Source_code = resJnlTemplate.Source_code
 	rec.Reason_code = resJnlBatch.Reason_code
 	rec.Posting_no_series = resJnlBatch.Posting_no_series
