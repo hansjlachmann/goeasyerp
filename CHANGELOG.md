@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.124](https://github.com/hansjlachmann/openerp/compare/v0.1.123...v0.1.124) (2026-11-02)
+
+
+### Features
+
+* G/L budgets with a budget matrix by periods ([#185](https://github.com/hansjlachmann/openerp/issues/185)) ([78c91c3](https://github.com/hansjlachmann/openerp/commit/78c91c34ea553727127597136ed9408f9430249f))
+
 ## [0.1.123](https://github.com/hansjlachmann/openerp/compare/v0.1.122...v0.1.123) (2026-11-01)
 
 
