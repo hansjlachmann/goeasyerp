@@ -2,6 +2,7 @@ package reports
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -130,6 +131,16 @@ func (r *Run) OptionBool(name string) bool {
 		return true
 	}
 	return false
+}
+
+// OptionFile returns the contents of a "file" option (the file the user picked, sent as base64;
+// nil when none or not base64)
+func (r *Run) OptionFile(name string) []byte {
+	data, err := base64.StdEncoding.DecodeString(strings.TrimSpace(r.options[name]))
+	if err != nil || len(data) == 0 {
+		return nil
+	}
+	return data
 }
 
 // OptionDecimal returns a number option as a decimal (0 when blank or not a number)

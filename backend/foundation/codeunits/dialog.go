@@ -36,7 +36,7 @@ const OutputKey = "_output"
 type InputField struct {
 	Name     string `json:"name"`               // Field key (e.g. "date")
 	Label    string `json:"label"`              // Display label
-	Type     string `json:"type"`               // "date", "text", "number", "option", "bool"
+	Type     string `json:"type"`               // "date", "text", "number", "option", "bool", "file" (the contents as base64)
 	Required bool   `json:"required,omitempty"` // Whether the field is required
 	Default  string `json:"default,omitempty"`  // Default value ("option": the number, 1-based)
 	// Options: the choices of an "option" field, shown as a list to pick one from; the value

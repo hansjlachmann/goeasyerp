@@ -20,6 +20,20 @@ table:
           - source: description
             width: 250
 
+    - name: business_unit_code
+      no: 50
+      type: types.Code
+      db_name: business_unit_code
+      length: 10
+      table_relation:
+        table: Business_Unit
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
     - name: journal_batch_name
       no: 51
       type: types.Code

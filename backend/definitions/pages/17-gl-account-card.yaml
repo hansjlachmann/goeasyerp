@@ -64,6 +64,7 @@ page:
         fields:
           - source: consol_credit_acc
           - source: consol_debit_acc
+          - source: consol_currency_val_method
 
       - name: Reporting
         caption: Reporting

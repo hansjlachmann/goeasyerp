@@ -26,6 +26,9 @@ page:
           - source: compress_tax_entries
             editable: true
 
+          - source: consolidation
+            editable: true
+
           - source: exchange_rate_adjmt
             editable: true
 

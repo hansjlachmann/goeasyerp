@@ -906,6 +906,8 @@ tables:
   g_l_account:
     caption: "Finanskonto"
     fields:
+      consol_currency_val_method: "Konsol. valutaværdimetode"
+      business_unit_filter: "Koncernenhedsfilter"
       comment: "Bemærkning"
       no: "Nr."
       name: "Navn"
@@ -957,6 +959,11 @@ tables:
 
     # Option field values
     options:
+      consol_currency_val_method:
+        automatic: "Automatisk"
+        current_rate: "Aktuel kurs"
+        historical_rate: "Historisk kurs"
+        manual_rate: "Manuel kurs"
       account_type:
         posting: "Bogføring"
         heading: "Overskrift"
@@ -3150,6 +3157,7 @@ tables:
   gen_journal_line:
     caption: "Finanskladdelinje"
     fields:
+      business_unit_code: "Koncernenhedskode"
       fa_posting_date: "Anlægsbogføringsdato"
       fa_posting_type: "Anlægsbogføringstype"
       depreciation_book_code: "Afskrivningsprofilkode"
@@ -3339,6 +3347,7 @@ tables:
   source_code_setup:
     caption: "Kildekodeopsætning"
     fields:
+      consolidation: "Konsolidering"
       compress_g_l: "Komprimer finans"
       compress_tax_entries: "Komprimer momsposter"
       compress_cust_ledger: "Komprimer debitorposter"
@@ -5992,3 +6001,64 @@ tables:
         quarter: "Kvartal"
         year: "År"
         period: "Periode"
+  user_time_register:
+    caption: "Brugertidsregister"
+    fields:
+      user_id: "Bruger-id"
+      date: "Dato"
+      minutes: "Minutter"
+  setup_checklist_line:
+    caption: "Linje i opsætningstjekliste"
+    fields:
+      no_of_records: "Antal poster"
+      line_no: "Linjenr."
+      table_id: "Tabel-id"
+      table_name: "Tabelnavn"
+      copying_available: "Kopiering tilgængelig"
+      page_id: "Side-id"
+      page_name: "Sidenavn"
+      starting_date: "Startdato"
+      ending_date: "Slutdato"
+      responsible_id: "Ansvarlig-id"
+      status: "Status"
+      comments: "Bemærkninger"
+      application_area_id: "Programområde-id"
+      application_area_name: "Programområdenavn"
+    options:
+      status:
+        planning: "Planlægning"
+        started: "Startet"
+        completed: "Fuldført"
+        not_used: "Ikke brugt"
+  setup_checklist_comment:
+    caption: "Bemærkning til opsætningstjekliste"
+    fields:
+      table_name: "Tabelnavn"
+      table_id: "Tabel-id"
+      line_no: "Linjenr."
+      date: "Dato"
+      code: "Kode"
+      comment: "Bemærkning"
+  application_area_line:
+    caption: "Programområdelinje"
+    fields:
+      line_no: "Linjenr."
+      id: "Id"
+      name: "Navn"
+  business_unit:
+    caption: "Koncernenhed"
+    fields:
+      code: "Kode"
+      consolidate: "Konsolider"
+      consolidation_pct: "Konsolidering %"
+      starting_date: "Startdato"
+      ending_date: "Slutdato"
+      income_currency_factor: "Valutafaktor resultat"
+      balance_currency_factor: "Valutafaktor balance"
+      exch_rate_loss_acc: "Konto for kurstab"
+      exch_rate_gains_acc: "Konto for kursgevinst"
+      residual_account: "Restkonto"
+      last_balance_currency_factor: "Seneste valutafaktor balance"
+      name: "Navn"
+      company_name: "Regnskabsnavn"
+      currency_code: "Valutakode"

@@ -1,0 +1,18 @@
+page:
+  id: 71
+  type: List
+  name: User Time Registers
+  source_table: User_Time_Register
+  caption: User Time Registers
+  # classic form 71: the minutes each user worked in the company per day (registered at log
+  # out with Register Time in the User Setup or the General Ledger Setup)
+
+  layout:
+    repeater:
+      fields:
+        - source: user_id
+          width: 140
+        - source: date
+          width: 110
+        - source: minutes
+          width: 110

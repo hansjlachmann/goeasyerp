@@ -38,7 +38,7 @@ func TestAuthMiddlewareCompanyGone(t *testing.T) {
 	})
 
 	request := func(companyName string) (string, string) {
-		token, err := GenerateToken(config, "HANS", "Hans", companyName, "en-US", "")
+		token, err := GenerateToken(config, "HANS", "Hans", companyName, "en-US", "", time.Time{})
 		if err != nil {
 			t.Fatal(err)
 		}

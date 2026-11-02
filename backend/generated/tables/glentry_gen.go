@@ -4433,6 +4433,10 @@ func (t *GLEntry) ValidateField(fieldName string, value interface{}) error {
 		} else {
 			return fmt.Errorf("invalid type for field business_unit_code")
 		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "business_unit_code"); err != nil {
+			return err
+		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
 			if trg, ok := l.(GLEntryOnValidate_Business_unit_code); ok {
@@ -7259,6 +7263,17 @@ func (t *GLEntry) GetTableRelationFields() map[string]tables.TableRelationInfo {
 				{Source: "description", Width: 250},
 			},
 			SearchTimeout: 0,
+		},
+		"business_unit_code": {
+			Table:        "Business_Unit",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "name", Width: 250},
+			},
+			SearchTimeout: 0,
+			NoValidate:    true,
 		},
 		"reason_code": {
 			Table:        "Reason_Code",

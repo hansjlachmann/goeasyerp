@@ -838,7 +838,7 @@ func (t *Company) renameReferences(field string, oldValue, newValue interface{})
 		condValue  int
 	}
 	references := map[string][]reference{
-		"name": {{"User_Member", true, "company", "", 0}},
+		"name": {{"Business_Unit", false, "company_name", "", 0}, {"User_Member", true, "company", "", 0}},
 	}
 	var companies []string
 	rows, err := t.db.Query(`SELECT name FROM "Company"`)

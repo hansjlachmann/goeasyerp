@@ -29,6 +29,7 @@
 //	OnValidate_Totaling(rec *gtables.GLAccount) error
 //	OnValidate_Consol_debit_acc(rec *gtables.GLAccount) error
 //	OnValidate_Consol_credit_acc(rec *gtables.GLAccount) error
+//	OnValidate_Consol_currency_val_method(rec *gtables.GLAccount) error
 //	OnValidate_Gen_posting_type(rec *gtables.GLAccount) error
 //	OnValidate_Gen_bus_posting_group(rec *gtables.GLAccount) error
 //	OnValidate_Gen_prod_posting_group(rec *gtables.GLAccount) error
@@ -114,6 +115,23 @@ func (o GLAccountDebit_credit) String() string {
 // IsValid checks if the GLAccountDebit_credit value is within valid range
 func (o GLAccountDebit_credit) IsValid() bool {
 	return o >= 0 && o < 3
+}
+
+// GLAccountConsol_currency_val_method represents the consol_currency_val_method option field
+type GLAccountConsol_currency_val_method int
+
+// String returns the text representation of GLAccountConsol_currency_val_method
+func (o GLAccountConsol_currency_val_method) String() string {
+	options := []string{"Automatic", "Current Rate", "Historical Rate", "Manual Rate"}
+	if o >= 0 && int(o) < len(options) {
+		return options[o]
+	}
+	return ""
+}
+
+// IsValid checks if the GLAccountConsol_currency_val_method value is within valid range
+func (o GLAccountConsol_currency_val_method) IsValid() bool {
+	return o >= 0 && o < 4
 }
 
 // GLAccountGen_posting_type represents the gen_posting_type option field
@@ -229,20 +247,21 @@ type GLAccount struct {
 	Add_currency_debit_amount types.Decimal
 	// FlowField: Sum(GLEntry.add_currency_credit_amount)
 	Add_currency_credit_amount types.Decimal
-	Consol_debit_acc           types.Code                        `db:"consol_debit_acc"`
-	Consol_credit_acc          types.Code                        `db:"consol_credit_acc"`
-	Gen_posting_type           GLAccountGen_posting_type         `db:"gen_posting_type"`
-	Gen_bus_posting_group      types.Code                        `db:"gen_bus_posting_group"`
-	Gen_prod_posting_group     types.Code                        `db:"gen_prod_posting_group"`
-	Automatic_ext_text         bool                              `db:"automatic_ext_text"`
-	Department_posting         GLAccountDepartment_posting       `db:"department_posting"`
-	Project_posting            GLAccountProject_posting          `db:"project_posting"`
-	Tax_area_code              types.Code                        `db:"tax_area_code"`
-	Tax_liable                 bool                              `db:"tax_liable"`
-	Tax_group_code             types.Code                        `db:"tax_group_code"`
-	Tax_bus_posting_group      types.Code                        `db:"tax_bus_posting_group"`
-	Tax_prod_posting_group     types.Code                        `db:"tax_prod_posting_group"`
-	Exchange_rate_adjustment   GLAccountExchange_rate_adjustment `db:"exchange_rate_adjustment"`
+	Consol_debit_acc           types.Code                          `db:"consol_debit_acc"`
+	Consol_credit_acc          types.Code                          `db:"consol_credit_acc"`
+	Consol_currency_val_method GLAccountConsol_currency_val_method `db:"consol_currency_val_method"`
+	Gen_posting_type           GLAccountGen_posting_type           `db:"gen_posting_type"`
+	Gen_bus_posting_group      types.Code                          `db:"gen_bus_posting_group"`
+	Gen_prod_posting_group     types.Code                          `db:"gen_prod_posting_group"`
+	Automatic_ext_text         bool                                `db:"automatic_ext_text"`
+	Department_posting         GLAccountDepartment_posting         `db:"department_posting"`
+	Project_posting            GLAccountProject_posting            `db:"project_posting"`
+	Tax_area_code              types.Code                          `db:"tax_area_code"`
+	Tax_liable                 bool                                `db:"tax_liable"`
+	Tax_group_code             types.Code                          `db:"tax_group_code"`
+	Tax_bus_posting_group      types.Code                          `db:"tax_bus_posting_group"`
+	Tax_prod_posting_group     types.Code                          `db:"tax_prod_posting_group"`
+	Exchange_rate_adjustment   GLAccountExchange_rate_adjustment   `db:"exchange_rate_adjustment"`
 	// FlowField: Exist(CommentLine.line_no)
 	Comment bool
 	// FlowFilter date_filter (types.Date): the filter expression FlowFields apply — not stored
@@ -251,6 +270,8 @@ type GLAccount struct {
 	Department_filter string
 	// FlowFilter project_filter (types.Code): the filter expression FlowFields apply — not stored
 	Project_filter string
+	// FlowFilter business_unit_filter (types.Code): the filter expression FlowFields apply — not stored
+	Business_unit_filter string
 	// FlowFilter budget_filter (types.Code): the filter expression FlowFields apply — not stored
 	Budget_filter string
 
@@ -351,6 +372,19 @@ var GLAccount_Debit_credit = struct {
 	Credit: 2,
 }
 
+// GLAccount_Consol_currency_val_method provides named constants for the consol_currency_val_method option field (FieldName.OptionValue syntax)
+var GLAccount_Consol_currency_val_method = struct {
+	Automatic      GLAccountConsol_currency_val_method
+	CurrentRate    GLAccountConsol_currency_val_method
+	HistoricalRate GLAccountConsol_currency_val_method
+	ManualRate     GLAccountConsol_currency_val_method
+}{
+	Automatic:      0,
+	CurrentRate:    1,
+	HistoricalRate: 2,
+	ManualRate:     3,
+}
+
 // GLAccount_Gen_posting_type provides named constants for the gen_posting_type option field (FieldName.OptionValue syntax)
 var GLAccount_Gen_posting_type = struct {
 	Blank    GLAccountGen_posting_type
@@ -437,6 +471,7 @@ var GLAccount_FieldNo = struct {
 	Add_currency_credit_amount     int
 	Consol_debit_acc               int
 	Consol_credit_acc              int
+	Consol_currency_val_method     int
 	Gen_posting_type               int
 	Gen_bus_posting_group          int
 	Gen_prod_posting_group         int
@@ -453,6 +488,7 @@ var GLAccount_FieldNo = struct {
 	Date_filter                    int
 	Department_filter              int
 	Project_filter                 int
+	Business_unit_filter           int
 	Budget_filter                  int
 }{
 	No:                             1,
@@ -486,6 +522,7 @@ var GLAccount_FieldNo = struct {
 	Add_currency_credit_amount:     65,
 	Consol_debit_acc:               40,
 	Consol_credit_acc:              41,
+	Consol_currency_val_method:     900,
 	Gen_posting_type:               43,
 	Gen_bus_posting_group:          44,
 	Gen_prod_posting_group:         45,
@@ -502,6 +539,7 @@ var GLAccount_FieldNo = struct {
 	Date_filter:                    28,
 	Department_filter:              29,
 	Project_filter:                 30,
+	Business_unit_filter:           42,
 	Budget_filter:                  35,
 }
 
@@ -570,6 +608,8 @@ func (t *GLAccount) FieldNo(fieldName string) int {
 		return 40
 	case "consol_credit_acc":
 		return 41
+	case "consol_currency_val_method":
+		return 900
 	case "gen_posting_type":
 		return 43
 	case "gen_bus_posting_group":
@@ -602,6 +642,8 @@ func (t *GLAccount) FieldNo(fieldName string) int {
 		return 29
 	case "project_filter":
 		return 30
+	case "business_unit_filter":
+		return 42
 	case "budget_filter":
 		return 35
 	}
@@ -673,6 +715,8 @@ func (t *GLAccount) FieldName(fieldNo int) string {
 		return "consol_debit_acc"
 	case 41:
 		return "consol_credit_acc"
+	case 900:
+		return "consol_currency_val_method"
 	case 43:
 		return "gen_posting_type"
 	case 44:
@@ -705,6 +749,8 @@ func (t *GLAccount) FieldName(fieldNo int) string {
 		return "department_filter"
 	case 30:
 		return "project_filter"
+	case 42:
+		return "business_unit_filter"
 	case 35:
 		return "budget_filter"
 	}
@@ -796,41 +842,42 @@ func (t *GLAccount) DeleteOrError(runTrigger bool) error {
 
 // Triggers of G_L_Account: a business logic type implements the ones it needs
 type (
-	GLAccountOnInsert                            interface{ OnInsert(rec *GLAccount) error }
-	GLAccountOnModify                            interface{ OnModify(rec *GLAccount) error }
-	GLAccountOnDelete                            interface{ OnDelete(rec *GLAccount) error }
-	GLAccountOnRename                            interface{ OnRename(rec *GLAccount) error }
-	GLAccountOnValidate_No                       interface{ OnValidate_No(rec *GLAccount) error }
-	GLAccountOnValidate_Name                     interface{ OnValidate_Name(rec *GLAccount) error }
-	GLAccountOnValidate_Search_name              interface{ OnValidate_Search_name(rec *GLAccount) error }
-	GLAccountOnValidate_Account_type             interface{ OnValidate_Account_type(rec *GLAccount) error }
-	GLAccountOnValidate_Department_code          interface{ OnValidate_Department_code(rec *GLAccount) error }
-	GLAccountOnValidate_Project_code             interface{ OnValidate_Project_code(rec *GLAccount) error }
-	GLAccountOnValidate_Income_balance           interface{ OnValidate_Income_balance(rec *GLAccount) error }
-	GLAccountOnValidate_Debit_credit             interface{ OnValidate_Debit_credit(rec *GLAccount) error }
-	GLAccountOnValidate_No_2                     interface{ OnValidate_No_2(rec *GLAccount) error }
-	GLAccountOnValidate_Blocked                  interface{ OnValidate_Blocked(rec *GLAccount) error }
-	GLAccountOnValidate_Direct_posting           interface{ OnValidate_Direct_posting(rec *GLAccount) error }
-	GLAccountOnValidate_Reconciliation_account   interface{ OnValidate_Reconciliation_account(rec *GLAccount) error }
-	GLAccountOnValidate_New_page                 interface{ OnValidate_New_page(rec *GLAccount) error }
-	GLAccountOnValidate_No_of_blank_lines        interface{ OnValidate_No_of_blank_lines(rec *GLAccount) error }
-	GLAccountOnValidate_Indentation              interface{ OnValidate_Indentation(rec *GLAccount) error }
-	GLAccountOnValidate_Last_date_modified       interface{ OnValidate_Last_date_modified(rec *GLAccount) error }
-	GLAccountOnValidate_Totaling                 interface{ OnValidate_Totaling(rec *GLAccount) error }
-	GLAccountOnValidate_Consol_debit_acc         interface{ OnValidate_Consol_debit_acc(rec *GLAccount) error }
-	GLAccountOnValidate_Consol_credit_acc        interface{ OnValidate_Consol_credit_acc(rec *GLAccount) error }
-	GLAccountOnValidate_Gen_posting_type         interface{ OnValidate_Gen_posting_type(rec *GLAccount) error }
-	GLAccountOnValidate_Gen_bus_posting_group    interface{ OnValidate_Gen_bus_posting_group(rec *GLAccount) error }
-	GLAccountOnValidate_Gen_prod_posting_group   interface{ OnValidate_Gen_prod_posting_group(rec *GLAccount) error }
-	GLAccountOnValidate_Automatic_ext_text       interface{ OnValidate_Automatic_ext_text(rec *GLAccount) error }
-	GLAccountOnValidate_Department_posting       interface{ OnValidate_Department_posting(rec *GLAccount) error }
-	GLAccountOnValidate_Project_posting          interface{ OnValidate_Project_posting(rec *GLAccount) error }
-	GLAccountOnValidate_Tax_area_code            interface{ OnValidate_Tax_area_code(rec *GLAccount) error }
-	GLAccountOnValidate_Tax_liable               interface{ OnValidate_Tax_liable(rec *GLAccount) error }
-	GLAccountOnValidate_Tax_group_code           interface{ OnValidate_Tax_group_code(rec *GLAccount) error }
-	GLAccountOnValidate_Tax_bus_posting_group    interface{ OnValidate_Tax_bus_posting_group(rec *GLAccount) error }
-	GLAccountOnValidate_Tax_prod_posting_group   interface{ OnValidate_Tax_prod_posting_group(rec *GLAccount) error }
-	GLAccountOnValidate_Exchange_rate_adjustment interface{ OnValidate_Exchange_rate_adjustment(rec *GLAccount) error }
+	GLAccountOnInsert                              interface{ OnInsert(rec *GLAccount) error }
+	GLAccountOnModify                              interface{ OnModify(rec *GLAccount) error }
+	GLAccountOnDelete                              interface{ OnDelete(rec *GLAccount) error }
+	GLAccountOnRename                              interface{ OnRename(rec *GLAccount) error }
+	GLAccountOnValidate_No                         interface{ OnValidate_No(rec *GLAccount) error }
+	GLAccountOnValidate_Name                       interface{ OnValidate_Name(rec *GLAccount) error }
+	GLAccountOnValidate_Search_name                interface{ OnValidate_Search_name(rec *GLAccount) error }
+	GLAccountOnValidate_Account_type               interface{ OnValidate_Account_type(rec *GLAccount) error }
+	GLAccountOnValidate_Department_code            interface{ OnValidate_Department_code(rec *GLAccount) error }
+	GLAccountOnValidate_Project_code               interface{ OnValidate_Project_code(rec *GLAccount) error }
+	GLAccountOnValidate_Income_balance             interface{ OnValidate_Income_balance(rec *GLAccount) error }
+	GLAccountOnValidate_Debit_credit               interface{ OnValidate_Debit_credit(rec *GLAccount) error }
+	GLAccountOnValidate_No_2                       interface{ OnValidate_No_2(rec *GLAccount) error }
+	GLAccountOnValidate_Blocked                    interface{ OnValidate_Blocked(rec *GLAccount) error }
+	GLAccountOnValidate_Direct_posting             interface{ OnValidate_Direct_posting(rec *GLAccount) error }
+	GLAccountOnValidate_Reconciliation_account     interface{ OnValidate_Reconciliation_account(rec *GLAccount) error }
+	GLAccountOnValidate_New_page                   interface{ OnValidate_New_page(rec *GLAccount) error }
+	GLAccountOnValidate_No_of_blank_lines          interface{ OnValidate_No_of_blank_lines(rec *GLAccount) error }
+	GLAccountOnValidate_Indentation                interface{ OnValidate_Indentation(rec *GLAccount) error }
+	GLAccountOnValidate_Last_date_modified         interface{ OnValidate_Last_date_modified(rec *GLAccount) error }
+	GLAccountOnValidate_Totaling                   interface{ OnValidate_Totaling(rec *GLAccount) error }
+	GLAccountOnValidate_Consol_debit_acc           interface{ OnValidate_Consol_debit_acc(rec *GLAccount) error }
+	GLAccountOnValidate_Consol_credit_acc          interface{ OnValidate_Consol_credit_acc(rec *GLAccount) error }
+	GLAccountOnValidate_Consol_currency_val_method interface{ OnValidate_Consol_currency_val_method(rec *GLAccount) error }
+	GLAccountOnValidate_Gen_posting_type           interface{ OnValidate_Gen_posting_type(rec *GLAccount) error }
+	GLAccountOnValidate_Gen_bus_posting_group      interface{ OnValidate_Gen_bus_posting_group(rec *GLAccount) error }
+	GLAccountOnValidate_Gen_prod_posting_group     interface{ OnValidate_Gen_prod_posting_group(rec *GLAccount) error }
+	GLAccountOnValidate_Automatic_ext_text         interface{ OnValidate_Automatic_ext_text(rec *GLAccount) error }
+	GLAccountOnValidate_Department_posting         interface{ OnValidate_Department_posting(rec *GLAccount) error }
+	GLAccountOnValidate_Project_posting            interface{ OnValidate_Project_posting(rec *GLAccount) error }
+	GLAccountOnValidate_Tax_area_code              interface{ OnValidate_Tax_area_code(rec *GLAccount) error }
+	GLAccountOnValidate_Tax_liable                 interface{ OnValidate_Tax_liable(rec *GLAccount) error }
+	GLAccountOnValidate_Tax_group_code             interface{ OnValidate_Tax_group_code(rec *GLAccount) error }
+	GLAccountOnValidate_Tax_bus_posting_group      interface{ OnValidate_Tax_bus_posting_group(rec *GLAccount) error }
+	GLAccountOnValidate_Tax_prod_posting_group     interface{ OnValidate_Tax_prod_posting_group(rec *GLAccount) error }
+	GLAccountOnValidate_Exchange_rate_adjustment   interface{ OnValidate_Exchange_rate_adjustment(rec *GLAccount) error }
 )
 
 // gLAccountLogic is the registered business logic of G_L_Account, in
@@ -898,6 +945,8 @@ func gLAccountTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GLAccountOnValidate_Consol_debit_acc)
 	case "OnValidate_Consol_credit_acc":
 		_, ok = logic.(GLAccountOnValidate_Consol_credit_acc)
+	case "OnValidate_Consol_currency_val_method":
+		_, ok = logic.(GLAccountOnValidate_Consol_currency_val_method)
 	case "OnValidate_Gen_posting_type":
 		_, ok = logic.(GLAccountOnValidate_Gen_posting_type)
 	case "OnValidate_Gen_bus_posting_group":
@@ -1108,6 +1157,7 @@ func GetGLAccountTableSchema() string {
 		add_currency_credit_amount TEXT,
 		consol_debit_acc TEXT(20),
 		consol_credit_acc TEXT(20),
+		consol_currency_val_method INTEGER CHECK (consol_currency_val_method >= 0 AND consol_currency_val_method <= 3),
 		gen_posting_type INTEGER CHECK (gen_posting_type >= 0 AND gen_posting_type <= 2),
 		gen_bus_posting_group TEXT(10),
 		gen_prod_posting_group TEXT(10),
@@ -1158,6 +1208,7 @@ func GetGLAccountPostgresTableSchema() string {
 		add_currency_credit_amount NUMERIC,
 		consol_debit_acc VARCHAR(20),
 		consol_credit_acc VARCHAR(20),
+		consol_currency_val_method INTEGER CHECK (consol_currency_val_method >= 0 AND consol_currency_val_method <= 3),
 		gen_posting_type INTEGER CHECK (gen_posting_type >= 0 AND gen_posting_type <= 2),
 		gen_bus_posting_group VARCHAR(10),
 		gen_prod_posting_group VARCHAR(10),
@@ -1343,6 +1394,7 @@ func (t *GLAccount) StoreOldValues() {
 	t.oldValues["totaling"] = t.Totaling
 	t.oldValues["consol_debit_acc"] = t.Consol_debit_acc
 	t.oldValues["consol_credit_acc"] = t.Consol_credit_acc
+	t.oldValues["consol_currency_val_method"] = t.Consol_currency_val_method
 	t.oldValues["gen_posting_type"] = t.Gen_posting_type
 	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
 	t.oldValues["gen_prod_posting_group"] = t.Gen_prod_posting_group
@@ -1425,6 +1477,9 @@ func (t *GLAccount) XRec() *GLAccount {
 	}
 	if v, ok := t.oldValues["consol_credit_acc"].(types.Code); ok {
 		x.Consol_credit_acc = v
+	}
+	if v, ok := t.oldValues["consol_currency_val_method"].(GLAccountConsol_currency_val_method); ok {
+		x.Consol_currency_val_method = v
 	}
 	if v, ok := t.oldValues["gen_posting_type"].(GLAccountGen_posting_type); ok {
 		x.Gen_posting_type = v
@@ -1542,6 +1597,7 @@ func (t *GLAccount) GetByPK(no types.Code) bool {
 	var totalingNull sql.NullString
 	var consol_debit_accNull sql.NullString
 	var consol_credit_accNull sql.NullString
+	var consol_currency_val_methodInt int
 	var gen_posting_typeInt int
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
@@ -1561,7 +1617,7 @@ func (t *GLAccount) GetByPK(no types.Code) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT no, name, search_name, account_type, department_code, project_code, income_balance, debit_credit, no_2, blocked, direct_posting, reconciliation_account, new_page, no_of_blank_lines, indentation, last_date_modified, totaling, consol_debit_acc, consol_credit_acc, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, automatic_ext_text, department_posting, project_posting, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, exchange_rate_adjustment FROM "%s" WHERE 1=1 AND no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT no, name, search_name, account_type, department_code, project_code, income_balance, debit_credit, no_2, blocked, direct_posting, reconciliation_account, new_page, no_of_blank_lines, indentation, last_date_modified, totaling, consol_debit_acc, consol_credit_acc, consol_currency_val_method, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, automatic_ext_text, department_posting, project_posting, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, exchange_rate_adjustment FROM "%s" WHERE 1=1 AND no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1587,6 +1643,7 @@ func (t *GLAccount) GetByPK(no types.Code) bool {
 		&totalingNull,
 		&consol_debit_accNull,
 		&consol_credit_accNull,
+		&consol_currency_val_methodInt,
 		&gen_posting_typeInt,
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
@@ -1631,6 +1688,7 @@ func (t *GLAccount) GetByPK(no types.Code) bool {
 	t.Totaling = types.NewText(totalingNull.String)
 	t.Consol_debit_acc = types.NewCode(consol_debit_accNull.String)
 	t.Consol_credit_acc = types.NewCode(consol_credit_accNull.String)
+	t.Consol_currency_val_method = GLAccountConsol_currency_val_method(consol_currency_val_methodInt)
 	t.Gen_posting_type = GLAccountGen_posting_type(gen_posting_typeInt)
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
@@ -1684,6 +1742,7 @@ func (t *GLAccount) Insert(runTrigger bool) bool {
 		t.Totaling,
 		t.Consol_debit_acc,
 		t.Consol_credit_acc,
+		t.Consol_currency_val_method,
 		t.Gen_posting_type,
 		t.Gen_bus_posting_group,
 		t.Gen_prod_posting_group,
@@ -1700,7 +1759,7 @@ func (t *GLAccount) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, name, search_name, account_type, department_code, project_code, income_balance, debit_credit, no_2, blocked, direct_posting, reconciliation_account, new_page, no_of_blank_lines, indentation, last_date_modified, totaling, consol_debit_acc, consol_credit_acc, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, automatic_ext_text, department_posting, project_posting, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, exchange_rate_adjustment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, name, search_name, account_type, department_code, project_code, income_balance, debit_credit, no_2, blocked, direct_posting, reconciliation_account, new_page, no_of_blank_lines, indentation, last_date_modified, totaling, consol_debit_acc, consol_credit_acc, consol_currency_val_method, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, automatic_ext_text, department_posting, project_posting, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, exchange_rate_adjustment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1757,6 +1816,7 @@ func (t *GLAccount) InsertAll(records []*GLAccount, runTrigger bool) error {
 			r.Totaling,
 			r.Consol_debit_acc,
 			r.Consol_credit_acc,
+			r.Consol_currency_val_method,
 			r.Gen_posting_type,
 			r.Gen_bus_posting_group,
 			r.Gen_prod_posting_group,
@@ -1772,7 +1832,7 @@ func (t *GLAccount) InsertAll(records []*GLAccount, runTrigger bool) error {
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, GLAccountTableName)
-	columns := []string{"no", "name", "search_name", "account_type", "department_code", "project_code", "income_balance", "debit_credit", "no_2", "blocked", "direct_posting", "reconciliation_account", "new_page", "no_of_blank_lines", "indentation", "last_date_modified", "totaling", "consol_debit_acc", "consol_credit_acc", "gen_posting_type", "gen_bus_posting_group", "gen_prod_posting_group", "automatic_ext_text", "department_posting", "project_posting", "tax_area_code", "tax_liable", "tax_group_code", "tax_bus_posting_group", "tax_prod_posting_group", "exchange_rate_adjustment"}
+	columns := []string{"no", "name", "search_name", "account_type", "department_code", "project_code", "income_balance", "debit_credit", "no_2", "blocked", "direct_posting", "reconciliation_account", "new_page", "no_of_blank_lines", "indentation", "last_date_modified", "totaling", "consol_debit_acc", "consol_credit_acc", "consol_currency_val_method", "gen_posting_type", "gen_bus_posting_group", "gen_prod_posting_group", "automatic_ext_text", "department_posting", "project_posting", "tax_area_code", "tax_liable", "tax_group_code", "tax_bus_posting_group", "tax_prod_posting_group", "exchange_rate_adjustment"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1888,6 +1948,10 @@ func (t *GLAccount) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "consol_credit_acc = ?")
 			values = append(values, t.Consol_credit_acc)
 		}
+		if t.hasFieldChanged("consol_currency_val_method") {
+			setClauses = append(setClauses, "consol_currency_val_method = ?")
+			values = append(values, t.Consol_currency_val_method)
+		}
 		if t.hasFieldChanged("gen_posting_type") {
 			setClauses = append(setClauses, "gen_posting_type = ?")
 			values = append(values, t.Gen_posting_type)
@@ -1979,6 +2043,8 @@ func (t *GLAccount) Modify(runTrigger bool) bool {
 		values = append(values, t.Consol_debit_acc)
 		setClauses = append(setClauses, "consol_credit_acc = ?")
 		values = append(values, t.Consol_credit_acc)
+		setClauses = append(setClauses, "consol_currency_val_method = ?")
+		values = append(values, t.Consol_currency_val_method)
 		setClauses = append(setClauses, "gen_posting_type = ?")
 		values = append(values, t.Gen_posting_type)
 		setClauses = append(setClauses, "gen_bus_posting_group = ?")
@@ -2151,6 +2217,10 @@ func (t *GLAccount) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Consol_credit_acc.Equal(old)
 		}
+	case "consol_currency_val_method":
+		if old, ok := oldValue.(GLAccountConsol_currency_val_method); ok {
+			return t.Consol_currency_val_method != old
+		}
 	case "gen_posting_type":
 		if old, ok := oldValue.(GLAccountGen_posting_type); ok {
 			return t.Gen_posting_type != old
@@ -2225,7 +2295,7 @@ func (t *GLAccount) renameReferences(field string, oldValue, newValue interface{
 		condValue  int
 	}
 	references := map[string][]reference{
-		"no": {{"Acc_Schedule_Line", false, "totaling", "", 0}, {"Bank_Account_Posting_Group", false, "g_l_bank_account_no", "", 0}, {"Bank_Account_Ledger_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Check_Ledger_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Comment_Line", false, "no", "table_name", 0}, {"Currency", false, "unrealized_gains_acc", "", 0}, {"Currency", false, "realized_gains_acc", "", 0}, {"Currency", false, "unrealized_losses_acc", "", 0}, {"Currency", false, "realized_losses_acc", "", 0}, {"Currency", false, "realized_gl_gains_account", "", 0}, {"Currency", false, "realized_gl_losses_account", "", 0}, {"Currency", false, "residual_gains_account", "", 0}, {"Currency", false, "residual_losses_account", "", 0}, {"Currency", false, "conv_lcy_rndg_debit_acc", "", 0}, {"Currency", false, "conv_lcy_rndg_credit_acc", "", 0}, {"Customer Ledger Entry", false, "bal_account_no", "bal_account_type", 0}, {"Customer_Posting_Group", false, "receivables_account", "", 0}, {"Customer_Posting_Group", false, "service_charge_acc", "", 0}, {"Customer_Posting_Group", false, "payment_disc_acc", "", 0}, {"Customer_Posting_Group", false, "invoice_rounding_account", "", 0}, {"Customer_Posting_Group", false, "additional_fee_account", "", 0}, {"Customer_Posting_Group", false, "interest_account", "", 0}, {"Customer_Posting_Group", false, "curr_appln_rounding_account", "", 0}, {"FA_Allocation", false, "account_no", "", 0}, {"FA_Posting_Group", false, "acquisition_cost_account", "", 0}, {"FA_Posting_Group", false, "accum_depreciation_account", "", 0}, {"FA_Posting_Group", false, "write_down_account", "", 0}, {"FA_Posting_Group", false, "appreciation_account", "", 0}, {"FA_Posting_Group", false, "custom_1_account", "", 0}, {"FA_Posting_Group", false, "custom_2_account", "", 0}, {"FA_Posting_Group", false, "acq_cost_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "accum_depr_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "write_down_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "appreciation_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "custom_1_account_on_disposal", "", 0}, {"FA_Posting_Group", false, "custom_2_account_on_disposal", "", 0}, {"FA_Posting_Group", false, "gains_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "losses_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "book_value_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "sales_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "write_down_bal_acc_on_disp", "", 0}, {"FA_Posting_Group", false, "apprec_bal_acc_on_disp", "", 0}, {"FA_Posting_Group", false, "custom_1_bal_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "custom_2_bal_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "maintenance_expense_account", "", 0}, {"FA_Posting_Group", false, "maintenance_bal_acc", "", 0}, {"FA_Posting_Group", false, "acquisition_cost_bal_acc", "", 0}, {"FA_Posting_Group", false, "depreciation_expense_acc", "", 0}, {"FA_Posting_Group", false, "write_down_expense_acc", "", 0}, {"FA_Posting_Group", false, "appreciation_bal_account", "", 0}, {"FA_Posting_Group", false, "custom_1_expense_acc", "", 0}, {"FA_Posting_Group", false, "custom_2_expense_acc", "", 0}, {"FA_Posting_Group", false, "sales_bal_acc", "", 0}, {"FA_Ledger_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Finance_Charge_Memo_Line", false, "no", "type", 1}, {"G_L_Budget_Entry", false, "gl_account_no", "", 0}, {"Gen_Jnl_Allocation", false, "account_no", "", 0}, {"Gen_Journal_Batch", false, "bal_account_no", "bal_account_type", 0}, {"Gen_Journal_Line", false, "account_no", "account_type", 0}, {"Gen_Journal_Line", false, "bal_account_no", "bal_account_type", 0}, {"Gen_Journal_Template", false, "bal_account_no", "bal_account_type", 0}, {"General_Posting_Setup", false, "sales_account", "", 0}, {"General_Posting_Setup", false, "sales_line_disc_account", "", 0}, {"General_Posting_Setup", false, "sales_inv_disc_account", "", 0}, {"General_Posting_Setup", false, "sales_payment_disc_account", "", 0}, {"General_Posting_Setup", false, "purch_account", "", 0}, {"General_Posting_Setup", false, "purch_line_disc_account", "", 0}, {"General_Posting_Setup", false, "purch_inv_disc_account", "", 0}, {"General_Posting_Setup", false, "purch_payment_disc_account", "", 0}, {"General_Posting_Setup", false, "cogs_account", "", 0}, {"General_Posting_Setup", false, "inventory_adjmt_account", "", 0}, {"General_Posting_Setup", false, "job_sales_adjmt_account", "", 0}, {"General_Posting_Setup", false, "job_cost_adjmt_account", "", 0}, {"General_Posting_Setup", false, "sales_credit_memo_account", "", 0}, {"General_Posting_Setup", false, "purch_credit_memo_account", "", 0}, {"G_L_Account", false, "totaling", "", 0}, {"G_L_Entry", false, "gl_account_no", "", 0}, {"G_L_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Inventory_Posting_Group", false, "inventory_account", "", 0}, {"Issued_Fin_Charge_Memo_Line", false, "no", "type", 1}, {"Issued_Reminder_Line", false, "no", "type", 1}, {"Maintenance_Ledger_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Payment_Method", false, "bal_account_no", "bal_account_type", 0}, {"Purch_Cr_Memo_Line", false, "no", "type", 1}, {"Purch_Inv_Line", false, "no", "type", 1}, {"Purch_Rcpt_Line", false, "no", "type", 1}, {"Purchase_Line", false, "no", "type", 1}, {"Reminder_Line", false, "no", "type", 1}, {"Requisition_Line", false, "no", "type", 1}, {"Sales_Cr_Memo_Line", false, "no", "type", 1}, {"Sales_Invoice_Line", false, "no", "type", 1}, {"Sales_Line", false, "no", "type", 1}, {"Sales_Shipment_Line", false, "no", "type", 1}, {"Tax_Jurisdiction", false, "tax_account_sales", "", 0}, {"Tax_Jurisdiction", false, "tax_account_purchases", "", 0}, {"Tax_Jurisdiction", false, "unreal_tax_acc_sales", "", 0}, {"Tax_Jurisdiction", false, "unreal_tax_acc_purchases", "", 0}, {"Tax_Jurisdiction", false, "reverse_charge_purchases", "", 0}, {"Tax_Jurisdiction", false, "unreal_rev_charge_purch", "", 0}, {"Tax_Posting_Setup", false, "sales_vat_account", "", 0}, {"Tax_Posting_Setup", false, "sales_vat_unreal_account", "", 0}, {"Tax_Posting_Setup", false, "purchase_vat_account", "", 0}, {"Tax_Posting_Setup", false, "purch_vat_unreal_account", "", 0}, {"Tax_Posting_Setup", false, "reverse_chrg_vat_acc", "", 0}, {"Tax_Posting_Setup", false, "reverse_chrg_vat_unreal_acc", "", 0}, {"Tax_Statement_Line", false, "account_totaling", "", 0}, {"Vendor_Posting_Group", false, "payables_account", "", 0}, {"Vendor_Posting_Group", false, "service_charge_acc", "", 0}, {"Vendor_Posting_Group", false, "payment_disc_acc", "", 0}, {"Vendor_Posting_Group", false, "invoice_rounding_account", "", 0}, {"Vendor_Posting_Group", false, "curr_appln_rounding_account", "", 0}, {"Vendor Ledger Entry", false, "bal_account_no", "bal_account_type", 0}},
+		"no": {{"Acc_Schedule_Line", false, "totaling", "", 0}, {"Bank_Account_Posting_Group", false, "g_l_bank_account_no", "", 0}, {"Bank_Account_Ledger_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Business_Unit", false, "exch_rate_loss_acc", "", 0}, {"Business_Unit", false, "exch_rate_gains_acc", "", 0}, {"Business_Unit", false, "residual_account", "", 0}, {"Check_Ledger_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Comment_Line", false, "no", "table_name", 0}, {"Currency", false, "unrealized_gains_acc", "", 0}, {"Currency", false, "realized_gains_acc", "", 0}, {"Currency", false, "unrealized_losses_acc", "", 0}, {"Currency", false, "realized_losses_acc", "", 0}, {"Currency", false, "realized_gl_gains_account", "", 0}, {"Currency", false, "realized_gl_losses_account", "", 0}, {"Currency", false, "residual_gains_account", "", 0}, {"Currency", false, "residual_losses_account", "", 0}, {"Currency", false, "conv_lcy_rndg_debit_acc", "", 0}, {"Currency", false, "conv_lcy_rndg_credit_acc", "", 0}, {"Customer Ledger Entry", false, "bal_account_no", "bal_account_type", 0}, {"Customer_Posting_Group", false, "receivables_account", "", 0}, {"Customer_Posting_Group", false, "service_charge_acc", "", 0}, {"Customer_Posting_Group", false, "payment_disc_acc", "", 0}, {"Customer_Posting_Group", false, "invoice_rounding_account", "", 0}, {"Customer_Posting_Group", false, "additional_fee_account", "", 0}, {"Customer_Posting_Group", false, "interest_account", "", 0}, {"Customer_Posting_Group", false, "curr_appln_rounding_account", "", 0}, {"FA_Allocation", false, "account_no", "", 0}, {"FA_Posting_Group", false, "acquisition_cost_account", "", 0}, {"FA_Posting_Group", false, "accum_depreciation_account", "", 0}, {"FA_Posting_Group", false, "write_down_account", "", 0}, {"FA_Posting_Group", false, "appreciation_account", "", 0}, {"FA_Posting_Group", false, "custom_1_account", "", 0}, {"FA_Posting_Group", false, "custom_2_account", "", 0}, {"FA_Posting_Group", false, "acq_cost_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "accum_depr_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "write_down_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "appreciation_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "custom_1_account_on_disposal", "", 0}, {"FA_Posting_Group", false, "custom_2_account_on_disposal", "", 0}, {"FA_Posting_Group", false, "gains_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "losses_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "book_value_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "sales_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "write_down_bal_acc_on_disp", "", 0}, {"FA_Posting_Group", false, "apprec_bal_acc_on_disp", "", 0}, {"FA_Posting_Group", false, "custom_1_bal_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "custom_2_bal_acc_on_disposal", "", 0}, {"FA_Posting_Group", false, "maintenance_expense_account", "", 0}, {"FA_Posting_Group", false, "maintenance_bal_acc", "", 0}, {"FA_Posting_Group", false, "acquisition_cost_bal_acc", "", 0}, {"FA_Posting_Group", false, "depreciation_expense_acc", "", 0}, {"FA_Posting_Group", false, "write_down_expense_acc", "", 0}, {"FA_Posting_Group", false, "appreciation_bal_account", "", 0}, {"FA_Posting_Group", false, "custom_1_expense_acc", "", 0}, {"FA_Posting_Group", false, "custom_2_expense_acc", "", 0}, {"FA_Posting_Group", false, "sales_bal_acc", "", 0}, {"FA_Ledger_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Finance_Charge_Memo_Line", false, "no", "type", 1}, {"G_L_Budget_Entry", false, "gl_account_no", "", 0}, {"Gen_Jnl_Allocation", false, "account_no", "", 0}, {"Gen_Journal_Batch", false, "bal_account_no", "bal_account_type", 0}, {"Gen_Journal_Line", false, "account_no", "account_type", 0}, {"Gen_Journal_Line", false, "bal_account_no", "bal_account_type", 0}, {"Gen_Journal_Template", false, "bal_account_no", "bal_account_type", 0}, {"General_Posting_Setup", false, "sales_account", "", 0}, {"General_Posting_Setup", false, "sales_line_disc_account", "", 0}, {"General_Posting_Setup", false, "sales_inv_disc_account", "", 0}, {"General_Posting_Setup", false, "sales_payment_disc_account", "", 0}, {"General_Posting_Setup", false, "purch_account", "", 0}, {"General_Posting_Setup", false, "purch_line_disc_account", "", 0}, {"General_Posting_Setup", false, "purch_inv_disc_account", "", 0}, {"General_Posting_Setup", false, "purch_payment_disc_account", "", 0}, {"General_Posting_Setup", false, "cogs_account", "", 0}, {"General_Posting_Setup", false, "inventory_adjmt_account", "", 0}, {"General_Posting_Setup", false, "job_sales_adjmt_account", "", 0}, {"General_Posting_Setup", false, "job_cost_adjmt_account", "", 0}, {"General_Posting_Setup", false, "sales_credit_memo_account", "", 0}, {"General_Posting_Setup", false, "purch_credit_memo_account", "", 0}, {"G_L_Account", false, "totaling", "", 0}, {"G_L_Entry", false, "gl_account_no", "", 0}, {"G_L_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Inventory_Posting_Group", false, "inventory_account", "", 0}, {"Issued_Fin_Charge_Memo_Line", false, "no", "type", 1}, {"Issued_Reminder_Line", false, "no", "type", 1}, {"Maintenance_Ledger_Entry", false, "bal_account_no", "bal_account_type", 0}, {"Payment_Method", false, "bal_account_no", "bal_account_type", 0}, {"Purch_Cr_Memo_Line", false, "no", "type", 1}, {"Purch_Inv_Line", false, "no", "type", 1}, {"Purch_Rcpt_Line", false, "no", "type", 1}, {"Purchase_Line", false, "no", "type", 1}, {"Reminder_Line", false, "no", "type", 1}, {"Requisition_Line", false, "no", "type", 1}, {"Sales_Cr_Memo_Line", false, "no", "type", 1}, {"Sales_Invoice_Line", false, "no", "type", 1}, {"Sales_Line", false, "no", "type", 1}, {"Sales_Shipment_Line", false, "no", "type", 1}, {"Tax_Jurisdiction", false, "tax_account_sales", "", 0}, {"Tax_Jurisdiction", false, "tax_account_purchases", "", 0}, {"Tax_Jurisdiction", false, "unreal_tax_acc_sales", "", 0}, {"Tax_Jurisdiction", false, "unreal_tax_acc_purchases", "", 0}, {"Tax_Jurisdiction", false, "reverse_charge_purchases", "", 0}, {"Tax_Jurisdiction", false, "unreal_rev_charge_purch", "", 0}, {"Tax_Posting_Setup", false, "sales_vat_account", "", 0}, {"Tax_Posting_Setup", false, "sales_vat_unreal_account", "", 0}, {"Tax_Posting_Setup", false, "purchase_vat_account", "", 0}, {"Tax_Posting_Setup", false, "purch_vat_unreal_account", "", 0}, {"Tax_Posting_Setup", false, "reverse_chrg_vat_acc", "", 0}, {"Tax_Posting_Setup", false, "reverse_chrg_vat_unreal_acc", "", 0}, {"Tax_Statement_Line", false, "account_totaling", "", 0}, {"Vendor_Posting_Group", false, "payables_account", "", 0}, {"Vendor_Posting_Group", false, "service_charge_acc", "", 0}, {"Vendor_Posting_Group", false, "payment_disc_acc", "", 0}, {"Vendor_Posting_Group", false, "invoice_rounding_account", "", 0}, {"Vendor_Posting_Group", false, "curr_appln_rounding_account", "", 0}, {"Vendor Ledger Entry", false, "bal_account_no", "bal_account_type", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
@@ -2482,6 +2552,7 @@ func (t *GLAccount) calcForRecords_balance_at_date(records []map[string]interfac
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Business_unit_filter = t.Business_unit_filter
 		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["balance_at_date"] = one.calcSum_balance_at_date().String()
@@ -2493,7 +2564,7 @@ func (t *GLAccount) calcForRecords_balance_at_date(records []map[string]interfac
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -2526,6 +2597,13 @@ func (t *GLAccount) calcForRecords_balance_at_date(records []map[string]interfac
 		if t.Department_filter != "" {
 			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Business_unit_filter != "" {
+			// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -2596,6 +2674,7 @@ func (t *GLAccount) calcForRecords_net_change(records []map[string]interface{}) 
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Business_unit_filter = t.Business_unit_filter
 		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["net_change"] = one.calcSum_net_change().String()
@@ -2607,7 +2686,7 @@ func (t *GLAccount) calcForRecords_net_change(records []map[string]interface{}) 
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -2640,6 +2719,13 @@ func (t *GLAccount) calcForRecords_net_change(records []map[string]interface{}) 
 		if t.Department_filter != "" {
 			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Business_unit_filter != "" {
+			// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -2710,6 +2796,7 @@ func (t *GLAccount) calcForRecords_budgeted_amount(records []map[string]interfac
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Business_unit_filter = t.Business_unit_filter
 		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["budgeted_amount"] = one.calcSum_budgeted_amount().String()
@@ -2831,6 +2918,7 @@ func (t *GLAccount) calcForRecords_budget_at_date(records []map[string]interface
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Business_unit_filter = t.Business_unit_filter
 		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["budget_at_date"] = one.calcSum_budget_at_date().String()
@@ -2952,6 +3040,7 @@ func (t *GLAccount) calcForRecords_balance(records []map[string]interface{}) {
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Business_unit_filter = t.Business_unit_filter
 		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["balance"] = one.calcSum_balance().String()
@@ -2963,7 +3052,7 @@ func (t *GLAccount) calcForRecords_balance(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -2996,6 +3085,13 @@ func (t *GLAccount) calcForRecords_balance(records []map[string]interface{}) {
 		if t.Department_filter != "" {
 			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Business_unit_filter != "" {
+			// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -3059,6 +3155,7 @@ func (t *GLAccount) calcForRecords_debit_amount(records []map[string]interface{}
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Business_unit_filter = t.Business_unit_filter
 		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["debit_amount"] = one.calcSum_debit_amount().String()
@@ -3070,7 +3167,7 @@ func (t *GLAccount) calcForRecords_debit_amount(records []map[string]interface{}
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -3103,6 +3200,13 @@ func (t *GLAccount) calcForRecords_debit_amount(records []map[string]interface{}
 		if t.Department_filter != "" {
 			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Business_unit_filter != "" {
+			// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -3173,6 +3277,7 @@ func (t *GLAccount) calcForRecords_credit_amount(records []map[string]interface{
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Business_unit_filter = t.Business_unit_filter
 		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["credit_amount"] = one.calcSum_credit_amount().String()
@@ -3184,7 +3289,7 @@ func (t *GLAccount) calcForRecords_credit_amount(records []map[string]interface{
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -3217,6 +3322,13 @@ func (t *GLAccount) calcForRecords_credit_amount(records []map[string]interface{
 		if t.Department_filter != "" {
 			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Business_unit_filter != "" {
+			// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -3287,6 +3399,7 @@ func (t *GLAccount) calcForRecords_additional_currency_net_change(records []map[
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Business_unit_filter = t.Business_unit_filter
 		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["additional_currency_net_change"] = one.calcSum_additional_currency_net_change().String()
@@ -3298,7 +3411,7 @@ func (t *GLAccount) calcForRecords_additional_currency_net_change(records []map[
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -3331,6 +3444,13 @@ func (t *GLAccount) calcForRecords_additional_currency_net_change(records []map[
 		if t.Department_filter != "" {
 			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Business_unit_filter != "" {
+			// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -3401,6 +3521,7 @@ func (t *GLAccount) calcForRecords_add_currency_balance_at_date(records []map[st
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Business_unit_filter = t.Business_unit_filter
 		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["add_currency_balance_at_date"] = one.calcSum_add_currency_balance_at_date().String()
@@ -3412,7 +3533,7 @@ func (t *GLAccount) calcForRecords_add_currency_balance_at_date(records []map[st
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -3445,6 +3566,13 @@ func (t *GLAccount) calcForRecords_add_currency_balance_at_date(records []map[st
 		if t.Department_filter != "" {
 			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Business_unit_filter != "" {
+			// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -3515,6 +3643,7 @@ func (t *GLAccount) calcForRecords_additional_currency_balance(records []map[str
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Business_unit_filter = t.Business_unit_filter
 		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["additional_currency_balance"] = one.calcSum_additional_currency_balance().String()
@@ -3526,7 +3655,7 @@ func (t *GLAccount) calcForRecords_additional_currency_balance(records []map[str
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -3559,6 +3688,13 @@ func (t *GLAccount) calcForRecords_additional_currency_balance(records []map[str
 		if t.Department_filter != "" {
 			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Business_unit_filter != "" {
+			// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -3622,6 +3758,7 @@ func (t *GLAccount) calcForRecords_add_currency_debit_amount(records []map[strin
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Business_unit_filter = t.Business_unit_filter
 		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["add_currency_debit_amount"] = one.calcSum_add_currency_debit_amount().String()
@@ -3633,7 +3770,7 @@ func (t *GLAccount) calcForRecords_add_currency_debit_amount(records []map[strin
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -3666,6 +3803,13 @@ func (t *GLAccount) calcForRecords_add_currency_debit_amount(records []map[strin
 		if t.Department_filter != "" {
 			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Business_unit_filter != "" {
+			// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -3736,6 +3880,7 @@ func (t *GLAccount) calcForRecords_add_currency_credit_amount(records []map[stri
 		one.Date_filter = t.Date_filter
 		one.Department_filter = t.Department_filter
 		one.Project_filter = t.Project_filter
+		one.Business_unit_filter = t.Business_unit_filter
 		one.Budget_filter = t.Budget_filter
 		one.FromMap(rec)
 		rec["add_currency_credit_amount"] = one.calcSum_add_currency_credit_amount().String()
@@ -3747,7 +3892,7 @@ func (t *GLAccount) calcForRecords_add_currency_credit_amount(records []map[stri
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -3780,6 +3925,13 @@ func (t *GLAccount) calcForRecords_add_currency_credit_amount(records []map[stri
 		if t.Department_filter != "" {
 			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Business_unit_filter != "" {
+			// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -3909,7 +4061,7 @@ func (t *GLAccount) calcSum_balance_at_date() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -3933,6 +4085,13 @@ func (t *GLAccount) calcSum_balance_at_date() types.Decimal {
 	if t.Department_filter != "" {
 		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Business_unit_filter != "" {
+		// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -3977,7 +4136,7 @@ func (t *GLAccount) calcSum_net_change() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -4001,6 +4160,13 @@ func (t *GLAccount) calcSum_net_change() types.Decimal {
 	if t.Department_filter != "" {
 		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Business_unit_filter != "" {
+		// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -4195,7 +4361,7 @@ func (t *GLAccount) calcSum_balance() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -4219,6 +4385,13 @@ func (t *GLAccount) calcSum_balance() types.Decimal {
 	if t.Department_filter != "" {
 		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Business_unit_filter != "" {
+		// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -4256,7 +4429,7 @@ func (t *GLAccount) calcSum_debit_amount() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -4280,6 +4453,13 @@ func (t *GLAccount) calcSum_debit_amount() types.Decimal {
 	if t.Department_filter != "" {
 		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Business_unit_filter != "" {
+		// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -4324,7 +4504,7 @@ func (t *GLAccount) calcSum_credit_amount() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -4348,6 +4528,13 @@ func (t *GLAccount) calcSum_credit_amount() types.Decimal {
 	if t.Department_filter != "" {
 		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Business_unit_filter != "" {
+		// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -4392,7 +4579,7 @@ func (t *GLAccount) calcSum_additional_currency_net_change() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -4416,6 +4603,13 @@ func (t *GLAccount) calcSum_additional_currency_net_change() types.Decimal {
 	if t.Department_filter != "" {
 		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Business_unit_filter != "" {
+		// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -4460,7 +4654,7 @@ func (t *GLAccount) calcSum_add_currency_balance_at_date() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -4484,6 +4678,13 @@ func (t *GLAccount) calcSum_add_currency_balance_at_date() types.Decimal {
 	if t.Department_filter != "" {
 		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Business_unit_filter != "" {
+		// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -4528,7 +4729,7 @@ func (t *GLAccount) calcSum_additional_currency_balance() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -4552,6 +4753,13 @@ func (t *GLAccount) calcSum_additional_currency_balance() types.Decimal {
 	if t.Department_filter != "" {
 		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Business_unit_filter != "" {
+		// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -4589,7 +4797,7 @@ func (t *GLAccount) calcSum_add_currency_debit_amount() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -4613,6 +4821,13 @@ func (t *GLAccount) calcSum_add_currency_debit_amount() types.Decimal {
 	if t.Department_filter != "" {
 		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Business_unit_filter != "" {
+		// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -4657,7 +4872,7 @@ func (t *GLAccount) calcSum_add_currency_credit_amount() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_date"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Department_filter != "" || t.Business_unit_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLEntryTableName, "gl_account_dimensions"), true
 	}
@@ -4681,6 +4896,13 @@ func (t *GLAccount) calcSum_add_currency_credit_amount() types.Decimal {
 	if t.Department_filter != "" {
 		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
 		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Business_unit_filter != "" {
+		// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -4947,6 +5169,8 @@ func (t *GLAccount) columnName(fieldName string) (string, bool) {
 		return "consol_debit_acc", true
 	case strings.ToLower("consol_credit_acc"):
 		return "consol_credit_acc", true
+	case strings.ToLower("consol_currency_val_method"):
+		return "consol_currency_val_method", true
 	case strings.ToLower("gen_posting_type"):
 		return "gen_posting_type", true
 	case strings.ToLower("gen_bus_posting_group"):
@@ -5332,7 +5556,7 @@ func (t *GLAccount) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, name, search_name, account_type, department_code, project_code, income_balance, debit_credit, no_2, blocked, direct_posting, reconciliation_account, new_page, no_of_blank_lines, indentation, last_date_modified, totaling, consol_debit_acc, consol_credit_acc, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, automatic_ext_text, department_posting, project_posting, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, exchange_rate_adjustment FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, name, search_name, account_type, department_code, project_code, income_balance, debit_credit, no_2, blocked, direct_posting, reconciliation_account, new_page, no_of_blank_lines, indentation, last_date_modified, totaling, consol_debit_acc, consol_credit_acc, consol_currency_val_method, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, automatic_ext_text, department_posting, project_posting, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, exchange_rate_adjustment FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5354,6 +5578,7 @@ func (t *GLAccount) FindFirst() bool {
 	var totalingNull sql.NullString
 	var consol_debit_accNull sql.NullString
 	var consol_credit_accNull sql.NullString
+	var consol_currency_val_methodInt int
 	var gen_posting_typeInt int
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
@@ -5387,6 +5612,7 @@ func (t *GLAccount) FindFirst() bool {
 		&totalingNull,
 		&consol_debit_accNull,
 		&consol_credit_accNull,
+		&consol_currency_val_methodInt,
 		&gen_posting_typeInt,
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
@@ -5427,6 +5653,7 @@ func (t *GLAccount) FindFirst() bool {
 	t.Totaling = types.NewText(totalingNull.String)
 	t.Consol_debit_acc = types.NewCode(consol_debit_accNull.String)
 	t.Consol_credit_acc = types.NewCode(consol_credit_accNull.String)
+	t.Consol_currency_val_method = GLAccountConsol_currency_val_method(consol_currency_val_methodInt)
 	t.Gen_posting_type = GLAccountGen_posting_type(gen_posting_typeInt)
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
@@ -5459,7 +5686,7 @@ func (t *GLAccount) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, name, search_name, account_type, department_code, project_code, income_balance, debit_credit, no_2, blocked, direct_posting, reconciliation_account, new_page, no_of_blank_lines, indentation, last_date_modified, totaling, consol_debit_acc, consol_credit_acc, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, automatic_ext_text, department_posting, project_posting, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, exchange_rate_adjustment FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, name, search_name, account_type, department_code, project_code, income_balance, debit_credit, no_2, blocked, direct_posting, reconciliation_account, new_page, no_of_blank_lines, indentation, last_date_modified, totaling, consol_debit_acc, consol_credit_acc, consol_currency_val_method, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, automatic_ext_text, department_posting, project_posting, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, exchange_rate_adjustment FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5481,6 +5708,7 @@ func (t *GLAccount) FindLast() bool {
 	var totalingNull sql.NullString
 	var consol_debit_accNull sql.NullString
 	var consol_credit_accNull sql.NullString
+	var consol_currency_val_methodInt int
 	var gen_posting_typeInt int
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
@@ -5514,6 +5742,7 @@ func (t *GLAccount) FindLast() bool {
 		&totalingNull,
 		&consol_debit_accNull,
 		&consol_credit_accNull,
+		&consol_currency_val_methodInt,
 		&gen_posting_typeInt,
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
@@ -5554,6 +5783,7 @@ func (t *GLAccount) FindLast() bool {
 	t.Totaling = types.NewText(totalingNull.String)
 	t.Consol_debit_acc = types.NewCode(consol_debit_accNull.String)
 	t.Consol_credit_acc = types.NewCode(consol_credit_accNull.String)
+	t.Consol_currency_val_method = GLAccountConsol_currency_val_method(consol_currency_val_methodInt)
 	t.Gen_posting_type = GLAccountGen_posting_type(gen_posting_typeInt)
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
@@ -5616,7 +5846,7 @@ func (t *GLAccount) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, name, search_name, account_type, department_code, project_code, income_balance, debit_credit, no_2, blocked, direct_posting, reconciliation_account, new_page, no_of_blank_lines, indentation, last_date_modified, totaling, consol_debit_acc, consol_credit_acc, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, automatic_ext_text, department_posting, project_posting, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, exchange_rate_adjustment FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, name, search_name, account_type, department_code, project_code, income_balance, debit_credit, no_2, blocked, direct_posting, reconciliation_account, new_page, no_of_blank_lines, indentation, last_date_modified, totaling, consol_debit_acc, consol_credit_acc, consol_currency_val_method, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, automatic_ext_text, department_posting, project_posting, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, exchange_rate_adjustment FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5702,6 +5932,7 @@ func (t *GLAccount) Next(steps ...int) bool {
 		var totalingNull sql.NullString
 		var consol_debit_accNull sql.NullString
 		var consol_credit_accNull sql.NullString
+		var consol_currency_val_methodInt int
 		var gen_posting_typeInt int
 		var gen_bus_posting_groupNull sql.NullString
 		var gen_prod_posting_groupNull sql.NullString
@@ -5735,6 +5966,7 @@ func (t *GLAccount) Next(steps ...int) bool {
 			&totalingNull,
 			&consol_debit_accNull,
 			&consol_credit_accNull,
+			&consol_currency_val_methodInt,
 			&gen_posting_typeInt,
 			&gen_bus_posting_groupNull,
 			&gen_prod_posting_groupNull,
@@ -5774,6 +6006,7 @@ func (t *GLAccount) Next(steps ...int) bool {
 		t.Totaling = types.NewText(totalingNull.String)
 		t.Consol_debit_acc = types.NewCode(consol_debit_accNull.String)
 		t.Consol_credit_acc = types.NewCode(consol_credit_accNull.String)
+		t.Consol_currency_val_method = GLAccountConsol_currency_val_method(consol_currency_val_methodInt)
 		t.Gen_posting_type = GLAccountGen_posting_type(gen_posting_typeInt)
 		t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 		t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
@@ -5835,7 +6068,7 @@ func (t *GLAccount) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, name, search_name, account_type, department_code, project_code, income_balance, debit_credit, no_2, blocked, direct_posting, reconciliation_account, new_page, no_of_blank_lines, indentation, last_date_modified, totaling, consol_debit_acc, consol_credit_acc, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, automatic_ext_text, department_posting, project_posting, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, exchange_rate_adjustment FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, name, search_name, account_type, department_code, project_code, income_balance, debit_credit, no_2, blocked, direct_posting, reconciliation_account, new_page, no_of_blank_lines, indentation, last_date_modified, totaling, consol_debit_acc, consol_credit_acc, consol_currency_val_method, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, automatic_ext_text, department_posting, project_posting, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, exchange_rate_adjustment FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5874,6 +6107,7 @@ func (t *GLAccount) FindSetBuffered() bool {
 		var totalingNull sql.NullString
 		var consol_debit_accNull sql.NullString
 		var consol_credit_accNull sql.NullString
+		var consol_currency_val_methodInt int
 		var gen_posting_typeInt int
 		var gen_bus_posting_groupNull sql.NullString
 		var gen_prod_posting_groupNull sql.NullString
@@ -5907,6 +6141,7 @@ func (t *GLAccount) FindSetBuffered() bool {
 			&totalingNull,
 			&consol_debit_accNull,
 			&consol_credit_accNull,
+			&consol_currency_val_methodInt,
 			&gen_posting_typeInt,
 			&gen_bus_posting_groupNull,
 			&gen_prod_posting_groupNull,
@@ -5944,6 +6179,7 @@ func (t *GLAccount) FindSetBuffered() bool {
 		record.Totaling = types.NewText(totalingNull.String)
 		record.Consol_debit_acc = types.NewCode(consol_debit_accNull.String)
 		record.Consol_credit_acc = types.NewCode(consol_credit_accNull.String)
+		record.Consol_currency_val_method = GLAccountConsol_currency_val_method(consol_currency_val_methodInt)
 		record.Gen_posting_type = GLAccountGen_posting_type(gen_posting_typeInt)
 		record.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 		record.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
@@ -6015,6 +6251,7 @@ func (t *GLAccount) copyFromBuffered(record *GLAccount) {
 	t.Add_currency_credit_amount = record.Add_currency_credit_amount
 	t.Consol_debit_acc = record.Consol_debit_acc
 	t.Consol_credit_acc = record.Consol_credit_acc
+	t.Consol_currency_val_method = record.Consol_currency_val_method
 	t.Gen_posting_type = record.Gen_posting_type
 	t.Gen_bus_posting_group = record.Gen_bus_posting_group
 	t.Gen_prod_posting_group = record.Gen_prod_posting_group
@@ -6637,6 +6874,55 @@ func (t *GLAccount) ValidateField(fieldName string, value interface{}) error {
 			}
 		}
 		return nil
+	case "consol_currency_val_method":
+		// Set field value
+		// Accept enum type directly
+		if v, ok := value.(GLAccountConsol_currency_val_method); ok {
+			t.Consol_currency_val_method = v
+			// Accept int (convert to enum)
+		} else if v, ok := value.(int); ok {
+			if v < 0 || v >= 4 {
+				return fmt.Errorf("invalid option value %d for field consol_currency_val_method (valid range: 0-%d)", v, 4-1)
+			}
+			t.Consol_currency_val_method = GLAccountConsol_currency_val_method(v)
+			// Accept float64 (JSON numbers decode as float64)
+		} else if v, ok := value.(float64); ok {
+			intVal := int(v)
+			if intVal < 0 || intVal >= 4 {
+				return fmt.Errorf("invalid option value %d for field consol_currency_val_method (valid range: 0-%d)", intVal, 4-1)
+			}
+			t.Consol_currency_val_method = GLAccountConsol_currency_val_method(intVal)
+			// Accept string (lookup in options and convert)
+		} else if v, ok := value.(string); ok {
+			if v == "" {
+				// Empty string defaults to first option (behavior)
+				t.Consol_currency_val_method = 0
+			} else {
+				options := []string{"Automatic", "Current Rate", "Historical Rate", "Manual Rate"}
+				found := false
+				for i, opt := range options {
+					if opt == v {
+						t.Consol_currency_val_method = GLAccountConsol_currency_val_method(i)
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("invalid option '%s' for field consol_currency_val_method (valid options: %v)", v, options)
+				}
+			}
+		} else {
+			return fmt.Errorf("invalid type for field consol_currency_val_method (expected GLAccountConsol_currency_val_method, int, or string)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GLAccountOnValidate_Consol_currency_val_method); ok {
+				if err := trg.OnValidate_Consol_currency_val_method(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	case "gen_posting_type":
 		// Set field value
 		// Accept enum type directly
@@ -7053,6 +7339,8 @@ func (t *GLAccount) FieldValue(no int) (any, bool) {
 		return t.Consol_debit_acc, true
 	case 41:
 		return t.Consol_credit_acc, true
+	case 900:
+		return t.Consol_currency_val_method, true
 	case 43:
 		return t.Gen_posting_type, true
 	case 44:
@@ -7247,6 +7535,11 @@ func (t *GLAccount) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.Consol_credit_acc = types.NewCode(v)
+			return true
+		}
+	case 900:
+		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
+			t.Consol_currency_val_method = GLAccountConsol_currency_val_method(i)
 			return true
 		}
 	case 43:
@@ -7820,6 +8113,8 @@ func (t *GLAccount) columnValue(column string) (interface{}, bool) {
 		return t.Consol_debit_acc, true
 	case "consol_credit_acc":
 		return t.Consol_credit_acc, true
+	case "consol_currency_val_method":
+		return int(t.Consol_currency_val_method), true
 	case "gen_posting_type":
 		return int(t.Gen_posting_type), true
 	case "gen_bus_posting_group":
@@ -7916,6 +8211,7 @@ func (t *GLAccount) Init() {
 	t.Totaling = *new(types.Text)
 	t.Consol_debit_acc = *new(types.Code)
 	t.Consol_credit_acc = *new(types.Code)
+	t.Consol_currency_val_method = 0
 	t.Gen_posting_type = 0
 	t.Gen_bus_posting_group = *new(types.Code)
 	t.Gen_prod_posting_group = *new(types.Code)
@@ -8005,6 +8301,7 @@ func (t *GLAccount) ToMap() map[string]interface{} {
 		"add_currency_credit_amount": t.Add_currency_credit_amount.String(),
 		"consol_debit_acc":           t.Consol_debit_acc.String(),
 		"consol_credit_acc":          t.Consol_credit_acc.String(),
+		"consol_currency_val_method": int(t.Consol_currency_val_method),
 		"gen_posting_type":           int(t.Gen_posting_type),
 		"gen_bus_posting_group":      t.Gen_bus_posting_group.String(),
 		"gen_prod_posting_group":     t.Gen_prod_posting_group.String(),
@@ -8169,6 +8466,23 @@ func (t *GLAccount) FromMap(data map[string]interface{}) {
 	if v, ok := data["consol_credit_acc"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Consol_credit_acc = types.NewCode(s)
+		}
+	}
+	if v, ok := data["consol_currency_val_method"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Consol_currency_val_method = GLAccountConsol_currency_val_method(int(val))
+		case int:
+			t.Consol_currency_val_method = GLAccountConsol_currency_val_method(val)
+		case string:
+			// Lookup string value in options
+			options := []string{"Automatic", "Current Rate", "Historical Rate", "Manual Rate"}
+			for i, opt := range options {
+				if opt == val {
+					t.Consol_currency_val_method = GLAccountConsol_currency_val_method(i)
+					break
+				}
+			}
 		}
 	}
 	if v, ok := data["gen_posting_type"]; ok && v != nil {
@@ -8624,6 +8938,16 @@ func (t *GLAccount) GetFields() []tables.FieldInfo {
 			FlowField:  false,
 		},
 		{
+			No:         900,
+			Name:       "consol_currency_val_method",
+			Type:       tables.FieldTypeOption,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
 			No:         43,
 			Name:       "gen_posting_type",
 			Type:       tables.FieldTypeOption,
@@ -8778,6 +9102,12 @@ func (t *GLAccount) SetFlowFilter(field, expr string) error {
 		}
 		t.Project_filter = expr
 		return nil
+	case "business_unit_filter":
+		if err := flowfilter.Validate(flowfilter.KindCode, expr); err != nil {
+			return err
+		}
+		t.Business_unit_filter = expr
+		return nil
 	case "budget_filter":
 		if err := flowfilter.Validate(flowfilter.KindCode, expr); err != nil {
 			return err
@@ -8794,6 +9124,7 @@ func (t *GLAccount) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 		{Name: "date_filter", Kind: string(flowfilter.KindDate)},
 		{Name: "department_filter", Kind: string(flowfilter.KindCode)},
 		{Name: "project_filter", Kind: string(flowfilter.KindCode)},
+		{Name: "business_unit_filter", Kind: string(flowfilter.KindCode)},
 		{Name: "budget_filter", Kind: string(flowfilter.KindCode)},
 	}
 }
@@ -8820,13 +9151,14 @@ func (t *GLAccount) GetFlowFields() []string {
 // GetOptionFields returns Option field names mapped to their option values
 func (t *GLAccount) GetOptionFields() map[string][]string {
 	return map[string][]string{
-		"account_type":             {"Posting", "Heading", "Total", "Begin-Total", "End-Total"},
-		"income_balance":           {"Income Statement", "Balance Sheet"},
-		"debit_credit":             {"Both", "Debit", "Credit"},
-		"gen_posting_type":         {" ", "Purchase", "Sale"},
-		"department_posting":       {" ", "Code Mandatory", "Same Code", "No Code"},
-		"project_posting":          {" ", "Code Mandatory", "Same Code", "No Code"},
-		"exchange_rate_adjustment": {"No Adjustment", "Adjust Amount", "Adjust Additional-Currency Amount"},
+		"account_type":               {"Posting", "Heading", "Total", "Begin-Total", "End-Total"},
+		"income_balance":             {"Income Statement", "Balance Sheet"},
+		"debit_credit":               {"Both", "Debit", "Credit"},
+		"consol_currency_val_method": {"Automatic", "Current Rate", "Historical Rate", "Manual Rate"},
+		"gen_posting_type":           {" ", "Purchase", "Sale"},
+		"department_posting":         {" ", "Code Mandatory", "Same Code", "No Code"},
+		"project_posting":            {" ", "Code Mandatory", "Same Code", "No Code"},
+		"exchange_rate_adjustment":   {"No Adjustment", "Adjust Amount", "Adjust Additional-Currency Amount"},
 	}
 }
 

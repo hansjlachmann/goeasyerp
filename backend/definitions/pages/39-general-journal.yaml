@@ -66,6 +66,10 @@ page:
         - source: description
           width: 250
 
+        - source: business_unit_code
+          width: 110
+          visible: false
+
         - source: department_code
           width: 110
           visible: false

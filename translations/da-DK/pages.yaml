@@ -992,3 +992,11 @@ pages:
     caption: "Indkøbsmetoder"
   date_compr_registers:
     caption: "Datokomprimeringsjournaler"
+  user_time_registers:
+    caption: "Brugertidsregistre"
+  setup_checklist:
+    caption: "Opsætningstjekliste"
+  setup_checklist_comment_sheet:
+    caption: "Bemærkninger til opsætningstjekliste"
+  business_units:
+    caption: "Koncernenheder"

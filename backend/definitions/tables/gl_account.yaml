@@ -5,7 +5,7 @@ table:
   description: General ledger accounts, the chart of accounts (table 15)
   data_caption_fields: [no, name]
   lookup_page_id: 18   # G/L Account List (classic LookupFormID)
-  # Not yet (TODO): 12 Comment, Business Unit Filter, 46 Picture, 10000
+  # Not yet (TODO): 46 Picture; budget FlowFields by Business Unit Filter (no Business Unit Code on budget entries yet)
   fields:
     - name: no
       no: 1
@@ -151,6 +151,21 @@ table:
       length: 10
       flow_filter: true
 
+    # the business units the FlowFields of the G/L entries add up (consolidation)
+    - name: business_unit_filter
+      no: 42
+      type: types.Code
+      length: 10
+      flow_filter: true
+      table_relation:
+        table: Business_Unit
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
     # FlowFields: totals of the G/L entries (a total account: of the accounts in its Totaling)
     - name: balance_at_date
       no: 31
@@ -170,6 +185,9 @@ table:
         - field: department_code
           type: filter
           value: department_filter
+        - field: business_unit_code
+          type: filter
+          value: business_unit_filter
         - field: project_code
           type: filter
           value: project_filter
@@ -196,6 +214,9 @@ table:
         - field: department_code
           type: filter
           value: department_filter
+        - field: business_unit_code
+          type: filter
+          value: business_unit_filter
         - field: project_code
           type: filter
           value: project_filter
@@ -294,6 +315,9 @@ table:
         - field: department_code
           type: filter
           value: department_filter
+        - field: business_unit_code
+          type: filter
+          value: business_unit_filter
         - field: project_code
           type: filter
           value: project_filter
@@ -316,6 +340,9 @@ table:
         - field: department_code
           type: filter
           value: department_filter
+        - field: business_unit_code
+          type: filter
+          value: business_unit_filter
         - field: project_code
           type: filter
           value: project_filter
@@ -341,6 +368,9 @@ table:
         - field: department_code
           type: filter
           value: department_filter
+        - field: business_unit_code
+          type: filter
+          value: business_unit_filter
         - field: project_code
           type: filter
           value: project_filter
@@ -366,6 +396,9 @@ table:
         - field: department_code
           type: filter
           value: department_filter
+        - field: business_unit_code
+          type: filter
+          value: business_unit_filter
         - field: project_code
           type: filter
           value: project_filter
@@ -391,6 +424,9 @@ table:
         - field: department_code
           type: filter
           value: department_filter
+        - field: business_unit_code
+          type: filter
+          value: business_unit_filter
         - field: project_code
           type: filter
           value: project_filter
@@ -417,6 +453,9 @@ table:
         - field: department_code
           type: filter
           value: department_filter
+        - field: business_unit_code
+          type: filter
+          value: business_unit_filter
         - field: project_code
           type: filter
           value: project_filter
@@ -439,6 +478,9 @@ table:
         - field: department_code
           type: filter
           value: department_filter
+        - field: business_unit_code
+          type: filter
+          value: business_unit_filter
         - field: project_code
           type: filter
           value: project_filter
@@ -464,6 +506,9 @@ table:
         - field: department_code
           type: filter
           value: department_filter
+        - field: business_unit_code
+          type: filter
+          value: business_unit_filter
         - field: project_code
           type: filter
           value: project_filter
@@ -482,6 +527,15 @@ table:
       type: types.Code
       db_name: consol_credit_acc
       length: 20
+
+    # how consolidation translates the account's amounts of a business unit in another currency
+    # (Automatic: balance sheet accounts at the current rate, income statement accounts at the
+    # average rate) — classic local field 10000
+    - name: consol_currency_val_method
+      no: 900
+      type: Option
+      db_name: consol_currency_val_method
+      options: ["Automatic", "Current Rate", "Historical Rate", "Manual Rate"]
 
     - name: gen_posting_type
       no: 43

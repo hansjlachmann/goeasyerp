@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/openerp/backend/business-logic/usertime"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"log"
 	"strings"
 	"time"
 
@@ -16,6 +18,7 @@ import (
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
 	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/openerp/backend/foundation/session"
+	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 )
 
@@ -126,11 +129,13 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	sess := session.NewSession(dbWrapper, company, nil)
 	sess.SetUser(user.User_id.String(), user.User_name.String(), user.Language.String(), userMenu)
 	sess.SetPermissions(hasRoles, isSuper, perms)
+	loginTime := time.Now()
+	sess.SetLoginTime(loginTime)
 	// a login starts on today (the work date of My Settings lasts for the session)
 	ResetWorkDate(h.db, h.dbType, user.User_id.String())
 
 	// Generate JWT and set cookie
-	token, tokenErr := middleware.GenerateToken(h.jwtConfig, user.User_id.String(), user.User_name.String(), company, user.Language.String(), userMenu)
+	token, tokenErr := middleware.GenerateToken(h.jwtConfig, user.User_id.String(), user.User_name.String(), company, user.Language.String(), userMenu, loginTime)
 	if tokenErr != nil {
 		return c.Status(500).JSON(apitypes.NewErrorResponse("Failed to create session token"))
 	}
@@ -177,6 +182,7 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 
 	// Remove from cache
 	if sess != nil && sess.GetUserID() != "" {
+		h.registerTime(sess)
 		h.sessionCache.RemoveByUser(sess.GetUserID())
 	}
 
@@ -188,6 +194,18 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 		"message": ts.Message("MSG_LOGOUT_SUCCESS", language),
 	})
 	return c.JSON(response)
+}
+
+// registerTime adds the session's time in its company to the user's time register (when the
+// user registers time; a failure only logs — logging out or changing company goes on)
+func (h *AuthHandler) registerTime(sess *session.Session) {
+	if sess.GetCompany() == "" {
+		return
+	}
+	src := ftables.DBSource(h.db, sess.GetCompany(), h.dbType)
+	if err := usertime.Register(src, sess.GetUserID(), sess.GetLoginTime(), time.Now()); err != nil {
+		log.Printf("user time register of %s in %s: %v", sess.GetUserID(), sess.GetCompany(), err)
+	}
 }
 
 // GetCurrentUser returns the currently logged in user
@@ -396,9 +414,10 @@ func (h *AuthHandler) SetLanguage(c *fiber.Ctx) error {
 	newSess := session.NewSession(dbWrapper, company, nil)
 	newSess.SetUser(userID, userName, requestBody.Language, menu)
 	newSess.SetPermissions(sess.HasRoles, sess.IsSuper, sess.Permissions)
+	newSess.SetLoginTime(sess.GetLoginTime())
 
 	// Re-issue JWT with updated language
-	token, tokenErr := middleware.GenerateToken(h.jwtConfig, userID, userName, company, requestBody.Language, menu)
+	token, tokenErr := middleware.GenerateToken(h.jwtConfig, userID, userName, company, requestBody.Language, menu, sess.GetLoginTime())
 	if tokenErr == nil {
 		middleware.SetAuthCookie(c, h.jwtConfig, token)
 		cacheKey := userID + ":" + company
@@ -453,6 +472,10 @@ func (h *AuthHandler) SetCompany(c *fiber.Ctx) error {
 		}
 	}
 
+	// Leaving the company ends the time registered in it; the new company's starts now
+	h.registerTime(sess)
+	loginTime := time.Now()
+
 	// Remove old cache entry
 	oldCacheKey := userID + ":" + sess.GetCompany()
 	h.sessionCache.Remove(oldCacheKey)
@@ -466,6 +489,7 @@ func (h *AuthHandler) SetCompany(c *fiber.Ctx) error {
 	dbWrapper := database.WrapConnection(h.db, h.dbType)
 	newSess := session.NewSession(dbWrapper, requestBody.Company, nil)
 	newSess.SetUser(userID, userName, language, menu)
+	newSess.SetLoginTime(loginTime)
 
 	// Load permissions for the new company context
 	if userID != "" {
@@ -474,7 +498,7 @@ func (h *AuthHandler) SetCompany(c *fiber.Ctx) error {
 	}
 
 	// Re-issue JWT with updated company
-	token, tokenErr := middleware.GenerateToken(h.jwtConfig, userID, userName, requestBody.Company, language, menu)
+	token, tokenErr := middleware.GenerateToken(h.jwtConfig, userID, userName, requestBody.Company, language, menu, loginTime)
 	if tokenErr == nil {
 		middleware.SetAuthCookie(c, h.jwtConfig, token)
 		newCacheKey := userID + ":" + requestBody.Company
@@ -516,9 +540,10 @@ func (h *AuthHandler) CompanyChanged(c *fiber.Ctx, oldName, newName string) {
 	userID, userName, language, menu := sess.GetUserID(), sess.GetUserName(), sess.GetLanguage(), sess.GetMenu()
 	newSess := session.NewSession(database.WrapConnection(h.db, h.dbType), newName, nil)
 	newSess.SetUser(userID, userName, language, menu)
+	newSess.SetLoginTime(sess.GetLoginTime())
 	hasRoles, isSuper, perms := h.loadUserPermissions(userID, newName)
 	newSess.SetPermissions(hasRoles, isSuper, perms)
-	token, err := middleware.GenerateToken(h.jwtConfig, userID, userName, newName, language, menu)
+	token, err := middleware.GenerateToken(h.jwtConfig, userID, userName, newName, language, menu, sess.GetLoginTime())
 	if err != nil {
 		return
 	}

@@ -1,0 +1,77 @@
+page:
+  id: 531
+  type: List
+  name: Setup Checklist
+  source_table: Setup_Checklist_Line
+  caption: Setup Checklist
+  # classic form 531: the setup tables of the company in the order to set them up (made again on
+  # every open, business-logic/pages/setupchecklist.go) — the status, who is responsible and
+  # when; a line opens the table's page, Copy Data takes a table's data from another company
+  editable: true
+
+  layout:
+    repeater:
+      fields:
+        - source: application_area_name
+          width: 170
+        - source: table_name
+          width: 250
+        # the table's records in the company (OnAfterGetRecord), opens the table's page
+        - source: no_of_records
+          calculated: true
+          type: int
+          width: 110
+          drilldown_page_field: page_id
+        - source: status
+          width: 110
+        - source: responsible_id
+          width: 130
+        - source: starting_date
+          width: 110
+        - source: ending_date
+          width: 110
+        - source: comments
+          width: 90
+          drilldown: 532
+          drilldown_filter_field: table_id
+          drilldown_filter_value: table_id
+
+  actions:
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+      enabled: true
+
+    - name: Print
+      caption: Print
+      image: Print
+      promoted: true
+      run_object: report:26
+
+    - name: Setup
+      caption: Setup
+      image: Setup
+      promoted: true
+      items:
+        - name: Table
+          caption: Table
+          image: Card
+          run_page_field: page_id
+        - name: Comments
+          caption: Comments
+          image: Document
+          run_page: 532
+          run_page_filter_field: table_id
+          run_page_filter_value: table_id
+
+    - name: Functions
+      caption: Functions
+      image: Calculate
+      promoted: true
+      items:
+        - name: Copy Data
+          caption: Copy Data
+          image: Copy
+          run_object: table:Setup_Checklist_Line.CopyData

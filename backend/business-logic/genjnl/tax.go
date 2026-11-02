@@ -11,10 +11,11 @@ import (
 // Sales tax of the journal lines (codeunit 12 InitTax, PostTax, InsertTax): a G/L line with a
 // general posting type takes the tax out of its amount (a sale includes it; a purchase with
 // use tax pays it on top), writes a tax entry per jurisdiction and posts the tax to the
-// jurisdiction's accounts.
+// jurisdiction's accounts. A settlement line (Manual VAT Entry, posting type Settlement, the
+// jurisdiction in Tax Area Code) writes one closed tax entry of its amount.
 //
 // Not migrated yet: the VAT calculation types (Normal, Reverse Charge, Full VAT), unrealized tax
-// (realized when the entries are applied), tax settlement, the additional reporting currency.
+// (realized when the entries are applied), the additional reporting currency.
 
 // initTaxRegister: the first line takes the next tax entry number (Tax Entry locked); the
 // register starts at it
@@ -130,7 +131,12 @@ func (p *GenJnlPostLine) postTax(genJnlLine *gtables.GenJournalLine) error {
 	}
 	if genJnlLine.Vat_posting == gtables.GenJournalLine_Vat_posting.ManualVATEntry &&
 		genJnlLine.Gen_posting_type == gtables.GenJournalLine_Gen_posting_type.Settlement {
-		return apperrors.JnlTaxNotYet(jnlLine, "gen_posting_type", genJnlLine.Gen_posting_type)
+		// a settlement (Calc. and Post Tax Settlement): one closed tax entry of the jurisdiction
+		// in the line's Tax Area Code
+		taxDetail := gtables.NewTaxDetail(p.src)
+		taxDetail.Tax_jurisdiction_code = genJnlLine.Tax_area_code
+		genJnlLine.Tax_area_code = ""
+		return p.insertTax(genJnlLine, taxDetail, glEntryAmount, glEntryTaxAmount, genJnlLine.Tax_base_amount_lcy)
 	}
 	p.salesTaxCalculate = salestax.New(p.src)
 	err := p.salesTaxCalculate.InitSalesTaxLines(genJnlLine.Tax_area_code, genJnlLine.Tax_group_code, genJnlLine.Tax_liable,
@@ -201,9 +207,12 @@ func (p *GenJnlPostLine) insertTax(genJnlLine *gtables.GenJournalLine, taxDetail
 	if err != nil {
 		return err
 	}
-	taxEntry.Tax_group_used = taxDetail.Tax_group_code
-	taxEntry.Tax_type = gtables.TaxEntryTax_type(taxDetail.Tax_type)
-	taxEntry.Tax_on_tax = taxDetail.Calculate_tax_on_tax
+	settlement := genJnlLine.Gen_posting_type == gtables.GenJournalLine_Gen_posting_type.Settlement
+	if !settlement {
+		taxEntry.Tax_group_used = taxDetail.Tax_group_code
+		taxEntry.Tax_type = gtables.TaxEntryTax_type(taxDetail.Tax_type)
+		taxEntry.Tax_on_tax = taxDetail.Calculate_tax_on_tax
+	}
 	taxEntry.Tax_jurisdiction_code = taxDetail.Tax_jurisdiction_code
 	unrealizedTax := taxJurisdiction.Unrealized_tax_type > 0 &&
 		(genJnlLine.Document_type == gtables.GenJournalLine_Document_type.Invoice ||
@@ -214,6 +223,11 @@ func (p *GenJnlPostLine) insertTax(genJnlLine *gtables.GenJournalLine, taxDetail
 		return apperrors.JnlUnrealizedTaxNotYet()
 	}
 	taxEntry.Amount = glEntryTaxAmount
+	if settlement {
+		// the settled amount is the G/L entry's
+		taxEntry.Amount = glEntryAmount
+		taxEntry.Closed = true
+	}
 	taxEntry.Base = glEntryBaseAmount
 	err = taxEntry.InsertOrError(false)
 	if err != nil {

@@ -92,6 +92,10 @@ func newCompany(t *testing.T, d renameDB, name string) {
 	if err := (&gtables.CustomerLedgerEntry{}).CreateTableWithDBType(d.db, name, d.dbType); err != nil {
 		t.Fatal(err)
 	}
+	// a company table that refers to the company (Business Unit's Company Name: renamed along)
+	if err := (&gtables.BusinessUnit{}).CreateTableWithDBType(d.db, name, d.dbType); err != nil {
+		t.Fatal(err)
+	}
 	for _, no := range []string{"C1", "C2"} {
 		var cust gtables.Customer
 		cust.InitWithDBType(d.db, name, d.dbType)
@@ -254,6 +258,12 @@ func TestRenameCompanyMovesItsData(t *testing.T) {
 			newCompany(t, d, "alpha")
 			wantTables, wantIndexes := companyObjects(t, d, "alpha")
 			before := balances(t, app, "alpha")
+			var busUnit gtables.BusinessUnit
+			busUnit.InitWithDBType(d.db, "alpha", d.dbType)
+			busUnit.Code, busUnit.Company_name = "SELF", "alpha"
+			if !busUnit.Insert(false) {
+				t.Fatal("insert business unit")
+			}
 
 			status, out := call(t, app, "PUT", "/api/tables/Company/modify/alpha", "alpha", `{"name":" Beta "}`)
 			if status != 200 {
@@ -261,6 +271,10 @@ func TestRenameCompanyMovesItsData(t *testing.T) {
 			}
 			if data, _ := out["data"].(map[string]interface{}); data["name"] != "beta" {
 				t.Errorf("renamed to %v, want beta (trimmed, lower case)", data["name"])
+			}
+			busUnit.InitWithDBType(d.db, "beta", d.dbType)
+			if !busUnit.Get(types.NewCode("SELF")) || busUnit.Company_name != "beta" {
+				t.Errorf("the business unit's company name is %q, want beta", busUnit.Company_name)
 			}
 
 			if n, i := companyObjects(t, d, "alpha"); n+i != 0 {
