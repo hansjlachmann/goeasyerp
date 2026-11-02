@@ -1,0 +1,39 @@
+page:
+  id: 154
+  type: Card
+  name: G/L Account Balance/Budget
+  source_table: G_L_Account
+  caption: G/L Account Balance/Budget
+  editable: false
+  # classic form 154 with its lines (form 350): the account's net change against its budget per
+  # period. The debit/credit columns and Closing Entries are left out
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+            editable: false
+          - source: name
+            editable: false
+      - name: Periods
+        caption: Periods
+        period_grid:
+          date_filter: date_filter
+          view_by: 2
+          filters:
+            - source: budget_filter
+            - source: department_filter
+            - source: project_filter
+          columns:
+            - source: net_change
+              drilldown: 20
+              drilldown_filter_field: gl_account_no
+              drilldown_filter_value: "no"
+              drilldown_date_field: posting_date
+            - source: budgeted_amount
+            - source: budget_pct
+              calculated: true
+              type: types.Decimal
+              decimal_places: "1:1"

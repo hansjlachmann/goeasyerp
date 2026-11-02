@@ -1,0 +1,50 @@
+page:
+  id: 121
+  type: List
+  name: G/L Budget Names
+  source_table: G_L_Budget_Name
+  caption: G/L Budget Names
+  card_page_id: 113          # the budget matrix of the selected budget
+  editable: true
+
+  layout:
+    repeater:
+      fields:
+        - source: name
+          width: 120
+        - source: description
+          width: 320
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    - name: Entries
+      caption: Entries
+      image: Entries
+      shortcut: Ctrl+F7
+      promoted: true
+      run_page: 120
+      run_page_filter_field: budget_name
+      run_page_filter_value: name
+
+    - name: Copy Budget
+      caption: Copy Budget
+      image: Copy
+      promoted: true
+      run_object: report:96

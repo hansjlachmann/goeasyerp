@@ -16,7 +16,7 @@ menu:
       - name: "Account Schedules"
         page_id: 104
       - name: "Budgets"
-        page_id: 113
+        page_id: 121
       - separator: true
       - name: "General Journals"
         page_id: 39

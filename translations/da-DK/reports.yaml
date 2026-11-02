@@ -244,6 +244,34 @@ reports:
       PAGE: "Side"
       PERIOD: "Periode: %1"
       POSTING_DATE: "Bogføringsdato"
+  "9":
+    caption: "Saldobalance/budget"
+    texts:
+      TITLE: "Saldobalance/budget"
+      NET_CHANGE: "Bevægelse"
+      BALANCE: "Saldo"
+      DEBIT: "Debet"
+      CREDIT: "Kredit"
+      PCT_OF_BUDGET: "% af budget"
+      BUDGET: "Budget"
+      BUDGET_FILTER: "Budgetfilter"
+      NAME: "Navn"
+      NO: "Nr."
+      PAGE: "Side"
+      PERIOD: "Periode: %1"
+  "96":
+    caption: "Kopier finansbudget"
+    options:
+      budget_name: "Budgetnavn"
+      gl_account_no: "Finanskontonr."
+      department_code: "Afdelingskode"
+      project_code: "Projektkode"
+      date_change_formula: "Datoændringsformel"
+      amount_change_factor: "Beløbsændringsfaktor"
+    texts:
+      COPY_TO: "Kopier til..."
+      CONFIRM_COPY: "Vil du kopiere budgettet?"
+      COPIED: "%1 budgetposter blev kopieret."
   "6":
     caption: "Saldobalance"
     texts:

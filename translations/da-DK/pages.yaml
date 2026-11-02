@@ -760,6 +760,16 @@ pages:
     caption: "Styklistejournaler"
   bom_ledger_entries:
     caption: "Styklisteposter"
+  g_l_budget_by_periods:
+    caption: "Finansbudget pr. periode"
+  g_l_budget_entries:
+    caption: "Finansbudgetposter"
+  g_l_budget_names:
+    caption: "Finansbudgetnavne"
+  g_l_account_balance_budget:
+    caption: "Finanskonto saldo/budget"
+    fields:
+      budget_pct: "Saldo/budget (%)"
   item_availability_by_periods:
     caption: "Varedisponering pr. periode"
     fields:

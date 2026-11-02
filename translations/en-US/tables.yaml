@@ -708,6 +708,23 @@ tables:
       description: "Description"
 
   # G/L Account (Table 15)
+  g_l_budget_name:
+    caption: "G/L Budget Name"
+    fields:
+      name: "Name"
+      description: "Description"
+  g_l_budget_entry:
+    caption: "G/L Budget Entry"
+    fields:
+      entry_no: "Entry No."
+      budget_name: "Budget Name"
+      gl_account_no: "G/L Account No."
+      date: "Date"
+      department_code: "Department Code"
+      project_code: "Project Code"
+      amount: "Amount"
+      description: "Description"
+      user_id: "User ID"
   g_l_account:
     caption: "G/L Account"
     fields:
@@ -748,6 +765,9 @@ tables:
       project_filter: "Project Filter"
       balance_at_date: "Balance at Date"
       net_change: "Net Change"
+      budgeted_amount: "Budgeted Amount"
+      budget_filter: "Budget Filter"
+      budget_at_date: "Budget at Date"
       balance: "Balance"
       debit_amount: "Debit Amount"
       credit_amount: "Credit Amount"

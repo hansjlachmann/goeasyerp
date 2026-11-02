@@ -276,6 +276,10 @@ messages:
   PERIOD_CODE: "Kode"
   PERIOD_DESCRIPTION: "Navn"
   PERIOD_NO_PERIODS: "Det er ingen perioder å vise."
+  PERIOD_ROUNDING_FACTOR: "Avrundingsfaktor"
+  PERIOD_ROUNDING_NONE: "Ingen"
+  PERIOD_NO_ROWS: "Det finnes ingen poster å vise."
+  PERIOD_SHOW_ENTRIES: "Vis poster"
   CARD_SAVE_FIRST: "Lagre posten først for å legge til linjer her."
 
   # List Page

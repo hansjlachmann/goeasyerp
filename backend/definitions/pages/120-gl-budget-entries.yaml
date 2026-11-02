@@ -1,0 +1,36 @@
+page:
+  id: 120
+  type: List
+  name: G/L Budget Entries
+  source_table: G_L_Budget_Entry
+  caption: G/L Budget Entries
+  editable: false   # classic InsertAllowed=No: entries come from the budget matrix and Copy Budget
+
+  layout:
+    repeater:
+      fields:
+        - source: budget_name
+          width: 110
+        - source: date
+          width: 110
+        - source: gl_account_no
+          width: 120
+        - source: description
+          width: 240
+        - source: department_code
+          width: 120
+        - source: project_code
+          width: 120
+        - source: amount
+          width: 140
+        - source: user_id
+          width: 110
+        - source: entry_no
+          width: 90
+
+  actions:
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

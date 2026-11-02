@@ -348,3 +348,40 @@ func RunFindRecords(pageID int, rec any, params map[string]string) error {
 	}
 	return nil
 }
+
+var matrixValidate = map[int]func(rec any, value types.Decimal) error{}
+
+// OnMatrixValidate registers what a value typed into a cell of a page's matrix section does
+// (classic: a value entered into the FlowField of a matrix): rec is the row's record with the
+// row's FlowFilters set (the column's period, the card record's and the user's filters), value
+// the amount typed. One per page.
+func OnMatrixValidate[T any](pageID int, fn func(rec T, value types.Decimal) error) {
+	triggersMu.Lock()
+	defer triggersMu.Unlock()
+	matrixValidate[pageID] = func(rec any, value types.Decimal) error {
+		r, ok := rec.(T)
+		if !ok {
+			var want T
+			return fmt.Errorf("page %d: OnMatrixValidate takes %T, the matrix row is %T", pageID, want, rec)
+		}
+		return fn(r, value)
+	}
+}
+
+// HasMatrixValidate reports whether a page's matrix cells can be entered
+func HasMatrixValidate(pageID int) bool {
+	triggersMu.RLock()
+	defer triggersMu.RUnlock()
+	return matrixValidate[pageID] != nil
+}
+
+// RunMatrixValidate runs a page's OnMatrixValidate trigger on a matrix row's record
+func RunMatrixValidate(pageID int, rec any, value types.Decimal) error {
+	triggersMu.RLock()
+	fn := matrixValidate[pageID]
+	triggersMu.RUnlock()
+	if fn == nil {
+		return fmt.Errorf("page %d has no OnMatrixValidate trigger", pageID)
+	}
+	return fn(rec, value)
+}

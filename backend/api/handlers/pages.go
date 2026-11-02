@@ -180,6 +180,19 @@ func (h *PagesHandler) GetPage(c *fiber.Ctx) error {
 					}
 				}
 			}
+			// A matrix's row fields and filters: captions of the rows' table; its cells can be
+			// entered only with the page's OnMatrixValidate trigger
+			if mx := pageDef.Page.Layout.Sections[i].Matrix; mx != nil {
+				for _, fields := range [][]pages.Field{mx.Filters, mx.Fields} {
+					for j := range fields {
+						field := &fields[j]
+						if field.Caption == "" {
+							field.Caption = pageFieldCaption(ts, pageDef.Page.Name, mx.Table, field, lang)
+						}
+					}
+				}
+				mx.Editable = mx.Editable && pages.HasMatrixValidate(pageDef.Page.ID)
+			}
 		}
 
 		// Get captions for list page repeater and mark primary key / required fields

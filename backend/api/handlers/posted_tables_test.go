@@ -24,6 +24,7 @@ func TestEntryTablesArePosted(t *testing.T) {
 		"Job_Queue_Entry":    true, // the job queue's jobs
 		"Document_Entry":     true, // Navigate's temporary lines
 		"Res_Capacity_Entry": true, // a resource's capacity, set by the user
+		"G_L_Budget_Entry":   true, // the budgets' amounts, entered in the budget matrix
 	}
 	metadata := pages.GetTableMetadata()
 	for _, name := range gtables.ListTableNames() {
