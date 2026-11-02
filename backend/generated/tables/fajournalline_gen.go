@@ -1054,10 +1054,10 @@ func GetFAJournalLinePostgresTableSchema() string {
 		depreciation_book_code VARCHAR(10),
 		fa_posting_type INTEGER CHECK (fa_posting_type >= 0 AND fa_posting_type <= 8),
 		fa_no VARCHAR(20),
-		fa_posting_date DATE,
-		posting_date DATE,
+		fa_posting_date TIMESTAMP,
+		posting_date TIMESTAMP,
 		document_type INTEGER CHECK (document_type >= 0 AND document_type <= 3),
-		document_date DATE,
+		document_date TIMESTAMP,
 		document_no VARCHAR(20),
 		external_document_no VARCHAR(20),
 		description VARCHAR(50),
@@ -1084,7 +1084,7 @@ func GetFAJournalLinePostgresTableSchema() string {
 		index_entry BOOLEAN,
 		posting_no_series VARCHAR(10),
 		recurring_method INTEGER CHECK (recurring_method >= 0 AND recurring_method <= 2),
-		expiration_date DATE,
+		expiration_date TIMESTAMP,
 		recurring_frequency VARCHAR(20),
 		PRIMARY KEY (journal_template_name, journal_batch_name, line_no)
 	`
@@ -2830,6 +2830,16 @@ func (t *FAJournalLine) parseFilterExpression(fieldName, expr string) (string, [
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

@@ -485,7 +485,7 @@ func GetMaintenanceRegistrationPostgresTableSchema() string {
 	return `
 		fa_no VARCHAR(20),
 		line_no INTEGER,
-		service_date DATE,
+		service_date TIMESTAMP,
 		maintenance_vendor_no VARCHAR(20),
 		comment VARCHAR(80),
 		service_agent_name VARCHAR(50),
@@ -1540,6 +1540,16 @@ func (t *MaintenanceRegistration) parseFilterExpression(fieldName, expr string) 
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

@@ -438,7 +438,7 @@ func GetSetupChecklistCommentPostgresTableSchema() string {
 		table_name VARCHAR(80),
 		table_id INTEGER,
 		line_no INTEGER,
-		date DATE,
+		date TIMESTAMP,
 		code VARCHAR(10),
 		comment VARCHAR(80),
 		PRIMARY KEY (table_id, line_no)
@@ -1507,6 +1507,16 @@ func (t *SetupChecklistComment) parseFilterExpression(fieldName, expr string) (s
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

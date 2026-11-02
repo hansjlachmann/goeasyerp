@@ -727,7 +727,7 @@ func GetItemApplicationEntryPostgresTableSchema() string {
 		new_entry_no INTEGER,
 		fixed_applied_to_entry_no INTEGER,
 		fixed_application BOOLEAN,
-		creation_date DATE,
+		creation_date TIMESTAMP,
 		valid BOOLEAN,
 		valuated BOOLEAN,
 		quantity NUMERIC,
@@ -740,7 +740,7 @@ func GetItemApplicationEntryPostgresTableSchema() string {
 		document_no VARCHAR(20),
 		entry_type INTEGER CHECK (entry_type >= 0 AND entry_type <= 4),
 		item_no VARCHAR(20),
-		posting_date DATE,
+		posting_date TIMESTAMP,
 		location_code VARCHAR(10),
 		transfered_from_entry_no INTEGER
 	`
@@ -2157,6 +2157,16 @@ func (t *ItemApplicationEntry) parseFilterExpression(fieldName, expr string) (st
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

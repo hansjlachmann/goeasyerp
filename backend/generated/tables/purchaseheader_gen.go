@@ -1807,14 +1807,14 @@ func GetPurchaseHeaderPostgresTableSchema() string {
 		ship_to_address_2 VARCHAR(30),
 		ship_to_city VARCHAR(30),
 		ship_to_contact VARCHAR(30),
-		order_date DATE,
-		posting_date DATE,
-		expected_receipt_date DATE,
+		order_date TIMESTAMP,
+		posting_date TIMESTAMP,
+		expected_receipt_date TIMESTAMP,
 		posting_description VARCHAR(50),
 		payment_terms_code VARCHAR(10),
-		due_date DATE,
+		due_date TIMESTAMP,
 		payment_discount_percent NUMERIC,
-		pmt_discount_date DATE,
+		pmt_discount_date TIMESTAMP,
 		shipment_method_code VARCHAR(10),
 		location_code VARCHAR(10),
 		department_code VARCHAR(10),
@@ -1864,7 +1864,7 @@ func GetPurchaseHeaderPostgresTableSchema() string {
 		ship_to_country_code VARCHAR(10),
 		order_address_code VARCHAR(10),
 		entry_point VARCHAR(10),
-		document_date DATE,
+		document_date TIMESTAMP,
 		area VARCHAR(10),
 		transaction_specification VARCHAR(10),
 		payment_method_code VARCHAR(10),
@@ -4838,6 +4838,16 @@ func (t *PurchaseHeader) parseFilterExpression(fieldName, expr string) (string, 
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

@@ -593,14 +593,14 @@ func GetBankAccountStatementLinePostgresTableSchema() string {
 		statement_no VARCHAR(20),
 		statement_line_no INTEGER,
 		document_no VARCHAR(20),
-		transaction_date DATE,
+		transaction_date TIMESTAMP,
 		description VARCHAR(50),
 		statement_amount NUMERIC,
 		difference NUMERIC,
 		applied_amount NUMERIC,
 		type INTEGER CHECK (type >= 0 AND type <= 2),
 		applied_entries INTEGER,
-		value_date DATE,
+		value_date TIMESTAMP,
 		check_no VARCHAR(20),
 		PRIMARY KEY (bank_account_no, statement_no, statement_line_no)
 	`
@@ -1794,6 +1794,16 @@ func (t *BankAccountStatementLine) parseFilterExpression(fieldName, expr string)
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

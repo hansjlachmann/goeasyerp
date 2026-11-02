@@ -629,8 +629,8 @@ func GetReminderFinChargeEntryPostgresTableSchema() string {
 		type INTEGER CHECK (type >= 0 AND type <= 1),
 		no VARCHAR(20),
 		reminder_level INTEGER,
-		posting_date DATE,
-		document_date DATE,
+		posting_date TIMESTAMP,
+		document_date TIMESTAMP,
 		interest_posted BOOLEAN,
 		interest_amount NUMERIC,
 		customer_entry_no INTEGER,
@@ -1835,6 +1835,16 @@ func (t *ReminderFinChargeEntry) parseFilterExpression(fieldName, expr string) (
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

@@ -576,8 +576,8 @@ func GetSetupChecklistLinePostgresTableSchema() string {
 		copying_available BOOLEAN,
 		page_id INTEGER,
 		page_name VARCHAR(80),
-		starting_date DATE,
-		ending_date DATE,
+		starting_date TIMESTAMP,
+		ending_date TIMESTAMP,
 		responsible_id VARCHAR(50),
 		status INTEGER CHECK (status >= 0 AND status <= 4),
 		comments BOOLEAN,
@@ -1900,6 +1900,16 @@ func (t *SetupChecklistLine) parseFilterExpression(fieldName, expr string) (stri
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

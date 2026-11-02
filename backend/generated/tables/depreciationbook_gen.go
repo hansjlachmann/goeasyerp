@@ -937,13 +937,13 @@ func GetDepreciationBookPostgresTableSchema() string {
 		allow_depr_below_zero BOOLEAN,
 		use_fa_exch_rate_in_duplic BOOLEAN,
 		part_of_duplication_list BOOLEAN,
-		last_date_modified DATE,
+		last_date_modified TIMESTAMP,
 		allow_indexation BOOLEAN,
 		use_same_fa_g_l_posting_dates BOOLEAN DEFAULT true,
 		default_exchange_rate NUMERIC,
 		use_fa_ledger_check BOOLEAN DEFAULT true,
 		use_rounding_in_periodic_depr BOOLEAN,
-		new_fiscal_year_starting_date DATE,
+		new_fiscal_year_starting_date TIMESTAMP,
 		no_of_days_in_fiscal_year INTEGER,
 		allow_changes_in_depr_fields BOOLEAN,
 		default_final_rounding_amount NUMERIC,
@@ -2733,6 +2733,16 @@ func (t *DepreciationBook) parseFilterExpression(fieldName, expr string) (string
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

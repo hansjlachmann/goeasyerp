@@ -1251,8 +1251,8 @@ func GetVendorLedgerEntryPostgresTableSchema() string {
 		entry_no INTEGER PRIMARY KEY,
 		vendor_no VARCHAR(20),
 		buy_from_vendor_no VARCHAR(20),
-		posting_date DATE,
-		document_date DATE,
+		posting_date TIMESTAMP,
+		document_date TIMESTAMP,
 		document_type INTEGER CHECK (document_type >= 0 AND document_type <= 5),
 		document_no VARCHAR(20),
 		external_document_no VARCHAR(20),
@@ -1271,7 +1271,7 @@ func GetVendorLedgerEntryPostgresTableSchema() string {
 		credit_amount_lcy NUMERIC,
 		purchase_lcy NUMERIC,
 		inv_discount_lcy NUMERIC,
-		pmt_discount_date DATE,
+		pmt_discount_date TIMESTAMP,
 		pmt_disc_possible NUMERIC,
 		pmt_disc_rcd_lcy NUMERIC,
 		vendor_posting_group VARCHAR(10),
@@ -1289,9 +1289,9 @@ func GetVendorLedgerEntryPostgresTableSchema() string {
 		open BOOLEAN,
 		positive BOOLEAN,
 		on_hold VARCHAR(3),
-		due_date DATE,
+		due_date TIMESTAMP,
 		closed_by_entry_no INTEGER,
-		closed_at_date DATE,
+		closed_at_date TIMESTAMP,
 		bal_account_type INTEGER CHECK (bal_account_type >= 0 AND bal_account_type <= 4),
 		bal_account_no VARCHAR(20),
 		no_series VARCHAR(10),
@@ -3347,6 +3347,16 @@ func (t *VendorLedgerEntry) parseFilterExpression(fieldName, expr string) (strin
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

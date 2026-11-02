@@ -8,7 +8,8 @@
 // Syntax: alternatives separated by '|'; each alternative is a value, a range "a..b",
 // an open range "..b" or "a..", "<>value", or a comparison "<value", "<=value", ">value",
 // ">=value". Text and Code accept '*' wildcards. Booleans accept Yes/No, true/false, 1/0.
-// Dates are ISO (YYYY-MM-DD) — the frontend converts the user's local date format before
+// Dates are ISO (YYYY-MM-DD), a closing date with a C (C2026-12-31: after the date, so
+// "..2026-12-31" leaves it out) — the frontend converts the user's local date format before
 // sending. Decimals accept a decimal point or comma ("1500,50"), no thousands separators.
 //
 // The same syntax filters FlowFields in lists (Customer Balance ">10000"): there the
@@ -20,7 +21,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
+
+	"github.com/hansjlachmann/openerp/backend/foundation/types"
 )
 
 // Kind is the data type of a FlowFilter field.
@@ -213,11 +215,12 @@ func value(kind Kind, s string) (interface{}, error) {
 	}
 	switch kind {
 	case KindDate:
-		d, err := time.Parse("2006-01-02", s)
-		if err != nil {
+		// ISO, a closing date with its C ("C2026-12-31"): as the database keeps it
+		d, err := types.NewDateFromString(s)
+		if err != nil || d.IsZero() || len(s) < 10 {
 			return nil, fmt.Errorf("%q is not a date", s)
 		}
-		return d.Format("2006-01-02"), nil
+		return d.StorageString(), nil
 	case KindInt:
 		n, err := strconv.ParseInt(s, 10, 64)
 		if err != nil {

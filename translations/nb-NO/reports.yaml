@@ -958,6 +958,27 @@ reports:
       E_LINE_INCONSISTENT: "E-linjen for konto %1 (linje %2) følger ikke A-linjen."
       DIFFERENT_METHODS: "Én %1 har en annen %2 enn en annen, i selskapet %3. Kontroller %4 og %5. Begge konsolideres til %6."
       WINDOW: "Konsoliderer selskap...\n\nKonsernenhetskode    #1##########\nLinjenummer          #4######\nFinanskontonr.       #2##########\nDato                 #3######"
+  "94":
+    caption: "Avslutt resultatregnskap"
+    options:
+      fiscal_year_ending_date: "Sluttdato for regnskapsår"
+      journal_template: "Finanskladdemal"
+      journal_batch: "Finanskladdenavn"
+      document_no: "Bilagsnr."
+      retained_earnings_acc: "Konto for opptjent egenkapital"
+      posting_description: "Bokføringsbeskrivelse"
+      close_by_business_unit: "Avslutt per konsernenhetskode"
+      close_by_department: "Avslutt per avdelingskode"
+      close_by_project: "Avslutt per prosjektkode"
+    texts:
+      OPTIONS: "Alternativer"
+      TITLE: "Avslutt resultatregnskap"
+      ENTER_ENDING_DATE: "Angi sluttdatoen for regnskapsåret."
+      NO_FISCAL_YEAR: "Regnskapsåret finnes ikke."
+      YEAR_NOT_CLOSED: "Regnskapsåret må avsluttes før resultatregnskapet kan avsluttes."
+      ENTER_DOCUMENT_NO: "Angi et bilagsnummer."
+      WINDOW: "Oppretter finanskladdelinjer...\n\nKontonr.             #1##########\nBeløp                #2##########\nKonsernenhetskode    #3##########\nAvdelingskode        #4##########\nProsjektkode         #5##########"
+      DONE: "Avslutningspostene er i finanskladden %1 %2. Bokfør dem der."
   "20":
     caption: "Beregn og bokfør avgiftsoppgjør"
     options:

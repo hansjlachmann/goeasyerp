@@ -187,6 +187,35 @@ func DropCompany(db database.Executor, dbType database.DBType, company string) e
 	return err
 }
 
+// DropAll removes the SIFT objects and definitions of every company (and of the global tables):
+// a change to the entry tables' columns their triggers would block; the next Sync builds them
+// again. db may be a transaction.
+func DropAll(db database.Executor, dbType database.DBType) error {
+	if err := ensureDefinitionTable(db); err != nil {
+		return err
+	}
+	rows, err := db.Query(`SELECT DISTINCT company FROM "` + definitionTable + `"`)
+	if err != nil {
+		return err
+	}
+	var companies []string
+	for rows.Next() {
+		var company string
+		if err := rows.Scan(&company); err != nil {
+			_ = rows.Close()
+			return err
+		}
+		companies = append(companies, company)
+	}
+	_ = rows.Close()
+	for _, company := range companies {
+		if err := DropCompany(db, dbType, company); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Suspend drops the SIFT totals and triggers of one table of a company (and forgets their
 // definitions), so a bulk load inserts its entries without a totals update per row — which
 // is slow and leaves a dead row version per entry on Postgres. Afterwards the table's

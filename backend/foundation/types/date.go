@@ -13,14 +13,20 @@ import (
 //
 // A closing date (ClosingDate) lies between a date and the next day — the period-end date
 // that closing entries are posted on. It is kept as the date at 23:59:59, so it sorts after
-// the date and before the next day; it reads and prints as "C2026-12-31". Closing dates
-// cannot be stored in date fields yet (that comes with the general ledger).
+// the date and before the next day; it reads and prints as "C2026-12-31". The database keeps
+// it as "2026-12-31 23:59:59" (a TEXT column on SQLite, a TIMESTAMP column on PostgreSQL;
+// normal dates as "2026-12-31", midnight): it sorts between the date and the next day, a range
+// up to the date ("..2026-12-31") leaves it out and one up to the closing date
+// ("..C2026-12-31") takes it in.
 type Date struct {
 	time.Time
 }
 
 // closingPrefix marks a closing date in text: "C2026-12-31"
 const closingPrefix = "C"
+
+// closingTime is the time of day a closing date is stored with
+const closingTime = "23:59:59"
 
 // Closing returns the closing date of d (ClosingDate); a blank date stays blank
 func (d Date) Closing() Date {
@@ -66,17 +72,21 @@ func NewDateFromString(value string) (Date, error) {
 		return d.Closing(), nil
 	}
 
-	t, err := time.Parse("2006-01-02", value)
-	if err != nil && len(value) > 10 && value[10] == 'T' {
-		// A DATE column read into a string on PostgreSQL arrives as a timestamp
-		// ("2026-10-21T00:00:00Z"): the date is its first part
-		t, err = time.Parse("2006-01-02", value[:10])
+	datePart, timePart := value, ""
+	if len(value) > 10 && (value[10] == 'T' || value[10] == ' ') {
+		// Stored with a time: a TIMESTAMP column read into a string on PostgreSQL
+		// ("2026-10-21T00:00:00Z"), a closing date ("2026-12-31 23:59:59")
+		datePart, timePart = value[:10], value[11:]
 	}
+	t, err := time.Parse("2006-01-02", datePart)
 	if err != nil {
 		return Date{}, fmt.Errorf("invalid date format, expected YYYY-MM-DD: %w", err)
 	}
-
-	return Date{time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)}, nil
+	d := Date{time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)}
+	if strings.HasPrefix(timePart, closingTime) {
+		return d.Closing(), nil
+	}
+	return d, nil
 }
 
 // MustDate creates a Date from a string, panics on error
@@ -208,6 +218,9 @@ func (d *Date) Scan(value interface{}) error {
 		d.Time = parsed.Time
 	case time.Time:
 		d.Time = time.Date(v.Year(), v.Month(), v.Day(), 0, 0, 0, 0, time.UTC)
+		if v.Hour() == 23 && v.Minute() == 59 && v.Second() == 59 {
+			d.Time = d.Closing().Time
+		}
 	default:
 		return fmt.Errorf("unsupported type for Date: %T", v)
 	}
@@ -215,16 +228,35 @@ func (d *Date) Scan(value interface{}) error {
 	return nil
 }
 
-// Value implements driver.Valuer for database storage
-// Stores as TEXT in "YYYY-MM-DD" format
+// Value implements driver.Valuer for database storage: "YYYY-MM-DD", a closing date
+// "YYYY-MM-DD 23:59:59"
 func (d Date) Value() (driver.Value, error) {
 	if d.IsZero() {
 		return nil, nil
 	}
-	if d.IsClosing() {
-		return nil, fmt.Errorf("closing date %s cannot be stored in a date field", d)
+	return d.StorageString(), nil
+}
+
+// StorageString is the date as the database keeps it and compares it: "2026-12-31", a closing
+// date "2026-12-31 23:59:59" ("" for a blank date)
+func (d Date) StorageString() string {
+	if d.IsZero() {
+		return ""
 	}
-	return d.String(), nil
+	if d.IsClosing() {
+		return d.Time.Format("2006-01-02") + " " + closingTime
+	}
+	return d.Time.Format("2006-01-02")
+}
+
+// FilterArg is a date of a filter expression as the database compares it: a date
+// ("2026-12-31", "C2026-12-31") as StorageString, other text unchanged (the database tells)
+func FilterArg(value string) string {
+	d, err := NewDateFromString(strings.TrimSpace(value))
+	if err != nil || d.IsZero() {
+		return value
+	}
+	return d.StorageString()
 }
 
 // BlankKeyDate is how a blank date is stored in a primary key column: a key column cannot hold

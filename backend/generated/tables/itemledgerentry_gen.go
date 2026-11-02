@@ -1255,7 +1255,7 @@ func GetItemLedgerEntryPostgresTableSchema() string {
 	return `
 		entry_no INTEGER PRIMARY KEY,
 		item_no VARCHAR(20),
-		posting_date DATE,
+		posting_date TIMESTAMP,
 		entry_type INTEGER CHECK (entry_type >= 0 AND entry_type <= 4),
 		source_no VARCHAR(20),
 		document_no VARCHAR(20),
@@ -1280,7 +1280,7 @@ func GetItemLedgerEntryPostgresTableSchema() string {
 		project_code VARCHAR(10),
 		positive BOOLEAN,
 		closed_by_entry_no INTEGER,
-		closed_at_date DATE,
+		closed_at_date TIMESTAMP,
 		closed_by_quantity NUMERIC,
 		source_type INTEGER CHECK (source_type >= 0 AND source_type <= 3),
 		adjusted_cost_qty NUMERIC,
@@ -1298,7 +1298,7 @@ func GetItemLedgerEntryPostgresTableSchema() string {
 		gen_bus_posting_group VARCHAR(10),
 		gen_prod_posting_group VARCHAR(10),
 		entry_exit_point VARCHAR(10),
-		document_date DATE,
+		document_date TIMESTAMP,
 		external_document_no VARCHAR(20),
 		area VARCHAR(10),
 		transaction_specification VARCHAR(10),
@@ -3491,6 +3491,16 @@ func (t *ItemLedgerEntry) parseFilterExpression(fieldName, expr string) (string,
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

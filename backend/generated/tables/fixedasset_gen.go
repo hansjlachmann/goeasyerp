@@ -769,17 +769,17 @@ func GetFixedAssetPostgresTableSchema() string {
 		main_asset_component INTEGER CHECK (main_asset_component >= 0 AND main_asset_component <= 2),
 		component_of_main_asset VARCHAR(20),
 		budgeted_asset BOOLEAN,
-		warranty_date DATE,
+		warranty_date TIMESTAMP,
 		responsible_employee VARCHAR(20),
 		serial_no VARCHAR(30),
-		last_date_modified DATE,
+		last_date_modified TIMESTAMP,
 		insured BOOLEAN,
 		comment BOOLEAN,
 		blocked BOOLEAN,
 		picture BYTEA,
 		maintenance_vendor_no VARCHAR(20),
 		under_maintenance BOOLEAN,
-		next_service_date DATE,
+		next_service_date TIMESTAMP,
 		inactive BOOLEAN,
 		no_series VARCHAR(10)
 	`
@@ -2561,6 +2561,16 @@ func (t *FixedAsset) parseFilterExpression(fieldName, expr string) (string, []in
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

@@ -1607,6 +1607,16 @@ func (t *User) parseFilterExpression(fieldName, expr string) (string, []interfac
 		}
 	}
 
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
+			}
+		}
+	}
+
 	// Join with OR
 	whereClause := "(" + strings.Join(conditions, " OR ") + ")"
 	return whereClause, args

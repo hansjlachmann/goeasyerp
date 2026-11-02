@@ -10,7 +10,7 @@ import (
 )
 
 // version is part of every fingerprint: changing how totals are built rebuilds them all.
-const version = "sift-v1"
+const version = "sift-v2" // v2: date key columns TIMESTAMP on Postgres (closing dates)
 
 // Kind is the kind of value of a key or sum column.
 type Kind string
@@ -96,7 +96,7 @@ func (g generator) columnType(c Column) string {
 		return "INTEGER"
 	case KindDate:
 		if g.pg() {
-			return "DATE"
+			return "TIMESTAMP" // a closing date is the date at 23:59:59
 		}
 		return "TEXT"
 	case KindDateTime:
@@ -126,7 +126,7 @@ func (g generator) blank(c Column) string {
 		return "0"
 	case KindDate:
 		if g.pg() {
-			return "DATE '0001-01-01'"
+			return "TIMESTAMP '0001-01-01 00:00:00'"
 		}
 		return "''"
 	case KindDateTime:

@@ -496,9 +496,9 @@ func GetBOMLedgerEntryPostgresTableSchema() string {
 		entry_no INTEGER PRIMARY KEY,
 		reference_type INTEGER CHECK (reference_type >= 0 AND reference_type <= 1),
 		reference_entry_no INTEGER,
-		posting_date DATE,
+		posting_date TIMESTAMP,
 		entry_type INTEGER CHECK (entry_type >= 0 AND entry_type <= 1),
-		document_date DATE
+		document_date TIMESTAMP
 	`
 }
 
@@ -1519,6 +1519,16 @@ func (t *BOMLedgerEntry) parseFilterExpression(fieldName, expr string) (string, 
 				args = append(args, tables.FilterBool(part))
 			} else {
 				args = append(args, part)
+			}
+		}
+	}
+
+	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
+	// as "2026-12-31 23:59:59")
+	if isDate {
+		for i, a := range args {
+			if v, ok := a.(string); ok {
+				args[i] = types.FilterArg(v)
 			}
 		}
 	}

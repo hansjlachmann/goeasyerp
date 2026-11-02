@@ -86,3 +86,54 @@ func TestPostConcurrentPostgres(t *testing.T) {
 		t.Errorf("the registers overlap: %v", ranges)
 	}
 }
+
+// Closing dates on PostgreSQL (TIMESTAMP date columns): a line on C2025-12-31 posts entries that
+// read back as closing, a filter on the closing date finds them and one on 31-12 does not, and
+// the SIFT totals of the G/L account leave them out up to 31-12 and take them in up to C31-12
+func TestClosingDatePostgres(t *testing.T) {
+	src := demoCompanyPostgres(t)
+	accountingPeriod := gtables.NewAccountingPeriod(src)
+	accountingPeriod.SetRange("starting_date", types.NewDate(2025, 1, 1), types.NewDate(2025, 12, 31))
+	accountingPeriod.ModifyAll("closed", true)
+	accountingPeriod.SetRange("starting_date", types.NewDate(2025, 1, 1), types.NewDate(2026, 1, 1))
+	accountingPeriod.ModifyAll("date_locked", true)
+
+	netChange := func(dateFilter string) types.Decimal {
+		glAcc := gtables.NewGLAccount(src)
+		must(t, glAcc.GetOrError(types.Code("3110")))
+		must(t, glAcc.SetFlowFilter("date_filter", dateFilter))
+		glAcc.CalcFields("net_change")
+		return glAcc.Net_change
+	}
+	year0, closing0 := netChange("2025-01-01..2025-12-31"), netChange("2025-01-01..C2025-12-31")
+
+	line := newJnlLine(src, "GENERAL", "DEFAULT", 10000)
+	must(t, line.Validate("posting_date", types.NewDate(2025, 12, 31).Closing()))
+	line.Document_no = "CLOSE25"
+	must(t, line.Validate("account_no", types.Code("3110")))
+	must(t, line.Validate("bal_account_no", types.Code("2120")))
+	must(t, line.Validate("amount", dec("100")))
+	must(t, line.InsertOrError(true))
+	_, err := postBatch(t, src, "GENERAL", "DEFAULT")
+	must(t, err)
+
+	glEntry := gtables.NewGLEntry(src)
+	glEntry.SetRange("document_no", types.Code("CLOSE25"))
+	if glEntry.Count() != 2 || !glEntry.FindFirst() || glEntry.Posting_date.String() != "C2025-12-31" {
+		t.Fatalf("%d entries, first on %s", glEntry.Count(), glEntry.Posting_date)
+	}
+	glEntry.SetFilter("posting_date", "C2025-12-31")
+	if glEntry.Count() != 2 {
+		t.Errorf("the closing date filter finds %d entries", glEntry.Count())
+	}
+	glEntry.SetRange("posting_date", types.NewDate(2025, 12, 31))
+	if glEntry.Count() != 0 {
+		t.Errorf("the filter on 31-12 finds %d closing entries", glEntry.Count())
+	}
+	if got := netChange("2025-01-01..2025-12-31"); !got.Equal(year0) {
+		t.Errorf("up to 31-12: %s, want %s", got, year0)
+	}
+	if got := netChange("2025-01-01..C2025-12-31").Sub(closing0); !got.Equal(dec("100")) {
+		t.Errorf("up to C31-12 changed by %s, want 100", got)
+	}
+}
