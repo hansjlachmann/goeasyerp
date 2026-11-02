@@ -1,0 +1,38 @@
+table:
+  id: 261
+  name: "Intrastat_Jnl_Template"
+  caption: Intrastat Jnl. Template
+  description: "The Intrastat journal templates (table 261)"
+  lookup_page_id: 326
+  data_caption_fields: [name, description]
+  fields:
+    - name: name
+      no: 1
+      type: types.Code
+      db_name: name
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: description
+      no: 2
+      type: types.Text
+      db_name: description
+      length: 80
+
+    # the checklist printout (Intrastat - Checklist 502)
+    - name: checklist_report_id
+      no: 5
+      type: int
+      db_name: checklist_report_id
+
+    # Form ID: the journal page of the template (Intrastat Journal 311)
+    - name: page_id
+      no: 6
+      type: int
+      db_name: page_id
+
+  keys:
+    - name: Primary
+      fields: [name]
+      clustered: true

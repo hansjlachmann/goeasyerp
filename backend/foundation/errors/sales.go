@@ -82,3 +82,19 @@ const ErrBlanketOrderNoLines ErrorCode = "ERR_BLANKET_ORDER_NO_LINES"
 func BlanketOrderNoLines() *AppError {
 	return &AppError{Code: ErrBlanketOrderNoLines}
 }
+
+// ErrIntrastatStatisticsPeriod: an Intrastat batch's Statistics Period is not YYMM (Field)
+const ErrIntrastatStatisticsPeriod ErrorCode = "ERR_INTRASTAT_STATISTICS_PERIOD"
+
+// ErrIntrastatMonth: the month of a Statistics Period is not 1-12
+const ErrIntrastatMonth ErrorCode = "ERR_INTRASTAT_MONTH"
+
+// IntrastatStatisticsPeriod: the batch's Statistics Period must be 4 characters
+func IntrastatStatisticsPeriod(table string) *AppError {
+	return &AppError{Code: ErrIntrastatStatisticsPeriod, Table: table, Field: "statistics_period"}
+}
+
+// IntrastatMonth: the Statistics Period's month is not a month
+func IntrastatMonth() *AppError {
+	return &AppError{Code: ErrIntrastatMonth}
+}

@@ -585,6 +585,12 @@ func (p *ItemJnlPostLine) initItemLedgEntry(itemLedgEntry2 *gtables.ItemLedgerEn
 	itemLedgEntry2.External_document_no = itemJnlLine.External_document_no
 	itemLedgEntry2.Description = itemJnlLine.Description
 	itemLedgEntry2.Location_code = itemJnlLine.Location_code
+	itemLedgEntry2.Transaction_type = itemJnlLine.Transaction_type
+	itemLedgEntry2.Transport_method = itemJnlLine.Transport_method
+	itemLedgEntry2.Country_code = itemJnlLine.Country_code
+	itemLedgEntry2.Entry_exit_point = itemJnlLine.Entry_exit_point
+	itemLedgEntry2.Area = itemJnlLine.Area
+	itemLedgEntry2.Transaction_specification = itemJnlLine.Transaction_specification
 	itemLedgEntry2.Inventory_posting_group = itemJnlLine.Inventory_posting_group
 	itemLedgEntry2.Source_posting_group = itemJnlLine.Source_posting_group
 	itemLedgEntry2.Unit_cost = itemJnlLine.Unit_cost

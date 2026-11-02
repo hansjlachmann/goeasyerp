@@ -3,8 +3,8 @@ table:
   name: "Purchase_Line"
   description: "Purchase Line (table 39): the lines of the purchase documents"
   # Left out until their steps: 38 Appl.-to Item Entry, 45-49 jobs, 53/5400 serial/lot, 63/64
-  # Receipt No./Line No. (Get Receipt Lines), 67 Profit %, 71-73 drop shipment, 78-83 foreign
-  # trade statistics, 80 Attached to Line No., 95/96/5495 reservations,
+  # Receipt No./Line No. (Get Receipt Lines), 67 Profit %, 71-73 drop shipment,
+  # 80 Attached to Line No., 95/96/5495 reservations,
   # 101 System-Created Entry, 5401 Prod. Order No., 5403 Bin, 5600-5613 fixed assets
   fields:
     - name: document_type
@@ -458,6 +458,76 @@ table:
       db_name: tax_calculation_type
       options: ["Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"]
       editable: false
+
+    - name: transaction_type
+      no: 78
+      type: types.Code
+      db_name: transaction_type
+      length: 10
+      table_relation:
+        table: Transaction_Type
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: transport_method
+      no: 79
+      type: types.Code
+      db_name: transport_method
+      length: 10
+      table_relation:
+        table: Transport_Method
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: entry_point
+      no: 81
+      type: types.Code
+      db_name: entry_point
+      length: 10
+      table_relation:
+        table: Entry_Exit_Point
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: area
+      no: 82
+      type: types.Code
+      db_name: area
+      length: 10
+      table_relation:
+        table: Area
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: text
+            width: 250
+
+    - name: transaction_specification
+      no: 83
+      type: types.Code
+      db_name: transaction_specification
+      length: 10
+      table_relation:
+        table: Transaction_Specification
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: text
+            width: 250
 
     - name: tax_area_code
       no: 85

@@ -59,6 +59,11 @@
 //	OnValidate_Gen_bus_posting_group(rec *gtables.SalesLine) error
 //	OnValidate_Gen_prod_posting_group(rec *gtables.SalesLine) error
 //	OnValidate_Tax_calculation_type(rec *gtables.SalesLine) error
+//	OnValidate_Transaction_type(rec *gtables.SalesLine) error
+//	OnValidate_Transport_method(rec *gtables.SalesLine) error
+//	OnValidate_Exit_point(rec *gtables.SalesLine) error
+//	OnValidate_Area(rec *gtables.SalesLine) error
+//	OnValidate_Transaction_specification(rec *gtables.SalesLine) error
 //	OnValidate_Tax_area_code(rec *gtables.SalesLine) error
 //	OnValidate_Tax_liable(rec *gtables.SalesLine) error
 //	OnValidate_Tax_group_code(rec *gtables.SalesLine) error
@@ -159,77 +164,82 @@ func (o SalesLineTax_calculation_type) IsValid() bool {
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterSalesLineLogic.
 type SalesLine struct {
-	Document_type            SalesLineDocument_type        `db:"document_type,pk"`
-	Sell_to_customer_no      types.Code                    `db:"sell_to_customer_no"`
-	Document_no              types.Code                    `db:"document_no,pk"`
-	Line_no                  int                           `db:"line_no,pk"`
-	Type                     SalesLineType                 `db:"type"`
-	No                       types.Code                    `db:"no"`
-	Location_code            types.Code                    `db:"location_code"`
-	Posting_group            types.Code                    `db:"posting_group"`
-	Quantity_disc_code       types.Code                    `db:"quantity_disc_code"`
-	Shipment_date            types.Date                    `db:"shipment_date"`
-	Description              types.Text                    `db:"description"`
-	Description_2            types.Text                    `db:"description_2"`
-	Unit_of_measure          types.Text                    `db:"unit_of_measure"`
-	Quantity                 types.Decimal                 `db:"quantity"`
-	Outstanding_quantity     types.Decimal                 `db:"outstanding_quantity"`
-	Qty_to_invoice           types.Decimal                 `db:"qty_to_invoice"`
-	Qty_to_ship              types.Decimal                 `db:"qty_to_ship"`
-	Unit_price               types.Decimal                 `db:"unit_price"`
-	Unit_cost_lcy            types.Decimal                 `db:"unit_cost_lcy"`
-	Tax_percent              types.Decimal                 `db:"tax_percent"`
-	Quantity_disc_percent    types.Decimal                 `db:"quantity_disc_percent"`
-	Line_discount_percent    types.Decimal                 `db:"line_discount_percent"`
-	Line_discount_amount     types.Decimal                 `db:"line_discount_amount"`
-	Amount                   types.Decimal                 `db:"amount"`
-	Amount_including_tax     types.Decimal                 `db:"amount_including_tax"`
-	Allow_invoice_disc       bool                          `db:"allow_invoice_disc"`
-	Gross_weight             types.Decimal                 `db:"gross_weight"`
-	Net_weight               types.Decimal                 `db:"net_weight"`
-	Units_per_parcel         types.Decimal                 `db:"units_per_parcel"`
-	Unit_volume              types.Decimal                 `db:"unit_volume"`
-	Department_code          types.Code                    `db:"department_code"`
-	Project_code             types.Code                    `db:"project_code"`
-	Price_group_code         types.Code                    `db:"price_group_code"`
-	Allow_quantity_disc      bool                          `db:"allow_quantity_disc"`
-	Work_type_code           types.Code                    `db:"work_type_code"`
-	Cust_item_disc_percent   types.Decimal                 `db:"cust_item_disc_percent"`
-	Outstanding_amount       types.Decimal                 `db:"outstanding_amount"`
-	Qty_shipped_not_invoiced types.Decimal                 `db:"qty_shipped_not_invoiced"`
-	Shipped_not_invoiced     types.Decimal                 `db:"shipped_not_invoiced"`
-	Quantity_shipped         types.Decimal                 `db:"quantity_shipped"`
-	Quantity_invoiced        types.Decimal                 `db:"quantity_invoiced"`
-	Shipment_no              types.Code                    `db:"shipment_no"`
-	Shipment_line_no         int                           `db:"shipment_line_no"`
-	Profit_percent           types.Decimal                 `db:"profit_percent"`
-	Bill_to_customer_no      types.Code                    `db:"bill_to_customer_no"`
-	Inv_discount_amount      types.Decimal                 `db:"inv_discount_amount"`
-	Gen_bus_posting_group    types.Code                    `db:"gen_bus_posting_group"`
-	Gen_prod_posting_group   types.Code                    `db:"gen_prod_posting_group"`
-	Tax_calculation_type     SalesLineTax_calculation_type `db:"tax_calculation_type"`
-	Tax_area_code            types.Code                    `db:"tax_area_code"`
-	Tax_liable               bool                          `db:"tax_liable"`
-	Tax_group_code           types.Code                    `db:"tax_group_code"`
-	Tax_bus_posting_group    types.Code                    `db:"tax_bus_posting_group"`
-	Tax_prod_posting_group   types.Code                    `db:"tax_prod_posting_group"`
-	Currency_code            types.Code                    `db:"currency_code"`
-	Outstanding_amount_lcy   types.Decimal                 `db:"outstanding_amount_lcy"`
-	Shipped_not_invoiced_lcy types.Decimal                 `db:"shipped_not_invoiced_lcy"`
-	Blanket_order_no         types.Code                    `db:"blanket_order_no"`
-	Blanket_order_line_no    int                           `db:"blanket_order_line_no"`
-	Tax_base_amount          types.Decimal                 `db:"tax_base_amount"`
-	Unit_cost                types.Decimal                 `db:"unit_cost"`
-	Variant_code             types.Code                    `db:"variant_code"`
-	Qty_per_unit_of_measure  types.Decimal                 `db:"qty_per_unit_of_measure"`
-	Unit_of_measure_code     types.Code                    `db:"unit_of_measure_code"`
-	Quantity_base            types.Decimal                 `db:"quantity_base"`
-	Outstanding_qty_base     types.Decimal                 `db:"outstanding_qty_base"`
-	Qty_to_invoice_base      types.Decimal                 `db:"qty_to_invoice_base"`
-	Qty_to_ship_base         types.Decimal                 `db:"qty_to_ship_base"`
-	Qty_shpd_not_invd_base   types.Decimal                 `db:"qty_shpd_not_invd_base"`
-	Qty_shipped_base         types.Decimal                 `db:"qty_shipped_base"`
-	Qty_invoiced_base        types.Decimal                 `db:"qty_invoiced_base"`
+	Document_type             SalesLineDocument_type        `db:"document_type,pk"`
+	Sell_to_customer_no       types.Code                    `db:"sell_to_customer_no"`
+	Document_no               types.Code                    `db:"document_no,pk"`
+	Line_no                   int                           `db:"line_no,pk"`
+	Type                      SalesLineType                 `db:"type"`
+	No                        types.Code                    `db:"no"`
+	Location_code             types.Code                    `db:"location_code"`
+	Posting_group             types.Code                    `db:"posting_group"`
+	Quantity_disc_code        types.Code                    `db:"quantity_disc_code"`
+	Shipment_date             types.Date                    `db:"shipment_date"`
+	Description               types.Text                    `db:"description"`
+	Description_2             types.Text                    `db:"description_2"`
+	Unit_of_measure           types.Text                    `db:"unit_of_measure"`
+	Quantity                  types.Decimal                 `db:"quantity"`
+	Outstanding_quantity      types.Decimal                 `db:"outstanding_quantity"`
+	Qty_to_invoice            types.Decimal                 `db:"qty_to_invoice"`
+	Qty_to_ship               types.Decimal                 `db:"qty_to_ship"`
+	Unit_price                types.Decimal                 `db:"unit_price"`
+	Unit_cost_lcy             types.Decimal                 `db:"unit_cost_lcy"`
+	Tax_percent               types.Decimal                 `db:"tax_percent"`
+	Quantity_disc_percent     types.Decimal                 `db:"quantity_disc_percent"`
+	Line_discount_percent     types.Decimal                 `db:"line_discount_percent"`
+	Line_discount_amount      types.Decimal                 `db:"line_discount_amount"`
+	Amount                    types.Decimal                 `db:"amount"`
+	Amount_including_tax      types.Decimal                 `db:"amount_including_tax"`
+	Allow_invoice_disc        bool                          `db:"allow_invoice_disc"`
+	Gross_weight              types.Decimal                 `db:"gross_weight"`
+	Net_weight                types.Decimal                 `db:"net_weight"`
+	Units_per_parcel          types.Decimal                 `db:"units_per_parcel"`
+	Unit_volume               types.Decimal                 `db:"unit_volume"`
+	Department_code           types.Code                    `db:"department_code"`
+	Project_code              types.Code                    `db:"project_code"`
+	Price_group_code          types.Code                    `db:"price_group_code"`
+	Allow_quantity_disc       bool                          `db:"allow_quantity_disc"`
+	Work_type_code            types.Code                    `db:"work_type_code"`
+	Cust_item_disc_percent    types.Decimal                 `db:"cust_item_disc_percent"`
+	Outstanding_amount        types.Decimal                 `db:"outstanding_amount"`
+	Qty_shipped_not_invoiced  types.Decimal                 `db:"qty_shipped_not_invoiced"`
+	Shipped_not_invoiced      types.Decimal                 `db:"shipped_not_invoiced"`
+	Quantity_shipped          types.Decimal                 `db:"quantity_shipped"`
+	Quantity_invoiced         types.Decimal                 `db:"quantity_invoiced"`
+	Shipment_no               types.Code                    `db:"shipment_no"`
+	Shipment_line_no          int                           `db:"shipment_line_no"`
+	Profit_percent            types.Decimal                 `db:"profit_percent"`
+	Bill_to_customer_no       types.Code                    `db:"bill_to_customer_no"`
+	Inv_discount_amount       types.Decimal                 `db:"inv_discount_amount"`
+	Gen_bus_posting_group     types.Code                    `db:"gen_bus_posting_group"`
+	Gen_prod_posting_group    types.Code                    `db:"gen_prod_posting_group"`
+	Tax_calculation_type      SalesLineTax_calculation_type `db:"tax_calculation_type"`
+	Transaction_type          types.Code                    `db:"transaction_type"`
+	Transport_method          types.Code                    `db:"transport_method"`
+	Exit_point                types.Code                    `db:"exit_point"`
+	Area                      types.Code                    `db:"area"`
+	Transaction_specification types.Code                    `db:"transaction_specification"`
+	Tax_area_code             types.Code                    `db:"tax_area_code"`
+	Tax_liable                bool                          `db:"tax_liable"`
+	Tax_group_code            types.Code                    `db:"tax_group_code"`
+	Tax_bus_posting_group     types.Code                    `db:"tax_bus_posting_group"`
+	Tax_prod_posting_group    types.Code                    `db:"tax_prod_posting_group"`
+	Currency_code             types.Code                    `db:"currency_code"`
+	Outstanding_amount_lcy    types.Decimal                 `db:"outstanding_amount_lcy"`
+	Shipped_not_invoiced_lcy  types.Decimal                 `db:"shipped_not_invoiced_lcy"`
+	Blanket_order_no          types.Code                    `db:"blanket_order_no"`
+	Blanket_order_line_no     int                           `db:"blanket_order_line_no"`
+	Tax_base_amount           types.Decimal                 `db:"tax_base_amount"`
+	Unit_cost                 types.Decimal                 `db:"unit_cost"`
+	Variant_code              types.Code                    `db:"variant_code"`
+	Qty_per_unit_of_measure   types.Decimal                 `db:"qty_per_unit_of_measure"`
+	Unit_of_measure_code      types.Code                    `db:"unit_of_measure_code"`
+	Quantity_base             types.Decimal                 `db:"quantity_base"`
+	Outstanding_qty_base      types.Decimal                 `db:"outstanding_qty_base"`
+	Qty_to_invoice_base       types.Decimal                 `db:"qty_to_invoice_base"`
+	Qty_to_ship_base          types.Decimal                 `db:"qty_to_ship_base"`
+	Qty_shpd_not_invd_base    types.Decimal                 `db:"qty_shpd_not_invd_base"`
+	Qty_shipped_base          types.Decimal                 `db:"qty_shipped_base"`
+	Qty_invoiced_base         types.Decimal                 `db:"qty_invoiced_base"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -341,149 +351,159 @@ var SalesLine_Tax_calculation_type = struct {
 // SalesLine_FieldNo holds the field numbers of Sales_Line (FieldNo):
 // SalesLine_FieldNo.Document_type is 1
 var SalesLine_FieldNo = struct {
-	Document_type            int
-	Sell_to_customer_no      int
-	Document_no              int
-	Line_no                  int
-	Type                     int
-	No                       int
-	Location_code            int
-	Posting_group            int
-	Quantity_disc_code       int
-	Shipment_date            int
-	Description              int
-	Description_2            int
-	Unit_of_measure          int
-	Quantity                 int
-	Outstanding_quantity     int
-	Qty_to_invoice           int
-	Qty_to_ship              int
-	Unit_price               int
-	Unit_cost_lcy            int
-	Tax_percent              int
-	Quantity_disc_percent    int
-	Line_discount_percent    int
-	Line_discount_amount     int
-	Amount                   int
-	Amount_including_tax     int
-	Allow_invoice_disc       int
-	Gross_weight             int
-	Net_weight               int
-	Units_per_parcel         int
-	Unit_volume              int
-	Department_code          int
-	Project_code             int
-	Price_group_code         int
-	Allow_quantity_disc      int
-	Work_type_code           int
-	Cust_item_disc_percent   int
-	Outstanding_amount       int
-	Qty_shipped_not_invoiced int
-	Shipped_not_invoiced     int
-	Quantity_shipped         int
-	Quantity_invoiced        int
-	Shipment_no              int
-	Shipment_line_no         int
-	Profit_percent           int
-	Bill_to_customer_no      int
-	Inv_discount_amount      int
-	Gen_bus_posting_group    int
-	Gen_prod_posting_group   int
-	Tax_calculation_type     int
-	Tax_area_code            int
-	Tax_liable               int
-	Tax_group_code           int
-	Tax_bus_posting_group    int
-	Tax_prod_posting_group   int
-	Currency_code            int
-	Outstanding_amount_lcy   int
-	Shipped_not_invoiced_lcy int
-	Blanket_order_no         int
-	Blanket_order_line_no    int
-	Tax_base_amount          int
-	Unit_cost                int
-	Variant_code             int
-	Qty_per_unit_of_measure  int
-	Unit_of_measure_code     int
-	Quantity_base            int
-	Outstanding_qty_base     int
-	Qty_to_invoice_base      int
-	Qty_to_ship_base         int
-	Qty_shpd_not_invd_base   int
-	Qty_shipped_base         int
-	Qty_invoiced_base        int
+	Document_type             int
+	Sell_to_customer_no       int
+	Document_no               int
+	Line_no                   int
+	Type                      int
+	No                        int
+	Location_code             int
+	Posting_group             int
+	Quantity_disc_code        int
+	Shipment_date             int
+	Description               int
+	Description_2             int
+	Unit_of_measure           int
+	Quantity                  int
+	Outstanding_quantity      int
+	Qty_to_invoice            int
+	Qty_to_ship               int
+	Unit_price                int
+	Unit_cost_lcy             int
+	Tax_percent               int
+	Quantity_disc_percent     int
+	Line_discount_percent     int
+	Line_discount_amount      int
+	Amount                    int
+	Amount_including_tax      int
+	Allow_invoice_disc        int
+	Gross_weight              int
+	Net_weight                int
+	Units_per_parcel          int
+	Unit_volume               int
+	Department_code           int
+	Project_code              int
+	Price_group_code          int
+	Allow_quantity_disc       int
+	Work_type_code            int
+	Cust_item_disc_percent    int
+	Outstanding_amount        int
+	Qty_shipped_not_invoiced  int
+	Shipped_not_invoiced      int
+	Quantity_shipped          int
+	Quantity_invoiced         int
+	Shipment_no               int
+	Shipment_line_no          int
+	Profit_percent            int
+	Bill_to_customer_no       int
+	Inv_discount_amount       int
+	Gen_bus_posting_group     int
+	Gen_prod_posting_group    int
+	Tax_calculation_type      int
+	Transaction_type          int
+	Transport_method          int
+	Exit_point                int
+	Area                      int
+	Transaction_specification int
+	Tax_area_code             int
+	Tax_liable                int
+	Tax_group_code            int
+	Tax_bus_posting_group     int
+	Tax_prod_posting_group    int
+	Currency_code             int
+	Outstanding_amount_lcy    int
+	Shipped_not_invoiced_lcy  int
+	Blanket_order_no          int
+	Blanket_order_line_no     int
+	Tax_base_amount           int
+	Unit_cost                 int
+	Variant_code              int
+	Qty_per_unit_of_measure   int
+	Unit_of_measure_code      int
+	Quantity_base             int
+	Outstanding_qty_base      int
+	Qty_to_invoice_base       int
+	Qty_to_ship_base          int
+	Qty_shpd_not_invd_base    int
+	Qty_shipped_base          int
+	Qty_invoiced_base         int
 }{
-	Document_type:            1,
-	Sell_to_customer_no:      2,
-	Document_no:              3,
-	Line_no:                  4,
-	Type:                     5,
-	No:                       6,
-	Location_code:            7,
-	Posting_group:            8,
-	Quantity_disc_code:       9,
-	Shipment_date:            10,
-	Description:              11,
-	Description_2:            12,
-	Unit_of_measure:          13,
-	Quantity:                 15,
-	Outstanding_quantity:     16,
-	Qty_to_invoice:           17,
-	Qty_to_ship:              18,
-	Unit_price:               22,
-	Unit_cost_lcy:            23,
-	Tax_percent:              25,
-	Quantity_disc_percent:    26,
-	Line_discount_percent:    27,
-	Line_discount_amount:     28,
-	Amount:                   29,
-	Amount_including_tax:     30,
-	Allow_invoice_disc:       32,
-	Gross_weight:             34,
-	Net_weight:               35,
-	Units_per_parcel:         36,
-	Unit_volume:              37,
-	Department_code:          40,
-	Project_code:             41,
-	Price_group_code:         42,
-	Allow_quantity_disc:      43,
-	Work_type_code:           52,
-	Cust_item_disc_percent:   55,
-	Outstanding_amount:       57,
-	Qty_shipped_not_invoiced: 58,
-	Shipped_not_invoiced:     59,
-	Quantity_shipped:         60,
-	Quantity_invoiced:        61,
-	Shipment_no:              63,
-	Shipment_line_no:         64,
-	Profit_percent:           67,
-	Bill_to_customer_no:      68,
-	Inv_discount_amount:      69,
-	Gen_bus_posting_group:    74,
-	Gen_prod_posting_group:   75,
-	Tax_calculation_type:     77,
-	Tax_area_code:            85,
-	Tax_liable:               86,
-	Tax_group_code:           87,
-	Tax_bus_posting_group:    89,
-	Tax_prod_posting_group:   90,
-	Currency_code:            91,
-	Outstanding_amount_lcy:   92,
-	Shipped_not_invoiced_lcy: 93,
-	Blanket_order_no:         97,
-	Blanket_order_line_no:    98,
-	Tax_base_amount:          99,
-	Unit_cost:                100,
-	Variant_code:             5402,
-	Qty_per_unit_of_measure:  5404,
-	Unit_of_measure_code:     5407,
-	Quantity_base:            5415,
-	Outstanding_qty_base:     5416,
-	Qty_to_invoice_base:      5417,
-	Qty_to_ship_base:         5418,
-	Qty_shpd_not_invd_base:   5458,
-	Qty_shipped_base:         5460,
-	Qty_invoiced_base:        5461,
+	Document_type:             1,
+	Sell_to_customer_no:       2,
+	Document_no:               3,
+	Line_no:                   4,
+	Type:                      5,
+	No:                        6,
+	Location_code:             7,
+	Posting_group:             8,
+	Quantity_disc_code:        9,
+	Shipment_date:             10,
+	Description:               11,
+	Description_2:             12,
+	Unit_of_measure:           13,
+	Quantity:                  15,
+	Outstanding_quantity:      16,
+	Qty_to_invoice:            17,
+	Qty_to_ship:               18,
+	Unit_price:                22,
+	Unit_cost_lcy:             23,
+	Tax_percent:               25,
+	Quantity_disc_percent:     26,
+	Line_discount_percent:     27,
+	Line_discount_amount:      28,
+	Amount:                    29,
+	Amount_including_tax:      30,
+	Allow_invoice_disc:        32,
+	Gross_weight:              34,
+	Net_weight:                35,
+	Units_per_parcel:          36,
+	Unit_volume:               37,
+	Department_code:           40,
+	Project_code:              41,
+	Price_group_code:          42,
+	Allow_quantity_disc:       43,
+	Work_type_code:            52,
+	Cust_item_disc_percent:    55,
+	Outstanding_amount:        57,
+	Qty_shipped_not_invoiced:  58,
+	Shipped_not_invoiced:      59,
+	Quantity_shipped:          60,
+	Quantity_invoiced:         61,
+	Shipment_no:               63,
+	Shipment_line_no:          64,
+	Profit_percent:            67,
+	Bill_to_customer_no:       68,
+	Inv_discount_amount:       69,
+	Gen_bus_posting_group:     74,
+	Gen_prod_posting_group:    75,
+	Tax_calculation_type:      77,
+	Transaction_type:          78,
+	Transport_method:          79,
+	Exit_point:                81,
+	Area:                      82,
+	Transaction_specification: 83,
+	Tax_area_code:             85,
+	Tax_liable:                86,
+	Tax_group_code:            87,
+	Tax_bus_posting_group:     89,
+	Tax_prod_posting_group:    90,
+	Currency_code:             91,
+	Outstanding_amount_lcy:    92,
+	Shipped_not_invoiced_lcy:  93,
+	Blanket_order_no:          97,
+	Blanket_order_line_no:     98,
+	Tax_base_amount:           99,
+	Unit_cost:                 100,
+	Variant_code:              5402,
+	Qty_per_unit_of_measure:   5404,
+	Unit_of_measure_code:      5407,
+	Quantity_base:             5415,
+	Outstanding_qty_base:      5416,
+	Qty_to_invoice_base:       5417,
+	Qty_to_ship_base:          5418,
+	Qty_shpd_not_invd_base:    5458,
+	Qty_shipped_base:          5460,
+	Qty_invoiced_base:         5461,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -587,6 +607,16 @@ func (t *SalesLine) FieldNo(fieldName string) int {
 		return 75
 	case "tax_calculation_type":
 		return 77
+	case "transaction_type":
+		return 78
+	case "transport_method":
+		return 79
+	case "exit_point":
+		return 81
+	case "area":
+		return 82
+	case "transaction_specification":
+		return 83
 	case "tax_area_code":
 		return 85
 	case "tax_liable":
@@ -736,6 +766,16 @@ func (t *SalesLine) FieldName(fieldNo int) string {
 		return "gen_prod_posting_group"
 	case 77:
 		return "tax_calculation_type"
+	case 78:
+		return "transaction_type"
+	case 79:
+		return "transport_method"
+	case 81:
+		return "exit_point"
+	case 82:
+		return "area"
+	case 83:
+		return "transaction_specification"
 	case 85:
 		return "tax_area_code"
 	case 86:
@@ -869,81 +909,86 @@ func (t *SalesLine) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Sales_Line: a business logic type implements the ones it needs
 type (
-	SalesLineOnInsert                            interface{ OnInsert(rec *SalesLine) error }
-	SalesLineOnModify                            interface{ OnModify(rec *SalesLine) error }
-	SalesLineOnDelete                            interface{ OnDelete(rec *SalesLine) error }
-	SalesLineOnRename                            interface{ OnRename(rec *SalesLine) error }
-	SalesLineOnValidate_Document_type            interface{ OnValidate_Document_type(rec *SalesLine) error }
-	SalesLineOnValidate_Sell_to_customer_no      interface{ OnValidate_Sell_to_customer_no(rec *SalesLine) error }
-	SalesLineOnValidate_Document_no              interface{ OnValidate_Document_no(rec *SalesLine) error }
-	SalesLineOnValidate_Line_no                  interface{ OnValidate_Line_no(rec *SalesLine) error }
-	SalesLineOnValidate_Type                     interface{ OnValidate_Type(rec *SalesLine) error }
-	SalesLineOnValidate_No                       interface{ OnValidate_No(rec *SalesLine) error }
-	SalesLineOnValidate_Location_code            interface{ OnValidate_Location_code(rec *SalesLine) error }
-	SalesLineOnValidate_Posting_group            interface{ OnValidate_Posting_group(rec *SalesLine) error }
-	SalesLineOnValidate_Quantity_disc_code       interface{ OnValidate_Quantity_disc_code(rec *SalesLine) error }
-	SalesLineOnValidate_Shipment_date            interface{ OnValidate_Shipment_date(rec *SalesLine) error }
-	SalesLineOnValidate_Description              interface{ OnValidate_Description(rec *SalesLine) error }
-	SalesLineOnValidate_Description_2            interface{ OnValidate_Description_2(rec *SalesLine) error }
-	SalesLineOnValidate_Unit_of_measure          interface{ OnValidate_Unit_of_measure(rec *SalesLine) error }
-	SalesLineOnValidate_Quantity                 interface{ OnValidate_Quantity(rec *SalesLine) error }
-	SalesLineOnValidate_Outstanding_quantity     interface{ OnValidate_Outstanding_quantity(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_to_invoice           interface{ OnValidate_Qty_to_invoice(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_to_ship              interface{ OnValidate_Qty_to_ship(rec *SalesLine) error }
-	SalesLineOnValidate_Unit_price               interface{ OnValidate_Unit_price(rec *SalesLine) error }
-	SalesLineOnValidate_Unit_cost_lcy            interface{ OnValidate_Unit_cost_lcy(rec *SalesLine) error }
-	SalesLineOnValidate_Tax_percent              interface{ OnValidate_Tax_percent(rec *SalesLine) error }
-	SalesLineOnValidate_Quantity_disc_percent    interface{ OnValidate_Quantity_disc_percent(rec *SalesLine) error }
-	SalesLineOnValidate_Line_discount_percent    interface{ OnValidate_Line_discount_percent(rec *SalesLine) error }
-	SalesLineOnValidate_Line_discount_amount     interface{ OnValidate_Line_discount_amount(rec *SalesLine) error }
-	SalesLineOnValidate_Amount                   interface{ OnValidate_Amount(rec *SalesLine) error }
-	SalesLineOnValidate_Amount_including_tax     interface{ OnValidate_Amount_including_tax(rec *SalesLine) error }
-	SalesLineOnValidate_Allow_invoice_disc       interface{ OnValidate_Allow_invoice_disc(rec *SalesLine) error }
-	SalesLineOnValidate_Gross_weight             interface{ OnValidate_Gross_weight(rec *SalesLine) error }
-	SalesLineOnValidate_Net_weight               interface{ OnValidate_Net_weight(rec *SalesLine) error }
-	SalesLineOnValidate_Units_per_parcel         interface{ OnValidate_Units_per_parcel(rec *SalesLine) error }
-	SalesLineOnValidate_Unit_volume              interface{ OnValidate_Unit_volume(rec *SalesLine) error }
-	SalesLineOnValidate_Department_code          interface{ OnValidate_Department_code(rec *SalesLine) error }
-	SalesLineOnValidate_Project_code             interface{ OnValidate_Project_code(rec *SalesLine) error }
-	SalesLineOnValidate_Price_group_code         interface{ OnValidate_Price_group_code(rec *SalesLine) error }
-	SalesLineOnValidate_Allow_quantity_disc      interface{ OnValidate_Allow_quantity_disc(rec *SalesLine) error }
-	SalesLineOnValidate_Work_type_code           interface{ OnValidate_Work_type_code(rec *SalesLine) error }
-	SalesLineOnValidate_Cust_item_disc_percent   interface{ OnValidate_Cust_item_disc_percent(rec *SalesLine) error }
-	SalesLineOnValidate_Outstanding_amount       interface{ OnValidate_Outstanding_amount(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_shipped_not_invoiced interface{ OnValidate_Qty_shipped_not_invoiced(rec *SalesLine) error }
-	SalesLineOnValidate_Shipped_not_invoiced     interface{ OnValidate_Shipped_not_invoiced(rec *SalesLine) error }
-	SalesLineOnValidate_Quantity_shipped         interface{ OnValidate_Quantity_shipped(rec *SalesLine) error }
-	SalesLineOnValidate_Quantity_invoiced        interface{ OnValidate_Quantity_invoiced(rec *SalesLine) error }
-	SalesLineOnValidate_Shipment_no              interface{ OnValidate_Shipment_no(rec *SalesLine) error }
-	SalesLineOnValidate_Shipment_line_no         interface{ OnValidate_Shipment_line_no(rec *SalesLine) error }
-	SalesLineOnValidate_Profit_percent           interface{ OnValidate_Profit_percent(rec *SalesLine) error }
-	SalesLineOnValidate_Bill_to_customer_no      interface{ OnValidate_Bill_to_customer_no(rec *SalesLine) error }
-	SalesLineOnValidate_Inv_discount_amount      interface{ OnValidate_Inv_discount_amount(rec *SalesLine) error }
-	SalesLineOnValidate_Gen_bus_posting_group    interface{ OnValidate_Gen_bus_posting_group(rec *SalesLine) error }
-	SalesLineOnValidate_Gen_prod_posting_group   interface{ OnValidate_Gen_prod_posting_group(rec *SalesLine) error }
-	SalesLineOnValidate_Tax_calculation_type     interface{ OnValidate_Tax_calculation_type(rec *SalesLine) error }
-	SalesLineOnValidate_Tax_area_code            interface{ OnValidate_Tax_area_code(rec *SalesLine) error }
-	SalesLineOnValidate_Tax_liable               interface{ OnValidate_Tax_liable(rec *SalesLine) error }
-	SalesLineOnValidate_Tax_group_code           interface{ OnValidate_Tax_group_code(rec *SalesLine) error }
-	SalesLineOnValidate_Tax_bus_posting_group    interface{ OnValidate_Tax_bus_posting_group(rec *SalesLine) error }
-	SalesLineOnValidate_Tax_prod_posting_group   interface{ OnValidate_Tax_prod_posting_group(rec *SalesLine) error }
-	SalesLineOnValidate_Currency_code            interface{ OnValidate_Currency_code(rec *SalesLine) error }
-	SalesLineOnValidate_Outstanding_amount_lcy   interface{ OnValidate_Outstanding_amount_lcy(rec *SalesLine) error }
-	SalesLineOnValidate_Shipped_not_invoiced_lcy interface{ OnValidate_Shipped_not_invoiced_lcy(rec *SalesLine) error }
-	SalesLineOnValidate_Blanket_order_no         interface{ OnValidate_Blanket_order_no(rec *SalesLine) error }
-	SalesLineOnValidate_Blanket_order_line_no    interface{ OnValidate_Blanket_order_line_no(rec *SalesLine) error }
-	SalesLineOnValidate_Tax_base_amount          interface{ OnValidate_Tax_base_amount(rec *SalesLine) error }
-	SalesLineOnValidate_Unit_cost                interface{ OnValidate_Unit_cost(rec *SalesLine) error }
-	SalesLineOnValidate_Variant_code             interface{ OnValidate_Variant_code(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_per_unit_of_measure  interface{ OnValidate_Qty_per_unit_of_measure(rec *SalesLine) error }
-	SalesLineOnValidate_Unit_of_measure_code     interface{ OnValidate_Unit_of_measure_code(rec *SalesLine) error }
-	SalesLineOnValidate_Quantity_base            interface{ OnValidate_Quantity_base(rec *SalesLine) error }
-	SalesLineOnValidate_Outstanding_qty_base     interface{ OnValidate_Outstanding_qty_base(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_to_invoice_base      interface{ OnValidate_Qty_to_invoice_base(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_to_ship_base         interface{ OnValidate_Qty_to_ship_base(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_shpd_not_invd_base   interface{ OnValidate_Qty_shpd_not_invd_base(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_shipped_base         interface{ OnValidate_Qty_shipped_base(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_invoiced_base        interface{ OnValidate_Qty_invoiced_base(rec *SalesLine) error }
+	SalesLineOnInsert                             interface{ OnInsert(rec *SalesLine) error }
+	SalesLineOnModify                             interface{ OnModify(rec *SalesLine) error }
+	SalesLineOnDelete                             interface{ OnDelete(rec *SalesLine) error }
+	SalesLineOnRename                             interface{ OnRename(rec *SalesLine) error }
+	SalesLineOnValidate_Document_type             interface{ OnValidate_Document_type(rec *SalesLine) error }
+	SalesLineOnValidate_Sell_to_customer_no       interface{ OnValidate_Sell_to_customer_no(rec *SalesLine) error }
+	SalesLineOnValidate_Document_no               interface{ OnValidate_Document_no(rec *SalesLine) error }
+	SalesLineOnValidate_Line_no                   interface{ OnValidate_Line_no(rec *SalesLine) error }
+	SalesLineOnValidate_Type                      interface{ OnValidate_Type(rec *SalesLine) error }
+	SalesLineOnValidate_No                        interface{ OnValidate_No(rec *SalesLine) error }
+	SalesLineOnValidate_Location_code             interface{ OnValidate_Location_code(rec *SalesLine) error }
+	SalesLineOnValidate_Posting_group             interface{ OnValidate_Posting_group(rec *SalesLine) error }
+	SalesLineOnValidate_Quantity_disc_code        interface{ OnValidate_Quantity_disc_code(rec *SalesLine) error }
+	SalesLineOnValidate_Shipment_date             interface{ OnValidate_Shipment_date(rec *SalesLine) error }
+	SalesLineOnValidate_Description               interface{ OnValidate_Description(rec *SalesLine) error }
+	SalesLineOnValidate_Description_2             interface{ OnValidate_Description_2(rec *SalesLine) error }
+	SalesLineOnValidate_Unit_of_measure           interface{ OnValidate_Unit_of_measure(rec *SalesLine) error }
+	SalesLineOnValidate_Quantity                  interface{ OnValidate_Quantity(rec *SalesLine) error }
+	SalesLineOnValidate_Outstanding_quantity      interface{ OnValidate_Outstanding_quantity(rec *SalesLine) error }
+	SalesLineOnValidate_Qty_to_invoice            interface{ OnValidate_Qty_to_invoice(rec *SalesLine) error }
+	SalesLineOnValidate_Qty_to_ship               interface{ OnValidate_Qty_to_ship(rec *SalesLine) error }
+	SalesLineOnValidate_Unit_price                interface{ OnValidate_Unit_price(rec *SalesLine) error }
+	SalesLineOnValidate_Unit_cost_lcy             interface{ OnValidate_Unit_cost_lcy(rec *SalesLine) error }
+	SalesLineOnValidate_Tax_percent               interface{ OnValidate_Tax_percent(rec *SalesLine) error }
+	SalesLineOnValidate_Quantity_disc_percent     interface{ OnValidate_Quantity_disc_percent(rec *SalesLine) error }
+	SalesLineOnValidate_Line_discount_percent     interface{ OnValidate_Line_discount_percent(rec *SalesLine) error }
+	SalesLineOnValidate_Line_discount_amount      interface{ OnValidate_Line_discount_amount(rec *SalesLine) error }
+	SalesLineOnValidate_Amount                    interface{ OnValidate_Amount(rec *SalesLine) error }
+	SalesLineOnValidate_Amount_including_tax      interface{ OnValidate_Amount_including_tax(rec *SalesLine) error }
+	SalesLineOnValidate_Allow_invoice_disc        interface{ OnValidate_Allow_invoice_disc(rec *SalesLine) error }
+	SalesLineOnValidate_Gross_weight              interface{ OnValidate_Gross_weight(rec *SalesLine) error }
+	SalesLineOnValidate_Net_weight                interface{ OnValidate_Net_weight(rec *SalesLine) error }
+	SalesLineOnValidate_Units_per_parcel          interface{ OnValidate_Units_per_parcel(rec *SalesLine) error }
+	SalesLineOnValidate_Unit_volume               interface{ OnValidate_Unit_volume(rec *SalesLine) error }
+	SalesLineOnValidate_Department_code           interface{ OnValidate_Department_code(rec *SalesLine) error }
+	SalesLineOnValidate_Project_code              interface{ OnValidate_Project_code(rec *SalesLine) error }
+	SalesLineOnValidate_Price_group_code          interface{ OnValidate_Price_group_code(rec *SalesLine) error }
+	SalesLineOnValidate_Allow_quantity_disc       interface{ OnValidate_Allow_quantity_disc(rec *SalesLine) error }
+	SalesLineOnValidate_Work_type_code            interface{ OnValidate_Work_type_code(rec *SalesLine) error }
+	SalesLineOnValidate_Cust_item_disc_percent    interface{ OnValidate_Cust_item_disc_percent(rec *SalesLine) error }
+	SalesLineOnValidate_Outstanding_amount        interface{ OnValidate_Outstanding_amount(rec *SalesLine) error }
+	SalesLineOnValidate_Qty_shipped_not_invoiced  interface{ OnValidate_Qty_shipped_not_invoiced(rec *SalesLine) error }
+	SalesLineOnValidate_Shipped_not_invoiced      interface{ OnValidate_Shipped_not_invoiced(rec *SalesLine) error }
+	SalesLineOnValidate_Quantity_shipped          interface{ OnValidate_Quantity_shipped(rec *SalesLine) error }
+	SalesLineOnValidate_Quantity_invoiced         interface{ OnValidate_Quantity_invoiced(rec *SalesLine) error }
+	SalesLineOnValidate_Shipment_no               interface{ OnValidate_Shipment_no(rec *SalesLine) error }
+	SalesLineOnValidate_Shipment_line_no          interface{ OnValidate_Shipment_line_no(rec *SalesLine) error }
+	SalesLineOnValidate_Profit_percent            interface{ OnValidate_Profit_percent(rec *SalesLine) error }
+	SalesLineOnValidate_Bill_to_customer_no       interface{ OnValidate_Bill_to_customer_no(rec *SalesLine) error }
+	SalesLineOnValidate_Inv_discount_amount       interface{ OnValidate_Inv_discount_amount(rec *SalesLine) error }
+	SalesLineOnValidate_Gen_bus_posting_group     interface{ OnValidate_Gen_bus_posting_group(rec *SalesLine) error }
+	SalesLineOnValidate_Gen_prod_posting_group    interface{ OnValidate_Gen_prod_posting_group(rec *SalesLine) error }
+	SalesLineOnValidate_Tax_calculation_type      interface{ OnValidate_Tax_calculation_type(rec *SalesLine) error }
+	SalesLineOnValidate_Transaction_type          interface{ OnValidate_Transaction_type(rec *SalesLine) error }
+	SalesLineOnValidate_Transport_method          interface{ OnValidate_Transport_method(rec *SalesLine) error }
+	SalesLineOnValidate_Exit_point                interface{ OnValidate_Exit_point(rec *SalesLine) error }
+	SalesLineOnValidate_Area                      interface{ OnValidate_Area(rec *SalesLine) error }
+	SalesLineOnValidate_Transaction_specification interface{ OnValidate_Transaction_specification(rec *SalesLine) error }
+	SalesLineOnValidate_Tax_area_code             interface{ OnValidate_Tax_area_code(rec *SalesLine) error }
+	SalesLineOnValidate_Tax_liable                interface{ OnValidate_Tax_liable(rec *SalesLine) error }
+	SalesLineOnValidate_Tax_group_code            interface{ OnValidate_Tax_group_code(rec *SalesLine) error }
+	SalesLineOnValidate_Tax_bus_posting_group     interface{ OnValidate_Tax_bus_posting_group(rec *SalesLine) error }
+	SalesLineOnValidate_Tax_prod_posting_group    interface{ OnValidate_Tax_prod_posting_group(rec *SalesLine) error }
+	SalesLineOnValidate_Currency_code             interface{ OnValidate_Currency_code(rec *SalesLine) error }
+	SalesLineOnValidate_Outstanding_amount_lcy    interface{ OnValidate_Outstanding_amount_lcy(rec *SalesLine) error }
+	SalesLineOnValidate_Shipped_not_invoiced_lcy  interface{ OnValidate_Shipped_not_invoiced_lcy(rec *SalesLine) error }
+	SalesLineOnValidate_Blanket_order_no          interface{ OnValidate_Blanket_order_no(rec *SalesLine) error }
+	SalesLineOnValidate_Blanket_order_line_no     interface{ OnValidate_Blanket_order_line_no(rec *SalesLine) error }
+	SalesLineOnValidate_Tax_base_amount           interface{ OnValidate_Tax_base_amount(rec *SalesLine) error }
+	SalesLineOnValidate_Unit_cost                 interface{ OnValidate_Unit_cost(rec *SalesLine) error }
+	SalesLineOnValidate_Variant_code              interface{ OnValidate_Variant_code(rec *SalesLine) error }
+	SalesLineOnValidate_Qty_per_unit_of_measure   interface{ OnValidate_Qty_per_unit_of_measure(rec *SalesLine) error }
+	SalesLineOnValidate_Unit_of_measure_code      interface{ OnValidate_Unit_of_measure_code(rec *SalesLine) error }
+	SalesLineOnValidate_Quantity_base             interface{ OnValidate_Quantity_base(rec *SalesLine) error }
+	SalesLineOnValidate_Outstanding_qty_base      interface{ OnValidate_Outstanding_qty_base(rec *SalesLine) error }
+	SalesLineOnValidate_Qty_to_invoice_base       interface{ OnValidate_Qty_to_invoice_base(rec *SalesLine) error }
+	SalesLineOnValidate_Qty_to_ship_base          interface{ OnValidate_Qty_to_ship_base(rec *SalesLine) error }
+	SalesLineOnValidate_Qty_shpd_not_invd_base    interface{ OnValidate_Qty_shpd_not_invd_base(rec *SalesLine) error }
+	SalesLineOnValidate_Qty_shipped_base          interface{ OnValidate_Qty_shipped_base(rec *SalesLine) error }
+	SalesLineOnValidate_Qty_invoiced_base         interface{ OnValidate_Qty_invoiced_base(rec *SalesLine) error }
 )
 
 // salesLineLogic is the registered business logic of Sales_Line, in
@@ -1071,6 +1116,16 @@ func salesLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SalesLineOnValidate_Gen_prod_posting_group)
 	case "OnValidate_Tax_calculation_type":
 		_, ok = logic.(SalesLineOnValidate_Tax_calculation_type)
+	case "OnValidate_Transaction_type":
+		_, ok = logic.(SalesLineOnValidate_Transaction_type)
+	case "OnValidate_Transport_method":
+		_, ok = logic.(SalesLineOnValidate_Transport_method)
+	case "OnValidate_Exit_point":
+		_, ok = logic.(SalesLineOnValidate_Exit_point)
+	case "OnValidate_Area":
+		_, ok = logic.(SalesLineOnValidate_Area)
+	case "OnValidate_Transaction_specification":
+		_, ok = logic.(SalesLineOnValidate_Transaction_specification)
 	case "OnValidate_Tax_area_code":
 		_, ok = logic.(SalesLineOnValidate_Tax_area_code)
 	case "OnValidate_Tax_liable":
@@ -1243,6 +1298,21 @@ func (t *SalesLine) CheckFields() error {
 	if err := tables.CheckMaxLength(SalesLineTableName, "gen_prod_posting_group", string(t.Gen_prod_posting_group), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(SalesLineTableName, "transaction_type", string(t.Transaction_type), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(SalesLineTableName, "transport_method", string(t.Transport_method), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(SalesLineTableName, "exit_point", string(t.Exit_point), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(SalesLineTableName, "area", string(t.Area), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(SalesLineTableName, "transaction_specification", string(t.Transaction_specification), 10); err != nil {
+		return err
+	}
 	if err := tables.CheckMaxLength(SalesLineTableName, "tax_area_code", string(t.Tax_area_code), 20); err != nil {
 		return err
 	}
@@ -1343,6 +1413,11 @@ func GetSalesLineTableSchema() string {
 		gen_bus_posting_group TEXT(10),
 		gen_prod_posting_group TEXT(10),
 		tax_calculation_type INTEGER CHECK (tax_calculation_type >= 0 AND tax_calculation_type <= 3),
+		transaction_type TEXT(10),
+		transport_method TEXT(10),
+		exit_point TEXT(10),
+		area TEXT(10),
+		transaction_specification TEXT(10),
 		tax_area_code TEXT(20),
 		tax_liable INTEGER,
 		tax_group_code TEXT(10),
@@ -1421,6 +1496,11 @@ func GetSalesLinePostgresTableSchema() string {
 		gen_bus_posting_group VARCHAR(10),
 		gen_prod_posting_group VARCHAR(10),
 		tax_calculation_type INTEGER CHECK (tax_calculation_type >= 0 AND tax_calculation_type <= 3),
+		transaction_type VARCHAR(10),
+		transport_method VARCHAR(10),
+		exit_point VARCHAR(10),
+		area VARCHAR(10),
+		transaction_specification VARCHAR(10),
 		tax_area_code VARCHAR(20),
 		tax_liable BOOLEAN,
 		tax_group_code VARCHAR(10),
@@ -1636,6 +1716,11 @@ func (t *SalesLine) StoreOldValues() {
 	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
 	t.oldValues["gen_prod_posting_group"] = t.Gen_prod_posting_group
 	t.oldValues["tax_calculation_type"] = t.Tax_calculation_type
+	t.oldValues["transaction_type"] = t.Transaction_type
+	t.oldValues["transport_method"] = t.Transport_method
+	t.oldValues["exit_point"] = t.Exit_point
+	t.oldValues["area"] = t.Area
+	t.oldValues["transaction_specification"] = t.Transaction_specification
 	t.oldValues["tax_area_code"] = t.Tax_area_code
 	t.oldValues["tax_liable"] = t.Tax_liable
 	t.oldValues["tax_group_code"] = t.Tax_group_code
@@ -1818,6 +1903,21 @@ func (t *SalesLine) XRec() *SalesLine {
 	}
 	if v, ok := t.oldValues["tax_calculation_type"].(SalesLineTax_calculation_type); ok {
 		x.Tax_calculation_type = v
+	}
+	if v, ok := t.oldValues["transaction_type"].(types.Code); ok {
+		x.Transaction_type = v
+	}
+	if v, ok := t.oldValues["transport_method"].(types.Code); ok {
+		x.Transport_method = v
+	}
+	if v, ok := t.oldValues["exit_point"].(types.Code); ok {
+		x.Exit_point = v
+	}
+	if v, ok := t.oldValues["area"].(types.Code); ok {
+		x.Area = v
+	}
+	if v, ok := t.oldValues["transaction_specification"].(types.Code); ok {
+		x.Transaction_specification = v
 	}
 	if v, ok := t.oldValues["tax_area_code"].(types.Code); ok {
 		x.Tax_area_code = v
@@ -2019,6 +2119,11 @@ func (t *SalesLine) GetByPK(document_type SalesLineDocument_type, document_no ty
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
 	var tax_calculation_typeInt int
+	var transaction_typeNull sql.NullString
+	var transport_methodNull sql.NullString
+	var exit_pointNull sql.NullString
+	var areaNull sql.NullString
+	var transaction_specificationNull sql.NullString
 	var tax_area_codeNull sql.NullString
 	var tax_liableBool sql.NullBool
 	var tax_group_codeNull sql.NullString
@@ -2050,7 +2155,7 @@ func (t *SalesLine) GetByPK(document_type SalesLineDocument_type, document_no ty
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT document_type, sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_ship, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, outstanding_amount, qty_shipped_not_invoiced, shipped_not_invoiced, quantity_shipped, quantity_invoiced, shipment_no, shipment_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, shipped_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_ship_base, qty_shpd_not_invd_base, qty_shipped_base, qty_invoiced_base FROM "%s" WHERE 1=1 AND document_type = ? AND document_no = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT document_type, sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_ship, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, outstanding_amount, qty_shipped_not_invoiced, shipped_not_invoiced, quantity_shipped, quantity_invoiced, shipment_no, shipment_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, exit_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, shipped_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_ship_base, qty_shpd_not_invd_base, qty_shipped_base, qty_invoiced_base FROM "%s" WHERE 1=1 AND document_type = ? AND document_no = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2106,6 +2211,11 @@ func (t *SalesLine) GetByPK(document_type SalesLineDocument_type, document_no ty
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
 		&tax_calculation_typeInt,
+		&transaction_typeNull,
+		&transport_methodNull,
+		&exit_pointNull,
+		&areaNull,
+		&transaction_specificationNull,
 		&tax_area_codeNull,
 		&tax_liableBool,
 		&tax_group_codeNull,
@@ -2190,6 +2300,11 @@ func (t *SalesLine) GetByPK(document_type SalesLineDocument_type, document_no ty
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
 	t.Tax_calculation_type = SalesLineTax_calculation_type(tax_calculation_typeInt)
+	t.Transaction_type = types.NewCode(transaction_typeNull.String)
+	t.Transport_method = types.NewCode(transport_methodNull.String)
+	t.Exit_point = types.NewCode(exit_pointNull.String)
+	t.Area = types.NewCode(areaNull.String)
+	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
 	t.Tax_liable = tax_liableBool.Bool
 	t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
@@ -2283,6 +2398,11 @@ func (t *SalesLine) Insert(runTrigger bool) bool {
 		t.Gen_bus_posting_group,
 		t.Gen_prod_posting_group,
 		t.Tax_calculation_type,
+		t.Transaction_type,
+		t.Transport_method,
+		t.Exit_point,
+		t.Area,
+		t.Transaction_specification,
 		t.Tax_area_code,
 		t.Tax_liable,
 		t.Tax_group_code,
@@ -2309,7 +2429,7 @@ func (t *SalesLine) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (document_type, sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_ship, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, outstanding_amount, qty_shipped_not_invoiced, shipped_not_invoiced, quantity_shipped, quantity_invoiced, shipment_no, shipment_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, shipped_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_ship_base, qty_shpd_not_invd_base, qty_shipped_base, qty_invoiced_base) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_type, document_no, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (document_type, sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_ship, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, outstanding_amount, qty_shipped_not_invoiced, shipped_not_invoiced, quantity_shipped, quantity_invoiced, shipment_no, shipment_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, exit_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, shipped_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_ship_base, qty_shpd_not_invd_base, qty_shipped_base, qty_invoiced_base) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_type, document_no, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2396,6 +2516,11 @@ func (t *SalesLine) InsertAll(records []*SalesLine, runTrigger bool) error {
 			r.Gen_bus_posting_group,
 			r.Gen_prod_posting_group,
 			r.Tax_calculation_type,
+			r.Transaction_type,
+			r.Transport_method,
+			r.Exit_point,
+			r.Area,
+			r.Transaction_specification,
 			r.Tax_area_code,
 			r.Tax_liable,
 			r.Tax_group_code,
@@ -2421,7 +2546,7 @@ func (t *SalesLine) InsertAll(records []*SalesLine, runTrigger bool) error {
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, SalesLineTableName)
-	columns := []string{"document_type", "sell_to_customer_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "quantity_disc_code", "shipment_date", "description", "description_2", "unit_of_measure", "quantity", "outstanding_quantity", "qty_to_invoice", "qty_to_ship", "unit_price", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "department_code", "project_code", "price_group_code", "allow_quantity_disc", "work_type_code", "cust_item_disc_percent", "outstanding_amount", "qty_shipped_not_invoiced", "shipped_not_invoiced", "quantity_shipped", "quantity_invoiced", "shipment_no", "shipment_line_no", "profit_percent", "bill_to_customer_no", "inv_discount_amount", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_area_code", "tax_liable", "tax_group_code", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "outstanding_amount_lcy", "shipped_not_invoiced_lcy", "blanket_order_no", "blanket_order_line_no", "tax_base_amount", "unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "outstanding_qty_base", "qty_to_invoice_base", "qty_to_ship_base", "qty_shpd_not_invd_base", "qty_shipped_base", "qty_invoiced_base"}
+	columns := []string{"document_type", "sell_to_customer_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "quantity_disc_code", "shipment_date", "description", "description_2", "unit_of_measure", "quantity", "outstanding_quantity", "qty_to_invoice", "qty_to_ship", "unit_price", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "department_code", "project_code", "price_group_code", "allow_quantity_disc", "work_type_code", "cust_item_disc_percent", "outstanding_amount", "qty_shipped_not_invoiced", "shipped_not_invoiced", "quantity_shipped", "quantity_invoiced", "shipment_no", "shipment_line_no", "profit_percent", "bill_to_customer_no", "inv_discount_amount", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "transaction_type", "transport_method", "exit_point", "area", "transaction_specification", "tax_area_code", "tax_liable", "tax_group_code", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "outstanding_amount_lcy", "shipped_not_invoiced_lcy", "blanket_order_no", "blanket_order_line_no", "tax_base_amount", "unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "outstanding_qty_base", "qty_to_invoice_base", "qty_to_ship_base", "qty_shpd_not_invd_base", "qty_shipped_base", "qty_invoiced_base"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2663,6 +2788,26 @@ func (t *SalesLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "tax_calculation_type = ?")
 			values = append(values, t.Tax_calculation_type)
 		}
+		if t.hasFieldChanged("transaction_type") {
+			setClauses = append(setClauses, "transaction_type = ?")
+			values = append(values, t.Transaction_type)
+		}
+		if t.hasFieldChanged("transport_method") {
+			setClauses = append(setClauses, "transport_method = ?")
+			values = append(values, t.Transport_method)
+		}
+		if t.hasFieldChanged("exit_point") {
+			setClauses = append(setClauses, "exit_point = ?")
+			values = append(values, t.Exit_point)
+		}
+		if t.hasFieldChanged("area") {
+			setClauses = append(setClauses, "area = ?")
+			values = append(values, t.Area)
+		}
+		if t.hasFieldChanged("transaction_specification") {
+			setClauses = append(setClauses, "transaction_specification = ?")
+			values = append(values, t.Transaction_specification)
+		}
 		if t.hasFieldChanged("tax_area_code") {
 			setClauses = append(setClauses, "tax_area_code = ?")
 			values = append(values, t.Tax_area_code)
@@ -2850,6 +2995,16 @@ func (t *SalesLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Gen_prod_posting_group)
 		setClauses = append(setClauses, "tax_calculation_type = ?")
 		values = append(values, t.Tax_calculation_type)
+		setClauses = append(setClauses, "transaction_type = ?")
+		values = append(values, t.Transaction_type)
+		setClauses = append(setClauses, "transport_method = ?")
+		values = append(values, t.Transport_method)
+		setClauses = append(setClauses, "exit_point = ?")
+		values = append(values, t.Exit_point)
+		setClauses = append(setClauses, "area = ?")
+		values = append(values, t.Area)
+		setClauses = append(setClauses, "transaction_specification = ?")
+		values = append(values, t.Transaction_specification)
 		setClauses = append(setClauses, "tax_area_code = ?")
 		values = append(values, t.Tax_area_code)
 		setClauses = append(setClauses, "tax_liable = ?")
@@ -3147,6 +3302,26 @@ func (t *SalesLine) hasFieldChanged(fieldName string) bool {
 	case "tax_calculation_type":
 		if old, ok := oldValue.(SalesLineTax_calculation_type); ok {
 			return t.Tax_calculation_type != old
+		}
+	case "transaction_type":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Transaction_type.Equal(old)
+		}
+	case "transport_method":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Transport_method.Equal(old)
+		}
+	case "exit_point":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Exit_point.Equal(old)
+		}
+	case "area":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Area.Equal(old)
+		}
+	case "transaction_specification":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Transaction_specification.Equal(old)
 		}
 	case "tax_area_code":
 		if old, ok := oldValue.(types.Code); ok {
@@ -3542,6 +3717,16 @@ func (t *SalesLine) columnName(fieldName string) (string, bool) {
 		return "gen_prod_posting_group", true
 	case strings.ToLower("tax_calculation_type"):
 		return "tax_calculation_type", true
+	case strings.ToLower("transaction_type"):
+		return "transaction_type", true
+	case strings.ToLower("transport_method"):
+		return "transport_method", true
+	case strings.ToLower("exit_point"):
+		return "exit_point", true
+	case strings.ToLower("area"):
+		return "area", true
+	case strings.ToLower("transaction_specification"):
+		return "transaction_specification", true
 	case strings.ToLower("tax_area_code"):
 		return "tax_area_code", true
 	case strings.ToLower("tax_liable"):
@@ -4013,7 +4198,7 @@ func (t *SalesLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_ship, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, outstanding_amount, qty_shipped_not_invoiced, shipped_not_invoiced, quantity_shipped, quantity_invoiced, shipment_no, shipment_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, shipped_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_ship_base, qty_shpd_not_invd_base, qty_shipped_base, qty_invoiced_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT document_type, sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_ship, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, outstanding_amount, qty_shipped_not_invoiced, shipped_not_invoiced, quantity_shipped, quantity_invoiced, shipment_no, shipment_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, exit_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, shipped_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_ship_base, qty_shpd_not_invd_base, qty_shipped_base, qty_invoiced_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4065,6 +4250,11 @@ func (t *SalesLine) FindFirst() bool {
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
 	var tax_calculation_typeInt int
+	var transaction_typeNull sql.NullString
+	var transport_methodNull sql.NullString
+	var exit_pointNull sql.NullString
+	var areaNull sql.NullString
+	var transaction_specificationNull sql.NullString
 	var tax_area_codeNull sql.NullString
 	var tax_liableBool sql.NullBool
 	var tax_group_codeNull sql.NullString
@@ -4137,6 +4327,11 @@ func (t *SalesLine) FindFirst() bool {
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
 		&tax_calculation_typeInt,
+		&transaction_typeNull,
+		&transport_methodNull,
+		&exit_pointNull,
+		&areaNull,
+		&transaction_specificationNull,
 		&tax_area_codeNull,
 		&tax_liableBool,
 		&tax_group_codeNull,
@@ -4217,6 +4412,11 @@ func (t *SalesLine) FindFirst() bool {
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
 	t.Tax_calculation_type = SalesLineTax_calculation_type(tax_calculation_typeInt)
+	t.Transaction_type = types.NewCode(transaction_typeNull.String)
+	t.Transport_method = types.NewCode(transport_methodNull.String)
+	t.Exit_point = types.NewCode(exit_pointNull.String)
+	t.Area = types.NewCode(areaNull.String)
+	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
 	t.Tax_liable = tax_liableBool.Bool
 	t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
@@ -4258,7 +4458,7 @@ func (t *SalesLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_ship, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, outstanding_amount, qty_shipped_not_invoiced, shipped_not_invoiced, quantity_shipped, quantity_invoiced, shipment_no, shipment_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, shipped_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_ship_base, qty_shpd_not_invd_base, qty_shipped_base, qty_invoiced_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT document_type, sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_ship, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, outstanding_amount, qty_shipped_not_invoiced, shipped_not_invoiced, quantity_shipped, quantity_invoiced, shipment_no, shipment_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, exit_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, shipped_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_ship_base, qty_shpd_not_invd_base, qty_shipped_base, qty_invoiced_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4310,6 +4510,11 @@ func (t *SalesLine) FindLast() bool {
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
 	var tax_calculation_typeInt int
+	var transaction_typeNull sql.NullString
+	var transport_methodNull sql.NullString
+	var exit_pointNull sql.NullString
+	var areaNull sql.NullString
+	var transaction_specificationNull sql.NullString
 	var tax_area_codeNull sql.NullString
 	var tax_liableBool sql.NullBool
 	var tax_group_codeNull sql.NullString
@@ -4382,6 +4587,11 @@ func (t *SalesLine) FindLast() bool {
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
 		&tax_calculation_typeInt,
+		&transaction_typeNull,
+		&transport_methodNull,
+		&exit_pointNull,
+		&areaNull,
+		&transaction_specificationNull,
 		&tax_area_codeNull,
 		&tax_liableBool,
 		&tax_group_codeNull,
@@ -4462,6 +4672,11 @@ func (t *SalesLine) FindLast() bool {
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
 	t.Tax_calculation_type = SalesLineTax_calculation_type(tax_calculation_typeInt)
+	t.Transaction_type = types.NewCode(transaction_typeNull.String)
+	t.Transport_method = types.NewCode(transport_methodNull.String)
+	t.Exit_point = types.NewCode(exit_pointNull.String)
+	t.Area = types.NewCode(areaNull.String)
+	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
 	t.Tax_liable = tax_liableBool.Bool
 	t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
@@ -4533,7 +4748,7 @@ func (t *SalesLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_ship, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, outstanding_amount, qty_shipped_not_invoiced, shipped_not_invoiced, quantity_shipped, quantity_invoiced, shipment_no, shipment_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, shipped_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_ship_base, qty_shpd_not_invd_base, qty_shipped_base, qty_invoiced_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT document_type, sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_ship, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, outstanding_amount, qty_shipped_not_invoiced, shipped_not_invoiced, quantity_shipped, quantity_invoiced, shipment_no, shipment_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, exit_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, shipped_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_ship_base, qty_shpd_not_invd_base, qty_shipped_base, qty_invoiced_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4649,6 +4864,11 @@ func (t *SalesLine) Next(steps ...int) bool {
 		var gen_bus_posting_groupNull sql.NullString
 		var gen_prod_posting_groupNull sql.NullString
 		var tax_calculation_typeInt int
+		var transaction_typeNull sql.NullString
+		var transport_methodNull sql.NullString
+		var exit_pointNull sql.NullString
+		var areaNull sql.NullString
+		var transaction_specificationNull sql.NullString
 		var tax_area_codeNull sql.NullString
 		var tax_liableBool sql.NullBool
 		var tax_group_codeNull sql.NullString
@@ -4721,6 +4941,11 @@ func (t *SalesLine) Next(steps ...int) bool {
 			&gen_bus_posting_groupNull,
 			&gen_prod_posting_groupNull,
 			&tax_calculation_typeInt,
+			&transaction_typeNull,
+			&transport_methodNull,
+			&exit_pointNull,
+			&areaNull,
+			&transaction_specificationNull,
 			&tax_area_codeNull,
 			&tax_liableBool,
 			&tax_group_codeNull,
@@ -4800,6 +5025,11 @@ func (t *SalesLine) Next(steps ...int) bool {
 		t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 		t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
 		t.Tax_calculation_type = SalesLineTax_calculation_type(tax_calculation_typeInt)
+		t.Transaction_type = types.NewCode(transaction_typeNull.String)
+		t.Transport_method = types.NewCode(transport_methodNull.String)
+		t.Exit_point = types.NewCode(exit_pointNull.String)
+		t.Area = types.NewCode(areaNull.String)
+		t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 		t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
 		t.Tax_liable = tax_liableBool.Bool
 		t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
@@ -4870,7 +5100,7 @@ func (t *SalesLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_ship, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, outstanding_amount, qty_shipped_not_invoiced, shipped_not_invoiced, quantity_shipped, quantity_invoiced, shipment_no, shipment_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, shipped_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_ship_base, qty_shpd_not_invd_base, qty_shipped_base, qty_invoiced_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT document_type, sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_ship, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, outstanding_amount, qty_shipped_not_invoiced, shipped_not_invoiced, quantity_shipped, quantity_invoiced, shipment_no, shipment_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, exit_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, shipped_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_ship_base, qty_shpd_not_invd_base, qty_shipped_base, qty_invoiced_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4939,6 +5169,11 @@ func (t *SalesLine) FindSetBuffered() bool {
 		var gen_bus_posting_groupNull sql.NullString
 		var gen_prod_posting_groupNull sql.NullString
 		var tax_calculation_typeInt int
+		var transaction_typeNull sql.NullString
+		var transport_methodNull sql.NullString
+		var exit_pointNull sql.NullString
+		var areaNull sql.NullString
+		var transaction_specificationNull sql.NullString
 		var tax_area_codeNull sql.NullString
 		var tax_liableBool sql.NullBool
 		var tax_group_codeNull sql.NullString
@@ -5011,6 +5246,11 @@ func (t *SalesLine) FindSetBuffered() bool {
 			&gen_bus_posting_groupNull,
 			&gen_prod_posting_groupNull,
 			&tax_calculation_typeInt,
+			&transaction_typeNull,
+			&transport_methodNull,
+			&exit_pointNull,
+			&areaNull,
+			&transaction_specificationNull,
 			&tax_area_codeNull,
 			&tax_liableBool,
 			&tax_group_codeNull,
@@ -5088,6 +5328,11 @@ func (t *SalesLine) FindSetBuffered() bool {
 		record.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 		record.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
 		record.Tax_calculation_type = SalesLineTax_calculation_type(tax_calculation_typeInt)
+		record.Transaction_type = types.NewCode(transaction_typeNull.String)
+		record.Transport_method = types.NewCode(transport_methodNull.String)
+		record.Exit_point = types.NewCode(exit_pointNull.String)
+		record.Area = types.NewCode(areaNull.String)
+		record.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 		record.Tax_area_code = types.NewCode(tax_area_codeNull.String)
 		record.Tax_liable = tax_liableBool.Bool
 		record.Tax_group_code = types.NewCode(tax_group_codeNull.String)
@@ -5186,6 +5431,11 @@ func (t *SalesLine) copyFromBuffered(record *SalesLine) {
 	t.Gen_bus_posting_group = record.Gen_bus_posting_group
 	t.Gen_prod_posting_group = record.Gen_prod_posting_group
 	t.Tax_calculation_type = record.Tax_calculation_type
+	t.Transaction_type = record.Transaction_type
+	t.Transport_method = record.Transport_method
+	t.Exit_point = record.Exit_point
+	t.Area = record.Area
+	t.Transaction_specification = record.Transaction_specification
 	t.Tax_area_code = record.Tax_area_code
 	t.Tax_liable = record.Tax_liable
 	t.Tax_group_code = record.Tax_group_code
@@ -6627,6 +6877,116 @@ func (t *SalesLine) ValidateField(fieldName string, value interface{}) error {
 			}
 		}
 		return nil
+	case "transaction_type":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Transaction_type = v
+		} else if v, ok := value.(string); ok {
+			t.Transaction_type = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field transaction_type")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transaction_type"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesLineOnValidate_Transaction_type); ok {
+				if err := trg.OnValidate_Transaction_type(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "transport_method":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Transport_method = v
+		} else if v, ok := value.(string); ok {
+			t.Transport_method = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field transport_method")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transport_method"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesLineOnValidate_Transport_method); ok {
+				if err := trg.OnValidate_Transport_method(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "exit_point":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Exit_point = v
+		} else if v, ok := value.(string); ok {
+			t.Exit_point = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field exit_point")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "exit_point"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesLineOnValidate_Exit_point); ok {
+				if err := trg.OnValidate_Exit_point(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "area":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Area = v
+		} else if v, ok := value.(string); ok {
+			t.Area = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field area")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "area"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesLineOnValidate_Area); ok {
+				if err := trg.OnValidate_Area(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "transaction_specification":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Transaction_specification = v
+		} else if v, ok := value.(string); ok {
+			t.Transaction_specification = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field transaction_specification")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transaction_specification"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesLineOnValidate_Transaction_specification); ok {
+				if err := trg.OnValidate_Transaction_specification(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	case "tax_area_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
@@ -7299,6 +7659,16 @@ func (t *SalesLine) FieldValue(no int) (any, bool) {
 		return t.Gen_prod_posting_group, true
 	case 77:
 		return t.Tax_calculation_type, true
+	case 78:
+		return t.Transaction_type, true
+	case 79:
+		return t.Transport_method, true
+	case 81:
+		return t.Exit_point, true
+	case 82:
+		return t.Area, true
+	case 83:
+		return t.Transaction_specification, true
 	case 85:
 		return t.Tax_area_code, true
 	case 86:
@@ -7669,6 +8039,51 @@ func (t *SalesLine) SetFieldValue(no int, value any) bool {
 	case 77:
 		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
 			t.Tax_calculation_type = SalesLineTax_calculation_type(i)
+			return true
+		}
+	case 78:
+		if v, ok := value.(types.Code); ok {
+			t.Transaction_type = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Transaction_type = types.NewCode(v)
+			return true
+		}
+	case 79:
+		if v, ok := value.(types.Code); ok {
+			t.Transport_method = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Transport_method = types.NewCode(v)
+			return true
+		}
+	case 81:
+		if v, ok := value.(types.Code); ok {
+			t.Exit_point = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Exit_point = types.NewCode(v)
+			return true
+		}
+	case 82:
+		if v, ok := value.(types.Code); ok {
+			t.Area = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Area = types.NewCode(v)
+			return true
+		}
+	case 83:
+		if v, ok := value.(types.Code); ok {
+			t.Transaction_specification = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Transaction_specification = types.NewCode(v)
 			return true
 		}
 	case 85:
@@ -8658,6 +9073,16 @@ func (t *SalesLine) columnValue(column string) (interface{}, bool) {
 		return t.Gen_prod_posting_group, true
 	case "tax_calculation_type":
 		return int(t.Tax_calculation_type), true
+	case "transaction_type":
+		return t.Transaction_type, true
+	case "transport_method":
+		return t.Transport_method, true
+	case "exit_point":
+		return t.Exit_point, true
+	case "area":
+		return t.Area, true
+	case "transaction_specification":
+		return t.Transaction_specification, true
 	case "tax_area_code":
 		return t.Tax_area_code, true
 	case "tax_liable":
@@ -8810,6 +9235,11 @@ func (t *SalesLine) Init() {
 	t.Gen_bus_posting_group = *new(types.Code)
 	t.Gen_prod_posting_group = *new(types.Code)
 	t.Tax_calculation_type = 0
+	t.Transaction_type = *new(types.Code)
+	t.Transport_method = *new(types.Code)
+	t.Exit_point = *new(types.Code)
+	t.Area = *new(types.Code)
+	t.Transaction_specification = *new(types.Code)
 	t.Tax_area_code = *new(types.Code)
 	t.Tax_liable = *new(bool)
 	t.Tax_group_code = *new(types.Code)
@@ -8866,77 +9296,82 @@ func (t *SalesLine) ClearFilters() {
 // ToMap converts the current record to a map for JSON serialization
 func (t *SalesLine) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"document_type":            int(t.Document_type),
-		"sell_to_customer_no":      t.Sell_to_customer_no.String(),
-		"document_no":              t.Document_no.String(),
-		"line_no":                  t.Line_no,
-		"type":                     int(t.Type),
-		"no":                       t.No.String(),
-		"location_code":            t.Location_code.String(),
-		"posting_group":            t.Posting_group.String(),
-		"quantity_disc_code":       t.Quantity_disc_code.String(),
-		"shipment_date":            t.Shipment_date.String(),
-		"description":              t.Description.String(),
-		"description_2":            t.Description_2.String(),
-		"unit_of_measure":          t.Unit_of_measure.String(),
-		"quantity":                 t.Quantity.String(),
-		"outstanding_quantity":     t.Outstanding_quantity.String(),
-		"qty_to_invoice":           t.Qty_to_invoice.String(),
-		"qty_to_ship":              t.Qty_to_ship.String(),
-		"unit_price":               t.Unit_price.String(),
-		"unit_cost_lcy":            t.Unit_cost_lcy.String(),
-		"tax_percent":              t.Tax_percent.String(),
-		"quantity_disc_percent":    t.Quantity_disc_percent.String(),
-		"line_discount_percent":    t.Line_discount_percent.String(),
-		"line_discount_amount":     t.Line_discount_amount.String(),
-		"amount":                   t.Amount.String(),
-		"amount_including_tax":     t.Amount_including_tax.String(),
-		"allow_invoice_disc":       t.Allow_invoice_disc,
-		"gross_weight":             t.Gross_weight.String(),
-		"net_weight":               t.Net_weight.String(),
-		"units_per_parcel":         t.Units_per_parcel.String(),
-		"unit_volume":              t.Unit_volume.String(),
-		"department_code":          t.Department_code.String(),
-		"project_code":             t.Project_code.String(),
-		"price_group_code":         t.Price_group_code.String(),
-		"allow_quantity_disc":      t.Allow_quantity_disc,
-		"work_type_code":           t.Work_type_code.String(),
-		"cust_item_disc_percent":   t.Cust_item_disc_percent.String(),
-		"outstanding_amount":       t.Outstanding_amount.String(),
-		"qty_shipped_not_invoiced": t.Qty_shipped_not_invoiced.String(),
-		"shipped_not_invoiced":     t.Shipped_not_invoiced.String(),
-		"quantity_shipped":         t.Quantity_shipped.String(),
-		"quantity_invoiced":        t.Quantity_invoiced.String(),
-		"shipment_no":              t.Shipment_no.String(),
-		"shipment_line_no":         t.Shipment_line_no,
-		"profit_percent":           t.Profit_percent.String(),
-		"bill_to_customer_no":      t.Bill_to_customer_no.String(),
-		"inv_discount_amount":      t.Inv_discount_amount.String(),
-		"gen_bus_posting_group":    t.Gen_bus_posting_group.String(),
-		"gen_prod_posting_group":   t.Gen_prod_posting_group.String(),
-		"tax_calculation_type":     int(t.Tax_calculation_type),
-		"tax_area_code":            t.Tax_area_code.String(),
-		"tax_liable":               t.Tax_liable,
-		"tax_group_code":           t.Tax_group_code.String(),
-		"tax_bus_posting_group":    t.Tax_bus_posting_group.String(),
-		"tax_prod_posting_group":   t.Tax_prod_posting_group.String(),
-		"currency_code":            t.Currency_code.String(),
-		"outstanding_amount_lcy":   t.Outstanding_amount_lcy.String(),
-		"shipped_not_invoiced_lcy": t.Shipped_not_invoiced_lcy.String(),
-		"blanket_order_no":         t.Blanket_order_no.String(),
-		"blanket_order_line_no":    t.Blanket_order_line_no,
-		"tax_base_amount":          t.Tax_base_amount.String(),
-		"unit_cost":                t.Unit_cost.String(),
-		"variant_code":             t.Variant_code.String(),
-		"qty_per_unit_of_measure":  t.Qty_per_unit_of_measure.String(),
-		"unit_of_measure_code":     t.Unit_of_measure_code.String(),
-		"quantity_base":            t.Quantity_base.String(),
-		"outstanding_qty_base":     t.Outstanding_qty_base.String(),
-		"qty_to_invoice_base":      t.Qty_to_invoice_base.String(),
-		"qty_to_ship_base":         t.Qty_to_ship_base.String(),
-		"qty_shpd_not_invd_base":   t.Qty_shpd_not_invd_base.String(),
-		"qty_shipped_base":         t.Qty_shipped_base.String(),
-		"qty_invoiced_base":        t.Qty_invoiced_base.String(),
+		"document_type":             int(t.Document_type),
+		"sell_to_customer_no":       t.Sell_to_customer_no.String(),
+		"document_no":               t.Document_no.String(),
+		"line_no":                   t.Line_no,
+		"type":                      int(t.Type),
+		"no":                        t.No.String(),
+		"location_code":             t.Location_code.String(),
+		"posting_group":             t.Posting_group.String(),
+		"quantity_disc_code":        t.Quantity_disc_code.String(),
+		"shipment_date":             t.Shipment_date.String(),
+		"description":               t.Description.String(),
+		"description_2":             t.Description_2.String(),
+		"unit_of_measure":           t.Unit_of_measure.String(),
+		"quantity":                  t.Quantity.String(),
+		"outstanding_quantity":      t.Outstanding_quantity.String(),
+		"qty_to_invoice":            t.Qty_to_invoice.String(),
+		"qty_to_ship":               t.Qty_to_ship.String(),
+		"unit_price":                t.Unit_price.String(),
+		"unit_cost_lcy":             t.Unit_cost_lcy.String(),
+		"tax_percent":               t.Tax_percent.String(),
+		"quantity_disc_percent":     t.Quantity_disc_percent.String(),
+		"line_discount_percent":     t.Line_discount_percent.String(),
+		"line_discount_amount":      t.Line_discount_amount.String(),
+		"amount":                    t.Amount.String(),
+		"amount_including_tax":      t.Amount_including_tax.String(),
+		"allow_invoice_disc":        t.Allow_invoice_disc,
+		"gross_weight":              t.Gross_weight.String(),
+		"net_weight":                t.Net_weight.String(),
+		"units_per_parcel":          t.Units_per_parcel.String(),
+		"unit_volume":               t.Unit_volume.String(),
+		"department_code":           t.Department_code.String(),
+		"project_code":              t.Project_code.String(),
+		"price_group_code":          t.Price_group_code.String(),
+		"allow_quantity_disc":       t.Allow_quantity_disc,
+		"work_type_code":            t.Work_type_code.String(),
+		"cust_item_disc_percent":    t.Cust_item_disc_percent.String(),
+		"outstanding_amount":        t.Outstanding_amount.String(),
+		"qty_shipped_not_invoiced":  t.Qty_shipped_not_invoiced.String(),
+		"shipped_not_invoiced":      t.Shipped_not_invoiced.String(),
+		"quantity_shipped":          t.Quantity_shipped.String(),
+		"quantity_invoiced":         t.Quantity_invoiced.String(),
+		"shipment_no":               t.Shipment_no.String(),
+		"shipment_line_no":          t.Shipment_line_no,
+		"profit_percent":            t.Profit_percent.String(),
+		"bill_to_customer_no":       t.Bill_to_customer_no.String(),
+		"inv_discount_amount":       t.Inv_discount_amount.String(),
+		"gen_bus_posting_group":     t.Gen_bus_posting_group.String(),
+		"gen_prod_posting_group":    t.Gen_prod_posting_group.String(),
+		"tax_calculation_type":      int(t.Tax_calculation_type),
+		"transaction_type":          t.Transaction_type.String(),
+		"transport_method":          t.Transport_method.String(),
+		"exit_point":                t.Exit_point.String(),
+		"area":                      t.Area.String(),
+		"transaction_specification": t.Transaction_specification.String(),
+		"tax_area_code":             t.Tax_area_code.String(),
+		"tax_liable":                t.Tax_liable,
+		"tax_group_code":            t.Tax_group_code.String(),
+		"tax_bus_posting_group":     t.Tax_bus_posting_group.String(),
+		"tax_prod_posting_group":    t.Tax_prod_posting_group.String(),
+		"currency_code":             t.Currency_code.String(),
+		"outstanding_amount_lcy":    t.Outstanding_amount_lcy.String(),
+		"shipped_not_invoiced_lcy":  t.Shipped_not_invoiced_lcy.String(),
+		"blanket_order_no":          t.Blanket_order_no.String(),
+		"blanket_order_line_no":     t.Blanket_order_line_no,
+		"tax_base_amount":           t.Tax_base_amount.String(),
+		"unit_cost":                 t.Unit_cost.String(),
+		"variant_code":              t.Variant_code.String(),
+		"qty_per_unit_of_measure":   t.Qty_per_unit_of_measure.String(),
+		"unit_of_measure_code":      t.Unit_of_measure_code.String(),
+		"quantity_base":             t.Quantity_base.String(),
+		"outstanding_qty_base":      t.Outstanding_qty_base.String(),
+		"qty_to_invoice_base":       t.Qty_to_invoice_base.String(),
+		"qty_to_ship_base":          t.Qty_to_ship_base.String(),
+		"qty_shpd_not_invd_base":    t.Qty_shpd_not_invd_base.String(),
+		"qty_shipped_base":          t.Qty_shipped_base.String(),
+		"qty_invoiced_base":         t.Qty_invoiced_base.String(),
 	}
 }
 
@@ -9405,6 +9840,31 @@ func (t *SalesLine) FromMap(data map[string]interface{}) {
 					break
 				}
 			}
+		}
+	}
+	if v, ok := data["transaction_type"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Transaction_type = types.NewCode(s)
+		}
+	}
+	if v, ok := data["transport_method"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Transport_method = types.NewCode(s)
+		}
+	}
+	if v, ok := data["exit_point"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Exit_point = types.NewCode(s)
+		}
+	}
+	if v, ok := data["area"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Area = types.NewCode(s)
+		}
+	}
+	if v, ok := data["transaction_specification"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Transaction_specification = types.NewCode(s)
 		}
 	}
 	if v, ok := data["tax_area_code"]; ok && v != nil {
@@ -10167,6 +10627,56 @@ func (t *SalesLine) GetFields() []tables.FieldInfo {
 			ReadOnly:   true,
 		},
 		{
+			No:         78,
+			Name:       "transaction_type",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         79,
+			Name:       "transport_method",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         81,
+			Name:       "exit_point",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         82,
+			Name:       "area",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         83,
+			Name:       "transaction_specification",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
 			No:         85,
 			Name:       "tax_area_code",
 			Type:       tables.FieldTypeCode,
@@ -10565,6 +11075,56 @@ func (t *SalesLine) GetTableRelationFields() map[string]tables.TableRelationInfo
 			LookupColumns: []tables.LookupColumnInfo{
 				{Source: "code", Width: 100},
 				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"transaction_type": {
+			Table:        "Transaction_Type",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"transport_method": {
+			Table:        "Transport_Method",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"exit_point": {
+			Table:        "Entry_Exit_Point",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"area": {
+			Table:        "Area",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "text", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"transaction_specification": {
+			Table:        "Transaction_Specification",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "text", Width: 250},
 			},
 			SearchTimeout: 0,
 		},

@@ -36,6 +36,10 @@ type Run struct {
 	values   map[string]interface{}
 	output   string
 	fileName string
+
+	// A report that writes a file (a declaration to send): its name and contents
+	file    []byte
+	fileOut string
 }
 
 // SetValue sets a value the layout prints (value, lines, image elements; print_if) — the
@@ -80,6 +84,13 @@ func (r *Run) Output() string { return r.output }
 // SetFileName sets the name of the PDF (without .pdf; default the report's caption) — also
 // the document's title
 func (r *Run) SetFileName(name string) { r.fileName = name }
+
+// WriteFile makes the report's result a file (classic File.CREATE/WRITE of a processing report:
+// a declaration for the authorities) — the browser downloads it under name
+func (r *Run) WriteFile(name string, data []byte) {
+	r.fileOut = name
+	r.file = data
+}
 
 // Context is what the caller gave the report to work on (RunOptions.Context) — e.g. the item
 // journal line whose batch Calculate Inventory fills (classic SetItemJnlLine before RUNMODAL)
@@ -174,6 +185,8 @@ type Result struct {
 	Output   string
 	Pages    int
 	Texts    []pdf.PlacedText
+	// A processing report's file (Run.WriteFile): its contents (FileName its name)
+	File []byte
 }
 
 // Execute runs a report (Report.Run): request page, OnPreReport, the data items, OnPostReport
@@ -275,6 +288,10 @@ func Execute(id int, db database.Executor, company string, dbType database.DBTyp
 		return Result{}, err
 	}
 	result := Result{Message: run.message}
+	if run.file != nil {
+		result.File = run.file
+		result.FileName = run.fileOut
+	}
 	if run.printer != nil {
 		result, err = run.printout(result)
 	}

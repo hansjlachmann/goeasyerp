@@ -138,9 +138,14 @@ func (purchaseLineLogic) OnValidate_No(rec *gtables.PurchaseLine) error {
 	rec.Department_code = purchHeader.Department_code
 	rec.Project_code = purchHeader.Project_code
 	rec.Location_code = purchHeader.Location_code
+	rec.Transaction_type = purchHeader.Transaction_type
+	rec.Transport_method = purchHeader.Transport_method
 	rec.Pay_to_vendor_no = purchHeader.Pay_to_vendor_no
 	rec.Gen_bus_posting_group = purchHeader.Gen_bus_posting_group
 	rec.Tax_bus_posting_group = purchHeader.Tax_bus_posting_group
+	rec.Entry_point = purchHeader.Entry_point
+	rec.Area = purchHeader.Area
+	rec.Transaction_specification = purchHeader.Transaction_specification
 	rec.Tax_area_code = purchHeader.Tax_area_code
 	rec.Tax_liable = purchHeader.Tax_liable
 

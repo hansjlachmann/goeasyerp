@@ -1,0 +1,34 @@
+page:
+  id: 406
+  type: List
+  name: Transaction Specifications
+  source_table: Transaction_Specification
+  caption: Transaction Specifications
+  editable: true
+
+  layout:
+    repeater:
+      fields:
+        - source: code
+          width: 110
+        - source: text
+          width: 320
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

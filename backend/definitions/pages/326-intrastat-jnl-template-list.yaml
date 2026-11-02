@@ -1,0 +1,17 @@
+page:
+  id: 326
+  type: List
+  name: Intrastat Jnl. Template List
+  source_table: Intrastat_Jnl_Template
+  caption: Intrastat Jnl. Template List
+  editable: false
+
+  layout:
+    repeater:
+      fields:
+        - source: name
+          width: 110
+        - source: description
+          width: 250
+
+  actions: []

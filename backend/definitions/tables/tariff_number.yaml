@@ -1,0 +1,30 @@
+table:
+  id: 260
+  name: "Tariff_Number"
+  caption: Tariff Number
+  description: "The tariff numbers (commodity codes) of the Intrastat declaration (table 260)"
+  lookup_page_id: 310
+  fields:
+    - name: no
+      no: 1
+      type: types.Code
+      db_name: no
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: description
+      no: 2
+      type: types.Text
+      db_name: description
+      length: 50
+
+    - name: supplementary_units
+      no: 3
+      type: bool
+      db_name: supplementary_units
+
+  keys:
+    - name: Primary
+      fields: [no]
+      clustered: true

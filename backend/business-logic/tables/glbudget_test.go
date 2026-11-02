@@ -196,3 +196,34 @@ func TestSetResCapacity(t *testing.T) {
 		t.Error("a capacity without a date was entered")
 	}
 }
+
+// An Intrastat batch's Statistics Period is YYMM; a line's statistical value is the amount and
+// the indirect cost (or the cost regulation % of the amount), its total weight the net weight of
+// the quantity
+func TestIntrastatJnl(t *testing.T) {
+	db := newTestDB(t)
+	if err := CreateCompanyTables(db, "c1", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	src := ftables.DBSource(db, "c1", database.DBTypeSQLite)
+	batch := gtables.NewIntrastatJnlBatch(src)
+	for period, ok := range map[string]bool{"2610": true, "261": false, "2613": false, "26AB": false} {
+		err := batch.Validate("statistics_period", types.Code(period))
+		if (err == nil) != ok {
+			t.Errorf("statistics period %s: %v", period, err)
+		}
+	}
+	line := gtables.NewIntrastatJnlLine(src)
+	mustNoErr(t, line.Validate("net_weight", types.MustDecimal("2.5")))
+	mustNoErr(t, line.Validate("quantity", types.NewDecimalFromInt(4)))
+	mustNoErr(t, line.Validate("amount", types.NewDecimalFromInt(1000)))
+	mustNoErr(t, line.Validate("cost_regulation_percent", types.NewDecimalFromInt(5)))
+	if !line.Total_weight.Equal(types.NewDecimalFromInt(10)) || !line.Indirect_cost.Equal(types.NewDecimalFromInt(50)) ||
+		!line.Statistical_value.Equal(types.NewDecimalFromInt(1050)) {
+		t.Errorf("weight %s, indirect cost %s, statistical value %s", line.Total_weight, line.Indirect_cost, line.Statistical_value)
+	}
+	mustNoErr(t, line.Validate("indirect_cost", types.NewDecimalFromInt(20)))
+	if !line.Cost_regulation_percent.IsZero() || !line.Statistical_value.Equal(types.NewDecimalFromInt(1020)) {
+		t.Errorf("own indirect cost: %% %s, value %s", line.Cost_regulation_percent, line.Statistical_value)
+	}
+}

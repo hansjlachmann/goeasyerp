@@ -1,0 +1,279 @@
+table:
+  id: 263
+  name: "Intrastat_Jnl_Line"
+  caption: Intrastat Jnl. Line
+  description: "The lines of an Intrastat journal (table 263): receipts and shipments of goods with another EU country"
+  fields:
+    - name: journal_template_name
+      no: 1
+      type: types.Code
+      db_name: journal_template_name
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Intrastat_Jnl_Template
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: journal_batch_name
+      no: 2
+      type: types.Code
+      db_name: journal_batch_name
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Intrastat_Jnl_Batch
+        field: name
+        filters:
+          journal_template_name: {field: journal_template_name}
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: line_no
+      no: 3
+      type: int
+      db_name: line_no
+      primary_key: true
+
+    - name: type
+      no: 4
+      type: Option
+      db_name: type
+      options: ["Receipt", "Shipment"]
+
+    - name: date
+      no: 5
+      type: types.Date
+      db_name: date
+
+    - name: tariff_no
+      no: 6
+      type: types.Code
+      db_name: tariff_no
+      length: 10
+      table_relation:
+        table: Tariff_Number
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
+
+    - name: item_description
+      no: 7
+      type: types.Text
+      db_name: item_description
+      length: 50
+
+    - name: country_code
+      no: 8
+      type: types.Code
+      db_name: country_code
+      length: 10
+      table_relation:
+        table: Country_Region
+        field: code
+        lookup_columns:
+          - source: code
+            width: 80
+          - source: name
+            width: 200
+
+    - name: transaction_type
+      no: 9
+      type: types.Code
+      db_name: transaction_type
+      length: 10
+      table_relation:
+        table: Transaction_Type
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: transport_method
+      no: 10
+      type: types.Code
+      db_name: transport_method
+      length: 10
+      table_relation:
+        table: Transport_Method
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: source_type
+      no: 11
+      type: Option
+      db_name: source_type
+      options: [" ", "Item entry", "Job entry"]
+
+    - name: source_entry_no
+      no: 12
+      type: int
+      db_name: source_entry_no
+      editable: false
+
+    - name: net_weight
+      no: 13
+      type: types.Decimal
+      db_name: net_weight
+      decimal_places: "2:5"
+
+    - name: amount
+      no: 14
+      type: types.Decimal
+      db_name: amount
+      decimal_places: "0:0"
+
+    - name: quantity
+      no: 15
+      type: types.Decimal
+      db_name: quantity
+      decimal_places: "0:0"
+
+    - name: cost_regulation_percent
+      no: 16
+      type: types.Decimal
+      db_name: cost_regulation_percent
+      decimal_places: "2:2"
+      validation: {min: -100, max: 100}
+
+    - name: indirect_cost
+      no: 17
+      type: types.Decimal
+      db_name: indirect_cost
+      decimal_places: "0:0"
+
+    - name: statistical_value
+      no: 18
+      type: types.Decimal
+      db_name: statistical_value
+      decimal_places: "0:0"
+      editable: false
+
+    - name: document_no
+      no: 19
+      type: types.Code
+      db_name: document_no
+      length: 20
+
+    - name: item_no
+      no: 20
+      type: types.Code
+      db_name: item_no
+      length: 20
+      table_relation:
+        table: Item
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
+
+    - name: name
+      no: 21
+      type: types.Text
+      db_name: name
+      length: 30
+
+    - name: total_weight
+      no: 22
+      type: types.Decimal
+      db_name: total_weight
+      decimal_places: "0:5"
+      editable: false
+
+    - name: supplementary_units
+      no: 23
+      type: bool
+      db_name: supplementary_units
+      editable: false
+
+    - name: internal_ref_no
+      no: 24
+      type: types.Text
+      db_name: internal_ref_no
+      length: 10
+      editable: false
+
+    - name: country_of_origin_code
+      no: 25
+      type: types.Code
+      db_name: country_of_origin_code
+      length: 10
+      table_relation:
+        table: Country_Region
+        field: code
+        lookup_columns:
+          - source: code
+            width: 80
+          - source: name
+            width: 200
+
+    - name: entry_exit_point
+      no: 26
+      type: types.Code
+      db_name: entry_exit_point
+      length: 10
+      table_relation:
+        table: Entry_Exit_Point
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: area
+      no: 27
+      type: types.Code
+      db_name: area
+      length: 10
+      table_relation:
+        table: Area
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: text
+            width: 250
+
+    - name: transaction_specification
+      no: 28
+      type: types.Code
+      db_name: transaction_specification
+      length: 10
+      table_relation:
+        table: Transaction_Specification
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: text
+            width: 250
+
+  keys:
+    - name: Primary
+      fields: [journal_template_name, journal_batch_name, line_no]
+      clustered: true
+    - name: source
+      fields: [source_type, source_entry_no]
+    - name: type_country_tariff
+      fields: [type, country_code, tariff_no, transaction_type, transport_method]
+    - name: internal_ref_no
+      fields: [internal_ref_no]

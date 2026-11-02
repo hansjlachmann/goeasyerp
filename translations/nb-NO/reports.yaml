@@ -289,6 +289,45 @@ reports:
     caption: "Sett inn kontoer"
     texts:
       INSERTED: "%1 linjer ble satt inn."
+  "594":
+    caption: "Hent varetransaksjoner"
+    options:
+      starting_date: "Startdato"
+      ending_date: "Sluttdato"
+      cost_regulation_percent: "Kostnadsregulering %"
+    texts:
+      LINES_CREATED: "%1 linjer ble opprettet."
+  "502":
+    caption: "Intrastat - kontrolliste"
+    texts:
+      TITLE: "Intrastat - kontrolliste"
+      PAGE: "Side"
+      STATISTICS_PERIOD: "Statistikkperiode: %1"
+      VAT_REG_NO: "Org.nr."
+      TYPE: "Type"
+      TARIFF_NO: "Varenr. (tolltariff)"
+      COUNTRY_CODE: "Landkode"
+      TRANSACTION_TYPE: "Transaksjonstype"
+      TRANSPORT_METHOD: "Transportmåte"
+      ITEM_DESCRIPTION: "Varebeskrivelse"
+      TOTAL_WEIGHT: "Totalvekt"
+      QUANTITY: "Antall"
+      STATISTICAL_VALUE: "Statistisk verdi"
+      INTERNAL_REF_NO: "Intern ref.nr."
+      TOTAL: "Totalt"
+      NO_OF_ENTRIES: "Antall poster"
+      RECEIPT: "Mottak"
+      SHIPMENT: "Levering"
+  "593":
+    caption: "Intrastat - lag fil til myndighet"
+    texts:
+      FILE_NAME: "Intrastat %1.txt"
+      DONE: "Intrastat-oppgaven med %1 poster ble laget; bunken er rapportert."
+  "88":
+    caption: "Mva - VIES-oppgave (fil)"
+    texts:
+      FILE_NAME: "VIES %1.txt"
+      DONE: "VIES-oppgaven med %1 kunder ble laget."
   "6":
     caption: "Saldobalanse"
     texts:

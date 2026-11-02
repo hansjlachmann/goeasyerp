@@ -129,6 +129,8 @@ errors:
   ERR_GL_ACC_HAS_LEDGER_ENTRIES: "Du kan ikke endre %1 fordi det finnes én eller flere poster knyttet til denne kontoen."
   ERR_GL_ACC_HAS_BUDGET_ENTRIES: "Du kan ikke endre %1 fordi kontoen er med i ett eller flere budsjetter."
   ERR_BUDGET_NOT_ONE_VALUE: "Et beløp kan bare budsjetteres når %1 er én verdi."
+  ERR_INTRASTAT_STATISTICS_PERIOD: "%1 må være 4 tegn, for eksempel 2610 for oktober 2026."
+  ERR_INTRASTAT_MONTH: "Kontroller månedsnummeret."
   ERR_BLANKET_ORDER_QTY_TOO_HIGH: "%1 i den tilknyttede rammeordren kan ikke være større enn %2."
   ERR_BLANKET_ORDER_QTY_TO_MAKE: "%1 på linje %2 i rammeordren kan ikke være mer enn %5: utestående %3, på ordrer som ikke er bokført %4."
   ERR_BLANKET_ORDER_NO_LINES: "Det finnes ingen linjer å opprette."

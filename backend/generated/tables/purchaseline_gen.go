@@ -56,6 +56,11 @@
 //	OnValidate_Gen_bus_posting_group(rec *gtables.PurchaseLine) error
 //	OnValidate_Gen_prod_posting_group(rec *gtables.PurchaseLine) error
 //	OnValidate_Tax_calculation_type(rec *gtables.PurchaseLine) error
+//	OnValidate_Transaction_type(rec *gtables.PurchaseLine) error
+//	OnValidate_Transport_method(rec *gtables.PurchaseLine) error
+//	OnValidate_Entry_point(rec *gtables.PurchaseLine) error
+//	OnValidate_Area(rec *gtables.PurchaseLine) error
+//	OnValidate_Transaction_specification(rec *gtables.PurchaseLine) error
 //	OnValidate_Tax_area_code(rec *gtables.PurchaseLine) error
 //	OnValidate_Tax_liable(rec *gtables.PurchaseLine) error
 //	OnValidate_Tax_group_code(rec *gtables.PurchaseLine) error
@@ -230,6 +235,11 @@ type PurchaseLine struct {
 	Gen_bus_posting_group          types.Code                       `db:"gen_bus_posting_group"`
 	Gen_prod_posting_group         types.Code                       `db:"gen_prod_posting_group"`
 	Tax_calculation_type           PurchaseLineTax_calculation_type `db:"tax_calculation_type"`
+	Transaction_type               types.Code                       `db:"transaction_type"`
+	Transport_method               types.Code                       `db:"transport_method"`
+	Entry_point                    types.Code                       `db:"entry_point"`
+	Area                           types.Code                       `db:"area"`
+	Transaction_specification      types.Code                       `db:"transaction_specification"`
 	Tax_area_code                  types.Code                       `db:"tax_area_code"`
 	Tax_liable                     bool                             `db:"tax_liable"`
 	Tax_group_code                 types.Code                       `db:"tax_group_code"`
@@ -433,6 +443,11 @@ var PurchaseLine_FieldNo = struct {
 	Gen_bus_posting_group          int
 	Gen_prod_posting_group         int
 	Tax_calculation_type           int
+	Transaction_type               int
+	Transport_method               int
+	Entry_point                    int
+	Area                           int
+	Transaction_specification      int
 	Tax_area_code                  int
 	Tax_liable                     int
 	Tax_group_code                 int
@@ -513,6 +528,11 @@ var PurchaseLine_FieldNo = struct {
 	Gen_bus_posting_group:          74,
 	Gen_prod_posting_group:         75,
 	Tax_calculation_type:           77,
+	Transaction_type:               78,
+	Transport_method:               79,
+	Entry_point:                    81,
+	Area:                           82,
+	Transaction_specification:      83,
 	Tax_area_code:                  85,
 	Tax_liable:                     86,
 	Tax_group_code:                 87,
@@ -643,6 +663,16 @@ func (t *PurchaseLine) FieldNo(fieldName string) int {
 		return 75
 	case "tax_calculation_type":
 		return 77
+	case "transaction_type":
+		return 78
+	case "transport_method":
+		return 79
+	case "entry_point":
+		return 81
+	case "area":
+		return 82
+	case "transaction_specification":
+		return 83
 	case "tax_area_code":
 		return 85
 	case "tax_liable":
@@ -808,6 +838,16 @@ func (t *PurchaseLine) FieldName(fieldNo int) string {
 		return "gen_prod_posting_group"
 	case 77:
 		return "tax_calculation_type"
+	case 78:
+		return "transaction_type"
+	case 79:
+		return "transport_method"
+	case 81:
+		return "entry_point"
+	case 82:
+		return "area"
+	case 83:
+		return "transaction_specification"
 	case 85:
 		return "tax_area_code"
 	case 86:
@@ -1013,6 +1053,11 @@ type (
 	PurchaseLineOnValidate_Gen_bus_posting_group          interface{ OnValidate_Gen_bus_posting_group(rec *PurchaseLine) error }
 	PurchaseLineOnValidate_Gen_prod_posting_group         interface{ OnValidate_Gen_prod_posting_group(rec *PurchaseLine) error }
 	PurchaseLineOnValidate_Tax_calculation_type           interface{ OnValidate_Tax_calculation_type(rec *PurchaseLine) error }
+	PurchaseLineOnValidate_Transaction_type               interface{ OnValidate_Transaction_type(rec *PurchaseLine) error }
+	PurchaseLineOnValidate_Transport_method               interface{ OnValidate_Transport_method(rec *PurchaseLine) error }
+	PurchaseLineOnValidate_Entry_point                    interface{ OnValidate_Entry_point(rec *PurchaseLine) error }
+	PurchaseLineOnValidate_Area                           interface{ OnValidate_Area(rec *PurchaseLine) error }
+	PurchaseLineOnValidate_Transaction_specification      interface{ OnValidate_Transaction_specification(rec *PurchaseLine) error }
 	PurchaseLineOnValidate_Tax_area_code                  interface{ OnValidate_Tax_area_code(rec *PurchaseLine) error }
 	PurchaseLineOnValidate_Tax_liable                     interface{ OnValidate_Tax_liable(rec *PurchaseLine) error }
 	PurchaseLineOnValidate_Tax_group_code                 interface{ OnValidate_Tax_group_code(rec *PurchaseLine) error }
@@ -1167,6 +1212,16 @@ func purchaseLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PurchaseLineOnValidate_Gen_prod_posting_group)
 	case "OnValidate_Tax_calculation_type":
 		_, ok = logic.(PurchaseLineOnValidate_Tax_calculation_type)
+	case "OnValidate_Transaction_type":
+		_, ok = logic.(PurchaseLineOnValidate_Transaction_type)
+	case "OnValidate_Transport_method":
+		_, ok = logic.(PurchaseLineOnValidate_Transport_method)
+	case "OnValidate_Entry_point":
+		_, ok = logic.(PurchaseLineOnValidate_Entry_point)
+	case "OnValidate_Area":
+		_, ok = logic.(PurchaseLineOnValidate_Area)
+	case "OnValidate_Transaction_specification":
+		_, ok = logic.(PurchaseLineOnValidate_Transaction_specification)
 	case "OnValidate_Tax_area_code":
 		_, ok = logic.(PurchaseLineOnValidate_Tax_area_code)
 	case "OnValidate_Tax_liable":
@@ -1358,6 +1413,21 @@ func (t *PurchaseLine) CheckFields() error {
 	if err := tables.CheckMaxLength(PurchaseLineTableName, "gen_prod_posting_group", string(t.Gen_prod_posting_group), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(PurchaseLineTableName, "transaction_type", string(t.Transaction_type), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(PurchaseLineTableName, "transport_method", string(t.Transport_method), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(PurchaseLineTableName, "entry_point", string(t.Entry_point), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(PurchaseLineTableName, "area", string(t.Area), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(PurchaseLineTableName, "transaction_specification", string(t.Transaction_specification), 10); err != nil {
+		return err
+	}
 	if err := tables.CheckMaxLength(PurchaseLineTableName, "tax_area_code", string(t.Tax_area_code), 20); err != nil {
 		return err
 	}
@@ -1467,6 +1537,11 @@ func GetPurchaseLineTableSchema() string {
 		gen_bus_posting_group TEXT(10),
 		gen_prod_posting_group TEXT(10),
 		tax_calculation_type INTEGER CHECK (tax_calculation_type >= 0 AND tax_calculation_type <= 3),
+		transaction_type TEXT(10),
+		transport_method TEXT(10),
+		entry_point TEXT(10),
+		area TEXT(10),
+		transaction_specification TEXT(10),
 		tax_area_code TEXT(20),
 		tax_liable INTEGER,
 		tax_group_code TEXT(10),
@@ -1553,6 +1628,11 @@ func GetPurchaseLinePostgresTableSchema() string {
 		gen_bus_posting_group VARCHAR(10),
 		gen_prod_posting_group VARCHAR(10),
 		tax_calculation_type INTEGER CHECK (tax_calculation_type >= 0 AND tax_calculation_type <= 3),
+		transaction_type VARCHAR(10),
+		transport_method VARCHAR(10),
+		entry_point VARCHAR(10),
+		area VARCHAR(10),
+		transaction_specification VARCHAR(10),
 		tax_area_code VARCHAR(20),
 		tax_liable BOOLEAN,
 		tax_group_code VARCHAR(10),
@@ -1775,6 +1855,11 @@ func (t *PurchaseLine) StoreOldValues() {
 	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
 	t.oldValues["gen_prod_posting_group"] = t.Gen_prod_posting_group
 	t.oldValues["tax_calculation_type"] = t.Tax_calculation_type
+	t.oldValues["transaction_type"] = t.Transaction_type
+	t.oldValues["transport_method"] = t.Transport_method
+	t.oldValues["entry_point"] = t.Entry_point
+	t.oldValues["area"] = t.Area
+	t.oldValues["transaction_specification"] = t.Transaction_specification
 	t.oldValues["tax_area_code"] = t.Tax_area_code
 	t.oldValues["tax_liable"] = t.Tax_liable
 	t.oldValues["tax_group_code"] = t.Tax_group_code
@@ -1959,6 +2044,21 @@ func (t *PurchaseLine) XRec() *PurchaseLine {
 	}
 	if v, ok := t.oldValues["tax_calculation_type"].(PurchaseLineTax_calculation_type); ok {
 		x.Tax_calculation_type = v
+	}
+	if v, ok := t.oldValues["transaction_type"].(types.Code); ok {
+		x.Transaction_type = v
+	}
+	if v, ok := t.oldValues["transport_method"].(types.Code); ok {
+		x.Transport_method = v
+	}
+	if v, ok := t.oldValues["entry_point"].(types.Code); ok {
+		x.Entry_point = v
+	}
+	if v, ok := t.oldValues["area"].(types.Code); ok {
+		x.Area = v
+	}
+	if v, ok := t.oldValues["transaction_specification"].(types.Code); ok {
+		x.Transaction_specification = v
 	}
 	if v, ok := t.oldValues["tax_area_code"].(types.Code); ok {
 		x.Tax_area_code = v
@@ -2190,6 +2290,11 @@ func (t *PurchaseLine) GetByPK(document_type PurchaseLineDocument_type, document
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
 	var tax_calculation_typeInt int
+	var transaction_typeNull sql.NullString
+	var transport_methodNull sql.NullString
+	var entry_pointNull sql.NullString
+	var areaNull sql.NullString
+	var transaction_specificationNull sql.NullString
 	var tax_area_codeNull sql.NullString
 	var tax_liableBool sql.NullBool
 	var tax_group_codeNull sql.NullString
@@ -2232,7 +2337,7 @@ func (t *PurchaseLine) GetByPK(document_type PurchaseLineDocument_type, document
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE 1=1 AND document_type = ? AND document_no = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE 1=1 AND document_type = ? AND document_no = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2285,6 +2390,11 @@ func (t *PurchaseLine) GetByPK(document_type PurchaseLineDocument_type, document
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
 		&tax_calculation_typeInt,
+		&transaction_typeNull,
+		&transport_methodNull,
+		&entry_pointNull,
+		&areaNull,
+		&transaction_specificationNull,
 		&tax_area_codeNull,
 		&tax_liableBool,
 		&tax_group_codeNull,
@@ -2377,6 +2487,11 @@ func (t *PurchaseLine) GetByPK(document_type PurchaseLineDocument_type, document
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
 	t.Tax_calculation_type = PurchaseLineTax_calculation_type(tax_calculation_typeInt)
+	t.Transaction_type = types.NewCode(transaction_typeNull.String)
+	t.Transport_method = types.NewCode(transport_methodNull.String)
+	t.Entry_point = types.NewCode(entry_pointNull.String)
+	t.Area = types.NewCode(areaNull.String)
+	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
 	t.Tax_liable = tax_liableBool.Bool
 	t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
@@ -2478,6 +2593,11 @@ func (t *PurchaseLine) Insert(runTrigger bool) bool {
 		t.Gen_bus_posting_group,
 		t.Gen_prod_posting_group,
 		t.Tax_calculation_type,
+		t.Transaction_type,
+		t.Transport_method,
+		t.Entry_point,
+		t.Area,
+		t.Transaction_specification,
 		t.Tax_area_code,
 		t.Tax_liable,
 		t.Tax_group_code,
@@ -2515,7 +2635,7 @@ func (t *PurchaseLine) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_type, document_no, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_type, document_no, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2599,6 +2719,11 @@ func (t *PurchaseLine) InsertAll(records []*PurchaseLine, runTrigger bool) error
 			r.Gen_bus_posting_group,
 			r.Gen_prod_posting_group,
 			r.Tax_calculation_type,
+			r.Transaction_type,
+			r.Transport_method,
+			r.Entry_point,
+			r.Area,
+			r.Transaction_specification,
 			r.Tax_area_code,
 			r.Tax_liable,
 			r.Tax_group_code,
@@ -2635,7 +2760,7 @@ func (t *PurchaseLine) InsertAll(records []*PurchaseLine, runTrigger bool) error
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName)
-	columns := []string{"document_type", "buy_from_vendor_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "expected_receipt_date", "description", "description_2", "unit_of_measure", "quantity", "outstanding_quantity", "qty_to_invoice", "qty_to_receive", "direct_unit_cost", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "unit_price_lcy", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "department_code", "project_code", "indirect_cost_percent", "outstanding_amount", "qty_rcd_not_invoiced", "amt_rcd_not_invoiced", "quantity_received", "quantity_invoiced", "receipt_no", "receipt_line_no", "pay_to_vendor_no", "inv_discount_amount", "vendor_item_no", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "outstanding_amount_lcy", "amt_rcd_not_invoiced_lcy", "blanket_order_no", "blanket_order_line_no", "tax_base_amount", "unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "outstanding_qty_base", "qty_to_invoice_base", "qty_to_receive_base", "qty_rcd_not_invd_base", "qty_received_base", "qty_invoiced_base", "fa_posting_date", "fa_posting_type", "depreciation_book_code", "salvage_value", "depr_until_fa_posting_date", "depr_acquisition_cost", "maintenance_code", "insurance_no", "duplicate_in_depreciation_book", "use_duplication_list"}
+	columns := []string{"document_type", "buy_from_vendor_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "expected_receipt_date", "description", "description_2", "unit_of_measure", "quantity", "outstanding_quantity", "qty_to_invoice", "qty_to_receive", "direct_unit_cost", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "unit_price_lcy", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "department_code", "project_code", "indirect_cost_percent", "outstanding_amount", "qty_rcd_not_invoiced", "amt_rcd_not_invoiced", "quantity_received", "quantity_invoiced", "receipt_no", "receipt_line_no", "pay_to_vendor_no", "inv_discount_amount", "vendor_item_no", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "transaction_type", "transport_method", "entry_point", "area", "transaction_specification", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "outstanding_amount_lcy", "amt_rcd_not_invoiced_lcy", "blanket_order_no", "blanket_order_line_no", "tax_base_amount", "unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "outstanding_qty_base", "qty_to_invoice_base", "qty_to_receive_base", "qty_rcd_not_invd_base", "qty_received_base", "qty_invoiced_base", "fa_posting_date", "fa_posting_type", "depreciation_book_code", "salvage_value", "depr_until_fa_posting_date", "depr_acquisition_cost", "maintenance_code", "insurance_no", "duplicate_in_depreciation_book", "use_duplication_list"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2865,6 +2990,26 @@ func (t *PurchaseLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "tax_calculation_type = ?")
 			values = append(values, t.Tax_calculation_type)
 		}
+		if t.hasFieldChanged("transaction_type") {
+			setClauses = append(setClauses, "transaction_type = ?")
+			values = append(values, t.Transaction_type)
+		}
+		if t.hasFieldChanged("transport_method") {
+			setClauses = append(setClauses, "transport_method = ?")
+			values = append(values, t.Transport_method)
+		}
+		if t.hasFieldChanged("entry_point") {
+			setClauses = append(setClauses, "entry_point = ?")
+			values = append(values, t.Entry_point)
+		}
+		if t.hasFieldChanged("area") {
+			setClauses = append(setClauses, "area = ?")
+			values = append(values, t.Area)
+		}
+		if t.hasFieldChanged("transaction_specification") {
+			setClauses = append(setClauses, "transaction_specification = ?")
+			values = append(values, t.Transaction_specification)
+		}
 		if t.hasFieldChanged("tax_area_code") {
 			setClauses = append(setClauses, "tax_area_code = ?")
 			values = append(values, t.Tax_area_code)
@@ -3090,6 +3235,16 @@ func (t *PurchaseLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Gen_prod_posting_group)
 		setClauses = append(setClauses, "tax_calculation_type = ?")
 		values = append(values, t.Tax_calculation_type)
+		setClauses = append(setClauses, "transaction_type = ?")
+		values = append(values, t.Transaction_type)
+		setClauses = append(setClauses, "transport_method = ?")
+		values = append(values, t.Transport_method)
+		setClauses = append(setClauses, "entry_point = ?")
+		values = append(values, t.Entry_point)
+		setClauses = append(setClauses, "area = ?")
+		values = append(values, t.Area)
+		setClauses = append(setClauses, "transaction_specification = ?")
+		values = append(values, t.Transaction_specification)
 		setClauses = append(setClauses, "tax_area_code = ?")
 		values = append(values, t.Tax_area_code)
 		setClauses = append(setClauses, "tax_liable = ?")
@@ -3396,6 +3551,26 @@ func (t *PurchaseLine) hasFieldChanged(fieldName string) bool {
 	case "tax_calculation_type":
 		if old, ok := oldValue.(PurchaseLineTax_calculation_type); ok {
 			return t.Tax_calculation_type != old
+		}
+	case "transaction_type":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Transaction_type.Equal(old)
+		}
+	case "transport_method":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Transport_method.Equal(old)
+		}
+	case "entry_point":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Entry_point.Equal(old)
+		}
+	case "area":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Area.Equal(old)
+		}
+	case "transaction_specification":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Transaction_specification.Equal(old)
 		}
 	case "tax_area_code":
 		if old, ok := oldValue.(types.Code); ok {
@@ -3833,6 +4008,16 @@ func (t *PurchaseLine) columnName(fieldName string) (string, bool) {
 		return "gen_prod_posting_group", true
 	case strings.ToLower("tax_calculation_type"):
 		return "tax_calculation_type", true
+	case strings.ToLower("transaction_type"):
+		return "transaction_type", true
+	case strings.ToLower("transport_method"):
+		return "transport_method", true
+	case strings.ToLower("entry_point"):
+		return "entry_point", true
+	case strings.ToLower("area"):
+		return "area", true
+	case strings.ToLower("transaction_specification"):
+		return "transaction_specification", true
 	case strings.ToLower("tax_area_code"):
 		return "tax_area_code", true
 	case strings.ToLower("tax_liable"):
@@ -4336,7 +4521,7 @@ func (t *PurchaseLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4385,6 +4570,11 @@ func (t *PurchaseLine) FindFirst() bool {
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
 	var tax_calculation_typeInt int
+	var transaction_typeNull sql.NullString
+	var transport_methodNull sql.NullString
+	var entry_pointNull sql.NullString
+	var areaNull sql.NullString
+	var transaction_specificationNull sql.NullString
 	var tax_area_codeNull sql.NullString
 	var tax_liableBool sql.NullBool
 	var tax_group_codeNull sql.NullString
@@ -4465,6 +4655,11 @@ func (t *PurchaseLine) FindFirst() bool {
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
 		&tax_calculation_typeInt,
+		&transaction_typeNull,
+		&transport_methodNull,
+		&entry_pointNull,
+		&areaNull,
+		&transaction_specificationNull,
 		&tax_area_codeNull,
 		&tax_liableBool,
 		&tax_group_codeNull,
@@ -4553,6 +4748,11 @@ func (t *PurchaseLine) FindFirst() bool {
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
 	t.Tax_calculation_type = PurchaseLineTax_calculation_type(tax_calculation_typeInt)
+	t.Transaction_type = types.NewCode(transaction_typeNull.String)
+	t.Transport_method = types.NewCode(transport_methodNull.String)
+	t.Entry_point = types.NewCode(entry_pointNull.String)
+	t.Area = types.NewCode(areaNull.String)
+	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
 	t.Tax_liable = tax_liableBool.Bool
 	t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
@@ -4605,7 +4805,7 @@ func (t *PurchaseLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4654,6 +4854,11 @@ func (t *PurchaseLine) FindLast() bool {
 	var gen_bus_posting_groupNull sql.NullString
 	var gen_prod_posting_groupNull sql.NullString
 	var tax_calculation_typeInt int
+	var transaction_typeNull sql.NullString
+	var transport_methodNull sql.NullString
+	var entry_pointNull sql.NullString
+	var areaNull sql.NullString
+	var transaction_specificationNull sql.NullString
 	var tax_area_codeNull sql.NullString
 	var tax_liableBool sql.NullBool
 	var tax_group_codeNull sql.NullString
@@ -4734,6 +4939,11 @@ func (t *PurchaseLine) FindLast() bool {
 		&gen_bus_posting_groupNull,
 		&gen_prod_posting_groupNull,
 		&tax_calculation_typeInt,
+		&transaction_typeNull,
+		&transport_methodNull,
+		&entry_pointNull,
+		&areaNull,
+		&transaction_specificationNull,
 		&tax_area_codeNull,
 		&tax_liableBool,
 		&tax_group_codeNull,
@@ -4822,6 +5032,11 @@ func (t *PurchaseLine) FindLast() bool {
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
 	t.Tax_calculation_type = PurchaseLineTax_calculation_type(tax_calculation_typeInt)
+	t.Transaction_type = types.NewCode(transaction_typeNull.String)
+	t.Transport_method = types.NewCode(transport_methodNull.String)
+	t.Entry_point = types.NewCode(entry_pointNull.String)
+	t.Area = types.NewCode(areaNull.String)
+	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
 	t.Tax_liable = tax_liableBool.Bool
 	t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
@@ -4904,7 +5119,7 @@ func (t *PurchaseLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5017,6 +5232,11 @@ func (t *PurchaseLine) Next(steps ...int) bool {
 		var gen_bus_posting_groupNull sql.NullString
 		var gen_prod_posting_groupNull sql.NullString
 		var tax_calculation_typeInt int
+		var transaction_typeNull sql.NullString
+		var transport_methodNull sql.NullString
+		var entry_pointNull sql.NullString
+		var areaNull sql.NullString
+		var transaction_specificationNull sql.NullString
 		var tax_area_codeNull sql.NullString
 		var tax_liableBool sql.NullBool
 		var tax_group_codeNull sql.NullString
@@ -5097,6 +5317,11 @@ func (t *PurchaseLine) Next(steps ...int) bool {
 			&gen_bus_posting_groupNull,
 			&gen_prod_posting_groupNull,
 			&tax_calculation_typeInt,
+			&transaction_typeNull,
+			&transport_methodNull,
+			&entry_pointNull,
+			&areaNull,
+			&transaction_specificationNull,
 			&tax_area_codeNull,
 			&tax_liableBool,
 			&tax_group_codeNull,
@@ -5184,6 +5409,11 @@ func (t *PurchaseLine) Next(steps ...int) bool {
 		t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 		t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
 		t.Tax_calculation_type = PurchaseLineTax_calculation_type(tax_calculation_typeInt)
+		t.Transaction_type = types.NewCode(transaction_typeNull.String)
+		t.Transport_method = types.NewCode(transport_methodNull.String)
+		t.Entry_point = types.NewCode(entry_pointNull.String)
+		t.Area = types.NewCode(areaNull.String)
+		t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 		t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
 		t.Tax_liable = tax_liableBool.Bool
 		t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
@@ -5265,7 +5495,7 @@ func (t *PurchaseLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5331,6 +5561,11 @@ func (t *PurchaseLine) FindSetBuffered() bool {
 		var gen_bus_posting_groupNull sql.NullString
 		var gen_prod_posting_groupNull sql.NullString
 		var tax_calculation_typeInt int
+		var transaction_typeNull sql.NullString
+		var transport_methodNull sql.NullString
+		var entry_pointNull sql.NullString
+		var areaNull sql.NullString
+		var transaction_specificationNull sql.NullString
 		var tax_area_codeNull sql.NullString
 		var tax_liableBool sql.NullBool
 		var tax_group_codeNull sql.NullString
@@ -5411,6 +5646,11 @@ func (t *PurchaseLine) FindSetBuffered() bool {
 			&gen_bus_posting_groupNull,
 			&gen_prod_posting_groupNull,
 			&tax_calculation_typeInt,
+			&transaction_typeNull,
+			&transport_methodNull,
+			&entry_pointNull,
+			&areaNull,
+			&transaction_specificationNull,
 			&tax_area_codeNull,
 			&tax_liableBool,
 			&tax_group_codeNull,
@@ -5496,6 +5736,11 @@ func (t *PurchaseLine) FindSetBuffered() bool {
 		record.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 		record.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
 		record.Tax_calculation_type = PurchaseLineTax_calculation_type(tax_calculation_typeInt)
+		record.Transaction_type = types.NewCode(transaction_typeNull.String)
+		record.Transport_method = types.NewCode(transport_methodNull.String)
+		record.Entry_point = types.NewCode(entry_pointNull.String)
+		record.Area = types.NewCode(areaNull.String)
+		record.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 		record.Tax_area_code = types.NewCode(tax_area_codeNull.String)
 		record.Tax_liable = tax_liableBool.Bool
 		record.Tax_group_code = types.NewCode(tax_group_codeNull.String)
@@ -5602,6 +5847,11 @@ func (t *PurchaseLine) copyFromBuffered(record *PurchaseLine) {
 	t.Gen_bus_posting_group = record.Gen_bus_posting_group
 	t.Gen_prod_posting_group = record.Gen_prod_posting_group
 	t.Tax_calculation_type = record.Tax_calculation_type
+	t.Transaction_type = record.Transaction_type
+	t.Transport_method = record.Transport_method
+	t.Entry_point = record.Entry_point
+	t.Area = record.Area
+	t.Transaction_specification = record.Transaction_specification
 	t.Tax_area_code = record.Tax_area_code
 	t.Tax_liable = record.Tax_liable
 	t.Tax_group_code = record.Tax_group_code
@@ -6991,6 +7241,116 @@ func (t *PurchaseLine) ValidateField(fieldName string, value interface{}) error 
 			}
 		}
 		return nil
+	case "transaction_type":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Transaction_type = v
+		} else if v, ok := value.(string); ok {
+			t.Transaction_type = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field transaction_type")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transaction_type"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchaseLineOnValidate_Transaction_type); ok {
+				if err := trg.OnValidate_Transaction_type(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "transport_method":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Transport_method = v
+		} else if v, ok := value.(string); ok {
+			t.Transport_method = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field transport_method")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transport_method"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchaseLineOnValidate_Transport_method); ok {
+				if err := trg.OnValidate_Transport_method(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "entry_point":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Entry_point = v
+		} else if v, ok := value.(string); ok {
+			t.Entry_point = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field entry_point")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "entry_point"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchaseLineOnValidate_Entry_point); ok {
+				if err := trg.OnValidate_Entry_point(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "area":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Area = v
+		} else if v, ok := value.(string); ok {
+			t.Area = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field area")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "area"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchaseLineOnValidate_Area); ok {
+				if err := trg.OnValidate_Area(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "transaction_specification":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Transaction_specification = v
+		} else if v, ok := value.(string); ok {
+			t.Transaction_specification = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field transaction_specification")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transaction_specification"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchaseLineOnValidate_Transaction_specification); ok {
+				if err := trg.OnValidate_Transaction_specification(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	case "tax_area_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
@@ -7922,6 +8282,16 @@ func (t *PurchaseLine) FieldValue(no int) (any, bool) {
 		return t.Gen_prod_posting_group, true
 	case 77:
 		return t.Tax_calculation_type, true
+	case 78:
+		return t.Transaction_type, true
+	case 79:
+		return t.Transport_method, true
+	case 81:
+		return t.Entry_point, true
+	case 82:
+		return t.Area, true
+	case 83:
+		return t.Transaction_specification, true
 	case 85:
 		return t.Tax_area_code, true
 	case 86:
@@ -8291,6 +8661,51 @@ func (t *PurchaseLine) SetFieldValue(no int, value any) bool {
 	case 77:
 		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
 			t.Tax_calculation_type = PurchaseLineTax_calculation_type(i)
+			return true
+		}
+	case 78:
+		if v, ok := value.(types.Code); ok {
+			t.Transaction_type = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Transaction_type = types.NewCode(v)
+			return true
+		}
+	case 79:
+		if v, ok := value.(types.Code); ok {
+			t.Transport_method = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Transport_method = types.NewCode(v)
+			return true
+		}
+	case 81:
+		if v, ok := value.(types.Code); ok {
+			t.Entry_point = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Entry_point = types.NewCode(v)
+			return true
+		}
+	case 82:
+		if v, ok := value.(types.Code); ok {
+			t.Area = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Area = types.NewCode(v)
+			return true
+		}
+	case 83:
+		if v, ok := value.(types.Code); ok {
+			t.Transaction_specification = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Transaction_specification = types.NewCode(v)
 			return true
 		}
 	case 85:
@@ -9353,6 +9768,16 @@ func (t *PurchaseLine) columnValue(column string) (interface{}, bool) {
 		return t.Gen_prod_posting_group, true
 	case "tax_calculation_type":
 		return int(t.Tax_calculation_type), true
+	case "transaction_type":
+		return t.Transaction_type, true
+	case "transport_method":
+		return t.Transport_method, true
+	case "entry_point":
+		return t.Entry_point, true
+	case "area":
+		return t.Area, true
+	case "transaction_specification":
+		return t.Transaction_specification, true
 	case "tax_area_code":
 		return t.Tax_area_code, true
 	case "tax_liable":
@@ -9524,6 +9949,11 @@ func (t *PurchaseLine) Init() {
 	t.Gen_bus_posting_group = *new(types.Code)
 	t.Gen_prod_posting_group = *new(types.Code)
 	t.Tax_calculation_type = 0
+	t.Transaction_type = *new(types.Code)
+	t.Transport_method = *new(types.Code)
+	t.Entry_point = *new(types.Code)
+	t.Area = *new(types.Code)
+	t.Transaction_specification = *new(types.Code)
 	t.Tax_area_code = *new(types.Code)
 	t.Tax_liable = *new(bool)
 	t.Tax_group_code = *new(types.Code)
@@ -9637,6 +10067,11 @@ func (t *PurchaseLine) ToMap() map[string]interface{} {
 		"gen_bus_posting_group":          t.Gen_bus_posting_group.String(),
 		"gen_prod_posting_group":         t.Gen_prod_posting_group.String(),
 		"tax_calculation_type":           int(t.Tax_calculation_type),
+		"transaction_type":               t.Transaction_type.String(),
+		"transport_method":               t.Transport_method.String(),
+		"entry_point":                    t.Entry_point.String(),
+		"area":                           t.Area.String(),
+		"transaction_specification":      t.Transaction_specification.String(),
 		"tax_area_code":                  t.Tax_area_code.String(),
 		"tax_liable":                     t.Tax_liable,
 		"tax_group_code":                 t.Tax_group_code.String(),
@@ -10123,6 +10558,31 @@ func (t *PurchaseLine) FromMap(data map[string]interface{}) {
 					break
 				}
 			}
+		}
+	}
+	if v, ok := data["transaction_type"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Transaction_type = types.NewCode(s)
+		}
+	}
+	if v, ok := data["transport_method"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Transport_method = types.NewCode(s)
+		}
+	}
+	if v, ok := data["entry_point"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Entry_point = types.NewCode(s)
+		}
+	}
+	if v, ok := data["area"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Area = types.NewCode(s)
+		}
+	}
+	if v, ok := data["transaction_specification"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Transaction_specification = types.NewCode(s)
 		}
 	}
 	if v, ok := data["tax_area_code"]; ok && v != nil {
@@ -10925,6 +11385,56 @@ func (t *PurchaseLine) GetFields() []tables.FieldInfo {
 			ReadOnly:   true,
 		},
 		{
+			No:         78,
+			Name:       "transaction_type",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         79,
+			Name:       "transport_method",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         81,
+			Name:       "entry_point",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         82,
+			Name:       "area",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         83,
+			Name:       "transaction_specification",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
 			No:         85,
 			Name:       "tax_area_code",
 			Type:       tables.FieldTypeCode,
@@ -11416,6 +11926,56 @@ func (t *PurchaseLine) GetTableRelationFields() map[string]tables.TableRelationI
 			LookupColumns: []tables.LookupColumnInfo{
 				{Source: "code", Width: 100},
 				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"transaction_type": {
+			Table:        "Transaction_Type",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"transport_method": {
+			Table:        "Transport_Method",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"entry_point": {
+			Table:        "Entry_Exit_Point",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"area": {
+			Table:        "Area",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "text", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"transaction_specification": {
+			Table:        "Transaction_Specification",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "text", Width: 250},
 			},
 			SearchTimeout: 0,
 		},

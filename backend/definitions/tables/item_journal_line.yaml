@@ -347,6 +347,48 @@ table:
       db_name: drop_shipment
       editable: false
 
+    - name: transaction_type
+      no: 47
+      type: types.Code
+      db_name: transaction_type
+      length: 10
+      table_relation:
+        table: Transaction_Type
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: transport_method
+      no: 48
+      type: types.Code
+      db_name: transport_method
+      length: 10
+      table_relation:
+        table: Transport_Method
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: country_code
+      no: 49
+      type: types.Code
+      db_name: country_code
+      length: 10
+      table_relation:
+        table: Country_Region
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
     - name: new_location_code
       no: 50
       type: types.Code
@@ -446,6 +488,20 @@ table:
           - source: description
             width: 250
 
+    - name: entry_exit_point
+      no: 59
+      type: types.Code
+      db_name: entry_exit_point
+      length: 10
+      table_relation:
+        table: Entry_Exit_Point
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
     - name: document_date
       no: 60
       type: types.Date
@@ -456,6 +512,34 @@ table:
       type: types.Code
       db_name: external_document_no
       length: 20
+
+    - name: area
+      no: 63
+      type: types.Code
+      db_name: area
+      length: 10
+      table_relation:
+        table: Area
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: text
+            width: 250
+
+    - name: transaction_specification
+      no: 64
+      type: types.Code
+      db_name: transaction_specification
+      length: 10
+      table_relation:
+        table: Transaction_Specification
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: text
+            width: 250
 
     - name: posting_no_series
       no: 65

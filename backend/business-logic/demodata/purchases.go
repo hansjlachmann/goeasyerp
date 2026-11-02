@@ -301,7 +301,70 @@ func postDemoPurchases(src ftables.Source, open func(src ftables.Source) PurchPo
 	if err != nil {
 		return err
 	}
-	return post(order, true, true, today.AddDate(0, 0, -7))
+	err = post(order, true, true, today.AddDate(0, 0, -7))
+	if err != nil {
+		return err
+	}
+	return postDemoForeignPurchase(src, today, post)
+}
+
+// postDemoForeignPurchase: an order received and invoiced from a vendor in Denmark (an EU
+// country with an Intrastat Code), with the foreign trade statistics fields — the Intrastat
+// journal's demo receipt
+func postDemoForeignPurchase(src ftables.Source, today time.Time, post func(*gtables.PurchaseHeader, bool, bool, time.Time) error) error {
+	purchHeader := gtables.NewPurchaseHeader(src)
+	purchHeader.Document_type = gtables.PurchaseHeader_Document_type.Order
+	err := purchHeader.InsertOrError(true)
+	if err != nil {
+		return err
+	}
+	day := types.NewDateFromTime(today)
+	for _, step := range []struct {
+		field string
+		value interface{}
+	}{
+		{"buy_from_vendor_no", types.Code("V00060")},
+		{"order_date", day},
+		{"posting_date", day},
+		{"location_code", types.Code("MAIN")},
+		{"transaction_type", types.Code("11")},
+		{"transport_method", types.Code("3")},
+		{"entry_point", types.Code("SVINESUND")},
+		{"area", types.Code("03")},
+		{"transaction_specification", types.Code("10")},
+	} {
+		err = purchHeader.Validate(step.field, step.value)
+		if err != nil {
+			return fmt.Errorf("demo foreign purchase %s: %w", step.field, err)
+		}
+	}
+	err = purchHeader.ModifyOrError(true)
+	if err != nil {
+		return err
+	}
+	for i, l := range []struct {
+		item string
+		qty  int64
+	}{{"1000", 40}, {"1020", 10}} {
+		purchLine := gtables.NewPurchaseLine(src)
+		purchLine.Document_type = gtables.PurchaseLine_Document_type.Order
+		purchLine.Document_no = purchHeader.No
+		purchLine.Line_no = (i + 1) * 10000
+		err = purchLine.Validate("type", gtables.PurchaseLine_Type.Item)
+		if err == nil {
+			err = purchLine.Validate("no", types.Code(l.item))
+		}
+		if err == nil {
+			err = purchLine.Validate("quantity", types.NewDecimalFromInt(l.qty))
+		}
+		if err == nil {
+			err = purchLine.InsertOrError(true)
+		}
+		if err != nil {
+			return fmt.Errorf("demo foreign purchase line %d: %w", i+1, err)
+		}
+	}
+	return post(purchHeader, true, true, today)
 }
 
 // demoPurchaseMasters: the domestic vendors that supply items (Vendor No. on the item) and their

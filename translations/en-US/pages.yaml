@@ -796,6 +796,29 @@ pages:
     caption: "Lines"
   blanket_purchase_orders:
     caption: "Blanket Purchase Orders"
+  transaction_types:
+    caption: "Transaction Types"
+  transport_methods:
+    caption: "Transport Methods"
+  tariff_numbers:
+    caption: "Tariff Numbers"
+  entry_exit_points:
+    caption: "Entry/Exit Points"
+  areas:
+    caption: "Areas"
+  transaction_specifications:
+    caption: "Transaction Specifications"
+  intrastat_journal_templates:
+    caption: "Intrastat Journal Templates"
+  intrastat_jnl_template_list:
+    caption: "Intrastat Jnl. Template List"
+  intrastat_jnl_batches:
+    caption: "Intrastat Jnl. Batches"
+  intrastat_journal:
+    caption: "Intrastat Journal"
+    fields:
+      statistical_value_to_line: "Statistical Value"
+      total_statistical_value: "Total Stat. Value"
   item_availability_by_periods:
     caption: "Item Availability by Periods"
     fields:

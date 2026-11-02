@@ -173,6 +173,7 @@ menu:
               - name: "VIES Declaration Disk"
                 run_object: "report:88"
           - name: "Intrastat Journals"
+            page_id: 311
           - name: "Currency"
             items:
               - name: "Currencies"

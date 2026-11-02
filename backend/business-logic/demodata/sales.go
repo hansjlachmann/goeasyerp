@@ -300,7 +300,70 @@ func postDemoSales(src ftables.Source, open func(src ftables.Source) SalesPoster
 	if err != nil {
 		return err
 	}
-	return post(order, true, true, today.AddDate(0, 0, -7))
+	err = post(order, true, true, today.AddDate(0, 0, -7))
+	if err != nil {
+		return err
+	}
+	return postDemoForeignTrade(src, today, post)
+}
+
+// postDemoForeignTrade: an order shipped and invoiced to a customer in Denmark (an EU country
+// with an Intrastat Code), with the foreign trade statistics fields — the Intrastat journal's
+// demo shipment
+func postDemoForeignTrade(src ftables.Source, today time.Time, post func(*gtables.SalesHeader, bool, bool, time.Time) error) error {
+	salesHeader := gtables.NewSalesHeader(src)
+	salesHeader.Document_type = gtables.SalesHeader_Document_type.Order
+	err := salesHeader.InsertOrError(true)
+	if err != nil {
+		return err
+	}
+	day := types.NewDateFromTime(today)
+	for _, step := range []struct {
+		field string
+		value interface{}
+	}{
+		{"sell_to_customer_no", types.Code("C00080")},
+		{"order_date", day},
+		{"posting_date", day},
+		{"location_code", types.Code("MAIN")},
+		{"transaction_type", types.Code("11")},
+		{"transport_method", types.Code("3")},
+		{"exit_point", types.Code("SVINESUND")},
+		{"area", types.Code("03")},
+		{"transaction_specification", types.Code("10")},
+	} {
+		err = salesHeader.Validate(step.field, step.value)
+		if err != nil {
+			return fmt.Errorf("demo foreign trade %s: %w", step.field, err)
+		}
+	}
+	err = salesHeader.ModifyOrError(true)
+	if err != nil {
+		return err
+	}
+	for i, l := range []struct {
+		item string
+		qty  int64
+	}{{"1300", 4}, {"1310", 2}} {
+		salesLine := gtables.NewSalesLine(src)
+		salesLine.Document_type = gtables.SalesLine_Document_type.Order
+		salesLine.Document_no = salesHeader.No
+		salesLine.Line_no = (i + 1) * 10000
+		err = salesLine.Validate("type", gtables.SalesLine_Type.Item)
+		if err == nil {
+			err = salesLine.Validate("no", types.Code(l.item))
+		}
+		if err == nil {
+			err = salesLine.Validate("quantity", types.NewDecimalFromInt(l.qty))
+		}
+		if err == nil {
+			err = salesLine.InsertOrError(true)
+		}
+		if err != nil {
+			return fmt.Errorf("demo foreign trade line %d: %w", i+1, err)
+		}
+	}
+	return post(salesHeader, true, true, today)
 }
 
 // demoSalesMasters: the domestic customers, the items on inventory at the main warehouse and the

@@ -289,6 +289,45 @@ reports:
     caption: "Insert Accounts"
     texts:
       INSERTED: "%1 lines were inserted."
+  "594":
+    caption: "Get Item Ledger Entries"
+    options:
+      starting_date: "Starting Date"
+      ending_date: "Ending Date"
+      cost_regulation_percent: "Cost Regulation %"
+    texts:
+      LINES_CREATED: "%1 lines were created."
+  "502":
+    caption: "Intrastat - Checklist"
+    texts:
+      TITLE: "Intrastat - Checklist"
+      PAGE: "Page"
+      STATISTICS_PERIOD: "Statistics Period: %1"
+      VAT_REG_NO: "VAT Reg. No."
+      TYPE: "Type"
+      TARIFF_NO: "Tariff No."
+      COUNTRY_CODE: "Country Code"
+      TRANSACTION_TYPE: "Transaction Type"
+      TRANSPORT_METHOD: "Transport Method"
+      ITEM_DESCRIPTION: "Item Description"
+      TOTAL_WEIGHT: "Total Weight"
+      QUANTITY: "Quantity"
+      STATISTICAL_VALUE: "Statistical Value"
+      INTERNAL_REF_NO: "Internal Ref. No."
+      TOTAL: "Total"
+      NO_OF_ENTRIES: "No. of Entries"
+      RECEIPT: "Receipt"
+      SHIPMENT: "Shipment"
+  "593":
+    caption: "Intrastat - Make Disk Tax Auth"
+    texts:
+      FILE_NAME: "Intrastat %1.txt"
+      DONE: "The Intrastat declaration with %1 records was made; the batch is reported."
+  "88":
+    caption: "VAT- VIES Declaration Disk"
+    texts:
+      FILE_NAME: "VIES %1.txt"
+      DONE: "The VIES declaration with %1 customers was made."
   "6":
     caption: "Trial Balance"
     texts:

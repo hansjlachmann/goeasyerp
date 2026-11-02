@@ -1,0 +1,146 @@
+page:
+  id: 311
+  type: List
+  name: Intrastat Journal
+  source_table: Intrastat_Jnl_Line
+  caption: Intrastat Journal
+  editable: true
+  auto_split_key: true
+  delayed_insert: true
+  # classic form 311: the receipts and shipments of goods with other EU countries in a statistics
+  # period — filled from the item ledger entries (Get Entries, report 594), checked (Checklist,
+  # 502) and declared (Make Disk, 593)
+
+  # The batch the journal shows; OnOpenPage (business-logic/pages/intrastatjournal.go) turns
+  # template and batch into the list's filters
+  header_fields:
+    - param: batch
+      source: journal_batch_name
+      lookup_page: 327
+      lookup_field: name
+      lookup_filters:
+        journal_template_name: journal_template_name
+
+  # Under the list for the cursor row (OnAfterGetRecord: CalcStatisticalValue)
+  footer:
+    - source: statistical_value_to_line
+      calculated: true
+      type: types.Decimal
+      decimal_places: "0:0"
+    - source: total_statistical_value
+      calculated: true
+      type: types.Decimal
+      decimal_places: "0:0"
+
+  layout:
+    repeater:
+      fields:
+        - source: journal_template_name
+          width: 100
+          visible: false
+        - source: journal_batch_name
+          width: 100
+          visible: false
+        - source: line_no
+          width: 80
+          visible: false
+        - source: type
+          width: 100
+        - source: date
+          width: 100
+        - source: tariff_no
+          width: 110
+        - source: item_description
+          width: 220
+        - source: country_code
+          width: 90
+        - source: transaction_type
+          width: 110
+        - source: transaction_specification
+          width: 120
+          visible: false
+        - source: transport_method
+          width: 110
+        - source: entry_exit_point
+          width: 110
+          visible: false
+        - source: area
+          width: 80
+          visible: false
+        - source: source_type
+          width: 100
+          visible: false
+        - source: source_entry_no
+          width: 100
+          visible: false
+        - source: item_no
+          width: 100
+        - source: name
+          width: 180
+          visible: false
+        - source: document_no
+          width: 120
+        - source: country_of_origin_code
+          width: 110
+          visible: false
+        - source: net_weight
+          width: 100
+        - source: total_weight
+          width: 110
+        - source: quantity
+          width: 90
+        - source: supplementary_units
+          width: 110
+          visible: false
+        - source: amount
+          width: 110
+        - source: cost_regulation_percent
+          width: 110
+          visible: false
+        - source: indirect_cost
+          width: 100
+          visible: false
+        - source: statistical_value
+          width: 120
+        - source: internal_ref_no
+          width: 110
+          visible: false
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    # the batch's period's item entries with other EU countries as lines (report 594)
+    - name: Get Entries
+      caption: Get Entries
+      image: Import
+      promoted: true
+      run_object: report:594
+
+    - name: Checklist Report
+      caption: Checklist Report
+      image: Print
+      promoted: true
+      run_object: report:502
+
+    # the declaration as a file (report 593); the batch is then Reported
+    - name: Make Diskette
+      caption: Make Diskette
+      image: Export
+      promoted: true
+      run_object: report:593

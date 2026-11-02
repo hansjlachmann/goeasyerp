@@ -1,0 +1,60 @@
+table:
+  id: 262
+  name: "Intrastat_Jnl_Batch"
+  caption: Intrastat Jnl. Batch
+  description: "The Intrastat journal batches (table 262): a statistics period of a template"
+  lookup_page_id: 327
+  data_caption_fields: [name, description]
+  fields:
+    - name: journal_template_name
+      no: 1
+      type: types.Code
+      db_name: journal_template_name
+      length: 10
+      primary_key: true
+      required: true
+      table_relation:
+        table: Intrastat_Jnl_Template
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: name
+      no: 2
+      type: types.Code
+      db_name: name
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: description
+      no: 3
+      type: types.Text
+      db_name: description
+      length: 50
+
+    - name: reported
+      no: 13
+      type: bool
+      db_name: reported
+
+    # the period declared: YYMM (2610 = October 2026)
+    - name: statistics_period
+      no: 14
+      type: types.Code
+      db_name: statistics_period
+      length: 10
+
+    - name: currency_identifier
+      no: 16
+      type: types.Code
+      db_name: currency_identifier
+      length: 10
+
+  keys:
+    - name: Primary
+      fields: [journal_template_name, name]
+      clustered: true

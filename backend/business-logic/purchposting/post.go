@@ -584,6 +584,12 @@ func (p *PurchPost) postItemJnlLine(purchLine *gtables.PurchaseLine, qtyToReceiv
 	itemJnlLine.Item_no = purchLine.No
 	itemJnlLine.Description = purchLine.Description
 	itemJnlLine.Location_code = purchLine.Location_code
+	itemJnlLine.Country_code = purchHeader.Vat_country_code
+	itemJnlLine.Transaction_type = purchLine.Transaction_type
+	itemJnlLine.Transport_method = purchLine.Transport_method
+	itemJnlLine.Entry_exit_point = purchLine.Entry_point
+	itemJnlLine.Area = purchLine.Area
+	itemJnlLine.Transaction_specification = purchLine.Transaction_specification
 	itemJnlLine.Variant_code = purchLine.Variant_code
 	itemJnlLine.Inventory_posting_group = purchLine.Posting_group
 	itemJnlLine.Department_code = purchLine.Department_code

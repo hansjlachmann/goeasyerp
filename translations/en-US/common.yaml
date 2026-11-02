@@ -8,6 +8,9 @@ common:
 
   # Common actions
   actions:
+    get_entries: "Get Entries"
+    checklist_report: "Checklist Report"
+    make_diskette: "Make Diskette"
     edit_account_schedule: "Edit Account Schedule"
     insert_accounts: "Insert Accounts"
     set_up_column_layouts: "Set Up Column Layouts"

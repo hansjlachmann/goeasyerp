@@ -1,0 +1,25 @@
+table:
+  id: 285
+  name: "Transaction_Specification"
+  caption: Transaction Specification
+  description: "Intrastat transaction specifications (table 285)"
+  lookup_page_id: 406
+  fields:
+    - name: code
+      no: 1
+      type: types.Code
+      db_name: code
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: text
+      no: 2
+      type: types.Text
+      db_name: text
+      length: 50
+
+  keys:
+    - name: Primary
+      fields: [code]
+      clustered: true

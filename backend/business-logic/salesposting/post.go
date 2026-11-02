@@ -570,6 +570,12 @@ func (p *SalesPost) postItemJnlLine(salesLine *gtables.SalesLine, qtyToShip, qty
 	itemJnlLine.Item_no = salesLine.No
 	itemJnlLine.Description = salesLine.Description
 	itemJnlLine.Location_code = salesLine.Location_code
+	itemJnlLine.Country_code = salesHeader.Vat_country_code
+	itemJnlLine.Transaction_type = salesLine.Transaction_type
+	itemJnlLine.Transport_method = salesLine.Transport_method
+	itemJnlLine.Entry_exit_point = salesLine.Exit_point
+	itemJnlLine.Area = salesLine.Area
+	itemJnlLine.Transaction_specification = salesLine.Transaction_specification
 	itemJnlLine.Variant_code = salesLine.Variant_code
 	itemJnlLine.Inventory_posting_group = salesLine.Posting_group
 	itemJnlLine.Department_code = salesLine.Department_code

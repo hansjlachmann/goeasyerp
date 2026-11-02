@@ -289,6 +289,45 @@ reports:
     caption: "Indsæt konti"
     texts:
       INSERTED: "%1 linjer blev indsat."
+  "594":
+    caption: "Hent varetransaktioner"
+    options:
+      starting_date: "Startdato"
+      ending_date: "Slutdato"
+      cost_regulation_percent: "Omkostningsregulering %"
+    texts:
+      LINES_CREATED: "%1 linjer blev oprettet."
+  "502":
+    caption: "Intrastat - kontrolliste"
+    texts:
+      TITLE: "Intrastat - kontrolliste"
+      PAGE: "Side"
+      STATISTICS_PERIOD: "Statistikperiode: %1"
+      VAT_REG_NO: "SE/CVR-nr."
+      TYPE: "Type"
+      TARIFF_NO: "Varekode"
+      COUNTRY_CODE: "Landekode"
+      TRANSACTION_TYPE: "Transaktionstype"
+      TRANSPORT_METHOD: "Transportmåde"
+      ITEM_DESCRIPTION: "Varebeskrivelse"
+      TOTAL_WEIGHT: "Totalvægt"
+      QUANTITY: "Antal"
+      STATISTICAL_VALUE: "Statistisk værdi"
+      INTERNAL_REF_NO: "Internt ref.nr."
+      TOTAL: "I alt"
+      NO_OF_ENTRIES: "Antal poster"
+      RECEIPT: "Modtagelse"
+      SHIPMENT: "Levering"
+  "593":
+    caption: "Intrastat - lav fil til myndighed"
+    texts:
+      FILE_NAME: "Intrastat %1.txt"
+      DONE: "Intrastat-angivelsen med %1 poster blev lavet; kladden er indberettet."
+  "88":
+    caption: "Moms - VIES-angivelse (fil)"
+    texts:
+      FILE_NAME: "VIES %1.txt"
+      DONE: "VIES-angivelsen med %1 kunder blev lavet."
   "6":
     caption: "Saldobalance"
     texts:

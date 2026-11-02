@@ -352,6 +352,7 @@ func (salesHeaderLogic) OnValidate_Ship_to_code(rec *gtables.SalesHeader) error 
 		rec.Ship_to_contact = shipToAddr.Contact
 		rec.Shipment_method_code = shipToAddr.Shipment_method_code
 		rec.Location_code = shipToAddr.Location_code
+		rec.Vat_country_code = shipToAddr.Country_code
 		rec.Shipping_agent_code = shipToAddr.Shipping_agent_code
 		if shipToAddr.Tax_area_code != "" {
 			rec.Tax_area_code = shipToAddr.Tax_area_code
@@ -373,11 +374,12 @@ func (salesHeaderLogic) OnValidate_Ship_to_code(rec *gtables.SalesHeader) error 
 		rec.Ship_to_contact = cust.Contact
 		rec.Shipment_method_code = cust.Shipment_method_code
 		rec.Location_code = cust.Location_code
+		rec.Vat_country_code = cust.Country_code
 		rec.Shipping_agent_code = cust.Shipping_agent_code
 	}
 
 	if xRec.Sell_to_customer_no == rec.Sell_to_customer_no && xRec.Ship_to_code != rec.Ship_to_code {
-		if xRec.Tax_area_code != rec.Tax_area_code {
+		if xRec.Vat_country_code != rec.Vat_country_code || xRec.Tax_area_code != rec.Tax_area_code {
 			return RecreateSalesLines(rec)
 		}
 	}
@@ -401,6 +403,28 @@ func (salesHeaderLogic) OnValidate_Posting_date(rec *gtables.SalesHeader) error 
 		}
 	}
 	return nil
+}
+
+// OnValidate_Transaction_type, _Transport_method, _Exit_point, _Area, _Transaction_specification:
+// the foreign trade statistics fields go to the lines
+func (salesHeaderLogic) OnValidate_Transaction_type(rec *gtables.SalesHeader) error {
+	return updateSalesLines(rec, "transaction_type")
+}
+
+func (salesHeaderLogic) OnValidate_Transport_method(rec *gtables.SalesHeader) error {
+	return updateSalesLines(rec, "transport_method")
+}
+
+func (salesHeaderLogic) OnValidate_Exit_point(rec *gtables.SalesHeader) error {
+	return updateSalesLines(rec, "exit_point")
+}
+
+func (salesHeaderLogic) OnValidate_Area(rec *gtables.SalesHeader) error {
+	return updateSalesLines(rec, "area")
+}
+
+func (salesHeaderLogic) OnValidate_Transaction_specification(rec *gtables.SalesHeader) error {
+	return updateSalesLines(rec, "transaction_specification")
 }
 
 // OnValidate_Shipment_date: to the lines
@@ -650,6 +674,16 @@ func updateSalesLines(rec *gtables.SalesHeader, changedField string) error {
 			err = salesLine.Validate("department_code", rec.Department_code)
 		case "project_code":
 			err = salesLine.Validate("project_code", rec.Project_code)
+		case "transaction_type":
+			err = salesLine.Validate("transaction_type", rec.Transaction_type)
+		case "transport_method":
+			err = salesLine.Validate("transport_method", rec.Transport_method)
+		case "exit_point":
+			err = salesLine.Validate("exit_point", rec.Exit_point)
+		case "area":
+			err = salesLine.Validate("area", rec.Area)
+		case "transaction_specification":
+			err = salesLine.Validate("transaction_specification", rec.Transaction_specification)
 		}
 		if err != nil {
 			return err

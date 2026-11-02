@@ -66,6 +66,15 @@ func (c *reportCodeunit) Run(record interface{}) (fcodeunits.Result, error) {
 			},
 		}, nil
 	}
+	if result.File != nil {
+		// a file to send: the browser downloads it (after the report's message)
+		res := fcodeunits.Result{Success: true}
+		if result.Message != "" {
+			res = fcodeunits.Message(result.Message)
+		}
+		res.Data = map[string]interface{}{"file": base64.StdEncoding.EncodeToString(result.File), "filename": result.FileName}
+		return res, nil
+	}
 	if result.Message != "" {
 		return fcodeunits.Message(result.Message), nil
 	}

@@ -81,3 +81,13 @@ export function handlePrintout(printout: Printout) {
 		downloadPdf(blob, printout.filename);
 	}
 }
+
+/** A file in a job result's data (a processing report's declaration: file base64, filename) */
+export function resultFileOf(data: Record<string, unknown> | undefined | null): { blob: Blob; filename: string } | null {
+	if (!data || typeof data.file !== 'string') return null;
+	const chars = atob(data.file);
+	const bytes = new Uint8Array(chars.length);
+	for (let i = 0; i < chars.length; i++) bytes[i] = chars.charCodeAt(i);
+	const filename = typeof data.filename === 'string' && data.filename !== '' ? data.filename : 'file.txt';
+	return { blob: new Blob([bytes], { type: 'application/octet-stream' }), filename };
+}
