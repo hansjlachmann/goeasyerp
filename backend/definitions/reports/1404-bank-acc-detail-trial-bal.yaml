@@ -1,0 +1,74 @@
+# Report 1404 Bank Acc. - Detail Trial Bal.: the printed layout (sections per data item, positions in mm from the
+# section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 1404
+  name: Bank Acc. - Detail Trial Bal.
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: BankAccount
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: period_text
+          height: 5
+          elements:
+            - {value: period_text, x: 0, y: 0, width: 273}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 9
+          elements:
+            - {text: POSTING_DATE, x: 0, y: 1, width: 20, bold: true, wrap: true}
+            - {text: DOCUMENT_TYPE, x: 21, y: 1, width: 24, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 46, y: 1, width: 24, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 71, y: 1, width: 80, bold: true, wrap: true}
+            - {text: AMOUNT_LCY, x: 152, y: 1, width: 30, align: right, bold: true, wrap: true}
+            - {text: REMAINING_AMOUNT, x: 183, y: 1, width: 28, align: right, bold: true, wrap: true}
+            - {text: BALANCE_LCY, x: 212, y: 1, width: 32, align: right, bold: true, wrap: true}
+            - {text: ENTRY_NO, x: 246, y: 1, width: 20, align: right, bold: true, wrap: true}
+            - {line: true, x: 0, y: 7.5}
+        - type: body
+          height: 6.5
+          elements:
+            - {field: "no", x: 0, y: 1.5, width: 20, bold: true}
+            - {field: name, x: 21, y: 1.5, width: 120, bold: true}
+            - {text: BALANCE_BEFORE, x: 150, y: 1.5, width: 61, align: right}
+            - {value: start_balance, x: 212, y: 1.5, width: 32, align: right, bold: true}
+
+    - name: BankAccountLedgerEntry
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {field: posting_date, x: 0, y: 0, width: 20}
+            - {field: document_type, x: 21, y: 0, width: 24}
+            - {field: document_no, x: 46, y: 0, width: 24}
+            - {field: description, x: 71, y: 0, width: 80}
+            - {field: amount_lcy, x: 152, y: 0, width: 30, align: right}
+            - {field: remaining_amount, x: 183, y: 0, width: 28, align: right}
+            - {value: balance, x: 212, y: 0, width: 32, align: right}
+            - {field: entry_no, x: 246, y: 0, width: 20, align: right}
+        - type: footer
+          height: 7
+          elements:
+            - {line: true, x: 152, y: 0.5}
+            - {text: BALANCE_AT_END, x: 71, y: 1.5, width: 80}
+            - {total: amount_lcy, x: 152, y: 1.5, width: 30, align: right}
+            - {value: balance, x: 212, y: 1.5, width: 32, align: right, bold: true}

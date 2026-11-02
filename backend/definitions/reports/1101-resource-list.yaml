@@ -1,0 +1,54 @@
+# Report 1101 Resource - List: the printed layout (sections per data item, positions in mm from the
+# section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 1101
+  name: Resource - List
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Resource
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 9
+          elements:
+            - {text: NO, x: 0, y: 1, width: 20, bold: true, wrap: true}
+            - {text: NAME, x: 21, y: 1, width: 70, bold: true, wrap: true}
+            - {text: TYPE, x: 92, y: 1, width: 20, bold: true, wrap: true}
+            - {text: RESOURCE_GROUP_NO, x: 113, y: 1, width: 24, bold: true, wrap: true}
+            - {text: UNIT_OF_MEASURE, x: 138, y: 1, width: 20, bold: true, wrap: true}
+            - {text: DIRECT_UNIT_COST, x: 159, y: 1, width: 28, align: right, bold: true, wrap: true}
+            - {text: UNIT_COST, x: 188, y: 1, width: 28, align: right, bold: true, wrap: true}
+            - {text: UNIT_PRICE, x: 217, y: 1, width: 28, align: right, bold: true, wrap: true}
+            - {text: GEN_PROD_POSTING_GROUP, x: 246, y: 1, width: 27, bold: true, wrap: true}
+            - {line: true, x: 0, y: 7.5}
+        - type: body
+          height: 4.2
+          elements:
+            - {field: "no", x: 0, y: 0, width: 20}
+            - {field: name, x: 21, y: 0, width: 70}
+            - {field: type, x: 92, y: 0, width: 20}
+            - {field: resource_group_no, x: 113, y: 0, width: 24}
+            - {field: unit_of_measure_code, x: 138, y: 0, width: 20}
+            - {field: direct_unit_cost, x: 159, y: 0, width: 28, align: right}
+            - {field: unit_cost, x: 188, y: 0, width: 28, align: right}
+            - {field: unit_price, x: 217, y: 0, width: 28, align: right}
+            - {field: gen_prod_posting_group, x: 246, y: 0, width: 27}
