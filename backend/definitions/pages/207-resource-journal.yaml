@@ -125,3 +125,11 @@ page:
       shortcut: F11
       promoted: true
       run_object: codeunit:271
+
+    # what Post would write for the batch, nothing saved (Posting Preview 115)
+    - name: Preview Posting
+      caption: Preview Posting
+      image: Search
+      shortcut: Ctrl+Alt+F9
+      promoted: true
+      run_object: "table:Res_Journal_Line.PreviewPosting"

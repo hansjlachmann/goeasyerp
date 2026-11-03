@@ -45,6 +45,7 @@ var EntryTables = []EntryTable{
 	{gtables.FALedgerEntryTableName, gtables.FALedgerEntryTableID, 5604},
 	{gtables.MaintenanceLedgerEntryTableName, gtables.MaintenanceLedgerEntryTableID, 5641},
 	{gtables.InsCoverageLedgerEntryTableName, gtables.InsCoverageLedgerEntryTableID, 5647},
+	{gtables.BOMLedgerEntryTableName, gtables.BOMLedgerEntryTableID, 430},
 }
 
 // IsEntryTable reports whether a preview collects the table's entries
