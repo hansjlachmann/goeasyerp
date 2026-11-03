@@ -6,19 +6,21 @@ describe('returnUrl', () => {
 		window.history.replaceState({}, '', '/pages/22?filter=city%3DOslo&back=%2Fold&select=OLD');
 	});
 
-	it('adds the current page (without an earlier back/select) as back', () => {
+	it('adds the current page (with its own way back, without an earlier select) as back', () => {
 		const url = withReturn('/pages/25?filter=customer_no%3DC00010', 'C00010');
 		expect(url.startsWith('/pages/25?filter=customer_no%3DC00010&back=')).toBe(true);
-		const back = decodeURIComponent(url.split('back=')[1]);
-		expect(back).toBe('/pages/22?filter=city%3DOslo&select=C00010');
+		const back = new URL(url, 'http://app').searchParams.get('back');
+		expect(back).toBe('/pages/22?filter=city%3DOslo&back=%2Fold&select=C00010');
+		// back from there: the page it was opened from
+		expect(new URL(back!, 'http://app').searchParams.get('back')).toBe('/old');
 	});
 
 	it('from a modal card: the way back opens the card again on the record (card=1)', () => {
-		const back = decodeURIComponent(withReturn('/pages/151?filter=no%3DC00010', 'C00010', true).split('back=')[1]);
-		expect(back).toBe('/pages/22?filter=city%3DOslo&select=C00010&card=1');
+		const back = new URL(withReturn('/pages/151?filter=no%3DC00010', 'C00010', true), 'http://app').searchParams.get('back')!;
+		expect(back).toBe('/pages/22?filter=city%3DOslo&back=%2Fold&select=C00010&card=1');
 		window.history.replaceState({}, '', back);
-		const again = decodeURIComponent(withReturn('/pages/25', 'C00020').split('back=')[1]);
-		expect(again).toBe('/pages/22?filter=city%3DOslo&select=C00020');
+		const again = new URL(withReturn('/pages/25', 'C00020'), 'http://app').searchParams.get('back');
+		expect(again).toBe('/pages/22?filter=city%3DOslo&back=%2Fold&select=C00020');
 	});
 
 	it('uses ? when the target has no query yet', () => {

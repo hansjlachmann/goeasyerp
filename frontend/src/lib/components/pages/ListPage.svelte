@@ -2,13 +2,14 @@
 	import type { PageDefinition, Field } from '$lib/types/pages';
 	import { navigationQuery, type NavigationQuery } from '$lib/utils/recordNavigation';
 	import type { TableFilter, LookupData, DialogResult, ListOptions } from '$lib/types/api';
-	import { goto, replaceState } from '$app/navigation';
+	import { pageNavigator } from '$lib/utils/pageNavigator';
 	import { toast } from '$lib/stores/toast';
 	import { confirm } from '$lib/stores/confirm';
 	import { t, MSG, ERR, DLG, BTN, LIST } from '$lib/services/i18n.svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import ModalCardPage from './ModalCardPage.svelte';
 	import PageRenderer from './PageRenderer.svelte';
+	import PageFrames from './PageFrames.svelte';
 	import ActionMenu from '../ActionMenu.svelte';
 	import ActionButton from '../ActionButton.svelte';
 	import { newLineNo, newLineNoAbove } from '$lib/utils/autoSplitKey';
@@ -19,7 +20,7 @@
 	import CustomizeFieldsModal from './CustomizeFieldsModal.svelte';
 	import FilterPane from './FilterPane.svelte';
 	import ConfirmModal from '../ConfirmModal.svelte';
-	import Modal, { isModalOpen } from '../Modal.svelte';
+	import Modal, { isModalOpen, isInTopModal } from '../Modal.svelte';
 	import ProgressModal from '../ProgressModal.svelte';
 	import { startJob, type SyncJobResult, type ErrorDetails } from '$lib/services/jobs';
 	import { printoutOf } from '$lib/utils/printout';
@@ -143,6 +144,9 @@
 		onfilter
 	}: Props = $props();
 
+	// Where the pages it opens go: the browser, or the page frame it is in
+	const pageNav = pageNavigator();
+
 	// Get primary key field name from page definition
 	const primaryKeyField = $derived(getPrimaryKeyField(page));
 	// Get all primary key fields (supports composite keys for delayed insert)
@@ -218,7 +222,7 @@
 	function openPending() {
 		const path = pendingOpen;
 		pendingOpen = null;
-		if (path) goto(path);
+		if (path) pageNav.open(path);
 	}
 	function closeDialog() {
 		dialogOpen = false;
@@ -388,9 +392,10 @@
 			// Skip if a modal or the Switch Company dialog (Ctrl+O) is open, or the column
 			// header menu (it handles its own keys, Esc closes it)
 			// … or a codeunit's message box / a page it opened (they handle Esc themselves), or any
-			// other modal — unless this list is inside the modal (a page opened with RunModal)
+			// other modal — unless this list is inside the top one (a page opened with RunModal, a
+			// page frame)
 			if (modalOpen || get(companySwitchOpen) || columnMenu || progressModalOpen || dialogOpen || runPage) return;
-			if (isModalOpen() && !listPageElement?.closest('.modal-content')) return;
+			if (isModalOpen() && !isInTopModal(listPageElement)) return;
 			// The keys of an action menu (and other parts marking their keys as their own) are
 			// theirs — the filter pane's Esc is handled just below
 			// (only those inside this list: a card's subpage wrapper is around the list, its keys
@@ -510,10 +515,8 @@
 	function closeList() {
 		if (onclose) {
 			onclose();
-		} else if (returnUrl) {
-			goto(returnUrl);
 		} else {
-			goto('/');
+			pageNav.close(returnUrl ?? '/');
 		}
 	}
 
@@ -527,9 +530,9 @@
 		// Back from a page a modal card opened (Statistics, Comments …): the card again, on
 		// the record — the parameter leaves the URL, so closing the card stays on the list
 		if (index >= 0 && initialOpenCard && page.page.modal_card && !subpage) {
-			const url = new URL(window.location.href);
+			const url = pageNav.location();
 			url.searchParams.delete('card');
-			replaceState(url.pathname + url.search, {});
+			pageNav.replaceState(url.pathname + url.search);
 			const record = records[index];
 			setTimeout(() => openModalCard(record), 0);
 		}
@@ -541,9 +544,9 @@
 	$effect(() => {
 		if (startNewDone || !startNew || subpage) return;
 		startNewDone = true;
-		const url = new URL(window.location.href);
+		const url = pageNav.location();
 		url.searchParams.delete('new');
-		replaceState(url.pathname + url.search, {});
+		pageNav.replaceState(url.pathname + url.search);
 		setTimeout(() => handleAction('New'), 0);
 	});
 
@@ -865,7 +868,7 @@
 			const row = selectedRecord;
 			const url = runPagePath(action, row);
 			if (!url) return; // no row to filter on
-			goto(withReturn(url, row ? getRecordId(row, primaryKeyField, primaryKeyFieldsList) : undefined));
+			pageNav.open(withReturn(url, row ? getRecordId(row, primaryKeyField, primaryKeyFieldsList) : undefined));
 			return;
 		}
 
@@ -3110,7 +3113,7 @@
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div class="list-page" class:embedded={pickOnEnter} class:subpage use:shortcuts={shortcutMap()} tabindex="0" bind:this={listPageElement} onkeydown={handleSearchShortcut} role="application" aria-label={page.page.caption}>
 	<!-- A subpage has no title (its card section has the caption) and no search box -->
-	<PageHeader title={subpage ? '' : page.page.caption} onclose={returnUrl || (onclose && !subpage) ? closeList : undefined}>
+	<PageHeader title={subpage ? '' : page.page.caption} onclose={returnUrl || pageNav.framed || (onclose && !subpage) ? closeList : undefined}>
 		{#snippet leftActions()}
 			{#if page.page.editable}
 				<!-- Save state indicator - fixed width container to prevent layout shift -->
@@ -3693,7 +3696,7 @@
 														: `/pages/${field.drilldown}?filter=${encodeURIComponent(`${field.drilldown_filter_field}=${record[field.drilldown_filter_value || ''] ?? ''}`)}`;
 													if (!url) return;
 													// Back to this list, on this record, with Esc or the close button
-													goto(withReturn(url, getRecordId(record, primaryKeyField, primaryKeyFieldsList)));
+													pageNav.open(withReturn(url, getRecordId(record, primaryKeyField, primaryKeyFieldsList)));
 												}}
 											>
 												{formatCellValue(record[field.source], field.source)}
@@ -3842,20 +3845,22 @@
 	{@const request = runPage}
 	<Modal open={true} size="expanded">
 		<div class="run-page">
-			<PageRenderer
-				pageid={request.pageId}
-				embedded={true}
-				initialFilters={request.filters}
-				initialSelect={request.select}
-				lookupMode={request.lookupMode}
-				openParams={request.params}
-				onclose={(action, key) => {
-					// respond first: {@const request} follows runPage, which is cleared next
-					const respond = request.respond;
-					respond(action === 'Cancel' ? null : { action, key: key ?? '' });
-					runPage = null;
-				}}
-			/>
+			<PageFrames>
+				<PageRenderer
+					pageid={request.pageId}
+					embedded={true}
+					initialFilters={request.filters}
+					initialSelect={request.select}
+					lookupMode={request.lookupMode}
+					openParams={request.params}
+					onclose={(action, key) => {
+						// respond first: {@const request} follows runPage, which is cleared next
+						const respond = request.respond;
+						respond(action === 'Cancel' ? null : { action, key: key ?? '' });
+						runPage = null;
+					}}
+				/>
+			</PageFrames>
 		</div>
 	</Modal>
 {/if}

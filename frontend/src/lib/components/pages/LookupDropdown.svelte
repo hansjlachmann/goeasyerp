@@ -7,11 +7,12 @@
 	import { clickOutside } from '$lib/actions/clickOutside';
 	import { floating } from '$lib/actions/floating';
 	import { api } from '$lib/services/api';
-	import { goto } from '$app/navigation';
+	import { pageNavigator } from '$lib/utils/pageNavigator';
 	import { withReturn } from '$lib/utils/returnUrl';
 	import type { TableFilter } from '$lib/types/api';
 	import Modal from '../Modal.svelte';
 	import PageRenderer from './PageRenderer.svelte';
+	import PageFrames from './PageFrames.svelte';
 
 	interface LookupRow {
 		_key: string;
@@ -70,6 +71,9 @@
 		onselect,
 		onblur
 	}: Props = $props();
+
+	// Where the pages it opens go: the browser, or the page frame it is in
+	const pageNav = pageNavigator();
 
 	let isOpen = $state(false);
 	// the open list (moved to <body> by floating, so nothing clips it)
@@ -303,7 +307,7 @@
 			newPick = { pageId: newPageId, filters };
 			return;
 		}
-		goto(withReturn(path));
+		pageNav.open(withReturn(path));
 	}
 
 	// New over the page (lookup mode, a new record ready to type): Enter or OK picks the record
@@ -586,15 +590,17 @@
 	{@const request = newPick}
 	<Modal open={true} size="expanded" onclose={() => closeNew('Cancel')}>
 		<div class="new-pick-page" data-own-keys>
-			<PageRenderer
-				pageid={request.pageId}
-				embedded={true}
-				initialFilters={request.filters}
-				lookupMode={true}
-				editableLookup={true}
-				startNew={true}
-				onclose={(action, _key, picked) => closeNew(action, picked)}
-			/>
+			<PageFrames>
+				<PageRenderer
+					pageid={request.pageId}
+					embedded={true}
+					initialFilters={request.filters}
+					lookupMode={true}
+					editableLookup={true}
+					startNew={true}
+					onclose={(action, _key, picked) => closeNew(action, picked)}
+				/>
+			</PageFrames>
 		</div>
 	</Modal>
 {/if}
