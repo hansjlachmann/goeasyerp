@@ -1210,7 +1210,7 @@ func (t *FAAllocation) CalcFieldsForRecords(records []map[string]interface{}, fi
 // calcForRecords_account_name calculates the account_name FlowField for a set of records
 // CalcFormula: Lookup(GLAccount.name)
 func (t *FAAllocation) calcForRecords_account_name(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &FAAllocation{db: t.db, company: t.company, dbType: t.dbType}
 		r.FromMap(rec)

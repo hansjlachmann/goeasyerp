@@ -12,7 +12,7 @@ import (
 // resourceLogic is the business logic of table 156 Resource.
 //
 // Not migrated yet (their tables come later): OnDelete's check of outstanding sales order
-// lines and its deletion of extended texts; Resource Group No.'s update of job budget entries.
+// lines and its deletion of extended texts.
 // Resource Group No. asks no confirmation (no dialogs in table triggers yet).
 type resourceLogic struct{}
 
@@ -110,7 +110,8 @@ func (resourceLogic) OnValidate_Name(rec *gtables.Resource) error {
 	return nil
 }
 
-// OnValidate_Resource_group_no: the resource's capacity entries move to the new group
+// OnValidate_Resource_group_no: the resource's capacity entries and project budget entries move
+// to the new group
 func (resourceLogic) OnValidate_Resource_group_no(rec *gtables.Resource) error {
 	xRec := rec.XRec()
 	if rec.Resource_group_no == xRec.Resource_group_no {
@@ -122,6 +123,13 @@ func (resourceLogic) OnValidate_Resource_group_no(rec *gtables.Resource) error {
 	resCapacityEntry.SetCurrentKey("resource_no")
 	resCapacityEntry.SetRange("resource_no", rec.No)
 	resCapacityEntry.ModifyAll("resource_group_no", rec.Resource_group_no)
+
+	// Project Budget Entries
+	projectBudgetEntry := gtables.NewProjectBudgetEntry(rec)
+	projectBudgetEntry.SetCurrentKey("project_status", "type", "no")
+	projectBudgetEntry.SetRange("type", gtables.ProjectBudgetEntry_Type.Resource)
+	projectBudgetEntry.SetRange("no", rec.No)
+	projectBudgetEntry.ModifyAll("resource_group_no", rec.Resource_group_no)
 	return nil
 }
 

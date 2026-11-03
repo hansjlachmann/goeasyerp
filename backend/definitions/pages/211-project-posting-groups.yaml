@@ -1,0 +1,43 @@
+page:
+  id: 211
+  type: List
+  name: Project Posting Groups
+  source_table: Project_Posting_Group
+  caption: Project Posting Groups
+  editable: true
+  copy_paste_allowed: true
+
+  layout:
+    repeater:
+      fields:
+        - source: code
+          width: 100
+        - source: wip_cost_account
+          width: 140
+        - source: wip_sales_account
+          width: 140
+        - source: cost_account
+          width: 140
+        - source: sales_account
+          width: 140
+        - source: g_l_exp_sales_acc
+          width: 160
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

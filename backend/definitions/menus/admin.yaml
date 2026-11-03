@@ -220,7 +220,7 @@ menu:
               - name: "Date Compression Registers"
                 page_id: 107
 
-  - name: "Sales & Receivables"
+  - name: "Sales"
     icon: users
     items:
       - name: "Customers"
@@ -338,7 +338,7 @@ menu:
               - name: "Date Compression Registers"
                 page_id: 107
 
-  - name: "Purchases & Payables"
+  - name: "Purchase"
     icon: truck
     items:
       - name: "Vendors"
@@ -437,7 +437,7 @@ menu:
               - name: "Date Compression Registers"
                 page_id: 107
 
-  - name: "Inventory"
+  - name: "Items & Inventory"
     icon: package
     items:
       - name: "Items"
@@ -613,15 +613,15 @@ menu:
               - name: "Date Compression Registers"
                 page_id: 107
 
-  - name: "Jobs"
+  - name: "Projects"
     icon: briefcase
     items:
-      - name: "Jobs"
-        page_id: 88
+      - name: "Projects"
+        page_id: 89
       - name: "Budgets"
         page_id: 212
       - separator: true
-      - name: "Job Journals"
+      - name: "Project Journals"
       - separator: true
       - name: "Reports"
       - name: "Registers"
@@ -631,9 +631,9 @@ menu:
       - separator: true
       - name: "Setup"
         items:
-          - name: "Jobs Setup"
+          - name: "Projects Setup"
             page_id: 463
-          - name: "Job Posting Groups"
+          - name: "Project Posting Groups"
             page_id: 211
           - separator: true
           - name: "Phases"
@@ -649,30 +649,30 @@ menu:
         items:
           - name: "Recurring Journals"
           - separator: true
-          - name: "Calculate Job WIP Value"
+          - name: "Calculate Project WIP Value"
             run_object: "report:1295"
           - name: "Post WIP Value to G/L"
             run_object: "report:1214"
           - separator: true
-          - name: "Calculate Job Recognition"
+          - name: "Calculate Project Recognition"
             run_object: "report:1294"
-          - name: "Post Job Recognition to G/L"
+          - name: "Post Project Recognition to G/L"
             run_object: "report:1213"
           - separator: true
           - name: "Date Compression"
             items:
-              - name: "Job Ledger"
+              - name: "Project Ledger"
                 run_object: "report:1298"
-              - name: "Job Budget Entries"
+              - name: "Project Budget Entries"
                 run_object: "report:1297"
               - separator: true
-              - name: "Delete Empty Job Registers"
+              - name: "Delete Empty Project Registers"
                 run_object: "report:1299"
               - separator: true
               - name: "Date Compression Registers"
                 page_id: 107
 
-  - name: "Fixed Assets"
+  - name: "Assets & Depreciations"
     icon: building
     items:
       - name: "Fixed Assets"

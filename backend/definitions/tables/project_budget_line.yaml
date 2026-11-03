@@ -1,0 +1,399 @@
+table:
+  id: 168
+  name: "Project_Budget_Line"
+  caption: Project Budget Line
+  description: "Project budget lines (table 168): what a project plans to use — its quantities are the budget entries'"
+  lookup_page_id: 216
+  fields:
+    - name: project_no
+      no: 1
+      type: types.Code
+      db_name: project_no
+      length: 20
+      primary_key: true
+      table_relation:
+        table: Project
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
+
+    - name: phase_code
+      no: 2
+      type: types.Code
+      db_name: phase_code
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Phase
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: task_code
+      no: 3
+      type: types.Code
+      db_name: task_code
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Task
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: step_code
+      no: 4
+      type: types.Code
+      db_name: step_code
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Step
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: type
+      no: 5
+      type: Option
+      db_name: type
+      primary_key: true
+      options: ["Resource", "Item", "Account (G/L)", "Group (Resource)"]
+
+    - name: no
+      no: 6
+      type: types.Code
+      db_name: no
+      length: 20
+      primary_key: true
+      table_relation:
+        conditions:
+          - when: {field: type, equal: 0}
+            table: Resource
+            field: no
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: name
+                width: 250
+          - when: {field: type, equal: 1}
+            table: Item
+            field: no
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: description
+                width: 250
+          - when: {field: type, equal: 2}
+            table: G_L_Account
+            field: no
+            filters:
+              account_type: {const: 0}   # Posting accounts only
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: name
+                width: 250
+          - when: {field: type, equal: 3}
+            table: Resource_Group
+            field: no
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: name
+                width: 250
+
+    - name: variant_code
+      no: 5402
+      type: types.Code
+      db_name: variant_code
+      length: 10
+      primary_key: true
+      table_relation:
+        conditions:
+          - when: {field: type, equal: 1}
+            table: Item_Variant
+            field: code
+            filters:
+              item_no: {field: "no"}
+            lookup_columns:
+              - source: code
+                width: 100
+              - source: description
+                width: 250
+
+    - name: starting_date
+      no: 7
+      type: types.Date
+      db_name: starting_date
+
+    - name: description
+      no: 8
+      type: types.Text
+      db_name: description
+      length: 50
+
+    - name: quantity
+      no: 9
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: ProjectBudgetEntry
+      source_field: quantity
+      flow_filters:
+        - field: project_no
+          type: field
+          value: project_no
+        - field: phase_code
+          type: field
+          value: phase_code
+        - field: task_code
+          type: field
+          value: task_code
+        - field: step_code
+          type: field
+          value: step_code
+        - field: type
+          type: field
+          value: type
+        - field: no
+          type: field
+          value: no
+        - field: variant_code
+          type: field
+          value: variant_code
+        - field: date
+          type: filter
+          value: date_filter
+
+    - name: direct_unit_cost
+      no: 10
+      type: types.Decimal
+      db_name: direct_unit_cost
+      decimal_places: "2:5"   # a unit amount (classic AutoFormatType=2)
+
+    - name: unit_cost
+      no: 11
+      type: types.Decimal
+      db_name: unit_cost
+      decimal_places: "2:5"
+
+    - name: total_cost
+      no: 12
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"   # an amount
+      calc_formula: Sum
+      source_table: ProjectBudgetEntry
+      source_field: total_cost
+      flow_filters:
+        - field: project_no
+          type: field
+          value: project_no
+        - field: phase_code
+          type: field
+          value: phase_code
+        - field: task_code
+          type: field
+          value: task_code
+        - field: step_code
+          type: field
+          value: step_code
+        - field: type
+          type: field
+          value: type
+        - field: no
+          type: field
+          value: no
+        - field: variant_code
+          type: field
+          value: variant_code
+        - field: date
+          type: filter
+          value: date_filter
+
+    - name: unit_price
+      no: 13
+      type: types.Decimal
+      db_name: unit_price
+      decimal_places: "2:5"
+
+    - name: total_price
+      no: 14
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: ProjectBudgetEntry
+      source_field: total_price
+      flow_filters:
+        - field: project_no
+          type: field
+          value: project_no
+        - field: phase_code
+          type: field
+          value: phase_code
+        - field: task_code
+          type: field
+          value: task_code
+        - field: step_code
+          type: field
+          value: step_code
+        - field: type
+          type: field
+          value: type
+        - field: no
+          type: field
+          value: no
+        - field: variant_code
+          type: field
+          value: variant_code
+        - field: date
+          type: filter
+          value: date_filter
+
+    - name: dimension_1_code
+      no: 17
+      type: types.Code
+      db_name: dimension_1_code
+      length: 10
+      table_relation:
+        table: Dimension_1
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: dimension_2_code
+      no: 18
+      type: types.Code
+      db_name: dimension_2_code
+      length: 10
+      table_relation:
+        table: Dimension_2
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: price_group_code
+      no: 21
+      type: types.Code
+      db_name: price_group_code
+      length: 10
+      table_relation:
+        table: Price_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+
+    - name: date_filter
+      no: 22
+      type: types.Date
+      db_name: date_filter
+      flow_filter: true
+
+    - name: qty_quoted_project
+      no: 23
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: ProjectBudgetEntry
+      source_field: quantity
+      flow_filters:
+        - field: project_status
+          type: const
+          value: 1   # Quote
+        - field: type
+          type: field
+          value: type
+        - field: no
+          type: field
+          value: no
+        - field: date
+          type: filter
+          value: date_filter
+
+    - name: qty_on_order_project
+      no: 24
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: ProjectBudgetEntry
+      source_field: quantity
+      flow_filters:
+        - field: project_status
+          type: const
+          value: 2   # Order
+        - field: type
+          type: field
+          value: type
+        - field: no
+          type: field
+          value: no
+        - field: date
+          type: filter
+          value: date_filter
+
+    - name: res_gr_qty_quoted
+      no: 25
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: ProjectBudgetEntry
+      source_field: quantity
+      flow_filters:
+        - field: project_status
+          type: const
+          value: 1   # Quote
+        - field: resource_group_no
+          type: field
+          value: no
+        - field: date
+          type: filter
+          value: date_filter
+
+    - name: res_gr_qty_on_order
+      no: 26
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: ProjectBudgetEntry
+      source_field: quantity
+      flow_filters:
+        - field: project_status
+          type: const
+          value: 2   # Order
+        - field: resource_group_no
+          type: field
+          value: no
+        - field: date
+          type: filter
+          value: date_filter
+
+  keys:
+    - name: Primary
+      fields: [project_no, phase_code, task_code, step_code, type, no, variant_code]
+      clustered: true

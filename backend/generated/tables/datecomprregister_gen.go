@@ -1395,7 +1395,7 @@ func (t *DateComprRegister) CalcFieldsForRecords(records []map[string]interface{
 // calcForRecords_table_caption calculates the table_caption FlowField for a set of records
 // CalcFormula: Lookup(Object.name)
 func (t *DateComprRegister) calcForRecords_table_caption(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &DateComprRegister{db: t.db, company: t.company, dbType: t.dbType}
 		r.FromMap(rec)

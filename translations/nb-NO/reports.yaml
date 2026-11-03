@@ -65,7 +65,7 @@ reports:
       only_index_entries: "Bare indekseringsposter"
       retain_document_type: "Behold Bilagstype"
       retain_document_no: "Behold Bilagsnr."
-      retain_job_no: "Behold Prosjektnr."
+      retain_project_no: "Behold Prosjektnr."
       retain_business_unit_code: "Behold Konsernselskapskode"
       retain_dimension_1_code: "Behold dimensjon 1-kode"
       retain_dimension_2_code: "Behold dimensjon 2-kode"

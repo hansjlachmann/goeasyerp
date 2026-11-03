@@ -74,8 +74,8 @@ func TestUpdateChecklist(t *testing.T) {
 	mustOK(t, line.ModifyOrError(false))
 
 	area := gtables.NewApplicationAreaLine(demo)
-	if !area.GetByPK(gtables.FixedAssetTableID) || area.GetByPK(167) {
-		t.Error("Fixed Assets area missing, or the Jobs area (no tables yet) there")
+	if !area.GetByPK(gtables.FixedAssetTableID) || !area.GetByPK(gtables.ProjectTableID) || area.Name != "Projects" {
+		t.Error("Fixed Assets or Projects area missing")
 	}
 
 	mustOK(t, setupchecklist.UpdateChecklist(demo))

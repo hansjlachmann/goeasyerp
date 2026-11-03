@@ -3999,7 +3999,7 @@ func (t *SalesHeader) CalcFieldsForRecords(records []map[string]interface{}, fie
 // calcForRecords_comment calculates the comment FlowField for a set of records
 // CalcFormula: Exist(SalesCommentLine.line_no)
 func (t *SalesHeader) calcForRecords_comment(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &SalesHeader{db: t.db, company: t.company, dbType: t.dbType}
 		r.FromMap(rec)
@@ -4011,7 +4011,7 @@ func (t *SalesHeader) calcForRecords_comment(records []map[string]interface{}) {
 // calcForRecords_amount calculates the amount FlowField for a set of records
 // CalcFormula: Sum(SalesLine.amount)
 func (t *SalesHeader) calcForRecords_amount(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &SalesHeader{db: t.db, company: t.company, dbType: t.dbType}
 		r.FromMap(rec)
@@ -4023,7 +4023,7 @@ func (t *SalesHeader) calcForRecords_amount(records []map[string]interface{}) {
 // calcForRecords_amount_including_tax calculates the amount_including_tax FlowField for a set of records
 // CalcFormula: Sum(SalesLine.amount_including_tax)
 func (t *SalesHeader) calcForRecords_amount_including_tax(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &SalesHeader{db: t.db, company: t.company, dbType: t.dbType}
 		r.FromMap(rec)

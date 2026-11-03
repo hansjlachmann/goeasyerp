@@ -1979,9 +1979,12 @@ func (t *GeneralLedgerSetup) CalcFieldsForRecords(records []map[string]interface
 // calcForRecords_cust_balances_due calculates the cust_balances_due FlowField for a set of records
 // CalcFormula: Sum(CustomerLedgerEntry.remaining_amt_lcy)
 func (t *GeneralLedgerSetup) calcForRecords_cust_balances_due(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &GeneralLedgerSetup{db: t.db, company: t.company, dbType: t.dbType}
+		r.Date_filter = t.Date_filter
+		r.Dimension_1_filter = t.Dimension_1_filter
+		r.Dimension_2_filter = t.Dimension_2_filter
 		r.FromMap(rec)
 		r.calcFlowField_cust_balances_due()
 		rec["cust_balances_due"] = r.Cust_balances_due.String()
@@ -1991,9 +1994,12 @@ func (t *GeneralLedgerSetup) calcForRecords_cust_balances_due(records []map[stri
 // calcForRecords_vendor_balances_due calculates the vendor_balances_due FlowField for a set of records
 // CalcFormula: Sum(VendorLedgerEntry.remaining_amt_lcy)
 func (t *GeneralLedgerSetup) calcForRecords_vendor_balances_due(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &GeneralLedgerSetup{db: t.db, company: t.company, dbType: t.dbType}
+		r.Date_filter = t.Date_filter
+		r.Dimension_1_filter = t.Dimension_1_filter
+		r.Dimension_2_filter = t.Dimension_2_filter
 		r.FromMap(rec)
 		r.calcFlowField_vendor_balances_due()
 		rec["vendor_balances_due"] = r.Vendor_balances_due.String()

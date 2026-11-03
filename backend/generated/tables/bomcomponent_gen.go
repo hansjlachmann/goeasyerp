@@ -1377,7 +1377,7 @@ func (t *BOMComponent) CalcFieldsForRecords(records []map[string]interface{}, fi
 // calcForRecords_bom_description calculates the bom_description FlowField for a set of records
 // CalcFormula: Lookup(Item.description)
 func (t *BOMComponent) calcForRecords_bom_description(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &BOMComponent{db: t.db, company: t.company, dbType: t.dbType}
 		r.FromMap(rec)

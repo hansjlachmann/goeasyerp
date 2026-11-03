@@ -65,7 +65,7 @@ reports:
       only_index_entries: "Kun indekseringsposter"
       retain_document_type: "Bevar Bilagstype"
       retain_document_no: "Bevar Bilagsnr."
-      retain_job_no: "Bevar Sagsnr."
+      retain_project_no: "Bevar Projektnr."
       retain_business_unit_code: "Bevar Koncernvirksomhedskode"
       retain_dimension_1_code: "Bevar dimension 1-kode"
       retain_dimension_2_code: "Bevar dimension 2-kode"

@@ -1055,3 +1055,27 @@ pages:
     caption: "Varetilgjengelighet per hylle"
   items_by_bin:
     caption: "Varer per hylle"
+
+  # Projects
+  projects:
+    caption: "Prosjekter"
+  project_card:
+    caption: "Prosjektkort"
+  project_posting_groups:
+    caption: "Prosjektbokføringsgrupper"
+  project_budget:
+    caption: "Prosjektbudsjett"
+  project_quantity_allocated:
+    caption: "Fordelt antall på prosjekt"
+  project_budget_lines:
+    caption: "Prosjektbudsjett (fase/oppgave/trinn)"
+  project_budget_entries:
+    caption: "Prosjektbudsjettposter"
+  projects_setup:
+    caption: "Prosjektoppsett"
+  phases:
+    caption: "Faser"
+  tasks:
+    caption: "Oppgaver"
+  steps:
+    caption: "Trinn"

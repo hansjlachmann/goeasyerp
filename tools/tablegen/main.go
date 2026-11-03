@@ -3317,9 +3317,12 @@ func (t *{{ $.StructName }}) calcForRecords_{{ .Name }}(records []map[string]int
 		{{- end }}
 	}
 {{- else }}
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &{{ $.StructName }}{db: t.db, company: t.company, dbType: t.dbType}
+{{- range $.FlowFilterFields }}
+		r.{{ upperFirst .Name }} = t.{{ upperFirst .Name }}
+{{- end }}
 		r.FromMap(rec)
 		r.calcFlowField_{{ .Name }}()
 		{{- if eq .Type "types.Decimal" }}

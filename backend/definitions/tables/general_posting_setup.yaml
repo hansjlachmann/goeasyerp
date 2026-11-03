@@ -196,10 +196,10 @@ table:
           - source: name
             width: 250
 
-    - name: job_sales_adjmt_account
+    - name: project_sales_adjmt_account
       no: 24
       type: types.Code
-      db_name: job_sales_adjmt_account
+      db_name: project_sales_adjmt_account
       length: 20
       table_relation:
         table: G_L_Account
@@ -212,10 +212,10 @@ table:
           - source: name
             width: 250
 
-    - name: job_cost_adjmt_account
+    - name: project_cost_adjmt_account
       no: 25
       type: types.Code
-      db_name: job_cost_adjmt_account
+      db_name: project_cost_adjmt_account
       length: 20
       table_relation:
         table: G_L_Account

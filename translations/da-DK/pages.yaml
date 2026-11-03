@@ -1055,3 +1055,27 @@ pages:
     caption: "Varedisponering pr. placering"
   items_by_bin:
     caption: "Varer pr. placering"
+
+  # Projects
+  projects:
+    caption: "Projekter"
+  project_card:
+    caption: "Projektkort"
+  project_posting_groups:
+    caption: "Projektbogføringsgrupper"
+  project_budget:
+    caption: "Projektbudget"
+  project_quantity_allocated:
+    caption: "Fordelt antal på projekt"
+  project_budget_lines:
+    caption: "Projektbudget (fase/opgave/trin)"
+  project_budget_entries:
+    caption: "Projektbudgetposter"
+  projects_setup:
+    caption: "Projektopsætning"
+  phases:
+    caption: "Faser"
+  tasks:
+    caption: "Opgaver"
+  steps:
+    caption: "Trin"

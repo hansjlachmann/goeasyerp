@@ -1,0 +1,55 @@
+page:
+  id: 215
+  type: Card
+  name: Project Quantity Allocated
+  source_table: Project
+  caption: Project Quantity Allocated
+  list_page_id: 89
+  enable_navigation: true
+  editable: true
+  # classic form 215: the project's budget lines against periods; a quantity typed into a
+  # cell enters a budget entry with the difference on the period's first date
+  # (OnMatrixValidate → SetProjectBudgetLineQuantity)
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+            editable: false
+          - source: description
+            editable: false
+
+      - name: Quantity
+        caption: Quantity
+        matrix:
+          table: Project_Budget_Line
+          value: quantity
+          entry_table: Project_Budget_Entry
+          date_filter: date_filter
+          row_filters:
+            project_no: "no"
+          view_by: 2
+          editable: true
+          fields:
+            - source: phase_code
+              width: 80
+            - source: task_code
+              width: 80
+            - source: step_code
+              width: 80
+            - source: type
+              width: 110
+            - source: "no"
+              width: 90
+            - source: description
+              width: 220
+
+  actions:
+    - name: Back to List
+      caption: Back to List
+      image: Back
+      shortcut: Esc
+      promoted: true
+      run_page: 89

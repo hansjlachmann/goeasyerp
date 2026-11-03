@@ -1043,7 +1043,7 @@ func (t *ReqWkshTemplate) CalcFieldsForRecords(records []map[string]interface{},
 // calcForRecords_page_name calculates the page_name FlowField for a set of records
 // CalcFormula: Lookup(Object.name)
 func (t *ReqWkshTemplate) calcForRecords_page_name(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &ReqWkshTemplate{db: t.db, company: t.company, dbType: t.dbType}
 		r.FromMap(rec)

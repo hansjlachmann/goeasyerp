@@ -24,7 +24,7 @@ page:
         - source: description
           width: 250
 
-        - source: job_no
+        - source: project_no
           width: 110
 
         - source: business_unit_code

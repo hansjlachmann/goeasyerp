@@ -1037,7 +1037,7 @@ func (t *SetupChecklistComment) CalcFieldsForRecords(records []map[string]interf
 // calcForRecords_table_name calculates the table_name FlowField for a set of records
 // CalcFormula: Lookup(SetupChecklistLine.table_name)
 func (t *SetupChecklistComment) calcForRecords_table_name(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &SetupChecklistComment{db: t.db, company: t.company, dbType: t.dbType}
 		r.FromMap(rec)

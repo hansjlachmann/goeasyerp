@@ -889,7 +889,7 @@ tables:
         shipment: "Shipment"
       source_type:
         item_entry: "Item entry"
-        job_entry: "Job entry"
+        project_entry: "Project entry"
   g_l_budget_name:
     caption: "G/L Budget Name"
     fields:
@@ -1031,7 +1031,7 @@ tables:
       source_code: "Source Code"
       system_created_entry: "System-Created Entry"
       prior_year_entry: "Prior-Year Entry"
-      job_no: "Job No."
+      project_no: "Project No."
       quantity: "Quantity"
       tax_amount: "Tax Amount"
       business_unit_code: "Business Unit Code"
@@ -1283,7 +1283,7 @@ tables:
         vendor: "Vendor"
         item: "Item"
         resource: "Resource"
-        job: "Job"
+        project: "Project"
         " ": " "
         resource_group: "Resource Group"
         bank_account: "Bank Account"
@@ -3488,8 +3488,8 @@ tables:
       purch_payment_disc_account: "Purch. Pmt. Disc. Account"
       cogs_account: "COGS Account"
       inventory_adjmt_account: "Inventory Adjmt. Account"
-      job_sales_adjmt_account: "Job Sales Adjmt. Account"
-      job_cost_adjmt_account: "Job Cost Adjmt. Account"
+      project_sales_adjmt_account: "Project Sales Adjmt. Account"
+      project_cost_adjmt_account: "Project Cost Adjmt. Account"
       sales_credit_memo_account: "Sales Credit Memo Account"
       purch_credit_memo_account: "Purch. Credit Memo Account"
   tax_area_line:
@@ -4110,6 +4110,8 @@ tables:
   resource:
     caption: "Resource"
     fields:
+      qty_on_order_project: "Qty. on Order (Project)"
+      qty_quoted_project: "Qty. Quoted (Project)"
       usage_qty: "Usage (Qty.)"
       usage_cost: "Usage (Cost)"
       usage_price: "Usage (Price)"
@@ -4165,6 +4167,8 @@ tables:
   resource_group:
     caption: "Resource Group"
     fields:
+      qty_on_order_project: "Qty. on Order (Project)"
+      qty_quoted_project: "Qty. Quoted (Project)"
       usage_qty: "Usage (Qty.)"
       usage_cost: "Usage (Cost)"
       usage_price: "Usage (Price)"
@@ -6401,3 +6405,160 @@ tables:
       location_code: "Location Code"
       code: "Code"
       description: "Description"
+
+  # Projects (tables 161–163, 167, 168, 208, 211, 315)
+  phase:
+    caption: "Phase"
+    fields:
+      code: "Code"
+      search_code: "Search Code"
+      description: "Description"
+  task:
+    caption: "Task"
+    fields:
+      code: "Code"
+      search_code: "Search Code"
+      description: "Description"
+  step:
+    caption: "Step"
+    fields:
+      code: "Code"
+      search_code: "Search Code"
+      description: "Description"
+  projects_setup:
+    caption: "Projects Setup"
+    fields:
+      primary_key: "Primary Key"
+      project_nos: "Project Nos."
+  project_posting_group:
+    caption: "Project Posting Group"
+    fields:
+      code: "Code"
+      wip_cost_account: "WIP Cost Account"
+      wip_sales_account: "WIP Sales Account"
+      cost_account: "Cost Account"
+      sales_account: "Sales Account"
+      g_l_exp_sales_acc: "G/L Exp. Sales Acc."
+  project:
+    caption: "Project"
+    fields:
+      no: "No."
+      description: "Description"
+      dimension_1_code: "Dimension 1 Code"
+      dimension_2_code: "Dimension 2 Code"
+      date_filter: "Date Filter"
+      search_description: "Search Description"
+      description_2: "Description 2"
+      bill_to_customer_no: "Bill-to Customer No."
+      creation_date: "Creation Date"
+      starting_date: "Starting Date"
+      ending_date: "Ending Date"
+      completion_date: "Completion Date"
+      project_posting_date: "Project Posting Date"
+      recognition_date: "Recognition Date"
+      completion_percent: "Completion %"
+      status: "Status"
+      person_responsible: "Person Responsible"
+      project_posting_group: "Project Posting Group"
+      blocked: "Blocked"
+      recognition_method: "Recognition Method"
+      last_date_modified: "Last Date Modified"
+      comment: "Comment"
+      application_method: "Application Method"
+      project_usage_posting: "Project Usage Posting"
+      type_filter: "Type Filter"
+      budgeted_cost: "Budgeted Cost"
+      budgeted_price: "Budgeted Price"
+      budgeted_res_qty: "Budgeted Res. Qty."
+      resource_filter: "Resource Filter"
+      phase_filter: "Phase Filter"
+      task_filter: "Task Filter"
+      step_filter: "Step Filter"
+      resource_gr_filter: "Resource Gr. Filter"
+      budgeted_res_gr_qty: "Budgeted Res. Gr. Qty."
+      picture: "Picture"
+      name: "Name"
+      address: "Address"
+      address_2: "Address 2"
+      city: "City"
+      contact: "Contact"
+      state: "State"
+      post_code: "Post Code"
+      no_series: "No. Series"
+    options:
+      status:
+        planning: "Planning"
+        quote: "Quote"
+        order: "Order"
+        completed: "Completed"
+      recognition_method:
+        percentage_of_completion: "Percentage of Completion"
+        completed_contract: "Completed Contract"
+      application_method:
+        apply_to_oldest: "Apply to Oldest"
+        manual: "Manual"
+      project_usage_posting:
+        none: "None"
+        costs: "Costs"
+        prices: "Prices"
+  project_budget_line:
+    caption: "Project Budget Line"
+    fields:
+      project_no: "Project No."
+      phase_code: "Phase Code"
+      task_code: "Task Code"
+      step_code: "Step Code"
+      type: "Type"
+      no: "No."
+      variant_code: "Variant Code"
+      description: "Description"
+      quantity: "Quantity"
+      total_cost: "Total Cost"
+      total_price: "Total Price"
+      dimension_1_code: "Dimension 1 Code"
+      dimension_2_code: "Dimension 2 Code"
+      date_filter: "Date Filter"
+      starting_date: "Starting Date"
+      direct_unit_cost: "Direct Unit Cost"
+      unit_cost: "Unit Cost"
+      unit_price: "Unit Price"
+      price_group_code: "Price Group Code"
+      qty_quoted_project: "Qty. Quoted (Project)"
+      qty_on_order_project: "Qty. on Order (Project)"
+      res_gr_qty_quoted: "Res. Gr. Qty. Quoted"
+      res_gr_qty_on_order: "Res. Gr. Qty. on Order"
+    options:
+      type:
+        resource: "Resource"
+        item: "Item"
+        account_g_l: "Account (G/L)"
+        group_resource: "Group (Resource)"
+  project_budget_entry:
+    caption: "Project Budget Entry"
+    fields:
+      project_no: "Project No."
+      phase_code: "Phase Code"
+      task_code: "Task Code"
+      step_code: "Step Code"
+      type: "Type"
+      no: "No."
+      variant_code: "Variant Code"
+      quantity: "Quantity"
+      total_cost: "Total Cost"
+      total_price: "Total Price"
+      entry_no: "Entry No."
+      project_status: "Project Status"
+      date: "Date"
+      resource_group_no: "Resource Group No."
+      user_id: "User ID"
+    options:
+      type:
+        resource: "Resource"
+        item: "Item"
+        account_g_l: "Account (G/L)"
+        group_resource: "Group (Resource)"
+      project_status:
+        planning: "Planning"
+        quote: "Quote"
+        order: "Order"
+        completed: "Completed"

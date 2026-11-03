@@ -2695,9 +2695,11 @@ func (t *FADepreciationBook) CalcFieldsForRecords(records []map[string]interface
 // calcForRecords_acquisition_cost calculates the acquisition_cost FlowField for a set of records
 // CalcFormula: Sum(FALedgerEntry.amount)
 func (t *FADepreciationBook) calcForRecords_acquisition_cost(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
+		r.Maintenance_code_filter = t.Maintenance_code_filter
+		r.Fa_posting_date_filter = t.Fa_posting_date_filter
 		r.FromMap(rec)
 		r.calcFlowField_acquisition_cost()
 		rec["acquisition_cost"] = r.Acquisition_cost.String()
@@ -2707,9 +2709,11 @@ func (t *FADepreciationBook) calcForRecords_acquisition_cost(records []map[strin
 // calcForRecords_depreciation calculates the depreciation FlowField for a set of records
 // CalcFormula: Sum(FALedgerEntry.amount)
 func (t *FADepreciationBook) calcForRecords_depreciation(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
+		r.Maintenance_code_filter = t.Maintenance_code_filter
+		r.Fa_posting_date_filter = t.Fa_posting_date_filter
 		r.FromMap(rec)
 		r.calcFlowField_depreciation()
 		rec["depreciation"] = r.Depreciation.String()
@@ -2719,9 +2723,11 @@ func (t *FADepreciationBook) calcForRecords_depreciation(records []map[string]in
 // calcForRecords_book_value calculates the book_value FlowField for a set of records
 // CalcFormula: Sum(FALedgerEntry.amount)
 func (t *FADepreciationBook) calcForRecords_book_value(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
+		r.Maintenance_code_filter = t.Maintenance_code_filter
+		r.Fa_posting_date_filter = t.Fa_posting_date_filter
 		r.FromMap(rec)
 		r.calcFlowField_book_value()
 		rec["book_value"] = r.Book_value.String()
@@ -2731,9 +2737,11 @@ func (t *FADepreciationBook) calcForRecords_book_value(records []map[string]inte
 // calcForRecords_proceeds_on_disposal calculates the proceeds_on_disposal FlowField for a set of records
 // CalcFormula: Sum(FALedgerEntry.amount)
 func (t *FADepreciationBook) calcForRecords_proceeds_on_disposal(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
+		r.Maintenance_code_filter = t.Maintenance_code_filter
+		r.Fa_posting_date_filter = t.Fa_posting_date_filter
 		r.FromMap(rec)
 		r.calcFlowField_proceeds_on_disposal()
 		rec["proceeds_on_disposal"] = r.Proceeds_on_disposal.String()
@@ -2743,9 +2751,11 @@ func (t *FADepreciationBook) calcForRecords_proceeds_on_disposal(records []map[s
 // calcForRecords_gain_loss calculates the gain_loss FlowField for a set of records
 // CalcFormula: Sum(FALedgerEntry.amount)
 func (t *FADepreciationBook) calcForRecords_gain_loss(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
+		r.Maintenance_code_filter = t.Maintenance_code_filter
+		r.Fa_posting_date_filter = t.Fa_posting_date_filter
 		r.FromMap(rec)
 		r.calcFlowField_gain_loss()
 		rec["gain_loss"] = r.Gain_loss.String()
@@ -2755,9 +2765,11 @@ func (t *FADepreciationBook) calcForRecords_gain_loss(records []map[string]inter
 // calcForRecords_write_down calculates the write_down FlowField for a set of records
 // CalcFormula: Sum(FALedgerEntry.amount)
 func (t *FADepreciationBook) calcForRecords_write_down(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
+		r.Maintenance_code_filter = t.Maintenance_code_filter
+		r.Fa_posting_date_filter = t.Fa_posting_date_filter
 		r.FromMap(rec)
 		r.calcFlowField_write_down()
 		rec["write_down"] = r.Write_down.String()
@@ -2767,9 +2779,11 @@ func (t *FADepreciationBook) calcForRecords_write_down(records []map[string]inte
 // calcForRecords_appreciation calculates the appreciation FlowField for a set of records
 // CalcFormula: Sum(FALedgerEntry.amount)
 func (t *FADepreciationBook) calcForRecords_appreciation(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
+		r.Maintenance_code_filter = t.Maintenance_code_filter
+		r.Fa_posting_date_filter = t.Fa_posting_date_filter
 		r.FromMap(rec)
 		r.calcFlowField_appreciation()
 		rec["appreciation"] = r.Appreciation.String()
@@ -2779,9 +2793,11 @@ func (t *FADepreciationBook) calcForRecords_appreciation(records []map[string]in
 // calcForRecords_custom_1 calculates the custom_1 FlowField for a set of records
 // CalcFormula: Sum(FALedgerEntry.amount)
 func (t *FADepreciationBook) calcForRecords_custom_1(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
+		r.Maintenance_code_filter = t.Maintenance_code_filter
+		r.Fa_posting_date_filter = t.Fa_posting_date_filter
 		r.FromMap(rec)
 		r.calcFlowField_custom_1()
 		rec["custom_1"] = r.Custom_1.String()
@@ -2791,9 +2807,11 @@ func (t *FADepreciationBook) calcForRecords_custom_1(records []map[string]interf
 // calcForRecords_custom_2 calculates the custom_2 FlowField for a set of records
 // CalcFormula: Sum(FALedgerEntry.amount)
 func (t *FADepreciationBook) calcForRecords_custom_2(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
+		r.Maintenance_code_filter = t.Maintenance_code_filter
+		r.Fa_posting_date_filter = t.Fa_posting_date_filter
 		r.FromMap(rec)
 		r.calcFlowField_custom_2()
 		rec["custom_2"] = r.Custom_2.String()
@@ -2803,9 +2821,11 @@ func (t *FADepreciationBook) calcForRecords_custom_2(records []map[string]interf
 // calcForRecords_depreciable_basis calculates the depreciable_basis FlowField for a set of records
 // CalcFormula: Sum(FALedgerEntry.amount)
 func (t *FADepreciationBook) calcForRecords_depreciable_basis(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
+		r.Maintenance_code_filter = t.Maintenance_code_filter
+		r.Fa_posting_date_filter = t.Fa_posting_date_filter
 		r.FromMap(rec)
 		r.calcFlowField_depreciable_basis()
 		rec["depreciable_basis"] = r.Depreciable_basis.String()
@@ -2815,9 +2835,11 @@ func (t *FADepreciationBook) calcForRecords_depreciable_basis(records []map[stri
 // calcForRecords_salvage_value calculates the salvage_value FlowField for a set of records
 // CalcFormula: Sum(FALedgerEntry.amount)
 func (t *FADepreciationBook) calcForRecords_salvage_value(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
+		r.Maintenance_code_filter = t.Maintenance_code_filter
+		r.Fa_posting_date_filter = t.Fa_posting_date_filter
 		r.FromMap(rec)
 		r.calcFlowField_salvage_value()
 		rec["salvage_value"] = r.Salvage_value.String()
@@ -2827,9 +2849,11 @@ func (t *FADepreciationBook) calcForRecords_salvage_value(records []map[string]i
 // calcForRecords_book_value_on_disposal calculates the book_value_on_disposal FlowField for a set of records
 // CalcFormula: Sum(FALedgerEntry.amount)
 func (t *FADepreciationBook) calcForRecords_book_value_on_disposal(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
+		r.Maintenance_code_filter = t.Maintenance_code_filter
+		r.Fa_posting_date_filter = t.Fa_posting_date_filter
 		r.FromMap(rec)
 		r.calcFlowField_book_value_on_disposal()
 		rec["book_value_on_disposal"] = r.Book_value_on_disposal.String()
@@ -2839,9 +2863,11 @@ func (t *FADepreciationBook) calcForRecords_book_value_on_disposal(records []map
 // calcForRecords_maintenance calculates the maintenance FlowField for a set of records
 // CalcFormula: Sum(MaintenanceLedgerEntry.amount)
 func (t *FADepreciationBook) calcForRecords_maintenance(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
+		r.Maintenance_code_filter = t.Maintenance_code_filter
+		r.Fa_posting_date_filter = t.Fa_posting_date_filter
 		r.FromMap(rec)
 		r.calcFlowField_maintenance()
 		rec["maintenance"] = r.Maintenance.String()

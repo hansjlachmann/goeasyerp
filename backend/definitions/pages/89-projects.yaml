@@ -1,0 +1,93 @@
+page:
+  id: 89
+  type: List
+  name: Projects
+  source_table: Project
+  caption: Projects
+  card_page_id: 88
+  modal_card: true
+
+  layout:
+    repeater:
+      fields:
+        - source: "no"
+          width: 100
+        - source: description
+          width: 250
+        - source: bill_to_customer_no
+          width: 130
+        - source: name
+          width: 200
+        - source: status
+          width: 100
+        - source: person_responsible
+          width: 140
+        - source: starting_date
+          width: 110
+        - source: ending_date
+          width: 110
+        - source: project_posting_group
+          width: 140
+          visible: false
+        - source: dimension_1_code
+          width: 120
+          visible: false
+        - source: dimension_2_code
+          width: 120
+          visible: false
+        - source: search_description
+          width: 200
+        - source: blocked
+          width: 80
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    - name: Budget
+      caption: Budget
+      image: Calculate
+      promoted: true
+      run_page: 212
+      run_page_params:
+        project: "no"
+
+    - name: Quantity Allocated
+      caption: Quantity Allocated
+      image: Calendar
+      promoted: true
+      run_page: 215
+      run_page_filter_field: "no"
+      run_page_filter_value: "no"
+
+    - name: Budget Entries
+      caption: Budget Entries
+      image: Entries
+      promoted: true
+      run_page: 220
+      run_page_filter_field: project_no
+      run_page_filter_value: "no"
+
+    - name: Comments
+      caption: Comments
+      image: Document
+      promoted: true
+      run_page: 124
+      run_page_filters:
+        - {field: table_name, const: "5"}   # Project
+        - {field: "no", value: "no"}

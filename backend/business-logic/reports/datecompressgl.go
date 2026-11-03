@@ -31,7 +31,7 @@ type dateCompressGL struct {
 
 func (r *dateCompressGL) Definition() *Definition {
 	r.tableID = gtables.GLEntryTableID
-	r.fields = []retainField{{name: "document_type"}, {name: "document_no"}, {name: "job_no"}, {name: "business_unit_code"},
+	r.fields = []retainField{{name: "document_type"}, {name: "document_no"}, {name: "project_no"}, {name: "business_unit_code"},
 		{name: "dimension_1_code"}, {name: "dimension_2_code"}, {name: "quantity", total: true}}
 	return &Definition{
 		OptionsCaption: "OPTIONS",
@@ -140,9 +140,9 @@ func (r *dateCompressGL) onAfterGetRecord(glEntry *gtables.GLEntry, run *Run) er
 			glEntry2.SetRange("document_no", glEntry2.Document_no)
 			newGLEntry.Document_no = glEntry2.Document_no
 		}
-		if r.retainNo("job_no") {
-			glEntry2.SetRange("job_no", glEntry2.Job_no)
-			newGLEntry.Job_no = glEntry2.Job_no
+		if r.retainNo("project_no") {
+			glEntry2.SetRange("project_no", glEntry2.Project_no)
+			newGLEntry.Project_no = glEntry2.Project_no
 		}
 		if r.retainNo("business_unit_code") {
 			glEntry2.SetRange("business_unit_code", glEntry2.Business_unit_code)

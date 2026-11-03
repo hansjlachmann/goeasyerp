@@ -1,0 +1,22 @@
+page:
+  id: 463
+  type: Card
+  name: Projects Setup
+  source_table: Projects_Setup
+  caption: Projects Setup
+  editable: true
+
+  layout:
+    sections:
+      - name: Numbering
+        caption: Numbering
+        fields:
+          - source: project_nos
+
+  actions:
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+      enabled: true

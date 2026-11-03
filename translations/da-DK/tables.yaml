@@ -889,7 +889,7 @@ tables:
         shipment: "Levering"
       source_type:
         item_entry: "Varepost"
-        job_entry: "Sagspost"
+        project_entry: "Projektpost"
   g_l_budget_name:
     caption: "Finansbudgetnavn"
     fields:
@@ -1031,7 +1031,7 @@ tables:
       source_code: "Kildespor"
       system_created_entry: "Systemoprettet post"
       prior_year_entry: "Post fra tidligere år"
-      job_no: "Sagsnr."
+      project_no: "Projektnr."
       quantity: "Antal"
       tax_amount: "Momsbeløb"
       business_unit_code: "Koncernvirksomhedskode"
@@ -1283,7 +1283,7 @@ tables:
         vendor: "Kreditor"
         item: "Vare"
         resource: "Ressource"
-        job: "Sag"
+        project: "Projekt"
         " ": " "
         resource_group: "Ressourcegruppe"
         bank_account: "Bankkonto"
@@ -3488,8 +3488,8 @@ tables:
       purch_payment_disc_account: "Konto for kontantrabat, køb"
       cogs_account: "Konto for vareforbrug"
       inventory_adjmt_account: "Konto for lagerregulering"
-      job_sales_adjmt_account: "Konto for sagssalgsregulering"
-      job_cost_adjmt_account: "Konto for sagskostregulering"
+      project_sales_adjmt_account: "Konto for projektsalgsregulering"
+      project_cost_adjmt_account: "Konto for projektkostregulering"
       sales_credit_memo_account: "Konto for salgskreditnota"
       purch_credit_memo_account: "Konto for købskreditnota"
   tax_area_line:
@@ -4110,6 +4110,8 @@ tables:
   resource:
     caption: "Ressource"
     fields:
+      qty_on_order_project: "Antal i ordre (projekt)"
+      qty_quoted_project: "Antal i tilbud (projekt)"
       usage_qty: "Forbrug (antal)"
       usage_cost: "Forbrug (kostpris)"
       usage_price: "Forbrug (pris)"
@@ -4165,6 +4167,8 @@ tables:
   resource_group:
     caption: "Ressourcegruppe"
     fields:
+      qty_on_order_project: "Antal i ordre (projekt)"
+      qty_quoted_project: "Antal i tilbud (projekt)"
       usage_qty: "Forbrug (antal)"
       usage_cost: "Forbrug (kostpris)"
       usage_price: "Forbrug (pris)"
@@ -6401,3 +6405,160 @@ tables:
       location_code: "Lokationskode"
       code: "Kode"
       description: "Beskrivelse"
+
+  # Projects (tables 161–163, 167, 168, 208, 211, 315)
+  phase:
+    caption: "Fase"
+    fields:
+      code: "Kode"
+      search_code: "Søgekode"
+      description: "Beskrivelse"
+  task:
+    caption: "Opgave"
+    fields:
+      code: "Kode"
+      search_code: "Søgekode"
+      description: "Beskrivelse"
+  step:
+    caption: "Trin"
+    fields:
+      code: "Kode"
+      search_code: "Søgekode"
+      description: "Beskrivelse"
+  projects_setup:
+    caption: "Projektopsætning"
+    fields:
+      primary_key: "Primær nøgle"
+      project_nos: "Projektnumre"
+  project_posting_group:
+    caption: "Projektbogføringsgruppe"
+    fields:
+      code: "Kode"
+      wip_cost_account: "Konto for VIA-kostpris"
+      wip_sales_account: "Konto for VIA-salg"
+      cost_account: "Kostkonto"
+      sales_account: "Salgskonto"
+      g_l_exp_sales_acc: "Finanskonto forventet salg"
+  project:
+    caption: "Projekt"
+    fields:
+      no: "Nr."
+      description: "Beskrivelse"
+      dimension_1_code: "Dimension 1-kode"
+      dimension_2_code: "Dimension 2-kode"
+      date_filter: "Datofilter"
+      search_description: "Søgebeskrivelse"
+      description_2: "Beskrivelse 2"
+      bill_to_customer_no: "Faktureres til kundenr."
+      creation_date: "Oprettelsesdato"
+      starting_date: "Startdato"
+      ending_date: "Slutdato"
+      completion_date: "Afslutningsdato"
+      project_posting_date: "Projektets bogføringsdato"
+      recognition_date: "Indtægtsføringsdato"
+      completion_percent: "Færdig %"
+      status: "Status"
+      person_responsible: "Ansvarlig"
+      project_posting_group: "Projektbogføringsgruppe"
+      blocked: "Spærret"
+      recognition_method: "Indtægtsføringsmetode"
+      last_date_modified: "Rettet den"
+      comment: "Bemærkning"
+      application_method: "Udligningsmetode"
+      project_usage_posting: "Bogføring af projektforbrug"
+      type_filter: "Typefilter"
+      budgeted_cost: "Budgetteret kostpris"
+      budgeted_price: "Budgetteret pris"
+      budgeted_res_qty: "Budgetteret ressourceantal"
+      resource_filter: "Ressourcefilter"
+      phase_filter: "Fasefilter"
+      task_filter: "Opgavefilter"
+      step_filter: "Trinfilter"
+      resource_gr_filter: "Ressourcegruppefilter"
+      budgeted_res_gr_qty: "Budgetteret ressourcegruppeantal"
+      picture: "Billede"
+      name: "Navn"
+      address: "Adresse"
+      address_2: "Adresse 2"
+      city: "By"
+      contact: "Kontakt"
+      state: "Region"
+      post_code: "Postnr."
+      no_series: "Nummerserie"
+    options:
+      status:
+        planning: "Planlægning"
+        quote: "Tilbud"
+        order: "Ordre"
+        completed: "Afsluttet"
+      recognition_method:
+        percentage_of_completion: "Færdiggørelsesgrad"
+        completed_contract: "Afsluttet kontrakt"
+      application_method:
+        apply_to_oldest: "Udlign ældste"
+        manual: "Manuel"
+      project_usage_posting:
+        none: "Ingen"
+        costs: "Kostpris"
+        prices: "Priser"
+  project_budget_line:
+    caption: "Projektbudgetlinje"
+    fields:
+      project_no: "Projektnr."
+      phase_code: "Fasekode"
+      task_code: "Opgavekode"
+      step_code: "Trinkode"
+      type: "Type"
+      no: "Nr."
+      variant_code: "Variantkode"
+      description: "Beskrivelse"
+      quantity: "Antal"
+      total_cost: "Kostpris i alt"
+      total_price: "Pris i alt"
+      dimension_1_code: "Dimension 1-kode"
+      dimension_2_code: "Dimension 2-kode"
+      date_filter: "Datofilter"
+      starting_date: "Startdato"
+      direct_unit_cost: "Købspris"
+      unit_cost: "Kostpris"
+      unit_price: "Enhedspris"
+      price_group_code: "Prisgruppekode"
+      qty_quoted_project: "Antal i tilbud (projekt)"
+      qty_on_order_project: "Antal i ordre (projekt)"
+      res_gr_qty_quoted: "Ressourcegruppeantal i tilbud"
+      res_gr_qty_on_order: "Ressourcegruppeantal i ordre"
+    options:
+      type:
+        resource: "Ressource"
+        item: "Vare"
+        account_g_l: "Konto (finans)"
+        group_resource: "Gruppe (ressource)"
+  project_budget_entry:
+    caption: "Projektbudgetpost"
+    fields:
+      project_no: "Projektnr."
+      phase_code: "Fasekode"
+      task_code: "Opgavekode"
+      step_code: "Trinkode"
+      type: "Type"
+      no: "Nr."
+      variant_code: "Variantkode"
+      quantity: "Antal"
+      total_cost: "Kostpris i alt"
+      total_price: "Pris i alt"
+      entry_no: "Løbenr."
+      project_status: "Projektstatus"
+      date: "Dato"
+      resource_group_no: "Ressourcegruppenr."
+      user_id: "Bruger-id"
+    options:
+      type:
+        resource: "Ressource"
+        item: "Vare"
+        account_g_l: "Konto (finans)"
+        group_resource: "Gruppe (ressource)"
+      project_status:
+        planning: "Planlægning"
+        quote: "Tilbud"
+        order: "Ordre"
+        completed: "Afsluttet"

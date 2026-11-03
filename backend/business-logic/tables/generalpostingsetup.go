@@ -72,11 +72,11 @@ func (generalPostingSetupLogic) OnValidate_Cogs_account(rec *gtables.GeneralPost
 func (generalPostingSetupLogic) OnValidate_Inventory_adjmt_account(rec *gtables.GeneralPostingSetup) error {
 	return checkSetupGLAcc(rec, rec.Inventory_adjmt_account)
 }
-func (generalPostingSetupLogic) OnValidate_Job_sales_adjmt_account(rec *gtables.GeneralPostingSetup) error {
-	return checkSetupGLAcc(rec, rec.Job_sales_adjmt_account)
+func (generalPostingSetupLogic) OnValidate_Project_sales_adjmt_account(rec *gtables.GeneralPostingSetup) error {
+	return checkSetupGLAcc(rec, rec.Project_sales_adjmt_account)
 }
-func (generalPostingSetupLogic) OnValidate_Job_cost_adjmt_account(rec *gtables.GeneralPostingSetup) error {
-	return checkSetupGLAcc(rec, rec.Job_cost_adjmt_account)
+func (generalPostingSetupLogic) OnValidate_Project_cost_adjmt_account(rec *gtables.GeneralPostingSetup) error {
+	return checkSetupGLAcc(rec, rec.Project_cost_adjmt_account)
 }
 func (generalPostingSetupLogic) OnValidate_Sales_credit_memo_account(rec *gtables.GeneralPostingSetup) error {
 	return checkSetupGLAcc(rec, rec.Sales_credit_memo_account)

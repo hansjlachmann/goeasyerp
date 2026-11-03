@@ -348,7 +348,7 @@ type MenuDefinition struct {
 	Menu []MenuGroup `yaml:"menu" json:"menu"`
 }
 
-// MenuGroup is a module of the main menu (General Ledger, Sales & Receivables …): its menu
+// MenuGroup is a module of the main menu (General Ledger, Sales …): its menu
 // entries, or a direct page
 type MenuGroup struct {
 	Name   string     `yaml:"name" json:"name"`

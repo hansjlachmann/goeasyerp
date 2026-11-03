@@ -1,0 +1,460 @@
+table:
+  id: 167
+  name: "Project"
+  caption: Project
+  description: "Projects (table 167): work done for a customer, its budget, later its usage and invoicing"
+  data_caption_fields: [no, description]
+  auto_key: true   # OnInsert gives a project without No. the next number of its series
+  lookup_page_id: 89
+  # 46/47/48 Usage (Cost)/(Price) and Invoiced Price come with the Project Ledger Entry.
+  fields:
+    - name: no
+      no: 1
+      type: types.Code
+      db_name: no
+      length: 20
+      primary_key: true
+      required: true
+
+    - name: search_description
+      no: 2
+      type: types.Code
+      db_name: search_description
+      length: 50
+
+    - name: description
+      no: 3
+      type: types.Text
+      db_name: description
+      length: 50
+
+    - name: description_2
+      no: 4
+      type: types.Text
+      db_name: description_2
+      length: 50
+
+    - name: bill_to_customer_no
+      no: 5
+      type: types.Code
+      db_name: bill_to_customer_no
+      length: 20
+      table_relation:
+        table: Customer
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+          - source: city
+            width: 250
+
+    - name: creation_date
+      no: 12
+      type: types.Date
+      db_name: creation_date
+
+    - name: starting_date
+      no: 13
+      type: types.Date
+      db_name: starting_date
+
+    - name: ending_date
+      no: 14
+      type: types.Date
+      db_name: ending_date
+
+    - name: completion_date
+      no: 15
+      type: types.Date
+      db_name: completion_date
+      editable: false
+
+    - name: project_posting_date
+      no: 16
+      type: types.Date
+      db_name: project_posting_date
+      editable: false
+
+    - name: recognition_date
+      no: 17
+      type: types.Date
+      db_name: recognition_date
+      editable: false
+
+    - name: completion_percent
+      no: 18
+      type: types.Decimal
+      db_name: completion_percent
+      decimal_places: "0:5"
+      validation: {min: 0, max: 100}
+
+    - name: status
+      no: 19
+      type: Option
+      db_name: status
+      options: ["Planning", "Quote", "Order", "Completed"]
+
+    - name: person_responsible
+      no: 20
+      type: types.Code
+      db_name: person_responsible
+      length: 20
+      table_relation:
+        table: Resource
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: dimension_1_code
+      no: 21
+      type: types.Code
+      db_name: dimension_1_code
+      length: 10
+      table_relation:
+        table: Dimension_1
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: dimension_2_code
+      no: 22
+      type: types.Code
+      db_name: dimension_2_code
+      length: 10
+      table_relation:
+        table: Dimension_2
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: project_posting_group
+      no: 23
+      type: types.Code
+      db_name: project_posting_group
+      length: 10
+      table_relation:
+        table: Project_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+
+    - name: blocked
+      no: 24
+      type: bool
+      db_name: blocked
+
+    - name: recognition_method
+      no: 28
+      type: Option
+      db_name: recognition_method
+      options: ["Percentage of Completion", "Completed Contract"]
+
+    - name: last_date_modified
+      no: 29
+      type: types.Date
+      db_name: last_date_modified
+      editable: false
+
+    - name: comment
+      no: 30
+      type: bool
+      db_name: comment
+      flow_field: true
+      calc_formula: Exist
+      source_table: CommentLine
+      source_field: line_no
+      flow_filters:
+        - field: table_name
+          type: const
+          value: 5   # Project
+        - field: no
+          type: field
+          value: no
+
+    - name: application_method
+      no: 41
+      type: Option
+      db_name: application_method
+      options: ["Apply to Oldest", "Manual"]
+
+    - name: project_usage_posting
+      no: 42
+      type: Option
+      db_name: project_usage_posting
+      options: ["None", "Costs", "Prices"]
+
+    - name: type_filter
+      no: 43
+      type: int   # the budget entries' Type (0 Resource, 1 Item, 2 Account (G/L), 3 Group (Resource))
+      db_name: type_filter
+      flow_filter: true
+
+    - name: budgeted_cost
+      no: 44
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"   # an amount
+      calc_formula: Sum
+      source_table: ProjectBudgetEntry
+      source_field: total_cost
+      flow_filters:
+        - field: project_no
+          type: field
+          value: no
+        - field: phase_code
+          type: filter
+          value: phase_filter
+        - field: task_code
+          type: filter
+          value: task_filter
+        - field: step_code
+          type: filter
+          value: step_filter
+        - field: type
+          type: filter
+          value: type_filter
+        - field: date
+          type: filter
+          value: date_filter
+
+    - name: budgeted_price
+      no: 45
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"   # an amount
+      calc_formula: Sum
+      source_table: ProjectBudgetEntry
+      source_field: total_price
+      flow_filters:
+        - field: project_no
+          type: field
+          value: no
+        - field: phase_code
+          type: filter
+          value: phase_filter
+        - field: task_code
+          type: filter
+          value: task_filter
+        - field: step_code
+          type: filter
+          value: step_filter
+        - field: type
+          type: filter
+          value: type_filter
+        - field: date
+          type: filter
+          value: date_filter
+
+    - name: budgeted_res_qty
+      no: 49
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: ProjectBudgetEntry
+      source_field: quantity
+      flow_filters:
+        - field: type
+          type: const
+          value: 0   # Resource
+        - field: project_no
+          type: field
+          value: no
+        - field: no
+          type: filter
+          value: resource_filter
+        - field: date
+          type: filter
+          value: date_filter
+
+    - name: resource_filter
+      no: 50
+      type: types.Code
+      db_name: resource_filter
+      length: 20
+      flow_filter: true
+
+    - name: date_filter
+      no: 51
+      type: types.Date
+      db_name: date_filter
+      flow_filter: true
+
+    - name: phase_filter
+      no: 52
+      type: types.Code
+      db_name: phase_filter
+      length: 10
+      flow_filter: true
+
+    - name: task_filter
+      no: 53
+      type: types.Code
+      db_name: task_filter
+      length: 10
+      flow_filter: true
+
+    - name: step_filter
+      no: 54
+      type: types.Code
+      db_name: step_filter
+      length: 10
+      flow_filter: true
+
+    - name: resource_gr_filter
+      no: 55
+      type: types.Code
+      db_name: resource_gr_filter
+      length: 20
+      flow_filter: true
+
+    - name: budgeted_res_gr_qty
+      no: 56
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: ProjectBudgetEntry
+      source_field: quantity
+      flow_filters:
+        - field: project_no
+          type: field
+          value: no
+        - field: resource_group_no
+          type: filter
+          value: resource_gr_filter
+        - field: date
+          type: filter
+          value: date_filter
+
+    - name: picture
+      no: 57
+      type: "[]byte"
+      db_name: picture
+
+    - name: name
+      no: 58
+      type: types.Text
+      length: 50
+      flow_field: true
+      calc_formula: Lookup
+      source_table: Customer
+      source_field: name
+      flow_filters:
+        - field: no
+          type: field
+          value: bill_to_customer_no
+
+    - name: address
+      no: 59
+      type: types.Text
+      length: 50
+      flow_field: true
+      calc_formula: Lookup
+      source_table: Customer
+      source_field: address
+      flow_filters:
+        - field: no
+          type: field
+          value: bill_to_customer_no
+
+    - name: address_2
+      no: 60
+      type: types.Text
+      length: 50
+      flow_field: true
+      calc_formula: Lookup
+      source_table: Customer
+      source_field: address_2
+      flow_filters:
+        - field: no
+          type: field
+          value: bill_to_customer_no
+
+    - name: city
+      no: 61
+      type: types.Text
+      length: 50
+      flow_field: true
+      calc_formula: Lookup
+      source_table: Customer
+      source_field: city
+      flow_filters:
+        - field: no
+          type: field
+          value: bill_to_customer_no
+
+    - name: contact
+      no: 62
+      type: types.Text
+      length: 50
+      flow_field: true
+      calc_formula: Lookup
+      source_table: Customer
+      source_field: contact
+      flow_filters:
+        - field: no
+          type: field
+          value: bill_to_customer_no
+
+    - name: state
+      no: 63
+      type: types.Text
+      length: 30
+      flow_field: true
+      calc_formula: Lookup
+      source_table: Customer
+      source_field: state
+      flow_filters:
+        - field: no
+          type: field
+          value: bill_to_customer_no
+
+    - name: post_code
+      no: 64
+      type: types.Code
+      length: 20
+      flow_field: true
+      calc_formula: Lookup
+      source_table: Customer
+      source_field: post_code
+      flow_filters:
+        - field: no
+          type: field
+          value: bill_to_customer_no
+
+    - name: no_series
+      no: 66
+      type: types.Code
+      db_name: no_series
+      length: 10
+      editable: false
+      table_relation:
+        table: No_Series
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+  keys:
+    - name: Primary
+      fields: [no]
+      clustered: true
+    - name: search_description
+      fields: [search_description]
+    - name: bill_to_customer_no
+      fields: [bill_to_customer_no]

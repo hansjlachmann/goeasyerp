@@ -52,11 +52,11 @@ page:
         - source: inventory_adjmt_account
           width: 110
 
-        - source: job_sales_adjmt_account
+        - source: project_sales_adjmt_account
           width: 110
           visible: false
 
-        - source: job_cost_adjmt_account
+        - source: project_cost_adjmt_account
           width: 110
           visible: false
 
