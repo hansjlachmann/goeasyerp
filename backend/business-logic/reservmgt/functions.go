@@ -1,6 +1,7 @@
 package reservmgt
 
 import (
+	"database/sql"
 	"strconv"
 
 	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
@@ -221,8 +222,13 @@ func reservationPage(optional bool) fcodeunits.Result {
 	return fcodeunits.Result{Success: true, OpenPage: &fcodeunits.PageLink{PageID: ReservationPageID, Params: params}}
 }
 
-// inTransaction runs fn on a transaction of the record's database (committed when it succeeds)
+// inTransaction runs fn on a transaction of the record's database (committed when it succeeds);
+// a record already in a transaction runs fn in it
 func inTransaction(rec ftables.Source, fn func(src ftables.Source) error) error {
+	_, inTx := rec.GetDB().(*sql.Tx)
+	if inTx {
+		return fn(rec)
+	}
 	tx, err := ftables.BeginTransaction(rec.GetDB())
 	if err != nil {
 		return err
