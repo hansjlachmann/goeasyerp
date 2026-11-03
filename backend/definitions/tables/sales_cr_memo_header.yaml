@@ -718,6 +718,20 @@ table:
       db_name: tax_exemption_no
       length: 30
 
+    - name: project_no
+      no: 56
+      type: types.Code
+      db_name: project_no
+      length: 20
+      table_relation:
+        table: Project
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
+
   keys:
     - name: Primary
       fields: ["no"]

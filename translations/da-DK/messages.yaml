@@ -493,6 +493,11 @@ Bogfører linjer #3###### @4@@@@@@@@@@@@@"
 Kontrollerer linjer #2######
 Bogfører linjer #3###### @4@@@@@@@@@@@@@"
   RES_JNL_TEMPLATE_DESCRIPTION: "Ressourcekladder"
+  PROJECT_JNL_POST_WINDOW: "Kladdenavn #1##########
+Kontrollerer linjer #2######
+Bogfører linjer #3###### @4@@@@@@@@@@@@@"
+  PROJECT_JNL_TEMPLATE_DESCRIPTION: "Projektkladder"
+  RECURRING_PROJECT_JNL_TEMPLATE_DESCRIPTION: "Gentagelseskladde - projekt"
   BOM_JNL_POST_WINDOW: "Kladdenavn #1##########
 Kontrollerer linjer #2######
 Bogfører linjer #3###### @4@@@@@@@@@@@@@"

@@ -1079,3 +1079,25 @@ pages:
     caption: "Tasks"
   steps:
     caption: "Steps"
+
+  # Project journal and ledger
+  project_journal_templates:
+    caption: "Project Journal Templates"
+  project_journal_template_list:
+    caption: "Project Journal Template List"
+  project_jnl_batches:
+    caption: "Project Jnl. Batches"
+  project_registers:
+    caption: "Project Registers"
+  project_journal:
+    caption: "Project Journal"
+    fields:
+      project_description: "Project Description"
+      account_name: "Account Name"
+  recurring_project_jnl:
+    caption: "Recurring Project Journal"
+    fields:
+      project_description: "Project Description"
+      account_name: "Account Name"
+  project_ledger_entries:
+    caption: "Project Ledger Entries"

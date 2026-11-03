@@ -1,0 +1,72 @@
+table:
+  id: 241
+  name: "Project_Register"
+  posted: true               # written by posting only: the table API does not insert, delete or rename
+  description: "Project registers (table 241): one per posting, the range of the project ledger entries it wrote"
+  lookup_page_id: 278
+  fields:
+    - name: no
+      no: 1
+      type: int
+      db_name: no
+      primary_key: true
+      required: true
+
+    - name: from_entry_no
+      no: 2
+      type: int
+      db_name: from_entry_no
+
+    - name: to_entry_no
+      no: 3
+      type: int
+      db_name: to_entry_no
+
+    - name: creation_date
+      no: 4
+      type: types.Date
+      db_name: creation_date
+
+    - name: source_code
+      no: 5
+      type: types.Code
+      db_name: source_code
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: user_id
+      no: 6
+      type: types.Code
+      db_name: user_id
+      length: 50
+      table_relation:
+        table: User
+        field: user_id
+        validate: false
+        lookup_columns:
+          - source: user_id
+            width: 120
+          - source: user_name
+            width: 200
+
+    - name: journal_batch_name
+      no: 7
+      type: types.Code
+      db_name: journal_batch_name
+      length: 10
+
+  keys:
+    - name: Primary
+      fields: [no]
+      clustered: true
+    - name: creation_date
+      fields: [creation_date]
+    - name: source_code
+      fields: [source_code, journal_batch_name, creation_date]

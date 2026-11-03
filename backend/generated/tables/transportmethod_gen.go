@@ -850,7 +850,7 @@ func (t *TransportMethod) renameReferences(field string, oldValue, newValue inte
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Intrastat_Jnl_Line", false, "transport_method", "", 0}, {"Item_Journal_Line", false, "transport_method", "", 0}, {"Item_Ledger_Entry", false, "transport_method", "", 0}, {"Purchase_Header", false, "transport_method", "", 0}, {"Purchase_Line", false, "transport_method", "", 0}, {"Sales_Header", false, "transport_method", "", 0}, {"Sales_Line", false, "transport_method", "", 0}},
+		"code": {{"Intrastat_Jnl_Line", false, "transport_method", "", 0}, {"Item_Journal_Line", false, "transport_method", "", 0}, {"Item_Ledger_Entry", false, "transport_method", "", 0}, {"Project_Journal_Line", false, "transport_method", "", 0}, {"Project_Ledger_Entry", false, "transport_method", "", 0}, {"Purchase_Header", false, "transport_method", "", 0}, {"Purchase_Line", false, "transport_method", "", 0}, {"Sales_Header", false, "transport_method", "", 0}, {"Sales_Line", false, "transport_method", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

@@ -94,6 +94,11 @@ reports:
       retain_transaction_type: "Retain Transaction Type"
       retain_transport_method: "Retain Transport Method"
       retain_variant_code: "Retain Variant Code"
+      retain_no: "Retain No."
+      retain_resource_group_no: "Retain Resource Group No."
+      retain_phase_code: "Retain Phase Code"
+      retain_task_code: "Retain Task Code"
+      retain_step_code: "Retain Step Code"
       retain_reclassification_entry: "Retain Reclassification Entry"
       retain_index_entry: "Retain Index Entry"
       retain_maintenance_code: "Retain Maintenance Code"
@@ -252,6 +257,15 @@ reports:
     caption: "Date Compress BOM Ledger"
     texts:
       WINDOW: "Date compressing BOM ledger entries...\n\nDate                 #1######\n\nNo. of new entries   #2######\nNo. of entries del.  #3######"
+  "1298":
+    caption: "Date Compress Project Ledger"
+    texts:
+      WINDOW: "Date compressing project ledger entries...\n\nProject No.          #1##########\nDate                 #2######\n\nNo. of new entries   #3######\nNo. of entries del.  #4######"
+  "1299":
+    caption: "Delete Empty Project Registers"
+    texts:
+      CONFIRM: "Do you want to delete the registers?"
+      WINDOW: "Deleting empty project registers...\n\nNo.                      #1######\nPosted on                #2######\n\nNo. of registers deleted #3######"
   "1198":
     caption: "Date Compress Resource Ledger"
     texts:
@@ -350,6 +364,7 @@ reports:
   "1191":
     caption: "Suggest Res. Price Chg. (Res.)"
     options:
+      project_no: "Project No."
       work_type_code: "Work Type Code"
       currency_code: "Currency Code"
       unit_price_factor: "Adjustment Factor"
@@ -362,6 +377,7 @@ reports:
   "1192":
     caption: "Suggest Res. Price Chg. (Price)"
     options:
+      project_no: "Project No."
       currency_code: "Currency Code"
       work_type_code: "Work Type Code"
       unit_price_factor: "Adjustment Factor"

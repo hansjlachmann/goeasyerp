@@ -1,0 +1,720 @@
+table:
+  id: 210
+  name: "Project_Journal_Line"
+  caption: Project Journal Line
+  description: "Project journal lines (table 210): a project's usage of resources, items and G/L accounts, before posting"
+  fields:
+    - name: journal_template_name
+      no: 1
+      type: types.Code
+      db_name: journal_template_name
+      length: 10
+      primary_key: true
+      required: true
+      table_relation:
+        table: Project_Journal_Template
+        field: name
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: journal_batch_name
+      no: 73
+      type: types.Code
+      db_name: journal_batch_name
+      length: 10
+      primary_key: true
+      required: true
+      table_relation:
+        table: Project_Journal_Batch
+        field: name
+        filters:
+          journal_template_name: {field: journal_template_name}
+        lookup_columns:
+          - source: name
+            width: 100
+          - source: description
+            width: 250
+
+    - name: line_no
+      no: 2
+      type: int
+      db_name: line_no
+      primary_key: true
+
+    - name: project_no
+      no: 3
+      type: types.Code
+      db_name: project_no
+      length: 20
+      table_relation:
+        table: Project
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
+
+    - name: posting_date
+      no: 4
+      type: types.Date
+      db_name: posting_date
+
+    - name: document_no
+      no: 5
+      type: types.Code
+      db_name: document_no
+      length: 20
+
+    - name: type
+      no: 6
+      type: Option
+      db_name: type
+      options: ["Resource", "Item", "Account (G/L)"]
+
+    - name: no
+      no: 8
+      type: types.Code
+      db_name: no
+      length: 20
+      table_relation:
+        conditions:
+          - when: {field: type, equal: 0}
+            table: Resource
+            field: no
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: name
+                width: 250
+          - when: {field: type, equal: 1}
+            table: Item
+            field: no
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: description
+                width: 250
+          - when: {field: type, equal: 2}
+            table: G_L_Account
+            field: no
+            filters:
+              account_type: {const: 0}   # Posting accounts only
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: name
+                width: 250
+
+    - name: description
+      no: 9
+      type: types.Text
+      db_name: description
+      length: 50
+
+    - name: quantity
+      no: 10
+      type: types.Decimal
+      db_name: quantity
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+
+    - name: direct_unit_cost
+      no: 12
+      type: types.Decimal
+      db_name: direct_unit_cost
+      decimal_places: "2:5"
+      precision: 18
+      scale: 5
+      validation: {min: 0}
+
+    - name: unit_cost
+      no: 13
+      type: types.Decimal
+      db_name: unit_cost
+      decimal_places: "2:5"
+      precision: 18
+      scale: 5
+      validation: {min: 0}
+
+    - name: total_cost
+      no: 14
+      type: types.Decimal
+      db_name: total_cost
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+      editable: false
+
+    - name: unit_price
+      no: 15
+      type: types.Decimal
+      db_name: unit_price
+      decimal_places: "2:5"
+      precision: 18
+      scale: 5
+      validation: {min: 0}
+
+    - name: total_price
+      no: 16
+      type: types.Decimal
+      db_name: total_price
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+      editable: false
+
+    - name: resource_group_no
+      no: 17
+      type: types.Code
+      db_name: resource_group_no
+      length: 20
+      editable: false
+      table_relation:
+        table: Resource_Group
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: unit_of_measure_code
+      no: 18
+      type: types.Code
+      db_name: unit_of_measure_code
+      length: 10
+      table_relation:
+        conditions:
+          - when: {field: type, equal: 0}
+            table: Unit_of_Measure
+            field: code
+            lookup_columns:
+              - source: code
+                width: 100
+              - source: description
+                width: 250
+          - when: {field: type, equal: 1}
+            table: Item_Unit_of_Measure
+            field: code
+            filters:
+              item_no: {field: "no"}
+            lookup_columns:
+              - source: code
+                width: 100
+              - source: qty_per_unit_of_measure
+                width: 120
+
+    - name: location_code
+      no: 21
+      type: types.Code
+      db_name: location_code
+      length: 10
+      table_relation:
+        table: Location
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: chargeable
+      no: 22
+      type: bool
+      db_name: chargeable
+      default: true
+
+    - name: posting_group
+      no: 30
+      type: types.Code
+      db_name: posting_group
+      length: 20
+      editable: false
+      table_relation:
+        conditions:
+          - when: {field: type, equal: 1}
+            table: Inventory_Posting_Group
+            field: code
+            lookup_columns:
+              - source: code
+                width: 100
+              - source: description
+                width: 250
+
+    - name: dimension_1_code
+      no: 31
+      type: types.Code
+      db_name: dimension_1_code
+      length: 10
+      table_relation:
+        table: Dimension_1
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: dimension_2_code
+      no: 32
+      type: types.Code
+      db_name: dimension_2_code
+      length: 10
+      table_relation:
+        table: Dimension_2
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: work_type_code
+      no: 33
+      type: types.Code
+      db_name: work_type_code
+      length: 10
+      table_relation:
+        table: Work_Type
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: price_group_code
+      no: 34
+      type: types.Code
+      db_name: price_group_code
+      length: 10
+      table_relation:
+        table: Price_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+
+    - name: appl_to_item_entry
+      no: 37
+      type: int
+      db_name: appl_to_item_entry
+      table_relation:
+        table: Item_Ledger_Entry
+        field: entry_no
+        filters:
+          item_no: {field: "no"}
+          open: {const: true}
+        lookup_columns:
+          - source: entry_no
+            width: 90
+          - source: posting_date
+            width: 110
+          - source: remaining_quantity
+            width: 120
+
+    - name: phase_code
+      no: 45
+      type: types.Code
+      db_name: phase_code
+      length: 10
+      table_relation:
+        table: Phase
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: task_code
+      no: 46
+      type: types.Code
+      db_name: task_code
+      length: 10
+      table_relation:
+        table: Task
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: step_code
+      no: 47
+      type: types.Code
+      db_name: step_code
+      length: 10
+      table_relation:
+        table: Step
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: entry_type
+      no: 61
+      type: Option
+      db_name: entry_type
+      editable: false
+      options: ["Usage", "Sale"]
+
+    - name: source_code
+      no: 62
+      type: types.Code
+      db_name: source_code
+      length: 10
+      editable: false
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: profit_percent
+      no: 63
+      type: types.Decimal
+      db_name: profit_percent
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+      validation: {max: 100}
+
+    - name: applies_to_entry
+      no: 64
+      type: int
+      db_name: applies_to_entry
+      table_relation:
+        table: Project_Ledger_Entry
+        field: entry_no
+        filters:
+          project_no: {field: project_no}
+          open: {const: true}
+        lookup_columns:
+          - source: entry_no
+            width: 90
+          - source: posting_date
+            width: 110
+          - source: description
+            width: 200
+          - source: remaining_amount
+            width: 120
+
+    - name: applies_to_id
+      no: 65
+      type: types.Code
+      db_name: applies_to_id
+      length: 20
+
+    - name: post_project_entry_only
+      no: 66
+      type: bool
+      db_name: post_project_entry_only
+      editable: false
+
+    - name: apply_and_close_project
+      no: 68
+      type: bool
+      db_name: apply_and_close_project
+
+    - name: reason_code
+      no: 74
+      type: types.Code
+      db_name: reason_code
+      length: 10
+      table_relation:
+        table: Reason_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: recurring_method
+      no: 75
+      type: Option
+      db_name: recurring_method
+      options: [" ", "Fixed", "Variable"]
+
+    - name: expiration_date
+      no: 76
+      type: types.Date
+      db_name: expiration_date
+
+    - name: recurring_frequency
+      no: 77
+      type: types.Code
+      db_name: recurring_frequency
+      length: 20
+      date_formula: true
+
+    - name: gen_bus_posting_group
+      no: 79
+      type: types.Code
+      db_name: gen_bus_posting_group
+      length: 10
+      table_relation:
+        table: Gen_Business_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: gen_prod_posting_group
+      no: 80
+      type: types.Code
+      db_name: gen_prod_posting_group
+      length: 10
+      table_relation:
+        table: Gen_Product_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: transaction_type
+      no: 81
+      type: types.Code
+      db_name: transaction_type
+      length: 10
+      table_relation:
+        table: Transaction_Type
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: transport_method
+      no: 82
+      type: types.Code
+      db_name: transport_method
+      length: 10
+      table_relation:
+        table: Transport_Method
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: country_code
+      no: 83
+      type: types.Code
+      db_name: country_code
+      length: 10
+      table_relation:
+        table: Country_Region
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: entry_exit_point
+      no: 86
+      type: types.Code
+      db_name: entry_exit_point
+      length: 10
+      table_relation:
+        table: Entry_Exit_Point
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: document_date
+      no: 87
+      type: types.Date
+      db_name: document_date
+
+    - name: external_document_no
+      no: 88
+      type: types.Code
+      db_name: external_document_no
+      length: 20
+
+    - name: area
+      no: 89
+      type: types.Code
+      db_name: area
+      length: 10
+      table_relation:
+        table: Area
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: text
+            width: 250
+
+    - name: transaction_specification
+      no: 90
+      type: types.Code
+      db_name: transaction_specification
+      length: 10
+      table_relation:
+        table: Transaction_Specification
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: text
+            width: 250
+
+    - name: serial_no
+      no: 91
+      type: types.Code
+      db_name: serial_no
+      length: 20
+
+    - name: posting_no_series
+      no: 92
+      type: types.Code
+      db_name: posting_no_series
+      length: 10
+      table_relation:
+        table: No_Series
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: source_currency_code
+      no: 93
+      type: types.Code
+      db_name: source_currency_code
+      length: 10
+      editable: false
+      table_relation:
+        table: Currency
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: source_currency_total_cost
+      no: 94
+      type: types.Decimal
+      db_name: source_currency_total_cost
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+      editable: false
+
+    - name: source_currency_total_price
+      no: 95
+      type: types.Decimal
+      db_name: source_currency_total_price
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+      editable: false
+
+    - name: lot_no
+      no: 5400
+      type: types.Code
+      db_name: lot_no
+      length: 20
+
+    - name: variant_code
+      no: 5402
+      type: types.Code
+      db_name: variant_code
+      length: 10
+      table_relation:
+        conditions:
+          - when: {field: type, equal: 1}
+            table: Item_Variant
+            field: code
+            filters:
+              item_no: {field: "no"}
+            lookup_columns:
+              - source: code
+                width: 100
+              - source: description
+                width: 250
+
+    - name: bin_code
+      no: 5403
+      type: types.Code
+      db_name: bin_code
+      length: 10
+      table_relation:
+        table: Bin
+        field: code
+        filters:
+          location_code: {field: location_code}
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: qty_per_unit_of_measure
+      no: 5404
+      type: types.Decimal
+      db_name: qty_per_unit_of_measure
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+      default: 1
+      editable: false
+
+    - name: quantity_base
+      no: 5410
+      type: types.Decimal
+      db_name: quantity_base
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+
+    # classic local field 10051 (Balancing Acc. No.): a G/L account line posts against it
+
+    - name: balancing_acc_no
+      no: 900
+      type: types.Code
+      db_name: balancing_acc_no
+      length: 20
+      table_relation:
+        table: G_L_Account
+        field: no
+        filters:
+          account_type: {const: 0}   # Posting accounts only
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+  keys:
+    - name: Primary
+      fields: [journal_template_name, journal_batch_name, line_no]
+      clustered: true
+    - name: type_no
+      fields: [journal_template_name, journal_batch_name, type, no, unit_of_measure_code, work_type_code]

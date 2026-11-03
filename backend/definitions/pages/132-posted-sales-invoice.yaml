@@ -54,6 +54,7 @@ page:
           - source: payment_method_code
           - source: dimension_1_code
           - source: dimension_2_code
+          - source: project_no
           - source: customer_posting_group
           - source: gen_bus_posting_group
           - source: tax_area_code

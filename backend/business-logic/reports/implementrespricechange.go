@@ -20,8 +20,8 @@ type implementResPriceChange struct {
 func (r *implementResPriceChange) Definition() *Definition {
 	return &Definition{
 		DataItems: []*DataItem{{
-			Name: "Resource_Price_Change", Table: "Resource_Price_Change", Key: []string{"type", "code", "work_type_code", "currency_code"},
-			RequestFilterFields: []string{"type", "code", "currency_code"},
+			Name: "Resource_Price_Change", Table: "Resource_Price_Change", Key: []string{"project_no", "type", "code", "work_type_code", "currency_code"},
+			RequestFilterFields: []string{"project_no", "type", "code", "currency_code"},
 			OnPreDataItem:       Trigger(r.onPreDataItem),
 			OnAfterGetRecord:    Trigger(r.onAfterGetRecord),
 			OnPostDataItem:      Trigger(r.onPostDataItem),
@@ -40,6 +40,7 @@ func (r *implementResPriceChange) onAfterGetRecord(resPriceChange *gtables.Resou
 	r.window.Update(3, resPriceChange.Work_type_code)
 	r.window.Update(4, resPriceChange.Currency_code)
 	resourcePrice := gtables.NewResourcePrice(run)
+	resourcePrice.Project_no = resPriceChange.Project_no
 	resourcePrice.Type = gtables.ResourcePriceType(resPriceChange.Type)
 	resourcePrice.Code = resPriceChange.Code
 	resourcePrice.Work_type_code = resPriceChange.Work_type_code

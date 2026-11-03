@@ -6,6 +6,7 @@ import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/itemjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/noseries"
+	"github.com/hansjlachmann/openerp/backend/business-logic/projectjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/purchpost"
 	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
 	"github.com/hansjlachmann/openerp/backend/business-logic/salestax"
@@ -29,11 +30,12 @@ import (
 // Not migrated: the VAT calculation types (as in the journals), prepayments, drop shipments,
 // reservations and item tracking, jobs, fixed asset lines, Get Receipt Lines, archive.
 type PurchPost struct {
-	src            ftables.Source
-	purchSetup     *gtables.PurchasesPayablesSetup
-	srcCode        types.Code
-	genJnlPostLine *genjnl.GenJnlPostLine
-	itemJnlPost    *itemjnl.ItemJnlPostLine
+	src                ftables.Source
+	purchSetup         *gtables.PurchasesPayablesSetup
+	srcCode            types.Code
+	genJnlPostLine     *genjnl.GenJnlPostLine
+	itemJnlPost        *itemjnl.ItemJnlPostLine
+	projectJnlPostLine *projectjnl.ProjectJnlPostLine
 
 	purchHeader        *gtables.PurchaseHeader
 	purchRcptHeader    *gtables.PurchRcptHeader
@@ -257,6 +259,7 @@ func (p *PurchPost) checkAndUpdate() error {
 	p.srcCode = sourceCodeSetup.Purchases
 	p.genJnlPostLine = genjnl.NewGenJnlPostLine(p.src)
 	p.itemJnlPost = itemjnl.NewItemJnlPostLine(p.src)
+	p.projectJnlPostLine = nil
 	var err2 error
 	p.totals, err2 = purchpost.NewTotals(purchHeader)
 	return err2
@@ -437,7 +440,11 @@ func (p *PurchPost) postLines() error {
 				return err
 			}
 		}
-		err := p.insertPostedLines(purchLine, qtyToReceive, qtyToReceiveBase, qtyToInvoice, qtyToInvoiceBase, lineFCY, lineLCY, itemRcptEntryNo)
+		err := p.postProjectJnlLine(purchLine, qtyToInvoice, qtyToInvoiceBase, lineFCY, lineLCY)
+		if err != nil {
+			return err
+		}
+		err = p.insertPostedLines(purchLine, qtyToReceive, qtyToReceiveBase, qtyToInvoice, qtyToInvoiceBase, lineFCY, lineLCY, itemRcptEntryNo)
 		if err != nil {
 			return err
 		}

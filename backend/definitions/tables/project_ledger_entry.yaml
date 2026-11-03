@@ -1,0 +1,697 @@
+table:
+  id: 169
+  name: "Project_Ledger_Entry"
+  caption: Project Ledger Entry
+  posted: true               # written by posting only: the table API does not insert, delete or rename
+  description: "Project ledger entries (table 169): a project's usage and sales, posted from the project journal and from sales and purchase invoices"
+  lookup_page_id: 92
+  fields:
+    - name: entry_no
+      no: 1
+      type: int
+      db_name: entry_no
+      primary_key: true
+
+    - name: project_no
+      no: 2
+      type: types.Code
+      db_name: project_no
+      length: 20
+      table_relation:
+        table: Project
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
+
+    - name: posting_date
+      no: 3
+      type: types.Date
+      db_name: posting_date
+
+    - name: document_no
+      no: 4
+      type: types.Code
+      db_name: document_no
+      length: 20
+
+    - name: type
+      no: 5
+      type: Option
+      db_name: type
+      options: ["Resource", "Item", "Account (G/L)"]
+
+    - name: no
+      no: 7
+      type: types.Code
+      db_name: no
+      length: 20
+      table_relation:
+        conditions:
+          - when: {field: type, equal: 0}
+            table: Resource
+            field: no
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: name
+                width: 250
+          - when: {field: type, equal: 1}
+            table: Item
+            field: no
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: description
+                width: 250
+          - when: {field: type, equal: 2}
+            table: G_L_Account
+            field: no
+            filters:
+              account_type: {const: 0}   # Posting accounts only
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: name
+                width: 250
+
+    - name: description
+      no: 8
+      type: types.Text
+      db_name: description
+      length: 50
+
+    - name: quantity
+      no: 9
+      type: types.Decimal
+      db_name: quantity
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+
+    - name: direct_unit_cost
+      no: 11
+      type: types.Decimal
+      db_name: direct_unit_cost
+      decimal_places: "2:5"
+      precision: 18
+      scale: 5
+
+    - name: unit_cost
+      no: 12
+      type: types.Decimal
+      db_name: unit_cost
+      decimal_places: "2:5"
+      precision: 18
+      scale: 5
+
+    - name: total_cost
+      no: 13
+      type: types.Decimal
+      db_name: total_cost
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+
+    - name: unit_price
+      no: 14
+      type: types.Decimal
+      db_name: unit_price
+      decimal_places: "2:5"
+      precision: 18
+      scale: 5
+
+    - name: total_price
+      no: 15
+      type: types.Decimal
+      db_name: total_price
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+
+    - name: resource_group_no
+      no: 16
+      type: types.Code
+      db_name: resource_group_no
+      length: 20
+      table_relation:
+        table: Resource_Group
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: unit_of_measure_code
+      no: 17
+      type: types.Code
+      db_name: unit_of_measure_code
+      length: 10
+      table_relation:
+        conditions:
+          - when: {field: type, equal: 0}
+            table: Unit_of_Measure
+            field: code
+            lookup_columns:
+              - source: code
+                width: 100
+              - source: description
+                width: 250
+          - when: {field: type, equal: 1}
+            table: Item_Unit_of_Measure
+            field: code
+            filters:
+              item_no: {field: "no"}
+            lookup_columns:
+              - source: code
+                width: 100
+              - source: qty_per_unit_of_measure
+                width: 120
+
+    - name: location_code
+      no: 20
+      type: types.Code
+      db_name: location_code
+      length: 10
+      table_relation:
+        table: Location
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: chargeable
+      no: 21
+      type: bool
+      db_name: chargeable
+      default: true
+
+    - name: project_posting_group
+      no: 29
+      type: types.Code
+      db_name: project_posting_group
+      length: 20
+      table_relation:
+        conditions:
+          - when: {field: type, equal: 1}
+            table: Inventory_Posting_Group
+            field: code
+            lookup_columns:
+              - source: code
+                width: 100
+              - source: description
+                width: 250
+
+    - name: dimension_1_code
+      no: 30
+      type: types.Code
+      db_name: dimension_1_code
+      length: 10
+      table_relation:
+        table: Dimension_1
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: dimension_2_code
+      no: 31
+      type: types.Code
+      db_name: dimension_2_code
+      length: 10
+      table_relation:
+        table: Dimension_2
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: work_type_code
+      no: 32
+      type: types.Code
+      db_name: work_type_code
+      length: 10
+      table_relation:
+        table: Work_Type
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: price_group_code
+      no: 33
+      type: types.Code
+      db_name: price_group_code
+      length: 10
+      table_relation:
+        table: Price_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+
+    - name: user_id
+      no: 37
+      type: types.Code
+      db_name: user_id
+      length: 20
+      table_relation:
+        table: User
+        field: user_id
+        validate: false   # the user who posted it; not checked
+        lookup_columns:
+          - source: user_id
+            width: 120
+
+    - name: source_code
+      no: 38
+      type: types.Code
+      db_name: source_code
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: related_to_budget
+      no: 43
+      type: bool
+      db_name: related_to_budget
+
+    - name: phase_code
+      no: 44
+      type: types.Code
+      db_name: phase_code
+      length: 10
+      table_relation:
+        table: Phase
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: task_code
+      no: 45
+      type: types.Code
+      db_name: task_code
+      length: 10
+      table_relation:
+        table: Task
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: step_code
+      no: 46
+      type: types.Code
+      db_name: step_code
+      length: 10
+      table_relation:
+        table: Step
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: amt_to_post_to_g_l
+      no: 60
+      type: types.Decimal
+      db_name: amt_to_post_to_g_l
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+
+    - name: amt_posted_to_g_l
+      no: 61
+      type: types.Decimal
+      db_name: amt_posted_to_g_l
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+
+    - name: amt_to_recognize
+      no: 62
+      type: types.Decimal
+      db_name: amt_to_recognize
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+
+    - name: amt_recognized
+      no: 63
+      type: types.Decimal
+      db_name: amt_recognized
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+
+    - name: entry_type
+      no: 64
+      type: Option
+      db_name: entry_type
+      options: ["Usage", "Sale"]
+
+    - name: positive
+      no: 65
+      type: bool
+      db_name: positive
+
+    - name: open
+      no: 66
+      type: bool
+      db_name: open
+
+    - name: remaining_amount
+      no: 67
+      type: types.Decimal
+      db_name: remaining_amount
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+
+    - name: closed_by_entry_no
+      no: 68
+      type: int
+      db_name: closed_by_entry_no
+
+    - name: closed_at_date
+      no: 69
+      type: types.Date
+      db_name: closed_at_date
+
+    - name: closed_by_amount
+      no: 70
+      type: types.Decimal
+      db_name: closed_by_amount
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+
+    - name: applies_to_id
+      no: 71
+      type: types.Code
+      db_name: applies_to_id
+      length: 20
+      editable: true   # Set Applies-to ID (codeunit 216) on the entries page
+
+    - name: journal_batch_name
+      no: 75
+      type: types.Code
+      db_name: journal_batch_name
+      length: 10
+
+    - name: reason_code
+      no: 76
+      type: types.Code
+      db_name: reason_code
+      length: 10
+      table_relation:
+        table: Reason_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: transaction_type
+      no: 77
+      type: types.Code
+      db_name: transaction_type
+      length: 10
+      table_relation:
+        table: Transaction_Type
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: transport_method
+      no: 78
+      type: types.Code
+      db_name: transport_method
+      length: 10
+      table_relation:
+        table: Transport_Method
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: country_code
+      no: 79
+      type: types.Code
+      db_name: country_code
+      length: 10
+      table_relation:
+        table: Country_Region
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: gen_bus_posting_group
+      no: 80
+      type: types.Code
+      db_name: gen_bus_posting_group
+      length: 10
+      table_relation:
+        table: Gen_Business_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: gen_prod_posting_group
+      no: 81
+      type: types.Code
+      db_name: gen_prod_posting_group
+      length: 10
+      table_relation:
+        table: Gen_Product_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: entry_exit_point
+      no: 82
+      type: types.Code
+      db_name: entry_exit_point
+      length: 10
+      table_relation:
+        table: Entry_Exit_Point
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: document_date
+      no: 83
+      type: types.Date
+      db_name: document_date
+
+    - name: external_document_no
+      no: 84
+      type: types.Code
+      db_name: external_document_no
+      length: 20
+
+    - name: area
+      no: 85
+      type: types.Code
+      db_name: area
+      length: 10
+      table_relation:
+        table: Area
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: text
+            width: 250
+
+    - name: transaction_specification
+      no: 86
+      type: types.Code
+      db_name: transaction_specification
+      length: 10
+      table_relation:
+        table: Transaction_Specification
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: text
+            width: 250
+
+    - name: no_series
+      no: 87
+      type: types.Code
+      db_name: no_series
+      length: 10
+      table_relation:
+        table: No_Series
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: additional_currency_total_cost
+      no: 88
+      type: types.Decimal
+      db_name: additional_currency_total_cost
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+
+    - name: add_currency_total_price
+      no: 89
+      type: types.Decimal
+      db_name: add_currency_total_price
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+
+    - name: add_curr_amount_to_recognize
+      no: 90
+      type: types.Decimal
+      db_name: add_curr_amount_to_recognize
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+
+    - name: add_curr_amt_to_post_to_g_l
+      no: 91
+      type: types.Decimal
+      db_name: add_curr_amt_to_post_to_g_l
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+
+    - name: add_curr_amount_recognized
+      no: 92
+      type: types.Decimal
+      db_name: add_curr_amount_recognized
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+
+    - name: add_curr_amt_posted_to_g_l
+      no: 93
+      type: types.Decimal
+      db_name: add_curr_amt_posted_to_g_l
+      decimal_places: "2:2"
+      precision: 18
+      scale: 5
+
+    - name: lot_no
+      no: 5400
+      type: types.Code
+      db_name: lot_no
+      length: 20
+
+    - name: variant_code
+      no: 5402
+      type: types.Code
+      db_name: variant_code
+      length: 10
+      table_relation:
+        conditions:
+          - when: {field: type, equal: 1}
+            table: Item_Variant
+            field: code
+            filters:
+              item_no: {field: "no"}
+            lookup_columns:
+              - source: code
+                width: 100
+              - source: description
+                width: 250
+
+    - name: bin_code
+      no: 5403
+      type: types.Code
+      db_name: bin_code
+      length: 10
+      table_relation:
+        table: Bin
+        field: code
+        filters:
+          location_code: {field: location_code}
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: qty_per_unit_of_measure
+      no: 5404
+      type: types.Decimal
+      db_name: qty_per_unit_of_measure
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+
+  keys:
+    - name: Primary
+      fields: [entry_no]
+      clustered: true
+    - name: project_date
+      fields: [project_no, posting_date]
+    - name: project_open
+      fields: [project_no, open, positive, posting_date]
+    - name: project_entry_type
+      fields: [project_no, entry_type, type, project_posting_group]
+    - name: applies_to_id
+      fields: [applies_to_id]
+    - name: closed_by_entry_no
+      fields: [closed_by_entry_no]
+    # SIFT key: the projects' Usage (Cost)/(Price) and Invoiced Price read the totals
+    - name: budget_line_date
+      fields: [related_to_budget, project_no, entry_type, phase_code, task_code, step_code, type, no, posting_date]
+      sum_index_fields:
+        - total_cost
+        - total_price
+    - name: project_type_no
+      fields: [project_no, entry_type, type, no, unit_of_measure_code, work_type_code]
+    - name: type_country
+      fields: [type, country_code, source_code, posting_date]
+    - name: document
+      fields: [document_no, posting_date]

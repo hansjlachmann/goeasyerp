@@ -6,6 +6,7 @@ import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/itemjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/noseries"
+	"github.com/hansjlachmann/openerp/backend/business-logic/projectjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
 	"github.com/hansjlachmann/openerp/backend/business-logic/resjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/salespost"
@@ -29,12 +30,13 @@ import (
 // Not migrated: the VAT calculation types (as in the journals), prepayments, drop shipments,
 // reservations and item tracking, combined shipments, the credit limit and archive.
 type SalesPost struct {
-	src            ftables.Source
-	salesSetup     *gtables.SalesReceivablesSetup
-	srcCode        types.Code
-	genJnlPostLine *genjnl.GenJnlPostLine
-	itemJnlPost    *itemjnl.ItemJnlPostLine
-	resJnlPostLine *resjnl.ResJnlPostLine
+	src                ftables.Source
+	salesSetup         *gtables.SalesReceivablesSetup
+	srcCode            types.Code
+	genJnlPostLine     *genjnl.GenJnlPostLine
+	itemJnlPost        *itemjnl.ItemJnlPostLine
+	resJnlPostLine     *resjnl.ResJnlPostLine
+	projectJnlPostLine *projectjnl.ProjectJnlPostLine
 
 	salesHeader       *gtables.SalesHeader
 	salesShptHeader   *gtables.SalesShipmentHeader
@@ -226,6 +228,7 @@ func (p *SalesPost) checkAndUpdate() error {
 	p.genJnlPostLine = genjnl.NewGenJnlPostLine(p.src)
 	p.itemJnlPost = itemjnl.NewItemJnlPostLine(p.src)
 	p.resJnlPostLine = resjnl.NewResJnlPostLine(p.src)
+	p.projectJnlPostLine = nil
 	var err2 error
 	p.totals, err2 = salespost.NewTotals(salesHeader)
 	return err2
@@ -419,7 +422,11 @@ func (p *SalesPost) postLines() error {
 				return err
 			}
 		}
-		err := p.insertPostedLines(salesLine, qtyToShip, qtyToShipBase, qtyToInvoice, qtyToInvoiceBase, lineFCY, lineLCY, itemShptEntryNo)
+		err := p.postProjectJnlLine(salesLine, qtyToInvoice, qtyToInvoiceBase, lineFCY, lineLCY)
+		if err != nil {
+			return err
+		}
+		err = p.insertPostedLines(salesLine, qtyToShip, qtyToShipBase, qtyToInvoice, qtyToInvoiceBase, lineFCY, lineLCY, itemShptEntryNo)
 		if err != nil {
 			return err
 		}

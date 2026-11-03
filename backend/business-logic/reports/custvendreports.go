@@ -7,7 +7,7 @@ import (
 )
 
 // The customer, vendor and bank account list reports (main menu Sales →
-// Reports, Purchase → Reports, General Ledger → Reports):
+// Reports, Purchases → Reports, General Ledger → Reports):
 //   - 101 Customer - List, 301 Vendor - List, 1402 Bank Account - List: the accounts with their
 //     main data and balance (LCY), the total balance;
 //   - 104 Customer - Detail Trial Bal., 304 Vendor - Detail Trial Balance, 1404 Bank Acc. -

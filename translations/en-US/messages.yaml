@@ -493,6 +493,11 @@ Posting lines #3###### @4@@@@@@@@@@@@@"
 Checking lines #2######
 Posting lines #3###### @4@@@@@@@@@@@@@"
   RES_JNL_TEMPLATE_DESCRIPTION: "Resource Journals"
+  PROJECT_JNL_POST_WINDOW: "Journal Batch Name #1##########
+Checking lines #2######
+Posting lines #3###### @4@@@@@@@@@@@@@"
+  PROJECT_JNL_TEMPLATE_DESCRIPTION: "Project Journals"
+  RECURRING_PROJECT_JNL_TEMPLATE_DESCRIPTION: "Recurring Project Journal"
   BOM_JNL_POST_WINDOW: "Journal Batch Name #1##########
 Checking lines #2######
 Posting lines #3###### @4@@@@@@@@@@@@@"

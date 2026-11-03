@@ -1,6 +1,7 @@
 package tables
 
 import (
+	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
 	"github.com/hansjlachmann/openerp/backend/business-logic/salestax"
 	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
@@ -146,6 +147,7 @@ func (purchaseLineLogic) OnValidate_No(rec *gtables.PurchaseLine) error {
 	rec.Expected_receipt_date = purchHeader.Expected_receipt_date
 	rec.Dimension_1_code = purchHeader.Dimension_1_code
 	rec.Dimension_2_code = purchHeader.Dimension_2_code
+	rec.Project_no = purchHeader.Project_no
 	rec.Location_code = purchHeader.Location_code
 	rec.Transaction_type = purchHeader.Transaction_type
 	rec.Transport_method = purchHeader.Transport_method
@@ -1016,8 +1018,22 @@ func getPurchLineFAPostingGroup(rec *gtables.PurchaseLine) error {
 
 // OnValidate_Fa_posting_type: a fixed asset line posts an acquisition cost or a maintenance (its
 // accounts' posting groups); other lines have none of the FA fields
+// OnValidate_Project_no: not on fixed asset lines; a reserved line keeps its project
+func (purchaseLineLogic) OnValidate_Project_no(rec *gtables.PurchaseLine) error {
+	if rec.Type == gtables.PurchaseLine_Type.FixedAsset {
+		if rec.Project_no != "" {
+			return apperrors.FANotTogetherWith(gtables.PurchaseLineTableName, "project_no", "type", rec.Type)
+		}
+	}
+	return reservmgt.New(rec).PurchLineVerifyChange(rec)
+}
+
 func (purchaseLineLogic) OnValidate_Fa_posting_type(rec *gtables.PurchaseLine) error {
 	if rec.Type == gtables.PurchaseLine_Type.FixedAsset {
+		err := rec.TestField("project_no", types.Code(""))
+		if err != nil {
+			return err
+		}
 		if rec.Fa_posting_type == gtables.PurchaseLine_Fa_posting_type.Blank {
 			rec.Fa_posting_type = gtables.PurchaseLine_Fa_posting_type.AcquisitionCost
 		}

@@ -94,6 +94,11 @@ reports:
       retain_transaction_type: "Behold Transaksjonstype"
       retain_transport_method: "Behold Transportmåte"
       retain_variant_code: "Behold Variantkode"
+      retain_no: "Behold Nr."
+      retain_resource_group_no: "Behold Ressursgruppenr."
+      retain_phase_code: "Behold Fasekode"
+      retain_task_code: "Behold Oppgavekode"
+      retain_step_code: "Behold Trinnkode"
       retain_reclassification_entry: "Behold Reklassifiseringspost"
       retain_index_entry: "Behold Indekseringspost"
       retain_maintenance_code: "Behold Vedlikeholdskode"
@@ -252,6 +257,15 @@ reports:
     caption: "Datokomprimer stykklisteposter"
     texts:
       WINDOW: "Datokomprimerer stykklisteposter...\n\nDato                 #1######\n\nAntall nye poster    #2######\nAntall slettet       #3######"
+  "1298":
+    caption: "Datokomprimer prosjektposter"
+    texts:
+      WINDOW: "Datokomprimerer prosjektposter...\n\nProsjektnr.          #1##########\nDato                 #2######\n\nAntall nye poster    #3######\nAntall slettet       #4######"
+  "1299":
+    caption: "Slett tomme prosjektregistre"
+    texts:
+      CONFIRM: "Vil du slette journalene?"
+      WINDOW: "Sletter tomme prosjektjournaler...\n\nNr.                      #1######\nBokført                  #2######\n\nAntall journaler slettet #3######"
   "1198":
     caption: "Datokomprimer ressursposter"
     texts:
@@ -350,6 +364,7 @@ reports:
   "1191":
     caption: "Foreslå ressursprisendr. (ress.)"
     options:
+      project_no: "Prosjektnr."
       work_type_code: "Arbeidstypekode"
       currency_code: "Valutakode"
       unit_price_factor: "Justeringsfaktor"
@@ -362,6 +377,7 @@ reports:
   "1192":
     caption: "Foreslå ressursprisendr. (pris)"
     options:
+      project_no: "Prosjektnr."
       currency_code: "Valutakode"
       work_type_code: "Arbeidstypekode"
       unit_price_factor: "Justeringsfaktor"

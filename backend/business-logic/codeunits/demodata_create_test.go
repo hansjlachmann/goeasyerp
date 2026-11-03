@@ -18,6 +18,7 @@ import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/glcheck"
 	"github.com/hansjlachmann/openerp/backend/business-logic/insurancejnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/itemjnl"
+	"github.com/hansjlachmann/openerp/backend/business-logic/projectjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/resjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
@@ -115,7 +116,7 @@ func TestDemoDataFillsTheMainMenu(t *testing.T) {
 	}
 	counts, err := demodata.Create(db, "demo", database.DBTypeSQLite, demodata.Options{Today: time.Date(2026, 10, 6, 0, 0, 0, 0, time.Local),
 		ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost,
-		GenJnlPostLine: openGenJnlPostLine, Journals: true,
+		GenJnlPostLine: openGenJnlPostLine, ProjectJnlPostLine: openProjectJnlPostLine, Journals: true,
 		ReminderIssue: openReminderIssue, FinChrgMemoIssue: openFinChrgMemoIssue, AdjustExchRates: adjustExchRates})
 	if err != nil {
 		t.Fatal(err)
@@ -256,6 +257,13 @@ func TestDemoDataFillsTheMainMenu(t *testing.T) {
 			return err
 		})
 	}
+	inTx("project journal", func(src ftables.Source) error {
+		l := gtables.NewProjectJournalLine(src)
+		l.SetRange("journal_template_name", "PROJECT")
+		l.FindFirst()
+		_, err := projectjnl.NewProjectJnlPostBatch(src).Run(l)
+		return err
+	})
 	inTx("resource journal", func(src ftables.Source) error {
 		l := gtables.NewResJournalLine(src)
 		l.FindFirst()

@@ -24,6 +24,9 @@ page:
           width: 250
         - source: work_type_code
           width: 110
+        - source: project_no
+          width: 110
+          visible: false
         - source: dimension_1_code
           width: 110
           visible: false

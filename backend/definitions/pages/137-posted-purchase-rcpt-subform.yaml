@@ -56,6 +56,18 @@ page:
         - source: dimension_2_code
           width: 110
           visible: false
+        - source: project_no
+          width: 110
+          visible: false
+        - source: phase_code
+          width: 100
+          visible: false
+        - source: task_code
+          width: 100
+          visible: false
+        - source: step_code
+          width: 100
+          visible: false
         - source: quantity_invoiced
           width: 120
         - source: qty_rcd_not_invoiced

@@ -8,6 +8,8 @@ common:
 
   # Common actions
   actions:
+    project: "Project"
+    project_ledger: "Project Ledger"
     budget: "Budget"
     quantity_allocated: "Quantity Allocated"
     budget_entries: "Budget Entries"
@@ -280,7 +282,7 @@ common:
   # Menu items
   menu:
     sales: "Sales"
-    purchase: "Purchase"
+    purchases: "Purchases"
     items_inventory: "Items & Inventory"
     assets_depreciations: "Assets & Depreciations"
     items_by_bin: "Items by Bin"

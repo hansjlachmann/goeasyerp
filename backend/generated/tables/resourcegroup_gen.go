@@ -965,7 +965,7 @@ func (t *ResourceGroup) renameReferences(field string, oldValue, newValue interf
 		condValue  int
 	}
 	references := map[string][]reference{
-		"no": {{"Project_Budget_Entry", false, "no", "type", 3}, {"Project_Budget_Entry", false, "resource_group_no", "", 0}, {"Project_Budget_Line", false, "no", "type", 3}, {"Res_Capacity_Entry", false, "resource_group_no", "", 0}, {"Res_Journal_Line", false, "resource_group_no", "", 0}, {"Res_Ledger_Entry", false, "resource_group_no", "", 0}, {"Resource", false, "resource_group_no", "", 0}, {"Resource_Cost", false, "code", "type", 1}, {"Resource_Price", false, "code", "type", 1}, {"Resource_Price_Change", false, "code", "type", 1}},
+		"no": {{"Project_Budget_Entry", false, "no", "type", 3}, {"Project_Budget_Entry", false, "resource_group_no", "", 0}, {"Project_Budget_Line", false, "no", "type", 3}, {"Project_Journal_Line", false, "resource_group_no", "", 0}, {"Project_Ledger_Entry", false, "resource_group_no", "", 0}, {"Res_Capacity_Entry", false, "resource_group_no", "", 0}, {"Res_Journal_Line", false, "resource_group_no", "", 0}, {"Res_Ledger_Entry", false, "resource_group_no", "", 0}, {"Resource", false, "resource_group_no", "", 0}, {"Resource_Cost", false, "code", "type", 1}, {"Resource_Price", false, "code", "type", 1}, {"Resource_Price_Change", false, "code", "type", 1}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

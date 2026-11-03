@@ -56,6 +56,7 @@ func insertDemoJournals(src ftables.Source, today time.Time, counts *Counts, p *
 		{"fixed asset journals", j.fixedAssetJournals},
 		{"item journals", j.itemJournals},
 		{"resource journals", j.resourceJournals},
+		{"project journals", j.projectJournals},
 		{"BOM journal", j.bomJournal},
 		{"depreciation table", j.depreciationTable},
 		{"resource price changes", j.resourcePriceChanges},
@@ -881,6 +882,76 @@ func (j *demoJournals) recurringItemResJournals() error {
 	}
 	r.Recurring_frequency = "1W"
 	r.Description = "Team meeting, week %2"
+	err = r.InsertOrError(true)
+	if err == nil {
+		j.lines++
+	}
+	return err
+}
+
+// projectJournals: the PROJECT journal with today's usage of a consultant and a desk on the
+// project on Order, and the RECURRING project journal with a weekly status meeting
+func (j *demoJournals) projectJournals() error {
+	project := gtables.NewProject(j.src)
+	project.SetRange("status", gtables.Project_Status.Order)
+	if !project.FindFirst() {
+		return nil
+	}
+	last := gtables.NewProjectJournalLine(j.src)
+	for i, u := range []struct {
+		lineType gtables.ProjectJournalLineType
+		no       types.Code
+		qty      int64
+	}{{gtables.ProjectJournalLine_Type.Resource, "R0020", 6}, {gtables.ProjectJournalLine_Type.Item, "1310", 1}} {
+		l := gtables.NewProjectJournalLine(j.src)
+		l.Journal_template_name = "PROJECT"
+		l.Journal_batch_name = "DEFAULT"
+		l.Line_no = (i + 1) * 10000
+		err := tables.SetUpNewProjectJnlLine(l, last)
+		if err != nil {
+			return err
+		}
+		l.Posting_date = j.today
+		l.Document_date = j.today
+		if l.Document_no == "" {
+			l.Document_no = types.NewCode(fmt.Sprintf("PRJ-%s", j.today.Format("20060102")))
+		}
+		l.Type = u.lineType
+		err = set(l, "project_no", project.No, "no", u.no)
+		if err == nil && u.lineType == gtables.ProjectJournalLine_Type.Item {
+			err = set(l, "location_code", types.Code("MAIN"))
+		}
+		if err == nil {
+			err = set(l, "quantity", types.NewDecimalFromInt(u.qty))
+		}
+		if err == nil {
+			err = l.InsertOrError(true)
+		}
+		if err != nil {
+			return err
+		}
+		j.lines++
+		last = l
+	}
+
+	r := gtables.NewProjectJournalLine(j.src)
+	r.Journal_template_name = "RECURRING"
+	r.Journal_batch_name = "DEFAULT"
+	r.Line_no = 10000
+	err := tables.SetUpNewProjectJnlLine(r, gtables.NewProjectJournalLine(j.src))
+	if err != nil {
+		return err
+	}
+	r.Posting_date = j.today
+	r.Document_no = "PRJMEET-%2"
+	r.Type = gtables.ProjectJournalLine_Type.Resource
+	err = set(r, "recurring_method", gtables.ProjectJournalLine_Recurring_method.Fixed, "project_no", project.No, "no", types.Code("R0010"),
+		"quantity", types.NewDecimalFromInt(1))
+	if err != nil {
+		return err
+	}
+	r.Recurring_frequency = "1W"
+	r.Description = "Project status meeting, week %2"
 	err = r.InsertOrError(true)
 	if err == nil {
 		j.lines++

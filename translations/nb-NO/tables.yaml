@@ -3161,6 +3161,7 @@ tables:
   gen_journal_line:
     caption: "Finanskladdelinje"
     fields:
+      project_no: "Prosjektnr."
       fa_add_currency_factor: "Anleggsfaktor for tilleggsvaluta"
       additional_currency_posting: "Bokføring i tilleggsvaluta"
       business_unit_code: "Konsernenhetskode"
@@ -3357,6 +3358,8 @@ tables:
   source_code_setup:
     caption: "Kildekodeoppsett"
     fields:
+      project_journal: "Prosjektkladd"
+      compress_project_ledger: "Komprimer prosjektposter"
       adjust_add_reporting_currency: "Juster tilleggsrapporteringsvaluta"
       consolidation: "Konsolidering"
       compress_g_l: "Komprimer finans"
@@ -4195,6 +4198,7 @@ tables:
   resource_price:
     caption: "Ressurspris"
     fields:
+      project_no: "Prosjektnr."
       type: "Type"
       code: "Kode"
       work_type_code: "Arbeidstypekode"
@@ -4208,6 +4212,7 @@ tables:
   resource_price_change:
     caption: "Ressursprisendring"
     fields:
+      project_no: "Prosjektnr."
       type: "Type"
       code: "Kode"
       work_type_code: "Arbeidstypekode"
@@ -4299,6 +4304,7 @@ tables:
   res_journal_line:
     caption: "Ressurskladdelinje"
     fields:
+      project_no: "Prosjektnr."
       recurring_method: "Gjentakelsesmetode"
       expiration_date: "Utløpsdato"
       recurring_frequency: "Gjentakelsesfrekvens"
@@ -4339,6 +4345,7 @@ tables:
   res_ledger_entry:
     caption: "Ressurspost"
     fields:
+      project_no: "Prosjektnr."
       entry_no: "Løpenr."
       entry_type: "Posttype"
       document_no: "Bilagsnr."
@@ -4496,6 +4503,7 @@ tables:
   sales_header:
     caption: "Salgshode"
     fields:
+      project_no: "Prosjektnr."
       transaction_type: "Transaksjonstype"
       transport_method: "Transportmåte"
       vat_country_code: "Mva.-landkode"
@@ -4604,6 +4612,13 @@ tables:
   sales_line:
     caption: "Salgslinje"
     fields:
+      project_no: "Prosjektnr."
+      appl_to_project_entry: "Utlign. mot prosjektpost"
+      phase_code: "Fasekode"
+      task_code: "Oppgavekode"
+      step_code: "Trinnkode"
+      project_applies_to_id: "Prosjektutlignings-ID"
+      apply_and_close_project: "Utlign og lukk (prosjekt)"
       transaction_type: "Transaksjonstype"
       transport_method: "Transportmåte"
       exit_point: "Utførselssted"
@@ -4710,6 +4725,7 @@ tables:
   sales_shipment_header:
     caption: "Salgsleveringshode"
     fields:
+      project_no: "Prosjektnr."
       sell_to_customer_no: "Salg til-kundenr."
       no: "Nr."
       bill_to_customer_no: "Faktura til-kundenr."
@@ -4784,6 +4800,13 @@ tables:
   sales_shipment_line:
     caption: "Salgsleveringslinje"
     fields:
+      project_no: "Prosjektnr."
+      appl_to_project_entry: "Utlign. mot prosjektpost"
+      phase_code: "Fasekode"
+      task_code: "Oppgavekode"
+      step_code: "Trinnkode"
+      project_applies_to_id: "Prosjektutlignings-ID"
+      apply_and_close_project: "Utlign og lukk (prosjekt)"
       sell_to_customer_no: "Salg til-kundenr."
       document_no: "Dokumentnr."
       line_no: "Linjenr."
@@ -4857,6 +4880,7 @@ tables:
   sales_invoice_header:
     caption: "Salgsfakturahode"
     fields:
+      project_no: "Prosjektnr."
       sell_to_customer_no: "Salg til-kundenr."
       no: "Nr."
       bill_to_customer_no: "Faktura til-kundenr."
@@ -4943,6 +4967,13 @@ tables:
   sales_invoice_line:
     caption: "Salgsfakturalinje"
     fields:
+      project_no: "Prosjektnr."
+      appl_to_project_entry: "Utlign. mot prosjektpost"
+      phase_code: "Fasekode"
+      task_code: "Oppgavekode"
+      step_code: "Trinnkode"
+      project_applies_to_id: "Prosjektutlignings-ID"
+      apply_and_close_project: "Utlign og lukk (prosjekt)"
       sell_to_customer_no: "Salg til-kundenr."
       document_no: "Dokumentnr."
       line_no: "Linjenr."
@@ -5011,6 +5042,7 @@ tables:
   sales_cr_memo_header:
     caption: "Salgskreditnotahode"
     fields:
+      project_no: "Prosjektnr."
       sell_to_customer_no: "Salg til-kundenr."
       no: "Nr."
       bill_to_customer_no: "Faktura til-kundenr."
@@ -5096,6 +5128,13 @@ tables:
   sales_cr_memo_line:
     caption: "Salgskreditnotalinje"
     fields:
+      project_no: "Prosjektnr."
+      appl_to_project_entry: "Utlign. mot prosjektpost"
+      phase_code: "Fasekode"
+      task_code: "Oppgavekode"
+      step_code: "Trinnkode"
+      project_applies_to_id: "Prosjektutlignings-ID"
+      apply_and_close_project: "Utlign og lukk (prosjekt)"
       sell_to_customer_no: "Salg til-kundenr."
       document_no: "Dokumentnr."
       line_no: "Linjenr."
@@ -5170,6 +5209,7 @@ tables:
   purchase_header:
     caption: "Kjøpshode"
     fields:
+      project_no: "Prosjektnr."
       transaction_type: "Transaksjonstype"
       transport_method: "Transportmåte"
       vat_country_code: "Mva.-landkode"
@@ -5275,6 +5315,10 @@ tables:
   purchase_line:
     caption: "Kjøpslinje"
     fields:
+      project_no: "Prosjektnr."
+      phase_code: "Fasekode"
+      task_code: "Oppgavekode"
+      step_code: "Trinnkode"
       transaction_type: "Transaksjonstype"
       transport_method: "Transportmåte"
       entry_point: "Innførselssted"
@@ -5410,6 +5454,7 @@ tables:
   purch_rcpt_header:
     caption: "Kjøpsmottakshode"
     fields:
+      project_no: "Prosjektnr."
       buy_from_vendor_no: "Kjøp fra-leverandørnr."
       no: "Nr."
       pay_to_vendor_no: "Betal til-leverandørnr."
@@ -5481,6 +5526,7 @@ tables:
   purch_inv_header:
     caption: "Kjøpsfakturahode"
     fields:
+      project_no: "Prosjektnr."
       buy_from_vendor_no: "Kjøp fra-leverandørnr."
       no: "Nr."
       pay_to_vendor_no: "Betal til-leverandørnr."
@@ -5564,6 +5610,7 @@ tables:
   purch_cr_memo_hdr:
     caption: "Kjøpskreditnotahode"
     fields:
+      project_no: "Prosjektnr."
       buy_from_vendor_no: "Kjøp fra-leverandørnr."
       no: "Nr."
       pay_to_vendor_no: "Betal til-leverandørnr."
@@ -5647,6 +5694,10 @@ tables:
   purch_rcpt_line:
     caption: "Kjøpsmottakslinje"
     fields:
+      project_no: "Prosjektnr."
+      phase_code: "Fasekode"
+      task_code: "Oppgavekode"
+      step_code: "Trinnkode"
       buy_from_vendor_no: "Kjøp fra-leverandørnr."
       document_no: "Dokumentnr."
       line_no: "Linjenr."
@@ -5718,6 +5769,10 @@ tables:
   purch_inv_line:
     caption: "Kjøpsfakturalinje"
     fields:
+      project_no: "Prosjektnr."
+      phase_code: "Fasekode"
+      task_code: "Oppgavekode"
+      step_code: "Trinnkode"
       fa_posting_date: "Anleggsbokføringsdato"
       fa_posting_type: "Anleggsbokføringstype"
       depreciation_book_code: "Avskrivningsprofilkode"
@@ -5797,6 +5852,10 @@ tables:
   purch_cr_memo_line:
     caption: "Kjøpskreditnotalinje"
     fields:
+      project_no: "Prosjektnr."
+      phase_code: "Fasekode"
+      task_code: "Oppgavekode"
+      step_code: "Trinnkode"
       fa_posting_date: "Anleggsbokføringsdato"
       fa_posting_type: "Anleggsbokføringstype"
       depreciation_book_code: "Avskrivningsprofilkode"
@@ -6442,6 +6501,9 @@ tables:
   project:
     caption: "Prosjekt"
     fields:
+      usage_cost: "Forbruk (kost)"
+      usage_price: "Forbruk (pris)"
+      invoiced_price: "Fakturert pris"
       no: "Nr."
       description: "Beskrivelse"
       dimension_1_code: "Dimensjon 1-kode"
@@ -6562,3 +6624,186 @@ tables:
         quote: "Tilbud"
         order: "Ordre"
         completed: "Fullført"
+
+  # Project journal and ledger (tables 169, 209, 210, 237, 241)
+  project_journal_template:
+    caption: "Prosjektkladdemal"
+    fields:
+      name: "Navn"
+      description: "Beskrivelse"
+      test_report_id: "Testrapport-ID"
+      page_id: "Side-ID"
+      posting_report_id: "Bokføringsrapport-ID"
+      force_posting_report: "Tving bokføringsrapport"
+      source_code: "Kildekode"
+      reason_code: "Årsakskode"
+      recurring: "Gjentakende"
+      no_series: "Nummerserie"
+      posting_no_series: "Bokføringsnummerserie"
+  project_journal_batch:
+    caption: "Prosjektkladdenavn"
+    fields:
+      journal_template_name: "Kladdemalnavn"
+      name: "Navn"
+      description: "Beskrivelse"
+      reason_code: "Årsakskode"
+      no_series: "Nummerserie"
+      posting_no_series: "Bokføringsnummerserie"
+  project_journal_line:
+    caption: "Prosjektkladdelinje"
+    fields:
+      journal_template_name: "Kladdemalnavn"
+      journal_batch_name: "Kladdenavn"
+      line_no: "Linjenr."
+      project_no: "Prosjektnr."
+      posting_date: "Bokføringsdato"
+      document_no: "Bilagsnr."
+      type: "Type"
+      no: "Nr."
+      description: "Beskrivelse"
+      quantity: "Antall"
+      direct_unit_cost: "Direkte enhetskost"
+      unit_cost: "Enhetskost"
+      total_cost: "Totalkost"
+      unit_price: "Enhetspris"
+      total_price: "Totalpris"
+      resource_group_no: "Ressursgruppenr."
+      unit_of_measure_code: "Enhetskode"
+      location_code: "Lokasjonskode"
+      chargeable: "Fakturerbar"
+      posting_group: "Bokføringsgruppe"
+      dimension_1_code: "Dimensjon 1-kode"
+      dimension_2_code: "Dimensjon 2-kode"
+      work_type_code: "Arbeidstypekode"
+      price_group_code: "Prisgruppekode"
+      appl_to_item_entry: "Utlign. mot varepost"
+      phase_code: "Fasekode"
+      task_code: "Oppgavekode"
+      step_code: "Trinnkode"
+      entry_type: "Posttype"
+      source_code: "Kildekode"
+      profit_percent: "Avanse %"
+      applies_to_entry: "Utlignes mot post"
+      applies_to_id: "Utlignings-ID"
+      post_project_entry_only: "Bokfør bare prosjektpost"
+      apply_and_close_project: "Utlign og lukk (prosjekt)"
+      reason_code: "Årsakskode"
+      recurring_method: "Gjentakelsesmetode"
+      expiration_date: "Utløpsdato"
+      recurring_frequency: "Gjentakelsesfrekvens"
+      gen_bus_posting_group: "Bedriftsbokføringsgruppe"
+      gen_prod_posting_group: "Produktbokføringsgruppe"
+      transaction_type: "Transaksjonstype"
+      transport_method: "Transportmåte"
+      country_code: "Landkode"
+      entry_exit_point: "Inn-/utførselssted"
+      document_date: "Bilagsdato"
+      external_document_no: "Eksternt bilagsnr."
+      area: "Område"
+      transaction_specification: "Transaksjonsspesifikasjon"
+      serial_no: "Serienr."
+      posting_no_series: "Bokføringsnummerserie"
+      source_currency_code: "Kildevalutakode"
+      source_currency_total_cost: "Kost totalt i kildevaluta"
+      source_currency_total_price: "Pris totalt i kildevaluta"
+      lot_no: "Lotnr."
+      variant_code: "Variantkode"
+      bin_code: "Hyllekode"
+      qty_per_unit_of_measure: "Antall per enhet"
+      quantity_base: "Antall (basis)"
+      balancing_acc_no: "Motkontonr."
+    options:
+      type:
+        resource: "Ressurs"
+        item: "Vare"
+        account_g_l: "Konto (finans)"
+      entry_type:
+        usage: "Forbruk"
+        sale: "Salg"
+      recurring_method:
+        fixed: "Fast"
+        variable: "Variabel"
+  project_ledger_entry:
+    caption: "Prosjektpost"
+    fields:
+      entry_no: "Løpenr."
+      project_no: "Prosjektnr."
+      posting_date: "Bokføringsdato"
+      document_no: "Bilagsnr."
+      type: "Type"
+      no: "Nr."
+      description: "Beskrivelse"
+      quantity: "Antall"
+      direct_unit_cost: "Direkte enhetskost"
+      unit_cost: "Enhetskost"
+      total_cost: "Totalkost"
+      unit_price: "Enhetspris"
+      total_price: "Totalpris"
+      resource_group_no: "Ressursgruppenr."
+      unit_of_measure_code: "Enhetskode"
+      location_code: "Lokasjonskode"
+      chargeable: "Fakturerbar"
+      project_posting_group: "Prosjektbokføringsgruppe"
+      dimension_1_code: "Dimensjon 1-kode"
+      dimension_2_code: "Dimensjon 2-kode"
+      work_type_code: "Arbeidstypekode"
+      price_group_code: "Prisgruppekode"
+      user_id: "Brukernavn"
+      source_code: "Kildekode"
+      related_to_budget: "Knyttet til budsjett"
+      phase_code: "Fasekode"
+      task_code: "Oppgavekode"
+      step_code: "Trinnkode"
+      amt_to_post_to_g_l: "Beløp å bokføre i finans"
+      amt_posted_to_g_l: "Beløp bokført i finans"
+      amt_to_recognize: "Beløp å inntektsføre"
+      amt_recognized: "Inntektsført beløp"
+      entry_type: "Posttype"
+      positive: "Positiv"
+      open: "Åpen"
+      remaining_amount: "Restbeløp"
+      closed_by_entry_no: "Lukket av løpenr."
+      closed_at_date: "Lukket den"
+      closed_by_amount: "Lukket med beløp"
+      applies_to_id: "Utlignings-ID"
+      journal_batch_name: "Kladdenavn"
+      reason_code: "Årsakskode"
+      transaction_type: "Transaksjonstype"
+      transport_method: "Transportmåte"
+      country_code: "Landkode"
+      gen_bus_posting_group: "Bedriftsbokføringsgruppe"
+      gen_prod_posting_group: "Produktbokføringsgruppe"
+      entry_exit_point: "Inn-/utførselssted"
+      document_date: "Bilagsdato"
+      external_document_no: "Eksternt bilagsnr."
+      area: "Område"
+      transaction_specification: "Transaksjonsspesifikasjon"
+      no_series: "Nummerserie"
+      additional_currency_total_cost: "Kost totalt i tilleggsvaluta"
+      add_currency_total_price: "Pris totalt i tilleggsvaluta"
+      add_curr_amount_to_recognize: "Tilleggsvaluta å inntektsføre"
+      add_curr_amt_to_post_to_g_l: "Tilleggsvaluta å bokføre i finans"
+      add_curr_amount_recognized: "Tilleggsvaluta inntektsført"
+      add_curr_amt_posted_to_g_l: "Tilleggsvaluta bokført i finans"
+      lot_no: "Lotnr."
+      variant_code: "Variantkode"
+      bin_code: "Hyllekode"
+      qty_per_unit_of_measure: "Antall per enhet"
+    options:
+      type:
+        resource: "Ressurs"
+        item: "Vare"
+        account_g_l: "Konto (finans)"
+      entry_type:
+        usage: "Forbruk"
+        sale: "Salg"
+  project_register:
+    caption: "Prosjektjournal"
+    fields:
+      no: "Nr."
+      from_entry_no: "Fra løpenr."
+      to_entry_no: "Til løpenr."
+      creation_date: "Opprettet dato"
+      source_code: "Kildekode"
+      user_id: "Brukernavn"
+      journal_batch_name: "Kladdenavn"

@@ -1,0 +1,109 @@
+page:
+  id: 92
+  type: List
+  name: Project Ledger Entries
+  source_table: Project_Ledger_Entry
+  caption: Project Ledger Entries
+  editable: true   # posted: only Applies-to ID can be changed (Set Applies-to ID)
+
+  layout:
+    repeater:
+      fields:
+        - source: posting_date
+          width: 100
+        - source: entry_type
+          width: 90
+        - source: document_no
+          width: 110
+        - source: project_no
+          width: 110
+        - source: type
+          width: 110
+        - source: "no"
+          width: 110
+        - source: variant_code
+          width: 100
+          visible: false
+        - source: description
+          width: 250
+        - source: dimension_1_code
+          width: 110
+          visible: false
+        - source: dimension_2_code
+          width: 110
+          visible: false
+        - source: work_type_code
+          width: 110
+          visible: false
+        - source: location_code
+          width: 100
+        - source: bin_code
+          width: 100
+          visible: false
+        - source: phase_code
+          width: 100
+          visible: false
+        - source: task_code
+          width: 100
+          visible: false
+        - source: step_code
+          width: 100
+          visible: false
+        - source: quantity
+          width: 100
+        - source: unit_of_measure_code
+          width: 110
+        - source: direct_unit_cost
+          width: 120
+          visible: false
+        - source: unit_cost
+          width: 120
+          visible: false
+        - source: total_cost
+          width: 120
+        - source: unit_price
+          width: 120
+          visible: false
+        - source: total_price
+          width: 120
+        - source: chargeable
+          width: 90
+        - source: remaining_amount
+          width: 120
+        - source: open
+          width: 70
+        - source: applies_to_id
+          width: 120
+        - source: related_to_budget
+          width: 90
+          visible: false
+        - source: user_id
+          width: 110
+          visible: false
+        - source: source_code
+          width: 110
+          visible: false
+        - source: reason_code
+          width: 110
+          visible: false
+        - source: entry_no
+          width: 90
+
+  actions:
+    # opened from a line's Applies-to ID: the entry gets (or loses) the line's ID (page parameter)
+    - name: Set Applies-to ID
+      caption: Set Applies-to ID
+      image: Approve
+      shortcut: Shift+F11
+      promoted: true
+      run_object: table:Project_Ledger_Entry.SetApplId
+
+    - name: Navigate
+      caption: Navigate
+      image: Navigate
+      shortcut: Ctrl+Alt+Q
+      promoted: true
+      run_page: 344
+      run_page_params:
+        document_no: document_no
+        posting_date: posting_date

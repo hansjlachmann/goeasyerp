@@ -1079,3 +1079,25 @@ pages:
     caption: "Opgaver"
   steps:
     caption: "Trin"
+
+  # Project journal and ledger
+  project_journal_templates:
+    caption: "Projektkladdeskabeloner"
+  project_journal_template_list:
+    caption: "Projektkladdeskabelonoversigt"
+  project_jnl_batches:
+    caption: "Projektkladdenavne"
+  project_registers:
+    caption: "Projektjournaler"
+  project_journal:
+    caption: "Projektkladde"
+    fields:
+      project_description: "Projektbeskrivelse"
+      account_name: "Kontonavn"
+  recurring_project_jnl:
+    caption: "Gentagende projektkladde"
+    fields:
+      project_description: "Projektbeskrivelse"
+      account_name: "Kontonavn"
+  project_ledger_entries:
+    caption: "Projektposter"

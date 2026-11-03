@@ -37,6 +37,7 @@
 //	OnValidate_Document_date(rec *gtables.ResLedgerEntry) error
 //	OnValidate_External_document_no(rec *gtables.ResLedgerEntry) error
 //	OnValidate_No_series(rec *gtables.ResLedgerEntry) error
+//	OnValidate_Project_no(rec *gtables.ResLedgerEntry) error
 
 package tables
 
@@ -108,6 +109,7 @@ type ResLedgerEntry struct {
 	Document_date          types.Date               `db:"document_date"`
 	External_document_no   types.Code               `db:"external_document_no"`
 	No_series              types.Code               `db:"no_series"`
+	Project_no             types.Code               `db:"project_no"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -214,6 +216,7 @@ var ResLedgerEntry_FieldNo = struct {
 	Document_date          int
 	External_document_no   int
 	No_series              int
+	Project_no             int
 }{
 	Entry_no:               1,
 	Entry_type:             2,
@@ -242,6 +245,7 @@ var ResLedgerEntry_FieldNo = struct {
 	Document_date:          27,
 	External_document_no:   28,
 	No_series:              29,
+	Project_no:             9,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -301,6 +305,8 @@ func (t *ResLedgerEntry) FieldNo(fieldName string) int {
 		return 28
 	case "no_series":
 		return 29
+	case "project_no":
+		return 9
 	}
 	return 0
 }
@@ -362,6 +368,8 @@ func (t *ResLedgerEntry) FieldName(fieldNo int) string {
 		return "external_document_no"
 	case 29:
 		return "no_series"
+	case 9:
+		return "project_no"
 	}
 	return ""
 }
@@ -544,6 +552,9 @@ type (
 	ResLedgerEntryOnValidate_No_series interface {
 		OnValidate_No_series(rec *ResLedgerEntry) error
 	}
+	ResLedgerEntryOnValidate_Project_no interface {
+		OnValidate_Project_no(rec *ResLedgerEntry) error
+	}
 )
 
 // resLedgerEntryLogic is the registered business logic of Res_Ledger_Entry, in
@@ -627,6 +638,8 @@ func resLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ResLedgerEntryOnValidate_External_document_no)
 	case "OnValidate_No_series":
 		_, ok = logic.(ResLedgerEntryOnValidate_No_series)
+	case "OnValidate_Project_no":
+		_, ok = logic.(ResLedgerEntryOnValidate_Project_no)
 	default:
 		return false, false
 	}
@@ -749,6 +762,9 @@ func (t *ResLedgerEntry) CheckFields() error {
 	if err := tables.CheckMaxLength(ResLedgerEntryTableName, "no_series", string(t.No_series), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(ResLedgerEntryTableName, "project_no", string(t.Project_no), 20); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -802,7 +818,8 @@ func GetResLedgerEntryTableSchema() string {
 		gen_prod_posting_group TEXT(10),
 		document_date TEXT,
 		external_document_no TEXT(20),
-		no_series TEXT(10)
+		no_series TEXT(10),
+		project_no TEXT(20)
 	`
 }
 
@@ -835,7 +852,8 @@ func GetResLedgerEntryPostgresTableSchema() string {
 		gen_prod_posting_group VARCHAR(10),
 		document_date TIMESTAMP,
 		external_document_no VARCHAR(20),
-		no_series VARCHAR(10)
+		no_series VARCHAR(10),
+		project_no VARCHAR(20)
 	`
 }
 
@@ -1027,6 +1045,7 @@ func (t *ResLedgerEntry) StoreOldValues() {
 	t.oldValues["document_date"] = t.Document_date
 	t.oldValues["external_document_no"] = t.External_document_no
 	t.oldValues["no_series"] = t.No_series
+	t.oldValues["project_no"] = t.Project_no
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1121,6 +1140,9 @@ func (t *ResLedgerEntry) XRec() *ResLedgerEntry {
 	}
 	if v, ok := t.oldValues["no_series"].(types.Code); ok {
 		x.No_series = v
+	}
+	if v, ok := t.oldValues["project_no"].(types.Code); ok {
+		x.Project_no = v
 	}
 	return x
 }
@@ -1220,6 +1242,7 @@ func (t *ResLedgerEntry) GetByPK(entry_no int) bool {
 	var document_dateNull sql.NullString
 	var external_document_noNull sql.NullString
 	var no_seriesNull sql.NullString
+	var project_noNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1227,7 +1250,7 @@ func (t *ResLedgerEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, project_no FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1261,6 +1284,7 @@ func (t *ResLedgerEntry) GetByPK(entry_no int) bool {
 		&document_dateNull,
 		&external_document_noNull,
 		&no_seriesNull,
+		&project_noNull,
 	)
 
 	if err != nil {
@@ -1301,6 +1325,7 @@ func (t *ResLedgerEntry) GetByPK(entry_no int) bool {
 	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 	t.External_document_no = types.NewCode(external_document_noNull.String)
 	t.No_series = types.NewCode(no_seriesNull.String)
+	t.Project_no = types.NewCode(project_noNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1350,11 +1375,12 @@ func (t *ResLedgerEntry) Insert(runTrigger bool) bool {
 		t.Document_date,
 		t.External_document_no,
 		t.No_series,
+		t.Project_no,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, project_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1419,10 +1445,11 @@ func (t *ResLedgerEntry) InsertAll(records []*ResLedgerEntry, runTrigger bool) e
 			r.Document_date,
 			r.External_document_no,
 			r.No_series,
+			r.Project_no,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ResLedgerEntryTableName)
-	columns := []string{"entry_no", "entry_type", "document_no", "posting_date", "resource_no", "resource_group_no", "description", "work_type_code", "unit_of_measure_code", "quantity", "direct_unit_cost", "unit_cost", "total_cost", "unit_price", "total_price", "dimension_1_code", "dimension_2_code", "user_id", "source_code", "chargeable", "journal_batch_name", "reason_code", "gen_bus_posting_group", "gen_prod_posting_group", "document_date", "external_document_no", "no_series"}
+	columns := []string{"entry_no", "entry_type", "document_no", "posting_date", "resource_no", "resource_group_no", "description", "work_type_code", "unit_of_measure_code", "quantity", "direct_unit_cost", "unit_cost", "total_cost", "unit_price", "total_price", "dimension_1_code", "dimension_2_code", "user_id", "source_code", "chargeable", "journal_batch_name", "reason_code", "gen_bus_posting_group", "gen_prod_posting_group", "document_date", "external_document_no", "no_series", "project_no"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1570,6 +1597,10 @@ func (t *ResLedgerEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "no_series = ?")
 			values = append(values, t.No_series)
 		}
+		if t.hasFieldChanged("project_no") {
+			setClauses = append(setClauses, "project_no = ?")
+			values = append(values, t.Project_no)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -1629,6 +1660,8 @@ func (t *ResLedgerEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.External_document_no)
 		setClauses = append(setClauses, "no_series = ?")
 		values = append(values, t.No_series)
+		setClauses = append(setClauses, "project_no = ?")
+		values = append(values, t.Project_no)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -1804,6 +1837,10 @@ func (t *ResLedgerEntry) hasFieldChanged(fieldName string) bool {
 	case "no_series":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.No_series.Equal(old)
+		}
+	case "project_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Project_no.Equal(old)
 		}
 	}
 
@@ -2103,6 +2140,8 @@ func (t *ResLedgerEntry) columnName(fieldName string) (string, bool) {
 		return "external_document_no", true
 	case strings.ToLower("no_series"):
 		return "no_series", true
+	case strings.ToLower("project_no"):
+		return "project_no", true
 	}
 	return "", false
 }
@@ -2478,7 +2517,7 @@ func (t *ResLedgerEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, project_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2509,6 +2548,7 @@ func (t *ResLedgerEntry) FindFirst() bool {
 	var document_dateNull sql.NullString
 	var external_document_noNull sql.NullString
 	var no_seriesNull sql.NullString
+	var project_noNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&t.Entry_no,
@@ -2538,6 +2578,7 @@ func (t *ResLedgerEntry) FindFirst() bool {
 		&document_dateNull,
 		&external_document_noNull,
 		&no_seriesNull,
+		&project_noNull,
 	)
 
 	if err != nil {
@@ -2575,6 +2616,7 @@ func (t *ResLedgerEntry) FindFirst() bool {
 	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 	t.External_document_no = types.NewCode(external_document_noNull.String)
 	t.No_series = types.NewCode(no_seriesNull.String)
+	t.Project_no = types.NewCode(project_noNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2595,7 +2637,7 @@ func (t *ResLedgerEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, project_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2626,6 +2668,7 @@ func (t *ResLedgerEntry) FindLast() bool {
 	var document_dateNull sql.NullString
 	var external_document_noNull sql.NullString
 	var no_seriesNull sql.NullString
+	var project_noNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&t.Entry_no,
@@ -2655,6 +2698,7 @@ func (t *ResLedgerEntry) FindLast() bool {
 		&document_dateNull,
 		&external_document_noNull,
 		&no_seriesNull,
+		&project_noNull,
 	)
 
 	if err != nil {
@@ -2692,6 +2736,7 @@ func (t *ResLedgerEntry) FindLast() bool {
 	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 	t.External_document_no = types.NewCode(external_document_noNull.String)
 	t.No_series = types.NewCode(no_seriesNull.String)
+	t.Project_no = types.NewCode(project_noNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2742,7 +2787,7 @@ func (t *ResLedgerEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, project_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2837,6 +2882,7 @@ func (t *ResLedgerEntry) Next(steps ...int) bool {
 		var document_dateNull sql.NullString
 		var external_document_noNull sql.NullString
 		var no_seriesNull sql.NullString
+		var project_noNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&t.Entry_no,
@@ -2866,6 +2912,7 @@ func (t *ResLedgerEntry) Next(steps ...int) bool {
 			&document_dateNull,
 			&external_document_noNull,
 			&no_seriesNull,
+			&project_noNull,
 		)
 
 		if err != nil {
@@ -2902,6 +2949,7 @@ func (t *ResLedgerEntry) Next(steps ...int) bool {
 		t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 		t.External_document_no = types.NewCode(external_document_noNull.String)
 		t.No_series = types.NewCode(no_seriesNull.String)
+		t.Project_no = types.NewCode(project_noNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -2951,7 +2999,7 @@ func (t *ResLedgerEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, project_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2999,6 +3047,7 @@ func (t *ResLedgerEntry) FindSetBuffered() bool {
 		var document_dateNull sql.NullString
 		var external_document_noNull sql.NullString
 		var no_seriesNull sql.NullString
+		var project_noNull sql.NullString
 
 		err := rows.Scan(
 			&record.Entry_no,
@@ -3028,6 +3077,7 @@ func (t *ResLedgerEntry) FindSetBuffered() bool {
 			&document_dateNull,
 			&external_document_noNull,
 			&no_seriesNull,
+			&project_noNull,
 		)
 
 		if err != nil {
@@ -3062,6 +3112,7 @@ func (t *ResLedgerEntry) FindSetBuffered() bool {
 		record.Document_date, _ = types.NewDateFromString(document_dateNull.String)
 		record.External_document_no = types.NewCode(external_document_noNull.String)
 		record.No_series = types.NewCode(no_seriesNull.String)
+		record.Project_no = types.NewCode(project_noNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -3117,6 +3168,7 @@ func (t *ResLedgerEntry) copyFromBuffered(record *ResLedgerEntry) {
 	t.Document_date = record.Document_date
 	t.External_document_no = record.External_document_no
 	t.No_series = record.No_series
+	t.Project_no = record.Project_no
 	t.StoreOldValues()
 }
 
@@ -3898,6 +3950,28 @@ func (t *ResLedgerEntry) ValidateField(fieldName string, value interface{}) erro
 			}
 		}
 		return nil
+	case "project_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Project_no = v
+		} else if v, ok := value.(string); ok {
+			t.Project_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field project_no")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_no"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ResLedgerEntryOnValidate_Project_no); ok {
+				if err := trg.OnValidate_Project_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -3964,6 +4038,8 @@ func (t *ResLedgerEntry) FieldValue(no int) (any, bool) {
 		return t.External_document_no, true
 	case 29:
 		return t.No_series, true
+	case 9:
+		return t.Project_no, true
 	}
 	return nil, false
 }
@@ -4176,6 +4252,15 @@ func (t *ResLedgerEntry) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.No_series = types.NewCode(v)
+			return true
+		}
+	case 9:
+		if v, ok := value.(types.Code); ok {
+			t.Project_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Project_no = types.NewCode(v)
 			return true
 		}
 	}
@@ -4721,6 +4806,8 @@ func (t *ResLedgerEntry) columnValue(column string) (interface{}, bool) {
 		return t.External_document_no, true
 	case "no_series":
 		return t.No_series, true
+	case "project_no":
+		return t.Project_no, true
 	}
 	return nil, false
 }
@@ -4801,6 +4888,7 @@ func (t *ResLedgerEntry) Init() {
 	t.Document_date = *new(types.Date)
 	t.External_document_no = *new(types.Code)
 	t.No_series = *new(types.Code)
+	t.Project_no = *new(types.Code)
 	t.applyDefaults()
 }
 
@@ -4862,6 +4950,7 @@ func (t *ResLedgerEntry) ToMap() map[string]interface{} {
 		"document_date":          t.Document_date.String(),
 		"external_document_no":   t.External_document_no.String(),
 		"no_series":              t.No_series.String(),
+		"project_no":             t.Project_no.String(),
 	}
 }
 
@@ -5062,6 +5151,11 @@ func (t *ResLedgerEntry) FromMap(data map[string]interface{}) {
 	if v, ok := data["no_series"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.No_series = types.NewCode(s)
+		}
+	}
+	if v, ok := data["project_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Project_no = types.NewCode(s)
 		}
 	}
 }
@@ -5361,6 +5455,16 @@ func (t *ResLedgerEntry) GetFields() []tables.FieldInfo {
 			PrimaryKey: false,
 			FlowField:  false,
 		},
+		{
+			No:         9,
+			Name:       "project_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
 	}
 }
 
@@ -5509,6 +5613,16 @@ func (t *ResLedgerEntry) GetTableRelationFields() map[string]tables.TableRelatio
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
 				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"project_no": {
+			Table:        "Project",
+			Field:        "no",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "no", Width: 100},
 				{Source: "description", Width: 250},
 			},
 			SearchTimeout: 0,

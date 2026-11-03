@@ -1,6 +1,7 @@
 package demodata
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
@@ -110,5 +111,111 @@ func insertDemoProjects(src ftables.Source, today time.Time, counts *Counts) err
 			}
 		}
 	}
+	return nil
+}
+
+// ProjectJnlPoster posts a project journal line (codeunit 202 Project Jnl.-Post Line)
+type ProjectJnlPoster interface {
+	Run(projectJnlLine *gtables.ProjectJournalLine) error
+}
+
+// postDemoProjectUsage: the project on Order uses its resources and items every month since it
+// started (project journal lines posted through codeunit 202 — the resource usage, the items
+// taken from inventory), and the customer is invoiced the consultant's hours of the first month
+// with the project on the invoice lines (codeunit 80: the project's sale, applied to the usage)
+func postDemoProjectUsage(src ftables.Source, open func(src ftables.Source) ProjectJnlPoster, openSales func(src ftables.Source) SalesPoster, today time.Time, counts *Counts) error {
+	project := gtables.NewProject(src)
+	project.SetRange("status", gtables.Project_Status.Order)
+	if !project.FindFirst() {
+		return nil
+	}
+	poster := open(src)
+	usage := []struct {
+		lineType gtables.ProjectJournalLineType
+		no       types.Code
+		workType types.Code
+		qty      int64
+	}{
+		{gtables.ProjectJournalLine_Type.Resource, "R0010", "NORMAL", 10},
+		{gtables.ProjectJournalLine_Type.Resource, "R0040", "NORMAL", 30},
+		{gtables.ProjectJournalLine_Type.Item, "1310", "", 2},
+	}
+	start := project.Starting_date.Time
+	for month := start; !month.After(today); month = month.AddDate(0, 1, 0) {
+		date := types.NewDateFromTime(month.AddDate(0, 0, 14))
+		if date.Time.After(today) {
+			date = types.NewDateFromTime(today)
+		}
+		for _, u := range usage {
+			l := gtables.NewProjectJournalLine(src)
+			l.Init()
+			l.Journal_template_name = "PROJECT"
+			l.Journal_batch_name = "DEFAULT"
+			l.Posting_date = date
+			l.Document_date = date
+			l.Document_no = types.NewCode("PRJ-" + month.Format("200601"))
+			l.Source_code = "PROJJNL"
+			l.Entry_type = gtables.ProjectJournalLine_Entry_type.Usage
+			l.Type = u.lineType
+			err := set(l, "project_no", project.No, "no", u.no)
+			if err == nil && u.workType != "" {
+				err = set(l, "work_type_code", u.workType)
+			}
+			if err == nil && u.lineType == gtables.ProjectJournalLine_Type.Item {
+				err = set(l, "location_code", types.Code("MAIN"))
+			}
+			if err == nil {
+				err = set(l, "quantity", types.NewDecimalFromInt(u.qty))
+			}
+			if err == nil {
+				err = poster.Run(l)
+			}
+			if err != nil {
+				return fmt.Errorf("demo project usage %s %s: %w", project.No, u.no, err)
+			}
+			counts.ProjectLedgerEntries++
+		}
+	}
+
+	if openSales == nil {
+		return nil
+	}
+	invoiceDate := types.NewDateFromTime(start.AddDate(0, 1, 0))
+	if invoiceDate.Time.After(today) {
+		invoiceDate = types.NewDateFromTime(today)
+	}
+	invoice := gtables.NewSalesHeader(src)
+	invoice.Document_type = gtables.SalesHeader_Document_type.Invoice
+	err := invoice.InsertOrError(true)
+	if err != nil {
+		return err
+	}
+	err = set(invoice, "sell_to_customer_no", project.Bill_to_customer_no, "posting_date", invoiceDate, "document_date", invoiceDate, "project_no", project.No)
+	if err == nil {
+		err = invoice.ModifyOrError(true)
+	}
+	if err != nil {
+		return fmt.Errorf("demo project invoice: %w", err)
+	}
+	line := gtables.NewSalesLine(src)
+	line.Document_type = gtables.SalesLine_Document_type.Invoice
+	line.Document_no = invoice.No
+	line.Line_no = 10000
+	err = line.InsertOrError(true)
+	if err == nil {
+		err = set(line, "type", gtables.SalesLine_Type.Resource, "no", types.Code("R0010"), "work_type_code", types.Code("NORMAL"), "quantity", types.NewDecimalFromInt(10))
+	}
+	if err == nil {
+		err = line.ModifyOrError(true)
+	}
+	if err != nil {
+		return fmt.Errorf("demo project invoice line: %w", err)
+	}
+	invoice.Ship, invoice.Invoice = true, true
+	err = openSales(src).Run(invoice)
+	if err != nil {
+		return fmt.Errorf("demo project invoice posting: %w", err)
+	}
+	counts.ProjectLedgerEntries++
 	return nil
 }

@@ -17,6 +17,7 @@ const (
 	vendLedgEntriesPage     = 29
 	itemLedgEntriesPage     = 38
 	resLedgEntriesPage      = 202
+	projectLedgEntriesPage  = 92
 	taxEntriesPage          = 315
 	bankAccLedgEntriesPage  = 372
 	checkLedgEntriesPage    = 374
@@ -148,6 +149,13 @@ func FindRecords(docEntry *gtables.DocumentEntry, docNoFilter, postingDateFilter
 	if fcodeunits.CanRead("Res_Ledger_Entry") {
 		resLedgEntry := gtables.NewResLedgerEntry(docEntry)
 		err := findEntries(docEntry, resLedgEntry, gtables.ResLedgerEntryTableID, resLedgEntriesPage, docNoFilter, postingDateFilter)
+		if err != nil {
+			return err
+		}
+	}
+	if fcodeunits.CanRead("Project_Ledger_Entry") {
+		projectLedgEntry := gtables.NewProjectLedgerEntry(docEntry)
+		err := findEntries(docEntry, projectLedgEntry, gtables.ProjectLedgerEntryTableID, projectLedgEntriesPage, docNoFilter, postingDateFilter)
 		if err != nil {
 			return err
 		}

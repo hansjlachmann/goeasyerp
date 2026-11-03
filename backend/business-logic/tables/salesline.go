@@ -135,6 +135,7 @@ func (salesLineLogic) OnValidate_No(rec *gtables.SalesLine) error {
 	rec.Shipment_date = salesHeader.Shipment_date
 	rec.Dimension_1_code = salesHeader.Dimension_1_code
 	rec.Dimension_2_code = salesHeader.Dimension_2_code
+	rec.Project_no = salesHeader.Project_no
 	rec.Location_code = salesHeader.Location_code
 	rec.Price_group_code = salesHeader.Price_group_code
 	rec.Transaction_type = salesHeader.Transaction_type
@@ -609,6 +610,16 @@ func (salesLineLogic) OnValidate_Price_group_code(rec *gtables.SalesLine) error 
 
 // OnValidate_Work_type_code: a resource's price and cost for the work type, and its unit of
 // measure
+// OnValidate_Project_no: a reserved line keeps its project; the unit price for the project
+func (salesLineLogic) OnValidate_Project_no(rec *gtables.SalesLine) error {
+	rec.CalcFields("reserved_qty_base")
+	err := rec.TestField("reserved_qty_base", types.Decimal{})
+	if err != nil {
+		return err
+	}
+	return updateSalesLineUnitPrice(rec)
+}
+
 func (salesLineLogic) OnValidate_Work_type_code(rec *gtables.SalesLine) error {
 	if rec.Type == gtables.SalesLine_Type.Resource {
 		err := updateSalesLineUnitPrice(rec)
@@ -866,6 +877,7 @@ func updateSalesLineUnitPrice(rec *gtables.SalesLine) error {
 		itemPriceInclTax = itemPrice.Price_includes_tax
 	case gtables.SalesLine_Type.Resource:
 		resPrice := gtables.NewResourcePrice(rec)
+		resPrice.Project_no = rec.Project_no
 		resPrice.Code = rec.No
 		resPrice.Work_type_code = rec.Work_type_code
 		resPrice.Currency_code = rec.Currency_code

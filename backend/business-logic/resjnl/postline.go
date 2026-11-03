@@ -14,8 +14,6 @@ var unitPrecision = types.MustDecimal("0.00001")
 // resource ledger entry (a sale with the opposite sign) and keeps the Resource Register. Open it
 // on the posting's transaction; one instance per posting keeps the entry numbers and the
 // register.
-//
-// Not migrated yet: jobs (Job No.).
 type ResJnlPostLine struct {
 	src ftables.Source
 
@@ -128,6 +126,7 @@ func (p *ResJnlPostLine) code() error {
 	resLedgEntry.Resource_group_no = resJnlLine.Resource_group_no
 	resLedgEntry.Description = resJnlLine.Description
 	resLedgEntry.Work_type_code = resJnlLine.Work_type_code
+	resLedgEntry.Project_no = resJnlLine.Project_no
 	resLedgEntry.Unit_of_measure_code = resJnlLine.Unit_of_measure_code
 	resLedgEntry.Quantity = resJnlLine.Quantity
 	resLedgEntry.Direct_unit_cost = resJnlLine.Direct_unit_cost

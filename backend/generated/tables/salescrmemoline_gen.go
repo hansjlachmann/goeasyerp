@@ -63,6 +63,13 @@
 //	OnValidate_Serial_no(rec *gtables.SalesCrMemoLine) error
 //	OnValidate_Lot_no(rec *gtables.SalesCrMemoLine) error
 //	OnValidate_Bin_code(rec *gtables.SalesCrMemoLine) error
+//	OnValidate_Project_no(rec *gtables.SalesCrMemoLine) error
+//	OnValidate_Appl_to_project_entry(rec *gtables.SalesCrMemoLine) error
+//	OnValidate_Phase_code(rec *gtables.SalesCrMemoLine) error
+//	OnValidate_Task_code(rec *gtables.SalesCrMemoLine) error
+//	OnValidate_Step_code(rec *gtables.SalesCrMemoLine) error
+//	OnValidate_Project_applies_to_id(rec *gtables.SalesCrMemoLine) error
+//	OnValidate_Apply_and_close_project(rec *gtables.SalesCrMemoLine) error
 
 package tables
 
@@ -177,6 +184,13 @@ type SalesCrMemoLine struct {
 	Serial_no               types.Code                          `db:"serial_no"`
 	Lot_no                  types.Code                          `db:"lot_no"`
 	Bin_code                types.Code                          `db:"bin_code"`
+	Project_no              types.Code                          `db:"project_no"`
+	Appl_to_project_entry   int                                 `db:"appl_to_project_entry"`
+	Phase_code              types.Code                          `db:"phase_code"`
+	Task_code               types.Code                          `db:"task_code"`
+	Step_code               types.Code                          `db:"step_code"`
+	Project_applies_to_id   types.Code                          `db:"project_applies_to_id"`
+	Apply_and_close_project bool                                `db:"apply_and_close_project"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -326,6 +340,13 @@ var SalesCrMemoLine_FieldNo = struct {
 	Serial_no               int
 	Lot_no                  int
 	Bin_code                int
+	Project_no              int
+	Appl_to_project_entry   int
+	Phase_code              int
+	Task_code               int
+	Step_code               int
+	Project_applies_to_id   int
+	Apply_and_close_project int
 }{
 	Sell_to_customer_no:     2,
 	Document_no:             3,
@@ -380,6 +401,13 @@ var SalesCrMemoLine_FieldNo = struct {
 	Serial_no:               53,
 	Lot_no:                  5400,
 	Bin_code:                5403,
+	Project_no:              45,
+	Appl_to_project_entry:   46,
+	Phase_code:              47,
+	Task_code:               48,
+	Step_code:               49,
+	Project_applies_to_id:   50,
+	Apply_and_close_project: 51,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -491,6 +519,20 @@ func (t *SalesCrMemoLine) FieldNo(fieldName string) int {
 		return 5400
 	case "bin_code":
 		return 5403
+	case "project_no":
+		return 45
+	case "appl_to_project_entry":
+		return 46
+	case "phase_code":
+		return 47
+	case "task_code":
+		return 48
+	case "step_code":
+		return 49
+	case "project_applies_to_id":
+		return 50
+	case "apply_and_close_project":
+		return 51
 	}
 	return 0
 }
@@ -604,6 +646,20 @@ func (t *SalesCrMemoLine) FieldName(fieldNo int) string {
 		return "lot_no"
 	case 5403:
 		return "bin_code"
+	case 45:
+		return "project_no"
+	case 46:
+		return "appl_to_project_entry"
+	case 47:
+		return "phase_code"
+	case 48:
+		return "task_code"
+	case 49:
+		return "step_code"
+	case 50:
+		return "project_applies_to_id"
+	case 51:
+		return "apply_and_close_project"
 	}
 	return ""
 }
@@ -864,6 +920,27 @@ type (
 	SalesCrMemoLineOnValidate_Bin_code interface {
 		OnValidate_Bin_code(rec *SalesCrMemoLine) error
 	}
+	SalesCrMemoLineOnValidate_Project_no interface {
+		OnValidate_Project_no(rec *SalesCrMemoLine) error
+	}
+	SalesCrMemoLineOnValidate_Appl_to_project_entry interface {
+		OnValidate_Appl_to_project_entry(rec *SalesCrMemoLine) error
+	}
+	SalesCrMemoLineOnValidate_Phase_code interface {
+		OnValidate_Phase_code(rec *SalesCrMemoLine) error
+	}
+	SalesCrMemoLineOnValidate_Task_code interface {
+		OnValidate_Task_code(rec *SalesCrMemoLine) error
+	}
+	SalesCrMemoLineOnValidate_Step_code interface {
+		OnValidate_Step_code(rec *SalesCrMemoLine) error
+	}
+	SalesCrMemoLineOnValidate_Project_applies_to_id interface {
+		OnValidate_Project_applies_to_id(rec *SalesCrMemoLine) error
+	}
+	SalesCrMemoLineOnValidate_Apply_and_close_project interface {
+		OnValidate_Apply_and_close_project(rec *SalesCrMemoLine) error
+	}
 )
 
 // salesCrMemoLineLogic is the registered business logic of Sales_Cr_Memo_Line, in
@@ -999,6 +1076,20 @@ func salesCrMemoLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SalesCrMemoLineOnValidate_Lot_no)
 	case "OnValidate_Bin_code":
 		_, ok = logic.(SalesCrMemoLineOnValidate_Bin_code)
+	case "OnValidate_Project_no":
+		_, ok = logic.(SalesCrMemoLineOnValidate_Project_no)
+	case "OnValidate_Appl_to_project_entry":
+		_, ok = logic.(SalesCrMemoLineOnValidate_Appl_to_project_entry)
+	case "OnValidate_Phase_code":
+		_, ok = logic.(SalesCrMemoLineOnValidate_Phase_code)
+	case "OnValidate_Task_code":
+		_, ok = logic.(SalesCrMemoLineOnValidate_Task_code)
+	case "OnValidate_Step_code":
+		_, ok = logic.(SalesCrMemoLineOnValidate_Step_code)
+	case "OnValidate_Project_applies_to_id":
+		_, ok = logic.(SalesCrMemoLineOnValidate_Project_applies_to_id)
+	case "OnValidate_Apply_and_close_project":
+		_, ok = logic.(SalesCrMemoLineOnValidate_Apply_and_close_project)
 	default:
 		return false, false
 	}
@@ -1154,6 +1245,21 @@ func (t *SalesCrMemoLine) CheckFields() error {
 	if err := tables.CheckMaxLength(SalesCrMemoLineTableName, "bin_code", string(t.Bin_code), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(SalesCrMemoLineTableName, "project_no", string(t.Project_no), 20); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(SalesCrMemoLineTableName, "phase_code", string(t.Phase_code), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(SalesCrMemoLineTableName, "task_code", string(t.Task_code), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(SalesCrMemoLineTableName, "step_code", string(t.Step_code), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(SalesCrMemoLineTableName, "project_applies_to_id", string(t.Project_applies_to_id), 20); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -1234,6 +1340,13 @@ func GetSalesCrMemoLineTableSchema() string {
 		serial_no TEXT(20),
 		lot_no TEXT(20),
 		bin_code TEXT(10),
+		project_no TEXT(20),
+		appl_to_project_entry INTEGER,
+		phase_code TEXT(10),
+		task_code TEXT(10),
+		step_code TEXT(10),
+		project_applies_to_id TEXT(20),
+		apply_and_close_project INTEGER,
 		PRIMARY KEY (document_no, line_no)
 	`
 }
@@ -1294,6 +1407,13 @@ func GetSalesCrMemoLinePostgresTableSchema() string {
 		serial_no VARCHAR(20),
 		lot_no VARCHAR(20),
 		bin_code VARCHAR(10),
+		project_no VARCHAR(20),
+		appl_to_project_entry INTEGER,
+		phase_code VARCHAR(10),
+		task_code VARCHAR(10),
+		step_code VARCHAR(10),
+		project_applies_to_id VARCHAR(20),
+		apply_and_close_project BOOLEAN,
 		PRIMARY KEY (document_no, line_no)
 	`
 }
@@ -1485,6 +1605,13 @@ func (t *SalesCrMemoLine) StoreOldValues() {
 	t.oldValues["serial_no"] = t.Serial_no
 	t.oldValues["lot_no"] = t.Lot_no
 	t.oldValues["bin_code"] = t.Bin_code
+	t.oldValues["project_no"] = t.Project_no
+	t.oldValues["appl_to_project_entry"] = t.Appl_to_project_entry
+	t.oldValues["phase_code"] = t.Phase_code
+	t.oldValues["task_code"] = t.Task_code
+	t.oldValues["step_code"] = t.Step_code
+	t.oldValues["project_applies_to_id"] = t.Project_applies_to_id
+	t.oldValues["apply_and_close_project"] = t.Apply_and_close_project
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1658,6 +1785,27 @@ func (t *SalesCrMemoLine) XRec() *SalesCrMemoLine {
 	if v, ok := t.oldValues["bin_code"].(types.Code); ok {
 		x.Bin_code = v
 	}
+	if v, ok := t.oldValues["project_no"].(types.Code); ok {
+		x.Project_no = v
+	}
+	if v, ok := t.oldValues["appl_to_project_entry"].(int); ok {
+		x.Appl_to_project_entry = v
+	}
+	if v, ok := t.oldValues["phase_code"].(types.Code); ok {
+		x.Phase_code = v
+	}
+	if v, ok := t.oldValues["task_code"].(types.Code); ok {
+		x.Task_code = v
+	}
+	if v, ok := t.oldValues["step_code"].(types.Code); ok {
+		x.Step_code = v
+	}
+	if v, ok := t.oldValues["project_applies_to_id"].(types.Code); ok {
+		x.Project_applies_to_id = v
+	}
+	if v, ok := t.oldValues["apply_and_close_project"].(bool); ok {
+		x.Apply_and_close_project = v
+	}
 	return x
 }
 
@@ -1781,6 +1929,13 @@ func (t *SalesCrMemoLine) GetByPK(document_no types.Code, line_no int) bool {
 	var serial_noNull sql.NullString
 	var lot_noNull sql.NullString
 	var bin_codeNull sql.NullString
+	var project_noNull sql.NullString
+	var appl_to_project_entryVal int
+	var phase_codeNull sql.NullString
+	var task_codeNull sql.NullString
+	var step_codeNull sql.NullString
+	var project_applies_to_idNull sql.NullString
+	var apply_and_close_projectBool sql.NullBool
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1789,7 +1944,7 @@ func (t *SalesCrMemoLine) GetByPK(document_no types.Code, line_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no, bin_code FROM "%s" WHERE 1=1 AND document_no = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project FROM "%s" WHERE 1=1 AND document_no = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1849,6 +2004,13 @@ func (t *SalesCrMemoLine) GetByPK(document_no types.Code, line_no int) bool {
 		&serial_noNull,
 		&lot_noNull,
 		&bin_codeNull,
+		&project_noNull,
+		&appl_to_project_entryVal,
+		&phase_codeNull,
+		&task_codeNull,
+		&step_codeNull,
+		&project_applies_to_idNull,
+		&apply_and_close_projectBool,
 	)
 
 	if err != nil {
@@ -1915,6 +2077,13 @@ func (t *SalesCrMemoLine) GetByPK(document_no types.Code, line_no int) bool {
 	t.Serial_no = types.NewCode(serial_noNull.String)
 	t.Lot_no = types.NewCode(lot_noNull.String)
 	t.Bin_code = types.NewCode(bin_codeNull.String)
+	t.Project_no = types.NewCode(project_noNull.String)
+	t.Appl_to_project_entry = appl_to_project_entryVal
+	t.Phase_code = types.NewCode(phase_codeNull.String)
+	t.Task_code = types.NewCode(task_codeNull.String)
+	t.Step_code = types.NewCode(step_codeNull.String)
+	t.Project_applies_to_id = types.NewCode(project_applies_to_idNull.String)
+	t.Apply_and_close_project = apply_and_close_projectBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1990,11 +2159,18 @@ func (t *SalesCrMemoLine) Insert(runTrigger bool) bool {
 		t.Serial_no,
 		t.Lot_no,
 		t.Bin_code,
+		t.Project_no,
+		t.Appl_to_project_entry,
+		t.Phase_code,
+		t.Task_code,
+		t.Step_code,
+		t.Project_applies_to_id,
+		t.Apply_and_close_project,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_no, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_no, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2085,10 +2261,17 @@ func (t *SalesCrMemoLine) InsertAll(records []*SalesCrMemoLine, runTrigger bool)
 			r.Serial_no,
 			r.Lot_no,
 			r.Bin_code,
+			r.Project_no,
+			r.Appl_to_project_entry,
+			r.Phase_code,
+			r.Task_code,
+			r.Step_code,
+			r.Project_applies_to_id,
+			r.Apply_and_close_project,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, SalesCrMemoLineTableName)
-	columns := []string{"sell_to_customer_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "quantity_disc_code", "shipment_date", "description", "description_2", "unit_of_measure", "quantity", "unit_price", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "dimension_1_code", "dimension_2_code", "price_group_code", "allow_quantity_disc", "work_type_code", "cust_item_disc_percent", "profit_percent", "bill_to_customer_no", "inv_discount_amount", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_area_code", "tax_liable", "tax_group_code", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "tax_base_amount", "unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "serial_no", "lot_no", "bin_code"}
+	columns := []string{"sell_to_customer_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "quantity_disc_code", "shipment_date", "description", "description_2", "unit_of_measure", "quantity", "unit_price", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "dimension_1_code", "dimension_2_code", "price_group_code", "allow_quantity_disc", "work_type_code", "cust_item_disc_percent", "profit_percent", "bill_to_customer_no", "inv_discount_amount", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_area_code", "tax_liable", "tax_group_code", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "tax_base_amount", "unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "serial_no", "lot_no", "bin_code", "project_no", "appl_to_project_entry", "phase_code", "task_code", "step_code", "project_applies_to_id", "apply_and_close_project"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2343,6 +2526,34 @@ func (t *SalesCrMemoLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "bin_code = ?")
 			values = append(values, t.Bin_code)
 		}
+		if t.hasFieldChanged("project_no") {
+			setClauses = append(setClauses, "project_no = ?")
+			values = append(values, t.Project_no)
+		}
+		if t.hasFieldChanged("appl_to_project_entry") {
+			setClauses = append(setClauses, "appl_to_project_entry = ?")
+			values = append(values, t.Appl_to_project_entry)
+		}
+		if t.hasFieldChanged("phase_code") {
+			setClauses = append(setClauses, "phase_code = ?")
+			values = append(values, t.Phase_code)
+		}
+		if t.hasFieldChanged("task_code") {
+			setClauses = append(setClauses, "task_code = ?")
+			values = append(values, t.Task_code)
+		}
+		if t.hasFieldChanged("step_code") {
+			setClauses = append(setClauses, "step_code = ?")
+			values = append(values, t.Step_code)
+		}
+		if t.hasFieldChanged("project_applies_to_id") {
+			setClauses = append(setClauses, "project_applies_to_id = ?")
+			values = append(values, t.Project_applies_to_id)
+		}
+		if t.hasFieldChanged("apply_and_close_project") {
+			setClauses = append(setClauses, "apply_and_close_project = ?")
+			values = append(values, t.Apply_and_close_project)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -2452,6 +2663,20 @@ func (t *SalesCrMemoLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Lot_no)
 		setClauses = append(setClauses, "bin_code = ?")
 		values = append(values, t.Bin_code)
+		setClauses = append(setClauses, "project_no = ?")
+		values = append(values, t.Project_no)
+		setClauses = append(setClauses, "appl_to_project_entry = ?")
+		values = append(values, t.Appl_to_project_entry)
+		setClauses = append(setClauses, "phase_code = ?")
+		values = append(values, t.Phase_code)
+		setClauses = append(setClauses, "task_code = ?")
+		values = append(values, t.Task_code)
+		setClauses = append(setClauses, "step_code = ?")
+		values = append(values, t.Step_code)
+		setClauses = append(setClauses, "project_applies_to_id = ?")
+		values = append(values, t.Project_applies_to_id)
+		setClauses = append(setClauses, "apply_and_close_project = ?")
+		values = append(values, t.Apply_and_close_project)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -2717,6 +2942,36 @@ func (t *SalesCrMemoLine) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Bin_code.Equal(old)
 		}
+	case "project_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Project_no.Equal(old)
+		}
+	case "appl_to_project_entry":
+		if old, ok := oldValue.(int); ok {
+			return t.Appl_to_project_entry != old
+		}
+		return true // Type mismatch, assume changed
+	case "phase_code":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Phase_code.Equal(old)
+		}
+	case "task_code":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Task_code.Equal(old)
+		}
+	case "step_code":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Step_code.Equal(old)
+		}
+	case "project_applies_to_id":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Project_applies_to_id.Equal(old)
+		}
+	case "apply_and_close_project":
+		if old, ok := oldValue.(bool); ok {
+			return t.Apply_and_close_project != old
+		}
+		return true // Type mismatch, assume changed
 	}
 
 	return false
@@ -3028,6 +3283,20 @@ func (t *SalesCrMemoLine) columnName(fieldName string) (string, bool) {
 		return "lot_no", true
 	case strings.ToLower("bin_code"):
 		return "bin_code", true
+	case strings.ToLower("project_no"):
+		return "project_no", true
+	case strings.ToLower("appl_to_project_entry"):
+		return "appl_to_project_entry", true
+	case strings.ToLower("phase_code"):
+		return "phase_code", true
+	case strings.ToLower("task_code"):
+		return "task_code", true
+	case strings.ToLower("step_code"):
+		return "step_code", true
+	case strings.ToLower("project_applies_to_id"):
+		return "project_applies_to_id", true
+	case strings.ToLower("apply_and_close_project"):
+		return "apply_and_close_project", true
 	}
 	return "", false
 }
@@ -3186,6 +3455,8 @@ func (t *SalesCrMemoLine) isBoolColumn(column string) bool {
 	case "allow_quantity_disc":
 		return true
 	case "tax_liable":
+		return true
+	case "apply_and_close_project":
 		return true
 	}
 	return false
@@ -3433,7 +3704,7 @@ func (t *SalesCrMemoLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3490,6 +3761,12 @@ func (t *SalesCrMemoLine) FindFirst() bool {
 	var serial_noNull sql.NullString
 	var lot_noNull sql.NullString
 	var bin_codeNull sql.NullString
+	var project_noNull sql.NullString
+	var phase_codeNull sql.NullString
+	var task_codeNull sql.NullString
+	var step_codeNull sql.NullString
+	var project_applies_to_idNull sql.NullString
+	var apply_and_close_projectBool sql.NullBool
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&sell_to_customer_noNull,
@@ -3545,6 +3822,13 @@ func (t *SalesCrMemoLine) FindFirst() bool {
 		&serial_noNull,
 		&lot_noNull,
 		&bin_codeNull,
+		&project_noNull,
+		&t.Appl_to_project_entry,
+		&phase_codeNull,
+		&task_codeNull,
+		&step_codeNull,
+		&project_applies_to_idNull,
+		&apply_and_close_projectBool,
 	)
 
 	if err != nil {
@@ -3608,6 +3892,12 @@ func (t *SalesCrMemoLine) FindFirst() bool {
 	t.Serial_no = types.NewCode(serial_noNull.String)
 	t.Lot_no = types.NewCode(lot_noNull.String)
 	t.Bin_code = types.NewCode(bin_codeNull.String)
+	t.Project_no = types.NewCode(project_noNull.String)
+	t.Phase_code = types.NewCode(phase_codeNull.String)
+	t.Task_code = types.NewCode(task_codeNull.String)
+	t.Step_code = types.NewCode(step_codeNull.String)
+	t.Project_applies_to_id = types.NewCode(project_applies_to_idNull.String)
+	t.Apply_and_close_project = apply_and_close_projectBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -3628,7 +3918,7 @@ func (t *SalesCrMemoLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3685,6 +3975,12 @@ func (t *SalesCrMemoLine) FindLast() bool {
 	var serial_noNull sql.NullString
 	var lot_noNull sql.NullString
 	var bin_codeNull sql.NullString
+	var project_noNull sql.NullString
+	var phase_codeNull sql.NullString
+	var task_codeNull sql.NullString
+	var step_codeNull sql.NullString
+	var project_applies_to_idNull sql.NullString
+	var apply_and_close_projectBool sql.NullBool
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&sell_to_customer_noNull,
@@ -3740,6 +4036,13 @@ func (t *SalesCrMemoLine) FindLast() bool {
 		&serial_noNull,
 		&lot_noNull,
 		&bin_codeNull,
+		&project_noNull,
+		&t.Appl_to_project_entry,
+		&phase_codeNull,
+		&task_codeNull,
+		&step_codeNull,
+		&project_applies_to_idNull,
+		&apply_and_close_projectBool,
 	)
 
 	if err != nil {
@@ -3803,6 +4106,12 @@ func (t *SalesCrMemoLine) FindLast() bool {
 	t.Serial_no = types.NewCode(serial_noNull.String)
 	t.Lot_no = types.NewCode(lot_noNull.String)
 	t.Bin_code = types.NewCode(bin_codeNull.String)
+	t.Project_no = types.NewCode(project_noNull.String)
+	t.Phase_code = types.NewCode(phase_codeNull.String)
+	t.Task_code = types.NewCode(task_codeNull.String)
+	t.Step_code = types.NewCode(step_codeNull.String)
+	t.Project_applies_to_id = types.NewCode(project_applies_to_idNull.String)
+	t.Apply_and_close_project = apply_and_close_projectBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -3853,7 +4162,7 @@ func (t *SalesCrMemoLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3974,6 +4283,12 @@ func (t *SalesCrMemoLine) Next(steps ...int) bool {
 		var serial_noNull sql.NullString
 		var lot_noNull sql.NullString
 		var bin_codeNull sql.NullString
+		var project_noNull sql.NullString
+		var phase_codeNull sql.NullString
+		var task_codeNull sql.NullString
+		var step_codeNull sql.NullString
+		var project_applies_to_idNull sql.NullString
+		var apply_and_close_projectBool sql.NullBool
 
 		err := t.currentRows.Scan(
 			&sell_to_customer_noNull,
@@ -4029,6 +4344,13 @@ func (t *SalesCrMemoLine) Next(steps ...int) bool {
 			&serial_noNull,
 			&lot_noNull,
 			&bin_codeNull,
+			&project_noNull,
+			&t.Appl_to_project_entry,
+			&phase_codeNull,
+			&task_codeNull,
+			&step_codeNull,
+			&project_applies_to_idNull,
+			&apply_and_close_projectBool,
 		)
 
 		if err != nil {
@@ -4091,6 +4413,12 @@ func (t *SalesCrMemoLine) Next(steps ...int) bool {
 		t.Serial_no = types.NewCode(serial_noNull.String)
 		t.Lot_no = types.NewCode(lot_noNull.String)
 		t.Bin_code = types.NewCode(bin_codeNull.String)
+		t.Project_no = types.NewCode(project_noNull.String)
+		t.Phase_code = types.NewCode(phase_codeNull.String)
+		t.Task_code = types.NewCode(task_codeNull.String)
+		t.Step_code = types.NewCode(step_codeNull.String)
+		t.Project_applies_to_id = types.NewCode(project_applies_to_idNull.String)
+		t.Apply_and_close_project = apply_and_close_projectBool.Bool
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -4140,7 +4468,7 @@ func (t *SalesCrMemoLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4214,6 +4542,12 @@ func (t *SalesCrMemoLine) FindSetBuffered() bool {
 		var serial_noNull sql.NullString
 		var lot_noNull sql.NullString
 		var bin_codeNull sql.NullString
+		var project_noNull sql.NullString
+		var phase_codeNull sql.NullString
+		var task_codeNull sql.NullString
+		var step_codeNull sql.NullString
+		var project_applies_to_idNull sql.NullString
+		var apply_and_close_projectBool sql.NullBool
 
 		err := rows.Scan(
 			&sell_to_customer_noNull,
@@ -4269,6 +4603,13 @@ func (t *SalesCrMemoLine) FindSetBuffered() bool {
 			&serial_noNull,
 			&lot_noNull,
 			&bin_codeNull,
+			&project_noNull,
+			&record.Appl_to_project_entry,
+			&phase_codeNull,
+			&task_codeNull,
+			&step_codeNull,
+			&project_applies_to_idNull,
+			&apply_and_close_projectBool,
 		)
 
 		if err != nil {
@@ -4329,6 +4670,12 @@ func (t *SalesCrMemoLine) FindSetBuffered() bool {
 		record.Serial_no = types.NewCode(serial_noNull.String)
 		record.Lot_no = types.NewCode(lot_noNull.String)
 		record.Bin_code = types.NewCode(bin_codeNull.String)
+		record.Project_no = types.NewCode(project_noNull.String)
+		record.Phase_code = types.NewCode(phase_codeNull.String)
+		record.Task_code = types.NewCode(task_codeNull.String)
+		record.Step_code = types.NewCode(step_codeNull.String)
+		record.Project_applies_to_id = types.NewCode(project_applies_to_idNull.String)
+		record.Apply_and_close_project = apply_and_close_projectBool.Bool
 
 		// Store old values
 		record.StoreOldValues()
@@ -4410,6 +4757,13 @@ func (t *SalesCrMemoLine) copyFromBuffered(record *SalesCrMemoLine) {
 	t.Serial_no = record.Serial_no
 	t.Lot_no = record.Lot_no
 	t.Bin_code = record.Bin_code
+	t.Project_no = record.Project_no
+	t.Appl_to_project_entry = record.Appl_to_project_entry
+	t.Phase_code = record.Phase_code
+	t.Task_code = record.Task_code
+	t.Step_code = record.Step_code
+	t.Project_applies_to_id = record.Project_applies_to_id
+	t.Apply_and_close_project = record.Apply_and_close_project
 	t.StoreOldValues()
 }
 
@@ -5854,6 +6208,158 @@ func (t *SalesCrMemoLine) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
+	case "project_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Project_no = v
+		} else if v, ok := value.(string); ok {
+			t.Project_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field project_no")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_no"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesCrMemoLineOnValidate_Project_no); ok {
+				if err := trg.OnValidate_Project_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "appl_to_project_entry":
+		// Set field value
+		switch v := value.(type) {
+		case int:
+			t.Appl_to_project_entry = v
+		case float64:
+			t.Appl_to_project_entry = int(v)
+		case string:
+			if v == "" {
+				t.Appl_to_project_entry = 0
+			} else if i, err := strconv.Atoi(v); err == nil {
+				t.Appl_to_project_entry = i
+			} else {
+				return fmt.Errorf("invalid integer value for field appl_to_project_entry: %s", v)
+			}
+		default:
+			return fmt.Errorf("invalid type for field appl_to_project_entry")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesCrMemoLineOnValidate_Appl_to_project_entry); ok {
+				if err := trg.OnValidate_Appl_to_project_entry(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "phase_code":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Phase_code = v
+		} else if v, ok := value.(string); ok {
+			t.Phase_code = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field phase_code")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "phase_code"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesCrMemoLineOnValidate_Phase_code); ok {
+				if err := trg.OnValidate_Phase_code(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "task_code":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Task_code = v
+		} else if v, ok := value.(string); ok {
+			t.Task_code = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field task_code")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "task_code"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesCrMemoLineOnValidate_Task_code); ok {
+				if err := trg.OnValidate_Task_code(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "step_code":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Step_code = v
+		} else if v, ok := value.(string); ok {
+			t.Step_code = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field step_code")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "step_code"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesCrMemoLineOnValidate_Step_code); ok {
+				if err := trg.OnValidate_Step_code(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "project_applies_to_id":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Project_applies_to_id = v
+		} else if v, ok := value.(string); ok {
+			t.Project_applies_to_id = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field project_applies_to_id")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesCrMemoLineOnValidate_Project_applies_to_id); ok {
+				if err := trg.OnValidate_Project_applies_to_id(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "apply_and_close_project":
+		// Set field value
+		if v, ok := value.(bool); ok {
+			t.Apply_and_close_project = v
+		} else if v, ok := value.(string); ok {
+			// Handle string boolean values from JSON/frontend
+			t.Apply_and_close_project = v == "true" || v == "1"
+		} else {
+			return fmt.Errorf("invalid type for field apply_and_close_project")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesCrMemoLineOnValidate_Apply_and_close_project); ok {
+				if err := trg.OnValidate_Apply_and_close_project(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -5972,6 +6478,20 @@ func (t *SalesCrMemoLine) FieldValue(no int) (any, bool) {
 		return t.Lot_no, true
 	case 5403:
 		return t.Bin_code, true
+	case 45:
+		return t.Project_no, true
+	case 46:
+		return t.Appl_to_project_entry, true
+	case 47:
+		return t.Phase_code, true
+	case 48:
+		return t.Task_code, true
+	case 49:
+		return t.Step_code, true
+	case 50:
+		return t.Project_applies_to_id, true
+	case 51:
+		return t.Apply_and_close_project, true
 	}
 	return nil, false
 }
@@ -6356,6 +6876,61 @@ func (t *SalesCrMemoLine) SetFieldValue(no int, value any) bool {
 			t.Bin_code = types.NewCode(v)
 			return true
 		}
+	case 45:
+		if v, ok := value.(types.Code); ok {
+			t.Project_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Project_no = types.NewCode(v)
+			return true
+		}
+	case 46:
+		if v, ok := value.(int); ok {
+			t.Appl_to_project_entry = v
+			return true
+		}
+	case 47:
+		if v, ok := value.(types.Code); ok {
+			t.Phase_code = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Phase_code = types.NewCode(v)
+			return true
+		}
+	case 48:
+		if v, ok := value.(types.Code); ok {
+			t.Task_code = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Task_code = types.NewCode(v)
+			return true
+		}
+	case 49:
+		if v, ok := value.(types.Code); ok {
+			t.Step_code = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Step_code = types.NewCode(v)
+			return true
+		}
+	case 50:
+		if v, ok := value.(types.Code); ok {
+			t.Project_applies_to_id = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Project_applies_to_id = types.NewCode(v)
+			return true
+		}
+	case 51:
+		if v, ok := value.(bool); ok {
+			t.Apply_and_close_project = v
+			return true
+		}
 	}
 	return false
 }
@@ -6471,6 +7046,8 @@ func (t *SalesCrMemoLine) CalcSums(fieldNames ...string) error {
 			column = "qty_per_unit_of_measure"
 		case "quantity_base":
 			column = "quantity_base"
+		case "appl_to_project_entry":
+			column = "appl_to_project_entry"
 		default:
 			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Sales_Cr_Memo_Line", name)
 		}
@@ -6606,6 +7183,12 @@ func (t *SalesCrMemoLine) CalcSums(fieldNames ...string) error {
 				return fmt.Errorf("CalcSums Sales_Cr_Memo_Line.%s: %w", column, err)
 			}
 			t.Quantity_base = d
+		case "appl_to_project_entry":
+			f, err := strconv.ParseFloat(total, 64)
+			if err != nil {
+				return fmt.Errorf("CalcSums Sales_Cr_Memo_Line.%s: %w", column, err)
+			}
+			t.Appl_to_project_entry = int(f)
 		}
 	}
 	return nil
@@ -7064,6 +7647,20 @@ func (t *SalesCrMemoLine) columnValue(column string) (interface{}, bool) {
 		return t.Lot_no, true
 	case "bin_code":
 		return t.Bin_code, true
+	case "project_no":
+		return t.Project_no, true
+	case "appl_to_project_entry":
+		return t.Appl_to_project_entry, true
+	case "phase_code":
+		return t.Phase_code, true
+	case "task_code":
+		return t.Task_code, true
+	case "step_code":
+		return t.Step_code, true
+	case "project_applies_to_id":
+		return t.Project_applies_to_id, true
+	case "apply_and_close_project":
+		return t.Apply_and_close_project, true
 	}
 	return nil, false
 }
@@ -7173,6 +7770,13 @@ func (t *SalesCrMemoLine) Init() {
 	t.Serial_no = *new(types.Code)
 	t.Lot_no = *new(types.Code)
 	t.Bin_code = *new(types.Code)
+	t.Project_no = *new(types.Code)
+	t.Appl_to_project_entry = *new(int)
+	t.Phase_code = *new(types.Code)
+	t.Task_code = *new(types.Code)
+	t.Step_code = *new(types.Code)
+	t.Project_applies_to_id = *new(types.Code)
+	t.Apply_and_close_project = *new(bool)
 	t.applyDefaults()
 }
 
@@ -7260,6 +7864,13 @@ func (t *SalesCrMemoLine) ToMap() map[string]interface{} {
 		"serial_no":               t.Serial_no.String(),
 		"lot_no":                  t.Lot_no.String(),
 		"bin_code":                t.Bin_code.String(),
+		"project_no":              t.Project_no.String(),
+		"appl_to_project_entry":   t.Appl_to_project_entry,
+		"phase_code":              t.Phase_code.String(),
+		"task_code":               t.Task_code.String(),
+		"step_code":               t.Step_code.String(),
+		"project_applies_to_id":   t.Project_applies_to_id.String(),
+		"apply_and_close_project": t.Apply_and_close_project,
 	}
 }
 
@@ -7700,6 +8311,49 @@ func (t *SalesCrMemoLine) FromMap(data map[string]interface{}) {
 	if v, ok := data["bin_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Bin_code = types.NewCode(s)
+		}
+	}
+	if v, ok := data["project_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Project_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["appl_to_project_entry"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Appl_to_project_entry = int(val)
+		case int:
+			t.Appl_to_project_entry = val
+		case string:
+			// a record key from a URL or a list selection
+			if n, err := strconv.Atoi(val); err == nil {
+				t.Appl_to_project_entry = n
+			}
+		}
+	}
+	if v, ok := data["phase_code"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Phase_code = types.NewCode(s)
+		}
+	}
+	if v, ok := data["task_code"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Task_code = types.NewCode(s)
+		}
+	}
+	if v, ok := data["step_code"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Step_code = types.NewCode(s)
+		}
+	}
+	if v, ok := data["project_applies_to_id"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Project_applies_to_id = types.NewCode(s)
+		}
+	}
+	if v, ok := data["apply_and_close_project"]; ok && v != nil {
+		if b, ok := v.(bool); ok {
+			t.Apply_and_close_project = b
 		}
 	}
 }
@@ -8291,6 +8945,76 @@ func (t *SalesCrMemoLine) GetFields() []tables.FieldInfo {
 			PrimaryKey: false,
 			FlowField:  false,
 		},
+		{
+			No:         45,
+			Name:       "project_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         46,
+			Name:       "appl_to_project_entry",
+			Type:       tables.FieldTypeInteger,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         47,
+			Name:       "phase_code",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         48,
+			Name:       "task_code",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         49,
+			Name:       "step_code",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         50,
+			Name:       "project_applies_to_id",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         51,
+			Name:       "apply_and_close_project",
+			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
 	}
 }
 
@@ -8541,6 +9265,46 @@ func (t *SalesCrMemoLine) GetTableRelationFields() map[string]tables.TableRelati
 			Filters: []tables.RelationFilterInfo{
 				{Column: "location_code", Field: "location_code", Const: ""},
 			},
+		},
+		"project_no": {
+			Table:        "Project",
+			Field:        "no",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "no", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"phase_code": {
+			Table:        "Phase",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"task_code": {
+			Table:        "Task",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"step_code": {
+			Table:        "Step",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
 		},
 	}
 }

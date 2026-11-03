@@ -32,6 +32,8 @@
 //	OnValidate_Item_journal(rec *gtables.SourceCodeSetup) error
 //	OnValidate_Bom_journal(rec *gtables.SourceCodeSetup) error
 //	OnValidate_Resource_journal(rec *gtables.SourceCodeSetup) error
+//	OnValidate_Project_journal(rec *gtables.SourceCodeSetup) error
+//	OnValidate_Compress_project_ledger(rec *gtables.SourceCodeSetup) error
 //	OnValidate_Item_transfer_journal(rec *gtables.SourceCodeSetup) error
 //	OnValidate_Phys_inventory_journal(rec *gtables.SourceCodeSetup) error
 //	OnValidate_Fixed_asset_journal(rec *gtables.SourceCodeSetup) error
@@ -92,6 +94,8 @@ type SourceCodeSetup struct {
 	Item_journal                  types.Code `db:"item_journal"`
 	Bom_journal                   types.Code `db:"bom_journal"`
 	Resource_journal              types.Code `db:"resource_journal"`
+	Project_journal               types.Code `db:"project_journal"`
+	Compress_project_ledger       types.Code `db:"compress_project_ledger"`
 	Item_transfer_journal         types.Code `db:"item_transfer_journal"`
 	Phys_inventory_journal        types.Code `db:"phys_inventory_journal"`
 	Fixed_asset_journal           types.Code `db:"fixed_asset_journal"`
@@ -197,6 +201,8 @@ var SourceCodeSetup_FieldNo = struct {
 	Item_journal                  int
 	Bom_journal                   int
 	Resource_journal              int
+	Project_journal               int
+	Compress_project_ledger       int
 	Item_transfer_journal         int
 	Phys_inventory_journal        int
 	Fixed_asset_journal           int
@@ -237,6 +243,8 @@ var SourceCodeSetup_FieldNo = struct {
 	Item_journal:                  16,
 	Bom_journal:                   17,
 	Resource_journal:              19,
+	Project_journal:               20,
+	Compress_project_ledger:       32,
 	Item_transfer_journal:         33,
 	Phys_inventory_journal:        34,
 	Fixed_asset_journal:           5600,
@@ -303,6 +311,10 @@ func (t *SourceCodeSetup) FieldNo(fieldName string) int {
 		return 17
 	case "resource_journal":
 		return 19
+	case "project_journal":
+		return 20
+	case "compress_project_ledger":
+		return 32
 	case "item_transfer_journal":
 		return 33
 	case "phys_inventory_journal":
@@ -388,6 +400,10 @@ func (t *SourceCodeSetup) FieldName(fieldNo int) string {
 		return "bom_journal"
 	case 19:
 		return "resource_journal"
+	case 20:
+		return "project_journal"
+	case 32:
+		return "compress_project_ledger"
 	case 33:
 		return "item_transfer_journal"
 	case 34:
@@ -589,6 +605,12 @@ type (
 	SourceCodeSetupOnValidate_Resource_journal interface {
 		OnValidate_Resource_journal(rec *SourceCodeSetup) error
 	}
+	SourceCodeSetupOnValidate_Project_journal interface {
+		OnValidate_Project_journal(rec *SourceCodeSetup) error
+	}
+	SourceCodeSetupOnValidate_Compress_project_ledger interface {
+		OnValidate_Compress_project_ledger(rec *SourceCodeSetup) error
+	}
 	SourceCodeSetupOnValidate_Item_transfer_journal interface {
 		OnValidate_Item_transfer_journal(rec *SourceCodeSetup) error
 	}
@@ -713,6 +735,10 @@ func sourceCodeSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SourceCodeSetupOnValidate_Bom_journal)
 	case "OnValidate_Resource_journal":
 		_, ok = logic.(SourceCodeSetupOnValidate_Resource_journal)
+	case "OnValidate_Project_journal":
+		_, ok = logic.(SourceCodeSetupOnValidate_Project_journal)
+	case "OnValidate_Compress_project_ledger":
+		_, ok = logic.(SourceCodeSetupOnValidate_Compress_project_ledger)
 	case "OnValidate_Item_transfer_journal":
 		_, ok = logic.(SourceCodeSetupOnValidate_Item_transfer_journal)
 	case "OnValidate_Phys_inventory_journal":
@@ -887,6 +913,12 @@ func (t *SourceCodeSetup) CheckFields() error {
 	if err := tables.CheckMaxLength(SourceCodeSetupTableName, "resource_journal", string(t.Resource_journal), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(SourceCodeSetupTableName, "project_journal", string(t.Project_journal), 10); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(SourceCodeSetupTableName, "compress_project_ledger", string(t.Compress_project_ledger), 10); err != nil {
+		return err
+	}
 	if err := tables.CheckMaxLength(SourceCodeSetupTableName, "item_transfer_journal", string(t.Item_transfer_journal), 10); err != nil {
 		return err
 	}
@@ -999,6 +1031,8 @@ func GetSourceCodeSetupTableSchema() string {
 		item_journal TEXT(10),
 		bom_journal TEXT(10),
 		resource_journal TEXT(10),
+		project_journal TEXT(10),
+		compress_project_ledger TEXT(10),
 		item_transfer_journal TEXT(10),
 		phys_inventory_journal TEXT(10),
 		fixed_asset_journal TEXT(10),
@@ -1044,6 +1078,8 @@ func GetSourceCodeSetupPostgresTableSchema() string {
 		item_journal VARCHAR(10),
 		bom_journal VARCHAR(10),
 		resource_journal VARCHAR(10),
+		project_journal VARCHAR(10),
+		compress_project_ledger VARCHAR(10),
 		item_transfer_journal VARCHAR(10),
 		phys_inventory_journal VARCHAR(10),
 		fixed_asset_journal VARCHAR(10),
@@ -1205,6 +1241,8 @@ func (t *SourceCodeSetup) StoreOldValues() {
 	t.oldValues["item_journal"] = t.Item_journal
 	t.oldValues["bom_journal"] = t.Bom_journal
 	t.oldValues["resource_journal"] = t.Resource_journal
+	t.oldValues["project_journal"] = t.Project_journal
+	t.oldValues["compress_project_ledger"] = t.Compress_project_ledger
 	t.oldValues["item_transfer_journal"] = t.Item_transfer_journal
 	t.oldValues["phys_inventory_journal"] = t.Phys_inventory_journal
 	t.oldValues["fixed_asset_journal"] = t.Fixed_asset_journal
@@ -1301,6 +1339,12 @@ func (t *SourceCodeSetup) XRec() *SourceCodeSetup {
 	}
 	if v, ok := t.oldValues["resource_journal"].(types.Code); ok {
 		x.Resource_journal = v
+	}
+	if v, ok := t.oldValues["project_journal"].(types.Code); ok {
+		x.Project_journal = v
+	}
+	if v, ok := t.oldValues["compress_project_ledger"].(types.Code); ok {
+		x.Compress_project_ledger = v
 	}
 	if v, ok := t.oldValues["item_transfer_journal"].(types.Code); ok {
 		x.Item_transfer_journal = v
@@ -1436,6 +1480,8 @@ func (t *SourceCodeSetup) GetByPK(primary_key types.Code) bool {
 	var item_journalNull sql.NullString
 	var bom_journalNull sql.NullString
 	var resource_journalNull sql.NullString
+	var project_journalNull sql.NullString
+	var compress_project_ledgerNull sql.NullString
 	var item_transfer_journalNull sql.NullString
 	var phys_inventory_journalNull sql.NullString
 	var fixed_asset_journalNull sql.NullString
@@ -1460,7 +1506,7 @@ func (t *SourceCodeSetup) GetByPK(primary_key types.Code) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE 1=1 AND primary_key = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, project_journal, compress_project_ledger, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE 1=1 AND primary_key = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1489,6 +1535,8 @@ func (t *SourceCodeSetup) GetByPK(primary_key types.Code) bool {
 		&item_journalNull,
 		&bom_journalNull,
 		&resource_journalNull,
+		&project_journalNull,
+		&compress_project_ledgerNull,
 		&item_transfer_journalNull,
 		&phys_inventory_journalNull,
 		&fixed_asset_journalNull,
@@ -1541,6 +1589,8 @@ func (t *SourceCodeSetup) GetByPK(primary_key types.Code) bool {
 	t.Item_journal = types.NewCode(item_journalNull.String)
 	t.Bom_journal = types.NewCode(bom_journalNull.String)
 	t.Resource_journal = types.NewCode(resource_journalNull.String)
+	t.Project_journal = types.NewCode(project_journalNull.String)
+	t.Compress_project_ledger = types.NewCode(compress_project_ledgerNull.String)
 	t.Item_transfer_journal = types.NewCode(item_transfer_journalNull.String)
 	t.Phys_inventory_journal = types.NewCode(phys_inventory_journalNull.String)
 	t.Fixed_asset_journal = types.NewCode(fixed_asset_journalNull.String)
@@ -1602,6 +1652,8 @@ func (t *SourceCodeSetup) Insert(runTrigger bool) bool {
 		t.Item_journal,
 		t.Bom_journal,
 		t.Resource_journal,
+		t.Project_journal,
+		t.Compress_project_ledger,
 		t.Item_transfer_journal,
 		t.Phys_inventory_journal,
 		t.Fixed_asset_journal,
@@ -1623,7 +1675,7 @@ func (t *SourceCodeSetup) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (primary_key) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, project_journal, compress_project_ledger, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (primary_key) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1683,6 +1735,8 @@ func (t *SourceCodeSetup) InsertAll(records []*SourceCodeSetup, runTrigger bool)
 			r.Item_journal,
 			r.Bom_journal,
 			r.Resource_journal,
+			r.Project_journal,
+			r.Compress_project_ledger,
 			r.Item_transfer_journal,
 			r.Phys_inventory_journal,
 			r.Fixed_asset_journal,
@@ -1703,7 +1757,7 @@ func (t *SourceCodeSetup) InsertAll(records []*SourceCodeSetup, runTrigger bool)
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, SourceCodeSetupTableName)
-	columns := []string{"primary_key", "sales", "purchases", "exchange_rate_adjmt", "close_income_statement", "consolidation", "adjust_add_reporting_currency", "general_journal", "sales_journal", "purchase_journal", "cash_receipt_journal", "payment_journal", "sales_entry_application", "purchase_entry_application", "tax_settlement", "financially_voided_check", "finance_charge_memo", "reminder", "inventory_post_cost", "item_journal", "bom_journal", "resource_journal", "item_transfer_journal", "phys_inventory_journal", "fixed_asset_journal", "fixed_asset_g_l_journal", "insurance_journal", "compress_g_l", "compress_tax_entries", "compress_cust_ledger", "compress_vend_ledger", "compress_item_ledger", "compress_bom_ledger", "compress_res_ledger", "compress_bank_acc_ledger", "compress_check_ledger", "compress_fa_ledger", "compress_maintenance_ledger", "compress_insurance_ledger"}
+	columns := []string{"primary_key", "sales", "purchases", "exchange_rate_adjmt", "close_income_statement", "consolidation", "adjust_add_reporting_currency", "general_journal", "sales_journal", "purchase_journal", "cash_receipt_journal", "payment_journal", "sales_entry_application", "purchase_entry_application", "tax_settlement", "financially_voided_check", "finance_charge_memo", "reminder", "inventory_post_cost", "item_journal", "bom_journal", "resource_journal", "project_journal", "compress_project_ledger", "item_transfer_journal", "phys_inventory_journal", "fixed_asset_journal", "fixed_asset_g_l_journal", "insurance_journal", "compress_g_l", "compress_tax_entries", "compress_cust_ledger", "compress_vend_ledger", "compress_item_ledger", "compress_bom_ledger", "compress_res_ledger", "compress_bank_acc_ledger", "compress_check_ledger", "compress_fa_ledger", "compress_maintenance_ledger", "compress_insurance_ledger"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1831,6 +1885,14 @@ func (t *SourceCodeSetup) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "resource_journal = ?")
 			values = append(values, t.Resource_journal)
 		}
+		if t.hasFieldChanged("project_journal") {
+			setClauses = append(setClauses, "project_journal = ?")
+			values = append(values, t.Project_journal)
+		}
+		if t.hasFieldChanged("compress_project_ledger") {
+			setClauses = append(setClauses, "compress_project_ledger = ?")
+			values = append(values, t.Compress_project_ledger)
+		}
 		if t.hasFieldChanged("item_transfer_journal") {
 			setClauses = append(setClauses, "item_transfer_journal = ?")
 			values = append(values, t.Item_transfer_journal)
@@ -1948,6 +2010,10 @@ func (t *SourceCodeSetup) Modify(runTrigger bool) bool {
 		values = append(values, t.Bom_journal)
 		setClauses = append(setClauses, "resource_journal = ?")
 		values = append(values, t.Resource_journal)
+		setClauses = append(setClauses, "project_journal = ?")
+		values = append(values, t.Project_journal)
+		setClauses = append(setClauses, "compress_project_ledger = ?")
+		values = append(values, t.Compress_project_ledger)
 		setClauses = append(setClauses, "item_transfer_journal = ?")
 		values = append(values, t.Item_transfer_journal)
 		setClauses = append(setClauses, "phys_inventory_journal = ?")
@@ -2113,6 +2179,14 @@ func (t *SourceCodeSetup) hasFieldChanged(fieldName string) bool {
 	case "resource_journal":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Resource_journal.Equal(old)
+		}
+	case "project_journal":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Project_journal.Equal(old)
+		}
+	case "compress_project_ledger":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Compress_project_ledger.Equal(old)
 		}
 	case "item_transfer_journal":
 		if old, ok := oldValue.(types.Code); ok {
@@ -2430,6 +2504,10 @@ func (t *SourceCodeSetup) columnName(fieldName string) (string, bool) {
 		return "bom_journal", true
 	case strings.ToLower("resource_journal"):
 		return "resource_journal", true
+	case strings.ToLower("project_journal"):
+		return "project_journal", true
+	case strings.ToLower("compress_project_ledger"):
+		return "compress_project_ledger", true
 	case strings.ToLower("item_transfer_journal"):
 		return "item_transfer_journal", true
 	case strings.ToLower("phys_inventory_journal"):
@@ -2821,7 +2899,7 @@ func (t *SourceCodeSetup) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, project_journal, compress_project_ledger, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2848,6 +2926,8 @@ func (t *SourceCodeSetup) FindFirst() bool {
 	var item_journalNull sql.NullString
 	var bom_journalNull sql.NullString
 	var resource_journalNull sql.NullString
+	var project_journalNull sql.NullString
+	var compress_project_ledgerNull sql.NullString
 	var item_transfer_journalNull sql.NullString
 	var phys_inventory_journalNull sql.NullString
 	var fixed_asset_journalNull sql.NullString
@@ -2889,6 +2969,8 @@ func (t *SourceCodeSetup) FindFirst() bool {
 		&item_journalNull,
 		&bom_journalNull,
 		&resource_journalNull,
+		&project_journalNull,
+		&compress_project_ledgerNull,
 		&item_transfer_journalNull,
 		&phys_inventory_journalNull,
 		&fixed_asset_journalNull,
@@ -2939,6 +3021,8 @@ func (t *SourceCodeSetup) FindFirst() bool {
 	t.Item_journal = types.NewCode(item_journalNull.String)
 	t.Bom_journal = types.NewCode(bom_journalNull.String)
 	t.Resource_journal = types.NewCode(resource_journalNull.String)
+	t.Project_journal = types.NewCode(project_journalNull.String)
+	t.Compress_project_ledger = types.NewCode(compress_project_ledgerNull.String)
 	t.Item_transfer_journal = types.NewCode(item_transfer_journalNull.String)
 	t.Phys_inventory_journal = types.NewCode(phys_inventory_journalNull.String)
 	t.Fixed_asset_journal = types.NewCode(fixed_asset_journalNull.String)
@@ -2976,7 +3060,7 @@ func (t *SourceCodeSetup) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, project_journal, compress_project_ledger, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3003,6 +3087,8 @@ func (t *SourceCodeSetup) FindLast() bool {
 	var item_journalNull sql.NullString
 	var bom_journalNull sql.NullString
 	var resource_journalNull sql.NullString
+	var project_journalNull sql.NullString
+	var compress_project_ledgerNull sql.NullString
 	var item_transfer_journalNull sql.NullString
 	var phys_inventory_journalNull sql.NullString
 	var fixed_asset_journalNull sql.NullString
@@ -3044,6 +3130,8 @@ func (t *SourceCodeSetup) FindLast() bool {
 		&item_journalNull,
 		&bom_journalNull,
 		&resource_journalNull,
+		&project_journalNull,
+		&compress_project_ledgerNull,
 		&item_transfer_journalNull,
 		&phys_inventory_journalNull,
 		&fixed_asset_journalNull,
@@ -3094,6 +3182,8 @@ func (t *SourceCodeSetup) FindLast() bool {
 	t.Item_journal = types.NewCode(item_journalNull.String)
 	t.Bom_journal = types.NewCode(bom_journalNull.String)
 	t.Resource_journal = types.NewCode(resource_journalNull.String)
+	t.Project_journal = types.NewCode(project_journalNull.String)
+	t.Compress_project_ledger = types.NewCode(compress_project_ledgerNull.String)
 	t.Item_transfer_journal = types.NewCode(item_transfer_journalNull.String)
 	t.Phys_inventory_journal = types.NewCode(phys_inventory_journalNull.String)
 	t.Fixed_asset_journal = types.NewCode(fixed_asset_journalNull.String)
@@ -3161,7 +3251,7 @@ func (t *SourceCodeSetup) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, project_journal, compress_project_ledger, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3252,6 +3342,8 @@ func (t *SourceCodeSetup) Next(steps ...int) bool {
 		var item_journalNull sql.NullString
 		var bom_journalNull sql.NullString
 		var resource_journalNull sql.NullString
+		var project_journalNull sql.NullString
+		var compress_project_ledgerNull sql.NullString
 		var item_transfer_journalNull sql.NullString
 		var phys_inventory_journalNull sql.NullString
 		var fixed_asset_journalNull sql.NullString
@@ -3293,6 +3385,8 @@ func (t *SourceCodeSetup) Next(steps ...int) bool {
 			&item_journalNull,
 			&bom_journalNull,
 			&resource_journalNull,
+			&project_journalNull,
+			&compress_project_ledgerNull,
 			&item_transfer_journalNull,
 			&phys_inventory_journalNull,
 			&fixed_asset_journalNull,
@@ -3342,6 +3436,8 @@ func (t *SourceCodeSetup) Next(steps ...int) bool {
 		t.Item_journal = types.NewCode(item_journalNull.String)
 		t.Bom_journal = types.NewCode(bom_journalNull.String)
 		t.Resource_journal = types.NewCode(resource_journalNull.String)
+		t.Project_journal = types.NewCode(project_journalNull.String)
+		t.Compress_project_ledger = types.NewCode(compress_project_ledgerNull.String)
 		t.Item_transfer_journal = types.NewCode(item_transfer_journalNull.String)
 		t.Phys_inventory_journal = types.NewCode(phys_inventory_journalNull.String)
 		t.Fixed_asset_journal = types.NewCode(fixed_asset_journalNull.String)
@@ -3408,7 +3504,7 @@ func (t *SourceCodeSetup) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, project_journal, compress_project_ledger, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3452,6 +3548,8 @@ func (t *SourceCodeSetup) FindSetBuffered() bool {
 		var item_journalNull sql.NullString
 		var bom_journalNull sql.NullString
 		var resource_journalNull sql.NullString
+		var project_journalNull sql.NullString
+		var compress_project_ledgerNull sql.NullString
 		var item_transfer_journalNull sql.NullString
 		var phys_inventory_journalNull sql.NullString
 		var fixed_asset_journalNull sql.NullString
@@ -3493,6 +3591,8 @@ func (t *SourceCodeSetup) FindSetBuffered() bool {
 			&item_journalNull,
 			&bom_journalNull,
 			&resource_journalNull,
+			&project_journalNull,
+			&compress_project_ledgerNull,
 			&item_transfer_journalNull,
 			&phys_inventory_journalNull,
 			&fixed_asset_journalNull,
@@ -3540,6 +3640,8 @@ func (t *SourceCodeSetup) FindSetBuffered() bool {
 		record.Item_journal = types.NewCode(item_journalNull.String)
 		record.Bom_journal = types.NewCode(bom_journalNull.String)
 		record.Resource_journal = types.NewCode(resource_journalNull.String)
+		record.Project_journal = types.NewCode(project_journalNull.String)
+		record.Compress_project_ledger = types.NewCode(compress_project_ledgerNull.String)
 		record.Item_transfer_journal = types.NewCode(item_transfer_journalNull.String)
 		record.Phys_inventory_journal = types.NewCode(phys_inventory_journalNull.String)
 		record.Fixed_asset_journal = types.NewCode(fixed_asset_journalNull.String)
@@ -3607,6 +3709,8 @@ func (t *SourceCodeSetup) copyFromBuffered(record *SourceCodeSetup) {
 	t.Item_journal = record.Item_journal
 	t.Bom_journal = record.Bom_journal
 	t.Resource_journal = record.Resource_journal
+	t.Project_journal = record.Project_journal
+	t.Compress_project_ledger = record.Compress_project_ledger
 	t.Item_transfer_journal = record.Item_transfer_journal
 	t.Phys_inventory_journal = record.Phys_inventory_journal
 	t.Fixed_asset_journal = record.Fixed_asset_journal
@@ -4238,6 +4342,50 @@ func (t *SourceCodeSetup) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
+	case "project_journal":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Project_journal = v
+		} else if v, ok := value.(string); ok {
+			t.Project_journal = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field project_journal")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_journal"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SourceCodeSetupOnValidate_Project_journal); ok {
+				if err := trg.OnValidate_Project_journal(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "compress_project_ledger":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Compress_project_ledger = v
+		} else if v, ok := value.(string); ok {
+			t.Compress_project_ledger = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field compress_project_ledger")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "compress_project_ledger"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SourceCodeSetupOnValidate_Compress_project_ledger); ok {
+				if err := trg.OnValidate_Compress_project_ledger(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	case "item_transfer_journal":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
@@ -4668,6 +4816,10 @@ func (t *SourceCodeSetup) FieldValue(no int) (any, bool) {
 		return t.Bom_journal, true
 	case 19:
 		return t.Resource_journal, true
+	case 20:
+		return t.Project_journal, true
+	case 32:
+		return t.Compress_project_ledger, true
 	case 33:
 		return t.Item_transfer_journal, true
 	case 34:
@@ -4913,6 +5065,24 @@ func (t *SourceCodeSetup) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.Resource_journal = types.NewCode(v)
+			return true
+		}
+	case 20:
+		if v, ok := value.(types.Code); ok {
+			t.Project_journal = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Project_journal = types.NewCode(v)
+			return true
+		}
+	case 32:
+		if v, ok := value.(types.Code); ok {
+			t.Compress_project_ledger = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Compress_project_ledger = types.NewCode(v)
 			return true
 		}
 	case 33:
@@ -5532,6 +5702,10 @@ func (t *SourceCodeSetup) columnValue(column string) (interface{}, bool) {
 		return t.Bom_journal, true
 	case "resource_journal":
 		return t.Resource_journal, true
+	case "project_journal":
+		return t.Project_journal, true
+	case "compress_project_ledger":
+		return t.Compress_project_ledger, true
 	case "item_transfer_journal":
 		return t.Item_transfer_journal, true
 	case "phys_inventory_journal":
@@ -5641,6 +5815,8 @@ func (t *SourceCodeSetup) Init() {
 	t.Item_journal = *new(types.Code)
 	t.Bom_journal = *new(types.Code)
 	t.Resource_journal = *new(types.Code)
+	t.Project_journal = *new(types.Code)
+	t.Compress_project_ledger = *new(types.Code)
 	t.Item_transfer_journal = *new(types.Code)
 	t.Phys_inventory_journal = *new(types.Code)
 	t.Fixed_asset_journal = *new(types.Code)
@@ -5714,6 +5890,8 @@ func (t *SourceCodeSetup) ToMap() map[string]interface{} {
 		"item_journal":                  t.Item_journal.String(),
 		"bom_journal":                   t.Bom_journal.String(),
 		"resource_journal":              t.Resource_journal.String(),
+		"project_journal":               t.Project_journal.String(),
+		"compress_project_ledger":       t.Compress_project_ledger.String(),
 		"item_transfer_journal":         t.Item_transfer_journal.String(),
 		"phys_inventory_journal":        t.Phys_inventory_journal.String(),
 		"fixed_asset_journal":           t.Fixed_asset_journal.String(),
@@ -5844,6 +6022,16 @@ func (t *SourceCodeSetup) FromMap(data map[string]interface{}) {
 	if v, ok := data["resource_journal"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Resource_journal = types.NewCode(s)
+		}
+	}
+	if v, ok := data["project_journal"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Project_journal = types.NewCode(s)
+		}
+	}
+	if v, ok := data["compress_project_ledger"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Compress_project_ledger = types.NewCode(s)
 		}
 	}
 	if v, ok := data["item_transfer_journal"]; ok && v != nil {
@@ -6165,6 +6353,26 @@ func (t *SourceCodeSetup) GetFields() []tables.FieldInfo {
 		{
 			No:         19,
 			Name:       "resource_journal",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         20,
+			Name:       "project_journal",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         32,
+			Name:       "compress_project_ledger",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -6572,6 +6780,26 @@ func (t *SourceCodeSetup) GetTableRelationFields() map[string]tables.TableRelati
 			SearchTimeout: 0,
 		},
 		"resource_journal": {
+			Table:        "Source_Code",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"project_journal": {
+			Table:        "Source_Code",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"compress_project_ledger": {
 			Table:        "Source_Code",
 			Field:        "code",
 			DisplayField: "",

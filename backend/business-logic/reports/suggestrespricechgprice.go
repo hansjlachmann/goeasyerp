@@ -26,6 +26,7 @@ type suggestResPriceChgPrice struct {
 	priceLowerLimit types.Decimal
 	toCurrencyCode  types.Code
 	toWorkTypeCode  types.Code
+	toProjectNo     types.Code
 	roundingMethod  *gtables.RoundingMethod
 	roundingCode    types.Code
 	window          *system.Window
@@ -35,6 +36,7 @@ func (r *suggestResPriceChgPrice) Definition() *Definition {
 	return &Definition{
 		OptionsCaption: "COPY_TO",
 		Options: []Option{
+			{Name: "project_no", Type: "text", Default: all, Relation: &OptionRelation{Table: "Project", Columns: []string{"no", "description"}}},
 			{Name: "currency_code", Type: "text", Default: all, Relation: &OptionRelation{Table: "Currency", Columns: []string{"code", "description"}}},
 			{Name: "work_type_code", Type: "text", Default: all, Relation: &OptionRelation{Table: "Work_Type", Columns: []string{"code", "description"}}},
 			{Name: "unit_price_factor", Type: "number", Default: "1"},
@@ -44,8 +46,8 @@ func (r *suggestResPriceChgPrice) Definition() *Definition {
 		},
 		OnPreReport: r.onPreReport,
 		DataItems: []*DataItem{{
-			Name: "Resource_Price", Table: "Resource_Price", Key: []string{"type", "code", "work_type_code", "currency_code"},
-			RequestFilterFields: []string{"type", "code", "work_type_code", "currency_code"},
+			Name: "Resource_Price", Table: "Resource_Price", Key: []string{"project_no", "type", "code", "work_type_code", "currency_code"},
+			RequestFilterFields: []string{"project_no", "type", "code", "work_type_code", "currency_code"},
 			OnPreDataItem:       Trigger(r.resourcePriceOnPreDataItem),
 			OnAfterGetRecord:    Trigger(r.resourcePriceOnAfterGetRecord),
 		}},
@@ -60,6 +62,14 @@ func (r *suggestResPriceChgPrice) onPreReport(run *Run) error {
 	r.roundingMethod = gtables.NewRoundingMethod(run)
 	r.toCurrencyCode = types.Code(system.UpperCase(run.Option("currency_code")))
 	r.toWorkTypeCode = types.Code(system.UpperCase(run.Option("work_type_code")))
+	r.toProjectNo = types.Code(system.UpperCase(run.Option("project_no")))
+	if r.toProjectNo != all && r.toProjectNo != "" {
+		toProject := gtables.NewProject(run)
+		err := toProject.GetOrError(r.toProjectNo)
+		if err != nil {
+			return err
+		}
+	}
 	if r.toCurrencyCode != all {
 		if r.toCurrencyCode != "" {
 			toCurrency := gtables.NewCurrency(run)
@@ -103,6 +113,11 @@ func (r *suggestResPriceChgPrice) resourcePriceOnAfterGetRecord(resourcePrice *g
 		resPriceChg.Work_type_code = resourcePrice.Work_type_code
 	} else {
 		resPriceChg.Work_type_code = r.toWorkTypeCode
+	}
+	if r.toProjectNo == all {
+		resPriceChg.Project_no = resourcePrice.Project_no
+	} else {
+		resPriceChg.Project_no = r.toProjectNo
 	}
 
 	resPriceChg.New_unit_price = resourcePrice.Unit_price

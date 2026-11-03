@@ -2112,7 +2112,7 @@ func (t *Resource) renameReferences(field string, oldValue, newValue interface{}
 		condValue  int
 	}
 	references := map[string][]reference{
-		"no": {{"BOM_Component", false, "no", "type", 2}, {"Project", false, "person_responsible", "", 0}, {"Project_Budget_Entry", false, "no", "type", 0}, {"Project_Budget_Line", false, "no", "type", 0}, {"Res_Capacity_Entry", false, "resource_no", "", 0}, {"Res_Journal_Line", false, "resource_no", "", 0}, {"Res_Ledger_Entry", false, "resource_no", "", 0}, {"Resource_Cost", false, "code", "type", 0}, {"Resource_Price", false, "code", "type", 0}, {"Resource_Price_Change", false, "code", "type", 0}, {"Sales_Cr_Memo_Line", false, "no", "type", 3}, {"Sales_Invoice_Line", false, "no", "type", 3}, {"Sales_Line", false, "no", "type", 3}, {"Sales_Shipment_Line", false, "no", "type", 3}},
+		"no": {{"BOM_Component", false, "no", "type", 2}, {"Project", false, "person_responsible", "", 0}, {"Project_Budget_Entry", false, "no", "type", 0}, {"Project_Budget_Line", false, "no", "type", 0}, {"Project_Journal_Line", false, "no", "type", 0}, {"Project_Ledger_Entry", false, "no", "type", 0}, {"Res_Capacity_Entry", false, "resource_no", "", 0}, {"Res_Journal_Line", false, "resource_no", "", 0}, {"Res_Ledger_Entry", false, "resource_no", "", 0}, {"Resource_Cost", false, "code", "type", 0}, {"Resource_Price", false, "code", "type", 0}, {"Resource_Price_Change", false, "code", "type", 0}, {"Sales_Cr_Memo_Line", false, "no", "type", 3}, {"Sales_Invoice_Line", false, "no", "type", 3}, {"Sales_Line", false, "no", "type", 3}, {"Sales_Shipment_Line", false, "no", "type", 3}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
