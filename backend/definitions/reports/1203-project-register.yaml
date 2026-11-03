@@ -1,0 +1,77 @@
+# Report 1203 Project Register: the printed layout (see business-logic/reports/layout.go)
+report:
+  id: 1203
+  name: Project Register
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Project_Register
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 9
+          elements:
+            - {text: PROJECT_NO, x: 0, y: 1, width: 22, bold: true, wrap: true}
+            - {text: POSTING_DATE, x: 23, y: 1, width: 20, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 44, y: 1, width: 22, bold: true, wrap: true}
+            - {text: ENTRY_TYPE, x: 67, y: 1, width: 16, bold: true, wrap: true}
+            - {text: TYPE, x: 84, y: 1, width: 22, bold: true, wrap: true}
+            - {text: NO, x: 107, y: 1, width: 22, bold: true, wrap: true}
+            - {text: QUANTITY, x: 130, y: 1, width: 22, bold: true, wrap: true, align: right}
+            - {text: UNIT_OF_MEASURE, x: 153, y: 1, width: 14, bold: true, wrap: true}
+            - {text: UNIT_COST, x: 168, y: 1, width: 25, bold: true, wrap: true, align: right}
+            - {text: TOTAL_COST, x: 194, y: 1, width: 25, bold: true, wrap: true, align: right}
+            - {text: UNIT_PRICE, x: 220, y: 1, width: 25, bold: true, wrap: true, align: right}
+            - {text: TOTAL_PRICE, x: 246, y: 1, width: 27, bold: true, wrap: true, align: right}
+            - {line: true, x: 0, y: 7.5}
+        - type: body
+          height: 6
+          elements:
+            - {value: register_text, x: 0, y: 1, width: 60, bold: true}
+            - {value: source_code_text, x: 61, y: 1, width: 60}
+            - {value: source_code_description, x: 122, y: 1, width: 100}
+    - name: Project_Ledger_Entry
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {field: project_no, x: 0, y: 0, width: 22}
+            - {field: posting_date, x: 23, y: 0, width: 20}
+            - {field: document_no, x: 44, y: 0, width: 22}
+            - {field: entry_type, x: 67, y: 0, width: 16}
+            - {field: type, x: 84, y: 0, width: 22}
+            - {field: "no", x: 107, y: 0, width: 22}
+            - {field: quantity, x: 130, y: 0, width: 22, align: right, decimal_places: "2:5"}
+            - {field: unit_of_measure_code, x: 153, y: 0, width: 14}
+            - {field: unit_cost, x: 168, y: 0, width: 25, align: right}
+            - {field: total_cost, x: 194, y: 0, width: 25, align: right}
+            - {field: unit_price, x: 220, y: 0, width: 25, align: right}
+            - {field: total_price, x: 246, y: 0, width: 27, align: right}
+        - type: body
+          print_if: project_description
+          height: 4.2
+          elements:
+            - {value: project_description, x: 4, y: 0, width: 100}
+        - type: footer
+          height: 7
+          elements:
+            - {value: entries_text, x: 0, y: 1, width: 120}
+            - {value: no_of_entries, x: 121, y: 1, width: 20, align: right, decimal_places: "0:0"}

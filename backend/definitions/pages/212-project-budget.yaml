@@ -99,3 +99,9 @@ page:
       run_page: 215
       run_page_filter_field: "no"
       run_page_filter_value: project_no
+    # Copy Project Budget (report 1296): the lines of another project into this one
+    - name: Copy Budget
+      caption: Copy Budget
+      image: Copy
+      promoted: true
+      run_object: report:1296

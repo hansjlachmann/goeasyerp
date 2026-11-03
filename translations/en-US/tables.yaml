@@ -3358,6 +3358,8 @@ tables:
   source_code_setup:
     caption: "Source Code Setup"
     fields:
+      post_value: "Post Value"
+      post_recognition: "Post Recognition"
       project_journal: "Project Journal"
       compress_project_ledger: "Compress Project Ledger"
       adjust_add_reporting_currency: "Adjust Add. Reporting Currency"

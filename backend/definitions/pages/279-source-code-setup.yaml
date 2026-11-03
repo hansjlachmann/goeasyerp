@@ -113,6 +113,21 @@ page:
           - source: compress_res_ledger
             editable: true
 
+      - name: Projects
+        caption: Projects
+        fields:
+          - source: project_journal
+            editable: true
+
+          - source: post_value
+            editable: true
+
+          - source: post_recognition
+            editable: true
+
+          - source: compress_project_ledger
+            editable: true
+
       - name: Fixed Assets
         caption: Fixed Assets
         fields:

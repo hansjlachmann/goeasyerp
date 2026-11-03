@@ -1,0 +1,80 @@
+# Report 1220 Project Cost Transaction Detail: the printed layout (see business-logic/reports/layout.go)
+report:
+  id: 1220
+  name: Project Cost Transaction Detail
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Project
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 9
+          elements:
+            - {text: POSTING_DATE, x: 0, y: 1, width: 20, bold: true, wrap: true}
+            - {text: ENTRY_TYPE, x: 21, y: 1, width: 16, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 38, y: 1, width: 22, bold: true, wrap: true}
+            - {text: TYPE, x: 61, y: 1, width: 20, bold: true, wrap: true}
+            - {text: NO, x: 82, y: 1, width: 22, bold: true, wrap: true}
+            - {text: QUANTITY, x: 105, y: 1, width: 22, bold: true, wrap: true, align: right}
+            - {text: UNIT_OF_MEASURE, x: 128, y: 1, width: 14, bold: true, wrap: true}
+            - {text: TOTAL_COST, x: 143, y: 1, width: 26, bold: true, wrap: true, align: right}
+            - {text: TOTAL_PRICE, x: 170, y: 1, width: 26, bold: true, wrap: true, align: right}
+            - {text: AMT_POSTED_TO_GL, x: 197, y: 1, width: 26, bold: true, wrap: true, align: right}
+            - {text: AMT_RECOGNIZED, x: 224, y: 1, width: 26, bold: true, wrap: true, align: right}
+            - {text: CHARGEABLE, x: 251, y: 1, width: 22, bold: true, wrap: true}
+            - {line: true, x: 0, y: 7.5}
+        - type: body
+          height: 6
+          elements:
+            - {value: project_text, x: 0, y: 1.5, width: 80, bold: true}
+            - {field: description, x: 82, y: 1.5, width: 120, bold: true}
+    - name: Project_Ledger_Entry
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {field: posting_date, x: 0, y: 0, width: 20}
+            - {field: entry_type, x: 21, y: 0, width: 16}
+            - {field: document_no, x: 38, y: 0, width: 22}
+            - {field: type, x: 61, y: 0, width: 20}
+            - {field: "no", x: 82, y: 0, width: 22}
+            - {field: quantity, x: 105, y: 0, width: 22, align: right, decimal_places: "2:5"}
+            - {field: unit_of_measure_code, x: 128, y: 0, width: 14}
+            - {field: total_cost, x: 143, y: 0, width: 26, align: right}
+            - {field: total_price, x: 170, y: 0, width: 26, align: right}
+            - {field: amt_posted_to_g_l, x: 197, y: 0, width: 26, align: right}
+            - {field: amt_recognized, x: 224, y: 0, width: 26, align: right}
+            - {field: chargeable, x: 251, y: 0, width: 22}
+        - type: footer
+          height: 11
+          elements:
+            - {line: true, x: 143, y: 0.5}
+            - {value: usage_text, x: 0, y: 1.5, width: 140, bold: true}
+            - {value: usage_total_cost, x: 143, y: 1.5, width: 26, align: right, bold: true}
+            - {value: usage_total_price, x: 170, y: 1.5, width: 26, align: right, bold: true}
+            - {value: usage_amt_posted_to_g_l, x: 197, y: 1.5, width: 26, align: right, bold: true}
+            - {value: usage_amt_recognized, x: 224, y: 1.5, width: 26, align: right, bold: true}
+            - {value: sales_text, x: 0, y: 6, width: 140, bold: true}
+            - {value: sales_total_cost, x: 143, y: 6, width: 26, align: right, bold: true}
+            - {value: sales_total_price, x: 170, y: 6, width: 26, align: right, bold: true}
+            - {value: sales_amt_posted_to_g_l, x: 197, y: 6, width: 26, align: right, bold: true}
+            - {value: sales_amt_recognized, x: 224, y: 6, width: 26, align: right, bold: true}

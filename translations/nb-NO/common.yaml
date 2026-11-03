@@ -214,6 +214,9 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    projects: "Prosjekter"
+    budgeted: "Budsjettert"
+    realized: "Realisert"
     quantity: "Antall"
     duration: "Varighet"
     dimensions: "Dimensjoner"
@@ -281,6 +284,16 @@ common:
 
   # Menu items
   menu:
+    project_list: "Prosjektliste"
+    project_register: "Prosjektjournal"
+    completed_projects: "Fullførte prosjekter"
+    customer_projects_cost: "Kundeprosjekter (kost)"
+    customer_projects_price: "Kundeprosjekter (pris)"
+    project_cost_budget: "Prosjektkostbudsjett"
+    project_actual_to_budget_cost: "Prosjekt - faktisk mot budsjett (kost)"
+    project_actual_to_budget_price: "Prosjekt - faktisk mot budsjett (pris)"
+    project_cost_suggested_billing: "Prosjektkost - foreslått fakturering"
+    project_cost_transaction_detail: "Prosjektkost - transaksjonsdetaljer"
     sales: "Salg"
     purchases: "Innkjøp"
     items_inventory: "Varer og lager"

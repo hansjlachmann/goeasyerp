@@ -306,6 +306,34 @@ table:
           - source: description
             width: 250
 
+    - name: post_recognition
+      no: 6
+      type: types.Code
+      db_name: post_recognition
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: post_value
+      no: 7
+      type: types.Code
+      db_name: post_value
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
     - name: project_journal
       no: 20
       type: types.Code
