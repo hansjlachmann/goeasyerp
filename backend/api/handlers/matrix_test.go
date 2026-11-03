@@ -246,3 +246,71 @@ func TestMatrixPage(t *testing.T) {
 		t.Errorf("row %v", row)
 	}
 }
+
+// Items by Bin (5411): a matrix page with a column per bin of the Location Filter and the items'
+// quantity on hand in each bin
+func TestItemsByBin(t *testing.T) {
+	if err := pages.GetRegistry().LoadPages(); err != nil {
+		t.Skipf("pages: %v", err)
+	}
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db.SetMaxOpenConns(1)
+	t.Cleanup(func() { _ = db.Close() })
+	if err := tables.CreateCompanyTables(db, "TEST", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	src := ftables.DBSource(db, "TEST", database.DBTypeSQLite)
+	must := func(err error) {
+		t.Helper()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, no := range []string{"I1", "I2"} {
+		item := gtables.NewItem(src)
+		item.No = types.Code(no)
+		must(item.InsertOrError(false))
+	}
+	for _, b := range [][2]string{{"MAIN", "A"}, {"MAIN", "B"}, {"OSLO", "S"}} {
+		bin := gtables.NewBin(src)
+		bin.Location_code, bin.Code = types.Code(b[0]), types.Code(b[1])
+		must(bin.InsertOrError(false))
+	}
+	for i, e := range []struct {
+		item, location, bin string
+		qty               int64
+	}{{"I1", "MAIN", "A", 5}, {"I1", "MAIN", "A", -2}, {"I1", "MAIN", "B", 4}, {"I2", "OSLO", "S", 7}, {"I2", "MAIN", "", 9}} {
+		entry := gtables.NewItemLedgerEntry(src)
+		entry.Entry_no, entry.Item_no, entry.Location_code, entry.Bin_code = i+1, types.Code(e.item), types.Code(e.location), types.Code(e.bin)
+		entry.Quantity = types.NewDecimalFromInt(e.qty)
+		must(entry.InsertOrError(false))
+	}
+
+	app := fiber.New()
+	app.Use(func(c *fiber.Ctx) error {
+		c.Locals("session", &session.Session{Company: "TEST", Language: "en-US"})
+		return c.Next()
+	})
+	app.Post("/api/pages/:id/matrix", NewPageTriggersHandler(db, database.DBTypeSQLite).Matrix)
+	status, out := sendJSON(t, app, "POST", "/api/pages/5411/matrix",
+		`{"section": "", "record": {}, "filters": [{"field": "location_filter", "expression": "MAIN"}], "view_by": 0}`)
+	if status != 200 {
+		t.Fatalf("items by bin: %d %v", status, out)
+	}
+	data := out["data"].(map[string]interface{})
+	columns := data["columns"].([]interface{})
+	if len(columns) != 2 || columns[0].(map[string]interface{})["name"] != "MAIN, A" || columns[1].(map[string]interface{})["name"] != "MAIN, B" {
+		t.Fatalf("columns %v", columns)
+	}
+	values := map[string]string{}
+	for _, r := range data["rows"].([]interface{}) {
+		row := r.(map[string]interface{})
+		values[fmt.Sprint(row["key"])] = fmt.Sprint(row["values"])
+	}
+	if values["I1"] != "[3 4]" || values["I2"] != "[ ]" {
+		t.Errorf("cells %v, want I1 [3 4], I2 blank", values)
+	}
+}

@@ -1,0 +1,26 @@
+page:
+  id: 5411
+  type: List
+  name: Items by Bin
+  source_table: Item
+  caption: Items by Bin
+  # classic form 5411: the items against the bins of the Location Filter — a matrix page whose
+  # columns and cells come from its OnMatrixCalculate trigger (a cell: the item's quantity on
+  # hand in the bin)
+
+  layout:
+    matrix:
+      table: Item
+      calculated: true
+      no_periods: true   # the columns are the bins
+      date_filter: date_filter
+      view_by: 0
+      filters:
+        - source: location_filter
+        - source: bin_filter
+        - source: variant_filter
+      fields:
+        - source: "no"
+          width: 90
+        - source: description
+          width: 240

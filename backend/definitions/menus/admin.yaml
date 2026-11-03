@@ -442,6 +442,8 @@ menu:
     items:
       - name: "Items"
         page_id: 31
+      - name: "Items by Bin"
+        page_id: 5411
       - separator: true
       - name: "Item Journals"
         page_id: 40
