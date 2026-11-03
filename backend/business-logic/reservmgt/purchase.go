@@ -13,7 +13,7 @@ func PurchLineSource(purchLine *gtables.PurchaseLine) Source {
 
 // purchLineCreateReservFor (PurchLineCreateReservFor): a purchase line that takes the item (a
 // negative line, a credit memo) reserves a quantity from a supply
-func (m *ReservationManagement) purchLineCreateReservFor(purchLine *gtables.PurchaseLine, validToDate types.Date, description types.Text, expectedReceiptDate types.Date, quantity types.Decimal, from Source, fromVariantCode, fromLocationCode types.Code) error {
+func (m *ReservationManagement) purchLineCreateReservFor(purchLine *gtables.PurchaseLine, validToDate types.Date, description types.Text, expectedReceiptDate types.Date, quantity types.Decimal, from Source, fromVariantCode, fromLocationCode, fromSerialNo, fromLotNo types.Code) error {
 	err := purchLine.TestField("type", gtables.PurchaseLine_Type.Item)
 	if err == nil {
 		err = purchLine.TestField("no")
@@ -34,6 +34,12 @@ func (m *ReservationManagement) purchLineCreateReservFor(purchLine *gtables.Purc
 	if err == nil {
 		err = purchLine.TestField("variant_code", fromVariantCode)
 	}
+	if err == nil {
+		err = purchLine.TestField("serial_no", fromSerialNo)
+	}
+	if err == nil {
+		err = purchLine.TestField("lot_no", fromLotNo)
+	}
 	if err != nil {
 		return err
 	}
@@ -50,6 +56,7 @@ func (m *ReservationManagement) purchLineCreateReservFor(purchLine *gtables.Purc
 	}
 	return m.createReservEntry(PurchLineSource(purchLine), from, reservEntryValues{
 		itemNo: purchLine.No, variantCode: purchLine.Variant_code, locationCode: purchLine.Location_code,
+		serialNo: purchLine.Serial_no, lotNo: purchLine.Lot_no,
 		validToDate: validToDate, description: description,
 		expectedReceiptDate: expectedReceiptDate, shipmentDate: purchLine.Expected_receipt_date, quantity: quantity})
 }
@@ -91,7 +98,7 @@ func (m *ReservationManagement) PurchLineSetReservFor(currentPurchLine *gtables.
 	}
 	m.forPurchLine = gtables.NewPurchaseLine(m.src)
 	m.forPurchLine.Copy(currentPurchLine)
-	m.setReservFor(TypePurchase, currentPurchLine.No, currentPurchLine.Variant_code, currentPurchLine.Location_code,
+	m.setReservFor(TypePurchase, currentPurchLine.No, currentPurchLine.Variant_code, currentPurchLine.Location_code, currentPurchLine.Serial_no, currentPurchLine.Lot_no,
 		currentPurchLine.Expected_receipt_date, PurchLineSource(currentPurchLine))
 	return nil
 }
@@ -119,6 +126,7 @@ func (m *ReservationManagement) PurchLineVerifyChange(newPurchLine *gtables.Purc
 		reservedQtyBase: newPurchLine.Reserved_qty_base, qtyBase: newPurchLine.Quantity_base,
 		validSignNegative: newPurchLine.Document_type != gtables.PurchaseLine_Document_type.CreditMemo,
 		itemNo:            newPurchLine.No, locationCode: newPurchLine.Location_code, variantCode: newPurchLine.Variant_code,
+		serialNo: newPurchLine.Serial_no, lotNo: newPurchLine.Lot_no, serialField: "serial_no", lotField: "lot_no",
 		itemField: "no", locationField: "location_code",
 		date: newPurchLine.Expected_receipt_date, dateField: "expected_receipt_date"})
 }

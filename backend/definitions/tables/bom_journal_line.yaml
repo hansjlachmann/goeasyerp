@@ -307,6 +307,12 @@ table:
       scale: 5
       editable: false
 
+    - name: lot_no
+      no: 5400
+      type: types.Code
+      db_name: lot_no
+      length: 20
+
   keys:
     - name: Primary
       fields: [journal_template_name, journal_batch_name, line_no]

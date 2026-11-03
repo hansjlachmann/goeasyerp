@@ -128,41 +128,41 @@ func init() {
 		return reserveAvailable(rec, func(m *ReservationManagement) (types.Decimal, Source, types.Date, error) {
 			qtyToReserve, _, err := m.SalesLineUpdateValues(rec)
 			return qtyToReserve, SalesLineSource(rec), rec.Shipment_date, err
-		}, rec.Variant_code, rec.Location_code)
+		}, rec.Variant_code, rec.Location_code, rec.Serial_no, rec.Lot_no)
 	}))
 	functions.Register("table", gtables.PurchaseLineTableName, "ReserveAvailable", functions.For(func(rec *gtables.PurchaseLine) (fcodeunits.Result, error) {
 		return reserveAvailable(rec, func(m *ReservationManagement) (types.Decimal, Source, types.Date, error) {
 			qtyToReserve, _, err := m.PurchLineUpdateValues(rec)
 			return qtyToReserve, PurchLineSource(rec), rec.Expected_receipt_date, err
-		}, rec.Variant_code, rec.Location_code)
+		}, rec.Variant_code, rec.Location_code, rec.Serial_no, rec.Lot_no)
 	}))
 	functions.Register("table", gtables.ItemJournalLineTableName, "ReserveAvailable", functions.For(func(rec *gtables.ItemJournalLine) (fcodeunits.Result, error) {
-		locationCode := rec.Location_code
+		locationCode, serialNo, lotNo := rec.Location_code, rec.Serial_no, rec.Lot_no
 		if rec.Entry_type == gtables.ItemJournalLine_Entry_type.Transfer {
-			locationCode = rec.New_location_code
+			locationCode, serialNo, lotNo = rec.New_location_code, rec.New_serial_no, rec.New_lot_no
 		}
 		return reserveAvailable(rec, func(m *ReservationManagement) (types.Decimal, Source, types.Date, error) {
 			qtyToReserve, _, err := m.ItemJnlLineUpdateValues(rec)
 			return qtyToReserve, ItemJnlLineSource(rec), rec.Posting_date, err
-		}, rec.Variant_code, locationCode)
+		}, rec.Variant_code, locationCode, serialNo, lotNo)
 	}))
 	functions.Register("table", gtables.BOMJournalLineTableName, "ReserveAvailable", functions.For(func(rec *gtables.BOMJournalLine) (fcodeunits.Result, error) {
 		return reserveAvailable(rec, func(m *ReservationManagement) (types.Decimal, Source, types.Date, error) {
 			qtyToReserve, _, err := m.BOMJnlLineUpdateValues(rec)
 			return qtyToReserve, BOMJnlLineSource(rec), rec.Posting_date, err
-		}, rec.Variant_code, rec.Location_code)
+		}, rec.Variant_code, rec.Location_code, "", rec.Lot_no)
 	}))
 	functions.Register("table", gtables.RequisitionLineTableName, "ReserveAvailable", functions.For(func(rec *gtables.RequisitionLine) (fcodeunits.Result, error) {
 		return reserveAvailable(rec, func(m *ReservationManagement) (types.Decimal, Source, types.Date, error) {
 			qtyToReserve, _, err := m.ReqLineUpdateValues(rec)
 			return qtyToReserve, ReqLineSource(rec), rec.Expected_receipt_date, err
-		}, rec.Variant_code, rec.Location_code)
+		}, rec.Variant_code, rec.Location_code, rec.Serial_no, rec.Lot_no)
 	}))
 	functions.Register("table", gtables.ItemLedgerEntryTableName, "ReserveAvailable", functions.For(func(rec *gtables.ItemLedgerEntry) (fcodeunits.Result, error) {
 		return reserveAvailable(rec, func(m *ReservationManagement) (types.Decimal, Source, types.Date, error) {
 			qtyToReserve, _, err := m.ItemLedgEntryUpdateValues(rec)
 			return qtyToReserve, ItemLedgEntrySource(rec), types.Date{}, err
-		}, rec.Variant_code, rec.Location_code)
+		}, rec.Variant_code, rec.Location_code, rec.Serial_no, rec.Lot_no)
 	}))
 	for table, source := range map[string]func(rec any) Source{
 		gtables.SalesLineTableName:       func(rec any) Source { return SalesLineSource(rec.(*gtables.SalesLine)) },
@@ -379,7 +379,7 @@ func showAvailable(rec *gtables.EntrySummary) (fcodeunits.Result, error) {
 // reserveAvailable (the Available - … pages' Reserve): the line the page is for reserves from
 // the supply line what both still have (the supply line's available quantity, the line's
 // remaining one)
-func reserveAvailable(rec ftables.Source, values func(m *ReservationManagement) (types.Decimal, Source, types.Date, error), variantCode, locationCode types.Code) (fcodeunits.Result, error) {
+func reserveAvailable(rec ftables.Source, values func(m *ReservationManagement) (types.Decimal, Source, types.Date, error), variantCode, locationCode, serialNo, lotNo types.Code) (fcodeunits.Result, error) {
 	err := inTransaction(rec, func(src ftables.Source) error {
 		gtables.NewReservationEntry(src).LockTable()
 		m := New(src)
@@ -411,7 +411,13 @@ func reserveAvailable(rec ftables.Source, values func(m *ReservationManagement) 
 		if locationCode != f.LocationCode {
 			return apperrors.FieldMustBe(gtables.ReservationEntryTableName, "location_code", f.LocationCode.String())
 		}
-		err = m.CreateReservation(f.ValidToDate, "", expectedDate, reserveQuantity, from, variantCode, locationCode)
+		if serialNo != f.SerialNo {
+			return apperrors.FieldMustBe(gtables.ReservationEntryTableName, "serial_no", f.SerialNo.String())
+		}
+		if lotNo != f.LotNo {
+			return apperrors.FieldMustBe(gtables.ReservationEntryTableName, "lot_no", f.LotNo.String())
+		}
+		err = m.CreateReservation(f.ValidToDate, "", expectedDate, reserveQuantity, from, variantCode, locationCode, serialNo, lotNo)
 		if err != nil {
 			return err
 		}

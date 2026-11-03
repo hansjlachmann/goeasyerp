@@ -132,6 +132,7 @@ func (itemJournalLineLogic) OnValidate_Entry_type(rec *gtables.ItemJournalLine) 
 		rec.New_location_code = ""
 		rec.New_department_code = ""
 		rec.New_project_code = ""
+		rec.New_serial_no = ""
 	}
 	return nil
 }
@@ -421,4 +422,14 @@ func SetUpNewItemJnlLine(rec, lastItemJnlLine *gtables.ItemJournalLine) error {
 	rec.Reason_code = itemJnlBatch.Reason_code
 	rec.Posting_no_series = itemJnlBatch.Posting_no_series
 	return nil
+}
+
+// OnValidate_New_serial_no / OnValidate_New_lot_no: only a transfer gives the item a new serial
+// or lot number
+func (itemJournalLineLogic) OnValidate_New_serial_no(rec *gtables.ItemJournalLine) error {
+	return rec.TestField("entry_type", gtables.ItemJournalLine_Entry_type.Transfer)
+}
+
+func (itemJournalLineLogic) OnValidate_New_lot_no(rec *gtables.ItemJournalLine) error {
+	return rec.TestField("entry_type", gtables.ItemJournalLine_Entry_type.Transfer)
 }

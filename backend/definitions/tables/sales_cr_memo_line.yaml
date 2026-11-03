@@ -554,6 +554,18 @@ table:
       precision: 18
       scale: 5
 
+    - name: serial_no
+      no: 53
+      type: types.Code
+      db_name: serial_no
+      length: 20
+
+    - name: lot_no
+      no: 5400
+      type: types.Code
+      db_name: lot_no
+      length: 20
+
   keys:
     - name: Primary
       fields: [document_no, line_no]

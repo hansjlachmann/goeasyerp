@@ -60,6 +60,12 @@ page:
           visible: false
         - source: entry_no
           width: 90
+        - source: serial_no
+          width: 110
+          visible: false
+        - source: lot_no
+          width: 110
+          visible: false
 
   actions:
     - name: Navigate

@@ -1198,6 +1198,19 @@
 		if (fn) void fieldRunner?.run(fn, savedRecord, { quiet: true });
 	}
 
+	// A field's own lookup (on_lookup, classic OnLookup): its function works on the row as it is
+	// (it may open a page); the row takes the record it gives back and saves the field
+	async function runFieldLookup(record: Record<string, any>, field: Field) {
+		if (!field.on_lookup || !isCellEditable(field)) return;
+		const data = await fieldRunner?.run(field.on_lookup, stripInternalFields($state.snapshot(record)), { quiet: true });
+		const changed = data?.record as Record<string, unknown> | undefined;
+		if (!changed) return;
+		for (const [key, value] of Object.entries(changed)) {
+			record[key] = value;
+		}
+		await handleCellBlur(record, displayIndexOf(record), field.source);
+	}
+
 	async function handleCellBlur(record: Record<string, any>, rowIndex: number, fieldName?: string, leavingRow: boolean = false) {
 		if (!page || !editableActive) return;
 
@@ -1509,6 +1522,13 @@
 		const hasLookup = lookupFor(lookups, field.source, record)?.columns || lookupFor(lookups, field.source, record)?.simple;
 		const hasOptions = !!options[field.source];
 
+		// Alt+ArrowDown / F4 runs a field's own lookup (on_lookup)
+		if (field.on_lookup && ((event.key === 'ArrowDown' && event.altKey) || event.key === 'F4')) {
+			event.preventDefault();
+			void runFieldLookup(record, field);
+			return;
+		}
+
 		// Alt+ArrowDown opens the lookup/option dropdown
 		if (event.key === 'ArrowDown' && event.altKey && (hasLookup || hasOptions)) {
 			event.preventDefault();
@@ -1682,6 +1702,18 @@
 	// Handle keyboard navigation in cell-editing mode
 	function handleCellKeyDown(event: KeyboardEvent, rowIndex: number, colIndex: number) {
 		const cols = visibleColumns();
+
+		// Alt+ArrowDown / F4 runs a field's own lookup (on_lookup) with the value typed so far
+		const lookupField = cols[colIndex];
+		if (lookupField?.on_lookup && ((event.key === 'ArrowDown' && event.altKey) || event.key === 'F4')) {
+			event.preventDefault();
+			const row = displayRecords[rowIndex];
+			if (row) {
+				cellState = 'cell-selected';
+				void runFieldLookup(row, lookupField);
+			}
+			return;
+		}
 
 		// Ctrl+Insert or Alt+N to insert new row
 		if (isNewRowShortcut(event)) {
@@ -3558,6 +3590,31 @@
 													role="button"
 													tabindex="-1"
 													aria-label="Open options"
+												>▼</span>
+											{/if}
+										</div>
+									{:else if field.on_lookup}
+										<!-- Cell-selected with its own lookup (on_lookup): value + arrow -->
+										<div
+											class="cell-selected-content cell-selected-active cell-selected-lookup"
+											tabindex="0"
+											data-cell-row={index}
+											data-cell-col={colIndex}
+											ondblclick={() => enterCellEditing(false)}
+											onkeydown={(e) => handleCellSelectedKeyDown(e, index, colIndex)}
+										>
+											<span class="cell-selected-lookup-value"><span class="cell-selected-text">{formatCellValue(record[field.source], field.source)}</span></span>
+											{#if isCellEditable(field)}
+												<!-- svelte-ignore a11y_click_events_have_key_events -->
+												<span
+													class="cell-selected-lookup-arrow"
+													onclick={(e) => {
+														e.stopPropagation();
+														void runFieldLookup(record, field);
+													}}
+													role="button"
+													tabindex="-1"
+													aria-label="Open lookup"
 												>▼</span>
 											{/if}
 										</div>

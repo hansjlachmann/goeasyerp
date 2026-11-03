@@ -99,6 +99,12 @@ page:
         - source: confirmed
           width: 90
           visible: false
+        - source: serial_no
+          width: 110
+          visible: false
+        - source: lot_no
+          width: 110
+          visible: false
 
   actions:
     - name: New

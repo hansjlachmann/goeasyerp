@@ -3774,6 +3774,7 @@ tables:
       reserved_qty_on_inventory: "Reserved Qty. on Inventory"
       reserved_qty_on_purch_orders: "Reserved Qty. on Purch. Orders"
       reserved_qty_on_sales_orders: "Reserved Qty. on Sales Orders"
+      serial_nos: "Serial Nos."
     options:
       price_profit_calculation:
         profit_price_cost: "Profit=Price-Cost"
@@ -3917,6 +3918,10 @@ tables:
       negative_reserved_quantity: "Negative Reserved Quantity"
       positive_reserved_qty_base: "Positive Reserved Qty. (Base)"
       negative_reserved_qty_base: "Negative Reserved Qty. (Base)"
+      serial_no: "Serial No."
+      lot_no: "Lot No."
+      new_serial_no: "New Serial No."
+      new_lot_no: "New Lot No."
     options:
       recurring_method:
         fixed: "Fixed"
@@ -3996,6 +4001,8 @@ tables:
       variant_code: "Variant Code"
       qty_per_unit_of_measure: "Qty. per Unit of Measure"
       unit_of_measure_code: "Unit of Measure Code"
+      serial_no: "Serial No."
+      lot_no: "Lot No."
     options:
       entry_type:
         purchase: "Purchase"
@@ -4084,6 +4091,8 @@ tables:
       no_series: "No. Series"
       variant_code: "Variant Code"
       unit_of_measure_code: "Unit of Measure Code"
+      serial_no: "Serial No."
+      lot_no: "Lot No."
     options:
       entry_type:
         purchase: "Purchase"
@@ -4437,6 +4446,7 @@ tables:
       reserved_quantity: "Reserved Quantity"
       reserve: "Reserve"
       reserved_qty_base: "Reserved Qty. (Base)"
+      lot_no: "Lot No."
     options:
       recurring_method:
         fixed: "Fixed"
@@ -4662,6 +4672,8 @@ tables:
       reserve: "Reserve"
       reserved_qty_base: "Reserved Qty. (Base)"
       planned: "Planned"
+      serial_no: "Serial No."
+      lot_no: "Lot No."
     options:
       document_type:
         quote: "Quote"
@@ -4816,6 +4828,8 @@ tables:
       quantity_base: "Quantity (Base)"
       qty_shpd_not_invd_base: "Qty. Shipped Not Invd. (Base)"
       qty_invoiced_base: "Qty. Invoiced (Base)"
+      serial_no: "Serial No."
+      lot_no: "Lot No."
     options:
       type:
         g_l_account: "G/L Account"
@@ -4967,6 +4981,8 @@ tables:
       qty_per_unit_of_measure: "Qty. per Unit of Measure"
       unit_of_measure_code: "Unit of Measure Code"
       quantity_base: "Quantity (Base)"
+      serial_no: "Serial No."
+      lot_no: "Lot No."
     options:
       type:
         g_l_account: "G/L Account"
@@ -5115,6 +5131,8 @@ tables:
       qty_per_unit_of_measure: "Qty. per Unit of Measure"
       unit_of_measure_code: "Unit of Measure Code"
       quantity_base: "Quantity (Base)"
+      serial_no: "Serial No."
+      lot_no: "Lot No."
     options:
       type:
         g_l_account: "G/L Account"
@@ -5328,6 +5346,8 @@ tables:
       reserved_quantity: "Reserved Quantity"
       reserve: "Reserve"
       reserved_qty_base: "Reserved Qty. (Base)"
+      serial_no: "Serial No."
+      lot_no: "Lot No."
     options:
       fa_posting_type:
         acquisition_cost: "Acquisition Cost"
@@ -5665,6 +5685,8 @@ tables:
       qty_rcd_not_invd_base: "Qty. Rcd. Not Invd. (Base)"
       qty_invoiced_base: "Qty. Invoiced (Base)"
       item_rcpt_entry_no: "Item Rcpt. Entry No."
+      serial_no: "Serial No."
+      lot_no: "Lot No."
     options:
       type:
         fixed_asset: "Fixed Asset"
@@ -5738,6 +5760,8 @@ tables:
       qty_per_unit_of_measure: "Qty. per Unit of Measure"
       unit_of_measure_code: "Unit of Measure Code"
       quantity_base: "Quantity (Base)"
+      serial_no: "Serial No."
+      lot_no: "Lot No."
     options:
       fa_posting_type:
         acquisition_cost: "Acquisition Cost"
@@ -5812,6 +5836,8 @@ tables:
       qty_per_unit_of_measure: "Qty. per Unit of Measure"
       unit_of_measure_code: "Unit of Measure Code"
       quantity_base: "Quantity (Base)"
+      serial_no: "Serial No."
+      lot_no: "Lot No."
     options:
       fa_posting_type:
         acquisition_cost: "Acquisition Cost"
@@ -6012,6 +6038,8 @@ tables:
       reserved_quantity: "Reserved Quantity"
       reserve: "Reserve"
       reserved_qty_base: "Reserved Qty. (Base)"
+      serial_no: "Serial No."
+      lot_no: "Lot No."
     options:
       type:
         account_g_l: "Account (G/L)"
@@ -6311,6 +6339,8 @@ tables:
       cancelation_date: "Cancelation Date"
       canceled_or_changed_by: "Canceled or Changed by"
       variant_code: "Variant Code"
+      serial_no: "Serial No."
+      lot_no: "Lot No."
     options:
       reservation_status:
         open: "Open"

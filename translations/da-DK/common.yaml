@@ -270,6 +270,8 @@ common:
 
   # Menu items
   menu:
+    serial_number_sold_history: "Solgte serienumre"
+    serial_number_status_aging: "Serienumre - status/alder"
     sales_reservation_avail: "Salgsreservationer - disponibilitet"
     purchase_reservation_avail: "Købsreservationer - disponibilitet"
     item_jnl_reservation_avail: "Varekladdereservationer - disponibilitet"

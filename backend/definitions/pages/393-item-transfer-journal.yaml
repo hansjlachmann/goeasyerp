@@ -72,6 +72,22 @@ page:
         - source: reason_code
           width: 110
           visible: false
+        - source: serial_no
+          width: 110
+          visible: false
+          on_lookup: table:Item_Journal_Line.SelectItemEntry
+        - source: lot_no
+          width: 110
+          visible: false
+          on_lookup: table:Item_Journal_Line.SelectItemEntry
+        - source: new_serial_no
+          width: 110
+          visible: false
+          on_lookup: table:Item_Journal_Line.SelectNewItemEntry
+        - source: new_lot_no
+          width: 110
+          visible: false
+          on_lookup: table:Item_Journal_Line.SelectNewItemEntry
 
   actions:
     - name: New

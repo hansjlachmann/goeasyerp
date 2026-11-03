@@ -462,6 +462,10 @@ menu:
             run_object: "report:703"
           - name: "Item Jnl. Reservation Avail."
             run_object: "report:723"
+          - name: "Serial Number Sold History"
+            run_object: "report:704"
+          - name: "Serial Number Status/Aging"
+            run_object: "report:705"
       - name: "BOM Reports"
       - name: "Item Registers"
         page_id: 117

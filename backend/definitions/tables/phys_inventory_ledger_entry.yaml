@@ -269,6 +269,18 @@ table:
       db_name: unit_of_measure_code
       length: 10
 
+    - name: serial_no
+      no: 40
+      type: types.Code
+      db_name: serial_no
+      length: 20
+
+    - name: lot_no
+      no: 5400
+      type: types.Code
+      db_name: lot_no
+      length: 20
+
   keys:
     - name: Primary
       fields: [entry_no]

@@ -268,7 +268,13 @@ type Field struct {
 	// the saved record — quietly: only its questions, the page it opens and errors show
 	// ("table:Sales_Line.ReserveAlways")
 	OnAfterValidate string `yaml:"on_after_validate,omitempty" json:"on_after_validate,omitempty"`
-	Type            string `yaml:"type,omitempty" json:"-"`
+	// OnLookup: the field's lookup is this registered function (classic OnLookup): it works on
+	// the record as the page has it, may open a page (RunModal) and gives the record back with
+	// the fields it set (registered like an AssistEdit: ForAssistEdit, WithAssistEdit) — the
+	// page takes it and saves ("table:Sales_Line.SelectItemEntry"); Alt+↓ / F4 or ▼ in a list
+	// cell, the "…" on a card
+	OnLookup string `yaml:"on_lookup,omitempty" json:"on_lookup,omitempty"`
+	Type     string `yaml:"type,omitempty" json:"-"`
 	// CheckBox: a Yes/No FlowFilter above a matrix shown as a check box (checked: the filter
 	// Yes, else none) — a page variable switching the matrix, such as Use Add. Reporting Currency
 	CheckBox bool `yaml:"check_box,omitempty" json:"check_box,omitempty"`

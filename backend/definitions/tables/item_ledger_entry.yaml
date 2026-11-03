@@ -587,6 +587,18 @@ table:
       db_name: unit_of_measure_code
       length: 10
 
+    - name: serial_no
+      no: 40
+      type: types.Code
+      db_name: serial_no
+      length: 20
+
+    - name: lot_no
+      no: 5400
+      type: types.Code
+      db_name: lot_no
+      length: 20
+
   keys:
     - name: Primary
       fields: [entry_no]
@@ -607,5 +619,7 @@ table:
       fields: [closed_by_entry_no]
     - name: document
       fields: [document_no, posting_date]
+    - name: lot_serial
+      fields: [item_no, lot_no, serial_no]
     - name: cost_adjust
       fields: [cost_is_adjusted, item_no, adjust_invoice_cost]

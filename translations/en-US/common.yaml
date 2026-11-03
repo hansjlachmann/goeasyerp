@@ -270,6 +270,8 @@ common:
 
   # Menu items
   menu:
+    serial_number_sold_history: "Serial Number Sold History"
+    serial_number_status_aging: "Serial Number Status/Aging"
     sales_reservation_avail: "Sales Reservation Avail."
     purchase_reservation_avail: "Purchase Reservation Avail."
     item_jnl_reservation_avail: "Item Jnl. Reservation Avail."

@@ -578,6 +578,8 @@ func (p *SalesPost) postItemJnlLine(salesLine *gtables.SalesLine, qtyToShip, qty
 	itemJnlLine.Area = salesLine.Area
 	itemJnlLine.Transaction_specification = salesLine.Transaction_specification
 	itemJnlLine.Variant_code = salesLine.Variant_code
+	itemJnlLine.Serial_no = salesLine.Serial_no
+	itemJnlLine.Lot_no = salesLine.Lot_no
 	itemJnlLine.Inventory_posting_group = salesLine.Posting_group
 	itemJnlLine.Department_code = salesLine.Department_code
 	itemJnlLine.Project_code = salesLine.Project_code

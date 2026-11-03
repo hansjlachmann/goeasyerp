@@ -322,3 +322,7 @@ errors:
   ERR_RESERV_ONLY_POSITIVE: "Only positive reservations can be transferred."
   ERR_RESERV_MUST_BE_REDUCED: "%1 must be reduced."
   ERR_RESERV_DATE_NOT_POSTING_DATE: "%1 must be the same as the posting date when a quantity is reserved."
+  ERR_ITEM_TRACKING_NOT_ON_INVENTORY: "Item %1%2 is not on inventory."
+  ERR_SERIAL_ALREADY_ON_INVENTORY: "Serial No. %1 is already on inventory."
+  ERR_SERIAL_SHIPPED_NOT_RECEIVED: "Serial No. %1 has already been shipped to a customer but has not yet been received from a vendor."
+  ERR_SERIAL_QTY_MUST_BE_ONE: "%1 must be 1 or -1 when Serial No. has been entered."
