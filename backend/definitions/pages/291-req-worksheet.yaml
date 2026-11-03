@@ -64,14 +64,17 @@ page:
           width: 100
         - source: quantity
           width: 90
+          on_after_validate: table:Requisition_Line.ReserveAlways
         - source: reserve
           width: 100
           visible: false
+          on_after_validate: table:Requisition_Line.ReserveAlways
         - source: reserved_quantity
           width: 120
           visible: false
         - source: unit_of_measure_code
           width: 100
+          on_after_validate: table:Requisition_Line.ReserveAlways
         - source: vendor_no
           width: 100
         - source: order_address_code

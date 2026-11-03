@@ -263,7 +263,12 @@ type Field struct {
 	// AssistEdit: the field's "…" (classic OnAssistEdit) runs this registered function
 	// (run_object "table:Customer.AssistEdit", registered WithAssistEdit) with the card's record
 	AssistEdit string `yaml:"assist_edit,omitempty" json:"assist_edit,omitempty"`
-	Type       string `yaml:"type,omitempty" json:"-"`
+	// OnAfterValidate: after the field's value is entered and the record saved (classic
+	// OnAfterValidate with CurrForm.SAVERECORD), the page runs this registered function with
+	// the saved record — quietly: only its questions, the page it opens and errors show
+	// ("table:Sales_Line.ReserveAlways")
+	OnAfterValidate string `yaml:"on_after_validate,omitempty" json:"on_after_validate,omitempty"`
+	Type            string `yaml:"type,omitempty" json:"-"`
 	// CheckBox: a Yes/No FlowFilter above a matrix shown as a check box (checked: the filter
 	// Yes, else none) — a page variable switching the matrix, such as Use Add. Reporting Currency
 	CheckBox bool `yaml:"check_box,omitempty" json:"check_box,omitempty"`

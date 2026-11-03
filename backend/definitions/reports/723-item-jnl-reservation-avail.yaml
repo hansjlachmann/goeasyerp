@@ -1,0 +1,81 @@
+# Report 723 Item Jnl. Reservation Avail.: the printed layout (sections per data item, positions in mm from the
+# section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 723
+  name: Item Jnl. Reservation Avail.
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Item_Journal_Line
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 11
+          elements:
+            - {text: ITEM_NO, x: 0, y: 1, width: 22, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 23, y: 1, width: 60, bold: true, wrap: true}
+            - {text: POSTING_DATE, x: 84, y: 1, width: 20, bold: true, wrap: true}
+            - {text: RESERVE, x: 105, y: 1, width: 18, bold: true, wrap: true}
+            - {text: QUANTITY_BASE, x: 124, y: 1, width: 26, align: right, bold: true, wrap: true}
+            - {text: RESERVED_QTY_BASE, x: 151, y: 1, width: 26, align: right, bold: true, wrap: true}
+            - {text: STATUS, x: 178, y: 1, width: 30, bold: true, wrap: true}
+            - {text: EXPECTED_RECEIPT_DATE, x: 209, y: 1, width: 22, bold: true, wrap: true}
+            - {text: QTY_ON_HAND, x: 232, y: 1, width: 26, align: right, bold: true, wrap: true}
+            - {line: true, x: 0, y: 9.5}
+        - type: body
+          print_if: first_line
+          height: 6
+          elements:
+            - {value: document_text, x: 0, y: 1.5, width: 150, bold: true}
+        - type: body
+          print_if: show_lines
+          height: 4.2
+          elements:
+            - {field: item_no, x: 0, y: 0, width: 22}
+            - {field: description, x: 23, y: 0, width: 60}
+            - {field: posting_date, x: 84, y: 0, width: 20}
+            - {field: reserve, x: 105, y: 0, width: 18}
+            - {field: quantity_base, x: 124, y: 0, width: 26, align: right}
+            - {field: negative_reserved_qty_base, x: 151, y: 0, width: 26, align: right}
+            - {value: line_status, x: 178, y: 0, width: 30}
+            - {value: line_receipt_date, x: 209, y: 0, width: 22}
+            - {value: line_quantity_on_hand, x: 232, y: 0, width: 26, align: right, decimal_places: "0:5"}
+
+    - name: Reservation_Entry
+      sections:
+        - type: body
+          print_if: show_reservation_entries
+          height: 4.2
+          elements:
+            - {value: reserv_text, x: 23, y: 0, width: 120}
+            - {field: quantity, x: 151, y: 0, width: 26, align: right}
+            - {value: show_reserv_date, x: 209, y: 0, width: 22}
+            - {value: entry_quantity_on_hand, x: 232, y: 0, width: 26, align: right, decimal_places: "0:5"}
+
+    - name: DocumentFooter
+      sections:
+        - type: body
+          height: 6
+          elements:
+            - {value: document_text, x: 0, y: 1, width: 120, bold: true}
+            - {value: document_status, x: 178, y: 1, width: 30, bold: true}
+            - {value: document_receipt_date, x: 209, y: 1, width: 22}
+            - {line: true, x: 0, y: 5.5}

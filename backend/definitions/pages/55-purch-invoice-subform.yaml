@@ -37,14 +37,17 @@ page:
           visible: false
         - source: quantity
           width: 100
+          on_after_validate: table:Purchase_Line.ReserveAlways
         - source: reserve
           width: 100
           visible: false
+          on_after_validate: table:Purchase_Line.ReserveAlways
         - source: reserved_quantity
           width: 120
           visible: false
         - source: unit_of_measure_code
           width: 110
+          on_after_validate: table:Purchase_Line.ReserveAlways
         - source: direct_unit_cost
           width: 120
         - source: line_discount_percent

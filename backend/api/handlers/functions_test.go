@@ -46,6 +46,26 @@ func TestPageFunctionsAreRegistered(t *testing.T) {
 	}
 	for id, p := range pages.GetRegistry().GetAllPages() {
 		check(id, p.Page.SourceTable, p.Page.Actions)
+		// A field's OnAfterValidate: a function of the page's table
+		fields := []pages.Field{}
+		if p.Page.Layout.Repeater != nil {
+			fields = append(fields, p.Page.Layout.Repeater.Fields...)
+		}
+		for _, s := range p.Page.Layout.Sections {
+			fields = append(fields, s.Fields...)
+		}
+		for _, f := range fields {
+			if f.OnAfterValidate == "" {
+				continue
+			}
+			found++
+			fn, _, err := functions.Resolve(f.OnAfterValidate)
+			if err != nil {
+				t.Errorf("page %d field %s: %v", id, f.Source, err)
+			} else if factory, ok := gtables.GetTableFactory(fn.Table); !ok || factory().GetTableName() != tableName(p.Page.SourceTable) {
+				t.Errorf("page %d field %s: %s takes a %s record", id, f.Source, f.OnAfterValidate, fn.Table)
+			}
+		}
 		// A field's AssistEdit: registered as one, on the page's table
 		for _, s := range p.Page.Layout.Sections {
 			for _, f := range s.Fields {

@@ -270,6 +270,9 @@ common:
 
   # Menu items
   menu:
+    sales_reservation_avail: "Sales Reservation Avail."
+    purchase_reservation_avail: "Purchase Reservation Avail."
+    item_jnl_reservation_avail: "Item Jnl. Reservation Avail."
     trial_balance_previous_year: "Trial Balance/Previous Year"
     bank_account_register: "Bank Account Register"
     customer_statement: "Customer Statement"

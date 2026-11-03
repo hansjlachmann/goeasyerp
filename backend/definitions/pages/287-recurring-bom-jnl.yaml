@@ -57,14 +57,17 @@ page:
           width: 100
         - source: quantity
           width: 100
+          on_after_validate: table:BOM_Journal_Line.ReserveAlways
         - source: reserve
           width: 100
           visible: false
+          on_after_validate: table:BOM_Journal_Line.ReserveAlways
         - source: reserved_quantity
           width: 120
           visible: false
         - source: unit_of_measure_code
           width: 110
+          on_after_validate: table:BOM_Journal_Line.ReserveAlways
         - source: unit_cost
           width: 120
         - source: total_cost

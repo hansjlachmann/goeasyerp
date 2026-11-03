@@ -15,7 +15,7 @@
 	import { currentUser } from '$lib/stores/user';
 	import { lookupFor, getFieldCaption, isItemVisible, isBlobType, type ItemCustomization } from '$lib/utils/fieldHelpers';
 	import { loadPageCustomizations, savePageCustomizations } from '$lib/utils/customizationStorage';
-	import { getRecordId, isNewRecord, deepCopy, getPrimaryKeyField, getPrimaryKeyFields, stripInternalFields, hasRecordChanged } from '$lib/utils/recordHelpers';
+	import { getRecordId, isNewRecord, deepCopy, getPrimaryKeyField, getPrimaryKeyFields, stripInternalFields, hasRecordChanged, sameFieldValue } from '$lib/utils/recordHelpers';
 	import { runPagePath, type RunPageAction } from '$lib/utils/runPage';
 	import { withReturn } from '$lib/utils/returnUrl';
 	import { toast } from '$lib/stores/toast';
@@ -259,11 +259,23 @@
 			}
 
 			saveState = 'saving';
+			// the fields with an OnAfterValidate whose value this save changes
+			const before = lastSavedRecord;
+			const afterValidate = [
+				...new Set(
+					(page.page.layout.sections ?? [])
+						.flatMap((s) => s.fields ?? [])
+						.filter((f) => f.on_after_validate && before && !sameFieldValue(record[f.source], before[f.source]))
+						.map((f) => f.on_after_validate as string)
+				)
+			];
 			try {
 				// onsave returns true if a save actually happened
 				const didSave = await onsave?.(record, opts);
 
 				if (didSave) {
+					// OnAfterValidate: after the save, quietly (its questions and pages show)
+					for (const fn of afterValidate) void runner?.run(fn, $state.snapshot(record), { quiet: true });
 					// Update lastSavedRecord after successful save
 					lastSavedRecord = deepCopy(record);
 					savedRecord = deepCopy($state.snapshot(record));

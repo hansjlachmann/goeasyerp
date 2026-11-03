@@ -26,6 +26,7 @@
 	import { toDecimalInput, fromDecimalInput } from '$lib/utils/regional';
 	import { apiFieldFilters } from '$lib/utils/flowFilter';
 	import DateInput from '../DateInput.svelte';
+	import ObjectRunner from '../ObjectRunner.svelte';
 	import { shortcuts, normalizeShortcut, getShortcutKey, commonShortcuts } from '$lib/utils/shortcuts';
 	import { cn } from '$lib/utils/cn';
 	import { api } from '$lib/services/api';
@@ -1187,6 +1188,16 @@
 		return true;
 	}
 
+	// A field's OnAfterValidate (on_after_validate): after the field's value is saved the page runs
+	// its function with the saved record — quietly, its questions and the page it opens show (a
+	// Reserve = Always line reserves); the list reloads when the function changed something
+	let fieldRunner = $state<ObjectRunner | undefined>(undefined);
+	function runAfterValidate(fieldName: string | undefined, savedRecord: Record<string, any> | undefined) {
+		if (!fieldName || !savedRecord) return;
+		const fn = page.page.layout.repeater?.fields?.find((f) => f.source === fieldName)?.on_after_validate;
+		if (fn) void fieldRunner?.run(fn, savedRecord, { quiet: true });
+	}
+
 	async function handleCellBlur(record: Record<string, any>, rowIndex: number, fieldName?: string, leavingRow: boolean = false) {
 		if (!page || !editableActive) return;
 
@@ -1280,6 +1291,7 @@
 				if (onsave) {
 					await onsave(savedRecord, true);
 				}
+				runAfterValidate(fieldName, savedRecord);
 			} else if (recordId !== undefined) {
 				// Existing record - update it (recordId may be "" for a blank-PK setup record)
 				const _tempId = record._tempId;
@@ -1299,6 +1311,7 @@
 				if (onsave) {
 					await onsave(savedRecord, false);
 				}
+				runAfterValidate(fieldName, savedRecord);
 			}
 		} catch (err) {
 			console.error('Error saving cell:', err);
@@ -3745,6 +3758,8 @@
 />
 
 <!-- Progress Modal (for codeunits with progress) -->
+<ObjectRunner bind:this={fieldRunner} ondone={(refresh) => { if (refresh) onaction?.('Refresh'); }} />
+
 <ProgressModal
 	open={progressModalOpen}
 	title={progressTitle}

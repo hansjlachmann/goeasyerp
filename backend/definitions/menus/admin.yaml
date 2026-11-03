@@ -252,6 +252,8 @@ menu:
             run_object: "report:120"
           - name: "Customer Statement"
             run_object: "report:116"
+          - name: "Sales Reservation Avail."
+            run_object: "report:209"
       - name: "Documents"
         items:
           - name: "Sales - Quote"
@@ -368,6 +370,8 @@ menu:
             run_object: "report:304"
           - name: "Aged Accounts Payable"
             run_object: "report:322"
+          - name: "Purchase Reservation Avail."
+            run_object: "report:409"
       - name: "Documents"
         items:
           - name: "Purchase - Quote"
@@ -456,6 +460,8 @@ menu:
             run_object: "report:1001"
           - name: "Item Register"
             run_object: "report:703"
+          - name: "Item Jnl. Reservation Avail."
+            run_object: "report:723"
       - name: "BOM Reports"
       - name: "Item Registers"
         page_id: 117

@@ -270,6 +270,9 @@ common:
 
   # Menu items
   menu:
+    sales_reservation_avail: "Salgsreservationer - disponibilitet"
+    purchase_reservation_avail: "Købsreservationer - disponibilitet"
+    item_jnl_reservation_avail: "Varekladdereservationer - disponibilitet"
     trial_balance_previous_year: "Saldobalance/sidste år"
     bank_account_register: "Bankkontojournal"
     customer_statement: "Kontoudtog debitor"

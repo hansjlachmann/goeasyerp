@@ -117,6 +117,7 @@
 						progressErrorDetails = details ?? null;
 					},
 					onConfirm: (event, respond) => {
+						progressOpen = true; // also a quiet run shows its questions
 						confirmMode = true;
 						confirmMessage = event.message;
 						confirmCallback = (response: boolean) => {
@@ -136,6 +137,7 @@
 						};
 					},
 					onInputRequest: (event, respond) => {
+						progressOpen = true;
 						inputMode = true;
 						inputFields = (event.data?.fields as typeof inputFields) || [];
 						inputDataItems = (event.data?.data_items as RequestDataItem[]) || [];
@@ -181,8 +183,10 @@
 			const opens = openPagePath(resultData?.open_page);
 			pendingOpen = opens;
 			if (opens && !dialog) openPending();
-			// a page that opens another record leaves this one (it may be gone: the quote)
-			if (!quiet && !opens) ondone?.(refresh);
+			// a page that opens another record leaves this one (it may be gone: the quote); a quiet
+			// run reports only a refresh it asked for (a field's OnAfterValidate changed the record)
+			if (quiet && resultData?.refresh === true) refresh = true;
+			if (!opens && (!quiet || refresh)) ondone?.(refresh);
 			return resultData;
 		} catch (err) {
 			// an error with details (the G/L entries of a posting that does not balance) stays in
