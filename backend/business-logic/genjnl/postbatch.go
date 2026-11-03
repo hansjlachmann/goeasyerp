@@ -47,6 +47,7 @@ type GenJnlPostBatch struct {
 	currentBalance         types.Decimal
 	currencyBalance        types.Decimal
 	lastCurrencyCode       types.Code
+	lastFAAddCurrExchRate  types.Decimal
 	startLineNo            int
 	currentCustomerVendors int
 	taxEntryCreated        bool
@@ -276,6 +277,7 @@ func (b *GenJnlPostBatch) checkLinesBalance(genJnlLine *gtables.GenJournalLine, 
 	b.lastDate = types.Date{}
 	b.lastDocType = gtables.GenJournalLine_Document_type.Blank
 	b.lastDocNo = ""
+	b.lastFAAddCurrExchRate = types.Decimal{}
 	b.currentCustomerVendors = 0
 	b.taxEntryCreated = false
 	b.currentBalance = types.Decimal{}
@@ -328,6 +330,12 @@ func (b *GenJnlPostBatch) checkLinesBalance(genJnlLine *gtables.GenJournalLine, 
 			b.currencyBalance = types.Decimal{}
 			b.lastCurrencyCode = genJnlLine.Currency_code
 		}
+		if !b.lastFAAddCurrExchRate.Equal(genJnlLine.Fa_add_currency_factor) {
+			err := b.checkAddExchRateBalance()
+			if err != nil {
+				return err
+			}
+		}
 		if b.currentBalance.IsZero() {
 			b.startLineNo = genJnlLine.Line_no
 			b.currentCustomerVendors = 0
@@ -358,6 +366,7 @@ func (b *GenJnlPostBatch) checkLinesBalance(genJnlLine *gtables.GenJournalLine, 
 		b.lastDate = genJnlLine.Posting_date
 		b.lastDocType = genJnlLine.Document_type
 		b.lastDocNo = genJnlLine.Document_no
+		b.lastFAAddCurrExchRate = genJnlLine.Fa_add_currency_factor
 		if b.genJnlTemplate.Force_doc_balance {
 			b.taxEntryCreated = b.taxEntryCreated ||
 				genJnlLine.Account_type == gtables.GenJournalLine_Account_type.GLAccount && genJnlLine.Account_no != "" &&
@@ -382,6 +391,15 @@ func (b *GenJnlPostBatch) checkLinesBalance(genJnlLine *gtables.GenJournalLine, 
 
 // checkBalance: the lines since the last balance (a date, or a document with Force Doc.
 // Balance) add up to 0 — in LCY, and in their currency when they are all in one
+// checkAddExchRateBalance (CheckAddExchRateBalance): the lines before a line with another FA
+// Add.-Currency Factor balance — the factors of one transaction must be the same
+func (b *GenJnlPostBatch) checkAddExchRateBalance() error {
+	if !b.currentBalance.IsZero() {
+		return apperrors.JnlAddCurrOutOfBalance(jnlLine, b.lastDocNo.String())
+	}
+	return nil
+}
+
 func (b *GenJnlPostBatch) checkBalance() error {
 	if !b.currentBalance.IsZero() {
 		if b.genJnlTemplate.Force_doc_balance {

@@ -93,6 +93,9 @@ func GetBalAcc(genJnlLine *gtables.GenJournalLine) error {
 		balLine.Department_code = b.DepartmentCode
 		balLine.Project_code = b.ProjectCode
 		balLine.Description = genJnlLine.Description
+		// the asset's additional-currency rate on its balancing lines too, so the transaction
+		// balances in the additional currency
+		balLine.Fa_add_currency_factor = genJnlLine.Fa_add_currency_factor
 		err = tables.SetGenJnlTrailCodes(balLine)
 		if err != nil {
 			return err

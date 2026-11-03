@@ -555,6 +555,30 @@ table:
           - source: description
             width: 250
 
+    - name: source_currency_unit_cost
+      no: 72
+      type: types.Decimal
+      db_name: source_currency_unit_cost
+      decimal_places: "2:5"
+      precision: 18
+      scale: 5
+      editable: false
+
+    - name: source_currency_code
+      no: 73
+      type: types.Code
+      db_name: source_currency_code
+      length: 10
+      editable: false
+      table_relation:
+        table: Currency
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
     - name: reserve
       no: 70
       type: Option

@@ -1,6 +1,7 @@
 package reports
 
 import (
+	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/system"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
@@ -11,9 +12,8 @@ import (
 // the entry it came from); outbound entries take the cost of the inbound entries they were
 // applied to (FIFO, LIFO, Standard) or, for an Average item, the cost of their invoices; an
 // assembled item (BOM) takes the change of its components' cost. The G/L follows with report
-// 1002 Post Inventory Cost to G/L.
-//
-// Not migrated yet: the additional reporting currency amounts.
+// 1002 Post Inventory Cost to G/L. The additional-currency costs (Add.-Currency Adj. Cost (Qty.),
+// Add.-Curr. Adj. Cost (Inv Qty), the item's Add.-Curr. Average Cost) follow the same way.
 const AdjustCostItemEntriesID = 795
 
 func init() {
@@ -27,9 +27,12 @@ type adjustCostItemEntries struct {
 	endDate   types.Date
 	window    *system.Window
 
-	bomLedgerEntry   *gtables.BOMLedgerEntry
-	oldAdjCostQty    types.Decimal
-	oldAdjCostInvQty types.Decimal
+	bomLedgerEntry              *gtables.BOMLedgerEntry
+	oldAdjCostQty               types.Decimal
+	oldAdjCostInvQty            types.Decimal
+	oldAddCurrencyAdjCostQty    types.Decimal
+	oldAddCurrencyAdjCostInvQty types.Decimal
+	currency                    *gtables.Currency // the additional reporting currency's rounding
 }
 
 func (r *adjustCostItemEntries) Definition() *Definition {
@@ -60,6 +63,21 @@ func (r *adjustCostItemEntries) onPreReport(run *Run) error {
 	}
 	r.window = system.OpenWindow(run.Text("WINDOW_INCREASE"))
 	r.window.Update(2, lastItemLedgEntryNo)
+
+	glSetup := gtables.GetGeneralLedgerSetup(run)
+	r.currency = gtables.NewCurrency(run)
+	if glSetup.Additional_reporting_currency != "" {
+		err := r.currency.GetOrError(glSetup.Additional_reporting_currency)
+		if err != nil {
+			return err
+		}
+		err = r.currency.TestField("amount_rounding_precision")
+		if err != nil {
+			return err
+		}
+	} else {
+		tables.InitRoundingPrecision(r.currency)
+	}
 	err := r.updateReceipts()
 	if err != nil {
 		return err
@@ -87,6 +105,7 @@ func (r *adjustCostItemEntries) updateReceipts() error {
 		if purchRcptItemEntry.Entry_type != gtables.ItemLedgerEntry_Entry_type.Transfer {
 			// Receipt invoices
 			purchCostTracedBack := purchRcptItemEntry.Adjusted_cost_invoiced_qty
+			purchCostTracedBackAddCurr := purchRcptItemEntry.Add_curr_adj_cost_inv_qty
 			purchQtyTracedBack := purchRcptItemEntry.Invoiced_quantity
 			if !purchRcptItemEntry.Quantity.Equal(purchRcptItemEntry.Invoiced_quantity) {
 				purchInvItemEntry := gtables.NewItemLedgerEntry(run)
@@ -95,11 +114,14 @@ func (r *adjustCostItemEntries) updateReceipts() error {
 				purchInvItemEntry.SetFilter("invoiced_quantity", ">0")
 				for found2 := purchInvItemEntry.FindSetBuffered(); found2; found2 = purchInvItemEntry.Next() {
 					purchCostTracedBack = purchCostTracedBack.Add(purchInvItemEntry.Adjusted_cost_invoiced_qty)
+					purchCostTracedBackAddCurr = purchCostTracedBackAddCurr.Add(purchInvItemEntry.Add_curr_adj_cost_inv_qty)
 					purchQtyTracedBack = purchQtyTracedBack.Add(purchInvItemEntry.Invoiced_quantity)
 				}
 			}
 			purchReceiptEntry2.Adjusted_cost_qty = purchCostTracedBack.Add(
 				system.Round(purchReceiptEntry2.Unit_cost.Mul(purchReceiptEntry2.Quantity.Sub(purchQtyTracedBack))))
+			purchReceiptEntry2.Add_currency_adj_cost_qty = purchCostTracedBackAddCurr.Add(
+				r.roundAmount(purchReceiptEntry2.Additional_currency_unit_cost.Mul(purchReceiptEntry2.Quantity.Sub(purchQtyTracedBack))))
 			if purchQtyTracedBack.Equal(purchReceiptEntry2.Quantity) {
 				r.setCostIsAdjustedToTRUE(purchReceiptEntry2)
 			}
@@ -120,8 +142,11 @@ func (r *adjustCostItemEntries) updateReceipts() error {
 			}
 			purchReceiptEntry2.Adjusted_cost_qty = system.Round(
 				purchRcptItemEntry2.Adjusted_cost_qty.Mul(itemApplicationEntry.Quantity).Div(purchRcptItemEntry2.Quantity))
+			purchReceiptEntry2.Add_currency_adj_cost_qty = r.roundAmount(
+				purchRcptItemEntry2.Add_currency_adj_cost_qty.Mul(itemApplicationEntry.Quantity).Div(purchRcptItemEntry2.Quantity))
 			purchReceiptEntry2.Cost_is_adjusted = purchRcptItemEntry2.Cost_is_adjusted
 			purchReceiptEntry2.Adjusted_cost_invoiced_qty = purchReceiptEntry2.Adjusted_cost_qty
+			purchReceiptEntry2.Add_curr_adj_cost_inv_qty = purchReceiptEntry2.Add_currency_adj_cost_qty
 		}
 		err := purchReceiptEntry2.ModifyOrError(false)
 		if err != nil {
@@ -163,6 +188,8 @@ func (r *adjustCostItemEntries) adjustShipment(salesRcptItemEntry *gtables.ItemL
 	run := r.run
 	purchCostTracedBack := types.Decimal{}
 	salesCostTracedBack := types.Decimal{}
+	purchCostTracedBackAddCurr := types.Decimal{}
+	salesCostTracedBackAddCurr := types.Decimal{}
 	purchQtyTracedBack := types.Decimal{}
 	salesQtyTracedBack := types.Decimal{}
 	purchCostIsAdjusted := true
@@ -180,6 +207,8 @@ func (r *adjustCostItemEntries) adjustShipment(salesRcptItemEntry *gtables.ItemL
 			}
 			purchCostTracedBack = purchCostTracedBack.Add(
 				purchRcptItemEntry.Adjusted_cost_qty.Div(purchRcptItemEntry.Quantity).Mul(itemApplicationEntry.Quantity))
+			purchCostTracedBackAddCurr = purchCostTracedBackAddCurr.Add(
+				purchRcptItemEntry.Add_currency_adj_cost_qty.Div(purchRcptItemEntry.Quantity).Mul(itemApplicationEntry.Quantity))
 			purchQtyTracedBack = purchQtyTracedBack.Add(itemApplicationEntry.Quantity)
 			if !purchRcptItemEntry.Cost_is_adjusted {
 				purchCostIsAdjusted = false
@@ -189,16 +218,21 @@ func (r *adjustCostItemEntries) adjustShipment(salesRcptItemEntry *gtables.ItemL
 		r.saveOldValues(salesRcptItemEntry)
 		salesRcptItemEntry.Adjusted_cost_qty = system.Round(
 			purchCostTracedBack.Add(salesRcptItemEntry.Unit_cost.Mul(salesRcptItemEntry.Quantity.Sub(purchQtyTracedBack))))
+		salesRcptItemEntry.Add_currency_adj_cost_qty = r.roundAmount(
+			purchCostTracedBackAddCurr.Add(salesRcptItemEntry.Additional_currency_unit_cost.Mul(salesRcptItemEntry.Quantity.Sub(purchQtyTracedBack))))
 	}
 
 	qtyToDistribute := types.Decimal{}
 	costToDistribute := types.Decimal{}
+	costToDistributeAddCurr := types.Decimal{}
 	if salesRcptItemEntry.Invoiced_quantity.Equal(salesRcptItemEntry.Quantity) {
 		salesRcptItemEntry.Adjusted_cost_invoiced_qty = salesRcptItemEntry.Adjusted_cost_qty
+		salesRcptItemEntry.Add_curr_adj_cost_inv_qty = salesRcptItemEntry.Add_currency_adj_cost_qty
 		salesQtyTracedBack = salesRcptItemEntry.Invoiced_quantity
 	} else {
 		qtyToDistribute = salesRcptItemEntry.Quantity
 		costToDistribute = salesRcptItemEntry.Adjusted_cost_qty
+		costToDistributeAddCurr = salesRcptItemEntry.Add_currency_adj_cost_qty
 	}
 	if !qtyToDistribute.IsZero() {
 		// Adjust shipment invoices
@@ -216,12 +250,16 @@ func (r *adjustCostItemEntries) adjustShipment(salesRcptItemEntry *gtables.ItemL
 			if itemCostAtAvg {
 				if salesInvItemEntry.Cost_is_adjusted {
 					salesCostTracedBack = salesCostTracedBack.Add(salesInvItemEntry.Adjusted_cost_invoiced_qty)
+					salesCostTracedBackAddCurr = salesCostTracedBackAddCurr.Add(salesInvItemEntry.Add_curr_adj_cost_inv_qty)
 					salesQtyTracedBack = salesQtyTracedBack.Add(salesInvItemEntry.Invoiced_quantity)
 				}
 			} else {
 				salesInvItemEntry.Adjusted_cost_invoiced_qty = system.Round(
 					costToDistribute.Div(qtyToDistribute).Mul(salesInvItemEntry.Invoiced_quantity))
+				salesInvItemEntry.Add_curr_adj_cost_inv_qty = r.roundAmount(
+					costToDistributeAddCurr.Div(qtyToDistribute).Mul(salesInvItemEntry.Invoiced_quantity))
 				costToDistribute = costToDistribute.Sub(salesInvItemEntry.Adjusted_cost_invoiced_qty)
+				costToDistributeAddCurr = costToDistributeAddCurr.Sub(salesInvItemEntry.Add_curr_adj_cost_inv_qty)
 				qtyToDistribute = qtyToDistribute.Sub(salesInvItemEntry.Invoiced_quantity)
 				salesQtyTracedBack = salesQtyTracedBack.Add(salesInvItemEntry.Invoiced_quantity)
 				if purchQtyTracedBack.Equal(salesRcptItemEntry.Quantity) && purchCostIsAdjusted {
@@ -241,6 +279,8 @@ func (r *adjustCostItemEntries) adjustShipment(salesRcptItemEntry *gtables.ItemL
 	if itemCostAtAvg {
 		salesShipmentEntry2.Adjusted_cost_qty = system.Round(
 			salesCostTracedBack.Add(salesShipmentEntry2.Unit_cost.Mul(salesShipmentEntry2.Quantity.Sub(salesQtyTracedBack))))
+		salesShipmentEntry2.Add_currency_adj_cost_qty = r.roundAmount(
+			salesCostTracedBackAddCurr.Add(salesShipmentEntry2.Additional_currency_unit_cost.Mul(salesShipmentEntry2.Quantity.Sub(salesQtyTracedBack))))
 		if salesQtyTracedBack.Equal(salesShipmentEntry2.Quantity) {
 			salesShipmentEntry2.Cost_is_adjusted = true
 		}
@@ -270,6 +310,13 @@ func (r *adjustCostItemEntries) getItem(itemNo types.Code) bool {
 func (r *adjustCostItemEntries) saveOldValues(itemLedgerEntry *gtables.ItemLedgerEntry) {
 	r.oldAdjCostQty = itemLedgerEntry.Adjusted_cost_qty
 	r.oldAdjCostInvQty = itemLedgerEntry.Adjusted_cost_invoiced_qty
+	r.oldAddCurrencyAdjCostQty = itemLedgerEntry.Add_currency_adj_cost_qty
+	r.oldAddCurrencyAdjCostInvQty = itemLedgerEntry.Add_curr_adj_cost_inv_qty
+}
+
+// roundAmount rounds an additional-currency amount (the currency's Amount Rounding Precision)
+func (r *adjustCostItemEntries) roundAmount(amount types.Decimal) types.Decimal {
+	return system.Round(amount, r.currency.Amount_rounding_precision)
 }
 
 // setCostIsAdjustedToTRUE (SetCostIsAdjustedToTRUE): an assembled item's entry is adjusted only
@@ -324,6 +371,10 @@ func (r *adjustCostItemEntries) updateBOMFinishedGood(itemLedgerEntry *gtables.I
 	costInvQtyChange := r.oldAdjCostInvQty.Sub(itemLedgerEntry.Adjusted_cost_invoiced_qty).Mul(indirectFactor)
 	itemLedgerEntry2.Adjusted_cost_qty = system.Round(itemLedgerEntry2.Adjusted_cost_qty.Add(costQtyChange))
 	itemLedgerEntry2.Adjusted_cost_invoiced_qty = system.Round(itemLedgerEntry2.Adjusted_cost_invoiced_qty.Add(costInvQtyChange))
+	addCurrencyCostQtyChange := r.oldAddCurrencyAdjCostQty.Sub(itemLedgerEntry.Add_currency_adj_cost_qty).Mul(indirectFactor)
+	addCurrencyCostInvQtyChange := r.oldAddCurrencyAdjCostInvQty.Sub(itemLedgerEntry.Add_curr_adj_cost_inv_qty).Mul(indirectFactor)
+	itemLedgerEntry2.Add_currency_adj_cost_qty = r.roundAmount(itemLedgerEntry2.Add_currency_adj_cost_qty.Add(addCurrencyCostQtyChange))
+	itemLedgerEntry2.Add_curr_adj_cost_inv_qty = r.roundAmount(itemLedgerEntry2.Add_curr_adj_cost_inv_qty.Add(addCurrencyCostInvQtyChange))
 	err := itemLedgerEntry2.ModifyOrError(false)
 	if err != nil {
 		return err
@@ -334,8 +385,18 @@ func (r *adjustCostItemEntries) updateBOMFinishedGood(itemLedgerEntry *gtables.I
 		r.item.Average_cost = r.item.Net_invoiced_qty.Mul(r.item.Average_cost)
 		r.item.Average_cost = r.item.Average_cost.Add(costInvQtyChange)
 		r.item.Average_cost = r.item.Average_cost.Div(r.item.Net_invoiced_qty)
+
+		r.item.Add_curr_average_cost = r.item.Net_invoiced_qty.Mul(r.item.Add_curr_average_cost)
+		r.item.Add_curr_average_cost = r.item.Add_curr_average_cost.Add(addCurrencyCostInvQtyChange)
+		r.item.Add_curr_average_cost = r.item.Add_curr_average_cost.Div(r.item.Net_invoiced_qty)
 	} else {
 		r.item.Average_cost = itemLedgerEntry2.Adjusted_cost_invoiced_qty.Div(itemLedgerEntry2.Invoiced_quantity)
+		r.item.Add_curr_average_cost = itemLedgerEntry2.Add_curr_adj_cost_inv_qty.Div(itemLedgerEntry2.Invoiced_quantity)
+	}
+	// the additional-currency average first: the average cost's trigger keeps it (see Item)
+	err = r.item.Validate("add_curr_average_cost", system.Round(r.item.Add_curr_average_cost, r.currency.Unit_amount_rounding_precision))
+	if err != nil {
+		return err
 	}
 	err = r.item.Validate("average_cost", system.Round(r.item.Average_cost, types.MustDecimal("0.00001")))
 	if err != nil {

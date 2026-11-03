@@ -238,6 +238,7 @@ errors:
   ERR_JNL_NAME_TOO_LONG: "%1 må ikke være længere end %2 tegn."
   ERR_JNL_CORRECTION_SAME: "%1 skal være den samme på alle linjer i samme bilag."
   ERR_JNL_DOC_OUT_OF_BALANCE: "%1 %3 er ikke i balance med %4. Kontrollér, at %2, %1 og beløbet er korrekte på hver linje."
+  ERR_JNL_ADD_CURR_OUT_OF_BALANCE: "%1 %3 er ikke i balance på grund af den ekstra rapporteringsvaluta. Kontrollér, at %2 er korrekt på hver linje."
   ERR_JNL_DATE_OUT_OF_BALANCE: "Linjerne på %3 er ikke i balance med %4. Kontrollér, at %1 og %2 er korrekte på hver linje."
   ERR_JNL_DOC_OUT_OF_BALANCE_CURRENCY: "%1 %3 er ikke i balance med %4 %5. Kontrollér, at %2, %1 og beløbet er korrekte på hver linje."
   ERR_JNL_DATE_OUT_OF_BALANCE_CURRENCY: "Linjerne på %3 er ikke i balance med %4 %5. Kontrollér, at %1 og %2 er korrekte på hver linje."

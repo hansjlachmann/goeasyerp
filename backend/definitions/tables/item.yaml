@@ -215,6 +215,14 @@ table:
       precision: 18
       scale: 5
 
+    - name: add_curr_average_cost
+      no: 104
+      type: types.Decimal
+      db_name: add_curr_average_cost
+      decimal_places: "2:5"
+      precision: 18
+      scale: 5
+
     - name: minimum_unit_price
       no: 27
       type: types.Decimal

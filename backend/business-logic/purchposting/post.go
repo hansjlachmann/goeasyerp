@@ -605,6 +605,8 @@ func (p *PurchPost) postItemJnlLine(purchLine *gtables.PurchaseLine, qtyToReceiv
 	itemJnlLine.Invoiced_quantity = qtyToInvoice.Mul(p.sign)
 	itemJnlLine.Invoiced_qty_base = qtyToInvoiceBase.Mul(p.sign)
 	itemJnlLine.Unit_cost = purchLine.Unit_cost_lcy
+	itemJnlLine.Source_currency_code = purchHeader.Currency_code
+	itemJnlLine.Source_currency_unit_cost = purchLine.Unit_cost
 	itemJnlLine.Indirect_cost_percent = purchLine.Indirect_cost_percent
 	itemJnlLine.Item_shpt_entry_no = itemRcptEntryNo
 	itemJnlLine.Amount = amounts[0].Mul(p.sign)

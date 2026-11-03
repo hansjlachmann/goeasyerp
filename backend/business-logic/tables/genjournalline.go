@@ -1552,6 +1552,61 @@ func setGenJnlLineFADeprBook(rec *gtables.GenJournalLine, faNo types.Code) error
 		}
 		rec.Posting_group = faDeprBook.Fa_posting_group
 	}
+	return getFAAddCurrExchRate(rec)
+}
+
+// getFAAddCurrExchRate (GetFAAddCurrExchRate): a fixed asset line whose depreciation book posts
+// the line's FA posting type at the asset's own additional-currency rate takes the FA
+// depreciation book's FA Add.-Currency Factor (codeunit 12 exchanges the line with it)
+func getFAAddCurrExchRate(rec *gtables.GenJournalLine) error {
+	rec.Fa_add_currency_factor = types.Decimal{}
+	if rec.Fa_posting_type != gtables.GenJournalLine_Fa_posting_type.Blank && rec.Depreciation_book_code != "" {
+		var faNo types.Code
+		if rec.Account_type == gtables.GenJournalLine_Account_type.FixedAsset {
+			faNo = rec.Account_no
+		}
+		if rec.Bal_account_type == gtables.GenJournalLine_Bal_account_type.FixedAsset {
+			faNo = rec.Bal_account_no
+		}
+		if faNo != "" {
+			deprBook := gtables.NewDepreciationBook(rec)
+			err := deprBook.GetOrError(rec.Depreciation_book_code)
+			if err != nil {
+				return err
+			}
+			var useFAAddCurrExchRate bool
+			switch rec.Fa_posting_type {
+			case gtables.GenJournalLine_Fa_posting_type.AcquisitionCost:
+				useFAAddCurrExchRate = deprBook.Add_curr_exch_rate_acq_cost
+			case gtables.GenJournalLine_Fa_posting_type.Depreciation:
+				useFAAddCurrExchRate = deprBook.Add_curr_exch_rate_depr
+			case gtables.GenJournalLine_Fa_posting_type.WriteDown:
+				useFAAddCurrExchRate = deprBook.Add_curr_exch_rate_write_down
+			case gtables.GenJournalLine_Fa_posting_type.Appreciation:
+				useFAAddCurrExchRate = deprBook.Add_curr_exch_rate_apprec
+			case gtables.GenJournalLine_Fa_posting_type.Custom1:
+				useFAAddCurrExchRate = deprBook.Add_curr_exch_rate_custom_1
+			case gtables.GenJournalLine_Fa_posting_type.Custom2:
+				useFAAddCurrExchRate = deprBook.Add_curr_exch_rate_custom_2
+			case gtables.GenJournalLine_Fa_posting_type.Disposal:
+				useFAAddCurrExchRate = deprBook.Add_curr_exch_rate_disp
+			case gtables.GenJournalLine_Fa_posting_type.Maintenance:
+				useFAAddCurrExchRate = deprBook.Add_curr_exch_rate_maint
+			}
+			if useFAAddCurrExchRate {
+				faDeprBook := gtables.NewFADepreciationBook(rec)
+				err = faDeprBook.GetOrError(map[string]interface{}{"fa_no": faNo, "depreciation_book_code": rec.Depreciation_book_code})
+				if err != nil {
+					return err
+				}
+				err = faDeprBook.TestField("fa_add_currency_factor")
+				if err != nil {
+					return err
+				}
+				rec.Fa_add_currency_factor = faDeprBook.Fa_add_currency_factor
+			}
+		}
+	}
 	return nil
 }
 
@@ -1591,9 +1646,12 @@ func (genJournalLineLogic) OnValidate_Fa_posting_type(rec *gtables.GenJournalLin
 		}
 	}
 	if rec.Fa_posting_type != gtables.GenJournalLine_Fa_posting_type.Maintenance {
-		return rec.TestField("maintenance_code", types.Code(""))
+		err := rec.TestField("maintenance_code", types.Code(""))
+		if err != nil {
+			return err
+		}
 	}
-	return nil
+	return getFAAddCurrExchRate(rec)
 }
 
 // OnValidate_Depreciation_book_code: the fixed asset's posting group in the book
@@ -1616,7 +1674,7 @@ func (genJournalLineLogic) OnValidate_Depreciation_book_code(rec *gtables.GenJou
 		}
 		rec.Posting_group = faDeprBook.Fa_posting_group
 	}
-	return nil
+	return getFAAddCurrExchRate(rec)
 }
 
 // OnValidate_Maintenance_code: only on a maintenance

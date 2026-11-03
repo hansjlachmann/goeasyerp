@@ -301,6 +301,9 @@ func (r *dateCompressItemLedger) comprItemEntry(itemLedgEntry *gtables.ItemLedge
 	newItemLedgEntry.Adjusted_cost_qty = newItemLedgEntry.Adjusted_cost_qty.Add(itemLedgEntry.Adjusted_cost_qty)
 	newItemLedgEntry.Adjusted_cost_invoiced_qty = newItemLedgEntry.Adjusted_cost_invoiced_qty.Add(itemLedgEntry.Adjusted_cost_invoiced_qty)
 	newItemLedgEntry.Cost_posted_to_gl = newItemLedgEntry.Cost_posted_to_gl.Add(itemLedgEntry.Cost_posted_to_gl)
+	newItemLedgEntry.Add_currency_adj_cost_qty = newItemLedgEntry.Add_currency_adj_cost_qty.Add(itemLedgEntry.Add_currency_adj_cost_qty)
+	newItemLedgEntry.Add_curr_adj_cost_inv_qty = newItemLedgEntry.Add_curr_adj_cost_inv_qty.Add(itemLedgEntry.Add_curr_adj_cost_inv_qty)
+	newItemLedgEntry.Add_curr_cost_posted_to_gl = newItemLedgEntry.Add_curr_cost_posted_to_gl.Add(itemLedgEntry.Add_curr_cost_posted_to_gl)
 	newItemLedgEntry.Invt_qty_not_adjusted = newItemLedgEntry.Invt_qty_not_adjusted.Add(itemLedgEntry.Invt_qty_not_adjusted)
 	err := itemLedgEntry.DeleteOrError(false)
 	if err != nil {

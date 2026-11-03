@@ -60,6 +60,10 @@ page:
           width: 100
           visible: false
 
+        - source: fa_add_currency_factor
+          width: 140
+          visible: false
+
         - source: acquisition_cost
           width: 130
           drilldown: 5604

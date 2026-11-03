@@ -239,6 +239,7 @@ reports:
       AVERAGE_COST: "Average Cost"
       LAST_DIRECT_COST: "Last Direct Cost"
       STANDARD_COST: "Standard Cost"
+      ADD_CURR_AVERAGE_COST: "Add.-Curr. Average Cost"
   "1191":
     caption: "Suggest Res. Price Chg. (Res.)"
     options:

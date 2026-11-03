@@ -21,8 +21,11 @@ var unitPrecision = types.MustDecimal("0.00001")
 // direct cost and goes into its average cost. Open it on the posting's transaction; one instance
 // per posting keeps the entry numbers and the registers.
 //
-// Not migrated yet: reservations, item tracking (Lot No.), bins, the additional reporting
-// currency.
+// With an additional reporting currency the assembled item's cost is exchanged at the posting
+// date's rate (its Additional-Currency Unit Cost, adjusted costs and the item's Add.-Curr.
+// Average Cost).
+//
+// Not migrated yet: reservations, item tracking (Lot No.), bins.
 type BOMJnlPostLine struct {
 	src ftables.Source
 
@@ -231,11 +234,18 @@ func (p *BOMJnlPostLine) code() error {
 	itemLedgEntry.Cost_is_adjusted = false // components might be adjusted later
 	if item.Costing_method == gtables.Item_Costing_method.Standard {
 		itemLedgEntry.Unit_cost = item.Unit_cost
+		itemLedgEntry.Additional_currency_unit_cost, err = p.itemJnlPostLine.AddCurrencyUnitCost(bomJnlLine.Posting_date, itemLedgEntry.Unit_cost)
+		if err != nil {
+			return err
+		}
 		itemLedgEntry.Cost_is_adjusted = true
 	} else {
 		if item.Costing_method == gtables.Item_Costing_method.Average {
 			itemLedgEntry.Invoiced_quantity = itemLedgEntry.Quantity // restore from delay
 			itemLedgEntry.Adjusted_cost_invoiced_qty = itemLedgEntry.Adjusted_cost_qty
+			// the classic leaves the additional-currency cost out here, so the average below
+			// would not take the delayed amount off
+			itemLedgEntry.Add_curr_adj_cost_inv_qty = itemLedgEntry.Add_currency_adj_cost_qty
 			err = itemLedgEntry.ModifyOrError(false)
 			if err != nil {
 				return err
@@ -252,6 +262,10 @@ func (p *BOMJnlPostLine) code() error {
 		itemLedgEntry.Unit_cost = system.Round(
 			bomTotalCost.Div(itemLedgEntry.Invoiced_quantity).Mul(one.Add(item.Indirect_cost_percent.Div(hundred))),
 			unitPrecision)
+		itemLedgEntry.Additional_currency_unit_cost, err = p.itemJnlPostLine.AddCurrencyUnitCost(bomJnlLine.Posting_date, itemLedgEntry.Unit_cost)
+		if err != nil {
+			return err
+		}
 		// adjust average cost
 		item.CalcFields("net_invoiced_qty")
 		if item.Net_invoiced_qty.GreaterThan(itemLedgEntry.Invoiced_quantity) {
@@ -259,8 +273,23 @@ func (p *BOMJnlPostLine) code() error {
 			item.Average_cost = item.Average_cost.Sub(itemLedgEntry.Adjusted_cost_invoiced_qty).Add(
 				itemLedgEntry.Unit_cost.Mul(itemLedgEntry.Invoiced_quantity))
 			item.Average_cost = item.Average_cost.Div(item.Net_invoiced_qty)
+
+			item.Add_curr_average_cost = item.Net_invoiced_qty.Mul(item.Add_curr_average_cost)
+			item.Add_curr_average_cost = item.Add_curr_average_cost.Sub(itemLedgEntry.Add_curr_adj_cost_inv_qty).Add(
+				itemLedgEntry.Additional_currency_unit_cost.Mul(itemLedgEntry.Invoiced_quantity))
+			item.Add_curr_average_cost = item.Add_curr_average_cost.Div(item.Net_invoiced_qty)
+			addCurrAverageCost := p.itemJnlPostLine.RoundAddCurrUnitAmount(item.Add_curr_average_cost)
+
+			err = item.Validate("add_curr_average_cost", addCurrAverageCost)
+			if err != nil {
+				return err
+			}
 			err = item.Validate("average_cost", system.Round(item.Average_cost, unitPrecision))
 		} else {
+			err = item.Validate("add_curr_average_cost", itemLedgEntry.Additional_currency_unit_cost)
+			if err != nil {
+				return err
+			}
 			err = item.Validate("average_cost", itemLedgEntry.Unit_cost)
 		}
 		if err != nil {
@@ -273,7 +302,13 @@ func (p *BOMJnlPostLine) code() error {
 	}
 	itemLedgEntry.Unit_amount = system.Round(itemLedgEntry.Unit_cost)
 	itemLedgEntry.Adjusted_cost_invoiced_qty = system.Round(itemLedgEntry.Unit_cost.Mul(itemLedgEntry.Invoiced_quantity))
+	addCurrUnitCost, err := p.itemJnlPostLine.AddCurrencyUnitCost(bomJnlLine.Posting_date, itemLedgEntry.Unit_cost)
+	if err != nil {
+		return err
+	}
+	itemLedgEntry.Add_curr_adj_cost_inv_qty = p.itemJnlPostLine.RoundAddCurrAmount(addCurrUnitCost.Mul(itemLedgEntry.Invoiced_quantity))
 	itemLedgEntry.Adjusted_cost_qty = itemLedgEntry.Adjusted_cost_invoiced_qty
+	itemLedgEntry.Add_currency_adj_cost_qty = itemLedgEntry.Add_curr_adj_cost_inv_qty
 	itemLedgEntry.Amount = itemLedgEntry.Adjusted_cost_invoiced_qty
 	// The changed cost reaches the G/L at once with Automatic Cost Posting (as codeunit 22 does
 	// when it adjusts an entry); otherwise Post Inventory Cost to G/L posts it

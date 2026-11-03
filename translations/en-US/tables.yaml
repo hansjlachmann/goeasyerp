@@ -3157,6 +3157,7 @@ tables:
   gen_journal_line:
     caption: "Gen. Journal Line"
     fields:
+      fa_add_currency_factor: "FA Add.-Currency Factor"
       additional_currency_posting: "Additional-Currency Posting"
       business_unit_code: "Business Unit Code"
       fa_posting_date: "FA Posting Date"
@@ -3678,6 +3679,7 @@ tables:
   item:
     caption: "Item"
     fields:
+      add_curr_average_cost: "Add.-Curr. Average Cost"
       qty_on_purch_order: "Qty. on Purch. Order"
       qty_on_sales_order: "Qty. on Sales Order"
       requisition_method_code: "Requisition Method Code"
@@ -3849,6 +3851,8 @@ tables:
   item_journal_line:
     caption: "Item Journal Line"
     fields:
+      source_currency_unit_cost: "Source Currency Unit Cost"
+      source_currency_code: "Source Currency Code"
       transaction_type: "Transaction Type"
       transport_method: "Transport Method"
       country_code: "Country Code"
@@ -3925,6 +3929,10 @@ tables:
   item_ledger_entry:
     caption: "Item Ledger Entry"
     fields:
+      add_currency_adj_cost_qty: "Add.-Currency Adj. Cost (Qty.)"
+      add_curr_adj_cost_inv_qty: "Add.-Curr. Adj. Cost (Inv Qty)"
+      add_curr_cost_posted_to_gl: "Add.-Curr. Cost Posted to G/L"
+      additional_currency_unit_cost: "Additional-Currency Unit Cost"
       transaction_type: "Transaction Type"
       transport_method: "Transport Method"
       country_code: "Country Code"

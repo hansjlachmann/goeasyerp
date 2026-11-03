@@ -84,6 +84,7 @@ const (
 	ErrJnlNameTooLong          ErrorCode = "ERR_JNL_NAME_TOO_LONG"
 	ErrJnlCorrectionSame       ErrorCode = "ERR_JNL_CORRECTION_SAME"
 	ErrJnlDocOutOfBalance      ErrorCode = "ERR_JNL_DOC_OUT_OF_BALANCE"
+	ErrJnlAddCurrOutOfBalance  ErrorCode = "ERR_JNL_ADD_CURR_OUT_OF_BALANCE"
 	ErrJnlDateOutOfBalance     ErrorCode = "ERR_JNL_DATE_OUT_OF_BALANCE"
 	ErrJnlDocOutOfBalanceCurr  ErrorCode = "ERR_JNL_DOC_OUT_OF_BALANCE_CURRENCY"
 	ErrJnlDateOutOfBalanceCurr ErrorCode = "ERR_JNL_DATE_OUT_OF_BALANCE_CURRENCY"
@@ -177,6 +178,12 @@ func JnlCorrectionSame(table, field string) *AppError {
 // JnlDocOutOfBalance: a document of the journal does not balance
 func JnlDocOutOfBalance(table, docNo, amount string) *AppError {
 	return &AppError{Code: ErrJnlDocOutOfBalance, Table: table, Field: "document_no", Field2: "posting_date", Params: []string{docNo, amount}}
+}
+
+// JnlAddCurrOutOfBalance: the lines of a document up to a line with another FA Add.-Currency
+// Factor do not balance (CheckAddExchRateBalance)
+func JnlAddCurrOutOfBalance(table, docNo string) *AppError {
+	return &AppError{Code: ErrJnlAddCurrOutOfBalance, Table: table, Field: "document_no", Field2: "fa_add_currency_factor", Params: []string{docNo}}
 }
 
 // JnlDateOutOfBalance: the lines of a posting date do not balance

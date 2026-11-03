@@ -239,6 +239,7 @@ reports:
       AVERAGE_COST: "Gjennomsnittskost"
       LAST_DIRECT_COST: "Siste direkte kost"
       STANDARD_COST: "Standardkost"
+      ADD_CURR_AVERAGE_COST: "Gjennomsnittskost i tilleggsvaluta"
   "1191":
     caption: "Foreslå ressursprisendr. (ress.)"
     options:

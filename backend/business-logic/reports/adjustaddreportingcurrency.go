@@ -16,10 +16,11 @@ import (
 // the difference goes to the currency's residual gains or losses account (an entry of amount 0),
 // and so do the closed income statements (the year's additional-currency balance of an account
 // whose LCY balance the closing entries cleared goes to the retained earnings account) — in a G/L
-// register of the run. Removing the currency only stops new entries from getting the amounts.
+// register of the run. The item ledger entries get their costs and the items their Add.-Curr.
+// Average Cost in the new currency too. Removing the currency only stops new entries from getting
+// the amounts.
 //
-// Not migrated yet: the item ledger entries' and items' additional-currency costs (they come
-// with the items' additional reporting currency), changing the rate on the request page.
+// Not migrated yet: changing the rate on the request page.
 const AdjustAddReportingCurrencyID = 86
 
 func init() {
@@ -80,6 +81,18 @@ func (r *adjustAddReportingCurrency) Definition() *Definition {
 				OnPreDataItem:    Trigger(r.glEntryOnPreDataItem),
 				OnAfterGetRecord: Trigger(r.glEntryOnAfterGetRecord),
 				OnPostDataItem:   Trigger(r.glEntryOnPostDataItem),
+			},
+			{
+				Name:             "Item_Ledger_Entry",
+				Table:            gtables.ItemLedgerEntryTableName,
+				Key:              []string{"entry_no"},
+				OnAfterGetRecord: Trigger(r.itemLedgEntryOnAfterGetRecord),
+			},
+			{
+				Name:             "Item",
+				Table:            gtables.ItemTableName,
+				Key:              []string{"no"},
+				OnAfterGetRecord: Trigger(r.itemOnAfterGetRecord),
 			},
 		},
 	}
@@ -299,6 +312,35 @@ func (r *adjustAddReportingCurrency) glEntryOnPostDataItem(glEntry *gtables.GLEn
 		return r.glReg.InsertOrError(false)
 	}
 	return nil
+}
+
+// itemLedgEntryOnAfterGetRecord: the entry's costs in the new currency
+func (r *adjustAddReportingCurrency) itemLedgEntryOnAfterGetRecord(itemLedgEntry *gtables.ItemLedgerEntry, run *Run) error {
+	r.window.Update(1, itemLedgEntry.Item_no)
+	var err error
+	for _, pair := range [][2]*types.Decimal{
+		{&itemLedgEntry.Add_currency_adj_cost_qty, &itemLedgEntry.Adjusted_cost_qty},
+		{&itemLedgEntry.Add_curr_adj_cost_inv_qty, &itemLedgEntry.Adjusted_cost_invoiced_qty},
+		{&itemLedgEntry.Add_curr_cost_posted_to_gl, &itemLedgEntry.Cost_posted_to_gl},
+		{&itemLedgEntry.Additional_currency_unit_cost, &itemLedgEntry.Unit_cost},
+	} {
+		*pair[0], err = r.exchangeAmtLCYToFCY(run, *pair[1])
+		if err != nil {
+			return err
+		}
+	}
+	return itemLedgEntry.ModifyOrError(false)
+}
+
+// itemOnAfterGetRecord: the item's average cost in the new currency
+func (r *adjustAddReportingCurrency) itemOnAfterGetRecord(item *gtables.Item, run *Run) error {
+	r.window.Update(1, item.No)
+	var err error
+	item.Add_curr_average_cost, err = r.exchangeAmtLCYToFCY(run, item.Average_cost)
+	if err != nil {
+		return err
+	}
+	return item.ModifyOrError(false)
 }
 
 // usedCodes: whether the closing entries of the key's date and account carry business units,

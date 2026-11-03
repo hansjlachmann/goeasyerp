@@ -591,6 +591,8 @@ func (p *SalesPost) postItemJnlLine(salesLine *gtables.SalesLine, qtyToShip, qty
 	itemJnlLine.Invoiced_quantity = qtyToInvoice.Mul(p.sign)
 	itemJnlLine.Invoiced_qty_base = qtyToInvoiceBase.Mul(p.sign)
 	itemJnlLine.Unit_cost = salesLine.Unit_cost_lcy
+	itemJnlLine.Source_currency_code = salesHeader.Currency_code
+	itemJnlLine.Source_currency_unit_cost = salesLine.Unit_cost
 	itemJnlLine.Item_shpt_entry_no = itemShptEntryNo
 	itemJnlLine.Amount = amounts[0].Mul(p.sign)
 	itemJnlLine.Discount_amount = amounts[1].Mul(p.sign)

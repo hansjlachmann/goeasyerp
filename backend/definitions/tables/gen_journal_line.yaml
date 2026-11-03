@@ -877,6 +877,15 @@ table:
       options: ["None", "Amount Only", "Additional-Currency Amount Only"]
       editable: false
 
+    - name: fa_add_currency_factor
+      no: 98
+      type: types.Decimal
+      db_name: fa_add_currency_factor
+      decimal_places: "0:15"
+      precision: 18
+      scale: 15
+      editable: false
+
     - name: source_curr_tax_amount
       no: 102
       type: types.Decimal

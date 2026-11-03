@@ -21,9 +21,14 @@ var unitPrecision = types.MustDecimal("0.00001")
 // to the G/L (codeunit 12). Open it on the posting's transaction; one instance per posting keeps
 // the entry numbers, the Item Register and the G/L Register.
 //
-// Not migrated yet: reservations, item tracking (serial and lot numbers), bins, the additional
-// reporting currency, cost adjustment (Adjust Cost - Item Entries); Costing Method Specific
-// (it needs serial numbers) is refused.
+// With an additional reporting currency every cost has its amount in that currency too
+// (Additional-Currency Unit Cost — the document's unit cost when it is in the currency, else the
+// LCY unit cost at the posting date's rate —, Add.-Currency Adj. Cost (Qty.), Add.-Curr. Adj.
+// Cost (Inv Qty), the item's Add.-Curr. Average Cost) and the inventory posting carries it into
+// the G/L.
+//
+// Not migrated yet: reservations, item tracking (serial and lot numbers), bins; Costing Method
+// Specific (it needs serial numbers) is refused.
 type ItemJnlPostLine struct {
 	src ftables.Source
 
@@ -41,6 +46,9 @@ type ItemJnlPostLine struct {
 	physInvtEntryNo    int
 	applicationEntryNo int
 	invtSetupRead      bool
+	glSetupRead        bool
+	glSetup            *gtables.GeneralLedgerSetup
+	currency           *gtables.Currency // the additional reporting currency (blank without one)
 }
 
 // NewItemJnlPostLine opens the posting codeunit in the posting's database (its transaction)
@@ -120,8 +128,13 @@ func (p *ItemJnlPostLine) code() error {
 		}
 	}
 
+	err := p.getGLSetup()
+	if err != nil {
+		return err
+	}
+
 	p.item = gtables.NewItem(p.src)
-	err := p.item.GetOrError(itemJnlLine.Item_no)
+	err = p.item.GetOrError(itemJnlLine.Item_no)
 	if err != nil {
 		return err
 	}
@@ -179,10 +192,14 @@ func (p *ItemJnlPostLine) code() error {
 	itemJnlLine.Invoiced_quantity = itemJnlLine.Invoiced_qty_base
 	itemJnlLine.Unit_amount = system.Round(itemJnlLine.Unit_amount.Div(itemJnlLine.Qty_per_unit_of_measure), unitPrecision)
 	itemJnlLine.Unit_cost = system.Round(itemJnlLine.Unit_cost.Div(itemJnlLine.Qty_per_unit_of_measure), unitPrecision)
+	itemJnlLine.Source_currency_unit_cost = system.Round(itemJnlLine.Source_currency_unit_cost.Div(itemJnlLine.Qty_per_unit_of_measure), unitPrecision)
 
 	p.itemLedgEntry = gtables.NewItemLedgerEntry(p.src)
 	itemLedgEntry := p.itemLedgEntry
-	p.initItemLedgEntry(itemLedgEntry)
+	err = p.initItemLedgEntry(itemLedgEntry)
+	if err != nil {
+		return err
+	}
 
 	itemLedgEntry.Remaining_quantity = itemLedgEntry.Quantity
 	itemLedgEntry.Open = !itemLedgEntry.Remaining_quantity.IsZero()
@@ -194,13 +211,18 @@ func (p *ItemJnlPostLine) code() error {
 	if itemLedgEntry.Entry_type == gtables.ItemLedgerEntry_Entry_type.Transfer || p.item.Inventory_value_zero {
 		itemLedgEntry.Adjusted_cost_qty = types.Decimal{}
 		itemLedgEntry.Adjusted_cost_invoiced_qty = types.Decimal{}
+		itemLedgEntry.Add_currency_adj_cost_qty = types.Decimal{}
+		itemLedgEntry.Add_curr_adj_cost_inv_qty = types.Decimal{}
 	} else {
 		if p.item.Costing_method == gtables.Item_Costing_method.Average &&
 			itemLedgEntry.Invoiced_quantity.IsNegative() &&
 			!itemJnlLine.Drop_shipment {
 			itemLedgEntry.Adjusted_cost_qty = system.Round(itemLedgEntry.Quantity.Mul(p.item.Average_cost))
+			itemLedgEntry.Add_currency_adj_cost_qty = p.roundAmount(itemLedgEntry.Quantity.Mul(p.item.Add_curr_average_cost))
 			itemLedgEntry.Adjusted_cost_invoiced_qty = system.Round(itemLedgEntry.Invoiced_quantity.Mul(p.item.Average_cost))
+			itemLedgEntry.Add_curr_adj_cost_inv_qty = p.roundAmount(itemLedgEntry.Invoiced_quantity.Mul(p.item.Add_curr_average_cost))
 			itemLedgEntry.Unit_cost = p.item.Average_cost
+			itemLedgEntry.Additional_currency_unit_cost = p.item.Add_curr_average_cost
 			netInvoicedQty := p.itemNetInvoicedQty(itemLedgEntry.Drop_shipment)
 			if netInvoicedQty.IsNegative() {
 				itemLedgEntry.Invt_qty_not_adjusted = itemLedgEntry.Invoiced_quantity
@@ -216,7 +238,9 @@ func (p *ItemJnlPostLine) code() error {
 			}
 		} else {
 			itemLedgEntry.Adjusted_cost_qty = system.Round(itemLedgEntry.Quantity.Mul(itemLedgEntry.Unit_cost))
+			itemLedgEntry.Add_currency_adj_cost_qty = p.roundAmount(itemLedgEntry.Quantity.Mul(itemLedgEntry.Additional_currency_unit_cost))
 			itemLedgEntry.Adjusted_cost_invoiced_qty = system.Round(itemLedgEntry.Invoiced_quantity.Mul(itemLedgEntry.Unit_cost))
+			itemLedgEntry.Add_curr_adj_cost_inv_qty = p.roundAmount(itemLedgEntry.Invoiced_quantity.Mul(itemLedgEntry.Additional_currency_unit_cost))
 		}
 	}
 
@@ -241,6 +265,7 @@ func (p *ItemJnlPostLine) code() error {
 
 	if itemLedgEntry.Entry_type == gtables.ItemLedgerEntry_Entry_type.Transfer {
 		itemLedgEntry.Unit_cost = types.Decimal{}
+		itemLedgEntry.Additional_currency_unit_cost = types.Decimal{}
 		itemLedgEntry.Unit_amount = types.Decimal{}
 	}
 
@@ -251,6 +276,7 @@ func (p *ItemJnlPostLine) code() error {
 
 	if itemLedgEntry.Entry_type == gtables.ItemLedgerEntry_Entry_type.Transfer && !itemLedgEntry.Quantity.IsZero() {
 		itemLedgEntry.Unit_cost = system.Round(itemLedgEntry.Unit_cost.Div(itemLedgEntry.Quantity), unitPrecision)
+		itemLedgEntry.Additional_currency_unit_cost = system.Round(itemLedgEntry.Additional_currency_unit_cost.Div(itemLedgEntry.Quantity), unitPrecision)
 		itemLedgEntry.Unit_amount = system.Round(itemLedgEntry.Amount.Div(itemLedgEntry.Quantity), unitPrecision)
 	}
 
@@ -313,15 +339,21 @@ func (p *ItemJnlPostLine) updateUnitCost() error {
 		}
 
 		if !p.itemJnlLine.Drop_shipment {
-			var averageCost types.Decimal
+			var averageCost, addCurrAverageCost types.Decimal
 			netInvoicedQty := p.itemNetInvoicedQty(itemLedgEntry.Drop_shipment)
 			if netInvoicedQty.GreaterThan(itemLedgEntry.Invoiced_quantity) {
 				averageCost = netInvoicedQty.Sub(itemLedgEntry.Invoiced_quantity).Mul(p.item.Average_cost) // Inventory valuation for this purchase
 				averageCost = averageCost.Add(itemLedgEntry.Adjusted_cost_invoiced_qty)                    // Purchase value
 				averageCost = averageCost.Div(netInvoicedQty)
+
+				addCurrAverageCost = netInvoicedQty.Sub(itemLedgEntry.Invoiced_quantity).Mul(p.item.Add_curr_average_cost) // Inventory valuation for this purchase
+				addCurrAverageCost = addCurrAverageCost.Add(itemLedgEntry.Add_curr_adj_cost_inv_qty)                       // Purchase value
+				addCurrAverageCost = addCurrAverageCost.Div(netInvoicedQty)
 			} else {
 				averageCost = itemLedgEntry.Unit_cost
+				addCurrAverageCost = itemLedgEntry.Additional_currency_unit_cost
 			}
+			p.item.Add_curr_average_cost = system.Round(addCurrAverageCost, unitPrecision)
 			err = p.item.Validate("average_cost", system.Round(averageCost, unitPrecision))
 			if err != nil {
 				return err
@@ -458,6 +490,10 @@ func (p *ItemJnlPostLine) applyItemLedgEntry(itemLedgEntry *gtables.ItemLedgerEn
 
 			if itemLedgEntry.Entry_type == gtables.ItemLedgerEntry_Entry_type.Transfer && !causedByTransfer {
 				itemLedgEntry.Unit_cost = itemLedgEntry.Unit_cost.Add(oldItemLedgEntry.Unit_cost.Mul(appliedQty))
+				// the classic adds the entry's own additional-currency unit cost here; the applied
+				// entry's, as for the LCY unit cost
+				itemLedgEntry.Additional_currency_unit_cost = itemLedgEntry.Additional_currency_unit_cost.Add(
+					oldItemLedgEntry.Additional_currency_unit_cost.Mul(appliedQty))
 			}
 
 			if itemLedgEntry.Remaining_quantity.Add(itemLedgEntry.Reserved_quantity).IsZero() {
@@ -482,12 +518,18 @@ func (p *ItemJnlPostLine) adjustSalesInv() error {
 			salesInvItemEntry.Adjusted_cost_invoiced_qty = system.Round(
 				salesInvItemEntry.Adjusted_cost_invoiced_qty.Sub(salesInvItemEntry.Invt_qty_not_adjusted.Mul(salesInvItemEntry.Unit_cost)).Add(
 					salesInvItemEntry.Invt_qty_not_adjusted.Mul(itemLedgEntry.Unit_cost)))
+			salesInvItemEntry.Add_curr_adj_cost_inv_qty = p.roundAmount(
+				salesInvItemEntry.Add_curr_adj_cost_inv_qty.Sub(salesInvItemEntry.Invt_qty_not_adjusted.Mul(salesInvItemEntry.Additional_currency_unit_cost)).Add(
+					salesInvItemEntry.Invt_qty_not_adjusted.Mul(itemLedgEntry.Additional_currency_unit_cost)))
 			qtyAvailableForCostAdj = qtyAvailableForCostAdj.Add(salesInvItemEntry.Invt_qty_not_adjusted)
 			salesInvItemEntry.Invt_qty_not_adjusted = types.Decimal{}
 		} else {
 			salesInvItemEntry.Adjusted_cost_invoiced_qty = system.Round(
 				salesInvItemEntry.Adjusted_cost_invoiced_qty.Add(qtyAvailableForCostAdj.Mul(salesInvItemEntry.Unit_cost)).Sub(
 					qtyAvailableForCostAdj.Mul(itemLedgEntry.Unit_cost)))
+			salesInvItemEntry.Add_curr_adj_cost_inv_qty = p.roundAmount(
+				salesInvItemEntry.Add_curr_adj_cost_inv_qty.Add(qtyAvailableForCostAdj.Mul(salesInvItemEntry.Additional_currency_unit_cost)).Sub(
+					qtyAvailableForCostAdj.Mul(itemLedgEntry.Additional_currency_unit_cost)))
 			salesInvItemEntry.Invt_qty_not_adjusted = salesInvItemEntry.Invt_qty_not_adjusted.Add(qtyAvailableForCostAdj)
 			qtyAvailableForCostAdj = types.Decimal{}
 		}
@@ -497,6 +539,7 @@ func (p *ItemJnlPostLine) adjustSalesInv() error {
 		}
 		if salesInvItemEntry.Invoiced_quantity.Equal(salesInvItemEntry.Quantity) {
 			salesInvItemEntry.Adjusted_cost_qty = salesInvItemEntry.Adjusted_cost_invoiced_qty
+			salesInvItemEntry.Add_currency_adj_cost_qty = salesInvItemEntry.Add_curr_adj_cost_inv_qty
 		}
 
 		if p.invtSetup.Automatic_cost_posting &&
@@ -520,7 +563,10 @@ func (p *ItemJnlPostLine) adjustSalesInv() error {
 func (p *ItemJnlPostLine) insertTransferEntry(itemLedgEntry, oldItemLedgEntry *gtables.ItemLedgerEntry, appliedQty types.Decimal) error {
 	itemJnlLine := p.itemJnlLine
 	itemLedgEntry4 := gtables.NewItemLedgerEntry(p.src)
-	p.initItemLedgEntry(itemLedgEntry4)
+	err := p.initItemLedgEntry(itemLedgEntry4)
+	if err != nil {
+		return err
+	}
 	itemLedgEntry4.Applies_to_entry = 0
 
 	itemLedgEntry4.Source_type = oldItemLedgEntry.Source_type
@@ -542,18 +588,23 @@ func (p *ItemJnlPostLine) insertTransferEntry(itemLedgEntry, oldItemLedgEntry *g
 	itemLedgEntry4.Positive = itemLedgEntry4.Remaining_quantity.IsPositive()
 	itemLedgEntry4.Unit_amount = oldItemLedgEntry.Unit_amount
 	itemLedgEntry4.Unit_cost = oldItemLedgEntry.Unit_cost
+	itemLedgEntry4.Additional_currency_unit_cost = oldItemLedgEntry.Additional_currency_unit_cost
 
 	itemLedgEntry4.Location_code = itemJnlLine.New_location_code
 	itemLedgEntry4.Department_code = itemJnlLine.New_department_code
 	itemLedgEntry4.Project_code = itemJnlLine.New_project_code
 
 	itemLedgEntry4.Adjusted_cost_qty = system.Round(itemLedgEntry4.Quantity.Mul(itemLedgEntry4.Unit_cost))
+	itemLedgEntry4.Add_currency_adj_cost_qty = p.roundAmount(itemLedgEntry4.Quantity.Mul(itemLedgEntry4.Additional_currency_unit_cost))
 	itemLedgEntry4.Adjusted_cost_invoiced_qty = system.Round(itemLedgEntry4.Invoiced_quantity.Mul(itemLedgEntry4.Unit_cost))
+	itemLedgEntry4.Add_curr_adj_cost_inv_qty = p.roundAmount(itemLedgEntry4.Invoiced_quantity.Mul(itemLedgEntry4.Additional_currency_unit_cost))
 
 	itemLedgEntry.Adjusted_cost_qty = itemLedgEntry.Adjusted_cost_qty.Sub(itemLedgEntry4.Adjusted_cost_qty)
+	itemLedgEntry.Add_currency_adj_cost_qty = itemLedgEntry.Add_currency_adj_cost_qty.Sub(itemLedgEntry4.Add_currency_adj_cost_qty)
 	itemLedgEntry.Adjusted_cost_invoiced_qty = itemLedgEntry.Adjusted_cost_invoiced_qty.Sub(itemLedgEntry4.Adjusted_cost_invoiced_qty)
+	itemLedgEntry.Add_curr_adj_cost_inv_qty = itemLedgEntry.Add_curr_adj_cost_inv_qty.Sub(itemLedgEntry4.Add_curr_adj_cost_inv_qty)
 
-	err := p.insertApplicationEntry(itemLedgEntry4.Entry_no, itemLedgEntry4.Entry_no, itemLedgEntry.Entry_no,
+	err = p.insertApplicationEntry(itemLedgEntry4.Entry_no, itemLedgEntry4.Entry_no, itemLedgEntry.Entry_no,
 		oldItemLedgEntry.Entry_no, itemLedgEntry4.Entry_type, itemLedgEntry4.Posting_date,
 		itemLedgEntry4.Document_no, itemLedgEntry4.Quantity)
 	if err != nil {
@@ -570,7 +621,7 @@ func (p *ItemJnlPostLine) insertTransferEntry(itemLedgEntry, oldItemLedgEntry *g
 
 // initItemLedgEntry starts an item ledger entry with the next entry number and the line's
 // values; a sale, negative adjustment or transfer takes the quantity out (negative)
-func (p *ItemJnlPostLine) initItemLedgEntry(itemLedgEntry2 *gtables.ItemLedgerEntry) {
+func (p *ItemJnlPostLine) initItemLedgEntry(itemLedgEntry2 *gtables.ItemLedgerEntry) error {
 	p.entryNo = p.entryNo + 1
 
 	itemJnlLine := p.itemJnlLine
@@ -594,6 +645,17 @@ func (p *ItemJnlPostLine) initItemLedgEntry(itemLedgEntry2 *gtables.ItemLedgerEn
 	itemLedgEntry2.Inventory_posting_group = itemJnlLine.Inventory_posting_group
 	itemLedgEntry2.Source_posting_group = itemJnlLine.Source_posting_group
 	itemLedgEntry2.Unit_cost = itemJnlLine.Unit_cost
+	if p.glSetup.Additional_reporting_currency != "" {
+		if itemJnlLine.Source_currency_code == p.glSetup.Additional_reporting_currency {
+			itemLedgEntry2.Additional_currency_unit_cost = itemJnlLine.Source_currency_unit_cost
+		} else {
+			unitCost, err := p.exchangeUnitCostToAddCurr(itemJnlLine.Posting_date, itemJnlLine.Unit_cost)
+			if err != nil {
+				return err
+			}
+			itemLedgEntry2.Additional_currency_unit_cost = unitCost
+		}
+	}
 	itemLedgEntry2.Amount = itemJnlLine.Amount
 	itemLedgEntry2.Discount_amount = itemJnlLine.Discount_amount
 	itemLedgEntry2.Salespers_purch_code = itemJnlLine.Salespers_purch_code
@@ -632,6 +694,7 @@ func (p *ItemJnlPostLine) initItemLedgEntry(itemLedgEntry2 *gtables.ItemLedgerEn
 		itemLedgEntry2.Quantity = itemJnlLine.Quantity
 		itemLedgEntry2.Invoiced_quantity = itemJnlLine.Invoiced_quantity
 	}
+	return nil
 }
 
 // insertItemLedgEntry writes an item ledger entry — refused when a negative adjustment of an item
@@ -745,6 +808,18 @@ func (p *ItemJnlPostLine) postInventoryToGL(itemLedgEntry *gtables.ItemLedgerEnt
 	if err != nil {
 		return err
 	}
+	genJnlLine.Source_currency_code = p.glSetup.Additional_reporting_currency
+	genJnlLine.Source_currency_amount = itemLedgEntry.Add_curr_adj_cost_inv_qty.Sub(itemLedgEntry.Add_curr_cost_posted_to_gl)
+	if p.glSetup.Additional_reporting_currency != "" &&
+		genJnlLine.Amount.IsZero() &&
+		!genJnlLine.Source_currency_amount.IsZero() {
+		genJnlLine.Additional_currency_posting = gtables.GenJournalLine_Additional_currency_posting.AdditionalCurrencyAmountOnly
+		err = genJnlLine.Validate("amount", genJnlLine.Source_currency_amount)
+		if err != nil {
+			return err
+		}
+		genJnlLine.Source_currency_amount = types.Decimal{}
+	}
 	if p.genJnlPostLine == nil {
 		p.genJnlPostLine = genjnl.NewGenJnlPostLine(p.src)
 	}
@@ -770,13 +845,65 @@ func (p *ItemJnlPostLine) postInventoryToGL(itemLedgEntry *gtables.ItemLedgerEnt
 	if err != nil {
 		return err
 	}
+	genJnlLine.Source_currency_amount = genJnlLine.Source_currency_amount.Neg()
 	err = p.genJnlPostLine.Run(genJnlLine)
 	if err != nil {
 		return err
 	}
 
 	itemLedgEntry.Cost_posted_to_gl = itemLedgEntry.Adjusted_cost_invoiced_qty
+	itemLedgEntry.Add_curr_cost_posted_to_gl = itemLedgEntry.Add_curr_adj_cost_inv_qty
 	return nil
+}
+
+// getGLSetup reads the General Ledger Setup and the additional reporting currency once (its
+// rounding precisions are required)
+func (p *ItemJnlPostLine) getGLSetup() error {
+	if !p.glSetupRead {
+		p.glSetupRead = true
+		p.glSetup = gtables.GetGeneralLedgerSetup(p.src)
+		p.currency = gtables.NewCurrency(p.src)
+		if p.glSetup.Additional_reporting_currency != "" {
+			err := p.currency.GetOrError(p.glSetup.Additional_reporting_currency)
+			if err != nil {
+				return err
+			}
+			err = p.currency.TestField("unit_amount_rounding_precision")
+			if err != nil {
+				return err
+			}
+			err = p.currency.TestField("amount_rounding_precision")
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// roundAmount rounds an additional-currency amount to the currency's Amount Rounding Precision
+// (classic ROUND(…, Currency."Amount Rounding Precision"); 0.01 without a currency)
+func (p *ItemJnlPostLine) roundAmount(amount types.Decimal) types.Decimal {
+	if p.currency == nil || p.currency.Amount_rounding_precision.IsZero() {
+		return system.Round(amount)
+	}
+	return system.Round(amount, p.currency.Amount_rounding_precision)
+}
+
+// exchangeUnitCostToAddCurr: an LCY unit cost in the additional reporting currency at the
+// date's rate, rounded to the currency's Unit-Amount Rounding Precision
+func (p *ItemJnlPostLine) exchangeUnitCostToAddCurr(date types.Date, unitCost types.Decimal) (types.Decimal, error) {
+	rates := tables.ExchangeRates(p.src)
+	acy := p.glSetup.Additional_reporting_currency
+	factor, err := rates.ExchangeRate(date, acy)
+	if err != nil {
+		return types.Decimal{}, err
+	}
+	amount, err := rates.ExchangeAmtLCYToFCY(date, acy, unitCost, factor)
+	if err != nil {
+		return types.Decimal{}, err
+	}
+	return system.Round(amount, p.currency.Unit_amount_rounding_precision), nil
 }
 
 // insertApplicationEntry writes an item application entry: the quantity of an item ledger
@@ -876,12 +1003,47 @@ func (p *ItemJnlPostLine) AutomaticCostPosting() bool {
 // (an entry whose cost changed after it was posted, the BOM journal's assembled item); the
 // entry's Cost Posted to G/L follows, the caller modifies it
 func (p *ItemJnlPostLine) PostInventoryToGL(itemLedgEntry *gtables.ItemLedgerEntry) error {
+	err := p.getGLSetup()
+	if err != nil {
+		return err
+	}
 	return p.postInventoryToGL(itemLedgEntry)
 }
 
 // AdjustSalesInv adjusts the cost of the sales invoiced before an inbound entry of an Average
 // item (the BOM journal's assembled item, whose cost is set after codeunit 22 posted it)
 func (p *ItemJnlPostLine) AdjustSalesInv(itemLedgEntry *gtables.ItemLedgerEntry) error {
+	err := p.getGLSetup()
+	if err != nil {
+		return err
+	}
 	p.itemLedgEntry = itemLedgEntry
 	return p.adjustSalesInv()
+}
+
+// AddCurrencyUnitCost: an LCY unit cost in the additional reporting currency at the date's rate
+// (0 without one) — the BOM journal's assembled item
+func (p *ItemJnlPostLine) AddCurrencyUnitCost(date types.Date, unitCost types.Decimal) (types.Decimal, error) {
+	err := p.getGLSetup()
+	if err != nil {
+		return types.Decimal{}, err
+	}
+	if p.glSetup.Additional_reporting_currency == "" {
+		return types.Decimal{}, nil
+	}
+	return p.exchangeUnitCostToAddCurr(date, unitCost)
+}
+
+// RoundAddCurrAmount rounds an additional-currency amount to the currency's precision
+func (p *ItemJnlPostLine) RoundAddCurrAmount(amount types.Decimal) types.Decimal {
+	return p.roundAmount(amount)
+}
+
+// RoundAddCurrUnitAmount rounds an additional-currency unit amount to the currency's Unit-Amount
+// Rounding Precision (0.00001 without one)
+func (p *ItemJnlPostLine) RoundAddCurrUnitAmount(amount types.Decimal) types.Decimal {
+	if p.currency == nil || p.currency.Unit_amount_rounding_precision.IsZero() {
+		return system.Round(amount, unitPrecision)
+	}
+	return system.Round(amount, p.currency.Unit_amount_rounding_precision)
 }

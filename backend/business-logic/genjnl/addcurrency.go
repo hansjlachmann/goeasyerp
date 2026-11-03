@@ -36,7 +36,7 @@ func (p *GenJnlPostLine) acyCode() types.Code {
 
 // getCurrencyExchRate (GetCurrencyExchRate): the additional currency (its rounding and residual
 // accounts are required) and its rate on the line's posting date (the day before for a reversing
-// entry); a fixed asset line with its own FA Add.-Currency Factor uses that factor
+// entry); a fixed asset line with its own FA Add.-Currency Factor uses that factor alone
 func (p *GenJnlPostLine) getCurrencyExchRate() error {
 	if p.acyCode() == "" {
 		return nil
@@ -67,6 +67,11 @@ func (p *GenJnlPostLine) getCurrencyExchRate() error {
 			return err
 		}
 		acy.currencyFactor = factor
+	}
+	if !p.genJnlLine.Fa_add_currency_factor.IsZero() && !p.genJnlLine.Fa_add_currency_factor.Equal(acy.currencyFactor) {
+		acy.useCurrFactorOnly = true
+		acy.currencyDate = types.Date{}
+		acy.currencyFactor = p.genJnlLine.Fa_add_currency_factor
 	}
 	return nil
 }

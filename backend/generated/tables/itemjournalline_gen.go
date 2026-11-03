@@ -56,6 +56,8 @@
 //	OnValidate_Area(rec *gtables.ItemJournalLine) error
 //	OnValidate_Transaction_specification(rec *gtables.ItemJournalLine) error
 //	OnValidate_Posting_no_series(rec *gtables.ItemJournalLine) error
+//	OnValidate_Source_currency_unit_cost(rec *gtables.ItemJournalLine) error
+//	OnValidate_Source_currency_code(rec *gtables.ItemJournalLine) error
 //	OnValidate_Reserve(rec *gtables.ItemJournalLine) error
 //	OnValidate_Variant_code(rec *gtables.ItemJournalLine) error
 //	OnValidate_Qty_per_unit_of_measure(rec *gtables.ItemJournalLine) error
@@ -206,6 +208,8 @@ type ItemJournalLine struct {
 	Area                      types.Code                      `db:"area"`
 	Transaction_specification types.Code                      `db:"transaction_specification"`
 	Posting_no_series         types.Code                      `db:"posting_no_series"`
+	Source_currency_unit_cost types.Decimal                   `db:"source_currency_unit_cost"`
+	Source_currency_code      types.Code                      `db:"source_currency_code"`
 	Reserve                   ItemJournalLineReserve          `db:"reserve"`
 	Variant_code              types.Code                      `db:"variant_code"`
 	Qty_per_unit_of_measure   types.Decimal                   `db:"qty_per_unit_of_measure"`
@@ -381,6 +385,8 @@ var ItemJournalLine_FieldNo = struct {
 	Area                      int
 	Transaction_specification int
 	Posting_no_series         int
+	Source_currency_unit_cost int
+	Source_currency_code      int
 	Reserve                   int
 	Variant_code              int
 	Qty_per_unit_of_measure   int
@@ -437,6 +443,8 @@ var ItemJournalLine_FieldNo = struct {
 	Area:                      63,
 	Transaction_specification: 64,
 	Posting_no_series:         65,
+	Source_currency_unit_cost: 72,
+	Source_currency_code:      73,
 	Reserve:                   70,
 	Variant_code:              5402,
 	Qty_per_unit_of_measure:   5404,
@@ -543,6 +551,10 @@ func (t *ItemJournalLine) FieldNo(fieldName string) int {
 		return 64
 	case "posting_no_series":
 		return 65
+	case "source_currency_unit_cost":
+		return 72
+	case "source_currency_code":
+		return 73
 	case "reserve":
 		return 70
 	case "variant_code":
@@ -660,6 +672,10 @@ func (t *ItemJournalLine) FieldName(fieldNo int) string {
 		return "transaction_specification"
 	case 65:
 		return "posting_no_series"
+	case 72:
+		return "source_currency_unit_cost"
+	case 73:
+		return "source_currency_code"
 	case 70:
 		return "reserve"
 	case 5402:
@@ -917,6 +933,12 @@ type (
 	ItemJournalLineOnValidate_Posting_no_series interface {
 		OnValidate_Posting_no_series(rec *ItemJournalLine) error
 	}
+	ItemJournalLineOnValidate_Source_currency_unit_cost interface {
+		OnValidate_Source_currency_unit_cost(rec *ItemJournalLine) error
+	}
+	ItemJournalLineOnValidate_Source_currency_code interface {
+		OnValidate_Source_currency_code(rec *ItemJournalLine) error
+	}
 	ItemJournalLineOnValidate_Reserve interface {
 		OnValidate_Reserve(rec *ItemJournalLine) error
 	}
@@ -1065,6 +1087,10 @@ func itemJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemJournalLineOnValidate_Transaction_specification)
 	case "OnValidate_Posting_no_series":
 		_, ok = logic.(ItemJournalLineOnValidate_Posting_no_series)
+	case "OnValidate_Source_currency_unit_cost":
+		_, ok = logic.(ItemJournalLineOnValidate_Source_currency_unit_cost)
+	case "OnValidate_Source_currency_code":
+		_, ok = logic.(ItemJournalLineOnValidate_Source_currency_code)
 	case "OnValidate_Reserve":
 		_, ok = logic.(ItemJournalLineOnValidate_Reserve)
 	case "OnValidate_Variant_code":
@@ -1247,6 +1273,9 @@ func (t *ItemJournalLine) CheckFields() error {
 	if err := tables.CheckMaxLength(ItemJournalLineTableName, "posting_no_series", string(t.Posting_no_series), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(ItemJournalLineTableName, "source_currency_code", string(t.Source_currency_code), 10); err != nil {
+		return err
+	}
 	if err := tables.CheckMaxLength(ItemJournalLineTableName, "variant_code", string(t.Variant_code), 10); err != nil {
 		return err
 	}
@@ -1332,6 +1361,8 @@ func GetItemJournalLineTableSchema() string {
 		area TEXT(10),
 		transaction_specification TEXT(10),
 		posting_no_series TEXT(10),
+		source_currency_unit_cost TEXT,
+		source_currency_code TEXT(10),
 		reserve INTEGER CHECK (reserve >= 0 AND reserve <= 2),
 		variant_code TEXT(10),
 		qty_per_unit_of_measure TEXT DEFAULT 1,
@@ -1394,6 +1425,8 @@ func GetItemJournalLinePostgresTableSchema() string {
 		area VARCHAR(10),
 		transaction_specification VARCHAR(10),
 		posting_no_series VARCHAR(10),
+		source_currency_unit_cost NUMERIC,
+		source_currency_code VARCHAR(10),
 		reserve INTEGER CHECK (reserve >= 0 AND reserve <= 2),
 		variant_code VARCHAR(10),
 		qty_per_unit_of_measure NUMERIC DEFAULT 1,
@@ -1585,6 +1618,8 @@ func (t *ItemJournalLine) StoreOldValues() {
 	t.oldValues["area"] = t.Area
 	t.oldValues["transaction_specification"] = t.Transaction_specification
 	t.oldValues["posting_no_series"] = t.Posting_no_series
+	t.oldValues["source_currency_unit_cost"] = t.Source_currency_unit_cost
+	t.oldValues["source_currency_code"] = t.Source_currency_code
 	t.oldValues["reserve"] = t.Reserve
 	t.oldValues["variant_code"] = t.Variant_code
 	t.oldValues["qty_per_unit_of_measure"] = t.Qty_per_unit_of_measure
@@ -1746,6 +1781,12 @@ func (t *ItemJournalLine) XRec() *ItemJournalLine {
 	if v, ok := t.oldValues["posting_no_series"].(types.Code); ok {
 		x.Posting_no_series = v
 	}
+	if v, ok := t.oldValues["source_currency_unit_cost"].(types.Decimal); ok {
+		x.Source_currency_unit_cost = v
+	}
+	if v, ok := t.oldValues["source_currency_code"].(types.Code); ok {
+		x.Source_currency_code = v
+	}
 	if v, ok := t.oldValues["reserve"].(ItemJournalLineReserve); ok {
 		x.Reserve = v
 	}
@@ -1898,6 +1939,8 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 	var areaNull sql.NullString
 	var transaction_specificationNull sql.NullString
 	var posting_no_seriesNull sql.NullString
+	var source_currency_unit_costNull sql.NullString
+	var source_currency_codeNull sql.NullString
 	var reserveInt int
 	var variant_codeNull sql.NullString
 	var qty_per_unit_of_measureNull sql.NullString
@@ -1916,7 +1959,7 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1969,6 +2012,8 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 		&areaNull,
 		&transaction_specificationNull,
 		&posting_no_seriesNull,
+		&source_currency_unit_costNull,
+		&source_currency_codeNull,
 		&reserveInt,
 		&variant_codeNull,
 		&qty_per_unit_of_measureNull,
@@ -2037,6 +2082,8 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 	t.Area = types.NewCode(areaNull.String)
 	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
+	t.Source_currency_unit_cost, _ = types.NewDecimalFromString(source_currency_unit_costNull.String)
+	t.Source_currency_code = types.NewCode(source_currency_codeNull.String)
 	t.Reserve = ItemJournalLineReserve(reserveInt)
 	t.Variant_code = types.NewCode(variant_codeNull.String)
 	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
@@ -2114,6 +2161,8 @@ func (t *ItemJournalLine) Insert(runTrigger bool) bool {
 		t.Area,
 		t.Transaction_specification,
 		t.Posting_no_series,
+		t.Source_currency_unit_cost,
+		t.Source_currency_code,
 		t.Reserve,
 		t.Variant_code,
 		t.Qty_per_unit_of_measure,
@@ -2127,7 +2176,7 @@ func (t *ItemJournalLine) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2211,6 +2260,8 @@ func (t *ItemJournalLine) InsertAll(records []*ItemJournalLine, runTrigger bool)
 			r.Area,
 			r.Transaction_specification,
 			r.Posting_no_series,
+			r.Source_currency_unit_cost,
+			r.Source_currency_code,
 			r.Reserve,
 			r.Variant_code,
 			r.Qty_per_unit_of_measure,
@@ -2223,7 +2274,7 @@ func (t *ItemJournalLine) InsertAll(records []*ItemJournalLine, runTrigger bool)
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ItemJournalLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "source_code", "applies_to_entry", "item_shpt_entry_no", "department_code", "project_code", "indirect_cost_percent", "source_type", "reason_code", "drop_shipment", "transaction_type", "transport_method", "country_code", "new_location_code", "new_department_code", "new_project_code", "qty_calculated", "qty_phys_inventory", "last_item_ledger_entry_no", "phys_inventory", "gen_bus_posting_group", "gen_prod_posting_group", "entry_exit_point", "document_date", "external_document_no", "area", "transaction_specification", "posting_no_series", "reserve", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "invoiced_qty_base", "recurring_method", "expiration_date", "recurring_frequency"}
+	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "source_code", "applies_to_entry", "item_shpt_entry_no", "department_code", "project_code", "indirect_cost_percent", "source_type", "reason_code", "drop_shipment", "transaction_type", "transport_method", "country_code", "new_location_code", "new_department_code", "new_project_code", "qty_calculated", "qty_phys_inventory", "last_item_ledger_entry_no", "phys_inventory", "gen_bus_posting_group", "gen_prod_posting_group", "entry_exit_point", "document_date", "external_document_no", "area", "transaction_specification", "posting_no_series", "source_currency_unit_cost", "source_currency_code", "reserve", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "invoiced_qty_base", "recurring_method", "expiration_date", "recurring_frequency"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2453,6 +2504,14 @@ func (t *ItemJournalLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "posting_no_series = ?")
 			values = append(values, t.Posting_no_series)
 		}
+		if t.hasFieldChanged("source_currency_unit_cost") {
+			setClauses = append(setClauses, "source_currency_unit_cost = ?")
+			values = append(values, t.Source_currency_unit_cost)
+		}
+		if t.hasFieldChanged("source_currency_code") {
+			setClauses = append(setClauses, "source_currency_code = ?")
+			values = append(values, t.Source_currency_code)
+		}
 		if t.hasFieldChanged("reserve") {
 			setClauses = append(setClauses, "reserve = ?")
 			values = append(values, t.Reserve)
@@ -2582,6 +2641,10 @@ func (t *ItemJournalLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Transaction_specification)
 		setClauses = append(setClauses, "posting_no_series = ?")
 		values = append(values, t.Posting_no_series)
+		setClauses = append(setClauses, "source_currency_unit_cost = ?")
+		values = append(values, t.Source_currency_unit_cost)
+		setClauses = append(setClauses, "source_currency_code = ?")
+		values = append(values, t.Source_currency_code)
 		setClauses = append(setClauses, "reserve = ?")
 		values = append(values, t.Reserve)
 		setClauses = append(setClauses, "variant_code = ?")
@@ -2843,6 +2906,14 @@ func (t *ItemJournalLine) hasFieldChanged(fieldName string) bool {
 	case "posting_no_series":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Posting_no_series.Equal(old)
+		}
+	case "source_currency_unit_cost":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Source_currency_unit_cost.Equal(old)
+		}
+	case "source_currency_code":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Source_currency_code.Equal(old)
 		}
 	case "reserve":
 		if old, ok := oldValue.(ItemJournalLineReserve); ok {
@@ -3178,6 +3249,10 @@ func (t *ItemJournalLine) columnName(fieldName string) (string, bool) {
 		return "transaction_specification", true
 	case strings.ToLower("posting_no_series"):
 		return "posting_no_series", true
+	case strings.ToLower("source_currency_unit_cost"):
+		return "source_currency_unit_cost", true
+	case strings.ToLower("source_currency_code"):
+		return "source_currency_code", true
 	case strings.ToLower("reserve"):
 		return "reserve", true
 	case strings.ToLower("variant_code"):
@@ -3391,6 +3466,8 @@ func (t *ItemJournalLine) isDecimalColumn(column string) bool {
 		return true
 	case "qty_phys_inventory":
 		return true
+	case "source_currency_unit_cost":
+		return true
 	case "qty_per_unit_of_measure":
 		return true
 	case "quantity_base":
@@ -3587,7 +3664,7 @@ func (t *ItemJournalLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3634,6 +3711,8 @@ func (t *ItemJournalLine) FindFirst() bool {
 	var areaNull sql.NullString
 	var transaction_specificationNull sql.NullString
 	var posting_no_seriesNull sql.NullString
+	var source_currency_unit_costNull sql.NullString
+	var source_currency_codeNull sql.NullString
 	var reserveInt int
 	var variant_codeNull sql.NullString
 	var qty_per_unit_of_measureNull sql.NullString
@@ -3691,6 +3770,8 @@ func (t *ItemJournalLine) FindFirst() bool {
 		&areaNull,
 		&transaction_specificationNull,
 		&posting_no_seriesNull,
+		&source_currency_unit_costNull,
+		&source_currency_codeNull,
 		&reserveInt,
 		&variant_codeNull,
 		&qty_per_unit_of_measureNull,
@@ -3753,6 +3834,8 @@ func (t *ItemJournalLine) FindFirst() bool {
 	t.Area = types.NewCode(areaNull.String)
 	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
+	t.Source_currency_unit_cost, _ = types.NewDecimalFromString(source_currency_unit_costNull.String)
+	t.Source_currency_code = types.NewCode(source_currency_codeNull.String)
 	t.Reserve = ItemJournalLineReserve(reserveInt)
 	t.Variant_code = types.NewCode(variant_codeNull.String)
 	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
@@ -3782,7 +3865,7 @@ func (t *ItemJournalLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3829,6 +3912,8 @@ func (t *ItemJournalLine) FindLast() bool {
 	var areaNull sql.NullString
 	var transaction_specificationNull sql.NullString
 	var posting_no_seriesNull sql.NullString
+	var source_currency_unit_costNull sql.NullString
+	var source_currency_codeNull sql.NullString
 	var reserveInt int
 	var variant_codeNull sql.NullString
 	var qty_per_unit_of_measureNull sql.NullString
@@ -3886,6 +3971,8 @@ func (t *ItemJournalLine) FindLast() bool {
 		&areaNull,
 		&transaction_specificationNull,
 		&posting_no_seriesNull,
+		&source_currency_unit_costNull,
+		&source_currency_codeNull,
 		&reserveInt,
 		&variant_codeNull,
 		&qty_per_unit_of_measureNull,
@@ -3948,6 +4035,8 @@ func (t *ItemJournalLine) FindLast() bool {
 	t.Area = types.NewCode(areaNull.String)
 	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
+	t.Source_currency_unit_cost, _ = types.NewDecimalFromString(source_currency_unit_costNull.String)
+	t.Source_currency_code = types.NewCode(source_currency_codeNull.String)
 	t.Reserve = ItemJournalLineReserve(reserveInt)
 	t.Variant_code = types.NewCode(variant_codeNull.String)
 	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
@@ -4007,7 +4096,7 @@ func (t *ItemJournalLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4118,6 +4207,8 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 		var areaNull sql.NullString
 		var transaction_specificationNull sql.NullString
 		var posting_no_seriesNull sql.NullString
+		var source_currency_unit_costNull sql.NullString
+		var source_currency_codeNull sql.NullString
 		var reserveInt int
 		var variant_codeNull sql.NullString
 		var qty_per_unit_of_measureNull sql.NullString
@@ -4175,6 +4266,8 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 			&areaNull,
 			&transaction_specificationNull,
 			&posting_no_seriesNull,
+			&source_currency_unit_costNull,
+			&source_currency_codeNull,
 			&reserveInt,
 			&variant_codeNull,
 			&qty_per_unit_of_measureNull,
@@ -4236,6 +4329,8 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 		t.Area = types.NewCode(areaNull.String)
 		t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 		t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
+		t.Source_currency_unit_cost, _ = types.NewDecimalFromString(source_currency_unit_costNull.String)
+		t.Source_currency_code = types.NewCode(source_currency_codeNull.String)
 		t.Reserve = ItemJournalLineReserve(reserveInt)
 		t.Variant_code = types.NewCode(variant_codeNull.String)
 		t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
@@ -4294,7 +4389,7 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4358,6 +4453,8 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 		var areaNull sql.NullString
 		var transaction_specificationNull sql.NullString
 		var posting_no_seriesNull sql.NullString
+		var source_currency_unit_costNull sql.NullString
+		var source_currency_codeNull sql.NullString
 		var reserveInt int
 		var variant_codeNull sql.NullString
 		var qty_per_unit_of_measureNull sql.NullString
@@ -4415,6 +4512,8 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 			&areaNull,
 			&transaction_specificationNull,
 			&posting_no_seriesNull,
+			&source_currency_unit_costNull,
+			&source_currency_codeNull,
 			&reserveInt,
 			&variant_codeNull,
 			&qty_per_unit_of_measureNull,
@@ -4474,6 +4573,8 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 		record.Area = types.NewCode(areaNull.String)
 		record.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 		record.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
+		record.Source_currency_unit_cost, _ = types.NewDecimalFromString(source_currency_unit_costNull.String)
+		record.Source_currency_code = types.NewCode(source_currency_codeNull.String)
 		record.Reserve = ItemJournalLineReserve(reserveInt)
 		record.Variant_code = types.NewCode(variant_codeNull.String)
 		record.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
@@ -4557,6 +4658,8 @@ func (t *ItemJournalLine) copyFromBuffered(record *ItemJournalLine) {
 	t.Area = record.Area
 	t.Transaction_specification = record.Transaction_specification
 	t.Posting_no_series = record.Posting_no_series
+	t.Source_currency_unit_cost = record.Source_currency_unit_cost
+	t.Source_currency_code = record.Source_currency_code
 	t.Reserve = record.Reserve
 	t.Variant_code = record.Variant_code
 	t.Qty_per_unit_of_measure = record.Qty_per_unit_of_measure
@@ -5830,6 +5933,56 @@ func (t *ItemJournalLine) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
+	case "source_currency_unit_cost":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Source_currency_unit_cost = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Source_currency_unit_cost, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field source_currency_unit_cost: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Source_currency_unit_cost = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Source_currency_unit_cost = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Source_currency_unit_cost = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field source_currency_unit_cost (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemJournalLineOnValidate_Source_currency_unit_cost); ok {
+				if err := trg.OnValidate_Source_currency_unit_cost(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "source_currency_code":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Source_currency_code = v
+		} else if v, ok := value.(string); ok {
+			t.Source_currency_code = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field source_currency_code")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "source_currency_code"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemJournalLineOnValidate_Source_currency_code); ok {
+				if err := trg.OnValidate_Source_currency_code(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	case "reserve":
 		// Set field value
 		// Accept enum type directly
@@ -6205,6 +6358,10 @@ func (t *ItemJournalLine) FieldValue(no int) (any, bool) {
 		return t.Transaction_specification, true
 	case 65:
 		return t.Posting_no_series, true
+	case 72:
+		return t.Source_currency_unit_cost, true
+	case 73:
+		return t.Source_currency_code, true
 	case 70:
 		return t.Reserve, true
 	case 5402:
@@ -6576,6 +6733,20 @@ func (t *ItemJournalLine) SetFieldValue(no int, value any) bool {
 			t.Posting_no_series = types.NewCode(v)
 			return true
 		}
+	case 72:
+		if v, ok := value.(types.Decimal); ok {
+			t.Source_currency_unit_cost = v
+			return true
+		}
+	case 73:
+		if v, ok := value.(types.Code); ok {
+			t.Source_currency_code = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Source_currency_code = types.NewCode(v)
+			return true
+		}
 	case 70:
 		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
 			t.Reserve = ItemJournalLineReserve(i)
@@ -6732,6 +6903,8 @@ func (t *ItemJournalLine) CalcSums(fieldNames ...string) error {
 			column = "qty_phys_inventory"
 		case "last_item_ledger_entry_no":
 			column = "last_item_ledger_entry_no"
+		case "source_currency_unit_cost":
+			column = "source_currency_unit_cost"
 		case "qty_per_unit_of_measure":
 			column = "qty_per_unit_of_measure"
 		case "quantity_base":
@@ -6825,6 +6998,12 @@ func (t *ItemJournalLine) CalcSums(fieldNames ...string) error {
 				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
 			}
 			t.Last_item_ledger_entry_no = int(f)
+		case "source_currency_unit_cost":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
+			}
+			t.Source_currency_unit_cost = d
 		case "qty_per_unit_of_measure":
 			d, err := types.NewDecimalFromString(total)
 			if err != nil {
@@ -7288,6 +7467,10 @@ func (t *ItemJournalLine) columnValue(column string) (interface{}, bool) {
 		return t.Transaction_specification, true
 	case "posting_no_series":
 		return t.Posting_no_series, true
+	case "source_currency_unit_cost":
+		return t.Source_currency_unit_cost, true
+	case "source_currency_code":
+		return t.Source_currency_code, true
 	case "reserve":
 		return int(t.Reserve), true
 	case "variant_code":
@@ -7411,6 +7594,8 @@ func (t *ItemJournalLine) Init() {
 	t.Area = *new(types.Code)
 	t.Transaction_specification = *new(types.Code)
 	t.Posting_no_series = *new(types.Code)
+	t.Source_currency_unit_cost = *new(types.Decimal)
+	t.Source_currency_code = *new(types.Code)
 	t.Reserve = 0
 	t.Variant_code = *new(types.Code)
 	t.Qty_per_unit_of_measure = *new(types.Decimal)
@@ -7500,6 +7685,8 @@ func (t *ItemJournalLine) ToMap() map[string]interface{} {
 		"area":                      t.Area.String(),
 		"transaction_specification": t.Transaction_specification.String(),
 		"posting_no_series":         t.Posting_no_series.String(),
+		"source_currency_unit_cost": t.Source_currency_unit_cost.String(),
+		"source_currency_code":      t.Source_currency_code.String(),
 		"reserve":                   int(t.Reserve),
 		"variant_code":              t.Variant_code.String(),
 		"qty_per_unit_of_measure":   t.Qty_per_unit_of_measure.String(),
@@ -7861,6 +8048,23 @@ func (t *ItemJournalLine) FromMap(data map[string]interface{}) {
 	if v, ok := data["posting_no_series"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Posting_no_series = types.NewCode(s)
+		}
+	}
+	if v, ok := data["source_currency_unit_cost"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Source_currency_unit_cost, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Source_currency_unit_cost = types.NewDecimal(val)
+		case int:
+			t.Source_currency_unit_cost = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Source_currency_unit_cost = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["source_currency_code"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Source_currency_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["reserve"]; ok && v != nil {
@@ -8456,6 +8660,29 @@ func (t *ItemJournalLine) GetFields() []tables.FieldInfo {
 			FlowField:  false,
 		},
 		{
+			No:            72,
+			Name:          "source_currency_unit_cost",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     false,
+			ReadOnly:      true,
+			DecimalPlaces: "2:5",
+		},
+		{
+			No:         73,
+			Name:       "source_currency_code",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+			ReadOnly:   true,
+		},
+		{
 			No:         70,
 			Name:       "reserve",
 			Type:       tables.FieldTypeOption,
@@ -8855,6 +9082,16 @@ func (t *ItemJournalLine) GetTableRelationFields() map[string]tables.TableRelati
 		},
 		"posting_no_series": {
 			Table:        "No_Series",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"source_currency_code": {
+			Table:        "Currency",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

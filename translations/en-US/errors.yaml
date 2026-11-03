@@ -238,6 +238,7 @@ errors:
   ERR_JNL_NAME_TOO_LONG: "%1 cannot exceed %2 characters."
   ERR_JNL_CORRECTION_SAME: "%1 must be the same on all lines for the same document."
   ERR_JNL_DOC_OUT_OF_BALANCE: "%1 %3 is out of balance by %4. Check that %2, %1 and the amount are correct for each line."
+  ERR_JNL_ADD_CURR_OUT_OF_BALANCE: "%1 %3 is out of balance due to the additional reporting currency. Check that %2 is correct for each line."
   ERR_JNL_DATE_OUT_OF_BALANCE: "The lines on %3 are out of balance by %4. Check that %1 and %2 are correct for each line."
   ERR_JNL_DOC_OUT_OF_BALANCE_CURRENCY: "%1 %3 is out of balance by %4 %5. Check that %2, %1 and the amount are correct for each line."
   ERR_JNL_DATE_OUT_OF_BALANCE_CURRENCY: "The lines on %3 are out of balance by %4 %5. Check that %1 and %2 are correct for each line."

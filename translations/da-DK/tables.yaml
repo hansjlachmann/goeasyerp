@@ -3157,6 +3157,7 @@ tables:
   gen_journal_line:
     caption: "Finanskladdelinje"
     fields:
+      fa_add_currency_factor: "Anlægsfaktor for ekstra valuta"
       additional_currency_posting: "Bogføring i ekstra valuta"
       business_unit_code: "Koncernenhedskode"
       fa_posting_date: "Anlægsbogføringsdato"
@@ -3678,6 +3679,7 @@ tables:
   item:
     caption: "Vare"
     fields:
+      add_curr_average_cost: "Gennemsnitskostpris i ekstra valuta"
       qty_on_purch_order: "Antal i købsordre"
       qty_on_sales_order: "Antal i salgsordre"
       requisition_method_code: "Indkøbsmetodekode"
@@ -3849,6 +3851,8 @@ tables:
   item_journal_line:
     caption: "Varekladdelinje"
     fields:
+      source_currency_unit_cost: "Kostpris i kildevaluta"
+      source_currency_code: "Kildevalutakode"
       transaction_type: "Transaktionstype"
       transport_method: "Transportmåde"
       country_code: "Landekode"
@@ -3925,6 +3929,10 @@ tables:
   item_ledger_entry:
     caption: "Varepost"
     fields:
+      add_currency_adj_cost_qty: "Reguleret kostpris (antal) i ekstra valuta"
+      add_curr_adj_cost_inv_qty: "Reguleret kostpris (fakt. antal) i ekstra valuta"
+      add_curr_cost_posted_to_gl: "Kostpris bogført i finans i ekstra valuta"
+      additional_currency_unit_cost: "Kostpris i ekstra valuta"
       transaction_type: "Transaktionstype"
       transport_method: "Transportmåde"
       country_code: "Landekode"
