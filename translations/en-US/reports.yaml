@@ -56,6 +56,7 @@ reports:
       ENTER_ENDING_DATE: "You must enter the Ending Date."
   shared:
     options:
+      use_add_rpt_curr: "Use Additional Reporting Currency"
       starting_date: "Starting Date"
       ending_date: "Ending Date"
       period_length: "Period Length"
@@ -94,6 +95,7 @@ reports:
       retain_maintenance_code: "Retain Maintenance Code"
       retain_quantity: "Retain Totals: Quantity"
     texts:
+      AMOUNTS_IN_CURRENCY: "Amounts are in %1"
       OPTIONS: "Options"
       DAY: "Day"
       WEEK: "Week"
@@ -511,6 +513,7 @@ reports:
   "502":
     caption: "Intrastat - Checklist"
     texts:
+      AMOUNTS_IN: "All amounts are in %1"
       TITLE: "Intrastat - Checklist"
       PAGE: "Page"
       STATISTICS_PERIOD: "Statistics Period: %1"
@@ -536,6 +539,8 @@ reports:
       DONE: "The Intrastat declaration with %1 records was made; the batch is reported."
   "88":
     caption: "VAT- VIES Declaration Disk"
+    options:
+      show_amounts_in_add_currency: "Show Amounts in Add. Reporting Currency"
     texts:
       FILE_NAME: "VIES %1.txt"
       DONE: "The VIES declaration with %1 customers was made."

@@ -717,6 +717,7 @@ tables:
   acc_schedule_line:
     caption: "Kontoskemalinje"
     fields:
+      use_add_rpt_curr: "Brug ekstra rapporteringsvaluta"
       schedule_name: "Skemanavn"
       line_no: "Linjenr."
       row_no: "Rækkenr."
@@ -842,6 +843,7 @@ tables:
   intrastat_jnl_batch:
     caption: "Intrastat-kladdenavn"
     fields:
+      amounts_in_add_currency: "Beløb i ekstra valuta"
       journal_template_name: "Kladdeskabelonnavn"
       name: "Navn"
       description: "Beskrivelse"

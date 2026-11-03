@@ -717,6 +717,7 @@ tables:
   acc_schedule_line:
     caption: "Acc. Schedule Line"
     fields:
+      use_add_rpt_curr: "Use Add. Reporting Currency"
       schedule_name: "Schedule Name"
       line_no: "Line No."
       row_no: "Row No."
@@ -842,6 +843,7 @@ tables:
   intrastat_jnl_batch:
     caption: "Intrastat Jnl. Batch"
     fields:
+      amounts_in_add_currency: "Amounts in Add. Currency"
       journal_template_name: "Journal Template Name"
       name: "Name"
       description: "Description"

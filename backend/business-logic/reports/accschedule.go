@@ -41,10 +41,11 @@ func (r *accountSchedule) Definition() *Definition {
 		Options: []Option{
 			{Name: "column_layout_name", Type: "text", Relation: &OptionRelation{Table: gtables.AccSchedColumnLayoutNameTableName, Columns: []string{"name", "description"}}},
 			{Name: "show_division_by_zero", Type: "bool", Default: "false"},
+			{Name: "use_add_rpt_curr", Type: "bool", Default: "false"},
 		},
 		ContextTable: gtables.AccScheduleNameTableName,
 		OnInitReport: r.onInitReport,
-		OnPreReport:  func(run *Run) error { setReportHeadValues(run); return nil },
+		OnPreReport:  r.onPreReport,
 		DataItems: []*DataItem{{
 			Name:                "AccScheduleName",
 			Table:               gtables.AccScheduleNameTableName,
@@ -72,6 +73,21 @@ func (r *accountSchedule) onInitReport(run *Run) error {
 		if accSchedName.Default_column_layout != "" {
 			run.SetOption("column_layout_name", accSchedName.Default_column_layout.String())
 		}
+	}
+	return nil
+}
+
+// onPreReport: with Use Additional Reporting Currency the head names the currency
+func (r *accountSchedule) onPreReport(run *Run) error {
+	setReportHeadValues(run)
+	if run.OptionBool("use_add_rpt_curr") {
+		glSetup := gtables.GetGeneralLedgerSetup(run)
+		currency := gtables.NewCurrency(run)
+		err := currency.GetOrError(glSetup.Additional_reporting_currency)
+		if err != nil {
+			return err
+		}
+		run.SetValue("add_curr_text", run.Text("AMOUNTS_IN_CURRENCY", currency.Description))
 	}
 	return nil
 }
@@ -117,6 +133,7 @@ func (r *accountSchedule) nameOnAfterGetRecord(rec *gtables.AccScheduleName, run
 		run.SetValue("rounding"+strconv.Itoa(i), rounding)
 	}
 	r.accSchedManagement = accsched.New(run)
+	r.accSchedManagement.SetParameters(run.OptionBool("use_add_rpt_curr"))
 	r.newPageNext = false
 	return nil
 }

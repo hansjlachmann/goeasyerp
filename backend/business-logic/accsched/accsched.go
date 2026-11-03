@@ -47,8 +47,9 @@ type cellValue struct {
 // AccSchedManagement calculates the cells of account schedules (one per run: it keeps the cells
 // calculated, as the classic temporary Acc. Sched. Cell Value)
 type AccSchedManagement struct {
-	src     ftables.Source
-	filters Filters
+	src           ftables.Source
+	filters       Filters
+	useAddRptCurr bool // the amounts in the additional reporting currency
 
 	startDate, endDate, fiscalStartDate types.Date
 	divisionError                       bool
@@ -66,6 +67,15 @@ type AccSchedManagement struct {
 // New is codeunit 8 for a database and company
 func New(src ftables.Source) *AccSchedManagement {
 	return &AccSchedManagement{src: src, accSchedCellValue: map[cellKey]cellValue{}}
+}
+
+// SetParameters (SetParameters): amounts in the additional reporting currency or in LCY; a
+// change forgets the cells calculated
+func (m *AccSchedManagement) SetParameters(useAddRptCurr bool) {
+	if useAddRptCurr != m.useAddRptCurr {
+		m.accSchedCellValue = map[cellKey]cellValue{}
+	}
+	m.useAddRptCurr = useAddRptCurr
 }
 
 // OpenSchedule: the schedule name to open — the one given when it exists, else the first one,
@@ -255,14 +265,30 @@ func (m *AccSchedManagement) calcGLAcc(glAcc *gtables.GLAccount, rowType gtables
 	case gtables.AccSchedColumn_Ledger_entry_type.GLEntries:
 		switch amountType {
 		case amountTypes.NetAmount:
-			glAcc.CalcFields("net_change")
-			colValue = glAcc.Net_change
+			if m.useAddRptCurr {
+				glAcc.CalcFields("additional_currency_net_change")
+				colValue = glAcc.Additional_currency_net_change
+			} else {
+				glAcc.CalcFields("net_change")
+				colValue = glAcc.Net_change
+			}
 		case amountTypes.DebitAmount:
-			glAcc.CalcFields("debit_amount")
-			colValue = glAcc.Debit_amount
+			if m.useAddRptCurr {
+				glAcc.CalcFields("add_currency_debit_amount")
+				colValue = glAcc.Add_currency_debit_amount
+			} else {
+				glAcc.CalcFields("debit_amount")
+				colValue = glAcc.Debit_amount
+			}
 		case amountTypes.CreditAmount:
-			glAcc.CalcFields("credit_amount")
-			colValue = glAcc.Credit_amount.Neg()
+			// the classic leaves the additional-currency credit positive; negative as in LCY
+			if m.useAddRptCurr {
+				glAcc.CalcFields("add_currency_credit_amount")
+				colValue = glAcc.Add_currency_credit_amount.Neg()
+			} else {
+				glAcc.CalcFields("credit_amount")
+				colValue = glAcc.Credit_amount.Neg()
+			}
 		}
 	case gtables.AccSchedColumn_Ledger_entry_type.GLBudgetEntries:
 		glAcc.CalcFields("budgeted_amount")

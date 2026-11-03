@@ -56,6 +56,7 @@ reports:
       ENTER_ENDING_DATE: "Du må angi sluttdatoen."
   shared:
     options:
+      use_add_rpt_curr: "Bruk ekstra rapporteringsvaluta"
       starting_date: "Startdato"
       ending_date: "Sluttdato"
       period_length: "Periodelengde"
@@ -94,6 +95,7 @@ reports:
       retain_maintenance_code: "Behold Vedlikeholdskode"
       retain_quantity: "Behold totaler: Antall"
     texts:
+      AMOUNTS_IN_CURRENCY: "Beløpene er i %1"
       OPTIONS: "Alternativer"
       DAY: "Dag"
       WEEK: "Uke"
@@ -511,6 +513,7 @@ reports:
   "502":
     caption: "Intrastat - kontrolliste"
     texts:
+      AMOUNTS_IN: "Alle beløp er i %1"
       TITLE: "Intrastat - kontrolliste"
       PAGE: "Side"
       STATISTICS_PERIOD: "Statistikkperiode: %1"
@@ -536,6 +539,8 @@ reports:
       DONE: "Intrastat-oppgaven med %1 poster ble laget; bunken er rapportert."
   "88":
     caption: "Mva - VIES-oppgave (fil)"
+    options:
+      show_amounts_in_add_currency: "Vis beløp i ekstra rapporteringsvaluta"
     texts:
       FILE_NAME: "VIES %1.txt"
       DONE: "VIES-oppgaven med %1 kunder ble laget."

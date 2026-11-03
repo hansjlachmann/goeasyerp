@@ -28,6 +28,10 @@ report:
             - {page_no: true, x: 263, y: 4, width: 10, align: right}
             - {value: user_id, x: 213, y: 8, width: 60, align: right}
         - type: header
+          height: 5
+          elements:
+            - {value: amounts_in, x: 0, y: 0, width: 140}
+        - type: header
           print_on_every_page: true
           height: 10
           elements:

@@ -35,6 +35,8 @@ page:
             - source: department_filter
             - source: project_filter
             - source: budget_filter
+            - source: use_add_rpt_curr
+              check_box: true
           fields:
             - source: row_no
               width: 80

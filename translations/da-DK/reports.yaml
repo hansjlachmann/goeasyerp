@@ -56,6 +56,7 @@ reports:
       ENTER_ENDING_DATE: "Du skal angive slutdatoen."
   shared:
     options:
+      use_add_rpt_curr: "Brug ekstra rapporteringsvaluta"
       starting_date: "Startdato"
       ending_date: "Slutdato"
       period_length: "Periodelængde"
@@ -94,6 +95,7 @@ reports:
       retain_maintenance_code: "Bevar Vedligeholdelseskode"
       retain_quantity: "Bevar totaler: Antal"
     texts:
+      AMOUNTS_IN_CURRENCY: "Beløbene er i %1"
       OPTIONS: "Indstillinger"
       DAY: "Dag"
       WEEK: "Uge"
@@ -511,6 +513,7 @@ reports:
   "502":
     caption: "Intrastat - kontrolliste"
     texts:
+      AMOUNTS_IN: "Alle beløb er i %1"
       TITLE: "Intrastat - kontrolliste"
       PAGE: "Side"
       STATISTICS_PERIOD: "Statistikperiode: %1"
@@ -536,6 +539,8 @@ reports:
       DONE: "Intrastat-angivelsen med %1 poster blev lavet; kladden er indberettet."
   "88":
     caption: "Moms - VIES-angivelse (fil)"
+    options:
+      show_amounts_in_add_currency: "Vis beløb i ekstra rapporteringsvaluta"
     texts:
       FILE_NAME: "VIES %1.txt"
       DONE: "VIES-angivelsen med %1 kunder blev lavet."

@@ -44,6 +44,11 @@ func (intrastatJnlBatchLogic) OnValidate_Statistics_period(rec *gtables.Intrasta
 	return nil
 }
 
+// OnValidate_Amounts_in_add_currency: not once reported
+func (intrastatJnlBatchLogic) OnValidate_Amounts_in_add_currency(rec *gtables.IntrastatJnlBatch) error {
+	return rec.TestField("reported", false)
+}
+
 // OnValidate_Currency_identifier: not once reported
 func (intrastatJnlBatchLogic) OnValidate_Currency_identifier(rec *gtables.IntrastatJnlBatch) error {
 	return rec.TestField("reported", false)

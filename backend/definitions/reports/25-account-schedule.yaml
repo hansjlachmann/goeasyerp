@@ -41,6 +41,11 @@ report:
           elements:
             - {value: budget_text, x: 0, y: 0, width: 273, align: center}
         - type: header
+          print_if: add_curr_text
+          height: 4.5
+          elements:
+            - {value: add_curr_text, x: 0, y: 0, width: 273, align: center}
+        - type: header
           print_on_every_page: true
           height: 15
           elements:

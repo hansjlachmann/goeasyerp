@@ -156,6 +156,21 @@ func (r *intrastatChecklist) Definition() *Definition {
 			OnAfterGetRecord: Trigger(func(rec *gtables.IntrastatJnlBatch, run *Run) error {
 				run.SetPageNo(1)
 				run.SetValue("statistics_period", run.Text("STATISTICS_PERIOD", rec.Statistics_period.String()))
+				// the batch's currency: the additional reporting currency or LCY
+				glSetup := gtables.GetGeneralLedgerSetup(run)
+				if rec.Amounts_in_add_currency {
+					err := glSetup.TestField("additional_reporting_currency")
+					if err != nil {
+						return err
+					}
+					run.SetValue("amounts_in", run.Text("AMOUNTS_IN", glSetup.Additional_reporting_currency))
+				} else {
+					err := glSetup.TestField("lcy_code")
+					if err != nil {
+						return err
+					}
+					run.SetValue("amounts_in", run.Text("AMOUNTS_IN", glSetup.Lcy_code))
+				}
 				*r = intrastatChecklist{}
 				return nil
 			}),
