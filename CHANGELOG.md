@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.128](https://github.com/hansjlachmann/openerp/compare/v0.1.127...v0.1.128) (2026-11-03)
+
+
+### Features
+
+* Preview Posting on the item, resource, FA, BOM and insurance journals ([#200](https://github.com/hansjlachmann/openerp/issues/200)) ([d78e592](https://github.com/hansjlachmann/openerp/commit/d78e592639d7c111fc7ec38bade115b8d889f9e0))
+
 ## [0.1.127](https://github.com/hansjlachmann/openerp/compare/v0.1.126...v0.1.127) (2026-11-03)
 
 
