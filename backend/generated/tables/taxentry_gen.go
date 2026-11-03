@@ -34,6 +34,12 @@
 //	OnValidate_Unrealized_base(rec *gtables.TaxEntry) error
 //	OnValidate_Remaining_unrealized_amount(rec *gtables.TaxEntry) error
 //	OnValidate_Remaining_unrealized_base(rec *gtables.TaxEntry) error
+//	OnValidate_Additional_currency_amount(rec *gtables.TaxEntry) error
+//	OnValidate_Additional_currency_base(rec *gtables.TaxEntry) error
+//	OnValidate_Add_currency_unrealized_amt(rec *gtables.TaxEntry) error
+//	OnValidate_Add_currency_unrealized_base(rec *gtables.TaxEntry) error
+//	OnValidate_Add_curr_rem_unreal_amount(rec *gtables.TaxEntry) error
+//	OnValidate_Add_curr_rem_unreal_base(rec *gtables.TaxEntry) error
 //	OnValidate_External_document_no(rec *gtables.TaxEntry) error
 //	OnValidate_No_series(rec *gtables.TaxEntry) error
 //	OnValidate_Tax_area_code(rec *gtables.TaxEntry) error
@@ -143,44 +149,50 @@ func (o TaxEntryTax_type) IsValid() bool {
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterTaxEntryLogic.
 type TaxEntry struct {
-	Entry_no                    int                          `db:"entry_no,pk"`
-	Gen_bus_posting_group       types.Code                   `db:"gen_bus_posting_group"`
-	Gen_prod_posting_group      types.Code                   `db:"gen_prod_posting_group"`
-	Posting_date                types.Date                   `db:"posting_date"`
-	Document_no                 types.Code                   `db:"document_no"`
-	Document_type               TaxEntryDocument_type        `db:"document_type"`
-	Type                        TaxEntryType                 `db:"type"`
-	Base                        types.Decimal                `db:"base"`
-	Amount                      types.Decimal                `db:"amount"`
-	Tax_calculation_type        TaxEntryTax_calculation_type `db:"tax_calculation_type"`
-	Sell_to_buy_from_no         types.Code                   `db:"sell_to_buy_from_no"`
-	Eu_3_party_trade            bool                         `db:"eu_3_party_trade"`
-	User_id                     types.Code                   `db:"user_id"`
-	Source_code                 types.Code                   `db:"source_code"`
-	Reason_code                 types.Code                   `db:"reason_code"`
-	Closed_by_entry_no          int                          `db:"closed_by_entry_no"`
-	Closed                      bool                         `db:"closed"`
-	Country_code                types.Code                   `db:"country_code"`
-	Internal_ref_no             types.Text                   `db:"internal_ref_no"`
-	Transaction_no              int                          `db:"transaction_no"`
-	Unrealized_amount           types.Decimal                `db:"unrealized_amount"`
-	Unrealized_base             types.Decimal                `db:"unrealized_base"`
-	Remaining_unrealized_amount types.Decimal                `db:"remaining_unrealized_amount"`
-	Remaining_unrealized_base   types.Decimal                `db:"remaining_unrealized_base"`
-	External_document_no        types.Code                   `db:"external_document_no"`
-	No_series                   types.Code                   `db:"no_series"`
-	Tax_area_code               types.Code                   `db:"tax_area_code"`
-	Tax_liable                  bool                         `db:"tax_liable"`
-	Tax_group_code              types.Code                   `db:"tax_group_code"`
-	Use_tax                     bool                         `db:"use_tax"`
-	Tax_jurisdiction_code       types.Code                   `db:"tax_jurisdiction_code"`
-	Tax_group_used              types.Code                   `db:"tax_group_used"`
-	Tax_type                    TaxEntryTax_type             `db:"tax_type"`
-	Tax_on_tax                  bool                         `db:"tax_on_tax"`
-	Sales_tax_connection_no     int                          `db:"sales_tax_connection_no"`
-	Unrealized_tax_entry_no     int                          `db:"unrealized_tax_entry_no"`
-	Tax_bus_posting_group       types.Code                   `db:"tax_bus_posting_group"`
-	Tax_prod_posting_group      types.Code                   `db:"tax_prod_posting_group"`
+	Entry_no                     int                          `db:"entry_no,pk"`
+	Gen_bus_posting_group        types.Code                   `db:"gen_bus_posting_group"`
+	Gen_prod_posting_group       types.Code                   `db:"gen_prod_posting_group"`
+	Posting_date                 types.Date                   `db:"posting_date"`
+	Document_no                  types.Code                   `db:"document_no"`
+	Document_type                TaxEntryDocument_type        `db:"document_type"`
+	Type                         TaxEntryType                 `db:"type"`
+	Base                         types.Decimal                `db:"base"`
+	Amount                       types.Decimal                `db:"amount"`
+	Tax_calculation_type         TaxEntryTax_calculation_type `db:"tax_calculation_type"`
+	Sell_to_buy_from_no          types.Code                   `db:"sell_to_buy_from_no"`
+	Eu_3_party_trade             bool                         `db:"eu_3_party_trade"`
+	User_id                      types.Code                   `db:"user_id"`
+	Source_code                  types.Code                   `db:"source_code"`
+	Reason_code                  types.Code                   `db:"reason_code"`
+	Closed_by_entry_no           int                          `db:"closed_by_entry_no"`
+	Closed                       bool                         `db:"closed"`
+	Country_code                 types.Code                   `db:"country_code"`
+	Internal_ref_no              types.Text                   `db:"internal_ref_no"`
+	Transaction_no               int                          `db:"transaction_no"`
+	Unrealized_amount            types.Decimal                `db:"unrealized_amount"`
+	Unrealized_base              types.Decimal                `db:"unrealized_base"`
+	Remaining_unrealized_amount  types.Decimal                `db:"remaining_unrealized_amount"`
+	Remaining_unrealized_base    types.Decimal                `db:"remaining_unrealized_base"`
+	Additional_currency_amount   types.Decimal                `db:"additional_currency_amount"`
+	Additional_currency_base     types.Decimal                `db:"additional_currency_base"`
+	Add_currency_unrealized_amt  types.Decimal                `db:"add_currency_unrealized_amt"`
+	Add_currency_unrealized_base types.Decimal                `db:"add_currency_unrealized_base"`
+	Add_curr_rem_unreal_amount   types.Decimal                `db:"add_curr_rem_unreal_amount"`
+	Add_curr_rem_unreal_base     types.Decimal                `db:"add_curr_rem_unreal_base"`
+	External_document_no         types.Code                   `db:"external_document_no"`
+	No_series                    types.Code                   `db:"no_series"`
+	Tax_area_code                types.Code                   `db:"tax_area_code"`
+	Tax_liable                   bool                         `db:"tax_liable"`
+	Tax_group_code               types.Code                   `db:"tax_group_code"`
+	Use_tax                      bool                         `db:"use_tax"`
+	Tax_jurisdiction_code        types.Code                   `db:"tax_jurisdiction_code"`
+	Tax_group_used               types.Code                   `db:"tax_group_used"`
+	Tax_type                     TaxEntryTax_type             `db:"tax_type"`
+	Tax_on_tax                   bool                         `db:"tax_on_tax"`
+	Sales_tax_connection_no      int                          `db:"sales_tax_connection_no"`
+	Unrealized_tax_entry_no      int                          `db:"unrealized_tax_entry_no"`
+	Tax_bus_posting_group        types.Code                   `db:"tax_bus_posting_group"`
+	Tax_prod_posting_group       types.Code                   `db:"tax_prod_posting_group"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -303,83 +315,95 @@ var TaxEntry_Tax_type = struct {
 // TaxEntry_FieldNo holds the field numbers of Tax_Entry (FieldNo):
 // TaxEntry_FieldNo.Entry_no is 1
 var TaxEntry_FieldNo = struct {
-	Entry_no                    int
-	Gen_bus_posting_group       int
-	Gen_prod_posting_group      int
-	Posting_date                int
-	Document_no                 int
-	Document_type               int
-	Type                        int
-	Base                        int
-	Amount                      int
-	Tax_calculation_type        int
-	Sell_to_buy_from_no         int
-	Eu_3_party_trade            int
-	User_id                     int
-	Source_code                 int
-	Reason_code                 int
-	Closed_by_entry_no          int
-	Closed                      int
-	Country_code                int
-	Internal_ref_no             int
-	Transaction_no              int
-	Unrealized_amount           int
-	Unrealized_base             int
-	Remaining_unrealized_amount int
-	Remaining_unrealized_base   int
-	External_document_no        int
-	No_series                   int
-	Tax_area_code               int
-	Tax_liable                  int
-	Tax_group_code              int
-	Use_tax                     int
-	Tax_jurisdiction_code       int
-	Tax_group_used              int
-	Tax_type                    int
-	Tax_on_tax                  int
-	Sales_tax_connection_no     int
-	Unrealized_tax_entry_no     int
-	Tax_bus_posting_group       int
-	Tax_prod_posting_group      int
+	Entry_no                     int
+	Gen_bus_posting_group        int
+	Gen_prod_posting_group       int
+	Posting_date                 int
+	Document_no                  int
+	Document_type                int
+	Type                         int
+	Base                         int
+	Amount                       int
+	Tax_calculation_type         int
+	Sell_to_buy_from_no          int
+	Eu_3_party_trade             int
+	User_id                      int
+	Source_code                  int
+	Reason_code                  int
+	Closed_by_entry_no           int
+	Closed                       int
+	Country_code                 int
+	Internal_ref_no              int
+	Transaction_no               int
+	Unrealized_amount            int
+	Unrealized_base              int
+	Remaining_unrealized_amount  int
+	Remaining_unrealized_base    int
+	Additional_currency_amount   int
+	Additional_currency_base     int
+	Add_currency_unrealized_amt  int
+	Add_currency_unrealized_base int
+	Add_curr_rem_unreal_amount   int
+	Add_curr_rem_unreal_base     int
+	External_document_no         int
+	No_series                    int
+	Tax_area_code                int
+	Tax_liable                   int
+	Tax_group_code               int
+	Use_tax                      int
+	Tax_jurisdiction_code        int
+	Tax_group_used               int
+	Tax_type                     int
+	Tax_on_tax                   int
+	Sales_tax_connection_no      int
+	Unrealized_tax_entry_no      int
+	Tax_bus_posting_group        int
+	Tax_prod_posting_group       int
 }{
-	Entry_no:                    1,
-	Gen_bus_posting_group:       2,
-	Gen_prod_posting_group:      3,
-	Posting_date:                4,
-	Document_no:                 5,
-	Document_type:               6,
-	Type:                        7,
-	Base:                        8,
-	Amount:                      9,
-	Tax_calculation_type:        10,
-	Sell_to_buy_from_no:         12,
-	Eu_3_party_trade:            13,
-	User_id:                     14,
-	Source_code:                 15,
-	Reason_code:                 16,
-	Closed_by_entry_no:          17,
-	Closed:                      18,
-	Country_code:                19,
-	Internal_ref_no:             20,
-	Transaction_no:              21,
-	Unrealized_amount:           22,
-	Unrealized_base:             23,
-	Remaining_unrealized_amount: 24,
-	Remaining_unrealized_base:   25,
-	External_document_no:        26,
-	No_series:                   28,
-	Tax_area_code:               29,
-	Tax_liable:                  30,
-	Tax_group_code:              31,
-	Use_tax:                     32,
-	Tax_jurisdiction_code:       33,
-	Tax_group_used:              34,
-	Tax_type:                    35,
-	Tax_on_tax:                  36,
-	Sales_tax_connection_no:     37,
-	Unrealized_tax_entry_no:     38,
-	Tax_bus_posting_group:       39,
-	Tax_prod_posting_group:      40,
+	Entry_no:                     1,
+	Gen_bus_posting_group:        2,
+	Gen_prod_posting_group:       3,
+	Posting_date:                 4,
+	Document_no:                  5,
+	Document_type:                6,
+	Type:                         7,
+	Base:                         8,
+	Amount:                       9,
+	Tax_calculation_type:         10,
+	Sell_to_buy_from_no:          12,
+	Eu_3_party_trade:             13,
+	User_id:                      14,
+	Source_code:                  15,
+	Reason_code:                  16,
+	Closed_by_entry_no:           17,
+	Closed:                       18,
+	Country_code:                 19,
+	Internal_ref_no:              20,
+	Transaction_no:               21,
+	Unrealized_amount:            22,
+	Unrealized_base:              23,
+	Remaining_unrealized_amount:  24,
+	Remaining_unrealized_base:    25,
+	Additional_currency_amount:   43,
+	Additional_currency_base:     44,
+	Add_currency_unrealized_amt:  45,
+	Add_currency_unrealized_base: 46,
+	Add_curr_rem_unreal_amount:   49,
+	Add_curr_rem_unreal_base:     50,
+	External_document_no:         26,
+	No_series:                    28,
+	Tax_area_code:                29,
+	Tax_liable:                   30,
+	Tax_group_code:               31,
+	Use_tax:                      32,
+	Tax_jurisdiction_code:        33,
+	Tax_group_used:               34,
+	Tax_type:                     35,
+	Tax_on_tax:                   36,
+	Sales_tax_connection_no:      37,
+	Unrealized_tax_entry_no:      38,
+	Tax_bus_posting_group:        39,
+	Tax_prod_posting_group:       40,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -433,6 +457,18 @@ func (t *TaxEntry) FieldNo(fieldName string) int {
 		return 24
 	case "remaining_unrealized_base":
 		return 25
+	case "additional_currency_amount":
+		return 43
+	case "additional_currency_base":
+		return 44
+	case "add_currency_unrealized_amt":
+		return 45
+	case "add_currency_unrealized_base":
+		return 46
+	case "add_curr_rem_unreal_amount":
+		return 49
+	case "add_curr_rem_unreal_base":
+		return 50
 	case "external_document_no":
 		return 26
 	case "no_series":
@@ -516,6 +552,18 @@ func (t *TaxEntry) FieldName(fieldNo int) string {
 		return "remaining_unrealized_amount"
 	case 25:
 		return "remaining_unrealized_base"
+	case 43:
+		return "additional_currency_amount"
+	case 44:
+		return "additional_currency_base"
+	case 45:
+		return "add_currency_unrealized_amt"
+	case 46:
+		return "add_currency_unrealized_base"
+	case 49:
+		return "add_curr_rem_unreal_amount"
+	case 50:
+		return "add_curr_rem_unreal_base"
 	case 26:
 		return "external_document_no"
 	case 28:
@@ -633,48 +681,54 @@ func (t *TaxEntry) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Tax_Entry: a business logic type implements the ones it needs
 type (
-	TaxEntryOnInsert                               interface{ OnInsert(rec *TaxEntry) error }
-	TaxEntryOnModify                               interface{ OnModify(rec *TaxEntry) error }
-	TaxEntryOnDelete                               interface{ OnDelete(rec *TaxEntry) error }
-	TaxEntryOnRename                               interface{ OnRename(rec *TaxEntry) error }
-	TaxEntryOnValidate_Entry_no                    interface{ OnValidate_Entry_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_Gen_bus_posting_group       interface{ OnValidate_Gen_bus_posting_group(rec *TaxEntry) error }
-	TaxEntryOnValidate_Gen_prod_posting_group      interface{ OnValidate_Gen_prod_posting_group(rec *TaxEntry) error }
-	TaxEntryOnValidate_Posting_date                interface{ OnValidate_Posting_date(rec *TaxEntry) error }
-	TaxEntryOnValidate_Document_no                 interface{ OnValidate_Document_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_Document_type               interface{ OnValidate_Document_type(rec *TaxEntry) error }
-	TaxEntryOnValidate_Type                        interface{ OnValidate_Type(rec *TaxEntry) error }
-	TaxEntryOnValidate_Base                        interface{ OnValidate_Base(rec *TaxEntry) error }
-	TaxEntryOnValidate_Amount                      interface{ OnValidate_Amount(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_calculation_type        interface{ OnValidate_Tax_calculation_type(rec *TaxEntry) error }
-	TaxEntryOnValidate_Sell_to_buy_from_no         interface{ OnValidate_Sell_to_buy_from_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_Eu_3_party_trade            interface{ OnValidate_Eu_3_party_trade(rec *TaxEntry) error }
-	TaxEntryOnValidate_User_id                     interface{ OnValidate_User_id(rec *TaxEntry) error }
-	TaxEntryOnValidate_Source_code                 interface{ OnValidate_Source_code(rec *TaxEntry) error }
-	TaxEntryOnValidate_Reason_code                 interface{ OnValidate_Reason_code(rec *TaxEntry) error }
-	TaxEntryOnValidate_Closed_by_entry_no          interface{ OnValidate_Closed_by_entry_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_Closed                      interface{ OnValidate_Closed(rec *TaxEntry) error }
-	TaxEntryOnValidate_Country_code                interface{ OnValidate_Country_code(rec *TaxEntry) error }
-	TaxEntryOnValidate_Internal_ref_no             interface{ OnValidate_Internal_ref_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_Transaction_no              interface{ OnValidate_Transaction_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_Unrealized_amount           interface{ OnValidate_Unrealized_amount(rec *TaxEntry) error }
-	TaxEntryOnValidate_Unrealized_base             interface{ OnValidate_Unrealized_base(rec *TaxEntry) error }
-	TaxEntryOnValidate_Remaining_unrealized_amount interface{ OnValidate_Remaining_unrealized_amount(rec *TaxEntry) error }
-	TaxEntryOnValidate_Remaining_unrealized_base   interface{ OnValidate_Remaining_unrealized_base(rec *TaxEntry) error }
-	TaxEntryOnValidate_External_document_no        interface{ OnValidate_External_document_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_No_series                   interface{ OnValidate_No_series(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_area_code               interface{ OnValidate_Tax_area_code(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_liable                  interface{ OnValidate_Tax_liable(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_group_code              interface{ OnValidate_Tax_group_code(rec *TaxEntry) error }
-	TaxEntryOnValidate_Use_tax                     interface{ OnValidate_Use_tax(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_jurisdiction_code       interface{ OnValidate_Tax_jurisdiction_code(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_group_used              interface{ OnValidate_Tax_group_used(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_type                    interface{ OnValidate_Tax_type(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_on_tax                  interface{ OnValidate_Tax_on_tax(rec *TaxEntry) error }
-	TaxEntryOnValidate_Sales_tax_connection_no     interface{ OnValidate_Sales_tax_connection_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_Unrealized_tax_entry_no     interface{ OnValidate_Unrealized_tax_entry_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_bus_posting_group       interface{ OnValidate_Tax_bus_posting_group(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_prod_posting_group      interface{ OnValidate_Tax_prod_posting_group(rec *TaxEntry) error }
+	TaxEntryOnInsert                                interface{ OnInsert(rec *TaxEntry) error }
+	TaxEntryOnModify                                interface{ OnModify(rec *TaxEntry) error }
+	TaxEntryOnDelete                                interface{ OnDelete(rec *TaxEntry) error }
+	TaxEntryOnRename                                interface{ OnRename(rec *TaxEntry) error }
+	TaxEntryOnValidate_Entry_no                     interface{ OnValidate_Entry_no(rec *TaxEntry) error }
+	TaxEntryOnValidate_Gen_bus_posting_group        interface{ OnValidate_Gen_bus_posting_group(rec *TaxEntry) error }
+	TaxEntryOnValidate_Gen_prod_posting_group       interface{ OnValidate_Gen_prod_posting_group(rec *TaxEntry) error }
+	TaxEntryOnValidate_Posting_date                 interface{ OnValidate_Posting_date(rec *TaxEntry) error }
+	TaxEntryOnValidate_Document_no                  interface{ OnValidate_Document_no(rec *TaxEntry) error }
+	TaxEntryOnValidate_Document_type                interface{ OnValidate_Document_type(rec *TaxEntry) error }
+	TaxEntryOnValidate_Type                         interface{ OnValidate_Type(rec *TaxEntry) error }
+	TaxEntryOnValidate_Base                         interface{ OnValidate_Base(rec *TaxEntry) error }
+	TaxEntryOnValidate_Amount                       interface{ OnValidate_Amount(rec *TaxEntry) error }
+	TaxEntryOnValidate_Tax_calculation_type         interface{ OnValidate_Tax_calculation_type(rec *TaxEntry) error }
+	TaxEntryOnValidate_Sell_to_buy_from_no          interface{ OnValidate_Sell_to_buy_from_no(rec *TaxEntry) error }
+	TaxEntryOnValidate_Eu_3_party_trade             interface{ OnValidate_Eu_3_party_trade(rec *TaxEntry) error }
+	TaxEntryOnValidate_User_id                      interface{ OnValidate_User_id(rec *TaxEntry) error }
+	TaxEntryOnValidate_Source_code                  interface{ OnValidate_Source_code(rec *TaxEntry) error }
+	TaxEntryOnValidate_Reason_code                  interface{ OnValidate_Reason_code(rec *TaxEntry) error }
+	TaxEntryOnValidate_Closed_by_entry_no           interface{ OnValidate_Closed_by_entry_no(rec *TaxEntry) error }
+	TaxEntryOnValidate_Closed                       interface{ OnValidate_Closed(rec *TaxEntry) error }
+	TaxEntryOnValidate_Country_code                 interface{ OnValidate_Country_code(rec *TaxEntry) error }
+	TaxEntryOnValidate_Internal_ref_no              interface{ OnValidate_Internal_ref_no(rec *TaxEntry) error }
+	TaxEntryOnValidate_Transaction_no               interface{ OnValidate_Transaction_no(rec *TaxEntry) error }
+	TaxEntryOnValidate_Unrealized_amount            interface{ OnValidate_Unrealized_amount(rec *TaxEntry) error }
+	TaxEntryOnValidate_Unrealized_base              interface{ OnValidate_Unrealized_base(rec *TaxEntry) error }
+	TaxEntryOnValidate_Remaining_unrealized_amount  interface{ OnValidate_Remaining_unrealized_amount(rec *TaxEntry) error }
+	TaxEntryOnValidate_Remaining_unrealized_base    interface{ OnValidate_Remaining_unrealized_base(rec *TaxEntry) error }
+	TaxEntryOnValidate_Additional_currency_amount   interface{ OnValidate_Additional_currency_amount(rec *TaxEntry) error }
+	TaxEntryOnValidate_Additional_currency_base     interface{ OnValidate_Additional_currency_base(rec *TaxEntry) error }
+	TaxEntryOnValidate_Add_currency_unrealized_amt  interface{ OnValidate_Add_currency_unrealized_amt(rec *TaxEntry) error }
+	TaxEntryOnValidate_Add_currency_unrealized_base interface{ OnValidate_Add_currency_unrealized_base(rec *TaxEntry) error }
+	TaxEntryOnValidate_Add_curr_rem_unreal_amount   interface{ OnValidate_Add_curr_rem_unreal_amount(rec *TaxEntry) error }
+	TaxEntryOnValidate_Add_curr_rem_unreal_base     interface{ OnValidate_Add_curr_rem_unreal_base(rec *TaxEntry) error }
+	TaxEntryOnValidate_External_document_no         interface{ OnValidate_External_document_no(rec *TaxEntry) error }
+	TaxEntryOnValidate_No_series                    interface{ OnValidate_No_series(rec *TaxEntry) error }
+	TaxEntryOnValidate_Tax_area_code                interface{ OnValidate_Tax_area_code(rec *TaxEntry) error }
+	TaxEntryOnValidate_Tax_liable                   interface{ OnValidate_Tax_liable(rec *TaxEntry) error }
+	TaxEntryOnValidate_Tax_group_code               interface{ OnValidate_Tax_group_code(rec *TaxEntry) error }
+	TaxEntryOnValidate_Use_tax                      interface{ OnValidate_Use_tax(rec *TaxEntry) error }
+	TaxEntryOnValidate_Tax_jurisdiction_code        interface{ OnValidate_Tax_jurisdiction_code(rec *TaxEntry) error }
+	TaxEntryOnValidate_Tax_group_used               interface{ OnValidate_Tax_group_used(rec *TaxEntry) error }
+	TaxEntryOnValidate_Tax_type                     interface{ OnValidate_Tax_type(rec *TaxEntry) error }
+	TaxEntryOnValidate_Tax_on_tax                   interface{ OnValidate_Tax_on_tax(rec *TaxEntry) error }
+	TaxEntryOnValidate_Sales_tax_connection_no      interface{ OnValidate_Sales_tax_connection_no(rec *TaxEntry) error }
+	TaxEntryOnValidate_Unrealized_tax_entry_no      interface{ OnValidate_Unrealized_tax_entry_no(rec *TaxEntry) error }
+	TaxEntryOnValidate_Tax_bus_posting_group        interface{ OnValidate_Tax_bus_posting_group(rec *TaxEntry) error }
+	TaxEntryOnValidate_Tax_prod_posting_group       interface{ OnValidate_Tax_prod_posting_group(rec *TaxEntry) error }
 )
 
 // taxEntryLogic is the registered business logic of Tax_Entry, in
@@ -752,6 +806,18 @@ func taxEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(TaxEntryOnValidate_Remaining_unrealized_amount)
 	case "OnValidate_Remaining_unrealized_base":
 		_, ok = logic.(TaxEntryOnValidate_Remaining_unrealized_base)
+	case "OnValidate_Additional_currency_amount":
+		_, ok = logic.(TaxEntryOnValidate_Additional_currency_amount)
+	case "OnValidate_Additional_currency_base":
+		_, ok = logic.(TaxEntryOnValidate_Additional_currency_base)
+	case "OnValidate_Add_currency_unrealized_amt":
+		_, ok = logic.(TaxEntryOnValidate_Add_currency_unrealized_amt)
+	case "OnValidate_Add_currency_unrealized_base":
+		_, ok = logic.(TaxEntryOnValidate_Add_currency_unrealized_base)
+	case "OnValidate_Add_curr_rem_unreal_amount":
+		_, ok = logic.(TaxEntryOnValidate_Add_curr_rem_unreal_amount)
+	case "OnValidate_Add_curr_rem_unreal_base":
+		_, ok = logic.(TaxEntryOnValidate_Add_curr_rem_unreal_base)
 	case "OnValidate_External_document_no":
 		_, ok = logic.(TaxEntryOnValidate_External_document_no)
 	case "OnValidate_No_series":
@@ -956,6 +1022,12 @@ func GetTaxEntryTableSchema() string {
 		unrealized_base TEXT,
 		remaining_unrealized_amount TEXT,
 		remaining_unrealized_base TEXT,
+		additional_currency_amount TEXT,
+		additional_currency_base TEXT,
+		add_currency_unrealized_amt TEXT,
+		add_currency_unrealized_base TEXT,
+		add_curr_rem_unreal_amount TEXT,
+		add_curr_rem_unreal_base TEXT,
 		external_document_no TEXT(20),
 		no_series TEXT(10),
 		tax_area_code TEXT(20),
@@ -1000,6 +1072,12 @@ func GetTaxEntryPostgresTableSchema() string {
 		unrealized_base NUMERIC,
 		remaining_unrealized_amount NUMERIC,
 		remaining_unrealized_base NUMERIC,
+		additional_currency_amount NUMERIC,
+		additional_currency_base NUMERIC,
+		add_currency_unrealized_amt NUMERIC,
+		add_currency_unrealized_base NUMERIC,
+		add_curr_rem_unreal_amount NUMERIC,
+		add_curr_rem_unreal_base NUMERIC,
 		external_document_no VARCHAR(20),
 		no_series VARCHAR(10),
 		tax_area_code VARCHAR(20),
@@ -1190,6 +1268,12 @@ func (t *TaxEntry) StoreOldValues() {
 	t.oldValues["unrealized_base"] = t.Unrealized_base
 	t.oldValues["remaining_unrealized_amount"] = t.Remaining_unrealized_amount
 	t.oldValues["remaining_unrealized_base"] = t.Remaining_unrealized_base
+	t.oldValues["additional_currency_amount"] = t.Additional_currency_amount
+	t.oldValues["additional_currency_base"] = t.Additional_currency_base
+	t.oldValues["add_currency_unrealized_amt"] = t.Add_currency_unrealized_amt
+	t.oldValues["add_currency_unrealized_base"] = t.Add_currency_unrealized_base
+	t.oldValues["add_curr_rem_unreal_amount"] = t.Add_curr_rem_unreal_amount
+	t.oldValues["add_curr_rem_unreal_base"] = t.Add_curr_rem_unreal_base
 	t.oldValues["external_document_no"] = t.External_document_no
 	t.oldValues["no_series"] = t.No_series
 	t.oldValues["tax_area_code"] = t.Tax_area_code
@@ -1289,6 +1373,24 @@ func (t *TaxEntry) XRec() *TaxEntry {
 	}
 	if v, ok := t.oldValues["remaining_unrealized_base"].(types.Decimal); ok {
 		x.Remaining_unrealized_base = v
+	}
+	if v, ok := t.oldValues["additional_currency_amount"].(types.Decimal); ok {
+		x.Additional_currency_amount = v
+	}
+	if v, ok := t.oldValues["additional_currency_base"].(types.Decimal); ok {
+		x.Additional_currency_base = v
+	}
+	if v, ok := t.oldValues["add_currency_unrealized_amt"].(types.Decimal); ok {
+		x.Add_currency_unrealized_amt = v
+	}
+	if v, ok := t.oldValues["add_currency_unrealized_base"].(types.Decimal); ok {
+		x.Add_currency_unrealized_base = v
+	}
+	if v, ok := t.oldValues["add_curr_rem_unreal_amount"].(types.Decimal); ok {
+		x.Add_curr_rem_unreal_amount = v
+	}
+	if v, ok := t.oldValues["add_curr_rem_unreal_base"].(types.Decimal); ok {
+		x.Add_curr_rem_unreal_base = v
 	}
 	if v, ok := t.oldValues["external_document_no"].(types.Code); ok {
 		x.External_document_no = v
@@ -1427,6 +1529,12 @@ func (t *TaxEntry) GetByPK(entry_no int) bool {
 	var unrealized_baseNull sql.NullString
 	var remaining_unrealized_amountNull sql.NullString
 	var remaining_unrealized_baseNull sql.NullString
+	var additional_currency_amountNull sql.NullString
+	var additional_currency_baseNull sql.NullString
+	var add_currency_unrealized_amtNull sql.NullString
+	var add_currency_unrealized_baseNull sql.NullString
+	var add_curr_rem_unreal_amountNull sql.NullString
+	var add_curr_rem_unreal_baseNull sql.NullString
 	var external_document_noNull sql.NullString
 	var no_seriesNull sql.NullString
 	var tax_area_codeNull sql.NullString
@@ -1448,7 +1556,7 @@ func (t *TaxEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, gen_bus_posting_group, gen_prod_posting_group, posting_date, document_no, document_type, type, base, amount, tax_calculation_type, sell_to_buy_from_no, eu_3_party_trade, user_id, source_code, reason_code, closed_by_entry_no, closed, country_code, internal_ref_no, transaction_no, unrealized_amount, unrealized_base, remaining_unrealized_amount, remaining_unrealized_base, external_document_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_jurisdiction_code, tax_group_used, tax_type, tax_on_tax, sales_tax_connection_no, unrealized_tax_entry_no, tax_bus_posting_group, tax_prod_posting_group FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, gen_bus_posting_group, gen_prod_posting_group, posting_date, document_no, document_type, type, base, amount, tax_calculation_type, sell_to_buy_from_no, eu_3_party_trade, user_id, source_code, reason_code, closed_by_entry_no, closed, country_code, internal_ref_no, transaction_no, unrealized_amount, unrealized_base, remaining_unrealized_amount, remaining_unrealized_base, additional_currency_amount, additional_currency_base, add_currency_unrealized_amt, add_currency_unrealized_base, add_curr_rem_unreal_amount, add_curr_rem_unreal_base, external_document_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_jurisdiction_code, tax_group_used, tax_type, tax_on_tax, sales_tax_connection_no, unrealized_tax_entry_no, tax_bus_posting_group, tax_prod_posting_group FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1479,6 +1587,12 @@ func (t *TaxEntry) GetByPK(entry_no int) bool {
 		&unrealized_baseNull,
 		&remaining_unrealized_amountNull,
 		&remaining_unrealized_baseNull,
+		&additional_currency_amountNull,
+		&additional_currency_baseNull,
+		&add_currency_unrealized_amtNull,
+		&add_currency_unrealized_baseNull,
+		&add_curr_rem_unreal_amountNull,
+		&add_curr_rem_unreal_baseNull,
 		&external_document_noNull,
 		&no_seriesNull,
 		&tax_area_codeNull,
@@ -1530,6 +1644,12 @@ func (t *TaxEntry) GetByPK(entry_no int) bool {
 	t.Unrealized_base, _ = types.NewDecimalFromString(unrealized_baseNull.String)
 	t.Remaining_unrealized_amount, _ = types.NewDecimalFromString(remaining_unrealized_amountNull.String)
 	t.Remaining_unrealized_base, _ = types.NewDecimalFromString(remaining_unrealized_baseNull.String)
+	t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
+	t.Additional_currency_base, _ = types.NewDecimalFromString(additional_currency_baseNull.String)
+	t.Add_currency_unrealized_amt, _ = types.NewDecimalFromString(add_currency_unrealized_amtNull.String)
+	t.Add_currency_unrealized_base, _ = types.NewDecimalFromString(add_currency_unrealized_baseNull.String)
+	t.Add_curr_rem_unreal_amount, _ = types.NewDecimalFromString(add_curr_rem_unreal_amountNull.String)
+	t.Add_curr_rem_unreal_base, _ = types.NewDecimalFromString(add_curr_rem_unreal_baseNull.String)
 	t.External_document_no = types.NewCode(external_document_noNull.String)
 	t.No_series = types.NewCode(no_seriesNull.String)
 	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
@@ -1590,6 +1710,12 @@ func (t *TaxEntry) Insert(runTrigger bool) bool {
 		t.Unrealized_base,
 		t.Remaining_unrealized_amount,
 		t.Remaining_unrealized_base,
+		t.Additional_currency_amount,
+		t.Additional_currency_base,
+		t.Add_currency_unrealized_amt,
+		t.Add_currency_unrealized_base,
+		t.Add_curr_rem_unreal_amount,
+		t.Add_curr_rem_unreal_base,
 		t.External_document_no,
 		t.No_series,
 		t.Tax_area_code,
@@ -1608,7 +1734,7 @@ func (t *TaxEntry) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, gen_bus_posting_group, gen_prod_posting_group, posting_date, document_no, document_type, type, base, amount, tax_calculation_type, sell_to_buy_from_no, eu_3_party_trade, user_id, source_code, reason_code, closed_by_entry_no, closed, country_code, internal_ref_no, transaction_no, unrealized_amount, unrealized_base, remaining_unrealized_amount, remaining_unrealized_base, external_document_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_jurisdiction_code, tax_group_used, tax_type, tax_on_tax, sales_tax_connection_no, unrealized_tax_entry_no, tax_bus_posting_group, tax_prod_posting_group) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, gen_bus_posting_group, gen_prod_posting_group, posting_date, document_no, document_type, type, base, amount, tax_calculation_type, sell_to_buy_from_no, eu_3_party_trade, user_id, source_code, reason_code, closed_by_entry_no, closed, country_code, internal_ref_no, transaction_no, unrealized_amount, unrealized_base, remaining_unrealized_amount, remaining_unrealized_base, additional_currency_amount, additional_currency_base, add_currency_unrealized_amt, add_currency_unrealized_base, add_curr_rem_unreal_amount, add_curr_rem_unreal_base, external_document_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_jurisdiction_code, tax_group_used, tax_type, tax_on_tax, sales_tax_connection_no, unrealized_tax_entry_no, tax_bus_posting_group, tax_prod_posting_group) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1670,6 +1796,12 @@ func (t *TaxEntry) InsertAll(records []*TaxEntry, runTrigger bool) error {
 			r.Unrealized_base,
 			r.Remaining_unrealized_amount,
 			r.Remaining_unrealized_base,
+			r.Additional_currency_amount,
+			r.Additional_currency_base,
+			r.Add_currency_unrealized_amt,
+			r.Add_currency_unrealized_base,
+			r.Add_curr_rem_unreal_amount,
+			r.Add_curr_rem_unreal_base,
 			r.External_document_no,
 			r.No_series,
 			r.Tax_area_code,
@@ -1687,7 +1819,7 @@ func (t *TaxEntry) InsertAll(records []*TaxEntry, runTrigger bool) error {
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, TaxEntryTableName)
-	columns := []string{"entry_no", "gen_bus_posting_group", "gen_prod_posting_group", "posting_date", "document_no", "document_type", "type", "base", "amount", "tax_calculation_type", "sell_to_buy_from_no", "eu_3_party_trade", "user_id", "source_code", "reason_code", "closed_by_entry_no", "closed", "country_code", "internal_ref_no", "transaction_no", "unrealized_amount", "unrealized_base", "remaining_unrealized_amount", "remaining_unrealized_base", "external_document_no", "no_series", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_jurisdiction_code", "tax_group_used", "tax_type", "tax_on_tax", "sales_tax_connection_no", "unrealized_tax_entry_no", "tax_bus_posting_group", "tax_prod_posting_group"}
+	columns := []string{"entry_no", "gen_bus_posting_group", "gen_prod_posting_group", "posting_date", "document_no", "document_type", "type", "base", "amount", "tax_calculation_type", "sell_to_buy_from_no", "eu_3_party_trade", "user_id", "source_code", "reason_code", "closed_by_entry_no", "closed", "country_code", "internal_ref_no", "transaction_no", "unrealized_amount", "unrealized_base", "remaining_unrealized_amount", "remaining_unrealized_base", "additional_currency_amount", "additional_currency_base", "add_currency_unrealized_amt", "add_currency_unrealized_base", "add_curr_rem_unreal_amount", "add_curr_rem_unreal_base", "external_document_no", "no_series", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_jurisdiction_code", "tax_group_used", "tax_type", "tax_on_tax", "sales_tax_connection_no", "unrealized_tax_entry_no", "tax_bus_posting_group", "tax_prod_posting_group"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1823,6 +1955,30 @@ func (t *TaxEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "remaining_unrealized_base = ?")
 			values = append(values, t.Remaining_unrealized_base)
 		}
+		if t.hasFieldChanged("additional_currency_amount") {
+			setClauses = append(setClauses, "additional_currency_amount = ?")
+			values = append(values, t.Additional_currency_amount)
+		}
+		if t.hasFieldChanged("additional_currency_base") {
+			setClauses = append(setClauses, "additional_currency_base = ?")
+			values = append(values, t.Additional_currency_base)
+		}
+		if t.hasFieldChanged("add_currency_unrealized_amt") {
+			setClauses = append(setClauses, "add_currency_unrealized_amt = ?")
+			values = append(values, t.Add_currency_unrealized_amt)
+		}
+		if t.hasFieldChanged("add_currency_unrealized_base") {
+			setClauses = append(setClauses, "add_currency_unrealized_base = ?")
+			values = append(values, t.Add_currency_unrealized_base)
+		}
+		if t.hasFieldChanged("add_curr_rem_unreal_amount") {
+			setClauses = append(setClauses, "add_curr_rem_unreal_amount = ?")
+			values = append(values, t.Add_curr_rem_unreal_amount)
+		}
+		if t.hasFieldChanged("add_curr_rem_unreal_base") {
+			setClauses = append(setClauses, "add_curr_rem_unreal_base = ?")
+			values = append(values, t.Add_curr_rem_unreal_base)
+		}
 		if t.hasFieldChanged("external_document_no") {
 			setClauses = append(setClauses, "external_document_no = ?")
 			values = append(values, t.External_document_no)
@@ -1932,6 +2088,18 @@ func (t *TaxEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.Remaining_unrealized_amount)
 		setClauses = append(setClauses, "remaining_unrealized_base = ?")
 		values = append(values, t.Remaining_unrealized_base)
+		setClauses = append(setClauses, "additional_currency_amount = ?")
+		values = append(values, t.Additional_currency_amount)
+		setClauses = append(setClauses, "additional_currency_base = ?")
+		values = append(values, t.Additional_currency_base)
+		setClauses = append(setClauses, "add_currency_unrealized_amt = ?")
+		values = append(values, t.Add_currency_unrealized_amt)
+		setClauses = append(setClauses, "add_currency_unrealized_base = ?")
+		values = append(values, t.Add_currency_unrealized_base)
+		setClauses = append(setClauses, "add_curr_rem_unreal_amount = ?")
+		values = append(values, t.Add_curr_rem_unreal_amount)
+		setClauses = append(setClauses, "add_curr_rem_unreal_base = ?")
+		values = append(values, t.Add_curr_rem_unreal_base)
 		setClauses = append(setClauses, "external_document_no = ?")
 		values = append(values, t.External_document_no)
 		setClauses = append(setClauses, "no_series = ?")
@@ -2104,6 +2272,30 @@ func (t *TaxEntry) hasFieldChanged(fieldName string) bool {
 	case "remaining_unrealized_base":
 		if old, ok := oldValue.(types.Decimal); ok {
 			return !t.Remaining_unrealized_base.Equal(old)
+		}
+	case "additional_currency_amount":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Additional_currency_amount.Equal(old)
+		}
+	case "additional_currency_base":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Additional_currency_base.Equal(old)
+		}
+	case "add_currency_unrealized_amt":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Add_currency_unrealized_amt.Equal(old)
+		}
+	case "add_currency_unrealized_base":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Add_currency_unrealized_base.Equal(old)
+		}
+	case "add_curr_rem_unreal_amount":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Add_curr_rem_unreal_amount.Equal(old)
+		}
+	case "add_curr_rem_unreal_base":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Add_curr_rem_unreal_base.Equal(old)
 		}
 	case "external_document_no":
 		if old, ok := oldValue.(types.Code); ok {
@@ -2418,6 +2610,18 @@ func (t *TaxEntry) columnName(fieldName string) (string, bool) {
 		return "remaining_unrealized_amount", true
 	case strings.ToLower("remaining_unrealized_base"):
 		return "remaining_unrealized_base", true
+	case strings.ToLower("additional_currency_amount"):
+		return "additional_currency_amount", true
+	case strings.ToLower("additional_currency_base"):
+		return "additional_currency_base", true
+	case strings.ToLower("add_currency_unrealized_amt"):
+		return "add_currency_unrealized_amt", true
+	case strings.ToLower("add_currency_unrealized_base"):
+		return "add_currency_unrealized_base", true
+	case strings.ToLower("add_curr_rem_unreal_amount"):
+		return "add_curr_rem_unreal_amount", true
+	case strings.ToLower("add_curr_rem_unreal_base"):
+		return "add_curr_rem_unreal_base", true
 	case strings.ToLower("external_document_no"):
 		return "external_document_no", true
 	case strings.ToLower("no_series"):
@@ -2637,6 +2841,18 @@ func (t *TaxEntry) isDecimalColumn(column string) bool {
 		return true
 	case "remaining_unrealized_base":
 		return true
+	case "additional_currency_amount":
+		return true
+	case "additional_currency_base":
+		return true
+	case "add_currency_unrealized_amt":
+		return true
+	case "add_currency_unrealized_base":
+		return true
+	case "add_curr_rem_unreal_amount":
+		return true
+	case "add_curr_rem_unreal_base":
+		return true
 	}
 	return false
 }
@@ -2827,7 +3043,7 @@ func (t *TaxEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, gen_bus_posting_group, gen_prod_posting_group, posting_date, document_no, document_type, type, base, amount, tax_calculation_type, sell_to_buy_from_no, eu_3_party_trade, user_id, source_code, reason_code, closed_by_entry_no, closed, country_code, internal_ref_no, transaction_no, unrealized_amount, unrealized_base, remaining_unrealized_amount, remaining_unrealized_base, external_document_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_jurisdiction_code, tax_group_used, tax_type, tax_on_tax, sales_tax_connection_no, unrealized_tax_entry_no, tax_bus_posting_group, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, gen_bus_posting_group, gen_prod_posting_group, posting_date, document_no, document_type, type, base, amount, tax_calculation_type, sell_to_buy_from_no, eu_3_party_trade, user_id, source_code, reason_code, closed_by_entry_no, closed, country_code, internal_ref_no, transaction_no, unrealized_amount, unrealized_base, remaining_unrealized_amount, remaining_unrealized_base, additional_currency_amount, additional_currency_base, add_currency_unrealized_amt, add_currency_unrealized_base, add_curr_rem_unreal_amount, add_curr_rem_unreal_base, external_document_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_jurisdiction_code, tax_group_used, tax_type, tax_on_tax, sales_tax_connection_no, unrealized_tax_entry_no, tax_bus_posting_group, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2853,6 +3069,12 @@ func (t *TaxEntry) FindFirst() bool {
 	var unrealized_baseNull sql.NullString
 	var remaining_unrealized_amountNull sql.NullString
 	var remaining_unrealized_baseNull sql.NullString
+	var additional_currency_amountNull sql.NullString
+	var additional_currency_baseNull sql.NullString
+	var add_currency_unrealized_amtNull sql.NullString
+	var add_currency_unrealized_baseNull sql.NullString
+	var add_curr_rem_unreal_amountNull sql.NullString
+	var add_curr_rem_unreal_baseNull sql.NullString
 	var external_document_noNull sql.NullString
 	var no_seriesNull sql.NullString
 	var tax_area_codeNull sql.NullString
@@ -2891,6 +3113,12 @@ func (t *TaxEntry) FindFirst() bool {
 		&unrealized_baseNull,
 		&remaining_unrealized_amountNull,
 		&remaining_unrealized_baseNull,
+		&additional_currency_amountNull,
+		&additional_currency_baseNull,
+		&add_currency_unrealized_amtNull,
+		&add_currency_unrealized_baseNull,
+		&add_curr_rem_unreal_amountNull,
+		&add_curr_rem_unreal_baseNull,
 		&external_document_noNull,
 		&no_seriesNull,
 		&tax_area_codeNull,
@@ -2937,6 +3165,12 @@ func (t *TaxEntry) FindFirst() bool {
 	t.Unrealized_base, _ = types.NewDecimalFromString(unrealized_baseNull.String)
 	t.Remaining_unrealized_amount, _ = types.NewDecimalFromString(remaining_unrealized_amountNull.String)
 	t.Remaining_unrealized_base, _ = types.NewDecimalFromString(remaining_unrealized_baseNull.String)
+	t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
+	t.Additional_currency_base, _ = types.NewDecimalFromString(additional_currency_baseNull.String)
+	t.Add_currency_unrealized_amt, _ = types.NewDecimalFromString(add_currency_unrealized_amtNull.String)
+	t.Add_currency_unrealized_base, _ = types.NewDecimalFromString(add_currency_unrealized_baseNull.String)
+	t.Add_curr_rem_unreal_amount, _ = types.NewDecimalFromString(add_curr_rem_unreal_amountNull.String)
+	t.Add_curr_rem_unreal_base, _ = types.NewDecimalFromString(add_curr_rem_unreal_baseNull.String)
 	t.External_document_no = types.NewCode(external_document_noNull.String)
 	t.No_series = types.NewCode(no_seriesNull.String)
 	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
@@ -2969,7 +3203,7 @@ func (t *TaxEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, gen_bus_posting_group, gen_prod_posting_group, posting_date, document_no, document_type, type, base, amount, tax_calculation_type, sell_to_buy_from_no, eu_3_party_trade, user_id, source_code, reason_code, closed_by_entry_no, closed, country_code, internal_ref_no, transaction_no, unrealized_amount, unrealized_base, remaining_unrealized_amount, remaining_unrealized_base, external_document_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_jurisdiction_code, tax_group_used, tax_type, tax_on_tax, sales_tax_connection_no, unrealized_tax_entry_no, tax_bus_posting_group, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, gen_bus_posting_group, gen_prod_posting_group, posting_date, document_no, document_type, type, base, amount, tax_calculation_type, sell_to_buy_from_no, eu_3_party_trade, user_id, source_code, reason_code, closed_by_entry_no, closed, country_code, internal_ref_no, transaction_no, unrealized_amount, unrealized_base, remaining_unrealized_amount, remaining_unrealized_base, additional_currency_amount, additional_currency_base, add_currency_unrealized_amt, add_currency_unrealized_base, add_curr_rem_unreal_amount, add_curr_rem_unreal_base, external_document_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_jurisdiction_code, tax_group_used, tax_type, tax_on_tax, sales_tax_connection_no, unrealized_tax_entry_no, tax_bus_posting_group, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2995,6 +3229,12 @@ func (t *TaxEntry) FindLast() bool {
 	var unrealized_baseNull sql.NullString
 	var remaining_unrealized_amountNull sql.NullString
 	var remaining_unrealized_baseNull sql.NullString
+	var additional_currency_amountNull sql.NullString
+	var additional_currency_baseNull sql.NullString
+	var add_currency_unrealized_amtNull sql.NullString
+	var add_currency_unrealized_baseNull sql.NullString
+	var add_curr_rem_unreal_amountNull sql.NullString
+	var add_curr_rem_unreal_baseNull sql.NullString
 	var external_document_noNull sql.NullString
 	var no_seriesNull sql.NullString
 	var tax_area_codeNull sql.NullString
@@ -3033,6 +3273,12 @@ func (t *TaxEntry) FindLast() bool {
 		&unrealized_baseNull,
 		&remaining_unrealized_amountNull,
 		&remaining_unrealized_baseNull,
+		&additional_currency_amountNull,
+		&additional_currency_baseNull,
+		&add_currency_unrealized_amtNull,
+		&add_currency_unrealized_baseNull,
+		&add_curr_rem_unreal_amountNull,
+		&add_curr_rem_unreal_baseNull,
 		&external_document_noNull,
 		&no_seriesNull,
 		&tax_area_codeNull,
@@ -3079,6 +3325,12 @@ func (t *TaxEntry) FindLast() bool {
 	t.Unrealized_base, _ = types.NewDecimalFromString(unrealized_baseNull.String)
 	t.Remaining_unrealized_amount, _ = types.NewDecimalFromString(remaining_unrealized_amountNull.String)
 	t.Remaining_unrealized_base, _ = types.NewDecimalFromString(remaining_unrealized_baseNull.String)
+	t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
+	t.Additional_currency_base, _ = types.NewDecimalFromString(additional_currency_baseNull.String)
+	t.Add_currency_unrealized_amt, _ = types.NewDecimalFromString(add_currency_unrealized_amtNull.String)
+	t.Add_currency_unrealized_base, _ = types.NewDecimalFromString(add_currency_unrealized_baseNull.String)
+	t.Add_curr_rem_unreal_amount, _ = types.NewDecimalFromString(add_curr_rem_unreal_amountNull.String)
+	t.Add_curr_rem_unreal_base, _ = types.NewDecimalFromString(add_curr_rem_unreal_baseNull.String)
 	t.External_document_no = types.NewCode(external_document_noNull.String)
 	t.No_series = types.NewCode(no_seriesNull.String)
 	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
@@ -3141,7 +3393,7 @@ func (t *TaxEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, gen_bus_posting_group, gen_prod_posting_group, posting_date, document_no, document_type, type, base, amount, tax_calculation_type, sell_to_buy_from_no, eu_3_party_trade, user_id, source_code, reason_code, closed_by_entry_no, closed, country_code, internal_ref_no, transaction_no, unrealized_amount, unrealized_base, remaining_unrealized_amount, remaining_unrealized_base, external_document_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_jurisdiction_code, tax_group_used, tax_type, tax_on_tax, sales_tax_connection_no, unrealized_tax_entry_no, tax_bus_posting_group, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, gen_bus_posting_group, gen_prod_posting_group, posting_date, document_no, document_type, type, base, amount, tax_calculation_type, sell_to_buy_from_no, eu_3_party_trade, user_id, source_code, reason_code, closed_by_entry_no, closed, country_code, internal_ref_no, transaction_no, unrealized_amount, unrealized_base, remaining_unrealized_amount, remaining_unrealized_base, additional_currency_amount, additional_currency_base, add_currency_unrealized_amt, add_currency_unrealized_base, add_curr_rem_unreal_amount, add_curr_rem_unreal_base, external_document_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_jurisdiction_code, tax_group_used, tax_type, tax_on_tax, sales_tax_connection_no, unrealized_tax_entry_no, tax_bus_posting_group, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3231,6 +3483,12 @@ func (t *TaxEntry) Next(steps ...int) bool {
 		var unrealized_baseNull sql.NullString
 		var remaining_unrealized_amountNull sql.NullString
 		var remaining_unrealized_baseNull sql.NullString
+		var additional_currency_amountNull sql.NullString
+		var additional_currency_baseNull sql.NullString
+		var add_currency_unrealized_amtNull sql.NullString
+		var add_currency_unrealized_baseNull sql.NullString
+		var add_curr_rem_unreal_amountNull sql.NullString
+		var add_curr_rem_unreal_baseNull sql.NullString
 		var external_document_noNull sql.NullString
 		var no_seriesNull sql.NullString
 		var tax_area_codeNull sql.NullString
@@ -3269,6 +3527,12 @@ func (t *TaxEntry) Next(steps ...int) bool {
 			&unrealized_baseNull,
 			&remaining_unrealized_amountNull,
 			&remaining_unrealized_baseNull,
+			&additional_currency_amountNull,
+			&additional_currency_baseNull,
+			&add_currency_unrealized_amtNull,
+			&add_currency_unrealized_baseNull,
+			&add_curr_rem_unreal_amountNull,
+			&add_curr_rem_unreal_baseNull,
 			&external_document_noNull,
 			&no_seriesNull,
 			&tax_area_codeNull,
@@ -3314,6 +3578,12 @@ func (t *TaxEntry) Next(steps ...int) bool {
 		t.Unrealized_base, _ = types.NewDecimalFromString(unrealized_baseNull.String)
 		t.Remaining_unrealized_amount, _ = types.NewDecimalFromString(remaining_unrealized_amountNull.String)
 		t.Remaining_unrealized_base, _ = types.NewDecimalFromString(remaining_unrealized_baseNull.String)
+		t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
+		t.Additional_currency_base, _ = types.NewDecimalFromString(additional_currency_baseNull.String)
+		t.Add_currency_unrealized_amt, _ = types.NewDecimalFromString(add_currency_unrealized_amtNull.String)
+		t.Add_currency_unrealized_base, _ = types.NewDecimalFromString(add_currency_unrealized_baseNull.String)
+		t.Add_curr_rem_unreal_amount, _ = types.NewDecimalFromString(add_curr_rem_unreal_amountNull.String)
+		t.Add_curr_rem_unreal_base, _ = types.NewDecimalFromString(add_curr_rem_unreal_baseNull.String)
 		t.External_document_no = types.NewCode(external_document_noNull.String)
 		t.No_series = types.NewCode(no_seriesNull.String)
 		t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
@@ -3375,7 +3645,7 @@ func (t *TaxEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, gen_bus_posting_group, gen_prod_posting_group, posting_date, document_no, document_type, type, base, amount, tax_calculation_type, sell_to_buy_from_no, eu_3_party_trade, user_id, source_code, reason_code, closed_by_entry_no, closed, country_code, internal_ref_no, transaction_no, unrealized_amount, unrealized_base, remaining_unrealized_amount, remaining_unrealized_base, external_document_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_jurisdiction_code, tax_group_used, tax_type, tax_on_tax, sales_tax_connection_no, unrealized_tax_entry_no, tax_bus_posting_group, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, gen_bus_posting_group, gen_prod_posting_group, posting_date, document_no, document_type, type, base, amount, tax_calculation_type, sell_to_buy_from_no, eu_3_party_trade, user_id, source_code, reason_code, closed_by_entry_no, closed, country_code, internal_ref_no, transaction_no, unrealized_amount, unrealized_base, remaining_unrealized_amount, remaining_unrealized_base, additional_currency_amount, additional_currency_base, add_currency_unrealized_amt, add_currency_unrealized_base, add_curr_rem_unreal_amount, add_curr_rem_unreal_base, external_document_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_jurisdiction_code, tax_group_used, tax_type, tax_on_tax, sales_tax_connection_no, unrealized_tax_entry_no, tax_bus_posting_group, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3418,6 +3688,12 @@ func (t *TaxEntry) FindSetBuffered() bool {
 		var unrealized_baseNull sql.NullString
 		var remaining_unrealized_amountNull sql.NullString
 		var remaining_unrealized_baseNull sql.NullString
+		var additional_currency_amountNull sql.NullString
+		var additional_currency_baseNull sql.NullString
+		var add_currency_unrealized_amtNull sql.NullString
+		var add_currency_unrealized_baseNull sql.NullString
+		var add_curr_rem_unreal_amountNull sql.NullString
+		var add_curr_rem_unreal_baseNull sql.NullString
 		var external_document_noNull sql.NullString
 		var no_seriesNull sql.NullString
 		var tax_area_codeNull sql.NullString
@@ -3456,6 +3732,12 @@ func (t *TaxEntry) FindSetBuffered() bool {
 			&unrealized_baseNull,
 			&remaining_unrealized_amountNull,
 			&remaining_unrealized_baseNull,
+			&additional_currency_amountNull,
+			&additional_currency_baseNull,
+			&add_currency_unrealized_amtNull,
+			&add_currency_unrealized_baseNull,
+			&add_curr_rem_unreal_amountNull,
+			&add_curr_rem_unreal_baseNull,
 			&external_document_noNull,
 			&no_seriesNull,
 			&tax_area_codeNull,
@@ -3499,6 +3781,12 @@ func (t *TaxEntry) FindSetBuffered() bool {
 		record.Unrealized_base, _ = types.NewDecimalFromString(unrealized_baseNull.String)
 		record.Remaining_unrealized_amount, _ = types.NewDecimalFromString(remaining_unrealized_amountNull.String)
 		record.Remaining_unrealized_base, _ = types.NewDecimalFromString(remaining_unrealized_baseNull.String)
+		record.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
+		record.Additional_currency_base, _ = types.NewDecimalFromString(additional_currency_baseNull.String)
+		record.Add_currency_unrealized_amt, _ = types.NewDecimalFromString(add_currency_unrealized_amtNull.String)
+		record.Add_currency_unrealized_base, _ = types.NewDecimalFromString(add_currency_unrealized_baseNull.String)
+		record.Add_curr_rem_unreal_amount, _ = types.NewDecimalFromString(add_curr_rem_unreal_amountNull.String)
+		record.Add_curr_rem_unreal_base, _ = types.NewDecimalFromString(add_curr_rem_unreal_baseNull.String)
 		record.External_document_no = types.NewCode(external_document_noNull.String)
 		record.No_series = types.NewCode(no_seriesNull.String)
 		record.Tax_area_code = types.NewCode(tax_area_codeNull.String)
@@ -3563,6 +3851,12 @@ func (t *TaxEntry) copyFromBuffered(record *TaxEntry) {
 	t.Unrealized_base = record.Unrealized_base
 	t.Remaining_unrealized_amount = record.Remaining_unrealized_amount
 	t.Remaining_unrealized_base = record.Remaining_unrealized_base
+	t.Additional_currency_amount = record.Additional_currency_amount
+	t.Additional_currency_base = record.Additional_currency_base
+	t.Add_currency_unrealized_amt = record.Add_currency_unrealized_amt
+	t.Add_currency_unrealized_base = record.Add_currency_unrealized_base
+	t.Add_curr_rem_unreal_amount = record.Add_curr_rem_unreal_amount
+	t.Add_curr_rem_unreal_base = record.Add_curr_rem_unreal_base
 	t.External_document_no = record.External_document_no
 	t.No_series = record.No_series
 	t.Tax_area_code = record.Tax_area_code
@@ -4355,6 +4649,174 @@ func (t *TaxEntry) ValidateField(fieldName string, value interface{}) error {
 			}
 		}
 		return nil
+	case "additional_currency_amount":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Additional_currency_amount = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Additional_currency_amount, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field additional_currency_amount: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Additional_currency_amount = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Additional_currency_amount = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Additional_currency_amount = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field additional_currency_amount (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(TaxEntryOnValidate_Additional_currency_amount); ok {
+				if err := trg.OnValidate_Additional_currency_amount(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "additional_currency_base":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Additional_currency_base = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Additional_currency_base, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field additional_currency_base: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Additional_currency_base = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Additional_currency_base = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Additional_currency_base = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field additional_currency_base (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(TaxEntryOnValidate_Additional_currency_base); ok {
+				if err := trg.OnValidate_Additional_currency_base(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "add_currency_unrealized_amt":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Add_currency_unrealized_amt = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Add_currency_unrealized_amt, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field add_currency_unrealized_amt: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Add_currency_unrealized_amt = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Add_currency_unrealized_amt = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Add_currency_unrealized_amt = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field add_currency_unrealized_amt (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(TaxEntryOnValidate_Add_currency_unrealized_amt); ok {
+				if err := trg.OnValidate_Add_currency_unrealized_amt(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "add_currency_unrealized_base":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Add_currency_unrealized_base = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Add_currency_unrealized_base, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field add_currency_unrealized_base: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Add_currency_unrealized_base = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Add_currency_unrealized_base = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Add_currency_unrealized_base = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field add_currency_unrealized_base (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(TaxEntryOnValidate_Add_currency_unrealized_base); ok {
+				if err := trg.OnValidate_Add_currency_unrealized_base(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "add_curr_rem_unreal_amount":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Add_curr_rem_unreal_amount = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Add_curr_rem_unreal_amount, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field add_curr_rem_unreal_amount: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Add_curr_rem_unreal_amount = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Add_curr_rem_unreal_amount = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Add_curr_rem_unreal_amount = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field add_curr_rem_unreal_amount (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(TaxEntryOnValidate_Add_curr_rem_unreal_amount); ok {
+				if err := trg.OnValidate_Add_curr_rem_unreal_amount(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "add_curr_rem_unreal_base":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Add_curr_rem_unreal_base = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Add_curr_rem_unreal_base, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field add_curr_rem_unreal_base: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Add_curr_rem_unreal_base = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Add_curr_rem_unreal_base = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Add_curr_rem_unreal_base = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field add_curr_rem_unreal_base (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(TaxEntryOnValidate_Add_curr_rem_unreal_base); ok {
+				if err := trg.OnValidate_Add_curr_rem_unreal_base(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	case "external_document_no":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
@@ -4747,6 +5209,18 @@ func (t *TaxEntry) FieldValue(no int) (any, bool) {
 		return t.Remaining_unrealized_amount, true
 	case 25:
 		return t.Remaining_unrealized_base, true
+	case 43:
+		return t.Additional_currency_amount, true
+	case 44:
+		return t.Additional_currency_base, true
+	case 45:
+		return t.Add_currency_unrealized_amt, true
+	case 46:
+		return t.Add_currency_unrealized_base, true
+	case 49:
+		return t.Add_curr_rem_unreal_amount, true
+	case 50:
+		return t.Add_curr_rem_unreal_base, true
 	case 26:
 		return t.External_document_no, true
 	case 28:
@@ -4946,6 +5420,36 @@ func (t *TaxEntry) SetFieldValue(no int, value any) bool {
 			t.Remaining_unrealized_base = v
 			return true
 		}
+	case 43:
+		if v, ok := value.(types.Decimal); ok {
+			t.Additional_currency_amount = v
+			return true
+		}
+	case 44:
+		if v, ok := value.(types.Decimal); ok {
+			t.Additional_currency_base = v
+			return true
+		}
+	case 45:
+		if v, ok := value.(types.Decimal); ok {
+			t.Add_currency_unrealized_amt = v
+			return true
+		}
+	case 46:
+		if v, ok := value.(types.Decimal); ok {
+			t.Add_currency_unrealized_base = v
+			return true
+		}
+	case 49:
+		if v, ok := value.(types.Decimal); ok {
+			t.Add_curr_rem_unreal_amount = v
+			return true
+		}
+	case 50:
+		if v, ok := value.(types.Decimal); ok {
+			t.Add_curr_rem_unreal_base = v
+			return true
+		}
 	case 26:
 		if v, ok := value.(types.Code); ok {
 			t.External_document_no = v
@@ -5139,6 +5643,18 @@ func (t *TaxEntry) CalcSums(fieldNames ...string) error {
 			column = "remaining_unrealized_amount"
 		case "remaining_unrealized_base":
 			column = "remaining_unrealized_base"
+		case "additional_currency_amount":
+			column = "additional_currency_amount"
+		case "additional_currency_base":
+			column = "additional_currency_base"
+		case "add_currency_unrealized_amt":
+			column = "add_currency_unrealized_amt"
+		case "add_currency_unrealized_base":
+			column = "add_currency_unrealized_base"
+		case "add_curr_rem_unreal_amount":
+			column = "add_curr_rem_unreal_amount"
+		case "add_curr_rem_unreal_base":
+			column = "add_curr_rem_unreal_base"
 		case "sales_tax_connection_no":
 			column = "sales_tax_connection_no"
 		case "unrealized_tax_entry_no":
@@ -5206,6 +5722,42 @@ func (t *TaxEntry) CalcSums(fieldNames ...string) error {
 				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
 			}
 			t.Remaining_unrealized_base = d
+		case "additional_currency_amount":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
+			}
+			t.Additional_currency_amount = d
+		case "additional_currency_base":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
+			}
+			t.Additional_currency_base = d
+		case "add_currency_unrealized_amt":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
+			}
+			t.Add_currency_unrealized_amt = d
+		case "add_currency_unrealized_base":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
+			}
+			t.Add_currency_unrealized_base = d
+		case "add_curr_rem_unreal_amount":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
+			}
+			t.Add_curr_rem_unreal_amount = d
+		case "add_curr_rem_unreal_base":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
+			}
+			t.Add_curr_rem_unreal_base = d
 		case "sales_tax_connection_no":
 			f, err := strconv.ParseFloat(total, 64)
 			if err != nil {
@@ -5617,6 +6169,18 @@ func (t *TaxEntry) columnValue(column string) (interface{}, bool) {
 		return t.Remaining_unrealized_amount, true
 	case "remaining_unrealized_base":
 		return t.Remaining_unrealized_base, true
+	case "additional_currency_amount":
+		return t.Additional_currency_amount, true
+	case "additional_currency_base":
+		return t.Additional_currency_base, true
+	case "add_currency_unrealized_amt":
+		return t.Add_currency_unrealized_amt, true
+	case "add_currency_unrealized_base":
+		return t.Add_currency_unrealized_base, true
+	case "add_curr_rem_unreal_amount":
+		return t.Add_curr_rem_unreal_amount, true
+	case "add_curr_rem_unreal_base":
+		return t.Add_curr_rem_unreal_base, true
 	case "external_document_no":
 		return t.External_document_no, true
 	case "no_series":
@@ -5722,6 +6286,12 @@ func (t *TaxEntry) Init() {
 	t.Unrealized_base = *new(types.Decimal)
 	t.Remaining_unrealized_amount = *new(types.Decimal)
 	t.Remaining_unrealized_base = *new(types.Decimal)
+	t.Additional_currency_amount = *new(types.Decimal)
+	t.Additional_currency_base = *new(types.Decimal)
+	t.Add_currency_unrealized_amt = *new(types.Decimal)
+	t.Add_currency_unrealized_base = *new(types.Decimal)
+	t.Add_curr_rem_unreal_amount = *new(types.Decimal)
+	t.Add_curr_rem_unreal_base = *new(types.Decimal)
 	t.External_document_no = *new(types.Code)
 	t.No_series = *new(types.Code)
 	t.Tax_area_code = *new(types.Code)
@@ -5770,44 +6340,50 @@ func (t *TaxEntry) ClearFilters() {
 // ToMap converts the current record to a map for JSON serialization
 func (t *TaxEntry) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"entry_no":                    t.Entry_no,
-		"gen_bus_posting_group":       t.Gen_bus_posting_group.String(),
-		"gen_prod_posting_group":      t.Gen_prod_posting_group.String(),
-		"posting_date":                t.Posting_date.String(),
-		"document_no":                 t.Document_no.String(),
-		"document_type":               int(t.Document_type),
-		"type":                        int(t.Type),
-		"base":                        t.Base.String(),
-		"amount":                      t.Amount.String(),
-		"tax_calculation_type":        int(t.Tax_calculation_type),
-		"sell_to_buy_from_no":         t.Sell_to_buy_from_no.String(),
-		"eu_3_party_trade":            t.Eu_3_party_trade,
-		"user_id":                     t.User_id.String(),
-		"source_code":                 t.Source_code.String(),
-		"reason_code":                 t.Reason_code.String(),
-		"closed_by_entry_no":          t.Closed_by_entry_no,
-		"closed":                      t.Closed,
-		"country_code":                t.Country_code.String(),
-		"internal_ref_no":             t.Internal_ref_no.String(),
-		"transaction_no":              t.Transaction_no,
-		"unrealized_amount":           t.Unrealized_amount.String(),
-		"unrealized_base":             t.Unrealized_base.String(),
-		"remaining_unrealized_amount": t.Remaining_unrealized_amount.String(),
-		"remaining_unrealized_base":   t.Remaining_unrealized_base.String(),
-		"external_document_no":        t.External_document_no.String(),
-		"no_series":                   t.No_series.String(),
-		"tax_area_code":               t.Tax_area_code.String(),
-		"tax_liable":                  t.Tax_liable,
-		"tax_group_code":              t.Tax_group_code.String(),
-		"use_tax":                     t.Use_tax,
-		"tax_jurisdiction_code":       t.Tax_jurisdiction_code.String(),
-		"tax_group_used":              t.Tax_group_used.String(),
-		"tax_type":                    int(t.Tax_type),
-		"tax_on_tax":                  t.Tax_on_tax,
-		"sales_tax_connection_no":     t.Sales_tax_connection_no,
-		"unrealized_tax_entry_no":     t.Unrealized_tax_entry_no,
-		"tax_bus_posting_group":       t.Tax_bus_posting_group.String(),
-		"tax_prod_posting_group":      t.Tax_prod_posting_group.String(),
+		"entry_no":                     t.Entry_no,
+		"gen_bus_posting_group":        t.Gen_bus_posting_group.String(),
+		"gen_prod_posting_group":       t.Gen_prod_posting_group.String(),
+		"posting_date":                 t.Posting_date.String(),
+		"document_no":                  t.Document_no.String(),
+		"document_type":                int(t.Document_type),
+		"type":                         int(t.Type),
+		"base":                         t.Base.String(),
+		"amount":                       t.Amount.String(),
+		"tax_calculation_type":         int(t.Tax_calculation_type),
+		"sell_to_buy_from_no":          t.Sell_to_buy_from_no.String(),
+		"eu_3_party_trade":             t.Eu_3_party_trade,
+		"user_id":                      t.User_id.String(),
+		"source_code":                  t.Source_code.String(),
+		"reason_code":                  t.Reason_code.String(),
+		"closed_by_entry_no":           t.Closed_by_entry_no,
+		"closed":                       t.Closed,
+		"country_code":                 t.Country_code.String(),
+		"internal_ref_no":              t.Internal_ref_no.String(),
+		"transaction_no":               t.Transaction_no,
+		"unrealized_amount":            t.Unrealized_amount.String(),
+		"unrealized_base":              t.Unrealized_base.String(),
+		"remaining_unrealized_amount":  t.Remaining_unrealized_amount.String(),
+		"remaining_unrealized_base":    t.Remaining_unrealized_base.String(),
+		"additional_currency_amount":   t.Additional_currency_amount.String(),
+		"additional_currency_base":     t.Additional_currency_base.String(),
+		"add_currency_unrealized_amt":  t.Add_currency_unrealized_amt.String(),
+		"add_currency_unrealized_base": t.Add_currency_unrealized_base.String(),
+		"add_curr_rem_unreal_amount":   t.Add_curr_rem_unreal_amount.String(),
+		"add_curr_rem_unreal_base":     t.Add_curr_rem_unreal_base.String(),
+		"external_document_no":         t.External_document_no.String(),
+		"no_series":                    t.No_series.String(),
+		"tax_area_code":                t.Tax_area_code.String(),
+		"tax_liable":                   t.Tax_liable,
+		"tax_group_code":               t.Tax_group_code.String(),
+		"use_tax":                      t.Use_tax,
+		"tax_jurisdiction_code":        t.Tax_jurisdiction_code.String(),
+		"tax_group_used":               t.Tax_group_used.String(),
+		"tax_type":                     int(t.Tax_type),
+		"tax_on_tax":                   t.Tax_on_tax,
+		"sales_tax_connection_no":      t.Sales_tax_connection_no,
+		"unrealized_tax_entry_no":      t.Unrealized_tax_entry_no,
+		"tax_bus_posting_group":        t.Tax_bus_posting_group.String(),
+		"tax_prod_posting_group":       t.Tax_prod_posting_group.String(),
 	}
 }
 
@@ -6033,6 +6609,78 @@ func (t *TaxEntry) FromMap(data map[string]interface{}) {
 			t.Remaining_unrealized_base = types.NewDecimalFromInt(int64(val))
 		case int64:
 			t.Remaining_unrealized_base = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["additional_currency_amount"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Additional_currency_amount, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Additional_currency_amount = types.NewDecimal(val)
+		case int:
+			t.Additional_currency_amount = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Additional_currency_amount = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["additional_currency_base"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Additional_currency_base, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Additional_currency_base = types.NewDecimal(val)
+		case int:
+			t.Additional_currency_base = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Additional_currency_base = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["add_currency_unrealized_amt"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Add_currency_unrealized_amt, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Add_currency_unrealized_amt = types.NewDecimal(val)
+		case int:
+			t.Add_currency_unrealized_amt = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Add_currency_unrealized_amt = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["add_currency_unrealized_base"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Add_currency_unrealized_base, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Add_currency_unrealized_base = types.NewDecimal(val)
+		case int:
+			t.Add_currency_unrealized_base = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Add_currency_unrealized_base = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["add_curr_rem_unreal_amount"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Add_curr_rem_unreal_amount, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Add_curr_rem_unreal_amount = types.NewDecimal(val)
+		case int:
+			t.Add_curr_rem_unreal_amount = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Add_curr_rem_unreal_amount = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["add_curr_rem_unreal_base"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Add_curr_rem_unreal_base, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Add_curr_rem_unreal_base = types.NewDecimal(val)
+		case int:
+			t.Add_curr_rem_unreal_base = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Add_curr_rem_unreal_base = types.NewDecimalFromInt(val)
 		}
 	}
 	if v, ok := data["external_document_no"]; ok && v != nil {
@@ -6387,6 +7035,66 @@ func (t *TaxEntry) GetFields() []tables.FieldInfo {
 		{
 			No:         25,
 			Name:       "remaining_unrealized_base",
+			Type:       tables.FieldTypeDecimal,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         43,
+			Name:       "additional_currency_amount",
+			Type:       tables.FieldTypeDecimal,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         44,
+			Name:       "additional_currency_base",
+			Type:       tables.FieldTypeDecimal,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         45,
+			Name:       "add_currency_unrealized_amt",
+			Type:       tables.FieldTypeDecimal,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         46,
+			Name:       "add_currency_unrealized_base",
+			Type:       tables.FieldTypeDecimal,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         49,
+			Name:       "add_curr_rem_unreal_amount",
+			Type:       tables.FieldTypeDecimal,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         50,
+			Name:       "add_curr_rem_unreal_base",
 			Type:       tables.FieldTypeDecimal,
 			Length:     0,
 			Required:   false,

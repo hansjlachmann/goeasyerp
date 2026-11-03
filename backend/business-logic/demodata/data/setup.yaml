@@ -45,6 +45,7 @@ master_data:
       - {code: GENJNL, description: General journal}
       - {code: TAXSETTL, description: Tax settlement}
       - {code: CONSOLID, description: Consolidation}
+      - {code: ACYADJ, description: Adjust additional reporting currency}
       - {code: COMPRGL, description: G/L date compression}
       - {code: COMPRTAX, description: Tax entry date compression}
       - {code: COMPRCUST, description: Customer ledger date compression}
@@ -488,10 +489,10 @@ master_data:
       - {item_no: "2000", price_group_code: WHOLESALE, unit_price: 165, allow_invoice_disc: false}
   - table: Currency
     records:
-      - {code: EUR, description: Euro, amount_rounding_precision: 0.01, invoice_rounding_precision: 0.01, realized_gains_acc: "6140", realized_losses_acc: "6150", unrealized_gains_acc: "6160", unrealized_losses_acc: "6170"}
-      - {code: USD, description: US dollar, amount_rounding_precision: 0.01, invoice_rounding_precision: 0.01, realized_gains_acc: "6140", realized_losses_acc: "6150", unrealized_gains_acc: "6160", unrealized_losses_acc: "6170"}
-      - {code: SEK, description: Swedish krona, amount_rounding_precision: 0.01, invoice_rounding_precision: 1, realized_gains_acc: "6140", realized_losses_acc: "6150", unrealized_gains_acc: "6160", unrealized_losses_acc: "6170"}
-      - {code: GBP, description: Pound sterling, amount_rounding_precision: 0.01, invoice_rounding_precision: 0.01, realized_gains_acc: "6140", realized_losses_acc: "6150", unrealized_gains_acc: "6160", unrealized_losses_acc: "6170"}
+      - {code: EUR, description: Euro, amount_rounding_precision: 0.01, invoice_rounding_precision: 0.01, realized_gains_acc: "6140", realized_losses_acc: "6150", realized_gl_gains_account: "6140", realized_gl_losses_account: "6150", unrealized_gains_acc: "6160", unrealized_losses_acc: "6170", residual_gains_account: "6160", residual_losses_account: "6170"}
+      - {code: USD, description: US dollar, amount_rounding_precision: 0.01, invoice_rounding_precision: 0.01, realized_gains_acc: "6140", realized_losses_acc: "6150", realized_gl_gains_account: "6140", realized_gl_losses_account: "6150", unrealized_gains_acc: "6160", unrealized_losses_acc: "6170", residual_gains_account: "6160", residual_losses_account: "6170"}
+      - {code: SEK, description: Swedish krona, amount_rounding_precision: 0.01, invoice_rounding_precision: 1, realized_gains_acc: "6140", realized_losses_acc: "6150", realized_gl_gains_account: "6140", realized_gl_losses_account: "6150", unrealized_gains_acc: "6160", unrealized_losses_acc: "6170", residual_gains_account: "6160", residual_losses_account: "6170"}
+      - {code: GBP, description: Pound sterling, amount_rounding_precision: 0.01, invoice_rounding_precision: 0.01, realized_gains_acc: "6140", realized_losses_acc: "6150", realized_gl_gains_account: "6140", realized_gl_losses_account: "6150", unrealized_gains_acc: "6160", unrealized_losses_acc: "6170", residual_gains_account: "6160", residual_losses_account: "6170"}
   - table: Currency_Exchange_Rate
     records:
       - {currency_code: EUR, starting_date: "2020-01-01", exchange_rate_amount: 100, adjustment_exch_rate_amount: 100, relational_exch_rate_amount: 1150, relational_adjmt_exch_rate_amt: 1150}
@@ -744,7 +745,7 @@ master_data:
       - {code: PROPERTY, description: Property insurance}
   - table: Source_Code_Setup   # the single setup record (blank key): the journals' source codes
     records:
-      - {general_journal: GENJNL, sales_journal: SALESJNL, purchase_journal: PURCHJNL, cash_receipt_journal: CASHRECJNL, payment_journal: PAYMENTJNL, sales: SALES, purchases: PURCHASES, sales_entry_application: SALESAPPL, purchase_entry_application: PURCHAPPL, item_journal: ITEMJNL, item_transfer_journal: TRANSFER, phys_inventory_journal: PHYSINVJNL, inventory_post_cost: INVTPCOST, resource_journal: RESJNL, bom_journal: BOMJNL, fixed_asset_journal: FAJNL, fixed_asset_g_l_journal: FAGLJNL, insurance_journal: INSJNL, reminder: REMINDER, finance_charge_memo: FINCHRG, exchange_rate_adjmt: EXCHRATADJ, tax_settlement: TAXSETTL, consolidation: CONSOLID, compress_g_l: COMPRGL, compress_tax_entries: COMPRTAX, compress_cust_ledger: COMPRCUST, compress_vend_ledger: COMPRVEND, compress_bank_acc_ledger: COMPRBANK, compress_check_ledger: COMPRCHECK, compress_item_ledger: COMPRITEM, compress_bom_ledger: COMPRBOM, compress_res_ledger: COMPRRES, compress_fa_ledger: COMPRFA, compress_maintenance_ledger: COMPRMAINT, compress_insurance_ledger: COMPRINS}
+      - {general_journal: GENJNL, sales_journal: SALESJNL, purchase_journal: PURCHJNL, cash_receipt_journal: CASHRECJNL, payment_journal: PAYMENTJNL, sales: SALES, purchases: PURCHASES, sales_entry_application: SALESAPPL, purchase_entry_application: PURCHAPPL, item_journal: ITEMJNL, item_transfer_journal: TRANSFER, phys_inventory_journal: PHYSINVJNL, inventory_post_cost: INVTPCOST, resource_journal: RESJNL, bom_journal: BOMJNL, fixed_asset_journal: FAJNL, fixed_asset_g_l_journal: FAGLJNL, insurance_journal: INSJNL, reminder: REMINDER, finance_charge_memo: FINCHRG, exchange_rate_adjmt: EXCHRATADJ, tax_settlement: TAXSETTL, consolidation: CONSOLID, adjust_add_reporting_currency: ACYADJ, compress_g_l: COMPRGL, compress_tax_entries: COMPRTAX, compress_cust_ledger: COMPRCUST, compress_vend_ledger: COMPRVEND, compress_bank_acc_ledger: COMPRBANK, compress_check_ledger: COMPRCHECK, compress_item_ledger: COMPRITEM, compress_bom_ledger: COMPRBOM, compress_res_ledger: COMPRRES, compress_fa_ledger: COMPRFA, compress_maintenance_ledger: COMPRMAINT, compress_insurance_ledger: COMPRINS}
   - table: Gen_Journal_Template   # one per journal type (type 0 General … 4 Payments); page and source code come from the type
     records:
       - {name: GENERAL, description: General Journal, type: 0, no_series: GJNL-GEN}

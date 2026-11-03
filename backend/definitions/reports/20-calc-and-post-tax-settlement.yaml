@@ -72,6 +72,7 @@ report:
     - name: Tax_Entry
       sections:
         - type: body
+          print_unless: use_add_curr
           height: 4.5
           elements:
             - {field: posting_date, x: 0, y: 0.5, width: 18}
@@ -82,6 +83,22 @@ report:
             - {field: amount, x: 109, y: 0.5, width: 24, align: right}
             - {field: unrealized_base, x: 134, y: 0.5, width: 24, align: right, blank_zero: true}
             - {field: unrealized_amount, x: 159, y: 0.5, width: 24, align: right, blank_zero: true}
+            - {field: tax_calculation_type, x: 185, y: 0.5, width: 20}
+            - {field: sell_to_buy_from_no, x: 206, y: 0.5, width: 24}
+            - {field: entry_no, x: 231, y: 0.5, width: 14, align: right}
+            - {field: user_id, x: 247, y: 0.5, width: 23}
+        - type: body
+          print_if: use_add_curr
+          height: 4.5
+          elements:
+            - {field: posting_date, x: 0, y: 0.5, width: 18}
+            - {field: document_no, x: 19, y: 0.5, width: 26}
+            - {field: document_type, x: 46, y: 0.5, width: 20}
+            - {field: type, x: 67, y: 0.5, width: 16}
+            - {field: additional_currency_base, x: 84, y: 0.5, width: 24, align: right}
+            - {field: additional_currency_amount, x: 109, y: 0.5, width: 24, align: right}
+            - {field: add_currency_unrealized_base, x: 134, y: 0.5, width: 24, align: right, blank_zero: true}
+            - {field: add_currency_unrealized_amt, x: 159, y: 0.5, width: 24, align: right, blank_zero: true}
             - {field: tax_calculation_type, x: 185, y: 0.5, width: 20}
             - {field: sell_to_buy_from_no, x: 206, y: 0.5, width: 24}
             - {field: entry_no, x: 231, y: 0.5, width: 14, align: right}

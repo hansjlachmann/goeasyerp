@@ -23,9 +23,9 @@ const maxPostingNoSeries = 10
 //
 // A recurring journal (recurring.go) posts its lines dated up to the work date that have not
 // expired — with their allocations, the reversing lines the day after — and keeps them: each
-// moves on by its Recurring Frequency, a variable or balance line without its amount.
-//
-// Not migrated yet: the additional reporting currency of the balance methods.
+// moves on by its Recurring Frequency, a variable or balance line without its amount. With an
+// additional reporting currency a balance line takes the account's additional-currency balance
+// too, and the allocations their share of it.
 type GenJnlPostBatch struct {
 	src             ftables.Source
 	genJnlCheckLine GenJnlCheckLine
@@ -122,6 +122,7 @@ func (b *GenJnlPostBatch) Run(rec *gtables.GenJournalLine) (PostBatchResult, err
 		}
 		genJnlLine5 := gtables.NewGenJournalLine(b.src)
 		genJnlLine5.Copy(genJnlLine)
+		prepareGenJnlLineAddCurr(b.src, genJnlLine5)
 		err = b.genJnlCheckLine.RunCheck(genJnlLine5)
 		if err != nil {
 			return result, err
@@ -155,6 +156,7 @@ func (b *GenJnlPostBatch) Run(rec *gtables.GenJournalLine) (PostBatchResult, err
 		}
 		genJnlLine5 := gtables.NewGenJournalLine(b.src)
 		genJnlLine5.Copy(genJnlLine3)
+		prepareGenJnlLineAddCurr(b.src, genJnlLine5)
 		err = b.genJnlPostLine.RunWithoutCheck(genJnlLine5)
 		if err != nil {
 			return result, err
@@ -187,6 +189,7 @@ func (b *GenJnlPostBatch) Run(rec *gtables.GenJournalLine) (PostBatchResult, err
 		}
 		genJnlLine5 := gtables.NewGenJournalLine(b.src)
 		genJnlLine5.Copy(genJnlLine3)
+		prepareGenJnlLineAddCurr(b.src, genJnlLine5)
 		err = b.genJnlPostLine.RunWithoutCheck(genJnlLine5)
 		if err != nil {
 			return result, err

@@ -48,8 +48,9 @@ func (p *GenJnlPostLine) finishTaxRegister() {
 // initTax: a line with a general posting type keeps its posting groups and tax on the G/L
 // entry and takes the tax out of the entry's amount
 func (p *GenJnlPostLine) initTax(genJnlLine *gtables.GenJournalLine) error {
+	p.addCurrGLEntryTaxAmt = types.Decimal{}
 	if genJnlLine.Gen_posting_type == gtables.GenJournalLine_Gen_posting_type.Blank {
-		return nil
+		return p.glCalcAddCurrency(p.glEntry.Additional_currency_amount, true)
 	}
 	switch genJnlLine.Gen_posting_type {
 	case gtables.GenJournalLine_Gen_posting_type.Sale:
@@ -96,9 +97,17 @@ func (p *GenJnlPostLine) initTax(genJnlLine *gtables.GenJournalLine) error {
 		if genJnlLine.Gen_posting_type != gtables.GenJournalLine_Gen_posting_type.Settlement {
 			p.setGLEntryTaxFields(genJnlLine)
 			p.glEntry.Tax_amount = genJnlLine.Tax_amount_lcy
+			if genJnlLine.Source_currency_code == p.acyCode() {
+				p.addCurrGLEntryTaxAmt = genJnlLine.Source_curr_tax_amount
+			} else {
+				p.addCurrGLEntryTaxAmt, err = p.calcLCYToAddCurr(genJnlLine.Tax_amount_lcy)
+				if err != nil {
+					return err
+				}
+			}
 		}
 	}
-	return nil
+	return p.glCalcAddCurrency(p.glEntry.Additional_currency_amount, true)
 }
 
 // setGLEntryTaxFields: the G/L entry keeps the line's posting groups and tax
@@ -136,10 +145,18 @@ func (p *GenJnlPostLine) postTax(genJnlLine *gtables.GenJournalLine) error {
 		taxDetail := gtables.NewTaxDetail(p.src)
 		taxDetail.Tax_jurisdiction_code = genJnlLine.Tax_area_code
 		genJnlLine.Tax_area_code = ""
-		return p.insertTax(genJnlLine, taxDetail, glEntryAmount, glEntryTaxAmount, genJnlLine.Tax_base_amount_lcy)
+		addCurrencyFactor, err := p.calcAddCurrFactor(p.glEntry.Additional_currency_amount, p.glEntry.Amount)
+		if err != nil {
+			return err
+		}
+		return p.insertTax(genJnlLine, taxDetail, glEntryAmount, glEntryTaxAmount, genJnlLine.Tax_base_amount_lcy, addCurrencyFactor)
+	}
+	addCurrencyFactor, err := p.calcAddCurrFactor(p.glEntry.Additional_currency_amount, p.glEntry.Amount)
+	if err != nil {
+		return err
 	}
 	p.salesTaxCalculate = salestax.New(p.src)
-	err := p.salesTaxCalculate.InitSalesTaxLines(genJnlLine.Tax_area_code, genJnlLine.Tax_group_code, genJnlLine.Tax_liable,
+	err = p.salesTaxCalculate.InitSalesTaxLines(genJnlLine.Tax_area_code, genJnlLine.Tax_group_code, genJnlLine.Tax_liable,
 		salesTaxBaseAmount, genJnlLine.Quantity, genJnlLine.Posting_date, glEntryTaxAmount)
 	if err != nil {
 		return err
@@ -149,7 +166,7 @@ func (p *GenJnlPostLine) postTax(genJnlLine *gtables.GenJournalLine) error {
 		if !ok {
 			break
 		}
-		err = p.insertTax(genJnlLine, taxDetail, salesTaxBaseAmount, taxAmount, taxBase)
+		err = p.insertTax(genJnlLine, taxDetail, salesTaxBaseAmount, taxAmount, taxBase, addCurrencyFactor)
 		if err != nil {
 			return err
 		}
@@ -159,7 +176,7 @@ func (p *GenJnlPostLine) postTax(genJnlLine *gtables.GenJournalLine) error {
 
 // insertTax writes the tax entry of one jurisdiction and posts its tax to the jurisdiction's
 // accounts (use tax: the purchase tax account and the reverse charge account)
-func (p *GenJnlPostLine) insertTax(genJnlLine *gtables.GenJournalLine, taxDetail *gtables.TaxDetail, glEntryAmount, glEntryTaxAmount, glEntryBaseAmount types.Decimal) error {
+func (p *GenJnlPostLine) insertTax(genJnlLine *gtables.GenJournalLine, taxDetail *gtables.TaxDetail, glEntryAmount, glEntryTaxAmount, glEntryBaseAmount, addCurrencyFactor types.Decimal) error {
 	taxEntry := gtables.NewTaxEntry(p.src)
 	taxEntry.Init()
 	taxEntry.Entry_no = p.nextTaxEntryNo
@@ -222,13 +239,27 @@ func (p *GenJnlPostLine) insertTax(genJnlLine *gtables.GenJournalLine, taxDetail
 	if unrealizedTax {
 		return apperrors.JnlUnrealizedTaxNotYet()
 	}
+	// the amounts in the additional currency: at the G/L entry's factor
+	var srcCurrGLEntryAmt, srcCurrGLEntryTaxAmt, srcCurrGLEntryBaseAmt types.Decimal
+	if p.acyCode() != "" {
+		precision := p.addCurr.currency.Amount_rounding_precision
+		srcCurrGLEntryAmt = system.Round(addCurrencyFactor.Mul(glEntryAmount), precision)
+		srcCurrGLEntryTaxAmt = system.Round(addCurrencyFactor.Mul(glEntryTaxAmount), precision)
+		srcCurrGLEntryBaseAmt = system.Round(addCurrencyFactor.Mul(glEntryBaseAmount), precision)
+	}
 	taxEntry.Amount = glEntryTaxAmount
+	srcCurrTaxAmount := srcCurrGLEntryTaxAmt
 	if settlement {
 		// the settled amount is the G/L entry's
 		taxEntry.Amount = glEntryAmount
+		srcCurrTaxAmount = srcCurrGLEntryAmt
 		taxEntry.Closed = true
 	}
 	taxEntry.Base = glEntryBaseAmount
+	if p.acyCode() != "" {
+		taxEntry.Additional_currency_amount = srcCurrTaxAmount
+		taxEntry.Additional_currency_base = srcCurrGLEntryBaseAmt
+	}
 	err = taxEntry.InsertOrError(false)
 	if err != nil {
 		return err
@@ -242,27 +273,27 @@ func (p *GenJnlPostLine) insertTax(genJnlLine *gtables.GenJournalLine, taxDetail
 	switch genJnlLine.Gen_posting_type {
 	case gtables.GenJournalLine_Gen_posting_type.Purchase:
 		if genJnlLine.Use_tax {
-			err = p.postTaxGLEntry(taxJurisdiction, "tax_account_purchases", taxJurisdiction.Tax_account_purchases, glEntryTaxAmount)
+			err = p.postTaxGLEntry(taxJurisdiction, "tax_account_purchases", taxJurisdiction.Tax_account_purchases, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
 			if err != nil {
 				return err
 			}
-			return p.postTaxGLEntry(taxJurisdiction, "reverse_charge_purchases", taxJurisdiction.Reverse_charge_purchases, glEntryTaxAmount.Neg())
+			return p.postTaxGLEntry(taxJurisdiction, "reverse_charge_purchases", taxJurisdiction.Reverse_charge_purchases, glEntryTaxAmount.Neg(), srcCurrGLEntryTaxAmt.Neg())
 		}
-		return p.postTaxGLEntry(taxJurisdiction, "tax_account_purchases", taxJurisdiction.Tax_account_purchases, glEntryTaxAmount)
+		return p.postTaxGLEntry(taxJurisdiction, "tax_account_purchases", taxJurisdiction.Tax_account_purchases, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
 	case gtables.GenJournalLine_Gen_posting_type.Sale:
-		return p.postTaxGLEntry(taxJurisdiction, "tax_account_sales", taxJurisdiction.Tax_account_sales, glEntryTaxAmount)
+		return p.postTaxGLEntry(taxJurisdiction, "tax_account_sales", taxJurisdiction.Tax_account_sales, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
 	}
 	return nil
 }
 
 // postTaxGLEntry posts tax on a jurisdiction's account (summarized when the General Ledger
 // Setup says so)
-func (p *GenJnlPostLine) postTaxGLEntry(taxJurisdiction *gtables.TaxJurisdiction, field string, account types.Code, amount types.Decimal) error {
+func (p *GenJnlPostLine) postTaxGLEntry(taxJurisdiction *gtables.TaxJurisdiction, field string, account types.Code, amount, amountAddCurr types.Decimal) error {
 	err := taxJurisdiction.TestField(field)
 	if err != nil {
 		return err
 	}
-	_, err = p.initGLEntry(account, amount, true)
+	_, err = p.initGLEntry(account, amount, amountAddCurr, true, true)
 	if err != nil {
 		return err
 	}
@@ -273,11 +304,12 @@ func (p *GenJnlPostLine) postTaxGLEntry(taxJurisdiction *gtables.TaxJurisdiction
 // added up (written by insertSummarizedTax), otherwise each is written
 func (p *GenJnlPostLine) summarizeTax() error {
 	if !p.glSetup.Summarize_gl_entries {
-		return p.insertGLEntry()
+		return p.insertGLEntry(true)
 	}
 	for _, glEntryTmpTax := range p.glEntryTmpTax {
 		if glEntryTmpTax.Gl_account_no == p.glEntry.Gl_account_no && glEntryTmpTax.Bal_account_no == p.glEntry.Bal_account_no {
 			glEntryTmpTax.Amount = glEntryTmpTax.Amount.Add(p.glEntry.Amount)
+			glEntryTmpTax.Additional_currency_amount = glEntryTmpTax.Additional_currency_amount.Add(p.glEntry.Additional_currency_amount)
 			return nil
 		}
 	}
@@ -292,7 +324,7 @@ func (p *GenJnlPostLine) insertSummarizedTax() error {
 		for _, glEntryTmpTax := range p.glEntryTmpTax {
 			p.glEntry = glEntryTmpTax
 			p.glEntry.Entry_no = p.nextEntryNo
-			err := p.insertGLEntry()
+			err := p.insertGLEntry(true)
 			if err != nil {
 				return err
 			}

@@ -17,9 +17,9 @@ import (
 // line (posting type Settlement, Manual VAT Entry) takes their tax off the tax account (the
 // setup's or the jurisdiction's; use tax also off the reverse charge account), its counterpart
 // goes to the settlement account, and the tax entries are closed by the settlement's tax entry.
-// Without Post it prints what would be posted (a test report).
-//
-// Not migrated yet: Show Amounts in Add. Reporting Currency.
+// Without Post it prints what would be posted (a test report). The lines carry the entries'
+// additional-currency amounts (Source Currency Amount), so the settlement clears them in that
+// currency too; Show Amounts in Add. Reporting Currency prints those amounts.
 const CalcAndPostTaxSettlementID = 20
 
 func init() {
@@ -39,14 +39,17 @@ type calcAndPostTaxSettlement struct {
 	printTaxEntries, post           bool
 	taxDateFilter                   string
 
-	sourceCodeSetup *gtables.SourceCodeSetup
-	genJnlPostLine  *genjnl.GenJnlPostLine
-	taxPostingSetup *gtables.TaxPostingSetup
-	groups          []taxSettlementGroup
-	group           taxSettlementGroup
-	taxEntry        *gtables.TaxEntry
-	nextTaxEntryNo  int
-	taxAmount       types.Decimal
+	sourceCodeSetup  *gtables.SourceCodeSetup
+	genJnlPostLine   *genjnl.GenJnlPostLine
+	taxPostingSetup  *gtables.TaxPostingSetup
+	groups           []taxSettlementGroup
+	group            taxSettlementGroup
+	taxEntry         *gtables.TaxEntry
+	nextTaxEntryNo   int
+	taxAmount        types.Decimal
+	taxAmountAddCurr types.Decimal
+	useAmtsInAddCurr bool
+	glSetup          *gtables.GeneralLedgerSetup
 }
 
 func (r *calcAndPostTaxSettlement) Definition() *Definition {
@@ -60,6 +63,7 @@ func (r *calcAndPostTaxSettlement) Definition() *Definition {
 			{Name: "settlement_account", Type: "text", Required: true, Relation: &OptionRelation{Table: gtables.GLAccountTableName, Columns: []string{"no", "name"}}},
 			{Name: "show_tax_entries", Type: "bool", Default: "false"},
 			{Name: "post", Type: "bool", Default: "false"},
+			{Name: "show_amounts_in_add_currency", Type: "bool", Default: "false"},
 		},
 		Transaction: true,
 		OnPreReport: r.onPreReport,
@@ -118,6 +122,7 @@ func (r *calcAndPostTaxSettlement) onPreReport(run *Run) error {
 	}
 	r.printTaxEntries = run.OptionBool("show_tax_entries")
 	r.post = run.OptionBool("post")
+	r.useAmtsInAddCurr = run.OptionBool("show_amounts_in_add_currency")
 
 	switch {
 	case r.endDate.IsZero() && r.startDate.IsZero():
@@ -134,12 +139,17 @@ func (r *calcAndPostTaxSettlement) onPreReport(run *Run) error {
 	run.SetValue("document_no", r.docNo.String())
 	run.SetValue("settlement_account", r.settlementAccount.String())
 	run.SetValue("not_posted", !r.post)
-	glSetup := gtables.GetGeneralLedgerSetup(run)
-	err = glSetup.TestField("lcy_code")
-	if err != nil {
-		return err
+	run.SetValue("use_add_curr", r.useAmtsInAddCurr)
+	r.glSetup = gtables.GetGeneralLedgerSetup(run)
+	if r.useAmtsInAddCurr {
+		run.SetValue("amounts_in", run.Text("AMOUNTS_IN", r.glSetup.Additional_reporting_currency))
+	} else {
+		err = r.glSetup.TestField("lcy_code")
+		if err != nil {
+			return err
+		}
+		run.SetValue("amounts_in", run.Text("AMOUNTS_IN", r.glSetup.Lcy_code))
 	}
-	run.SetValue("amounts_in", run.Text("AMOUNTS_IN", glSetup.Lcy_code))
 	return nil
 }
 
@@ -153,6 +163,7 @@ func (r *calcAndPostTaxSettlement) setupOnPreDataItem(setup *gtables.TaxPostingS
 	r.sourceCodeSetup = gtables.GetSourceCodeSetup(run)
 	r.genJnlPostLine = genjnl.NewGenJnlPostLine(run)
 	r.taxAmount = types.Decimal{}
+	r.taxAmountAddCurr = types.Decimal{}
 	run.SetValue("tax_amount", r.taxAmount)
 	setFilterText(run, setup)
 
@@ -188,6 +199,8 @@ func (r *calcAndPostTaxSettlement) setupOnPostDataItem(setup *gtables.TaxPosting
 	if err != nil {
 		return err
 	}
+	genJnlLine.Source_currency_code = r.glSetup.Additional_reporting_currency
+	genJnlLine.Source_currency_amount = r.taxAmountAddCurr
 	genJnlLine.Source_code = r.sourceCodeSetup.Tax_settlement
 	genJnlLine.Vat_posting = gtables.GenJournalLine_Vat_posting.ManualVATEntry
 	if r.post {
@@ -257,7 +270,7 @@ func (r *calcAndPostTaxSettlement) taxEntryOnPreDataItem(taxEntry *gtables.TaxEn
 // closeOnAfterGetRecord: the settlement of the group — its tax off the tax account(s) — and the
 // group's entries closed
 func (r *calcAndPostTaxSettlement) closeOnAfterGetRecord(rec *Integer, run *Run) error {
-	err := r.taxEntry.CalcSums("base", "amount")
+	err := r.taxEntry.CalcSums("base", "amount", "additional_currency_base", "additional_currency_amount")
 	if err != nil {
 		return err
 	}
@@ -338,8 +351,17 @@ func (r *calcAndPostTaxSettlement) closeOnAfterGetRecord(rec *Integer, run *Run)
 	}
 	genJnlLine.Tax_amount = r.taxEntry.Amount.Neg()
 	genJnlLine.Tax_base_amount = r.taxEntry.Base.Neg()
-	run.SetValue("settlement_base", genJnlLine.Tax_base_amount)
-	run.SetValue("settlement_amount", genJnlLine.Tax_amount)
+	genJnlLine.Source_currency_code = r.glSetup.Additional_reporting_currency
+	genJnlLine.Source_currency_amount = r.taxEntry.Additional_currency_amount.Neg()
+	genJnlLine.Source_curr_tax_amount = r.taxEntry.Additional_currency_amount.Neg()
+	genJnlLine.Source_curr_tax_base_amount = r.taxEntry.Additional_currency_base.Neg()
+	if r.useAmtsInAddCurr {
+		run.SetValue("settlement_base", genJnlLine.Source_curr_tax_base_amount)
+		run.SetValue("settlement_amount", genJnlLine.Source_curr_tax_amount)
+	} else {
+		run.SetValue("settlement_base", genJnlLine.Tax_base_amount)
+		run.SetValue("settlement_amount", genJnlLine.Tax_amount)
+	}
 	run.SetValue("tax_calculation_type", setup.GetOptionCaption("tax_calculation_type", i18n.Key(setup.Tax_calculation_type.String()), fcodeunits.CurrentLanguage()))
 	if r.post {
 		err = r.genJnlPostLine.Run(genJnlLine)
@@ -359,7 +381,13 @@ func (r *calcAndPostTaxSettlement) closeOnAfterGetRecord(rec *Integer, run *Run)
 		if err != nil {
 			return err
 		}
-		run.SetValue("reversing_amount", genJnlLine2.Amount)
+		genJnlLine2.Source_currency_code = r.glSetup.Additional_reporting_currency
+		genJnlLine2.Source_currency_amount = r.taxEntry.Additional_currency_amount
+		if r.useAmtsInAddCurr {
+			run.SetValue("reversing_amount", genJnlLine2.Source_currency_amount)
+		} else {
+			run.SetValue("reversing_amount", genJnlLine2.Amount)
+		}
 		run.SetValue("reversing_entry", true)
 		if r.post {
 			err = r.genJnlPostLine.Run(genJnlLine2)
@@ -370,7 +398,12 @@ func (r *calcAndPostTaxSettlement) closeOnAfterGetRecord(rec *Integer, run *Run)
 	}
 	if addToSettlement {
 		r.taxAmount = r.taxAmount.Add(r.taxEntry.Amount)
-		run.SetValue("tax_amount", r.taxAmount)
+		r.taxAmountAddCurr = r.taxAmountAddCurr.Add(r.taxEntry.Additional_currency_amount)
+		if r.useAmtsInAddCurr {
+			run.SetValue("tax_amount", r.taxAmountAddCurr)
+		} else {
+			run.SetValue("tax_amount", r.taxAmount)
+		}
 	}
 	r.nextTaxEntryNo++
 	run.SetValue("next_tax_entry_no", r.nextTaxEntryNo)

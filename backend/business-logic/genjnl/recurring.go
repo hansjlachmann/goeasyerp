@@ -4,6 +4,7 @@ import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
 	"github.com/hansjlachmann/openerp/backend/foundation/system"
+	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
@@ -66,6 +67,17 @@ func (b *GenJnlPostBatch) updateRecurringAmt(genJnlLine2 *gtables.GenJournalLine
 	err := glAcc.SetFlowFilter("date_filter", ".."+genJnlLine2.Posting_date.String())
 	if err != nil {
 		return err
+	}
+	acyCode := gtables.GetGeneralLedgerSetup(b.src).Additional_reporting_currency
+	if acyCode != "" {
+		// the balance in the additional currency too, shared out to the allocations
+		genJnlLine2.Source_currency_code = acyCode
+		glAcc.CalcFields("additional_currency_net_change")
+		genJnlLine2.Source_currency_amount = glAcc.Additional_currency_net_change.Neg()
+		err = tables.UpdateAllocationsAddCurr(genJnlLine2, genJnlLine2.Source_currency_amount)
+		if err != nil {
+			return err
+		}
 	}
 	glAcc.CalcFields("net_change")
 	err = genJnlLine2.Validate("amount", glAcc.Net_change.Neg())
@@ -162,6 +174,8 @@ func (b *GenJnlPostBatch) postAllocations(allocateGenJnlLine *gtables.GenJournal
 		genJnlLine2.Tax_amount = a.Tax_amount
 		genJnlLine2.Tax_base_amount = a.Amount.Sub(a.Tax_amount)
 		genJnlLine2.Tax_percent = a.Tax_percent
+		genJnlLine2.Source_currency_amount = a.Additional_currency_amount
+		prepareGenJnlLineAddCurr(b.src, genJnlLine2)
 		if reversing {
 			multiplyAmounts(genJnlLine2, types.NewDecimalFromInt(-1))
 			genJnlLine2.Reversing_entry = true
@@ -180,6 +194,22 @@ func (b *GenJnlPostBatch) postAllocations(allocateGenJnlLine *gtables.GenJournal
 		}
 	}
 	return nil
+}
+
+// prepareGenJnlLineAddCurr (PrepareGenJnlLineAddCurr): a balance recurring line posts in the
+// additional currency too — its source currency is the additional one; a line whose balance is
+// left in that currency only (amount 0) posts the additional-currency amount alone
+func prepareGenJnlLineAddCurr(src ftables.Source, genJnlLine *gtables.GenJournalLine) {
+	acyCode := gtables.GetGeneralLedgerSetup(src).Additional_reporting_currency
+	if acyCode == "" || !tables.IsBalanceRecurringMethod(genJnlLine.Recurring_method) {
+		return
+	}
+	genJnlLine.Source_currency_code = acyCode
+	if genJnlLine.Amount.IsZero() && !genJnlLine.Source_currency_amount.IsZero() {
+		genJnlLine.Additional_currency_posting = gtables.GenJournalLine_Additional_currency_posting.AdditionalCurrencyAmountOnly
+		genJnlLine.Amount = genJnlLine.Source_currency_amount
+		genJnlLine.Source_currency_amount = types.Decimal{}
+	}
 }
 
 // multiplyAmounts: the line's amounts times a factor (-1: the reversing line, 0: cleared)

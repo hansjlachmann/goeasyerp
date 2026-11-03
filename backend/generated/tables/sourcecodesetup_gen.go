@@ -16,6 +16,7 @@
 //	OnValidate_Exchange_rate_adjmt(rec *gtables.SourceCodeSetup) error
 //	OnValidate_Close_income_statement(rec *gtables.SourceCodeSetup) error
 //	OnValidate_Consolidation(rec *gtables.SourceCodeSetup) error
+//	OnValidate_Adjust_add_reporting_currency(rec *gtables.SourceCodeSetup) error
 //	OnValidate_General_journal(rec *gtables.SourceCodeSetup) error
 //	OnValidate_Sales_journal(rec *gtables.SourceCodeSetup) error
 //	OnValidate_Purchase_journal(rec *gtables.SourceCodeSetup) error
@@ -69,44 +70,45 @@ import (
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterSourceCodeSetupLogic.
 type SourceCodeSetup struct {
-	Primary_key                 types.Code `db:"primary_key,pk"`
-	Sales                       types.Code `db:"sales"`
-	Purchases                   types.Code `db:"purchases"`
-	Exchange_rate_adjmt         types.Code `db:"exchange_rate_adjmt"`
-	Close_income_statement      types.Code `db:"close_income_statement"`
-	Consolidation               types.Code `db:"consolidation"`
-	General_journal             types.Code `db:"general_journal"`
-	Sales_journal               types.Code `db:"sales_journal"`
-	Purchase_journal            types.Code `db:"purchase_journal"`
-	Cash_receipt_journal        types.Code `db:"cash_receipt_journal"`
-	Payment_journal             types.Code `db:"payment_journal"`
-	Sales_entry_application     types.Code `db:"sales_entry_application"`
-	Purchase_entry_application  types.Code `db:"purchase_entry_application"`
-	Tax_settlement              types.Code `db:"tax_settlement"`
-	Financially_voided_check    types.Code `db:"financially_voided_check"`
-	Finance_charge_memo         types.Code `db:"finance_charge_memo"`
-	Reminder                    types.Code `db:"reminder"`
-	Inventory_post_cost         types.Code `db:"inventory_post_cost"`
-	Item_journal                types.Code `db:"item_journal"`
-	Bom_journal                 types.Code `db:"bom_journal"`
-	Resource_journal            types.Code `db:"resource_journal"`
-	Item_transfer_journal       types.Code `db:"item_transfer_journal"`
-	Phys_inventory_journal      types.Code `db:"phys_inventory_journal"`
-	Fixed_asset_journal         types.Code `db:"fixed_asset_journal"`
-	Fixed_asset_g_l_journal     types.Code `db:"fixed_asset_g_l_journal"`
-	Insurance_journal           types.Code `db:"insurance_journal"`
-	Compress_g_l                types.Code `db:"compress_g_l"`
-	Compress_tax_entries        types.Code `db:"compress_tax_entries"`
-	Compress_cust_ledger        types.Code `db:"compress_cust_ledger"`
-	Compress_vend_ledger        types.Code `db:"compress_vend_ledger"`
-	Compress_item_ledger        types.Code `db:"compress_item_ledger"`
-	Compress_bom_ledger         types.Code `db:"compress_bom_ledger"`
-	Compress_res_ledger         types.Code `db:"compress_res_ledger"`
-	Compress_bank_acc_ledger    types.Code `db:"compress_bank_acc_ledger"`
-	Compress_check_ledger       types.Code `db:"compress_check_ledger"`
-	Compress_fa_ledger          types.Code `db:"compress_fa_ledger"`
-	Compress_maintenance_ledger types.Code `db:"compress_maintenance_ledger"`
-	Compress_insurance_ledger   types.Code `db:"compress_insurance_ledger"`
+	Primary_key                   types.Code `db:"primary_key,pk"`
+	Sales                         types.Code `db:"sales"`
+	Purchases                     types.Code `db:"purchases"`
+	Exchange_rate_adjmt           types.Code `db:"exchange_rate_adjmt"`
+	Close_income_statement        types.Code `db:"close_income_statement"`
+	Consolidation                 types.Code `db:"consolidation"`
+	Adjust_add_reporting_currency types.Code `db:"adjust_add_reporting_currency"`
+	General_journal               types.Code `db:"general_journal"`
+	Sales_journal                 types.Code `db:"sales_journal"`
+	Purchase_journal              types.Code `db:"purchase_journal"`
+	Cash_receipt_journal          types.Code `db:"cash_receipt_journal"`
+	Payment_journal               types.Code `db:"payment_journal"`
+	Sales_entry_application       types.Code `db:"sales_entry_application"`
+	Purchase_entry_application    types.Code `db:"purchase_entry_application"`
+	Tax_settlement                types.Code `db:"tax_settlement"`
+	Financially_voided_check      types.Code `db:"financially_voided_check"`
+	Finance_charge_memo           types.Code `db:"finance_charge_memo"`
+	Reminder                      types.Code `db:"reminder"`
+	Inventory_post_cost           types.Code `db:"inventory_post_cost"`
+	Item_journal                  types.Code `db:"item_journal"`
+	Bom_journal                   types.Code `db:"bom_journal"`
+	Resource_journal              types.Code `db:"resource_journal"`
+	Item_transfer_journal         types.Code `db:"item_transfer_journal"`
+	Phys_inventory_journal        types.Code `db:"phys_inventory_journal"`
+	Fixed_asset_journal           types.Code `db:"fixed_asset_journal"`
+	Fixed_asset_g_l_journal       types.Code `db:"fixed_asset_g_l_journal"`
+	Insurance_journal             types.Code `db:"insurance_journal"`
+	Compress_g_l                  types.Code `db:"compress_g_l"`
+	Compress_tax_entries          types.Code `db:"compress_tax_entries"`
+	Compress_cust_ledger          types.Code `db:"compress_cust_ledger"`
+	Compress_vend_ledger          types.Code `db:"compress_vend_ledger"`
+	Compress_item_ledger          types.Code `db:"compress_item_ledger"`
+	Compress_bom_ledger           types.Code `db:"compress_bom_ledger"`
+	Compress_res_ledger           types.Code `db:"compress_res_ledger"`
+	Compress_bank_acc_ledger      types.Code `db:"compress_bank_acc_ledger"`
+	Compress_check_ledger         types.Code `db:"compress_check_ledger"`
+	Compress_fa_ledger            types.Code `db:"compress_fa_ledger"`
+	Compress_maintenance_ledger   types.Code `db:"compress_maintenance_ledger"`
+	Compress_insurance_ledger     types.Code `db:"compress_insurance_ledger"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -173,83 +175,85 @@ const SourceCodeSetupTableName = "Source_Code_Setup"
 // SourceCodeSetup_FieldNo holds the field numbers of Source_Code_Setup (FieldNo):
 // SourceCodeSetup_FieldNo.Primary_key is 1
 var SourceCodeSetup_FieldNo = struct {
-	Primary_key                 int
-	Sales                       int
-	Purchases                   int
-	Exchange_rate_adjmt         int
-	Close_income_statement      int
-	Consolidation               int
-	General_journal             int
-	Sales_journal               int
-	Purchase_journal            int
-	Cash_receipt_journal        int
-	Payment_journal             int
-	Sales_entry_application     int
-	Purchase_entry_application  int
-	Tax_settlement              int
-	Financially_voided_check    int
-	Finance_charge_memo         int
-	Reminder                    int
-	Inventory_post_cost         int
-	Item_journal                int
-	Bom_journal                 int
-	Resource_journal            int
-	Item_transfer_journal       int
-	Phys_inventory_journal      int
-	Fixed_asset_journal         int
-	Fixed_asset_g_l_journal     int
-	Insurance_journal           int
-	Compress_g_l                int
-	Compress_tax_entries        int
-	Compress_cust_ledger        int
-	Compress_vend_ledger        int
-	Compress_item_ledger        int
-	Compress_bom_ledger         int
-	Compress_res_ledger         int
-	Compress_bank_acc_ledger    int
-	Compress_check_ledger       int
-	Compress_fa_ledger          int
-	Compress_maintenance_ledger int
-	Compress_insurance_ledger   int
+	Primary_key                   int
+	Sales                         int
+	Purchases                     int
+	Exchange_rate_adjmt           int
+	Close_income_statement        int
+	Consolidation                 int
+	Adjust_add_reporting_currency int
+	General_journal               int
+	Sales_journal                 int
+	Purchase_journal              int
+	Cash_receipt_journal          int
+	Payment_journal               int
+	Sales_entry_application       int
+	Purchase_entry_application    int
+	Tax_settlement                int
+	Financially_voided_check      int
+	Finance_charge_memo           int
+	Reminder                      int
+	Inventory_post_cost           int
+	Item_journal                  int
+	Bom_journal                   int
+	Resource_journal              int
+	Item_transfer_journal         int
+	Phys_inventory_journal        int
+	Fixed_asset_journal           int
+	Fixed_asset_g_l_journal       int
+	Insurance_journal             int
+	Compress_g_l                  int
+	Compress_tax_entries          int
+	Compress_cust_ledger          int
+	Compress_vend_ledger          int
+	Compress_item_ledger          int
+	Compress_bom_ledger           int
+	Compress_res_ledger           int
+	Compress_bank_acc_ledger      int
+	Compress_check_ledger         int
+	Compress_fa_ledger            int
+	Compress_maintenance_ledger   int
+	Compress_insurance_ledger     int
 }{
-	Primary_key:                 1,
-	Sales:                       2,
-	Purchases:                   3,
-	Exchange_rate_adjmt:         5,
-	Close_income_statement:      8,
-	Consolidation:               9,
-	General_journal:             10,
-	Sales_journal:               11,
-	Purchase_journal:            12,
-	Cash_receipt_journal:        13,
-	Payment_journal:             14,
-	Sales_entry_application:     21,
-	Purchase_entry_application:  22,
-	Tax_settlement:              23,
-	Financially_voided_check:    37,
-	Finance_charge_memo:         38,
-	Reminder:                    39,
-	Inventory_post_cost:         4,
-	Item_journal:                16,
-	Bom_journal:                 17,
-	Resource_journal:            19,
-	Item_transfer_journal:       33,
-	Phys_inventory_journal:      34,
-	Fixed_asset_journal:         5600,
-	Fixed_asset_g_l_journal:     5601,
-	Insurance_journal:           5602,
-	Compress_g_l:                24,
-	Compress_tax_entries:        25,
-	Compress_cust_ledger:        26,
-	Compress_vend_ledger:        27,
-	Compress_item_ledger:        28,
-	Compress_bom_ledger:         29,
-	Compress_res_ledger:         31,
-	Compress_bank_acc_ledger:    35,
-	Compress_check_ledger:       36,
-	Compress_fa_ledger:          5603,
-	Compress_maintenance_ledger: 5604,
-	Compress_insurance_ledger:   5605,
+	Primary_key:                   1,
+	Sales:                         2,
+	Purchases:                     3,
+	Exchange_rate_adjmt:           5,
+	Close_income_statement:        8,
+	Consolidation:                 9,
+	Adjust_add_reporting_currency: 41,
+	General_journal:               10,
+	Sales_journal:                 11,
+	Purchase_journal:              12,
+	Cash_receipt_journal:          13,
+	Payment_journal:               14,
+	Sales_entry_application:       21,
+	Purchase_entry_application:    22,
+	Tax_settlement:                23,
+	Financially_voided_check:      37,
+	Finance_charge_memo:           38,
+	Reminder:                      39,
+	Inventory_post_cost:           4,
+	Item_journal:                  16,
+	Bom_journal:                   17,
+	Resource_journal:              19,
+	Item_transfer_journal:         33,
+	Phys_inventory_journal:        34,
+	Fixed_asset_journal:           5600,
+	Fixed_asset_g_l_journal:       5601,
+	Insurance_journal:             5602,
+	Compress_g_l:                  24,
+	Compress_tax_entries:          25,
+	Compress_cust_ledger:          26,
+	Compress_vend_ledger:          27,
+	Compress_item_ledger:          28,
+	Compress_bom_ledger:           29,
+	Compress_res_ledger:           31,
+	Compress_bank_acc_ledger:      35,
+	Compress_check_ledger:         36,
+	Compress_fa_ledger:            5603,
+	Compress_maintenance_ledger:   5604,
+	Compress_insurance_ledger:     5605,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -267,6 +271,8 @@ func (t *SourceCodeSetup) FieldNo(fieldName string) int {
 		return 8
 	case "consolidation":
 		return 9
+	case "adjust_add_reporting_currency":
+		return 41
 	case "general_journal":
 		return 10
 	case "sales_journal":
@@ -350,6 +356,8 @@ func (t *SourceCodeSetup) FieldName(fieldNo int) string {
 		return "close_income_statement"
 	case 9:
 		return "consolidation"
+	case 41:
+		return "adjust_add_reporting_currency"
 	case 10:
 		return "general_journal"
 	case 11:
@@ -533,6 +541,9 @@ type (
 	SourceCodeSetupOnValidate_Consolidation interface {
 		OnValidate_Consolidation(rec *SourceCodeSetup) error
 	}
+	SourceCodeSetupOnValidate_Adjust_add_reporting_currency interface {
+		OnValidate_Adjust_add_reporting_currency(rec *SourceCodeSetup) error
+	}
 	SourceCodeSetupOnValidate_General_journal interface {
 		OnValidate_General_journal(rec *SourceCodeSetup) error
 	}
@@ -670,6 +681,8 @@ func sourceCodeSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SourceCodeSetupOnValidate_Close_income_statement)
 	case "OnValidate_Consolidation":
 		_, ok = logic.(SourceCodeSetupOnValidate_Consolidation)
+	case "OnValidate_Adjust_add_reporting_currency":
+		_, ok = logic.(SourceCodeSetupOnValidate_Adjust_add_reporting_currency)
 	case "OnValidate_General_journal":
 		_, ok = logic.(SourceCodeSetupOnValidate_General_journal)
 	case "OnValidate_Sales_journal":
@@ -826,6 +839,9 @@ func (t *SourceCodeSetup) CheckFields() error {
 	if err := tables.CheckMaxLength(SourceCodeSetupTableName, "consolidation", string(t.Consolidation), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(SourceCodeSetupTableName, "adjust_add_reporting_currency", string(t.Adjust_add_reporting_currency), 10); err != nil {
+		return err
+	}
 	if err := tables.CheckMaxLength(SourceCodeSetupTableName, "general_journal", string(t.General_journal), 10); err != nil {
 		return err
 	}
@@ -967,6 +983,7 @@ func GetSourceCodeSetupTableSchema() string {
 		exchange_rate_adjmt TEXT(10),
 		close_income_statement TEXT(10),
 		consolidation TEXT(10),
+		adjust_add_reporting_currency TEXT(10),
 		general_journal TEXT(10),
 		sales_journal TEXT(10),
 		purchase_journal TEXT(10),
@@ -1011,6 +1028,7 @@ func GetSourceCodeSetupPostgresTableSchema() string {
 		exchange_rate_adjmt VARCHAR(10),
 		close_income_statement VARCHAR(10),
 		consolidation VARCHAR(10),
+		adjust_add_reporting_currency VARCHAR(10),
 		general_journal VARCHAR(10),
 		sales_journal VARCHAR(10),
 		purchase_journal VARCHAR(10),
@@ -1171,6 +1189,7 @@ func (t *SourceCodeSetup) StoreOldValues() {
 	t.oldValues["exchange_rate_adjmt"] = t.Exchange_rate_adjmt
 	t.oldValues["close_income_statement"] = t.Close_income_statement
 	t.oldValues["consolidation"] = t.Consolidation
+	t.oldValues["adjust_add_reporting_currency"] = t.Adjust_add_reporting_currency
 	t.oldValues["general_journal"] = t.General_journal
 	t.oldValues["sales_journal"] = t.Sales_journal
 	t.oldValues["purchase_journal"] = t.Purchase_journal
@@ -1234,6 +1253,9 @@ func (t *SourceCodeSetup) XRec() *SourceCodeSetup {
 	}
 	if v, ok := t.oldValues["consolidation"].(types.Code); ok {
 		x.Consolidation = v
+	}
+	if v, ok := t.oldValues["adjust_add_reporting_currency"].(types.Code); ok {
+		x.Adjust_add_reporting_currency = v
 	}
 	if v, ok := t.oldValues["general_journal"].(types.Code); ok {
 		x.General_journal = v
@@ -1398,6 +1420,7 @@ func (t *SourceCodeSetup) GetByPK(primary_key types.Code) bool {
 	var exchange_rate_adjmtNull sql.NullString
 	var close_income_statementNull sql.NullString
 	var consolidationNull sql.NullString
+	var adjust_add_reporting_currencyNull sql.NullString
 	var general_journalNull sql.NullString
 	var sales_journalNull sql.NullString
 	var purchase_journalNull sql.NullString
@@ -1437,7 +1460,7 @@ func (t *SourceCodeSetup) GetByPK(primary_key types.Code) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE 1=1 AND primary_key = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE 1=1 AND primary_key = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1450,6 +1473,7 @@ func (t *SourceCodeSetup) GetByPK(primary_key types.Code) bool {
 		&exchange_rate_adjmtNull,
 		&close_income_statementNull,
 		&consolidationNull,
+		&adjust_add_reporting_currencyNull,
 		&general_journalNull,
 		&sales_journalNull,
 		&purchase_journalNull,
@@ -1501,6 +1525,7 @@ func (t *SourceCodeSetup) GetByPK(primary_key types.Code) bool {
 	t.Exchange_rate_adjmt = types.NewCode(exchange_rate_adjmtNull.String)
 	t.Close_income_statement = types.NewCode(close_income_statementNull.String)
 	t.Consolidation = types.NewCode(consolidationNull.String)
+	t.Adjust_add_reporting_currency = types.NewCode(adjust_add_reporting_currencyNull.String)
 	t.General_journal = types.NewCode(general_journalNull.String)
 	t.Sales_journal = types.NewCode(sales_journalNull.String)
 	t.Purchase_journal = types.NewCode(purchase_journalNull.String)
@@ -1561,6 +1586,7 @@ func (t *SourceCodeSetup) Insert(runTrigger bool) bool {
 		t.Exchange_rate_adjmt,
 		t.Close_income_statement,
 		t.Consolidation,
+		t.Adjust_add_reporting_currency,
 		t.General_journal,
 		t.Sales_journal,
 		t.Purchase_journal,
@@ -1597,7 +1623,7 @@ func (t *SourceCodeSetup) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (primary_key) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (primary_key) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1641,6 +1667,7 @@ func (t *SourceCodeSetup) InsertAll(records []*SourceCodeSetup, runTrigger bool)
 			r.Exchange_rate_adjmt,
 			r.Close_income_statement,
 			r.Consolidation,
+			r.Adjust_add_reporting_currency,
 			r.General_journal,
 			r.Sales_journal,
 			r.Purchase_journal,
@@ -1676,7 +1703,7 @@ func (t *SourceCodeSetup) InsertAll(records []*SourceCodeSetup, runTrigger bool)
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, SourceCodeSetupTableName)
-	columns := []string{"primary_key", "sales", "purchases", "exchange_rate_adjmt", "close_income_statement", "consolidation", "general_journal", "sales_journal", "purchase_journal", "cash_receipt_journal", "payment_journal", "sales_entry_application", "purchase_entry_application", "tax_settlement", "financially_voided_check", "finance_charge_memo", "reminder", "inventory_post_cost", "item_journal", "bom_journal", "resource_journal", "item_transfer_journal", "phys_inventory_journal", "fixed_asset_journal", "fixed_asset_g_l_journal", "insurance_journal", "compress_g_l", "compress_tax_entries", "compress_cust_ledger", "compress_vend_ledger", "compress_item_ledger", "compress_bom_ledger", "compress_res_ledger", "compress_bank_acc_ledger", "compress_check_ledger", "compress_fa_ledger", "compress_maintenance_ledger", "compress_insurance_ledger"}
+	columns := []string{"primary_key", "sales", "purchases", "exchange_rate_adjmt", "close_income_statement", "consolidation", "adjust_add_reporting_currency", "general_journal", "sales_journal", "purchase_journal", "cash_receipt_journal", "payment_journal", "sales_entry_application", "purchase_entry_application", "tax_settlement", "financially_voided_check", "finance_charge_memo", "reminder", "inventory_post_cost", "item_journal", "bom_journal", "resource_journal", "item_transfer_journal", "phys_inventory_journal", "fixed_asset_journal", "fixed_asset_g_l_journal", "insurance_journal", "compress_g_l", "compress_tax_entries", "compress_cust_ledger", "compress_vend_ledger", "compress_item_ledger", "compress_bom_ledger", "compress_res_ledger", "compress_bank_acc_ledger", "compress_check_ledger", "compress_fa_ledger", "compress_maintenance_ledger", "compress_insurance_ledger"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1739,6 +1766,10 @@ func (t *SourceCodeSetup) Modify(runTrigger bool) bool {
 		if t.hasFieldChanged("consolidation") {
 			setClauses = append(setClauses, "consolidation = ?")
 			values = append(values, t.Consolidation)
+		}
+		if t.hasFieldChanged("adjust_add_reporting_currency") {
+			setClauses = append(setClauses, "adjust_add_reporting_currency = ?")
+			values = append(values, t.Adjust_add_reporting_currency)
 		}
 		if t.hasFieldChanged("general_journal") {
 			setClauses = append(setClauses, "general_journal = ?")
@@ -1885,6 +1916,8 @@ func (t *SourceCodeSetup) Modify(runTrigger bool) bool {
 		values = append(values, t.Close_income_statement)
 		setClauses = append(setClauses, "consolidation = ?")
 		values = append(values, t.Consolidation)
+		setClauses = append(setClauses, "adjust_add_reporting_currency = ?")
+		values = append(values, t.Adjust_add_reporting_currency)
 		setClauses = append(setClauses, "general_journal = ?")
 		values = append(values, t.General_journal)
 		setClauses = append(setClauses, "sales_journal = ?")
@@ -2016,6 +2049,10 @@ func (t *SourceCodeSetup) hasFieldChanged(fieldName string) bool {
 	case "consolidation":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Consolidation.Equal(old)
+		}
+	case "adjust_add_reporting_currency":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Adjust_add_reporting_currency.Equal(old)
 		}
 	case "general_journal":
 		if old, ok := oldValue.(types.Code); ok {
@@ -2361,6 +2398,8 @@ func (t *SourceCodeSetup) columnName(fieldName string) (string, bool) {
 		return "close_income_statement", true
 	case strings.ToLower("consolidation"):
 		return "consolidation", true
+	case strings.ToLower("adjust_add_reporting_currency"):
+		return "adjust_add_reporting_currency", true
 	case strings.ToLower("general_journal"):
 		return "general_journal", true
 	case strings.ToLower("sales_journal"):
@@ -2782,7 +2821,7 @@ func (t *SourceCodeSetup) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2793,6 +2832,7 @@ func (t *SourceCodeSetup) FindFirst() bool {
 	var exchange_rate_adjmtNull sql.NullString
 	var close_income_statementNull sql.NullString
 	var consolidationNull sql.NullString
+	var adjust_add_reporting_currencyNull sql.NullString
 	var general_journalNull sql.NullString
 	var sales_journalNull sql.NullString
 	var purchase_journalNull sql.NullString
@@ -2833,6 +2873,7 @@ func (t *SourceCodeSetup) FindFirst() bool {
 		&exchange_rate_adjmtNull,
 		&close_income_statementNull,
 		&consolidationNull,
+		&adjust_add_reporting_currencyNull,
 		&general_journalNull,
 		&sales_journalNull,
 		&purchase_journalNull,
@@ -2882,6 +2923,7 @@ func (t *SourceCodeSetup) FindFirst() bool {
 	t.Exchange_rate_adjmt = types.NewCode(exchange_rate_adjmtNull.String)
 	t.Close_income_statement = types.NewCode(close_income_statementNull.String)
 	t.Consolidation = types.NewCode(consolidationNull.String)
+	t.Adjust_add_reporting_currency = types.NewCode(adjust_add_reporting_currencyNull.String)
 	t.General_journal = types.NewCode(general_journalNull.String)
 	t.Sales_journal = types.NewCode(sales_journalNull.String)
 	t.Purchase_journal = types.NewCode(purchase_journalNull.String)
@@ -2934,7 +2976,7 @@ func (t *SourceCodeSetup) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2945,6 +2987,7 @@ func (t *SourceCodeSetup) FindLast() bool {
 	var exchange_rate_adjmtNull sql.NullString
 	var close_income_statementNull sql.NullString
 	var consolidationNull sql.NullString
+	var adjust_add_reporting_currencyNull sql.NullString
 	var general_journalNull sql.NullString
 	var sales_journalNull sql.NullString
 	var purchase_journalNull sql.NullString
@@ -2985,6 +3028,7 @@ func (t *SourceCodeSetup) FindLast() bool {
 		&exchange_rate_adjmtNull,
 		&close_income_statementNull,
 		&consolidationNull,
+		&adjust_add_reporting_currencyNull,
 		&general_journalNull,
 		&sales_journalNull,
 		&purchase_journalNull,
@@ -3034,6 +3078,7 @@ func (t *SourceCodeSetup) FindLast() bool {
 	t.Exchange_rate_adjmt = types.NewCode(exchange_rate_adjmtNull.String)
 	t.Close_income_statement = types.NewCode(close_income_statementNull.String)
 	t.Consolidation = types.NewCode(consolidationNull.String)
+	t.Adjust_add_reporting_currency = types.NewCode(adjust_add_reporting_currencyNull.String)
 	t.General_journal = types.NewCode(general_journalNull.String)
 	t.Sales_journal = types.NewCode(sales_journalNull.String)
 	t.Purchase_journal = types.NewCode(purchase_journalNull.String)
@@ -3116,7 +3161,7 @@ func (t *SourceCodeSetup) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3191,6 +3236,7 @@ func (t *SourceCodeSetup) Next(steps ...int) bool {
 		var exchange_rate_adjmtNull sql.NullString
 		var close_income_statementNull sql.NullString
 		var consolidationNull sql.NullString
+		var adjust_add_reporting_currencyNull sql.NullString
 		var general_journalNull sql.NullString
 		var sales_journalNull sql.NullString
 		var purchase_journalNull sql.NullString
@@ -3231,6 +3277,7 @@ func (t *SourceCodeSetup) Next(steps ...int) bool {
 			&exchange_rate_adjmtNull,
 			&close_income_statementNull,
 			&consolidationNull,
+			&adjust_add_reporting_currencyNull,
 			&general_journalNull,
 			&sales_journalNull,
 			&purchase_journalNull,
@@ -3279,6 +3326,7 @@ func (t *SourceCodeSetup) Next(steps ...int) bool {
 		t.Exchange_rate_adjmt = types.NewCode(exchange_rate_adjmtNull.String)
 		t.Close_income_statement = types.NewCode(close_income_statementNull.String)
 		t.Consolidation = types.NewCode(consolidationNull.String)
+		t.Adjust_add_reporting_currency = types.NewCode(adjust_add_reporting_currencyNull.String)
 		t.General_journal = types.NewCode(general_journalNull.String)
 		t.Sales_journal = types.NewCode(sales_journalNull.String)
 		t.Purchase_journal = types.NewCode(purchase_journalNull.String)
@@ -3360,7 +3408,7 @@ func (t *SourceCodeSetup) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3388,6 +3436,7 @@ func (t *SourceCodeSetup) FindSetBuffered() bool {
 		var exchange_rate_adjmtNull sql.NullString
 		var close_income_statementNull sql.NullString
 		var consolidationNull sql.NullString
+		var adjust_add_reporting_currencyNull sql.NullString
 		var general_journalNull sql.NullString
 		var sales_journalNull sql.NullString
 		var purchase_journalNull sql.NullString
@@ -3428,6 +3477,7 @@ func (t *SourceCodeSetup) FindSetBuffered() bool {
 			&exchange_rate_adjmtNull,
 			&close_income_statementNull,
 			&consolidationNull,
+			&adjust_add_reporting_currencyNull,
 			&general_journalNull,
 			&sales_journalNull,
 			&purchase_journalNull,
@@ -3474,6 +3524,7 @@ func (t *SourceCodeSetup) FindSetBuffered() bool {
 		record.Exchange_rate_adjmt = types.NewCode(exchange_rate_adjmtNull.String)
 		record.Close_income_statement = types.NewCode(close_income_statementNull.String)
 		record.Consolidation = types.NewCode(consolidationNull.String)
+		record.Adjust_add_reporting_currency = types.NewCode(adjust_add_reporting_currencyNull.String)
 		record.General_journal = types.NewCode(general_journalNull.String)
 		record.Sales_journal = types.NewCode(sales_journalNull.String)
 		record.Purchase_journal = types.NewCode(purchase_journalNull.String)
@@ -3540,6 +3591,7 @@ func (t *SourceCodeSetup) copyFromBuffered(record *SourceCodeSetup) {
 	t.Exchange_rate_adjmt = record.Exchange_rate_adjmt
 	t.Close_income_statement = record.Close_income_statement
 	t.Consolidation = record.Consolidation
+	t.Adjust_add_reporting_currency = record.Adjust_add_reporting_currency
 	t.General_journal = record.General_journal
 	t.Sales_journal = record.Sales_journal
 	t.Purchase_journal = record.Purchase_journal
@@ -3829,6 +3881,28 @@ func (t *SourceCodeSetup) ValidateField(fieldName string, value interface{}) err
 		for _, l := range t.registeredLogic() {
 			if trg, ok := l.(SourceCodeSetupOnValidate_Consolidation); ok {
 				if err := trg.OnValidate_Consolidation(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "adjust_add_reporting_currency":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Adjust_add_reporting_currency = v
+		} else if v, ok := value.(string); ok {
+			t.Adjust_add_reporting_currency = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field adjust_add_reporting_currency")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "adjust_add_reporting_currency"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SourceCodeSetupOnValidate_Adjust_add_reporting_currency); ok {
+				if err := trg.OnValidate_Adjust_add_reporting_currency(t); err != nil {
 					return err
 				}
 			}
@@ -4562,6 +4636,8 @@ func (t *SourceCodeSetup) FieldValue(no int) (any, bool) {
 		return t.Close_income_statement, true
 	case 9:
 		return t.Consolidation, true
+	case 41:
+		return t.Adjust_add_reporting_currency, true
 	case 10:
 		return t.General_journal, true
 	case 11:
@@ -4693,6 +4769,15 @@ func (t *SourceCodeSetup) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.Consolidation = types.NewCode(v)
+			return true
+		}
+	case 41:
+		if v, ok := value.(types.Code); ok {
+			t.Adjust_add_reporting_currency = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Adjust_add_reporting_currency = types.NewCode(v)
 			return true
 		}
 	case 10:
@@ -5415,6 +5500,8 @@ func (t *SourceCodeSetup) columnValue(column string) (interface{}, bool) {
 		return t.Close_income_statement, true
 	case "consolidation":
 		return t.Consolidation, true
+	case "adjust_add_reporting_currency":
+		return t.Adjust_add_reporting_currency, true
 	case "general_journal":
 		return t.General_journal, true
 	case "sales_journal":
@@ -5538,6 +5625,7 @@ func (t *SourceCodeSetup) Init() {
 	t.Exchange_rate_adjmt = *new(types.Code)
 	t.Close_income_statement = *new(types.Code)
 	t.Consolidation = *new(types.Code)
+	t.Adjust_add_reporting_currency = *new(types.Code)
 	t.General_journal = *new(types.Code)
 	t.Sales_journal = *new(types.Code)
 	t.Purchase_journal = *new(types.Code)
@@ -5604,44 +5692,45 @@ func (t *SourceCodeSetup) ClearFilters() {
 // ToMap converts the current record to a map for JSON serialization
 func (t *SourceCodeSetup) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"primary_key":                 t.Primary_key.String(),
-		"sales":                       t.Sales.String(),
-		"purchases":                   t.Purchases.String(),
-		"exchange_rate_adjmt":         t.Exchange_rate_adjmt.String(),
-		"close_income_statement":      t.Close_income_statement.String(),
-		"consolidation":               t.Consolidation.String(),
-		"general_journal":             t.General_journal.String(),
-		"sales_journal":               t.Sales_journal.String(),
-		"purchase_journal":            t.Purchase_journal.String(),
-		"cash_receipt_journal":        t.Cash_receipt_journal.String(),
-		"payment_journal":             t.Payment_journal.String(),
-		"sales_entry_application":     t.Sales_entry_application.String(),
-		"purchase_entry_application":  t.Purchase_entry_application.String(),
-		"tax_settlement":              t.Tax_settlement.String(),
-		"financially_voided_check":    t.Financially_voided_check.String(),
-		"finance_charge_memo":         t.Finance_charge_memo.String(),
-		"reminder":                    t.Reminder.String(),
-		"inventory_post_cost":         t.Inventory_post_cost.String(),
-		"item_journal":                t.Item_journal.String(),
-		"bom_journal":                 t.Bom_journal.String(),
-		"resource_journal":            t.Resource_journal.String(),
-		"item_transfer_journal":       t.Item_transfer_journal.String(),
-		"phys_inventory_journal":      t.Phys_inventory_journal.String(),
-		"fixed_asset_journal":         t.Fixed_asset_journal.String(),
-		"fixed_asset_g_l_journal":     t.Fixed_asset_g_l_journal.String(),
-		"insurance_journal":           t.Insurance_journal.String(),
-		"compress_g_l":                t.Compress_g_l.String(),
-		"compress_tax_entries":        t.Compress_tax_entries.String(),
-		"compress_cust_ledger":        t.Compress_cust_ledger.String(),
-		"compress_vend_ledger":        t.Compress_vend_ledger.String(),
-		"compress_item_ledger":        t.Compress_item_ledger.String(),
-		"compress_bom_ledger":         t.Compress_bom_ledger.String(),
-		"compress_res_ledger":         t.Compress_res_ledger.String(),
-		"compress_bank_acc_ledger":    t.Compress_bank_acc_ledger.String(),
-		"compress_check_ledger":       t.Compress_check_ledger.String(),
-		"compress_fa_ledger":          t.Compress_fa_ledger.String(),
-		"compress_maintenance_ledger": t.Compress_maintenance_ledger.String(),
-		"compress_insurance_ledger":   t.Compress_insurance_ledger.String(),
+		"primary_key":                   t.Primary_key.String(),
+		"sales":                         t.Sales.String(),
+		"purchases":                     t.Purchases.String(),
+		"exchange_rate_adjmt":           t.Exchange_rate_adjmt.String(),
+		"close_income_statement":        t.Close_income_statement.String(),
+		"consolidation":                 t.Consolidation.String(),
+		"adjust_add_reporting_currency": t.Adjust_add_reporting_currency.String(),
+		"general_journal":               t.General_journal.String(),
+		"sales_journal":                 t.Sales_journal.String(),
+		"purchase_journal":              t.Purchase_journal.String(),
+		"cash_receipt_journal":          t.Cash_receipt_journal.String(),
+		"payment_journal":               t.Payment_journal.String(),
+		"sales_entry_application":       t.Sales_entry_application.String(),
+		"purchase_entry_application":    t.Purchase_entry_application.String(),
+		"tax_settlement":                t.Tax_settlement.String(),
+		"financially_voided_check":      t.Financially_voided_check.String(),
+		"finance_charge_memo":           t.Finance_charge_memo.String(),
+		"reminder":                      t.Reminder.String(),
+		"inventory_post_cost":           t.Inventory_post_cost.String(),
+		"item_journal":                  t.Item_journal.String(),
+		"bom_journal":                   t.Bom_journal.String(),
+		"resource_journal":              t.Resource_journal.String(),
+		"item_transfer_journal":         t.Item_transfer_journal.String(),
+		"phys_inventory_journal":        t.Phys_inventory_journal.String(),
+		"fixed_asset_journal":           t.Fixed_asset_journal.String(),
+		"fixed_asset_g_l_journal":       t.Fixed_asset_g_l_journal.String(),
+		"insurance_journal":             t.Insurance_journal.String(),
+		"compress_g_l":                  t.Compress_g_l.String(),
+		"compress_tax_entries":          t.Compress_tax_entries.String(),
+		"compress_cust_ledger":          t.Compress_cust_ledger.String(),
+		"compress_vend_ledger":          t.Compress_vend_ledger.String(),
+		"compress_item_ledger":          t.Compress_item_ledger.String(),
+		"compress_bom_ledger":           t.Compress_bom_ledger.String(),
+		"compress_res_ledger":           t.Compress_res_ledger.String(),
+		"compress_bank_acc_ledger":      t.Compress_bank_acc_ledger.String(),
+		"compress_check_ledger":         t.Compress_check_ledger.String(),
+		"compress_fa_ledger":            t.Compress_fa_ledger.String(),
+		"compress_maintenance_ledger":   t.Compress_maintenance_ledger.String(),
+		"compress_insurance_ledger":     t.Compress_insurance_ledger.String(),
 	}
 }
 
@@ -5675,6 +5764,11 @@ func (t *SourceCodeSetup) FromMap(data map[string]interface{}) {
 	if v, ok := data["consolidation"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Consolidation = types.NewCode(s)
+		}
+	}
+	if v, ok := data["adjust_add_reporting_currency"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Adjust_add_reporting_currency = types.NewCode(s)
 		}
 	}
 	if v, ok := data["general_journal"]; ok && v != nil {
@@ -5911,6 +6005,16 @@ func (t *SourceCodeSetup) GetFields() []tables.FieldInfo {
 		{
 			No:         9,
 			Name:       "consolidation",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         41,
+			Name:       "adjust_add_reporting_currency",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -6308,6 +6412,16 @@ func (t *SourceCodeSetup) GetTableRelationFields() map[string]tables.TableRelati
 			SearchTimeout: 0,
 		},
 		"consolidation": {
+			Table:        "Source_Code",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"adjust_add_reporting_currency": {
 			Table:        "Source_Code",
 			Field:        "code",
 			DisplayField: "",

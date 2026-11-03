@@ -105,10 +105,11 @@ func (c *GLBalanceCheck) findings(result *glcheck.Result, ts *i18n.TranslationSe
 
 	dates := apperrors.DetailsSection{
 		Caption: ts.Message("GL_CHECK_DATES", lang),
-		Columns: []apperrors.DetailsColumn{{Caption: entryCaption("posting_date")}, {Caption: entryCaption("amount"), Numeric: true}},
+		Columns: []apperrors.DetailsColumn{{Caption: entryCaption("posting_date")}, {Caption: entryCaption("amount"), Numeric: true},
+			{Caption: entryCaption("additional_currency_amount"), Numeric: true}},
 	}
 	for _, date := range result.Dates {
-		dates.Rows = append(dates.Rows, []string{format.Date(date.PostingDate, lang), amount(date.Amount)})
+		dates.Rows = append(dates.Rows, []string{format.Date(date.PostingDate, lang), amount(date.Amount), amount(date.AddCurrAmount)})
 	}
 	add(dates)
 
@@ -119,11 +120,12 @@ func (c *GLBalanceCheck) findings(result *glcheck.Result, ts *i18n.TranslationSe
 			{Caption: entryCaption("posting_date")},
 			{Caption: entryCaption("document_no")},
 			{Caption: entryCaption("amount"), Numeric: true},
+			{Caption: entryCaption("additional_currency_amount"), Numeric: true},
 		},
 	}
 	for _, transaction := range result.Transactions {
 		transactions.Rows = append(transactions.Rows, []string{strconv.Itoa(transaction.TransactionNo),
-			format.Date(transaction.PostingDate, lang), transaction.DocumentNo.String(), amount(transaction.Amount)})
+			format.Date(transaction.PostingDate, lang), transaction.DocumentNo.String(), amount(transaction.Amount), amount(transaction.AddCurrAmount)})
 	}
 	add(transactions)
 

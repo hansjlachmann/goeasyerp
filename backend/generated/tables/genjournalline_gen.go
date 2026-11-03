@@ -91,6 +91,7 @@
 //	OnValidate_Source_currency_code(rec *gtables.GenJournalLine) error
 //	OnValidate_Source_currency_amount(rec *gtables.GenJournalLine) error
 //	OnValidate_Source_curr_tax_base_amount(rec *gtables.GenJournalLine) error
+//	OnValidate_Additional_currency_posting(rec *gtables.GenJournalLine) error
 //	OnValidate_Source_curr_tax_amount(rec *gtables.GenJournalLine) error
 //	OnValidate_Tax_amount_lcy(rec *gtables.GenJournalLine) error
 //	OnValidate_Tax_base_amount_lcy(rec *gtables.GenJournalLine) error
@@ -339,6 +340,23 @@ func (o GenJournalLineSource_type) IsValid() bool {
 	return o >= 0 && o < 6
 }
 
+// GenJournalLineAdditional_currency_posting represents the additional_currency_posting option field
+type GenJournalLineAdditional_currency_posting int
+
+// String returns the text representation of GenJournalLineAdditional_currency_posting
+func (o GenJournalLineAdditional_currency_posting) String() string {
+	options := []string{"None", "Amount Only", "Additional-Currency Amount Only"}
+	if o >= 0 && int(o) < len(options) {
+		return options[o]
+	}
+	return ""
+}
+
+// IsValid checks if the GenJournalLineAdditional_currency_posting value is within valid range
+func (o GenJournalLineAdditional_currency_posting) IsValid() bool {
+	return o >= 0 && o < 3
+}
+
 // GenJournalLineFa_posting_type represents the fa_posting_type option field
 type GenJournalLineFa_posting_type int
 
@@ -406,63 +424,64 @@ type GenJournalLine struct {
 	Recurring_frequency      types.Code                        `db:"recurring_frequency"`
 	// FlowField: Sum(GenJnlAllocation.amount)
 	Allocated_amt_lcy              types.Decimal
-	Gen_posting_type               GenJournalLineGen_posting_type         `db:"gen_posting_type"`
-	Gen_bus_posting_group          types.Code                             `db:"gen_bus_posting_group"`
-	Gen_prod_posting_group         types.Code                             `db:"gen_prod_posting_group"`
-	Tax_calculation_type           GenJournalLineTax_calculation_type     `db:"tax_calculation_type"`
-	Allow_application              bool                                   `db:"allow_application"`
-	Bal_account_type               GenJournalLineBal_account_type         `db:"bal_account_type"`
-	Bal_gen_posting_type           GenJournalLineBal_gen_posting_type     `db:"bal_gen_posting_type"`
-	Bal_gen_bus_posting_group      types.Code                             `db:"bal_gen_bus_posting_group"`
-	Bal_gen_prod_posting_group     types.Code                             `db:"bal_gen_prod_posting_group"`
-	Bal_tax_calculation_type       GenJournalLineBal_tax_calculation_type `db:"bal_tax_calculation_type"`
-	Bal_tax_percent                types.Decimal                          `db:"bal_tax_percent"`
-	Bal_tax_amount                 types.Decimal                          `db:"bal_tax_amount"`
-	Bank_payment_type              GenJournalLineBank_payment_type        `db:"bank_payment_type"`
-	Tax_base_amount                types.Decimal                          `db:"tax_base_amount"`
-	Bal_tax_base_amount            types.Decimal                          `db:"bal_tax_base_amount"`
-	Correction                     bool                                   `db:"correction"`
-	Check_printed                  bool                                   `db:"check_printed"`
-	Document_date                  types.Date                             `db:"document_date"`
-	External_document_no           types.Code                             `db:"external_document_no"`
-	Source_type                    GenJournalLineSource_type              `db:"source_type"`
-	Source_no                      types.Code                             `db:"source_no"`
-	Posting_no_series              types.Code                             `db:"posting_no_series"`
-	Tax_area_code                  types.Code                             `db:"tax_area_code"`
-	Tax_liable                     bool                                   `db:"tax_liable"`
-	Tax_group_code                 types.Code                             `db:"tax_group_code"`
-	Use_tax                        bool                                   `db:"use_tax"`
-	Bal_tax_area_code              types.Code                             `db:"bal_tax_area_code"`
-	Bal_tax_liable                 bool                                   `db:"bal_tax_liable"`
-	Bal_tax_group_code             types.Code                             `db:"bal_tax_group_code"`
-	Bal_use_tax                    bool                                   `db:"bal_use_tax"`
-	Tax_bus_posting_group          types.Code                             `db:"tax_bus_posting_group"`
-	Tax_prod_posting_group         types.Code                             `db:"tax_prod_posting_group"`
-	Bal_tax_bus_posting_group      types.Code                             `db:"bal_tax_bus_posting_group"`
-	Bal_tax_prod_posting_group     types.Code                             `db:"bal_tax_prod_posting_group"`
-	Source_currency_code           types.Code                             `db:"source_currency_code"`
-	Source_currency_amount         types.Decimal                          `db:"source_currency_amount"`
-	Source_curr_tax_base_amount    types.Decimal                          `db:"source_curr_tax_base_amount"`
-	Source_curr_tax_amount         types.Decimal                          `db:"source_curr_tax_amount"`
-	Tax_amount_lcy                 types.Decimal                          `db:"tax_amount_lcy"`
-	Tax_base_amount_lcy            types.Decimal                          `db:"tax_base_amount_lcy"`
-	Bal_tax_amount_lcy             types.Decimal                          `db:"bal_tax_amount_lcy"`
-	Bal_tax_base_amount_lcy        types.Decimal                          `db:"bal_tax_base_amount_lcy"`
-	Reversing_entry                bool                                   `db:"reversing_entry"`
-	Fa_posting_date                types.Date                             `db:"fa_posting_date"`
-	Fa_posting_type                GenJournalLineFa_posting_type          `db:"fa_posting_type"`
-	Depreciation_book_code         types.Code                             `db:"depreciation_book_code"`
-	Salvage_value                  types.Decimal                          `db:"salvage_value"`
-	No_of_depreciation_days        int                                    `db:"no_of_depreciation_days"`
-	Depr_until_fa_posting_date     bool                                   `db:"depr_until_fa_posting_date"`
-	Depr_acquisition_cost          bool                                   `db:"depr_acquisition_cost"`
-	Maintenance_code               types.Code                             `db:"maintenance_code"`
-	Insurance_no                   types.Code                             `db:"insurance_no"`
-	Duplicate_in_depreciation_book types.Code                             `db:"duplicate_in_depreciation_book"`
-	Use_duplication_list           bool                                   `db:"use_duplication_list"`
-	Fa_reclassification_entry      bool                                   `db:"fa_reclassification_entry"`
-	Fa_error_entry_no              int                                    `db:"fa_error_entry_no"`
-	Index_entry                    bool                                   `db:"index_entry"`
+	Gen_posting_type               GenJournalLineGen_posting_type            `db:"gen_posting_type"`
+	Gen_bus_posting_group          types.Code                                `db:"gen_bus_posting_group"`
+	Gen_prod_posting_group         types.Code                                `db:"gen_prod_posting_group"`
+	Tax_calculation_type           GenJournalLineTax_calculation_type        `db:"tax_calculation_type"`
+	Allow_application              bool                                      `db:"allow_application"`
+	Bal_account_type               GenJournalLineBal_account_type            `db:"bal_account_type"`
+	Bal_gen_posting_type           GenJournalLineBal_gen_posting_type        `db:"bal_gen_posting_type"`
+	Bal_gen_bus_posting_group      types.Code                                `db:"bal_gen_bus_posting_group"`
+	Bal_gen_prod_posting_group     types.Code                                `db:"bal_gen_prod_posting_group"`
+	Bal_tax_calculation_type       GenJournalLineBal_tax_calculation_type    `db:"bal_tax_calculation_type"`
+	Bal_tax_percent                types.Decimal                             `db:"bal_tax_percent"`
+	Bal_tax_amount                 types.Decimal                             `db:"bal_tax_amount"`
+	Bank_payment_type              GenJournalLineBank_payment_type           `db:"bank_payment_type"`
+	Tax_base_amount                types.Decimal                             `db:"tax_base_amount"`
+	Bal_tax_base_amount            types.Decimal                             `db:"bal_tax_base_amount"`
+	Correction                     bool                                      `db:"correction"`
+	Check_printed                  bool                                      `db:"check_printed"`
+	Document_date                  types.Date                                `db:"document_date"`
+	External_document_no           types.Code                                `db:"external_document_no"`
+	Source_type                    GenJournalLineSource_type                 `db:"source_type"`
+	Source_no                      types.Code                                `db:"source_no"`
+	Posting_no_series              types.Code                                `db:"posting_no_series"`
+	Tax_area_code                  types.Code                                `db:"tax_area_code"`
+	Tax_liable                     bool                                      `db:"tax_liable"`
+	Tax_group_code                 types.Code                                `db:"tax_group_code"`
+	Use_tax                        bool                                      `db:"use_tax"`
+	Bal_tax_area_code              types.Code                                `db:"bal_tax_area_code"`
+	Bal_tax_liable                 bool                                      `db:"bal_tax_liable"`
+	Bal_tax_group_code             types.Code                                `db:"bal_tax_group_code"`
+	Bal_use_tax                    bool                                      `db:"bal_use_tax"`
+	Tax_bus_posting_group          types.Code                                `db:"tax_bus_posting_group"`
+	Tax_prod_posting_group         types.Code                                `db:"tax_prod_posting_group"`
+	Bal_tax_bus_posting_group      types.Code                                `db:"bal_tax_bus_posting_group"`
+	Bal_tax_prod_posting_group     types.Code                                `db:"bal_tax_prod_posting_group"`
+	Source_currency_code           types.Code                                `db:"source_currency_code"`
+	Source_currency_amount         types.Decimal                             `db:"source_currency_amount"`
+	Source_curr_tax_base_amount    types.Decimal                             `db:"source_curr_tax_base_amount"`
+	Additional_currency_posting    GenJournalLineAdditional_currency_posting `db:"additional_currency_posting"`
+	Source_curr_tax_amount         types.Decimal                             `db:"source_curr_tax_amount"`
+	Tax_amount_lcy                 types.Decimal                             `db:"tax_amount_lcy"`
+	Tax_base_amount_lcy            types.Decimal                             `db:"tax_base_amount_lcy"`
+	Bal_tax_amount_lcy             types.Decimal                             `db:"bal_tax_amount_lcy"`
+	Bal_tax_base_amount_lcy        types.Decimal                             `db:"bal_tax_base_amount_lcy"`
+	Reversing_entry                bool                                      `db:"reversing_entry"`
+	Fa_posting_date                types.Date                                `db:"fa_posting_date"`
+	Fa_posting_type                GenJournalLineFa_posting_type             `db:"fa_posting_type"`
+	Depreciation_book_code         types.Code                                `db:"depreciation_book_code"`
+	Salvage_value                  types.Decimal                             `db:"salvage_value"`
+	No_of_depreciation_days        int                                       `db:"no_of_depreciation_days"`
+	Depr_until_fa_posting_date     bool                                      `db:"depr_until_fa_posting_date"`
+	Depr_acquisition_cost          bool                                      `db:"depr_acquisition_cost"`
+	Maintenance_code               types.Code                                `db:"maintenance_code"`
+	Insurance_no                   types.Code                                `db:"insurance_no"`
+	Duplicate_in_depreciation_book types.Code                                `db:"duplicate_in_depreciation_book"`
+	Use_duplication_list           bool                                      `db:"use_duplication_list"`
+	Fa_reclassification_entry      bool                                      `db:"fa_reclassification_entry"`
+	Fa_error_entry_no              int                                       `db:"fa_error_entry_no"`
+	Index_entry                    bool                                      `db:"index_entry"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -702,6 +721,17 @@ var GenJournalLine_Source_type = struct {
 	Employee:    5,
 }
 
+// GenJournalLine_Additional_currency_posting provides named constants for the additional_currency_posting option field (FieldName.OptionValue syntax)
+var GenJournalLine_Additional_currency_posting = struct {
+	None                         GenJournalLineAdditional_currency_posting
+	AmountOnly                   GenJournalLineAdditional_currency_posting
+	AdditionalCurrencyAmountOnly GenJournalLineAdditional_currency_posting
+}{
+	None:                         0,
+	AmountOnly:                   1,
+	AdditionalCurrencyAmountOnly: 2,
+}
+
 // GenJournalLine_Fa_posting_type provides named constants for the fa_posting_type option field (FieldName.OptionValue syntax)
 var GenJournalLine_Fa_posting_type = struct {
 	Blank           GenJournalLineFa_posting_type
@@ -814,6 +844,7 @@ var GenJournalLine_FieldNo = struct {
 	Source_currency_code           int
 	Source_currency_amount         int
 	Source_curr_tax_base_amount    int
+	Additional_currency_posting    int
 	Source_curr_tax_amount         int
 	Tax_amount_lcy                 int
 	Tax_base_amount_lcy            int
@@ -917,6 +948,7 @@ var GenJournalLine_FieldNo = struct {
 	Source_currency_code:           99,
 	Source_currency_amount:         100,
 	Source_curr_tax_base_amount:    101,
+	Additional_currency_posting:    95,
 	Source_curr_tax_amount:         102,
 	Tax_amount_lcy:                 104,
 	Tax_base_amount_lcy:            105,
@@ -1106,6 +1138,8 @@ func (t *GenJournalLine) FieldNo(fieldName string) int {
 		return 100
 	case "source_curr_tax_base_amount":
 		return 101
+	case "additional_currency_posting":
+		return 95
 	case "source_curr_tax_amount":
 		return 102
 	case "tax_amount_lcy":
@@ -1317,6 +1351,8 @@ func (t *GenJournalLine) FieldName(fieldNo int) string {
 		return "source_currency_amount"
 	case 101:
 		return "source_curr_tax_base_amount"
+	case 95:
+		return "additional_currency_posting"
 	case 102:
 		return "source_curr_tax_amount"
 	case 104:
@@ -1701,6 +1737,9 @@ type (
 	GenJournalLineOnValidate_Source_curr_tax_base_amount interface {
 		OnValidate_Source_curr_tax_base_amount(rec *GenJournalLine) error
 	}
+	GenJournalLineOnValidate_Additional_currency_posting interface {
+		OnValidate_Additional_currency_posting(rec *GenJournalLine) error
+	}
 	GenJournalLineOnValidate_Source_curr_tax_amount interface {
 		OnValidate_Source_curr_tax_amount(rec *GenJournalLine) error
 	}
@@ -1952,6 +1991,8 @@ func genJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GenJournalLineOnValidate_Source_currency_amount)
 	case "OnValidate_Source_curr_tax_base_amount":
 		_, ok = logic.(GenJournalLineOnValidate_Source_curr_tax_base_amount)
+	case "OnValidate_Additional_currency_posting":
+		_, ok = logic.(GenJournalLineOnValidate_Additional_currency_posting)
 	case "OnValidate_Source_curr_tax_amount":
 		_, ok = logic.(GenJournalLineOnValidate_Source_curr_tax_amount)
 	case "OnValidate_Tax_amount_lcy":
@@ -2316,6 +2357,7 @@ func GetGenJournalLineTableSchema() string {
 		source_currency_code TEXT(10),
 		source_currency_amount TEXT,
 		source_curr_tax_base_amount TEXT,
+		additional_currency_posting INTEGER CHECK (additional_currency_posting >= 0 AND additional_currency_posting <= 2),
 		source_curr_tax_amount TEXT,
 		tax_amount_lcy TEXT,
 		tax_base_amount_lcy TEXT,
@@ -2425,6 +2467,7 @@ func GetGenJournalLinePostgresTableSchema() string {
 		source_currency_code VARCHAR(10),
 		source_currency_amount NUMERIC,
 		source_curr_tax_base_amount NUMERIC,
+		additional_currency_posting INTEGER CHECK (additional_currency_posting >= 0 AND additional_currency_posting <= 2),
 		source_curr_tax_amount NUMERIC,
 		tax_amount_lcy NUMERIC,
 		tax_base_amount_lcy NUMERIC,
@@ -2668,6 +2711,7 @@ func (t *GenJournalLine) StoreOldValues() {
 	t.oldValues["source_currency_code"] = t.Source_currency_code
 	t.oldValues["source_currency_amount"] = t.Source_currency_amount
 	t.oldValues["source_curr_tax_base_amount"] = t.Source_curr_tax_base_amount
+	t.oldValues["additional_currency_posting"] = t.Additional_currency_posting
 	t.oldValues["source_curr_tax_amount"] = t.Source_curr_tax_amount
 	t.oldValues["tax_amount_lcy"] = t.Tax_amount_lcy
 	t.oldValues["tax_base_amount_lcy"] = t.Tax_base_amount_lcy
@@ -2945,6 +2989,9 @@ func (t *GenJournalLine) XRec() *GenJournalLine {
 	if v, ok := t.oldValues["source_curr_tax_base_amount"].(types.Decimal); ok {
 		x.Source_curr_tax_base_amount = v
 	}
+	if v, ok := t.oldValues["additional_currency_posting"].(GenJournalLineAdditional_currency_posting); ok {
+		x.Additional_currency_posting = v
+	}
 	if v, ok := t.oldValues["source_curr_tax_amount"].(types.Decimal); ok {
 		x.Source_curr_tax_amount = v
 	}
@@ -3165,6 +3212,7 @@ func (t *GenJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	var source_currency_codeNull sql.NullString
 	var source_currency_amountNull sql.NullString
 	var source_curr_tax_base_amountNull sql.NullString
+	var additional_currency_postingInt int
 	var source_curr_tax_amountNull sql.NullString
 	var tax_amount_lcyNull sql.NullString
 	var tax_base_amount_lcyNull sql.NullString
@@ -3194,7 +3242,7 @@ func (t *GenJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, business_unit_code, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT journal_template_name, business_unit_code, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, additional_currency_posting, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -3282,6 +3330,7 @@ func (t *GenJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 		&source_currency_codeNull,
 		&source_currency_amountNull,
 		&source_curr_tax_base_amountNull,
+		&additional_currency_postingInt,
 		&source_curr_tax_amountNull,
 		&tax_amount_lcyNull,
 		&tax_base_amount_lcyNull,
@@ -3396,6 +3445,7 @@ func (t *GenJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	t.Source_currency_code = types.NewCode(source_currency_codeNull.String)
 	t.Source_currency_amount, _ = types.NewDecimalFromString(source_currency_amountNull.String)
 	t.Source_curr_tax_base_amount, _ = types.NewDecimalFromString(source_curr_tax_base_amountNull.String)
+	t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(additional_currency_postingInt)
 	t.Source_curr_tax_amount, _ = types.NewDecimalFromString(source_curr_tax_amountNull.String)
 	t.Tax_amount_lcy, _ = types.NewDecimalFromString(tax_amount_lcyNull.String)
 	t.Tax_base_amount_lcy, _ = types.NewDecimalFromString(tax_base_amount_lcyNull.String)
@@ -3519,6 +3569,7 @@ func (t *GenJournalLine) Insert(runTrigger bool) bool {
 		t.Source_currency_code,
 		t.Source_currency_amount,
 		t.Source_curr_tax_base_amount,
+		t.Additional_currency_posting,
 		t.Source_curr_tax_amount,
 		t.Tax_amount_lcy,
 		t.Tax_base_amount_lcy,
@@ -3543,7 +3594,7 @@ func (t *GenJournalLine) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, business_unit_code, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, business_unit_code, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, additional_currency_posting, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -3662,6 +3713,7 @@ func (t *GenJournalLine) InsertAll(records []*GenJournalLine, runTrigger bool) e
 			r.Source_currency_code,
 			r.Source_currency_amount,
 			r.Source_curr_tax_base_amount,
+			r.Additional_currency_posting,
 			r.Source_curr_tax_amount,
 			r.Tax_amount_lcy,
 			r.Tax_base_amount_lcy,
@@ -3685,7 +3737,7 @@ func (t *GenJournalLine) InsertAll(records []*GenJournalLine, runTrigger bool) e
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, GenJournalLineTableName)
-	columns := []string{"journal_template_name", "business_unit_code", "journal_batch_name", "line_no", "account_type", "account_no", "posting_date", "document_type", "document_no", "description", "tax_percent", "bal_account_no", "currency_code", "amount", "debit_amount", "credit_amount", "amount_lcy", "balance_lcy", "currency_factor", "sales_purch_lcy", "profit_lcy", "inv_discount_lcy", "sell_to_buy_from_no", "posting_group", "department_code", "project_code", "salespers_purch_code", "source_code", "system_created_entry", "on_hold", "applies_to_doc_type", "applies_to_doc_no", "due_date", "pmt_discount_date", "payment_discount_percent", "quantity", "tax_amount", "vat_posting", "payment_terms_code", "applies_to_id", "reason_code", "recurring_method", "expiration_date", "recurring_frequency", "gen_posting_type", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "allow_application", "bal_account_type", "bal_gen_posting_type", "bal_gen_bus_posting_group", "bal_gen_prod_posting_group", "bal_tax_calculation_type", "bal_tax_percent", "bal_tax_amount", "bank_payment_type", "tax_base_amount", "bal_tax_base_amount", "correction", "check_printed", "document_date", "external_document_no", "source_type", "source_no", "posting_no_series", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "bal_tax_area_code", "bal_tax_liable", "bal_tax_group_code", "bal_use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "bal_tax_bus_posting_group", "bal_tax_prod_posting_group", "source_currency_code", "source_currency_amount", "source_curr_tax_base_amount", "source_curr_tax_amount", "tax_amount_lcy", "tax_base_amount_lcy", "bal_tax_amount_lcy", "bal_tax_base_amount_lcy", "reversing_entry", "fa_posting_date", "fa_posting_type", "depreciation_book_code", "salvage_value", "no_of_depreciation_days", "depr_until_fa_posting_date", "depr_acquisition_cost", "maintenance_code", "insurance_no", "duplicate_in_depreciation_book", "use_duplication_list", "fa_reclassification_entry", "fa_error_entry_no", "index_entry"}
+	columns := []string{"journal_template_name", "business_unit_code", "journal_batch_name", "line_no", "account_type", "account_no", "posting_date", "document_type", "document_no", "description", "tax_percent", "bal_account_no", "currency_code", "amount", "debit_amount", "credit_amount", "amount_lcy", "balance_lcy", "currency_factor", "sales_purch_lcy", "profit_lcy", "inv_discount_lcy", "sell_to_buy_from_no", "posting_group", "department_code", "project_code", "salespers_purch_code", "source_code", "system_created_entry", "on_hold", "applies_to_doc_type", "applies_to_doc_no", "due_date", "pmt_discount_date", "payment_discount_percent", "quantity", "tax_amount", "vat_posting", "payment_terms_code", "applies_to_id", "reason_code", "recurring_method", "expiration_date", "recurring_frequency", "gen_posting_type", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "allow_application", "bal_account_type", "bal_gen_posting_type", "bal_gen_bus_posting_group", "bal_gen_prod_posting_group", "bal_tax_calculation_type", "bal_tax_percent", "bal_tax_amount", "bank_payment_type", "tax_base_amount", "bal_tax_base_amount", "correction", "check_printed", "document_date", "external_document_no", "source_type", "source_no", "posting_no_series", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "bal_tax_area_code", "bal_tax_liable", "bal_tax_group_code", "bal_use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "bal_tax_bus_posting_group", "bal_tax_prod_posting_group", "source_currency_code", "source_currency_amount", "source_curr_tax_base_amount", "additional_currency_posting", "source_curr_tax_amount", "tax_amount_lcy", "tax_base_amount_lcy", "bal_tax_amount_lcy", "bal_tax_base_amount_lcy", "reversing_entry", "fa_posting_date", "fa_posting_type", "depreciation_book_code", "salvage_value", "no_of_depreciation_days", "depr_until_fa_posting_date", "depr_acquisition_cost", "maintenance_code", "insurance_no", "duplicate_in_depreciation_book", "use_duplication_list", "fa_reclassification_entry", "fa_error_entry_no", "index_entry"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -4055,6 +4107,10 @@ func (t *GenJournalLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "source_curr_tax_base_amount = ?")
 			values = append(values, t.Source_curr_tax_base_amount)
 		}
+		if t.hasFieldChanged("additional_currency_posting") {
+			setClauses = append(setClauses, "additional_currency_posting = ?")
+			values = append(values, t.Additional_currency_posting)
+		}
 		if t.hasFieldChanged("source_curr_tax_amount") {
 			setClauses = append(setClauses, "source_curr_tax_amount = ?")
 			values = append(values, t.Source_curr_tax_amount)
@@ -4298,6 +4354,8 @@ func (t *GenJournalLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Source_currency_amount)
 		setClauses = append(setClauses, "source_curr_tax_base_amount = ?")
 		values = append(values, t.Source_curr_tax_base_amount)
+		setClauses = append(setClauses, "additional_currency_posting = ?")
+		values = append(values, t.Additional_currency_posting)
 		setClauses = append(setClauses, "source_curr_tax_amount = ?")
 		values = append(values, t.Source_curr_tax_amount)
 		setClauses = append(setClauses, "tax_amount_lcy = ?")
@@ -4724,6 +4782,10 @@ func (t *GenJournalLine) hasFieldChanged(fieldName string) bool {
 	case "source_curr_tax_base_amount":
 		if old, ok := oldValue.(types.Decimal); ok {
 			return !t.Source_curr_tax_base_amount.Equal(old)
+		}
+	case "additional_currency_posting":
+		if old, ok := oldValue.(GenJournalLineAdditional_currency_posting); ok {
+			return t.Additional_currency_posting != old
 		}
 	case "source_curr_tax_amount":
 		if old, ok := oldValue.(types.Decimal); ok {
@@ -5325,6 +5387,8 @@ func (t *GenJournalLine) columnName(fieldName string) (string, bool) {
 		return "source_currency_amount", true
 	case strings.ToLower("source_curr_tax_base_amount"):
 		return "source_curr_tax_base_amount", true
+	case strings.ToLower("additional_currency_posting"):
+		return "additional_currency_posting", true
 	case strings.ToLower("source_curr_tax_amount"):
 		return "source_curr_tax_amount", true
 	case strings.ToLower("tax_amount_lcy"):
@@ -5830,7 +5894,7 @@ func (t *GenJournalLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, business_unit_code, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, business_unit_code, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, additional_currency_posting, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5915,6 +5979,7 @@ func (t *GenJournalLine) FindFirst() bool {
 	var source_currency_codeNull sql.NullString
 	var source_currency_amountNull sql.NullString
 	var source_curr_tax_base_amountNull sql.NullString
+	var additional_currency_postingInt int
 	var source_curr_tax_amountNull sql.NullString
 	var tax_amount_lcyNull sql.NullString
 	var tax_base_amount_lcyNull sql.NullString
@@ -6016,6 +6081,7 @@ func (t *GenJournalLine) FindFirst() bool {
 		&source_currency_codeNull,
 		&source_currency_amountNull,
 		&source_curr_tax_base_amountNull,
+		&additional_currency_postingInt,
 		&source_curr_tax_amountNull,
 		&tax_amount_lcyNull,
 		&tax_base_amount_lcyNull,
@@ -6127,6 +6193,7 @@ func (t *GenJournalLine) FindFirst() bool {
 	t.Source_currency_code = types.NewCode(source_currency_codeNull.String)
 	t.Source_currency_amount, _ = types.NewDecimalFromString(source_currency_amountNull.String)
 	t.Source_curr_tax_base_amount, _ = types.NewDecimalFromString(source_curr_tax_base_amountNull.String)
+	t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(additional_currency_postingInt)
 	t.Source_curr_tax_amount, _ = types.NewDecimalFromString(source_curr_tax_amountNull.String)
 	t.Tax_amount_lcy, _ = types.NewDecimalFromString(tax_amount_lcyNull.String)
 	t.Tax_base_amount_lcy, _ = types.NewDecimalFromString(tax_base_amount_lcyNull.String)
@@ -6165,7 +6232,7 @@ func (t *GenJournalLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, business_unit_code, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, business_unit_code, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, additional_currency_posting, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -6250,6 +6317,7 @@ func (t *GenJournalLine) FindLast() bool {
 	var source_currency_codeNull sql.NullString
 	var source_currency_amountNull sql.NullString
 	var source_curr_tax_base_amountNull sql.NullString
+	var additional_currency_postingInt int
 	var source_curr_tax_amountNull sql.NullString
 	var tax_amount_lcyNull sql.NullString
 	var tax_base_amount_lcyNull sql.NullString
@@ -6351,6 +6419,7 @@ func (t *GenJournalLine) FindLast() bool {
 		&source_currency_codeNull,
 		&source_currency_amountNull,
 		&source_curr_tax_base_amountNull,
+		&additional_currency_postingInt,
 		&source_curr_tax_amountNull,
 		&tax_amount_lcyNull,
 		&tax_base_amount_lcyNull,
@@ -6462,6 +6531,7 @@ func (t *GenJournalLine) FindLast() bool {
 	t.Source_currency_code = types.NewCode(source_currency_codeNull.String)
 	t.Source_currency_amount, _ = types.NewDecimalFromString(source_currency_amountNull.String)
 	t.Source_curr_tax_base_amount, _ = types.NewDecimalFromString(source_curr_tax_base_amountNull.String)
+	t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(additional_currency_postingInt)
 	t.Source_curr_tax_amount, _ = types.NewDecimalFromString(source_curr_tax_amountNull.String)
 	t.Tax_amount_lcy, _ = types.NewDecimalFromString(tax_amount_lcyNull.String)
 	t.Tax_base_amount_lcy, _ = types.NewDecimalFromString(tax_base_amount_lcyNull.String)
@@ -6530,7 +6600,7 @@ func (t *GenJournalLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, business_unit_code, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, business_unit_code, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, additional_currency_posting, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -6679,6 +6749,7 @@ func (t *GenJournalLine) Next(steps ...int) bool {
 		var source_currency_codeNull sql.NullString
 		var source_currency_amountNull sql.NullString
 		var source_curr_tax_base_amountNull sql.NullString
+		var additional_currency_postingInt int
 		var source_curr_tax_amountNull sql.NullString
 		var tax_amount_lcyNull sql.NullString
 		var tax_base_amount_lcyNull sql.NullString
@@ -6780,6 +6851,7 @@ func (t *GenJournalLine) Next(steps ...int) bool {
 			&source_currency_codeNull,
 			&source_currency_amountNull,
 			&source_curr_tax_base_amountNull,
+			&additional_currency_postingInt,
 			&source_curr_tax_amountNull,
 			&tax_amount_lcyNull,
 			&tax_base_amount_lcyNull,
@@ -6890,6 +6962,7 @@ func (t *GenJournalLine) Next(steps ...int) bool {
 		t.Source_currency_code = types.NewCode(source_currency_codeNull.String)
 		t.Source_currency_amount, _ = types.NewDecimalFromString(source_currency_amountNull.String)
 		t.Source_curr_tax_base_amount, _ = types.NewDecimalFromString(source_curr_tax_base_amountNull.String)
+		t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(additional_currency_postingInt)
 		t.Source_curr_tax_amount, _ = types.NewDecimalFromString(source_curr_tax_amountNull.String)
 		t.Tax_amount_lcy, _ = types.NewDecimalFromString(tax_amount_lcyNull.String)
 		t.Tax_base_amount_lcy, _ = types.NewDecimalFromString(tax_base_amount_lcyNull.String)
@@ -6957,7 +7030,7 @@ func (t *GenJournalLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, business_unit_code, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, business_unit_code, journal_batch_name, line_no, account_type, account_no, posting_date, document_type, document_no, description, tax_percent, bal_account_no, currency_code, amount, debit_amount, credit_amount, amount_lcy, balance_lcy, currency_factor, sales_purch_lcy, profit_lcy, inv_discount_lcy, sell_to_buy_from_no, posting_group, department_code, project_code, salespers_purch_code, source_code, system_created_entry, on_hold, applies_to_doc_type, applies_to_doc_no, due_date, pmt_discount_date, payment_discount_percent, quantity, tax_amount, vat_posting, payment_terms_code, applies_to_id, reason_code, recurring_method, expiration_date, recurring_frequency, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, allow_application, bal_account_type, bal_gen_posting_type, bal_gen_bus_posting_group, bal_gen_prod_posting_group, bal_tax_calculation_type, bal_tax_percent, bal_tax_amount, bank_payment_type, tax_base_amount, bal_tax_base_amount, correction, check_printed, document_date, external_document_no, source_type, source_no, posting_no_series, tax_area_code, tax_liable, tax_group_code, use_tax, bal_tax_area_code, bal_tax_liable, bal_tax_group_code, bal_use_tax, tax_bus_posting_group, tax_prod_posting_group, bal_tax_bus_posting_group, bal_tax_prod_posting_group, source_currency_code, source_currency_amount, source_curr_tax_base_amount, additional_currency_posting, source_curr_tax_amount, tax_amount_lcy, tax_base_amount_lcy, bal_tax_amount_lcy, bal_tax_base_amount_lcy, reversing_entry, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, fa_reclassification_entry, fa_error_entry_no, index_entry FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -7059,6 +7132,7 @@ func (t *GenJournalLine) FindSetBuffered() bool {
 		var source_currency_codeNull sql.NullString
 		var source_currency_amountNull sql.NullString
 		var source_curr_tax_base_amountNull sql.NullString
+		var additional_currency_postingInt int
 		var source_curr_tax_amountNull sql.NullString
 		var tax_amount_lcyNull sql.NullString
 		var tax_base_amount_lcyNull sql.NullString
@@ -7160,6 +7234,7 @@ func (t *GenJournalLine) FindSetBuffered() bool {
 			&source_currency_codeNull,
 			&source_currency_amountNull,
 			&source_curr_tax_base_amountNull,
+			&additional_currency_postingInt,
 			&source_curr_tax_amountNull,
 			&tax_amount_lcyNull,
 			&tax_base_amount_lcyNull,
@@ -7268,6 +7343,7 @@ func (t *GenJournalLine) FindSetBuffered() bool {
 		record.Source_currency_code = types.NewCode(source_currency_codeNull.String)
 		record.Source_currency_amount, _ = types.NewDecimalFromString(source_currency_amountNull.String)
 		record.Source_curr_tax_base_amount, _ = types.NewDecimalFromString(source_curr_tax_base_amountNull.String)
+		record.Additional_currency_posting = GenJournalLineAdditional_currency_posting(additional_currency_postingInt)
 		record.Source_curr_tax_amount, _ = types.NewDecimalFromString(source_curr_tax_amountNull.String)
 		record.Tax_amount_lcy, _ = types.NewDecimalFromString(tax_amount_lcyNull.String)
 		record.Tax_base_amount_lcy, _ = types.NewDecimalFromString(tax_base_amount_lcyNull.String)
@@ -7396,6 +7472,7 @@ func (t *GenJournalLine) copyFromBuffered(record *GenJournalLine) {
 	t.Source_currency_code = record.Source_currency_code
 	t.Source_currency_amount = record.Source_currency_amount
 	t.Source_curr_tax_base_amount = record.Source_curr_tax_base_amount
+	t.Additional_currency_posting = record.Additional_currency_posting
 	t.Source_curr_tax_amount = record.Source_curr_tax_amount
 	t.Tax_amount_lcy = record.Tax_amount_lcy
 	t.Tax_base_amount_lcy = record.Tax_base_amount_lcy
@@ -9728,6 +9805,55 @@ func (t *GenJournalLine) ValidateField(fieldName string, value interface{}) erro
 			}
 		}
 		return nil
+	case "additional_currency_posting":
+		// Set field value
+		// Accept enum type directly
+		if v, ok := value.(GenJournalLineAdditional_currency_posting); ok {
+			t.Additional_currency_posting = v
+			// Accept int (convert to enum)
+		} else if v, ok := value.(int); ok {
+			if v < 0 || v >= 3 {
+				return fmt.Errorf("invalid option value %d for field additional_currency_posting (valid range: 0-%d)", v, 3-1)
+			}
+			t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(v)
+			// Accept float64 (JSON numbers decode as float64)
+		} else if v, ok := value.(float64); ok {
+			intVal := int(v)
+			if intVal < 0 || intVal >= 3 {
+				return fmt.Errorf("invalid option value %d for field additional_currency_posting (valid range: 0-%d)", intVal, 3-1)
+			}
+			t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(intVal)
+			// Accept string (lookup in options and convert)
+		} else if v, ok := value.(string); ok {
+			if v == "" {
+				// Empty string defaults to first option (behavior)
+				t.Additional_currency_posting = 0
+			} else {
+				options := []string{"None", "Amount Only", "Additional-Currency Amount Only"}
+				found := false
+				for i, opt := range options {
+					if opt == v {
+						t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(i)
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("invalid option '%s' for field additional_currency_posting (valid options: %v)", v, options)
+				}
+			}
+		} else {
+			return fmt.Errorf("invalid type for field additional_currency_posting (expected GenJournalLineAdditional_currency_posting, int, or string)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(GenJournalLineOnValidate_Additional_currency_posting); ok {
+				if err := trg.OnValidate_Additional_currency_posting(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	case "source_curr_tax_amount":
 		// Set field value
 		if v, ok := value.(types.Decimal); ok {
@@ -10403,6 +10529,8 @@ func (t *GenJournalLine) FieldValue(no int) (any, bool) {
 		return t.Source_currency_amount, true
 	case 101:
 		return t.Source_curr_tax_base_amount, true
+	case 95:
+		return t.Additional_currency_posting, true
 	case 102:
 		return t.Source_curr_tax_amount, true
 	case 104:
@@ -11007,6 +11135,11 @@ func (t *GenJournalLine) SetFieldValue(no int, value any) bool {
 	case 101:
 		if v, ok := value.(types.Decimal); ok {
 			t.Source_curr_tax_base_amount = v
+			return true
+		}
+	case 95:
+		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
+			t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(i)
 			return true
 		}
 	case 102:
@@ -11949,6 +12082,8 @@ func (t *GenJournalLine) columnValue(column string) (interface{}, bool) {
 		return t.Source_currency_amount, true
 	case "source_curr_tax_base_amount":
 		return t.Source_curr_tax_base_amount, true
+	case "additional_currency_posting":
+		return int(t.Additional_currency_posting), true
 	case "source_curr_tax_amount":
 		return t.Source_curr_tax_amount, true
 	case "tax_amount_lcy":
@@ -12129,6 +12264,7 @@ func (t *GenJournalLine) Init() {
 	t.Source_currency_code = *new(types.Code)
 	t.Source_currency_amount = *new(types.Decimal)
 	t.Source_curr_tax_base_amount = *new(types.Decimal)
+	t.Additional_currency_posting = 0
 	t.Source_curr_tax_amount = *new(types.Decimal)
 	t.Tax_amount_lcy = *new(types.Decimal)
 	t.Tax_base_amount_lcy = *new(types.Decimal)
@@ -12266,6 +12402,7 @@ func (t *GenJournalLine) ToMap() map[string]interface{} {
 		"source_currency_code":           t.Source_currency_code.String(),
 		"source_currency_amount":         t.Source_currency_amount.String(),
 		"source_curr_tax_base_amount":    t.Source_curr_tax_base_amount.String(),
+		"additional_currency_posting":    int(t.Additional_currency_posting),
 		"source_curr_tax_amount":         t.Source_curr_tax_amount.String(),
 		"tax_amount_lcy":                 t.Tax_amount_lcy.String(),
 		"tax_base_amount_lcy":            t.Tax_base_amount_lcy.String(),
@@ -12979,6 +13116,23 @@ func (t *GenJournalLine) FromMap(data map[string]interface{}) {
 			t.Source_curr_tax_base_amount = types.NewDecimalFromInt(int64(val))
 		case int64:
 			t.Source_curr_tax_base_amount = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["additional_currency_posting"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(int(val))
+		case int:
+			t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(val)
+		case string:
+			// Lookup string value in options
+			options := []string{"None", "Amount Only", "Additional-Currency Amount Only"}
+			for i, opt := range options {
+				if opt == val {
+					t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(i)
+					break
+				}
+			}
 		}
 	}
 	if v, ok := data["source_curr_tax_amount"]; ok && v != nil {
@@ -14017,6 +14171,17 @@ func (t *GenJournalLine) GetFields() []tables.FieldInfo {
 			ReadOnly:   true,
 		},
 		{
+			No:         95,
+			Name:       "additional_currency_posting",
+			Type:       tables.FieldTypeOption,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+			ReadOnly:   true,
+		},
+		{
 			No:         102,
 			Name:       "source_curr_tax_amount",
 			Type:       tables.FieldTypeDecimal,
@@ -14249,19 +14414,20 @@ func (t *GenJournalLine) GetFlowFields() []string {
 // GetOptionFields returns Option field names mapped to their option values
 func (t *GenJournalLine) GetOptionFields() map[string][]string {
 	return map[string][]string{
-		"account_type":             {"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset"},
-		"document_type":            {" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"},
-		"applies_to_doc_type":      {" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"},
-		"vat_posting":              {"Automatic VAT Entry", "Manual VAT Entry"},
-		"recurring_method":         {" ", "F Fixed", "V Variable", "B Balance", "RF Reversing Fixed", "RV Reversing Variable", "RB Reversing Balance"},
-		"gen_posting_type":         {" ", "Purchase", "Sale", "Settlement"},
-		"tax_calculation_type":     {"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"},
-		"bal_account_type":         {"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"},
-		"bal_gen_posting_type":     {" ", "Purchase", "Sale", "Settlement"},
-		"bal_tax_calculation_type": {"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"},
-		"bank_payment_type":        {" ", "Computer Check", "Manual Check", "Electronic Payment"},
-		"source_type":              {" ", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"},
-		"fa_posting_type":          {" ", "Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance"},
+		"account_type":                {"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset"},
+		"document_type":               {" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"},
+		"applies_to_doc_type":         {" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"},
+		"vat_posting":                 {"Automatic VAT Entry", "Manual VAT Entry"},
+		"recurring_method":            {" ", "F Fixed", "V Variable", "B Balance", "RF Reversing Fixed", "RV Reversing Variable", "RB Reversing Balance"},
+		"gen_posting_type":            {" ", "Purchase", "Sale", "Settlement"},
+		"tax_calculation_type":        {"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"},
+		"bal_account_type":            {"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"},
+		"bal_gen_posting_type":        {" ", "Purchase", "Sale", "Settlement"},
+		"bal_tax_calculation_type":    {"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"},
+		"bank_payment_type":           {" ", "Computer Check", "Manual Check", "Electronic Payment"},
+		"source_type":                 {" ", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"},
+		"additional_currency_posting": {"None", "Amount Only", "Additional-Currency Amount Only"},
+		"fa_posting_type":             {" ", "Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance"},
 	}
 }
 

@@ -18,10 +18,9 @@ import (
 // amounts changed in the entries; the total per posting group to the receivables or payables
 // account, the unrealized gains and losses to the currency's accounts). Each currency gets its
 // Last Date Adjusted; each adjustment per account type, posting group and currency an Exch. Rate
-// Adjmt. Register (86). A processing-only report (main menu General Ledger → Currency).
-//
-// Not migrated yet: Adjust G/L Accounts for Add.-Reporting Currency and the tax entries (there is
-// no additional reporting currency).
+// Adjmt. Register (86). With Adjust G/L Accounts for Add.-Reporting Currency the G/L accounts and
+// tax entries are adjusted to the additional reporting currency's rate as well
+// (adjustexchratesaddcurr.go). A processing-only report (main menu General Ledger → Currency).
 const AdjustExchangeRatesID = 595
 
 func init() {
@@ -43,6 +42,9 @@ type adjustExchangeRates struct {
 	window             *system.Window
 	noCurrencies       bool
 	currentCurrency    types.Code // the currency of the bank accounts being adjusted
+	adjCustVendBank    bool
+	adjGLAcc           bool
+	addCurr            addCurrAdjustment
 }
 
 // adjBufferKey / adjBufferAmounts: table 331 Adjust Exchange Rate Buffer
@@ -63,6 +65,8 @@ func (r *adjustExchangeRates) Definition() *Definition {
 			{Name: "posting_description", Type: "text"},
 			{Name: "posting_date", Type: "date", Required: true},
 			{Name: "document_no", Type: "text", Required: true},
+			{Name: "adjust_cust_vend_bank", Type: "bool", Default: "true"},
+			{Name: "adjust_gl_accounts", Type: "bool", Default: "false"},
 		},
 		Transaction:  true,
 		OnInitReport: r.onInitReport,
@@ -74,6 +78,7 @@ func (r *adjustExchangeRates) Definition() *Definition {
 				Table:               gtables.CurrencyTableName,
 				Key:                 []string{"code"},
 				RequestFilterFields: []string{"code"},
+				OnPreDataItem:       Trigger(r.currencyOnPreDataItem),
 				OnAfterGetRecord:    Trigger(r.currencyOnAfterGetRecord),
 				OnPostDataItem:      Trigger(r.currencyOnPostDataItem),
 				DataItems: []*DataItem{{
@@ -90,6 +95,7 @@ func (r *adjustExchangeRates) Definition() *Definition {
 				Name:           "customer",
 				Table:          gtables.CustomerTableName,
 				Key:            []string{"no"},
+				OnPreDataItem:  Trigger(r.customerOnPreDataItem),
 				OnPostDataItem: Trigger(r.customerOnPostDataItem),
 				DataItems: []*DataItem{{
 					Name:             "cust_ledger_entry",
@@ -105,6 +111,7 @@ func (r *adjustExchangeRates) Definition() *Definition {
 				Name:           "vendor",
 				Table:          gtables.VendorTableName,
 				Key:            []string{"no"},
+				OnPreDataItem:  Trigger(r.vendorOnPreDataItem),
 				OnPostDataItem: Trigger(r.vendorOnPostDataItem),
 				DataItems: []*DataItem{{
 					Name:             "vendor_ledger_entry",
@@ -115,6 +122,22 @@ func (r *adjustExchangeRates) Definition() *Definition {
 					OnPreDataItem:    Trigger(r.vendLedgEntryOnPreDataItem),
 					OnAfterGetRecord: Trigger(r.vendLedgEntryOnAfterGetRecord),
 				}},
+			},
+			{
+				Name:             "tax_posting_setup",
+				Table:            gtables.TaxPostingSetupTableName,
+				Key:              []string{"tax_bus_posting_group", "tax_prod_posting_group"},
+				OnPreDataItem:    Trigger(r.taxPostingSetupOnPreDataItem),
+				OnAfterGetRecord: Trigger(r.taxPostingSetupOnAfterGetRecord),
+			},
+			{
+				Name:             "gl_account",
+				Table:            gtables.GLAccountTableName,
+				Key:              []string{"no"},
+				TableView:        []ftables.FieldFilter{{Field: "exchange_rate_adjustment", Expression: "1..2"}},
+				OnPreDataItem:    Trigger(r.glAccOnPreDataItem),
+				OnAfterGetRecord: Trigger(r.glAccOnAfterGetRecord),
+				OnPostDataItem:   Trigger(r.glAccOnPostDataItem),
 			},
 		},
 	}
@@ -143,10 +166,23 @@ func (r *adjustExchangeRates) onPreReport(run *Run) error {
 		return system.Error(run.Text("ENTER_DOCUMENT_NO"))
 	}
 	r.postingDescription = run.Option("posting_description")
+	r.adjCustVendBank = run.OptionBool("adjust_cust_vend_bank")
+	r.adjGLAcc = run.OptionBool("adjust_gl_accounts")
+	if !r.adjCustVendBank && r.adjGLAcc {
+		if system.GuiAllowed() && !system.Confirm(run.Text("CONFIRM_GL_ONLY")) {
+			return system.Error(run.Text("CANCELED"))
+		}
+	}
 	r.sourceCode = gtables.GetSourceCodeSetup(run).Exchange_rate_adjmt
 	exchRateAdjReg := gtables.NewExchRateAdjmtReg(run)
 	if exchRateAdjReg.FindLast() {
 		r.exchRateAdjRegNo = exchRateAdjReg.No
+	}
+	if r.adjGLAcc {
+		err := r.checkAddCurrAdjustment(run)
+		if err != nil {
+			return err
+		}
 	}
 	r.genJnlPostLine = genjnl.NewGenJnlPostLine(run)
 	r.currencyFactors = map[types.Code]types.Decimal{}
@@ -159,6 +195,15 @@ func (r *adjustExchangeRates) onPreReport(run *Run) error {
 func (r *adjustExchangeRates) onPostReport(run *Run) error {
 	r.window.Close()
 	run.Message(run.Text("DONE", r.totalAdjAmount.String()))
+	return nil
+}
+
+// currencyOnPreDataItem: currencies, bank accounts, customers and vendors only with Adjust
+// Customer, Vendor and Bank Accounts
+func (r *adjustExchangeRates) currencyOnPreDataItem(currency *gtables.Currency, run *Run) error {
+	if !r.adjCustVendBank {
+		return Break()
+	}
 	return nil
 }
 
@@ -392,6 +437,20 @@ func (r *adjustExchangeRates) vendLedgEntryOnAfterGetRecord(e *gtables.VendorLed
 		return err
 	}
 	return e.ModifyOrError(false)
+}
+
+func (r *adjustExchangeRates) customerOnPreDataItem(cust *gtables.Customer, run *Run) error {
+	if !r.adjCustVendBank {
+		return Break()
+	}
+	return nil
+}
+
+func (r *adjustExchangeRates) vendorOnPreDataItem(vend *gtables.Vendor, run *Run) error {
+	if !r.adjCustVendBank {
+		return Break()
+	}
+	return nil
 }
 
 func (r *adjustExchangeRates) customerOnPostDataItem(cust *gtables.Customer, run *Run) error {

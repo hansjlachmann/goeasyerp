@@ -3157,6 +3157,7 @@ tables:
   gen_journal_line:
     caption: "Gen. Journal Line"
     fields:
+      additional_currency_posting: "Additional-Currency Posting"
       business_unit_code: "Business Unit Code"
       fa_posting_date: "FA Posting Date"
       fa_posting_type: "FA Posting Type"
@@ -3260,6 +3261,10 @@ tables:
       recurring_frequency: "Recurring Frequency"
       allocated_amt_lcy: "Allocated Amt. (LCY)"
     options:
+      additional_currency_posting:
+        none: "None"
+        amount_only: "Amount Only"
+        additional_currency_amount_only: "Additional-Currency Amount Only"
       recurring_method:
         f_fixed: "F Fixed"
         v_variable: "V Variable"
@@ -3347,6 +3352,7 @@ tables:
   source_code_setup:
     caption: "Source Code Setup"
     fields:
+      adjust_add_reporting_currency: "Adjust Add. Reporting Currency"
       consolidation: "Consolidation"
       compress_g_l: "Compress G/L"
       compress_tax_entries: "Compress Tax Entries"
@@ -3399,6 +3405,12 @@ tables:
   tax_entry:
     caption: "Tax Entry"
     fields:
+      add_curr_rem_unreal_base: "Add.-Curr. Rem. Unreal. Base"
+      add_curr_rem_unreal_amount: "Add.-Curr. Rem. Unreal. Amount"
+      add_currency_unrealized_base: "Add.-Currency Unrealized Base"
+      add_currency_unrealized_amt: "Add.-Currency Unrealized Amt."
+      additional_currency_base: "Additional-Currency Base"
+      additional_currency_amount: "Additional-Currency Amount"
       entry_no: "Entry No."
       gen_bus_posting_group: "Gen. Bus. Posting Group"
       gen_prod_posting_group: "Gen. Prod. Posting Group"

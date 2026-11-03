@@ -139,6 +139,7 @@ common:
     indent_chart_of_accounts: "Indent Chart of Accounts"
     table: "Table"
     copy_data: "Copy Data"
+    change_add_reporting_currency: "Change Add. Reporting Currency"
     reports: "Reports"
     trial_balance_4: "Trial Balance (4)"
     trial_balance: "Trial Balance"

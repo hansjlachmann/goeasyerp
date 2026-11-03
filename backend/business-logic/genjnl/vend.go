@@ -133,48 +133,8 @@ func (p *GenJnlPostLine) postVend(genJnlLine *gtables.GenJournalLine) error {
 		return err
 	}
 
-	// Post to Payables Account
-	_, err = p.initGLEntry(vendPostingGr.Payables_account, genJnlLine.Amount_lcy.Sub(p.applicationLCY()), true)
-	if err != nil {
-		return err
-	}
-	p.glEntry.Bal_account_type = gtables.GLEntryBal_account_type(genJnlLine.Bal_account_type)
-	p.glEntry.Bal_account_no = genJnlLine.Bal_account_no
-	err = p.insertGLEntry()
-	if err != nil {
-		return err
-	}
-	// Post payment discount
-	if !p.totalPmtDiscLCY.IsZero() {
-		err = vendPostingGr.TestField("payment_disc_acc")
-		if err != nil {
-			return err
-		}
-		_, err = p.initGLEntry(vendPostingGr.Payment_disc_acc, p.totalPmtDiscLCY, true)
-		if err != nil {
-			return err
-		}
-		err = p.insertGLEntry()
-		if err != nil {
-			return err
-		}
-	}
-	// Post to Curr. Appln. Rounding Account
-	if !p.totalApplnRoundingLCY.IsZero() {
-		err = vendPostingGr.TestField("curr_appln_rounding_account")
-		if err != nil {
-			return err
-		}
-		_, err = p.initGLEntry(vendPostingGr.Curr_appln_rounding_account, p.totalApplnRoundingLCY, true)
-		if err != nil {
-			return err
-		}
-		err = p.insertGLEntry()
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	// Post to Payables Account, payment discount, application rounding
+	return p.postApplicationGLEntries(genJnlLine, vendPostingGr, vendPostingGr.Payables_account, vendPostingGr.Payment_disc_acc, vendPostingGr.Curr_appln_rounding_account)
 }
 
 // applyVendLedgEntry applies a new vendor ledger entry (a payment) to the vendor's open
@@ -272,10 +232,22 @@ func (p *GenJnlPostLine) applyVendLedgEntry(newVendLedgEntry *gtables.VendorLedg
 			newVendLedgEntry.Amount_lcy = newVendLedgEntry.Amount_lcy.Add(pmtDiscLCY).Sub(deltaUnrealAmount)
 			oldVendLedgEntry.Pmt_disc_rcd_lcy = pmtDiscLCY.Sub(deltaUnrealAmount).Neg()
 			p.totalPmtDiscLCY = p.totalPmtDiscLCY.Sub(pmtDiscLCY.Sub(deltaUnrealAmount))
+			pmtDiscAddCurr, err := p.pmtDiscAddCurr(applnCurrencyCode, pmtDisc, pmtDiscLCY)
+			if err != nil {
+				return err
+			}
+			deltaUnrealAmountAddCurr, err := p.calcLCYToAddCurr(deltaUnrealAmount)
+			if err != nil {
+				return err
+			}
+			p.totalPmtDiscAddCurr = p.totalPmtDiscAddCurr.Sub(pmtDiscAddCurr.Sub(deltaUnrealAmountAddCurr))
 		}
 
 		// Management of currency rounding
-		p.vendCurrencyApplnRounding(newVendLedgEntry, oldVendLedgEntry, oldVendLedgEntry2, applnCurrencyCode, applnRoundingPrecision)
+		err = p.vendCurrencyApplnRounding(newVendLedgEntry, oldVendLedgEntry, oldVendLedgEntry2, applnCurrencyCode, applnRoundingPrecision)
+		if err != nil {
+			return err
+		}
 
 		// Find amount for application
 		var appliedAmount types.Decimal
@@ -393,15 +365,15 @@ func vendLedgApplAmtLCY(appliedAmount types.Decimal, vendLedgEntry *gtables.Vend
 
 // vendCurrencyApplnRounding: a payment in another currency that leaves less than the
 // application rounding precision takes the difference (Curr. Appln. Rounding Account)
-func (p *GenJnlPostLine) vendCurrencyApplnRounding(newVendLedgEntry, oldVendLedgEntry, oldVendLedgEntry2 *gtables.VendorLedgerEntry, applnCurrencyCode types.Code, applnRoundingPrecision types.Decimal) {
+func (p *GenJnlPostLine) vendCurrencyApplnRounding(newVendLedgEntry, oldVendLedgEntry, oldVendLedgEntry2 *gtables.VendorLedgerEntry, applnCurrencyCode types.Code, applnRoundingPrecision types.Decimal) error {
 	if newVendLedgEntry.Document_type != gtables.VendorLedgerEntry_Document_type.Payment ||
 		applnCurrencyCode == oldVendLedgEntry.Currency_code {
-		return
+		return nil
 	}
 	applnRounding := newVendLedgEntry.Remaining_amount.Add(oldVendLedgEntry2.Remaining_amount).Neg()
 	applnRoundingLCY := vendLedgApplAmtLCY(applnRounding, newVendLedgEntry)
 	if applnRounding.IsZero() || applnRounding.Abs().Decimal.GreaterThan(applnRoundingPrecision.Decimal) {
-		return
+		return nil
 	}
 	postUnrealAmount := newVendLedgEntry.Remaining_amt_lcy.Add(vendLedgApplAmtLCY(newVendLedgEntry.Remaining_amount.Neg(), newVendLedgEntry))
 	newVendLedgEntry.Amount = newVendLedgEntry.Amount.Add(applnRounding)
@@ -416,6 +388,12 @@ func (p *GenJnlPostLine) vendCurrencyApplnRounding(newVendLedgEntry, oldVendLedg
 	oldVendLedgEntry.Rounding_amount = applnRounding
 	oldVendLedgEntry.Rounding_amount_lcy = applnRoundingLCY
 	p.totalApplnRoundingLCY = p.totalApplnRoundingLCY.Sub(applnRoundingLCY.Sub(deltaUnrealAmount))
+	deltaUnrealAmountAddCurr, err := p.calcLCYToAddCurr(deltaUnrealAmount)
+	if err != nil {
+		return err
+	}
+	p.totalApplnRoundingAddCurr = p.totalApplnRoundingAddCurr.Sub(applnRounding.Sub(deltaUnrealAmountAddCurr))
+	return nil
 }
 
 // vendUpdateDebitCredit: Debit/Credit Amount (LCY) from the amounts (a correction the other way

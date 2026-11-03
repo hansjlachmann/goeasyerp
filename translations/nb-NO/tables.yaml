@@ -3157,6 +3157,7 @@ tables:
   gen_journal_line:
     caption: "Finanskladdelinje"
     fields:
+      additional_currency_posting: "Bokføring i tilleggsvaluta"
       business_unit_code: "Konsernenhetskode"
       fa_posting_date: "Anleggsbokføringsdato"
       fa_posting_type: "Anleggsbokføringstype"
@@ -3260,6 +3261,10 @@ tables:
       recurring_frequency: "Gjentakelsesfrekvens"
       allocated_amt_lcy: "Fordelt beløp (NOK)"
     options:
+      additional_currency_posting:
+        none: "Ingen"
+        amount_only: "Bare beløp"
+        additional_currency_amount_only: "Bare beløp i tilleggsvaluta"
       recurring_method:
         f_fixed: "F Fast"
         v_variable: "V Variabel"
@@ -3347,6 +3352,7 @@ tables:
   source_code_setup:
     caption: "Kildekodeoppsett"
     fields:
+      adjust_add_reporting_currency: "Juster tilleggsrapporteringsvaluta"
       consolidation: "Konsolidering"
       compress_g_l: "Komprimer finans"
       compress_tax_entries: "Komprimer mva.-poster"
@@ -3399,6 +3405,12 @@ tables:
   tax_entry:
     caption: "Mva.-post"
     fields:
+      add_curr_rem_unreal_base: "Gjenst. urealisert grunnlag i tilleggsvaluta"
+      add_curr_rem_unreal_amount: "Gjenst. urealisert beløp i tilleggsvaluta"
+      add_currency_unrealized_base: "Urealisert grunnlag i tilleggsvaluta"
+      add_currency_unrealized_amt: "Urealisert beløp i tilleggsvaluta"
+      additional_currency_base: "Grunnlag i tilleggsvaluta"
+      additional_currency_amount: "Beløp i tilleggsvaluta"
       entry_no: "Løpenr."
       gen_bus_posting_group: "Bedriftsbokføringsgruppe"
       gen_prod_posting_group: "Produktbokføringsgruppe"

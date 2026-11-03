@@ -979,6 +979,25 @@ reports:
       ENTER_DOCUMENT_NO: "Please enter a Document No."
       WINDOW: "Creating general journal lines...\n\nAccount No.          #1##########\nAmount               #2##########\nBusiness Unit Code   #3##########\nDepartment Code      #4##########\nProject Code         #5##########"
       DONE: "The closing entries are in the general journal %1 %2. Post them there."
+      CONFIRM_POST_DIRECTLY: "With the use of an additional reporting currency, this batch job will post closing entries directly to the general ledger. These closing entries will not be transferred to a general journal before the program posts them to the general ledger.\n\nDo you wish to continue?"
+      POSTED: "The closing entries were posted to the general ledger."
+  "86":
+    caption: "Adjust Add. Reporting Currency"
+    options:
+      additional_reporting_currency: "Additional Reporting Currency"
+      document_no: "Document No."
+      retained_earnings_acc: "Retained Earnings Acc."
+    texts:
+      OPTIONS: "Options"
+      UNCHANGED: "The additional reporting currency is already this one. Choose another one."
+      CONFIRM_CHANGE: "If you change the additional reporting currency, future general ledger entries will be posted in the new reporting currency (and in the local currency), and the posted general ledger entries are recalculated in the new currency.\n\nDo you want to change the additional reporting currency?"
+      CONFIRM_DELETE: "If you delete the additional reporting currency, future general ledger entries will be posted in the local currency only. Deleting the additional reporting currency has no effect on the general ledger entries already posted.\n\nDo you want to delete the additional reporting currency?"
+      DELETED: "The additional reporting currency was deleted."
+      ENTER_DOCUMENT_NO: "Please enter a Document No."
+      ENTER_RETAINED_EARNINGS: "Please enter the Retained Earnings Account No."
+      WINDOW: "Processing G/L Entries...\n\nPosting Date #1##########"
+      RESIDUAL: "Residual caused by rounding of %1"
+      DONE: "The posted entries are in the additional reporting currency %1."
   "20":
     caption: "Calc. and Post Tax Settlement"
     options:
@@ -989,6 +1008,7 @@ reports:
       settlement_account: "Settlement Account"
       show_tax_entries: "Show Tax Entries"
       post: "Post"
+      show_amounts_in_add_currency: "Show Amounts in Add. Reporting Currency"
     texts:
       OPTIONS: "Options"
       TITLE: "Calc. and Post Tax Settlement"
@@ -1026,6 +1046,7 @@ reports:
       include_tax_entries: "Include Tax Entries"
       period: "Include Tax Entries of"
       round_to_whole_numbers: "Round to Whole Numbers"
+      show_amounts_in_add_currency: "Show Amounts in Add. Reporting Currency"
     texts:
       TITLE: "Tax Statement"
       PAGE: "Page"
@@ -1039,6 +1060,8 @@ reports:
       TEMPLATE: "Tax Statement Template"
       STATEMENT_NAME: "Tax Statement Name"
       WHOLE_NUMBERS: "Amounts are in whole numbers."
+      AMOUNTS_IN: "All amounts are in %1"
+      WHOLE_ADD_CURR: "Amounts are in whole %1."
       ALL_ENTRIES: "The report includes all tax entries."
       CLOSED_ENTRIES: "The report includes only closed tax entries."
       ROW_NO: "Row No."
@@ -1781,6 +1804,8 @@ reports:
       posting_description: "Posting Description"
       posting_date: "Posting Date"
       document_no: "Document No."
+      adjust_cust_vend_bank: "Adjust Customer, Vendor and Bank Accounts"
+      adjust_gl_accounts: "Adjust G/L Accounts for Add.-Reporting Currency"
     texts:
       ADJUSTMENT_PERIOD: "Adjustment Period"
       POSTING_DESCRIPTION: "Exchange Rate Adjmt. of %1 %2"
@@ -1789,6 +1814,9 @@ reports:
       NO_CURRENCIES: "No currencies have been found."
       WINDOW: "Adjusting exchange rates...\nCurrency #1######\nCustomer #2##########\nVendor #3##########\nAdjustment #4#############"
       DONE: "The exchange rates were adjusted by %1 in total."
+      CONFIRM_GL_ONLY: "Do you want to adjust general ledger entries for currency fluctuations without adjusting customer, vendor and bank ledger entries? This may result in incorrect currency adjustments to payables, receivables and bank accounts.\n\nDo you wish to continue?"
+      CANCELED: "The adjustment of exchange rates has been canceled."
+      EXCH_RATE_ADJMT_ACCOUNT: "%1 on %2 %3 must be %4. When this %2 is used in %5, the exchange rate adjustment is defined in the %6 field in the %7. %2 %3 is used in the %8 field in the %5."
   "5692":
     caption: "Calculate Depreciation"
     options:
