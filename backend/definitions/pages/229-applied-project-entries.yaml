@@ -1,0 +1,100 @@
+# Page 229 Applied Project Entries: the entries applied to an entry — the one that closed it and those
+# it closed (opened by Applied Entries on pages 92 and 229, filtered on their entry numbers)
+page:
+  id: 229
+  type: List
+  name: Applied Project Entries
+  source_table: Project_Ledger_Entry
+  caption: Applied Project Entries
+  editable: true   # the entries applied to one (Applied Entries on the entries pages): only the phase, task and step can be changed (Project Entry-Edit)
+
+  layout:
+    repeater:
+      fields:
+        - source: posting_date
+          width: 100
+        - source: entry_type
+          width: 90
+        - source: document_no
+          width: 110
+        - source: project_no
+          width: 110
+        - source: type
+          width: 110
+        - source: "no"
+          width: 110
+        - source: variant_code
+          width: 100
+          visible: false
+        - source: description
+          width: 250
+        - source: dimension_1_code
+          width: 110
+          visible: false
+        - source: dimension_2_code
+          width: 110
+          visible: false
+        - source: location_code
+          width: 100
+          visible: false
+        - source: bin_code
+          width: 100
+          visible: false
+        - source: phase_code
+          width: 100
+          visible: false
+        - source: task_code
+          width: 100
+          visible: false
+        - source: step_code
+          width: 100
+          visible: false
+        - source: total_price
+          width: 120
+        - source: closed_by_amount
+          width: 120
+        - source: user_id
+          width: 110
+          visible: false
+        - source: source_code
+          width: 110
+          visible: false
+        - source: reason_code
+          width: 110
+          visible: false
+        - source: entry_no
+          width: 90
+
+  actions:
+    # opened from a line's Applies-to ID: the entry gets (or loses) the line's ID (page parameter)
+    - name: Set Applies-to ID
+      caption: Set Applies-to ID
+      image: Approve
+      shortcut: Shift+F11
+      promoted: true
+      run_object: table:Project_Ledger_Entry.SetApplId
+
+    # the entries applied to this one (page 229, the calling line's parameters kept)
+    - name: Applied Entries
+      caption: Applied Entries
+      image: Entries
+      promoted: true
+      run_object: table:Project_Ledger_Entry.AppliedEntries
+
+    # opened from a line's Applies-to ID: the line's amount against the entries marked with its ID (form 365)
+    - name: Reconcile
+      caption: Reconcile
+      image: Calculate
+      shortcut: Ctrl+F9
+      promoted: true
+      run_object: table:Project_Ledger_Entry.Reconcile
+
+    - name: Navigate
+      caption: Navigate
+      image: Navigate
+      shortcut: Ctrl+Alt+Q
+      promoted: true
+      run_page: 344
+      run_page_params:
+        document_no: document_no
+        posting_date: posting_date
