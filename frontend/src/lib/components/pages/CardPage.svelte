@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import Modal from '../Modal.svelte';
-	import { goto } from '$app/navigation';
+	import { pageNavigator } from '$lib/utils/pageNavigator';
 	import type { PageDefinition, Field, FieldState, Action } from '$lib/types/pages';
 	import type { LookupData } from '$lib/types/api';
 	import FieldRenderer from './FieldRenderer.svelte';
@@ -27,6 +27,7 @@
 	import { handleFieldEnterKey, getFieldControls, arrowLeavesField, fieldInDirection, focusField, type ArrowDirection } from '$lib/utils/fieldNavigation';
 	import { getJson, setJson } from '$lib/utils/storage';
 	import PageRenderer from './PageRenderer.svelte';
+	import PageFrames from './PageFrames.svelte';
 	import ActionButton from '../ActionButton.svelte';
 	import ActionMenu from '../ActionMenu.svelte';
 	import ObjectRunner from '../ObjectRunner.svelte';
@@ -89,6 +90,9 @@
 		onNavigateLast,
 		onrefresh
 	}: Props = $props();
+
+	// Where the pages it opens go: the browser, or the page frame it is in
+	const pageNav = pageNavigator();
 
 	// Get primary key field name from page definition
 	const primaryKeyField = $derived(getPrimaryKeyField(page));
@@ -411,9 +415,9 @@
 			// Over the list (modal card): close the card; a card page: open the list on this
 			// record — not as a page to return from (its Esc would come back here)
 			if (onbacktolist) onbacktolist();
-			else goto(`/pages/${action.run_page}?select=${encodeURIComponent(getRecordId(record, getPrimaryKeyField(page), getPrimaryKeyFields(page)) ?? '')}`);
+			else pageNav.move(`/pages/${action.run_page}?select=${encodeURIComponent(getRecordId(record, getPrimaryKeyField(page), getPrimaryKeyFields(page)) ?? '')}`);
 		} else if (action.run_page) {
-			goto(runPageUrl(action));
+			pageNav.open(runPageUrl(action));
 		} else if (action.run_object) {
 			handleRunObject(action.run_object);
 		} else if (!action.items) {
@@ -950,7 +954,9 @@
 	{@const d = drilldown}
 	<Modal open={true} size="expanded" onclose={() => (drilldown = null)}>
 		<div class="drilldown-page">
-			<PageRenderer pageid={d.pageId} embedded={true} initialFilters={d.filters} onclose={() => (drilldown = null)} />
+			<PageFrames>
+				<PageRenderer pageid={d.pageId} embedded={true} initialFilters={d.filters} onclose={() => (drilldown = null)} />
+			</PageFrames>
 		</div>
 	</Modal>
 {/if}

@@ -1,18 +1,12 @@
 import type { PageLoad } from './$types';
-import { parseNavigationQuery } from '$lib/utils/recordNavigation';
+import { parsePageUrl } from '$lib/utils/pageUrl';
 
 export const load: PageLoad = ({ params, url }) => {
-	const pageId = parseInt(params.id, 10);
-	const recordId = params.recordid;
-	// Opened from a list: card navigation moves through the list's records (filters, search, sort)
-	const navigationQuery = parseNavigationQuery(url.searchParams.get('nav'));
-	// Opened with Edit (a list's Edit / Ctrl+E): the card starts in edit mode
-	const edit = url.searchParams.get('edit') === '1';
-
+	const page = parsePageUrl(url, parseInt(params.id, 10), params.recordid);
 	return {
-		pageId,
-		recordId,
-		navigationQuery,
-		edit
+		pageId: page.pageId,
+		recordId: page.recordId,
+		navigationQuery: page.navigationQuery,
+		edit: page.edit
 	};
 };

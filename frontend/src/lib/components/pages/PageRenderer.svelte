@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto, replaceState } from '$app/navigation';
+	import { pageNavigator } from '$lib/utils/pageNavigator';
 	import { withNavigationQuery, type NavigationQuery } from '$lib/utils/recordNavigation';
 	import { onMount } from 'svelte';
 	import type { PageDefinition } from '$lib/types/pages';
@@ -20,6 +20,7 @@
 	import { withReturn } from '$lib/utils/returnUrl';
 	import ListPage from './ListPage.svelte';
 	import PageRenderer from './PageRenderer.svelte';
+	import PageFrames from './PageFrames.svelte';
 	import ListPageSkeleton from './ListPageSkeleton.svelte';
 	import CardPageSkeleton from './CardPageSkeleton.svelte';
 	import ConfirmModal from '../ConfirmModal.svelte';
@@ -97,6 +98,9 @@
 		openParams = {}
 	}: Props = $props();
 
+	// Where the page goes: the browser, or the page frame it is in
+	const pageNav = pageNavigator();
+
 	// ---- OnOpenPage (a journal): the page's parameters, the filters its trigger set ----
 	// svelte-ignore state_referenced_locally - the URL's parameters only start the page
 	let pageParams = $state<Record<string, string>>({ ...openParams });
@@ -128,7 +132,7 @@
 		}
 		// The page keeps its parameters (reload, back)
 		if (!embedded && !subpage && typeof window !== 'undefined') {
-			replaceState(pageUrlWith(pageParams), {});
+			pageNav.replaceState(pageUrlWith(pageParams));
 		}
 		return true;
 	}
@@ -140,7 +144,7 @@
 
 	// This page's URL with other parameters (the rest of the query kept)
 	function pageUrlWith(params: Record<string, string>): string {
-		const url = new URL(window.location.href);
+		const url = pageNav.location();
 		for (const [name, value] of Object.entries(params)) {
 			if (value === '' || value === undefined || value === null) url.searchParams.delete(name);
 			else url.searchParams.set(name, value);
@@ -152,7 +156,7 @@
 	function reopenWith(param: string, value: string) {
 		const params = { ...pageParams, [param]: value };
 		if (embedded || subpage) return;
-		goto(pageUrlWith(params), { replaceState: true });
+		pageNav.move(pageUrlWith(params), { replaceState: true });
 	}
 
 	// The first header field has the focus when the page opens (a journal: Batch Name, so
@@ -186,7 +190,7 @@
 		pickRequest = null;
 		if (!request || action !== 'LookupOK' || !picked) {
 			// Nothing picked when the page could not open yet: back where the user came from
-			if (request && openFilters.length === 0 && !embedded && !subpage) goto(returnUrl ?? '/');
+			if (request && openFilters.length === 0 && !embedded && !subpage) pageNav.close(returnUrl ?? '/');
 			return;
 		}
 		reopenWith(request.param, String(picked[request.field] ?? ''));
@@ -227,7 +231,7 @@
 		}
 		const changed = Object.keys(params).some((name) => (params[name] ?? '') !== (pageParams[name] ?? ''));
 		if (changed && !embedded && !subpage) {
-			goto(pageUrlWith(params), { replaceState: true });
+			pageNav.move(pageUrlWith(params), { replaceState: true });
 		} else {
 			void loadListData(0);
 		}
@@ -649,7 +653,7 @@
 				isExistingRecord = false; // Reset for new record
 				currentRecordId = undefined;
 				// Update URL to remove the recordid
-				replaceState(`/pages/${page.page.id}`, {});
+				pageNav.replaceState(`/pages/${page.page.id}`);
 				break;
 			case 'Delete':
 				// Get record ID from record object or recordid prop
@@ -667,7 +671,7 @@
 									// Try to find the associated list page by convention
 									// Customer Card (21) -> Customer List (22)
 									const listPageId = page!.page.id + 1;
-									goto(`/pages/${listPageId}`);
+									pageNav.close(`/pages/${listPageId}`);
 								}
 							} catch (err) {
 								console.error('Delete error:', err);
@@ -713,7 +717,7 @@
 				if (newRecordId && newRecordId !== currentRecordId) {
 					recordIds = recordIds.map((id) => (id === currentRecordId ? newRecordId : id));
 					currentRecordId = newRecordId;
-					replaceState(withNavigationQuery(`/pages/${page.page.id}/${newRecordId}`, navigationQuery), {});
+					pageNav.replaceState(withNavigationQuery(`/pages/${page.page.id}/${newRecordId}`, navigationQuery));
 				}
 				// the card's own "Saving… / ✓ Saved" indicator at the top tells it
 			} else {
@@ -732,7 +736,7 @@
 				// Navigate to the proper URL with the new record ID
 				if (newRecordId && page.page.id) {
 					// Update URL without full page reload
-					replaceState(`/pages/${page.page.id}/${newRecordId}`, {});
+					pageNav.replaceState(`/pages/${page.page.id}/${newRecordId}`);
 				}
 			}
 			return true;
@@ -754,14 +758,14 @@
 			case 'New':
 				// Navigate to card page in new mode
 				if (page.page.card_page_id) {
-					goto(`/pages/${page.page.card_page_id}`);
+					pageNav.open(`/pages/${page.page.card_page_id}`);
 				}
 				break;
 			case 'Edit':
 				if (selectedRecord && page.page.card_page_id) {
 					// Navigate to card page with record ID
 					const editRecordId = getRecordId(selectedRecord, primaryKeyField, primaryKeyFieldsList);
-					goto(`/pages/${page.page.card_page_id}/${editRecordId}?edit=1`);
+					pageNav.open(`/pages/${page.page.card_page_id}/${editRecordId}?edit=1`);
 				}
 				break;
 			case 'Delete':
@@ -799,7 +803,7 @@
 		if (!page || !page.page.card_page_id) return;
 
 		const recordId = getRecordId(clickedRecord, primaryKeyField, primaryKeyFieldsList);
-		goto(withNavigationQuery(`/pages/${page.page.card_page_id}/${recordId}`, navigation));
+		pageNav.open(withNavigationQuery(`/pages/${page.page.card_page_id}/${recordId}`, navigation));
 	}
 
 	// Handle save notification from list page (inline editing)
@@ -879,7 +883,7 @@
 	// Navigation functions for card pages
 	function navigateToRecord(targetRecordId: string) {
 		if (!page) return;
-		goto(withNavigationQuery(`/pages/${page.page.id}/${targetRecordId}`, navigationQuery));
+		pageNav.move(withNavigationQuery(`/pages/${page.page.id}/${targetRecordId}`, navigationQuery));
 	}
 
 	// Create navigation actions using shared helper
@@ -911,20 +915,14 @@
 		if (page?.page.type !== 'List' || !page.page.layout.matrix) return;
 		const target = e.target as HTMLElement | null;
 		if (target?.closest('input, [role="dialog"]')) return;
-		goto(returnUrl ?? '/');
+		pageNav.close(returnUrl ?? '/');
 	}
 
 	// Esc / close on a card page: back to the page that opened it (an action or drilldown of
-	// another card — that card again, on its record), else to the card's list
+	// another card — that card again, on its record), else to the card's list, else back in the
+	// browser's history (in a page frame: the page under it)
 	function handleCardClose() {
-		if (returnUrl) {
-			goto(returnUrl);
-		} else if (page?.page.list_page_id) {
-			goto(`/pages/${page.page.list_page_id}`);
-		} else {
-			// Fallback: go back in history
-			window.history.back();
-		}
+		pageNav.close(returnUrl ?? (page?.page.list_page_id ? `/pages/${page.page.list_page_id}` : undefined));
 	}
 </script>
 
@@ -992,7 +990,7 @@
 				section=""
 				matrix={page.page.layout.matrix}
 				record={{}}
-				ondrilldown={(pageId, filters) => goto(withReturn(`/pages/${pageId}?` + filters.map((f) => 'filter=' + encodeURIComponent(`${f.field}=${f.expression}`)).join('&')))}
+				ondrilldown={(pageId, filters) => pageNav.open(withReturn(`/pages/${pageId}?` + filters.map((f) => 'filter=' + encodeURIComponent(`${f.field}=${f.expression}`)).join('&')))}
 			/>
 		</div>
 	{:else if page.page.type === 'List'}
@@ -1140,14 +1138,16 @@
 	{@const request = pickRequest}
 	<Modal open={true} size="expanded" onclose={() => handlePick('Cancel')}>
 		<div class="pick-page">
-			<PageRenderer
-				pageid={request.pageId}
-				embedded={true}
-				initialFilters={request.filters}
-				lookupMode={true}
-				editableLookup={true}
-				onclose={(action, _key, picked) => handlePick(action, picked)}
-			/>
+			<PageFrames>
+				<PageRenderer
+					pageid={request.pageId}
+					embedded={true}
+					initialFilters={request.filters}
+					lookupMode={true}
+					editableLookup={true}
+					onclose={(action, _key, picked) => handlePick(action, picked)}
+				/>
+			</PageFrames>
 		</div>
 	</Modal>
 {/if}

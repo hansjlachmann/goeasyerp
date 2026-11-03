@@ -1,11 +1,17 @@
 <script lang="ts" module>
 	// The open modals, the last one on top: Esc closes the top one only, and the pages under
 	// a modal ignore the keyboard (isModalOpen) — unless they are inside one (RunModal)
-	const openModals: symbol[] = [];
+	const openModals: { id: symbol; content: () => HTMLElement | null }[] = [];
 
 	/** A modal (message box, confirmation, input dialog, modal card …) is open */
 	export function isModalOpen(): boolean {
 		return openModals.length > 0;
+	}
+
+	/** The element is in the top modal (a page in it has the keyboard, the pages under it not) */
+	export function isInTopModal(element: Element | null | undefined): boolean {
+		const top = openModals[openModals.length - 1]?.content();
+		return !!element && !!top && top.contains(element);
 	}
 </script>
 
@@ -21,10 +27,13 @@
 		size?: 'normal' | 'expanded' | 'fullscreen';
 		// Ctrl+Shift+F12 on the top modal (a modal card's full screen button)
 		ontogglefullscreen?: () => void;
+		// false: Esc is the page's in it (a page frame: the page closes itself, after its own
+		// uses of Esc — an edit, the filter pane)
+		closeOnEscape?: boolean;
 		children: Snippet;
 	}
 
-	let { open = false, onclose, title, size = 'normal', ontogglefullscreen, children }: Props = $props();
+	let { open = false, onclose, title, size = 'normal', ontogglefullscreen, closeOnEscape = true, children }: Props = $props();
 
 	// Reference to modal content for focus management
 	let modalContentRef = $state<HTMLDivElement | null>(null);
@@ -36,15 +45,15 @@
 	const id = Symbol('modal');
 	$effect(() => {
 		if (!open) return;
-		openModals.push(id);
+		openModals.push({ id, content: () => modalContentRef });
 		function handleKey(event: KeyboardEvent) {
-			if (openModals[openModals.length - 1] !== id) return;
+			if (openModals[openModals.length - 1]?.id !== id) return;
 			if (event.key === 'F12' && event.ctrlKey && event.shiftKey && ontogglefullscreen) {
 				event.preventDefault();
 				ontogglefullscreen();
 				return;
 			}
-			if (event.key !== 'Escape') return;
+			if (event.key !== 'Escape' || !closeOnEscape) return;
 			if (event.defaultPrevented) return;
 			event.preventDefault();
 			onclose?.();
@@ -52,7 +61,7 @@
 		document.addEventListener('keydown', handleKey);
 		return () => {
 			document.removeEventListener('keydown', handleKey);
-			const i = openModals.indexOf(id);
+			const i = openModals.findIndex((m) => m.id === id);
 			if (i >= 0) openModals.splice(i, 1);
 		};
 	});
