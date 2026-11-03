@@ -162,7 +162,10 @@ type Matrix struct {
 	// (an account schedule's column layout) for one period chosen above the matrix (View by,
 	// previous/next) — the period goes into DateFilter; RowFilters (a field of the rows → a
 	// field of the card record) select the rows (the schedule's lines)
-	Calculated             bool              `yaml:"calculated,omitempty" json:"calculated,omitempty"`
+	Calculated bool `yaml:"calculated,omitempty" json:"calculated,omitempty"`
+	// NoPeriods: a calculated matrix whose columns are not periods (Items by Bin: the bins) — no
+	// View by, no previous/next
+	NoPeriods              bool              `yaml:"no_periods,omitempty" json:"no_periods,omitempty"`
 	RowFilters             map[string]string `yaml:"row_filters,omitempty" json:"row_filters,omitempty"`
 	Drilldown              int               `yaml:"drilldown,omitempty" json:"drilldown,omitempty"`
 	DrilldownRowField      string            `yaml:"drilldown_row_field,omitempty" json:"drilldown_row_field,omitempty"`
