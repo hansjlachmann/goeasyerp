@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.129](https://github.com/hansjlachmann/openerp/compare/v0.1.128...v0.1.129) (2026-11-03)
+
+
+### Features
+
+* bins, Item Entry-Edit and the shipment/receipt line checks ([#202](https://github.com/hansjlachmann/openerp/issues/202)) ([4273ea2](https://github.com/hansjlachmann/openerp/commit/4273ea2c0c0efc3e1de57cb9ca9e834a420357e7))
+
 ## [0.1.128](https://github.com/hansjlachmann/openerp/compare/v0.1.127...v0.1.128) (2026-11-03)
 
 
