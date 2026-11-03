@@ -128,6 +128,14 @@ page:
       promoted: true
       run_object: codeunit:251
 
+    # what Post would write for the batch, nothing saved (Posting Preview 115)
+    - name: Preview Posting
+      caption: Preview Posting
+      image: Search
+      shortcut: Ctrl+Alt+F9
+      promoted: true
+      run_object: "table:BOM_Journal_Line.PreviewPosting"
+
     # Reservations of the line: the Reservation page (the sources it can reserve from) and its entries
     - name: Reserve
       caption: Reserve

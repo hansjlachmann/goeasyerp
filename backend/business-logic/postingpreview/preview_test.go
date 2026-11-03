@@ -9,12 +9,14 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
+	"github.com/hansjlachmann/openerp/backend/business-logic/bomjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/demodata"
 	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/itemjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/postingpreview"
 	"github.com/hansjlachmann/openerp/backend/business-logic/salesposting"
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
+	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
 	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
@@ -145,4 +147,63 @@ func TestPreviewUnbalancedAndFailing(t *testing.T) {
 	if err == nil || err.Error() != "the posting failed" {
 		t.Errorf("a failing posting: %v", err)
 	}
+}
+
+// Preview Posting on the item and BOM journals: the batch is posted in the preview — item and
+// BOM ledger entries collected —, the journal lines stay and no entry is saved
+func TestPreviewItemAndBOMJournals(t *testing.T) {
+	db := demoDB(t)
+	src := ftables.DBSource(db, "demo", database.DBTypeSQLite)
+	itemEntries := gtables.NewItemLedgerEntry(src).Count()
+
+	itemJnlLine := gtables.NewItemJournalLine(src)
+	itemJnlLine.InitRecord()
+	itemJnlLine.Journal_template_name, itemJnlLine.Journal_batch_name, itemJnlLine.Line_no = "ITEM", "DEFAULT", 10000
+	must(t, itemJnlLine.Validate("posting_date", types.NewDate(2026, 10, 6)))
+	itemJnlLine.Document_no = "T00001" // the batch's series
+	must(t, itemJnlLine.Validate("entry_type", gtables.ItemJournalLine_Entry_type.PositiveAdjmt))
+	must(t, itemJnlLine.Validate("item_no", types.Code("1000")))
+	must(t, itemJnlLine.Validate("location_code", types.Code("MAIN")))
+	must(t, itemJnlLine.Validate("quantity", types.MustDecimal("4")))
+	must(t, itemJnlLine.InsertOrError(true))
+	checkPreview(t, itemjnl.ItemJnlPostPreview, itemJnlLine, gtables.ItemLedgerEntryTableName)
+
+	bomJnlLine := gtables.NewBOMJournalLine(src)
+	bomJnlLine.InitRecord()
+	bomJnlLine.Journal_template_name, bomJnlLine.Journal_batch_name, bomJnlLine.Line_no = "BOM", "DEFAULT", 10000
+	must(t, bomJnlLine.Validate("posting_date", types.NewDate(2026, 10, 6)))
+	bomJnlLine.Document_no = "B00001"
+	must(t, bomJnlLine.Validate("item_no", types.Code("2100")))
+	must(t, bomJnlLine.Validate("location_code", types.Code("MAIN")))
+	must(t, bomJnlLine.Validate("quantity", types.MustDecimal("1")))
+	must(t, bomJnlLine.InsertOrError(true))
+	checkPreview(t, bomjnl.BOMJnlPostPreview, bomJnlLine, gtables.BOMLedgerEntryTableName)
+
+	if n := gtables.NewItemLedgerEntry(src).Count(); n != itemEntries {
+		t.Errorf("%d item ledger entries saved by the previews", n-itemEntries)
+	}
+	if !itemJnlLine.Get(map[string]interface{}{"journal_template_name": "ITEM", "journal_batch_name": "DEFAULT", "line_no": 10000}) ||
+		!bomJnlLine.Get(map[string]interface{}{"journal_template_name": "BOM", "journal_batch_name": "DEFAULT", "line_no": 10000}) {
+		t.Error("a previewed journal line is gone")
+	}
+}
+
+// checkPreview runs a journal's Preview Posting and finds the table's entries in the preview
+func checkPreview[T any](t *testing.T, preview func(T) (fcodeunits.Result, error), line T, table string) {
+	t.Helper()
+	result, err := preview(line)
+	must(t, err)
+	if result.OpenPage == nil || result.OpenPage.Params["preview"] == "" {
+		t.Fatalf("%s: no Posting Preview opened: %+v", table, result)
+	}
+	p, ok := postingpreview.Get(result.OpenPage.Params["preview"], fcodeunits.CurrentUserID(), "demo")
+	if !ok {
+		t.Fatalf("%s: preview not kept", table)
+	}
+	for _, entries := range p.Tables {
+		if entries.Table.Name == table && len(entries.Rows) > 0 {
+			return
+		}
+	}
+	t.Errorf("the preview has no %s entries", table)
 }
