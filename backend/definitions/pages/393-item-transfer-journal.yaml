@@ -88,6 +88,12 @@ page:
           width: 110
           visible: false
           on_lookup: table:Item_Journal_Line.SelectNewItemEntry
+        - source: bin_code
+          width: 100
+          visible: false
+        - source: new_bin_code
+          width: 100
+          visible: false
 
   actions:
     - name: New

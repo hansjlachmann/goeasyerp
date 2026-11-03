@@ -3775,6 +3775,7 @@ tables:
       reserved_qty_on_purch_orders: "Reserveret antal på købsordrer"
       reserved_qty_on_sales_orders: "Reserveret antal på salgsordrer"
       serial_nos: "Serienr.serie"
+      bin_filter: "Placeringsfilter"
     options:
       price_profit_calculation:
         profit_price_cost: "Avance=Pris-Kostpris"
@@ -3922,6 +3923,8 @@ tables:
       lot_no: "Lotnr."
       new_serial_no: "Nyt serienr."
       new_lot_no: "Nyt lotnr."
+      bin_code: "Placeringskode"
+      new_bin_code: "Ny placeringskode"
     options:
       recurring_method:
         fixed: "Fast"
@@ -4003,6 +4006,7 @@ tables:
       unit_of_measure_code: "Enhedskode"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Placeringskode"
     options:
       entry_type:
         purchase: "Køb"
@@ -4093,6 +4097,7 @@ tables:
       unit_of_measure_code: "Enhedskode"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Placeringskode"
     options:
       entry_type:
         purchase: "Køb"
@@ -4447,6 +4452,7 @@ tables:
       reserve: "Reserver"
       reserved_qty_base: "Reserveret antal (basis)"
       lot_no: "Lotnr."
+      bin_code: "Placeringskode"
     options:
       recurring_method:
         fixed: "Fast"
@@ -4674,6 +4680,7 @@ tables:
       planned: "Planlagt"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Placeringskode"
     options:
       document_type:
         quote: "Tilbud"
@@ -4830,6 +4837,7 @@ tables:
       qty_invoiced_base: "Faktureret antal (basis)"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Placeringskode"
     options:
       type:
         g_l_account: "Finanskonto"
@@ -4983,6 +4991,7 @@ tables:
       quantity_base: "Antal (basis)"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Placeringskode"
     options:
       type:
         g_l_account: "Finanskonto"
@@ -5133,6 +5142,7 @@ tables:
       quantity_base: "Antal (basis)"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Placeringskode"
     options:
       type:
         g_l_account: "Finanskonto"
@@ -5348,6 +5358,7 @@ tables:
       reserved_qty_base: "Reserveret antal (basis)"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Placeringskode"
     options:
       fa_posting_type:
         acquisition_cost: "Anskaffelsespris"
@@ -5687,6 +5698,7 @@ tables:
       item_rcpt_entry_no: "Varemodtagelseslø.nr."
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Placeringskode"
     options:
       type:
         fixed_asset: "Anlæg"
@@ -5762,6 +5774,7 @@ tables:
       quantity_base: "Antal (basis)"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Placeringskode"
     options:
       fa_posting_type:
         acquisition_cost: "Anskaffelsespris"
@@ -5838,6 +5851,7 @@ tables:
       quantity_base: "Antal (basis)"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Placeringskode"
     options:
       fa_posting_type:
         acquisition_cost: "Anskaffelsespris"
@@ -6040,6 +6054,7 @@ tables:
       reserved_qty_base: "Reserveret antal (basis)"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Placeringskode"
     options:
       type:
         account_g_l: "Konto (finans)"
@@ -6341,6 +6356,7 @@ tables:
       variant_code: "Variantkode"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Placeringskode"
     options:
       reservation_status:
         open: "Åben"
@@ -6377,3 +6393,9 @@ tables:
       total_available_quantity: "Disponibelt antal i alt"
       current_reserved_quantity: "Reserveret antal for linjen"
       available_page_id: "Side-id for disponible"
+  bin:
+    caption: "Placering"
+    fields:
+      location_code: "Lokationskode"
+      code: "Kode"
+      description: "Beskrivelse"

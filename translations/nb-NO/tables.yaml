@@ -3775,6 +3775,7 @@ tables:
       reserved_qty_on_purch_orders: "Reservert antall i kjøpsordrer"
       reserved_qty_on_sales_orders: "Reservert antall i salgsordrer"
       serial_nos: "Serienr.serie"
+      bin_filter: "Hyllefilter"
     options:
       price_profit_calculation:
         profit_price_cost: "Avanse=Pris-Kost"
@@ -3922,6 +3923,8 @@ tables:
       lot_no: "Lotnr."
       new_serial_no: "Nytt serienr."
       new_lot_no: "Nytt lotnr."
+      bin_code: "Hyllekode"
+      new_bin_code: "Ny hyllekode"
     options:
       recurring_method:
         fixed: "Fast"
@@ -4003,6 +4006,7 @@ tables:
       unit_of_measure_code: "Enhetskode"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Hyllekode"
     options:
       entry_type:
         purchase: "Kjøp"
@@ -4093,6 +4097,7 @@ tables:
       unit_of_measure_code: "Enhetskode"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Hyllekode"
     options:
       entry_type:
         purchase: "Kjøp"
@@ -4447,6 +4452,7 @@ tables:
       reserve: "Reserver"
       reserved_qty_base: "Reservert antall (basis)"
       lot_no: "Lotnr."
+      bin_code: "Hyllekode"
     options:
       recurring_method:
         fixed: "Fast"
@@ -4674,6 +4680,7 @@ tables:
       planned: "Planlagt"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Hyllekode"
     options:
       document_type:
         quote: "Tilbud"
@@ -4830,6 +4837,7 @@ tables:
       qty_invoiced_base: "Antall fakturert (basis)"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Hyllekode"
     options:
       type:
         g_l_account: "Finanskonto"
@@ -4983,6 +4991,7 @@ tables:
       quantity_base: "Antall (basis)"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Hyllekode"
     options:
       type:
         g_l_account: "Finanskonto"
@@ -5133,6 +5142,7 @@ tables:
       quantity_base: "Antall (basis)"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Hyllekode"
     options:
       type:
         g_l_account: "Finanskonto"
@@ -5348,6 +5358,7 @@ tables:
       reserved_qty_base: "Reservert antall (basis)"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Hyllekode"
     options:
       fa_posting_type:
         acquisition_cost: "Anskaffelseskost"
@@ -5687,6 +5698,7 @@ tables:
       item_rcpt_entry_no: "Varemottakslø.nr."
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Hyllekode"
     options:
       type:
         fixed_asset: "Anleggsmiddel"
@@ -5762,6 +5774,7 @@ tables:
       quantity_base: "Antall (basis)"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Hyllekode"
     options:
       fa_posting_type:
         acquisition_cost: "Anskaffelseskost"
@@ -5838,6 +5851,7 @@ tables:
       quantity_base: "Antall (basis)"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Hyllekode"
     options:
       fa_posting_type:
         acquisition_cost: "Anskaffelseskost"
@@ -6040,6 +6054,7 @@ tables:
       reserved_qty_base: "Reservert antall (basis)"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Hyllekode"
     options:
       type:
         account_g_l: "Konto (finans)"
@@ -6341,6 +6356,7 @@ tables:
       variant_code: "Variantkode"
       serial_no: "Serienr."
       lot_no: "Lotnr."
+      bin_code: "Hyllekode"
     options:
       reservation_status:
         open: "Åpen"
@@ -6377,3 +6393,9 @@ tables:
       total_available_quantity: "Tilgjengelig antall i alt"
       current_reserved_quantity: "Reservert antall for linjen"
       available_page_id: "Side-ID for tilgjengelige"
+  bin:
+    caption: "Hylle"
+    fields:
+      location_code: "Lokasjonskode"
+      code: "Kode"
+      description: "Beskrivelse"

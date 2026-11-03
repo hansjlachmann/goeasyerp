@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
 
@@ -66,5 +67,33 @@ func TestLotNumbers(t *testing.T) {
 	}
 	if remaining["L1"] != "3" || remaining["L2"] != "2" || remaining["L1B"] != "2" {
 		t.Errorf("remaining by lot %v, want L1 3, L2 2, L1B 2", remaining)
+	}
+}
+
+// Bins: the entries keep the line's bin; a sale from a bin takes that bin's entries, not the
+// oldest; a transfer moves the quantity to a new bin
+func TestBins(t *testing.T) {
+	src := demoCompany(t)
+	testItem(t, src, "TB1", gtables.Item_Costing_method.FIFO, "")
+	for _, code := range []string{"A1", "B1"} {
+		bin := gtables.NewBin(src)
+		bin.Location_code, bin.Code = "MAIN", types.Code(code)
+		must(t, bin.InsertOrError(true))
+	}
+	purchase := gtables.ItemJournalLine_Entry_type.Purchase
+	_, err := postItemLines(t, src,
+		itemLine{entryType: purchase, itemNo: "TB1", qty: "5", unitAmount: "10", binCode: "A1"},
+		itemLine{entryType: purchase, itemNo: "TB1", qty: "5", unitAmount: "12", binCode: "B1"},
+		itemLine{entryType: gtables.ItemJournalLine_Entry_type.Sale, itemNo: "TB1", qty: "3", binCode: "B1", day: 11},
+		itemLine{entryType: gtables.ItemJournalLine_Entry_type.Transfer, itemNo: "TB1", qty: "2", binCode: "A1", newLocation: "MAIN", newBinCode: "B1", day: 12})
+	must(t, err)
+	remaining := map[string]string{}
+	for _, e := range entries(src, "TB1") {
+		if e.Open {
+			remaining[string(e.Bin_code)] = remaining[string(e.Bin_code)] + e.Remaining_quantity.String() + " "
+		}
+	}
+	if remaining["A1"] != "3 " || remaining["B1"] != "2 2 " {
+		t.Errorf("remaining by bin %v, want A1 3, B1 2 and 2", remaining)
 	}
 }

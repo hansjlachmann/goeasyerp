@@ -444,3 +444,25 @@ func TestPostedDocumentsHistory(t *testing.T) {
 		t.Errorf("navigate: %v", found)
 	}
 }
+
+// A shipment invoiced later is still the order line's: an order line whose bin changed after
+// the shipment is not invoiced from it
+func TestInvoiceChecksShipmentLine(t *testing.T) {
+	src := demoCompany(t)
+	order := newDocument(t, src, gtables.SalesHeader_Document_type.Order, "C00010")
+	line := addLine(t, order, 10000, gtables.SalesLine_Type.Item, "1000", "2")
+	must(t, line.Validate("location_code", types.Code("MAIN")))
+	must(t, line.ModifyOrError(true))
+	reread(t, order)
+	post(t, order, true, false)
+
+	line = getLine(t, order, 10000)
+	must(t, line.Validate("bin_code", types.Code("A-01")))
+	must(t, line.ModifyOrError(true))
+	reread(t, order)
+	order.Ship, order.Invoice = false, true
+	err := salesposting.NewSalesPost(order).Run(order)
+	if err == nil || !strings.Contains(err.Error(), "Bin Code") {
+		t.Errorf("invoiced from a shipment of another bin: %v", err)
+	}
+}

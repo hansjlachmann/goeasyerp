@@ -70,6 +70,7 @@
 //	OnValidate_Use_duplication_list(rec *gtables.PurchCrMemoLine) error
 //	OnValidate_Serial_no(rec *gtables.PurchCrMemoLine) error
 //	OnValidate_Lot_no(rec *gtables.PurchCrMemoLine) error
+//	OnValidate_Bin_code(rec *gtables.PurchCrMemoLine) error
 
 package tables
 
@@ -208,6 +209,7 @@ type PurchCrMemoLine struct {
 	Use_duplication_list           bool                                `db:"use_duplication_list"`
 	Serial_no                      types.Code                          `db:"serial_no"`
 	Lot_no                         types.Code                          `db:"lot_no"`
+	Bin_code                       types.Code                          `db:"bin_code"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -377,6 +379,7 @@ var PurchCrMemoLine_FieldNo = struct {
 	Use_duplication_list           int
 	Serial_no                      int
 	Lot_no                         int
+	Bin_code                       int
 }{
 	Buy_from_vendor_no:             2,
 	Document_no:                    3,
@@ -438,6 +441,7 @@ var PurchCrMemoLine_FieldNo = struct {
 	Use_duplication_list:           5613,
 	Serial_no:                      53,
 	Lot_no:                         5400,
+	Bin_code:                       5403,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -563,6 +567,8 @@ func (t *PurchCrMemoLine) FieldNo(fieldName string) int {
 		return 53
 	case "lot_no":
 		return 5400
+	case "bin_code":
+		return 5403
 	}
 	return 0
 }
@@ -690,6 +696,8 @@ func (t *PurchCrMemoLine) FieldName(fieldNo int) string {
 		return "serial_no"
 	case 5400:
 		return "lot_no"
+	case 5403:
+		return "bin_code"
 	}
 	return ""
 }
@@ -971,6 +979,9 @@ type (
 	PurchCrMemoLineOnValidate_Lot_no interface {
 		OnValidate_Lot_no(rec *PurchCrMemoLine) error
 	}
+	PurchCrMemoLineOnValidate_Bin_code interface {
+		OnValidate_Bin_code(rec *PurchCrMemoLine) error
+	}
 )
 
 // purchCrMemoLineLogic is the registered business logic of Purch_Cr_Memo_Line, in
@@ -1120,6 +1131,8 @@ func purchCrMemoLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PurchCrMemoLineOnValidate_Serial_no)
 	case "OnValidate_Lot_no":
 		_, ok = logic.(PurchCrMemoLineOnValidate_Lot_no)
+	case "OnValidate_Bin_code":
+		_, ok = logic.(PurchCrMemoLineOnValidate_Bin_code)
 	default:
 		return false, false
 	}
@@ -1281,6 +1294,9 @@ func (t *PurchCrMemoLine) CheckFields() error {
 	if err := tables.CheckMaxLength(PurchCrMemoLineTableName, "lot_no", string(t.Lot_no), 20); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(PurchCrMemoLineTableName, "bin_code", string(t.Bin_code), 10); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -1368,6 +1384,7 @@ func GetPurchCrMemoLineTableSchema() string {
 		use_duplication_list INTEGER,
 		serial_no TEXT(20),
 		lot_no TEXT(20),
+		bin_code TEXT(10),
 		PRIMARY KEY (document_no, line_no)
 	`
 }
@@ -1435,6 +1452,7 @@ func GetPurchCrMemoLinePostgresTableSchema() string {
 		use_duplication_list BOOLEAN,
 		serial_no VARCHAR(20),
 		lot_no VARCHAR(20),
+		bin_code VARCHAR(10),
 		PRIMARY KEY (document_no, line_no)
 	`
 }
@@ -1632,6 +1650,7 @@ func (t *PurchCrMemoLine) StoreOldValues() {
 	t.oldValues["use_duplication_list"] = t.Use_duplication_list
 	t.oldValues["serial_no"] = t.Serial_no
 	t.oldValues["lot_no"] = t.Lot_no
+	t.oldValues["bin_code"] = t.Bin_code
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1826,6 +1845,9 @@ func (t *PurchCrMemoLine) XRec() *PurchCrMemoLine {
 	if v, ok := t.oldValues["lot_no"].(types.Code); ok {
 		x.Lot_no = v
 	}
+	if v, ok := t.oldValues["bin_code"].(types.Code); ok {
+		x.Bin_code = v
+	}
 	return x
 }
 
@@ -1956,6 +1978,7 @@ func (t *PurchCrMemoLine) GetByPK(document_no types.Code, line_no int) bool {
 	var use_duplication_listBool sql.NullBool
 	var serial_noNull sql.NullString
 	var lot_noNull sql.NullString
+	var bin_codeNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1964,7 +1987,7 @@ func (t *PurchCrMemoLine) GetByPK(document_no types.Code, line_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no FROM "%s" WHERE 1=1 AND document_no = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code FROM "%s" WHERE 1=1 AND document_no = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2031,6 +2054,7 @@ func (t *PurchCrMemoLine) GetByPK(document_no types.Code, line_no int) bool {
 		&use_duplication_listBool,
 		&serial_noNull,
 		&lot_noNull,
+		&bin_codeNull,
 	)
 
 	if err != nil {
@@ -2104,6 +2128,7 @@ func (t *PurchCrMemoLine) GetByPK(document_no types.Code, line_no int) bool {
 	t.Use_duplication_list = use_duplication_listBool.Bool
 	t.Serial_no = types.NewCode(serial_noNull.String)
 	t.Lot_no = types.NewCode(lot_noNull.String)
+	t.Bin_code = types.NewCode(bin_codeNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2186,11 +2211,12 @@ func (t *PurchCrMemoLine) Insert(runTrigger bool) bool {
 		t.Use_duplication_list,
 		t.Serial_no,
 		t.Lot_no,
+		t.Bin_code,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_no, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_no, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2288,10 +2314,11 @@ func (t *PurchCrMemoLine) InsertAll(records []*PurchCrMemoLine, runTrigger bool)
 			r.Use_duplication_list,
 			r.Serial_no,
 			r.Lot_no,
+			r.Bin_code,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, PurchCrMemoLineTableName)
-	columns := []string{"buy_from_vendor_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "expected_receipt_date", "description", "description_2", "unit_of_measure", "quantity", "direct_unit_cost", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "unit_price_lcy", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "department_code", "project_code", "indirect_cost_percent", "pay_to_vendor_no", "inv_discount_amount", "vendor_item_no", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "tax_base_amount", "unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "fa_posting_date", "fa_posting_type", "depreciation_book_code", "salvage_value", "depr_until_fa_posting_date", "depr_acquisition_cost", "maintenance_code", "insurance_no", "duplicate_in_depreciation_book", "use_duplication_list", "serial_no", "lot_no"}
+	columns := []string{"buy_from_vendor_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "expected_receipt_date", "description", "description_2", "unit_of_measure", "quantity", "direct_unit_cost", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "unit_price_lcy", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "department_code", "project_code", "indirect_cost_percent", "pay_to_vendor_no", "inv_discount_amount", "vendor_item_no", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "tax_base_amount", "unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "fa_posting_date", "fa_posting_type", "depreciation_book_code", "salvage_value", "depr_until_fa_posting_date", "depr_acquisition_cost", "maintenance_code", "insurance_no", "duplicate_in_depreciation_book", "use_duplication_list", "serial_no", "lot_no", "bin_code"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2574,6 +2601,10 @@ func (t *PurchCrMemoLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "lot_no = ?")
 			values = append(values, t.Lot_no)
 		}
+		if t.hasFieldChanged("bin_code") {
+			setClauses = append(setClauses, "bin_code = ?")
+			values = append(values, t.Bin_code)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -2697,6 +2728,8 @@ func (t *PurchCrMemoLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Serial_no)
 		setClauses = append(setClauses, "lot_no = ?")
 		values = append(values, t.Lot_no)
+		setClauses = append(setClauses, "bin_code = ?")
+		values = append(values, t.Bin_code)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -2992,6 +3025,10 @@ func (t *PurchCrMemoLine) hasFieldChanged(fieldName string) bool {
 	case "lot_no":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Lot_no.Equal(old)
+		}
+	case "bin_code":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Bin_code.Equal(old)
 		}
 	}
 
@@ -3318,6 +3355,8 @@ func (t *PurchCrMemoLine) columnName(fieldName string) (string, bool) {
 		return "serial_no", true
 	case strings.ToLower("lot_no"):
 		return "lot_no", true
+	case strings.ToLower("bin_code"):
+		return "bin_code", true
 	}
 	return "", false
 }
@@ -3733,7 +3772,7 @@ func (t *PurchCrMemoLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3797,6 +3836,7 @@ func (t *PurchCrMemoLine) FindFirst() bool {
 	var use_duplication_listBool sql.NullBool
 	var serial_noNull sql.NullString
 	var lot_noNull sql.NullString
+	var bin_codeNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&buy_from_vendor_noNull,
@@ -3859,6 +3899,7 @@ func (t *PurchCrMemoLine) FindFirst() bool {
 		&use_duplication_listBool,
 		&serial_noNull,
 		&lot_noNull,
+		&bin_codeNull,
 	)
 
 	if err != nil {
@@ -3929,6 +3970,7 @@ func (t *PurchCrMemoLine) FindFirst() bool {
 	t.Use_duplication_list = use_duplication_listBool.Bool
 	t.Serial_no = types.NewCode(serial_noNull.String)
 	t.Lot_no = types.NewCode(lot_noNull.String)
+	t.Bin_code = types.NewCode(bin_codeNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -3949,7 +3991,7 @@ func (t *PurchCrMemoLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4013,6 +4055,7 @@ func (t *PurchCrMemoLine) FindLast() bool {
 	var use_duplication_listBool sql.NullBool
 	var serial_noNull sql.NullString
 	var lot_noNull sql.NullString
+	var bin_codeNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&buy_from_vendor_noNull,
@@ -4075,6 +4118,7 @@ func (t *PurchCrMemoLine) FindLast() bool {
 		&use_duplication_listBool,
 		&serial_noNull,
 		&lot_noNull,
+		&bin_codeNull,
 	)
 
 	if err != nil {
@@ -4145,6 +4189,7 @@ func (t *PurchCrMemoLine) FindLast() bool {
 	t.Use_duplication_list = use_duplication_listBool.Bool
 	t.Serial_no = types.NewCode(serial_noNull.String)
 	t.Lot_no = types.NewCode(lot_noNull.String)
+	t.Bin_code = types.NewCode(bin_codeNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -4195,7 +4240,7 @@ func (t *PurchCrMemoLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4323,6 +4368,7 @@ func (t *PurchCrMemoLine) Next(steps ...int) bool {
 		var use_duplication_listBool sql.NullBool
 		var serial_noNull sql.NullString
 		var lot_noNull sql.NullString
+		var bin_codeNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&buy_from_vendor_noNull,
@@ -4385,6 +4431,7 @@ func (t *PurchCrMemoLine) Next(steps ...int) bool {
 			&use_duplication_listBool,
 			&serial_noNull,
 			&lot_noNull,
+			&bin_codeNull,
 		)
 
 		if err != nil {
@@ -4454,6 +4501,7 @@ func (t *PurchCrMemoLine) Next(steps ...int) bool {
 		t.Use_duplication_list = use_duplication_listBool.Bool
 		t.Serial_no = types.NewCode(serial_noNull.String)
 		t.Lot_no = types.NewCode(lot_noNull.String)
+		t.Bin_code = types.NewCode(bin_codeNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -4503,7 +4551,7 @@ func (t *PurchCrMemoLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4584,6 +4632,7 @@ func (t *PurchCrMemoLine) FindSetBuffered() bool {
 		var use_duplication_listBool sql.NullBool
 		var serial_noNull sql.NullString
 		var lot_noNull sql.NullString
+		var bin_codeNull sql.NullString
 
 		err := rows.Scan(
 			&buy_from_vendor_noNull,
@@ -4646,6 +4695,7 @@ func (t *PurchCrMemoLine) FindSetBuffered() bool {
 			&use_duplication_listBool,
 			&serial_noNull,
 			&lot_noNull,
+			&bin_codeNull,
 		)
 
 		if err != nil {
@@ -4713,6 +4763,7 @@ func (t *PurchCrMemoLine) FindSetBuffered() bool {
 		record.Use_duplication_list = use_duplication_listBool.Bool
 		record.Serial_no = types.NewCode(serial_noNull.String)
 		record.Lot_no = types.NewCode(lot_noNull.String)
+		record.Bin_code = types.NewCode(bin_codeNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -4801,6 +4852,7 @@ func (t *PurchCrMemoLine) copyFromBuffered(record *PurchCrMemoLine) {
 	t.Use_duplication_list = record.Use_duplication_list
 	t.Serial_no = record.Serial_no
 	t.Lot_no = record.Lot_no
+	t.Bin_code = record.Bin_code
 	t.StoreOldValues()
 }
 
@@ -6425,6 +6477,28 @@ func (t *PurchCrMemoLine) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
+	case "bin_code":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Bin_code = v
+		} else if v, ok := value.(string); ok {
+			t.Bin_code = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field bin_code")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bin_code"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchCrMemoLineOnValidate_Bin_code); ok {
+				if err := trg.OnValidate_Bin_code(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -6557,6 +6631,8 @@ func (t *PurchCrMemoLine) FieldValue(no int) (any, bool) {
 		return t.Serial_no, true
 	case 5400:
 		return t.Lot_no, true
+	case 5403:
+		return t.Bin_code, true
 	}
 	return nil, false
 }
@@ -6978,6 +7054,15 @@ func (t *PurchCrMemoLine) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.Lot_no = types.NewCode(v)
+			return true
+		}
+	case 5403:
+		if v, ok := value.(types.Code); ok {
+			t.Bin_code = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Bin_code = types.NewCode(v)
 			return true
 		}
 	}
@@ -7710,6 +7795,8 @@ func (t *PurchCrMemoLine) columnValue(column string) (interface{}, bool) {
 		return t.Serial_no, true
 	case "lot_no":
 		return t.Lot_no, true
+	case "bin_code":
+		return t.Bin_code, true
 	}
 	return nil, false
 }
@@ -7826,6 +7913,7 @@ func (t *PurchCrMemoLine) Init() {
 	t.Use_duplication_list = *new(bool)
 	t.Serial_no = *new(types.Code)
 	t.Lot_no = *new(types.Code)
+	t.Bin_code = *new(types.Code)
 	t.applyDefaults()
 }
 
@@ -7920,6 +8008,7 @@ func (t *PurchCrMemoLine) ToMap() map[string]interface{} {
 		"use_duplication_list":           t.Use_duplication_list,
 		"serial_no":                      t.Serial_no.String(),
 		"lot_no":                         t.Lot_no.String(),
+		"bin_code":                       t.Bin_code.String(),
 	}
 }
 
@@ -8414,6 +8503,11 @@ func (t *PurchCrMemoLine) FromMap(data map[string]interface{}) {
 	if v, ok := data["lot_no"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Lot_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["bin_code"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Bin_code = types.NewCode(s)
 		}
 	}
 }
@@ -9072,6 +9166,16 @@ func (t *PurchCrMemoLine) GetFields() []tables.FieldInfo {
 			PrimaryKey: false,
 			FlowField:  false,
 		},
+		{
+			No:         5403,
+			Name:       "bin_code",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
 	}
 }
 
@@ -9326,6 +9430,19 @@ func (t *PurchCrMemoLine) GetTableRelationFields() map[string]tables.TableRelati
 				{Source: "description", Width: 250},
 			},
 			SearchTimeout: 0,
+		},
+		"bin_code": {
+			Table:        "Bin",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+			Filters: []tables.RelationFilterInfo{
+				{Column: "location_code", Field: "location_code", Const: ""},
+			},
 		},
 	}
 }

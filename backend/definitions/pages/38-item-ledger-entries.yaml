@@ -108,6 +108,9 @@ page:
           width: 110
         - source: lot_no
           width: 110
+        - source: bin_code
+          width: 100
+          visible: false
 
   actions:
 

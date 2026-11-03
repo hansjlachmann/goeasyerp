@@ -1049,3 +1049,7 @@ pages:
     fields:
       available_quantity: "Disponibelt antal"
       current_reserved_quantity: "Reserveret antal for linjen"
+  bins:
+    caption: "Placeringer"
+  item_availability_by_bin:
+    caption: "Varedisponering pr. placering"

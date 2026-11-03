@@ -1049,3 +1049,7 @@ pages:
     fields:
       available_quantity: "Available Quantity"
       current_reserved_quantity: "Current Reserved Quantity"
+  bins:
+    caption: "Bins"
+  item_availability_by_bin:
+    caption: "Item Availability by Bin"

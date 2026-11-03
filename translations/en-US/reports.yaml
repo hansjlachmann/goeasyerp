@@ -23,6 +23,7 @@ reports:
       by_department: "By Department"
       by_project: "By Project"
       by_location: "By Location"
+      by_bin: "By Bin"
     texts:
       OPTIONS: "Options"
       NO_JOURNAL: "Run Calculate Inventory from a phys. inventory journal."
@@ -85,6 +86,7 @@ reports:
       retain_location_code: "Retain Location Code"
       retain_serial_no: "Retain Serial No."
       retain_lot_no: "Retain Lot No."
+      retain_bin_code: "Retain Bin Code"
       retain_source_type: "Retain Source Type"
       retain_source_no: "Retain Source No."
       retain_source_posting_group: "Retain Source Posting Group"

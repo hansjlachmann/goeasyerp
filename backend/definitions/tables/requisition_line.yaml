@@ -371,6 +371,22 @@ table:
       db_name: lot_no
       length: 20
 
+    - name: bin_code
+      no: 5403
+      type: types.Code
+      db_name: bin_code
+      length: 10
+      table_relation:
+        table: Bin
+        field: code
+        filters:
+          location_code: {field: location_code}
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
   keys:
     - name: Primary
       fields: [worksheet_template_name, journal_batch_name, line_no]

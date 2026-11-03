@@ -37,7 +37,8 @@ var unitPrecision = types.MustDecimal("0.00001")
 // Item tracking: the entries carry the line's Serial No. and Lot No. (a transfer's New Serial
 // No./New Lot No. at its new location); an outbound entry with a serial number takes that
 // serial number's inbound entry (Costing Method Specific needs one), with a lot number only that
-// lot's; a serial number is on inventory once. Not migrated yet: bins.
+// lot's; a serial number is on inventory once. Bins: the entries carry the line's Bin Code (a
+// transfer's New Bin Code), an outbound entry takes the inbound entries of its bin.
 type ItemJnlPostLine struct {
 	src ftables.Source
 
@@ -434,6 +435,9 @@ func (p *ItemJnlPostLine) applyItemLedgEntry(itemLedgEntry *gtables.ItemLedgerEn
 				err = reservEntry.TestField("location_code", itemJnlLine.Location_code)
 			}
 			if err == nil {
+				err = reservEntry.TestField("bin_code", itemJnlLine.Bin_code)
+			}
+			if err == nil {
 				err = reservEntry.TestField("serial_no", itemJnlLine.Serial_no)
 			}
 			if err == nil {
@@ -458,6 +462,9 @@ func (p *ItemJnlPostLine) applyItemLedgEntry(itemLedgEntry *gtables.ItemLedgerEn
 			}
 			if err == nil {
 				err = oldItemLedgEntry.TestField("location_code", reservEntry.Location_code)
+			}
+			if err == nil {
+				err = oldItemLedgEntry.TestField("bin_code", reservEntry.Bin_code)
 			}
 			if err == nil {
 				err = oldItemLedgEntry.TestField("serial_no", reservEntry.Serial_no)
@@ -502,6 +509,10 @@ func (p *ItemJnlPostLine) applyItemLedgEntry(itemLedgEntry *gtables.ItemLedgerEn
 					if err != nil {
 						return err
 					}
+					err = oldItemLedgEntry.TestField("bin_code", itemLedgEntry.Bin_code)
+					if err != nil {
+						return err
+					}
 					if itemLedgEntry.Serial_no != "" {
 						err = oldItemLedgEntry.TestField("serial_no", itemLedgEntry.Serial_no)
 						if err != nil {
@@ -531,6 +542,7 @@ func (p *ItemJnlPostLine) applyItemLedgEntry(itemLedgEntry *gtables.ItemLedgerEn
 					itemLedgEntry6.SetRange("positive", !itemLedgEntry.Positive)
 					if itemLedgEntry.Serial_no == "" {
 						itemLedgEntry6.SetRange("location_code", itemLedgEntry.Location_code)
+						itemLedgEntry6.SetRange("bin_code", itemLedgEntry.Bin_code)
 						if !itemLedgEntry.Positive && itemLedgEntry.Lot_no != "" {
 							itemLedgEntry6.SetRange("lot_no", itemLedgEntry.Lot_no)
 						}
@@ -556,6 +568,9 @@ func (p *ItemJnlPostLine) applyItemLedgEntry(itemLedgEntry *gtables.ItemLedgerEn
 					}
 					if itemLedgEntry6.Find(entryFindMethod) {
 						err := itemLedgEntry6.TestField("location_code", itemLedgEntry.Location_code)
+						if err == nil {
+							err = itemLedgEntry6.TestField("bin_code", itemLedgEntry.Bin_code)
+						}
 						if err == nil && !itemLedgEntry.Positive && itemLedgEntry.Lot_no != "" {
 							err = itemLedgEntry6.TestField("lot_no", itemLedgEntry.Lot_no)
 						}
@@ -568,6 +583,7 @@ func (p *ItemJnlPostLine) applyItemLedgEntry(itemLedgEntry *gtables.ItemLedgerEn
 						}
 						itemLedgEntry6.SetRange("serial_no", types.Code(""))
 						itemLedgEntry6.SetRange("location_code", itemLedgEntry.Location_code)
+						itemLedgEntry6.SetRange("bin_code", itemLedgEntry.Bin_code)
 						itemLedgEntry6.SetRange("lot_no", itemLedgEntry.Lot_no)
 						if !itemLedgEntry6.Find(entryFindMethod) {
 							return nil
@@ -730,6 +746,7 @@ func (p *ItemJnlPostLine) insertTransferEntry(itemLedgEntry, oldItemLedgEntry *g
 	itemLedgEntry4.Additional_currency_unit_cost = oldItemLedgEntry.Additional_currency_unit_cost
 
 	itemLedgEntry4.Location_code = itemJnlLine.New_location_code
+	itemLedgEntry4.Bin_code = itemJnlLine.New_bin_code
 	itemLedgEntry4.Serial_no = itemJnlLine.New_serial_no
 	itemLedgEntry4.Lot_no = itemJnlLine.New_lot_no
 	itemLedgEntry4.Department_code = itemJnlLine.New_department_code
@@ -816,6 +833,7 @@ func (p *ItemJnlPostLine) initItemLedgEntry(itemLedgEntry2 *gtables.ItemLedgerEn
 		itemLedgEntry2.Description = ""
 	}
 	itemLedgEntry2.Variant_code = itemJnlLine.Variant_code
+	itemLedgEntry2.Bin_code = itemJnlLine.Bin_code
 	itemLedgEntry2.Serial_no = itemJnlLine.Serial_no
 	itemLedgEntry2.Lot_no = itemJnlLine.Lot_no
 	itemLedgEntry2.Unit_of_measure_code = itemJnlLine.Unit_of_measure_code
@@ -1147,6 +1165,7 @@ func (p *ItemJnlPostLine) insertPhysInventoryEntry() error {
 		physInvtLedgEntry.Description = ""
 	}
 	physInvtLedgEntry.Variant_code = itemJnlLine.Variant_code
+	physInvtLedgEntry.Bin_code = itemJnlLine.Bin_code
 	physInvtLedgEntry.Serial_no = itemJnlLine.Serial_no
 	physInvtLedgEntry.Lot_no = itemJnlLine.Lot_no
 	physInvtLedgEntry.Unit_of_measure_code = itemJnlLine.Unit_of_measure_code

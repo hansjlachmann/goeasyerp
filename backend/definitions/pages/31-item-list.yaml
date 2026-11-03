@@ -212,6 +212,11 @@ page:
           run_page: 5414
           run_page_filter_field: "no"
           run_page_filter_value: "no"
+        - name: Bin
+          caption: Bin
+          run_page: 5412
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
 
     - name: Turnover
       caption: Turnover

@@ -39,6 +39,7 @@
 //	OnValidate_Variant_code(rec *gtables.ReservationEntry) error
 //	OnValidate_Serial_no(rec *gtables.ReservationEntry) error
 //	OnValidate_Lot_no(rec *gtables.ReservationEntry) error
+//	OnValidate_Bin_code(rec *gtables.ReservationEntry) error
 
 package tables
 
@@ -146,6 +147,7 @@ type ReservationEntry struct {
 	Variant_code              types.Code                         `db:"variant_code"`
 	Serial_no                 types.Code                         `db:"serial_no"`
 	Lot_no                    types.Code                         `db:"lot_no"`
+	Bin_code                  types.Code                         `db:"bin_code"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -306,6 +308,7 @@ var ReservationEntry_FieldNo = struct {
 	Variant_code              int
 	Serial_no                 int
 	Lot_no                    int
+	Bin_code                  int
 }{
 	Entry_no:                  1,
 	Item_no:                   2,
@@ -336,6 +339,7 @@ var ReservationEntry_FieldNo = struct {
 	Variant_code:              5401,
 	Serial_no:                 24,
 	Lot_no:                    5400,
+	Bin_code:                  5402,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -399,6 +403,8 @@ func (t *ReservationEntry) FieldNo(fieldName string) int {
 		return 24
 	case "lot_no":
 		return 5400
+	case "bin_code":
+		return 5402
 	}
 	return 0
 }
@@ -464,6 +470,8 @@ func (t *ReservationEntry) FieldName(fieldNo int) string {
 		return "serial_no"
 	case 5400:
 		return "lot_no"
+	case 5402:
+		return "bin_code"
 	}
 	return ""
 }
@@ -652,6 +660,9 @@ type (
 	ReservationEntryOnValidate_Lot_no interface {
 		OnValidate_Lot_no(rec *ReservationEntry) error
 	}
+	ReservationEntryOnValidate_Bin_code interface {
+		OnValidate_Bin_code(rec *ReservationEntry) error
+	}
 )
 
 // reservationEntryLogic is the registered business logic of Reservation_Entry, in
@@ -739,6 +750,8 @@ func reservationEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ReservationEntryOnValidate_Serial_no)
 	case "OnValidate_Lot_no":
 		_, ok = logic.(ReservationEntryOnValidate_Lot_no)
+	case "OnValidate_Bin_code":
+		_, ok = logic.(ReservationEntryOnValidate_Bin_code)
 	default:
 		return false, false
 	}
@@ -849,6 +862,9 @@ func (t *ReservationEntry) CheckFields() error {
 	if err := tables.CheckMaxLength(ReservationEntryTableName, "lot_no", string(t.Lot_no), 20); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(ReservationEntryTableName, "bin_code", string(t.Bin_code), 10); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -904,7 +920,8 @@ func GetReservationEntryTableSchema() string {
 		canceled_or_changed_by TEXT(50),
 		variant_code TEXT(10),
 		serial_no TEXT(20),
-		lot_no TEXT(20)
+		lot_no TEXT(20),
+		bin_code TEXT(10)
 	`
 }
 
@@ -939,7 +956,8 @@ func GetReservationEntryPostgresTableSchema() string {
 		canceled_or_changed_by VARCHAR(50),
 		variant_code VARCHAR(10),
 		serial_no VARCHAR(20),
-		lot_no VARCHAR(20)
+		lot_no VARCHAR(20),
+		bin_code VARCHAR(10)
 	`
 }
 
@@ -1127,6 +1145,7 @@ func (t *ReservationEntry) StoreOldValues() {
 	t.oldValues["variant_code"] = t.Variant_code
 	t.oldValues["serial_no"] = t.Serial_no
 	t.oldValues["lot_no"] = t.Lot_no
+	t.oldValues["bin_code"] = t.Bin_code
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1228,6 +1247,9 @@ func (t *ReservationEntry) XRec() *ReservationEntry {
 	if v, ok := t.oldValues["lot_no"].(types.Code); ok {
 		x.Lot_no = v
 	}
+	if v, ok := t.oldValues["bin_code"].(types.Code); ok {
+		x.Bin_code = v
+	}
 	return x
 }
 
@@ -1328,6 +1350,7 @@ func (t *ReservationEntry) GetByPK(entry_no int) bool {
 	var variant_codeNull sql.NullString
 	var serial_noNull sql.NullString
 	var lot_noNull sql.NullString
+	var bin_codeNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1335,7 +1358,7 @@ func (t *ReservationEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, item_no, location_code, quantity, reservation_status, valid_to_date, description, creation_date, transferred_from_entry_no, for_type, for_subtype, for_id, for_batch_name, for_prod_order_line, for_ref_no, from_type, from_subtype, from_id, from_batch_name, from_prod_order_line, from_ref_no, expected_receipt_date, shipment_date, created_by, cancelation_date, canceled_or_changed_by, variant_code, serial_no, lot_no FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, item_no, location_code, quantity, reservation_status, valid_to_date, description, creation_date, transferred_from_entry_no, for_type, for_subtype, for_id, for_batch_name, for_prod_order_line, for_ref_no, from_type, from_subtype, from_id, from_batch_name, from_prod_order_line, from_ref_no, expected_receipt_date, shipment_date, created_by, cancelation_date, canceled_or_changed_by, variant_code, serial_no, lot_no, bin_code FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1371,6 +1394,7 @@ func (t *ReservationEntry) GetByPK(entry_no int) bool {
 		&variant_codeNull,
 		&serial_noNull,
 		&lot_noNull,
+		&bin_codeNull,
 	)
 
 	if err != nil {
@@ -1413,6 +1437,7 @@ func (t *ReservationEntry) GetByPK(entry_no int) bool {
 	t.Variant_code = types.NewCode(variant_codeNull.String)
 	t.Serial_no = types.NewCode(serial_noNull.String)
 	t.Lot_no = types.NewCode(lot_noNull.String)
+	t.Bin_code = types.NewCode(bin_codeNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1464,11 +1489,12 @@ func (t *ReservationEntry) Insert(runTrigger bool) bool {
 		t.Variant_code,
 		t.Serial_no,
 		t.Lot_no,
+		t.Bin_code,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, item_no, location_code, quantity, reservation_status, valid_to_date, description, creation_date, transferred_from_entry_no, for_type, for_subtype, for_id, for_batch_name, for_prod_order_line, for_ref_no, from_type, from_subtype, from_id, from_batch_name, from_prod_order_line, from_ref_no, expected_receipt_date, shipment_date, created_by, cancelation_date, canceled_or_changed_by, variant_code, serial_no, lot_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, item_no, location_code, quantity, reservation_status, valid_to_date, description, creation_date, transferred_from_entry_no, for_type, for_subtype, for_id, for_batch_name, for_prod_order_line, for_ref_no, from_type, from_subtype, from_id, from_batch_name, from_prod_order_line, from_ref_no, expected_receipt_date, shipment_date, created_by, cancelation_date, canceled_or_changed_by, variant_code, serial_no, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1535,10 +1561,11 @@ func (t *ReservationEntry) InsertAll(records []*ReservationEntry, runTrigger boo
 			r.Variant_code,
 			r.Serial_no,
 			r.Lot_no,
+			r.Bin_code,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ReservationEntryTableName)
-	columns := []string{"entry_no", "item_no", "location_code", "quantity", "reservation_status", "valid_to_date", "description", "creation_date", "transferred_from_entry_no", "for_type", "for_subtype", "for_id", "for_batch_name", "for_prod_order_line", "for_ref_no", "from_type", "from_subtype", "from_id", "from_batch_name", "from_prod_order_line", "from_ref_no", "expected_receipt_date", "shipment_date", "created_by", "cancelation_date", "canceled_or_changed_by", "variant_code", "serial_no", "lot_no"}
+	columns := []string{"entry_no", "item_no", "location_code", "quantity", "reservation_status", "valid_to_date", "description", "creation_date", "transferred_from_entry_no", "for_type", "for_subtype", "for_id", "for_batch_name", "for_prod_order_line", "for_ref_no", "from_type", "from_subtype", "from_id", "from_batch_name", "from_prod_order_line", "from_ref_no", "expected_receipt_date", "shipment_date", "created_by", "cancelation_date", "canceled_or_changed_by", "variant_code", "serial_no", "lot_no", "bin_code"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1694,6 +1721,10 @@ func (t *ReservationEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "lot_no = ?")
 			values = append(values, t.Lot_no)
 		}
+		if t.hasFieldChanged("bin_code") {
+			setClauses = append(setClauses, "bin_code = ?")
+			values = append(values, t.Bin_code)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -1757,6 +1788,8 @@ func (t *ReservationEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.Serial_no)
 		setClauses = append(setClauses, "lot_no = ?")
 		values = append(values, t.Lot_no)
+		setClauses = append(setClauses, "bin_code = ?")
+		values = append(values, t.Bin_code)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -1924,6 +1957,10 @@ func (t *ReservationEntry) hasFieldChanged(fieldName string) bool {
 	case "lot_no":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Lot_no.Equal(old)
+		}
+	case "bin_code":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Bin_code.Equal(old)
 		}
 	}
 
@@ -2187,6 +2224,8 @@ func (t *ReservationEntry) columnName(fieldName string) (string, bool) {
 		return "serial_no", true
 	case strings.ToLower("lot_no"):
 		return "lot_no", true
+	case strings.ToLower("bin_code"):
+		return "bin_code", true
 	}
 	return "", false
 }
@@ -2556,7 +2595,7 @@ func (t *ReservationEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, location_code, quantity, reservation_status, valid_to_date, description, creation_date, transferred_from_entry_no, for_type, for_subtype, for_id, for_batch_name, for_prod_order_line, for_ref_no, from_type, from_subtype, from_id, from_batch_name, from_prod_order_line, from_ref_no, expected_receipt_date, shipment_date, created_by, cancelation_date, canceled_or_changed_by, variant_code, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, item_no, location_code, quantity, reservation_status, valid_to_date, description, creation_date, transferred_from_entry_no, for_type, for_subtype, for_id, for_batch_name, for_prod_order_line, for_ref_no, from_type, from_subtype, from_id, from_batch_name, from_prod_order_line, from_ref_no, expected_receipt_date, shipment_date, created_by, cancelation_date, canceled_or_changed_by, variant_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2582,6 +2621,7 @@ func (t *ReservationEntry) FindFirst() bool {
 	var variant_codeNull sql.NullString
 	var serial_noNull sql.NullString
 	var lot_noNull sql.NullString
+	var bin_codeNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&t.Entry_no,
@@ -2613,6 +2653,7 @@ func (t *ReservationEntry) FindFirst() bool {
 		&variant_codeNull,
 		&serial_noNull,
 		&lot_noNull,
+		&bin_codeNull,
 	)
 
 	if err != nil {
@@ -2645,6 +2686,7 @@ func (t *ReservationEntry) FindFirst() bool {
 	t.Variant_code = types.NewCode(variant_codeNull.String)
 	t.Serial_no = types.NewCode(serial_noNull.String)
 	t.Lot_no = types.NewCode(lot_noNull.String)
+	t.Bin_code = types.NewCode(bin_codeNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2665,7 +2707,7 @@ func (t *ReservationEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, location_code, quantity, reservation_status, valid_to_date, description, creation_date, transferred_from_entry_no, for_type, for_subtype, for_id, for_batch_name, for_prod_order_line, for_ref_no, from_type, from_subtype, from_id, from_batch_name, from_prod_order_line, from_ref_no, expected_receipt_date, shipment_date, created_by, cancelation_date, canceled_or_changed_by, variant_code, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, item_no, location_code, quantity, reservation_status, valid_to_date, description, creation_date, transferred_from_entry_no, for_type, for_subtype, for_id, for_batch_name, for_prod_order_line, for_ref_no, from_type, from_subtype, from_id, from_batch_name, from_prod_order_line, from_ref_no, expected_receipt_date, shipment_date, created_by, cancelation_date, canceled_or_changed_by, variant_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2691,6 +2733,7 @@ func (t *ReservationEntry) FindLast() bool {
 	var variant_codeNull sql.NullString
 	var serial_noNull sql.NullString
 	var lot_noNull sql.NullString
+	var bin_codeNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&t.Entry_no,
@@ -2722,6 +2765,7 @@ func (t *ReservationEntry) FindLast() bool {
 		&variant_codeNull,
 		&serial_noNull,
 		&lot_noNull,
+		&bin_codeNull,
 	)
 
 	if err != nil {
@@ -2754,6 +2798,7 @@ func (t *ReservationEntry) FindLast() bool {
 	t.Variant_code = types.NewCode(variant_codeNull.String)
 	t.Serial_no = types.NewCode(serial_noNull.String)
 	t.Lot_no = types.NewCode(lot_noNull.String)
+	t.Bin_code = types.NewCode(bin_codeNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2804,7 +2849,7 @@ func (t *ReservationEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, location_code, quantity, reservation_status, valid_to_date, description, creation_date, transferred_from_entry_no, for_type, for_subtype, for_id, for_batch_name, for_prod_order_line, for_ref_no, from_type, from_subtype, from_id, from_batch_name, from_prod_order_line, from_ref_no, expected_receipt_date, shipment_date, created_by, cancelation_date, canceled_or_changed_by, variant_code, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, item_no, location_code, quantity, reservation_status, valid_to_date, description, creation_date, transferred_from_entry_no, for_type, for_subtype, for_id, for_batch_name, for_prod_order_line, for_ref_no, from_type, from_subtype, from_id, from_batch_name, from_prod_order_line, from_ref_no, expected_receipt_date, shipment_date, created_by, cancelation_date, canceled_or_changed_by, variant_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2894,6 +2939,7 @@ func (t *ReservationEntry) Next(steps ...int) bool {
 		var variant_codeNull sql.NullString
 		var serial_noNull sql.NullString
 		var lot_noNull sql.NullString
+		var bin_codeNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&t.Entry_no,
@@ -2925,6 +2971,7 @@ func (t *ReservationEntry) Next(steps ...int) bool {
 			&variant_codeNull,
 			&serial_noNull,
 			&lot_noNull,
+			&bin_codeNull,
 		)
 
 		if err != nil {
@@ -2956,6 +3003,7 @@ func (t *ReservationEntry) Next(steps ...int) bool {
 		t.Variant_code = types.NewCode(variant_codeNull.String)
 		t.Serial_no = types.NewCode(serial_noNull.String)
 		t.Lot_no = types.NewCode(lot_noNull.String)
+		t.Bin_code = types.NewCode(bin_codeNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -3005,7 +3053,7 @@ func (t *ReservationEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, location_code, quantity, reservation_status, valid_to_date, description, creation_date, transferred_from_entry_no, for_type, for_subtype, for_id, for_batch_name, for_prod_order_line, for_ref_no, from_type, from_subtype, from_id, from_batch_name, from_prod_order_line, from_ref_no, expected_receipt_date, shipment_date, created_by, cancelation_date, canceled_or_changed_by, variant_code, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, item_no, location_code, quantity, reservation_status, valid_to_date, description, creation_date, transferred_from_entry_no, for_type, for_subtype, for_id, for_batch_name, for_prod_order_line, for_ref_no, from_type, from_subtype, from_id, from_batch_name, from_prod_order_line, from_ref_no, expected_receipt_date, shipment_date, created_by, cancelation_date, canceled_or_changed_by, variant_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3048,6 +3096,7 @@ func (t *ReservationEntry) FindSetBuffered() bool {
 		var variant_codeNull sql.NullString
 		var serial_noNull sql.NullString
 		var lot_noNull sql.NullString
+		var bin_codeNull sql.NullString
 
 		err := rows.Scan(
 			&record.Entry_no,
@@ -3079,6 +3128,7 @@ func (t *ReservationEntry) FindSetBuffered() bool {
 			&variant_codeNull,
 			&serial_noNull,
 			&lot_noNull,
+			&bin_codeNull,
 		)
 
 		if err != nil {
@@ -3108,6 +3158,7 @@ func (t *ReservationEntry) FindSetBuffered() bool {
 		record.Variant_code = types.NewCode(variant_codeNull.String)
 		record.Serial_no = types.NewCode(serial_noNull.String)
 		record.Lot_no = types.NewCode(lot_noNull.String)
+		record.Bin_code = types.NewCode(bin_codeNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -3165,6 +3216,7 @@ func (t *ReservationEntry) copyFromBuffered(record *ReservationEntry) {
 	t.Variant_code = record.Variant_code
 	t.Serial_no = record.Serial_no
 	t.Lot_no = record.Lot_no
+	t.Bin_code = record.Bin_code
 	t.StoreOldValues()
 }
 
@@ -4038,6 +4090,24 @@ func (t *ReservationEntry) ValidateField(fieldName string, value interface{}) er
 			}
 		}
 		return nil
+	case "bin_code":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Bin_code = v
+		} else if v, ok := value.(string); ok {
+			t.Bin_code = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field bin_code")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ReservationEntryOnValidate_Bin_code); ok {
+				if err := trg.OnValidate_Bin_code(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -4108,6 +4178,8 @@ func (t *ReservationEntry) FieldValue(no int) (any, bool) {
 		return t.Serial_no, true
 	case 5400:
 		return t.Lot_no, true
+	case 5402:
+		return t.Bin_code, true
 	}
 	return nil, false
 }
@@ -4314,6 +4386,15 @@ func (t *ReservationEntry) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.Lot_no = types.NewCode(v)
+			return true
+		}
+	case 5402:
+		if v, ok := value.(types.Code); ok {
+			t.Bin_code = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Bin_code = types.NewCode(v)
 			return true
 		}
 	}
@@ -4879,6 +4960,8 @@ func (t *ReservationEntry) columnValue(column string) (interface{}, bool) {
 		return t.Serial_no, true
 	case "lot_no":
 		return t.Lot_no, true
+	case "bin_code":
+		return t.Bin_code, true
 	}
 	return nil, false
 }
@@ -4961,6 +5044,7 @@ func (t *ReservationEntry) Init() {
 	t.Variant_code = *new(types.Code)
 	t.Serial_no = *new(types.Code)
 	t.Lot_no = *new(types.Code)
+	t.Bin_code = *new(types.Code)
 	t.applyDefaults()
 }
 
@@ -5024,6 +5108,7 @@ func (t *ReservationEntry) ToMap() map[string]interface{} {
 		"variant_code":              t.Variant_code.String(),
 		"serial_no":                 t.Serial_no.String(),
 		"lot_no":                    t.Lot_no.String(),
+		"bin_code":                  t.Bin_code.String(),
 	}
 }
 
@@ -5279,6 +5364,11 @@ func (t *ReservationEntry) FromMap(data map[string]interface{}) {
 	if v, ok := data["lot_no"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Lot_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["bin_code"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Bin_code = types.NewCode(s)
 		}
 	}
 }
@@ -5588,6 +5678,16 @@ func (t *ReservationEntry) GetFields() []tables.FieldInfo {
 			Name:       "lot_no",
 			Type:       tables.FieldTypeCode,
 			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5402,
+			Name:       "bin_code",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
 			Required:   false,
 			Editable:   true,
 			PrimaryKey: false,

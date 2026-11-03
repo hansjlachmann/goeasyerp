@@ -550,6 +550,12 @@ master_data:
     records:
       - {code: MAIN, name: Main warehouse}
       - {code: OSLO, name: Oslo store}
+  - table: Bin   # the places in the warehouses (lines and entries may name one)
+    records:
+      - {location_code: MAIN, code: A-01, description: "Aisle A, shelf 1"}
+      - {location_code: MAIN, code: A-02, description: "Aisle A, shelf 2"}
+      - {location_code: MAIN, code: B-01, description: "Aisle B, pallet rack"}
+      - {location_code: OSLO, code: S-01, description: "Store room"}
   - table: Customer_Posting_Group   # the receivables accounts of the customers' country
     records:
       - {code: DOMESTIC, receivables_account: "1410", service_charge_acc: "3130", payment_disc_acc: "3150", invoice_rounding_account: "3150", additional_fee_account: "3130", interest_account: "6115", curr_appln_rounding_account: "6140"}

@@ -23,6 +23,7 @@ reports:
       by_department: "Pr. afdeling"
       by_project: "Pr. projekt"
       by_location: "Pr. lokation"
+      by_bin: "Pr. placering"
     texts:
       OPTIONS: "Indstillinger"
       NO_JOURNAL: "Kør Beregn lager fra en lageropgørelseskladde."
@@ -85,6 +86,7 @@ reports:
       retain_location_code: "Bevar Lokationskode"
       retain_serial_no: "Bevar Serienr."
       retain_lot_no: "Bevar Lotnr."
+      retain_bin_code: "Bevar Placeringskode"
       retain_source_type: "Bevar Kildetype"
       retain_source_no: "Bevar Kildenr."
       retain_source_posting_group: "Bevar Kildebogføringsgruppe"

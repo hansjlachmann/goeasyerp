@@ -10,12 +10,10 @@ import (
 )
 
 // Report 790 Calculate Inventory: fills a phys. inventory journal batch with a line per item
-// (and variant, and by choice department, project and location) with the quantity on inventory
+// (and variant, and by choice department, project, location and bin) with the quantity on inventory
 // as Qty. (Calculated) and Qty. (Phys. Inventory) — the user enters the counted quantity, posting
 // adjusts the inventory by the difference. Run from the Phys. Inventory Journal with its line
 // as the context (classic SetItemJnlLine).
-//
-// Not migrated yet: bins (By Bin, Bin Filter).
 const CalculateInventoryID = 790
 
 func init() {
@@ -30,6 +28,7 @@ type calculateInventory struct {
 	zeroQty              bool
 	byDept, byProj       bool
 	byLocation           bool
+	byBin                bool
 	quantityOnHandBuffer map[quantityOnHandKey]types.Decimal
 	sourceCodeSetup      *gtables.SourceCodeSetup
 	window               *system.Window
@@ -37,7 +36,7 @@ type calculateInventory struct {
 
 // quantityOnHandKey is a line of the result (QuantityOnHandBuffer, table 307)
 type quantityOnHandKey struct {
-	itemNo, variantCode, deptCode, projCode, locationCode types.Code
+	itemNo, variantCode, deptCode, projCode, locationCode, binCode types.Code
 }
 
 func (r *calculateInventory) Definition() *Definition {
@@ -50,6 +49,7 @@ func (r *calculateInventory) Definition() *Definition {
 			{Name: "by_department", Type: "bool", Default: "false"},
 			{Name: "by_project", Type: "bool", Default: "false"},
 			{Name: "by_location", Type: "bool", Default: "false"},
+			{Name: "by_bin", Type: "bool", Default: "false"},
 		},
 		OnInitReport: r.onInitReport,
 		ContextTable: gtables.ItemJournalLineTableName,
@@ -57,7 +57,7 @@ func (r *calculateInventory) Definition() *Definition {
 			Name:                "item",
 			Table:               gtables.ItemTableName,
 			Key:                 []string{"no"},
-			RequestFilterFields: []string{"no", "department_filter", "project_filter", "location_filter"},
+			RequestFilterFields: []string{"no", "department_filter", "project_filter", "location_filter", "bin_filter"},
 			OnPreDataItem:       Trigger(r.itemOnPreDataItem),
 			OnAfterGetRecord:    Trigger(r.itemOnAfterGetRecord),
 			OnPostDataItem:      Trigger(r.itemOnPostDataItem),
@@ -104,6 +104,7 @@ func (r *calculateInventory) itemOnPreDataItem(item *gtables.Item, run *Run) err
 	r.byDept = run.OptionBool("by_department")
 	r.byProj = run.OptionBool("by_project")
 	r.byLocation = run.OptionBool("by_location")
+	r.byBin = run.OptionBool("by_bin")
 	if r.postingDate.IsZero() {
 		return system.Error(run.Text("ENTER_POSTING_DATE"))
 	}
@@ -141,7 +142,7 @@ func (r *calculateInventory) itemOnPreDataItem(item *gtables.Item, run *Run) err
 }
 
 // itemOnAfterGetRecord adds up the item's ledger entries per variant (and department, project,
-// location) within the item's filters
+// location, bin) within the item's filters
 func (r *calculateInventory) itemOnAfterGetRecord(item *gtables.Item, run *Run) error {
 	r.window.Update(1, item.No)
 	itemLedgEntry := gtables.NewItemLedgerEntry(run)
@@ -151,6 +152,7 @@ func (r *calculateInventory) itemOnAfterGetRecord(item *gtables.Item, run *Run) 
 	copyItemFilter(item.Department_filter, itemLedgEntry, "department_code")
 	copyItemFilter(item.Project_filter, itemLedgEntry, "project_code")
 	copyItemFilter(item.Location_filter, itemLedgEntry, "location_code")
+	copyItemFilter(item.Bin_filter, itemLedgEntry, "bin_code")
 	for found := itemLedgEntry.FindSetBuffered(); found; found = itemLedgEntry.Next() {
 		key := quantityOnHandKey{itemNo: itemLedgEntry.Item_no, variantCode: itemLedgEntry.Variant_code}
 		if r.byDept {
@@ -161,6 +163,9 @@ func (r *calculateInventory) itemOnAfterGetRecord(item *gtables.Item, run *Run) 
 		}
 		if r.byLocation {
 			key.locationCode = itemLedgEntry.Location_code
+		}
+		if r.byBin {
+			key.binCode = itemLedgEntry.Bin_code
 		}
 		r.quantityOnHandBuffer[key] = r.quantityOnHandBuffer[key].Add(itemLedgEntry.Quantity)
 	}
@@ -195,7 +200,10 @@ func (r *calculateInventory) itemOnPostDataItem(item *gtables.Item, run *Run) er
 		if a.projCode != b.projCode {
 			return a.projCode < b.projCode
 		}
-		return a.locationCode < b.locationCode
+		if a.locationCode != b.locationCode {
+			return a.locationCode < b.locationCode
+		}
+		return a.binCode < b.binCode
 	})
 	for _, key := range keys {
 		err := r.insertItemJnlLine(run, key, r.quantityOnHandBuffer[key])
@@ -239,6 +247,7 @@ func (r *calculateInventory) insertItemJnlLine(run *Run, key quantityOnHandKey, 
 		{"department_code", key.deptCode},
 		{"project_code", key.projCode},
 		{"location_code", key.locationCode},
+		{"bin_code", key.binCode},
 		{"source_code", r.sourceCodeSetup.Phys_inventory_journal},
 	}
 	for _, step := range steps {

@@ -37,3 +37,12 @@ page:
       shortcut: Ctrl+D
       promoted: true
       enabled: true
+
+    # the location's bins
+    - name: Bins
+      caption: Bins
+      image: Rows
+      promoted: true
+      run_page: 5400
+      run_page_filter_field: location_code
+      run_page_filter_value: code

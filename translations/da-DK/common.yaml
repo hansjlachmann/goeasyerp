@@ -8,6 +8,8 @@ common:
 
   # Common actions
   actions:
+    bins: "Placeringer"
+    bin: "Placering"
     get_entries: "Hent poster"
     checklist_report: "Kontrolliste"
     make_diskette: "Lav fil"
@@ -207,6 +209,7 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    bins: "Placeringer"
     overview: "Oversigt"
     budget: "Budget"
     fixed_assets: "Anlægsaktiver"

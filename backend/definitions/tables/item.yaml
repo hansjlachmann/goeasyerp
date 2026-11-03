@@ -572,6 +572,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
 
     - name: qty_on_purch_order
       no: 84
@@ -604,6 +607,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: expected_receipt_date
           type: filter
           value: date_filter
@@ -639,6 +645,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: shipment_date
           type: filter
           value: date_filter
@@ -671,6 +680,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
 
     - name: net_change
       no: 70
@@ -700,6 +712,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -735,6 +750,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -771,6 +789,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -806,6 +827,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -842,6 +866,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -877,6 +904,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -913,6 +943,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -948,6 +981,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -984,6 +1020,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -1020,6 +1059,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -1061,6 +1103,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -1096,6 +1141,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -1225,6 +1273,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: from_type
           type: const
           value: 6
@@ -1256,6 +1307,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: from_type
           type: const
           value: 3
@@ -1287,6 +1341,9 @@ table:
         - field: variant_code
           type: filter
           value: variant_filter
+        - field: bin_code
+          type: filter
+          value: bin_filter
         - field: from_type
           type: const
           value: 1
@@ -1372,6 +1429,17 @@ table:
             width: 100
           - source: description
             width: 250
+
+    - name: bin_filter
+      no: 5423
+      type: types.Code
+      db_name: bin_filter
+      length: 10
+      flow_filter: true
+      table_relation:
+        table: Bin
+        field: code
+        validate: false
 
   keys:
     - name: Primary

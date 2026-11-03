@@ -1,0 +1,40 @@
+page:
+  id: 5400
+  type: List
+  name: Bins
+  source_table: Bin
+  caption: Bins
+  editable: true
+  delayed_insert: true   # the key is the location and the bin code
+
+  layout:
+    repeater:
+      fields:
+        - source: location_code
+          width: 110
+        - source: code
+          width: 110
+        - source: description
+          width: 300
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+      enabled: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+      enabled: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+      enabled: true

@@ -221,6 +221,7 @@ func (m *ReservationManagement) summaryTotalQuantity(entryNo int, availabilityDa
 		calcItemLedgEntry.SetRange("drop_shipment", false)
 		calcItemLedgEntry.SetRange("variant_code", item.Variant_code)
 		calcItemLedgEntry.SetRange("location_code", item.Location_code)
+		calcItemLedgEntry.SetRange("bin_code", item.Bin_code)
 		calcItemLedgEntry.SetRange("serial_no", item.Serial_no)
 		calcItemLedgEntry.SetRange("lot_no", item.Lot_no)
 		err := calcItemLedgEntry.CalcSums("remaining_quantity")
@@ -270,6 +271,7 @@ func (m *ReservationManagement) purchLineFilter(documentType int, availabilityDa
 	calcPurchLine.SetRange("no", item.Item_no)
 	calcPurchLine.SetRange("variant_code", item.Variant_code)
 	calcPurchLine.SetRange("location_code", item.Location_code)
+	calcPurchLine.SetRange("bin_code", item.Bin_code)
 	calcPurchLine.SetRange("serial_no", item.Serial_no)
 	calcPurchLine.SetRange("lot_no", item.Lot_no)
 	calcPurchLine.SetRange("expected_receipt_date", types.Date{}, availabilityDate)
@@ -285,6 +287,7 @@ func (m *ReservationManagement) salesLineFilter(documentType int, availabilityDa
 	calcSalesLine.SetRange("no", item.Item_no)
 	calcSalesLine.SetRange("variant_code", item.Variant_code)
 	calcSalesLine.SetRange("location_code", item.Location_code)
+	calcSalesLine.SetRange("bin_code", item.Bin_code)
 	calcSalesLine.SetRange("serial_no", item.Serial_no)
 	calcSalesLine.SetRange("lot_no", item.Lot_no)
 	calcSalesLine.SetRange("shipment_date", types.Date{}, availabilityDate)
@@ -299,6 +302,7 @@ func (m *ReservationManagement) reqLineFilter(availabilityDate types.Date) *gtab
 	calcReqLine.SetRange("no", item.Item_no)
 	calcReqLine.SetRange("variant_code", item.Variant_code)
 	calcReqLine.SetRange("location_code", item.Location_code)
+	calcReqLine.SetRange("bin_code", item.Bin_code)
 	calcReqLine.SetRange("serial_no", item.Serial_no)
 	calcReqLine.SetRange("lot_no", item.Lot_no)
 	calcReqLine.SetRange("expected_receipt_date", types.Date{}, availabilityDate)
@@ -320,9 +324,11 @@ func (m *ReservationManagement) itemJnlLineFilter(entryType int, availabilityDat
 		calcItemJnlLine.SetRange("location_code", item.Location_code)
 	}
 	if entryType == int(gtables.ItemJournalLine_Entry_type.Transfer) {
+		calcItemJnlLine.SetRange("new_bin_code", item.Bin_code)
 		calcItemJnlLine.SetRange("new_serial_no", item.Serial_no)
 		calcItemJnlLine.SetRange("new_lot_no", item.Lot_no)
 	} else {
+		calcItemJnlLine.SetRange("bin_code", item.Bin_code)
 		calcItemJnlLine.SetRange("serial_no", item.Serial_no)
 		calcItemJnlLine.SetRange("lot_no", item.Lot_no)
 	}
@@ -337,6 +343,7 @@ func (m *ReservationManagement) bomJnlLineFilter(availabilityDate types.Date) *g
 	calcBOMJnlLine.SetRange("item_no", item.Item_no)
 	calcBOMJnlLine.SetRange("variant_code", item.Variant_code)
 	calcBOMJnlLine.SetRange("location_code", item.Location_code)
+	calcBOMJnlLine.SetRange("bin_code", item.Bin_code)
 	calcBOMJnlLine.SetRange("lot_no", item.Lot_no)
 	calcBOMJnlLine.SetRange("posting_date", types.Date{}, availabilityDate)
 	return calcBOMJnlLine
@@ -399,6 +406,7 @@ func (m *ReservationManagement) AutoReserveOneLine(reservSummEntryNo int, remain
 		calcItemLedgEntry.SetRange("positive", true)
 		calcItemLedgEntry.SetRange("variant_code", item.Variant_code)
 		calcItemLedgEntry.SetRange("location_code", item.Location_code)
+		calcItemLedgEntry.SetRange("bin_code", item.Bin_code)
 		calcItemLedgEntry.SetRange("serial_no", item.Serial_no)
 		calcItemLedgEntry.SetRange("lot_no", item.Lot_no)
 		calcItemLedgEntry.SetRange("drop_shipment", false)
@@ -410,7 +418,7 @@ func (m *ReservationManagement) AutoReserveOneLine(reservSummEntryNo int, remain
 			qtyThisLine := take(free)
 			err = m.CreateReservation(validToDate, description, types.Date{}, qtyThisLine,
 				Source{Type: TypeItemLedgerEntry, RefNo: calcItemLedgEntry.Entry_no},
-				calcItemLedgEntry.Variant_code, calcItemLedgEntry.Location_code, calcItemLedgEntry.Serial_no, calcItemLedgEntry.Lot_no)
+				calcItemLedgEntry.Variant_code, calcItemLedgEntry.Location_code, calcItemLedgEntry.Bin_code, calcItemLedgEntry.Serial_no, calcItemLedgEntry.Lot_no)
 			if err != nil {
 				return remainingQtyToReserve, err
 			}
@@ -438,7 +446,7 @@ func (m *ReservationManagement) AutoReserveOneLine(reservSummEntryNo int, remain
 			}
 			qtyThisLine = take(qtyThisLine.Add(calcPurchLine.Reserved_qty_base))
 			err = m.CreateReservation(validToDate, description, calcPurchLine.Expected_receipt_date, qtyThisLine,
-				PurchLineSource(calcPurchLine), calcPurchLine.Variant_code, calcPurchLine.Location_code, calcPurchLine.Serial_no, calcPurchLine.Lot_no)
+				PurchLineSource(calcPurchLine), calcPurchLine.Variant_code, calcPurchLine.Location_code, calcPurchLine.Bin_code, calcPurchLine.Serial_no, calcPurchLine.Lot_no)
 			if err != nil {
 				return remainingQtyToReserve, err
 			}
@@ -457,7 +465,7 @@ func (m *ReservationManagement) AutoReserveOneLine(reservSummEntryNo int, remain
 			}
 			qtyThisLine := take(free)
 			err = m.CreateReservation(validToDate, description, calcReqLine.Expected_receipt_date, qtyThisLine,
-				ReqLineSource(calcReqLine), calcReqLine.Variant_code, calcReqLine.Location_code, calcReqLine.Serial_no, calcReqLine.Lot_no)
+				ReqLineSource(calcReqLine), calcReqLine.Variant_code, calcReqLine.Location_code, calcReqLine.Bin_code, calcReqLine.Serial_no, calcReqLine.Lot_no)
 			if err != nil {
 				return remainingQtyToReserve, err
 			}
@@ -479,7 +487,7 @@ func (m *ReservationManagement) AutoReserveOneLine(reservSummEntryNo int, remain
 			}
 			qtyThisLine = take(qtyThisLine.Add(calcSalesLine.Reserved_qty_base))
 			err = m.CreateReservation(validToDate, description, calcSalesLine.Shipment_date, qtyThisLine,
-				SalesLineSource(calcSalesLine), calcSalesLine.Variant_code, calcSalesLine.Location_code, calcSalesLine.Serial_no, calcSalesLine.Lot_no)
+				SalesLineSource(calcSalesLine), calcSalesLine.Variant_code, calcSalesLine.Location_code, calcSalesLine.Bin_code, calcSalesLine.Serial_no, calcSalesLine.Lot_no)
 			if err != nil {
 				return remainingQtyToReserve, err
 			}
@@ -507,12 +515,12 @@ func (m *ReservationManagement) AutoReserveOneLine(reservSummEntryNo int, remain
 				continue
 			}
 			qtyThisLine = take(qtyThisLine.Add(calcItemJnlLine.Negative_reserved_qty_base))
-			locationCode, serialNo, lotNo := calcItemJnlLine.Location_code, calcItemJnlLine.Serial_no, calcItemJnlLine.Lot_no
+			locationCode, binCode, serialNo, lotNo := calcItemJnlLine.Location_code, calcItemJnlLine.Bin_code, calcItemJnlLine.Serial_no, calcItemJnlLine.Lot_no
 			if calcItemJnlLine.Entry_type == gtables.ItemJournalLine_Entry_type.Transfer {
-				locationCode, serialNo, lotNo = calcItemJnlLine.New_location_code, calcItemJnlLine.New_serial_no, calcItemJnlLine.New_lot_no
+				locationCode, binCode, serialNo, lotNo = calcItemJnlLine.New_location_code, calcItemJnlLine.New_bin_code, calcItemJnlLine.New_serial_no, calcItemJnlLine.New_lot_no
 			}
 			err = m.CreateReservation(validToDate, description, calcItemJnlLine.Posting_date, qtyThisLine,
-				ItemJnlLineSource(calcItemJnlLine), calcItemJnlLine.Variant_code, locationCode, serialNo, lotNo)
+				ItemJnlLineSource(calcItemJnlLine), calcItemJnlLine.Variant_code, locationCode, binCode, serialNo, lotNo)
 			if err != nil {
 				return remainingQtyToReserve, err
 			}
@@ -531,7 +539,7 @@ func (m *ReservationManagement) AutoReserveOneLine(reservSummEntryNo int, remain
 			}
 			qtyThisLine := take(free)
 			err = m.CreateReservation(validToDate, description, calcBOMJnlLine.Posting_date, qtyThisLine,
-				BOMJnlLineSource(calcBOMJnlLine), calcBOMJnlLine.Variant_code, calcBOMJnlLine.Location_code, "", calcBOMJnlLine.Lot_no)
+				BOMJnlLineSource(calcBOMJnlLine), calcBOMJnlLine.Variant_code, calcBOMJnlLine.Location_code, calcBOMJnlLine.Bin_code, "", calcBOMJnlLine.Lot_no)
 			if err != nil {
 				return remainingQtyToReserve, err
 			}
@@ -548,34 +556,34 @@ func (m *ReservationManagement) AutoReserveOneLine(reservSummEntryNo int, remain
 // CreateReservation (CreateReservation): the line reserved for (Set…ReservFor) reserves a
 // quantity from a supply line; the line is saved with its new reserved quantity (the supply
 // line's is changed by the caller)
-func (m *ReservationManagement) CreateReservation(validToDate types.Date, description types.Text, expectedDate types.Date, quantity types.Decimal, from Source, fromVariantCode, fromLocationCode, fromSerialNo, fromLotNo types.Code) error {
+func (m *ReservationManagement) CreateReservation(validToDate types.Date, description types.Text, expectedDate types.Date, quantity types.Decimal, from Source, fromVariantCode, fromLocationCode, fromBinCode, fromSerialNo, fromLotNo types.Code) error {
 	err := m.calcReservEntry.TestField("for_type")
 	if err != nil {
 		return err
 	}
 	switch int(m.calcReservEntry.For_type) {
 	case TypeSales:
-		err = m.salesLineCreateReservFor(m.forSalesLine, validToDate, description, expectedDate, quantity, from, fromVariantCode, fromLocationCode, fromSerialNo, fromLotNo)
+		err = m.salesLineCreateReservFor(m.forSalesLine, validToDate, description, expectedDate, quantity, from, fromVariantCode, fromLocationCode, fromBinCode, fromSerialNo, fromLotNo)
 		if err == nil {
 			err = m.forSalesLine.ModifyOrError(false)
 		}
 	case TypeRequisitionLine:
-		err = m.reqLineCreateReservFor(m.forReqLine, validToDate, description, expectedDate, quantity, from, fromVariantCode, fromLocationCode, fromSerialNo, fromLotNo)
+		err = m.reqLineCreateReservFor(m.forReqLine, validToDate, description, expectedDate, quantity, from, fromVariantCode, fromLocationCode, fromBinCode, fromSerialNo, fromLotNo)
 		if err == nil {
 			err = m.forReqLine.ModifyOrError(false)
 		}
 	case TypePurchase:
-		err = m.purchLineCreateReservFor(m.forPurchLine, validToDate, description, expectedDate, quantity, from, fromVariantCode, fromLocationCode, fromSerialNo, fromLotNo)
+		err = m.purchLineCreateReservFor(m.forPurchLine, validToDate, description, expectedDate, quantity, from, fromVariantCode, fromLocationCode, fromBinCode, fromSerialNo, fromLotNo)
 		if err == nil {
 			err = m.forPurchLine.ModifyOrError(false)
 		}
 	case TypeItemJournal:
-		err = m.itemJnlLineCreateReservFor(m.forItemJnlLine, validToDate, description, expectedDate, quantity, from, fromVariantCode, fromLocationCode, fromSerialNo, fromLotNo)
+		err = m.itemJnlLineCreateReservFor(m.forItemJnlLine, validToDate, description, expectedDate, quantity, from, fromVariantCode, fromLocationCode, fromBinCode, fromSerialNo, fromLotNo)
 		if err == nil {
 			err = m.forItemJnlLine.ModifyOrError(false)
 		}
 	case TypeBOMJournal:
-		err = m.bomJnlLineCreateReservFor(m.forBOMJnlLine, validToDate, description, expectedDate, quantity, from, fromVariantCode, fromLocationCode, fromSerialNo, fromLotNo)
+		err = m.bomJnlLineCreateReservFor(m.forBOMJnlLine, validToDate, description, expectedDate, quantity, from, fromVariantCode, fromLocationCode, fromBinCode, fromSerialNo, fromLotNo)
 		if err == nil {
 			err = m.forBOMJnlLine.ModifyOrError(false)
 		}
@@ -611,10 +619,11 @@ func (m *ReservationManagement) CalculateRemainingQty() (types.Decimal, error) {
 
 // setReservFor fills CalcReservEntry with the line reserved for (item, variant, location, date)
 // and CalcReservEntry2 with its open entries
-func (m *ReservationManagement) setReservFor(forType int, itemNo, variantCode, locationCode, serialNo, lotNo types.Code, date types.Date, forSrc Source) {
+func (m *ReservationManagement) setReservFor(forType int, itemNo, variantCode, locationCode, binCode, serialNo, lotNo types.Code, date types.Date, forSrc Source) {
 	m.calcReservEntry.Item_no = itemNo
 	m.calcReservEntry.Variant_code = variantCode
 	m.calcReservEntry.Location_code = locationCode
+	m.calcReservEntry.Bin_code = binCode
 	m.calcReservEntry.Serial_no = serialNo
 	m.calcReservEntry.Lot_no = lotNo
 	m.calcReservEntry.Expected_receipt_date = date

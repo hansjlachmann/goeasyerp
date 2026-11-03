@@ -89,10 +89,12 @@ func (h *PageTriggersHandler) PeriodGrid(c *fiber.Ctx) error {
 	for _, f := range grid.Filters {
 		allowed[f.Source] = true
 	}
+	flowFilterValues := map[string]string{} // the FlowFilters set, for the rows' filters
 	for _, f := range req.Filters {
 		if !allowed[f.Field] {
 			continue
 		}
+		flowFilterValues[f.Field] = f.Expression
 		if err := rec.SetFlowFilter(f.Field, f.Expression); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(apitypes.NewErrorResponse(errorMessage(err, language)))
 		}
@@ -182,6 +184,15 @@ func (h *PageTriggersHandler) PeriodGrid(c *fiber.Ctx) error {
 		})
 		if ok {
 			for rowField, recField := range grid.Rows.Filters {
+				// a FlowFilter of the grid (the bins of the Location Filter): its expression, none when blank
+				if allowed[recField] {
+					if expr := flowFilterValues[recField]; expr != "" {
+						if err := ftables.ApplyFilter(rowRec, ftables.FieldFilter{Field: rowField, Expression: expr}); err != nil {
+							return c.Status(fiber.StatusBadRequest).JSON(apitypes.NewErrorResponse(errorMessage(err, language)))
+						}
+					}
+					continue
+				}
 				ranger.SetRange(rowField, recValues[recField])
 			}
 		}

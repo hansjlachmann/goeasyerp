@@ -8,6 +8,8 @@ common:
 
   # Common actions
   actions:
+    bins: "Bins"
+    bin: "Bin"
     get_entries: "Get Entries"
     checklist_report: "Checklist Report"
     make_diskette: "Make Diskette"
@@ -207,6 +209,7 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    bins: "Bins"
     overview: "Overview"
     budget: "Budget"
     fixed_assets: "Fixed Assets"
