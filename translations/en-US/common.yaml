@@ -214,6 +214,9 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    projects: "Projects"
+    budgeted: "Budgeted"
+    realized: "Realized"
     quantity: "Quantity"
     duration: "Duration"
     dimensions: "Dimensions"
@@ -281,6 +284,16 @@ common:
 
   # Menu items
   menu:
+    project_list: "Project List"
+    project_register: "Project Register"
+    completed_projects: "Completed Projects"
+    customer_projects_cost: "Customer Projects (Cost)"
+    customer_projects_price: "Customer Projects (Price)"
+    project_cost_budget: "Project Cost Budget"
+    project_actual_to_budget_cost: "Project Actual to Budget (Cost)"
+    project_actual_to_budget_price: "Project Actual to Budget (Price)"
+    project_cost_suggested_billing: "Project Cost Suggested Billing"
+    project_cost_transaction_detail: "Project Cost Transaction Detail"
     sales: "Sales"
     purchases: "Purchases"
     items_inventory: "Items & Inventory"

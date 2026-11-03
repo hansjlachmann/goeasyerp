@@ -1,0 +1,63 @@
+# Report 1212 Completed Projects: the printed layout (see business-logic/reports/layout.go)
+report:
+  id: 1212
+  name: Completed Projects
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Project
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 9
+          elements:
+            - {text: NO, x: 0, y: 1, width: 22, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 23, y: 1, width: 60, bold: true, wrap: true}
+            - {text: COMPLETION_DATE, x: 84, y: 1, width: 22, bold: true, wrap: true}
+            - {text: BUDGETED_PRICE, x: 107, y: 1, width: 30, bold: true, wrap: true, align: right}
+            - {text: INVOICED_PRICE, x: 138, y: 1, width: 30, bold: true, wrap: true, align: right}
+            - {text: USAGE_COST, x: 169, y: 1, width: 30, bold: true, wrap: true, align: right}
+            - {text: PROFIT, x: 200, y: 1, width: 28, bold: true, wrap: true, align: right}
+            - {text: PERCENT_PROFIT, x: 229, y: 1, width: 18, bold: true, wrap: true, align: right}
+            - {text: BILL_TO_CUSTOMER_NO, x: 249, y: 1, width: 24, bold: true, wrap: true}
+            - {line: true, x: 0, y: 7.5}
+        - type: body
+          height: 4.2
+          elements:
+            - {field: "no", x: 0, y: 0, width: 22}
+            - {field: description, x: 23, y: 0, width: 60}
+            - {field: completion_date, x: 84, y: 0, width: 22}
+            - {field: budgeted_price, x: 107, y: 0, width: 30, align: right}
+            - {field: invoiced_price, x: 138, y: 0, width: 30, align: right}
+            - {field: usage_cost, x: 169, y: 0, width: 30, align: right}
+            - {value: profit, x: 200, y: 0, width: 28, align: right}
+            - {value: percent_profit, x: 229, y: 0, width: 18, align: right, decimal_places: "1:1"}
+            - {field: bill_to_customer_no, x: 249, y: 0, width: 24}
+        - type: footer
+          height: 8
+          elements:
+            - {line: true, x: 107, y: 0.5}
+            - {text: REPORT_TOTAL, x: 0, y: 2, width: 100, bold: true}
+            - {total: budgeted_price, x: 107, y: 2, width: 30, align: right, bold: true}
+            - {total: invoiced_price, x: 138, y: 2, width: 30, align: right, bold: true}
+            - {total: usage_cost, x: 169, y: 2, width: 30, align: right, bold: true}
+            - {value: total_profit, x: 200, y: 2, width: 28, align: right, bold: true}
+            - {value: total_percent_profit, x: 229, y: 2, width: 18, align: right, bold: true, decimal_places: "1:1"}

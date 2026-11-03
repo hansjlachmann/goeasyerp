@@ -3358,6 +3358,8 @@ tables:
   source_code_setup:
     caption: "Kildekodeopsætning"
     fields:
+      post_value: "Bogfør værdi"
+      post_recognition: "Bogfør indtægtsføring"
       project_journal: "Projektkladde"
       compress_project_ledger: "Komprimer projektposter"
       adjust_add_reporting_currency: "Reguler ekstra rapporteringsvaluta"

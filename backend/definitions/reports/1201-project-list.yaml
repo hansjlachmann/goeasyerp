@@ -1,0 +1,54 @@
+# Report 1201 Project List: the printed layout (see business-logic/reports/layout.go)
+report:
+  id: 1201
+  name: Project List
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Project
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 9
+          elements:
+            - {text: NO, x: 0, y: 1, width: 24, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 25, y: 1, width: 70, bold: true, wrap: true}
+            - {text: STATUS, x: 96, y: 1, width: 22, bold: true, wrap: true}
+            - {text: BILL_TO_CUSTOMER_NO, x: 119, y: 1, width: 26, bold: true, wrap: true}
+            - {text: CUSTOMER_NAME, x: 146, y: 1, width: 60, bold: true, wrap: true}
+            - {text: BUDGETED_COST, x: 207, y: 1, width: 32, bold: true, wrap: true, align: right}
+            - {text: BUDGETED_PRICE, x: 241, y: 1, width: 32, bold: true, wrap: true, align: right}
+            - {line: true, x: 0, y: 7.5}
+        - type: body
+          height: 4.2
+          elements:
+            - {field: "no", x: 0, y: 0, width: 24}
+            - {field: description, x: 25, y: 0, width: 70}
+            - {field: status, x: 96, y: 0, width: 22}
+            - {field: bill_to_customer_no, x: 119, y: 0, width: 26}
+            - {value: customer_name, x: 146, y: 0, width: 60}
+            - {field: budgeted_cost, x: 207, y: 0, width: 32, align: right}
+            - {field: budgeted_price, x: 241, y: 0, width: 32, align: right}
+        - type: body
+          print_if: description_2
+          height: 4.2
+          elements:
+            - {value: description_2, x: 25, y: 0, width: 70}

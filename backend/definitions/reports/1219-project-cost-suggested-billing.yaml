@@ -1,0 +1,76 @@
+# Report 1219 Project Cost Suggested Billing: the printed layout (see business-logic/reports/layout.go)
+report:
+  id: 1219
+  name: Project Cost Suggested Billing
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Rows
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 9
+          elements:
+            - {text: NO, x: 0, y: 1, width: 22, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 23, y: 1, width: 60, bold: true, wrap: true}
+            - {text: STARTING_DATE, x: 84, y: 1, width: 20, bold: true, wrap: true}
+            - {text: ENDING_DATE, x: 105, y: 1, width: 20, bold: true, wrap: true}
+            - {text: BUDGETED_PRICE, x: 126, y: 1, width: 30, bold: true, wrap: true, align: right}
+            - {text: USAGE_PRICE, x: 157, y: 1, width: 30, bold: true, wrap: true, align: right}
+            - {text: INVOICED_PRICE, x: 188, y: 1, width: 30, bold: true, wrap: true, align: right}
+            - {text: SUGGESTED_BILLING, x: 219, y: 1, width: 30, bold: true, wrap: true, align: right}
+            - {line: true, x: 0, y: 7.5}
+        - type: body
+          print_if: customer_head
+          height: 6
+          elements:
+            - {value: customer_text, x: 0, y: 1.5, width: 80, bold: true}
+            - {value: customer_name, x: 84, y: 1.5, width: 100, bold: true}
+        - type: body
+          print_if: line
+          height: 4.2
+          elements:
+            - {value: project_no, x: 0, y: 0, width: 22}
+            - {value: description, x: 23, y: 0, width: 60}
+            - {value: starting_date, x: 84, y: 0, width: 20}
+            - {value: ending_date, x: 105, y: 0, width: 20}
+            - {value: amount_0, x: 126, y: 0, width: 30, align: right}
+            - {value: amount_1, x: 157, y: 0, width: 30, align: right}
+            - {value: amount_2, x: 188, y: 0, width: 30, align: right}
+            - {value: amount_3, x: 219, y: 0, width: 30, align: right}
+        - type: body
+          print_if: customer_total
+          height: 7
+          elements:
+            - {value: total_text, x: 0, y: 1, width: 120, bold: true}
+            - {value: group_0, x: 126, y: 1, width: 30, align: right, bold: true}
+            - {value: group_1, x: 157, y: 1, width: 30, align: right, bold: true}
+            - {value: group_2, x: 188, y: 1, width: 30, align: right, bold: true}
+            - {value: group_3, x: 219, y: 1, width: 30, align: right, bold: true}
+        - type: footer
+          height: 8
+          elements:
+            - {line: true, x: 126, y: 0.5}
+            - {text: REPORT_TOTAL, x: 0, y: 2, width: 100, bold: true}
+            - {value: total_0, x: 126, y: 2, width: 30, align: right, bold: true}
+            - {value: total_1, x: 157, y: 2, width: 30, align: right, bold: true}
+            - {value: total_2, x: 188, y: 2, width: 30, align: right, bold: true}
+            - {value: total_3, x: 219, y: 2, width: 30, align: right, bold: true}

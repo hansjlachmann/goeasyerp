@@ -1,0 +1,120 @@
+# Report 1217 Project Cost Budget: the printed layout (see business-logic/reports/layout.go)
+report:
+  id: 1217
+  name: Project Cost Budget
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Project
+      new_page_per_record: true
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {value: title, x: 0, y: 0, width: 180, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 10
+          elements:
+            - {text: PROJECT_DESCRIPTION, x: 0, y: 0, width: 40}
+            - {value: project_description, x: 41, y: 0, width: 100}
+            - {value: starting_date_caption, x: 150, y: 0, width: 40}
+            - {value: starting_date, x: 191, y: 0, width: 30}
+            - {value: project_description_2, x: 41, y: 4, width: 100}
+            - {value: ending_date_caption, x: 150, y: 4, width: 40}
+            - {value: ending_date, x: 191, y: 4, width: 30}
+        - type: header
+          print_on_every_page: true
+          height: 9
+          elements:
+            - {text: PHASE_TASK_STEP, x: 0, y: 1, width: 30, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 31, y: 1, width: 70, bold: true, wrap: true}
+            - {text: TYPE, x: 102, y: 1, width: 22, bold: true, wrap: true}
+            - {text: NO, x: 125, y: 1, width: 22, bold: true, wrap: true}
+            - {text: QUANTITY, x: 148, y: 1, width: 22, bold: true, wrap: true, align: right}
+            - {text: UNIT_COST, x: 171, y: 1, width: 24, bold: true, wrap: true, align: right}
+            - {text: TOTAL_COST, x: 196, y: 1, width: 26, bold: true, wrap: true, align: right}
+            - {text: UNIT_PRICE, x: 223, y: 1, width: 24, bold: true, wrap: true, align: right}
+            - {text: TOTAL_PRICE, x: 248, y: 1, width: 25, bold: true, wrap: true, align: right}
+            - {line: true, x: 0, y: 7.5}
+    - name: Rows
+      sections:
+        - type: body
+          print_if: phase_head
+          height: 4.5
+          elements:
+            - {value: code, x: 0, y: 0, width: 24, bold: true}
+            - {value: text, x: 26, y: 0, width: 90, bold: true}
+        - type: body
+          print_if: task_head
+          height: 4.5
+          elements:
+            - {value: code, x: 3, y: 0, width: 24, bold: true}
+            - {value: text, x: 29, y: 0, width: 90, bold: true}
+        - type: body
+          print_if: step_head
+          height: 4.5
+          elements:
+            - {value: code, x: 6, y: 0, width: 24, bold: true}
+            - {value: text, x: 32, y: 0, width: 90, bold: true}
+        - type: body
+          print_if: line
+          height: 4.2
+          elements:
+            - {value: description, x: 31, y: 0, width: 70}
+            - {value: type, x: 102, y: 0, width: 22}
+            - {value: "no", x: 125, y: 0, width: 22}
+            - {value: quantity, x: 148, y: 0, width: 22, align: right, decimal_places: "2:5"}
+            - {value: unit_cost, x: 171, y: 0, width: 24, align: right}
+            - {value: total_cost, x: 196, y: 0, width: 26, align: right}
+            - {value: unit_price, x: 223, y: 0, width: 24, align: right}
+            - {value: total_price, x: 248, y: 0, width: 25, align: right}
+        - type: body
+          print_if: step_total
+          height: 5
+          elements:
+            - {value: code, x: 6, y: 0.5, width: 24, bold: true}
+            - {value: text, x: 32, y: 0.5, width: 90, bold: true}
+            - {value: total_0, x: 196, y: 0.5, width: 26, align: right, bold: true}
+            - {value: total_1, x: 248, y: 0.5, width: 25, align: right, bold: true}
+        - type: body
+          print_if: task_total
+          height: 5
+          elements:
+            - {value: code, x: 3, y: 0.5, width: 24, bold: true}
+            - {value: text, x: 29, y: 0.5, width: 90, bold: true}
+            - {value: total_0, x: 196, y: 0.5, width: 26, align: right, bold: true}
+            - {value: total_1, x: 248, y: 0.5, width: 25, align: right, bold: true}
+        - type: body
+          print_if: phase_total
+          height: 5
+          elements:
+            - {value: code, x: 0, y: 0.5, width: 24, bold: true}
+            - {value: text, x: 26, y: 0.5, width: 90, bold: true}
+            - {value: total_0, x: 196, y: 0.5, width: 26, align: right, bold: true}
+            - {value: total_1, x: 248, y: 0.5, width: 25, align: right, bold: true}
+        - type: body
+          print_if: blank
+          height: 4
+          elements:
+        - type: footer
+          height: 8
+          elements:
+            - {line: true, x: 196, y: 0.5}
+            - {value: project_total_text, x: 0, y: 2, width: 150, bold: true}
+            - {value: project_total_cost, x: 196, y: 2, width: 26, align: right, bold: true}
+            - {value: project_total_price, x: 248, y: 2, width: 25, align: right, bold: true}

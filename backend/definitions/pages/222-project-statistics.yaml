@@ -1,0 +1,221 @@
+page:
+  id: 222
+  type: Card
+  name: Project Statistics
+  source_table: Project   # opened from the Project Card and list (F7) on one project
+  caption: Project Statistics
+  editable: false
+
+  # classic form 222: per resources, items, miscellaneous (G/L accounts) and in total the
+  # budget's price, cost and profit and the realized usage and invoicing; the calculated fields
+  # are filled by OnAfterGetRecord (business-logic/pages/projectstatistics.go)
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+          - source: description
+          - source: status
+      - name: Budgeted
+        caption: Budgeted
+        fields:
+          - source: res_budget_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: res_budget_cost
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: res_budget_profit
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: res_budget_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: item_budget_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: item_budget_cost
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: item_budget_profit
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: item_budget_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: misc_budget_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: misc_budget_cost
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: misc_budget_profit
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: misc_budget_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: total_budget_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: total_budget_cost
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: total_budget_profit
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: total_budget_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+            style: Strong
+
+      - name: Realized
+        caption: Realized
+        fields:
+          - source: res_invoiced_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: res_usage_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: res_excess_invoicing
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: res_excess_inv_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: res_usage_cost
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: res_inv_profit
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: res_inv_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: item_invoiced_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: item_usage_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: item_excess_invoicing
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: item_excess_inv_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: item_usage_cost
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: item_inv_profit
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: item_inv_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: misc_invoiced_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: misc_usage_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: misc_excess_invoicing
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: misc_excess_inv_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: misc_usage_cost
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: misc_inv_profit
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: misc_inv_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: total_invoiced_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: total_usage_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: total_excess_invoicing
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: total_excess_inv_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+            style: Strong
+          - source: total_usage_cost
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: total_inv_profit
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: total_inv_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+            style: Strong
+
+  actions:
+    - name: Back
+      caption: Back
+      image: Back
+      shortcut: Esc
+      promoted: true
+      run_page: 89

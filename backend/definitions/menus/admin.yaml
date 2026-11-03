@@ -625,6 +625,27 @@ menu:
         page_id: 201
       - separator: true
       - name: "Reports"
+        items:
+          - name: "Project List"
+            run_object: "report:1201"
+          - name: "Project Register"
+            run_object: "report:1203"
+          - name: "Completed Projects"
+            run_object: "report:1212"
+          - name: "Customer Projects (Cost)"
+            run_object: "report:1215"
+          - name: "Customer Projects (Price)"
+            run_object: "report:1216"
+          - name: "Project Cost Budget"
+            run_object: "report:1217"
+          - name: "Project Actual to Budget (Cost)"
+            run_object: "report:1210"
+          - name: "Project Actual to Budget (Price)"
+            run_object: "report:1211"
+          - name: "Project Cost Suggested Billing"
+            run_object: "report:1219"
+          - name: "Project Cost Transaction Detail"
+            run_object: "report:1220"
       - name: "Registers"
         page_id: 278
       - name: "Navigate"
