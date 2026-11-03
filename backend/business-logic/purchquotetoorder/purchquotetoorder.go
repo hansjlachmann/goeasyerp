@@ -4,12 +4,13 @@
 package purchquotetoorder
 
 import (
+	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
 
-// Run (OnRun) makes the order of a quote and returns it (GetPurchOrderHeader). Not migrated:
-// reservations.
+// Run (OnRun) makes the order of a quote and returns it (GetPurchOrderHeader); the quote lines'
+// reservations go to the order lines.
 func Run(rec *gtables.PurchaseHeader) (*gtables.PurchaseHeader, error) {
 	err := rec.TestField("document_type", gtables.PurchaseHeader_Document_type.Quote)
 	if err != nil {
@@ -52,12 +53,28 @@ func Run(rec *gtables.PurchaseHeader) (*gtables.PurchaseHeader, error) {
 	purchQuoteLine := gtables.NewPurchaseLine(rec)
 	purchQuoteLine.SetRange("document_type", gtables.PurchaseLineDocument_type(rec.Document_type))
 	purchQuoteLine.SetRange("document_no", rec.No)
+	reservMgt := reservmgt.New(rec)
 	for found := purchQuoteLine.FindSet(); found; found = purchQuoteLine.Next() {
 		purchOrderLine = gtables.NewPurchaseLine(rec)
 		purchOrderLine.TransferFields(purchQuoteLine)
+		if !purchOrderLine.Reserved_qty_base.IsZero() {
+			err = purchOrderLine.Validate("reserved_qty_base", types.Decimal{})
+			if err != nil {
+				return nil, err
+			}
+		}
 		purchOrderLine.Document_type = gtables.PurchaseLineDocument_type(purchOrderHeader.Document_type)
 		purchOrderLine.Document_no = purchOrderHeader.No
 		purchOrderLine.Expected_receipt_date = purchOrderHeader.Expected_receipt_date
+		if !purchQuoteLine.Reserved_qty_base.IsZero() {
+			err = reservMgt.TransferPurchLineToPurchLine(purchQuoteLine, purchOrderLine, purchQuoteLine.Reserved_qty_base)
+			if err == nil {
+				err = purchQuoteLine.TestField("reserved_qty_base", types.Decimal{})
+			}
+			if err != nil {
+				return nil, err
+			}
+		}
 		err = purchOrderLine.InsertOrError(false)
 		if err != nil {
 			return nil, err

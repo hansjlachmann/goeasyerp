@@ -7,6 +7,7 @@
 package blanketorder
 
 import (
+	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
@@ -14,8 +15,9 @@ import (
 
 // SalesToOrder (codeunit 87 OnRun) makes the order of a sales blanket order and returns it
 // (GetSalesOrderHeader). Each blanket line's Qty. to Ship (Base) plus what orders not yet posted
-// take from it cannot be more than its outstanding quantity. Not migrated: the credit limit and
-// availability checks (codeunits 312, 311), reservations.
+// take from it cannot be more than its outstanding quantity; the blanket line's reservations go
+// with the quantity to the order line. Not migrated: the credit limit and availability checks
+// (codeunits 312, 311).
 func SalesToOrder(rec *gtables.SalesHeader) (*gtables.SalesHeader, error) {
 	err := rec.TestField("document_type", gtables.SalesHeader_Document_type.BlanketOrder)
 	if err != nil {
@@ -84,6 +86,9 @@ func SalesToOrder(rec *gtables.SalesHeader) (*gtables.SalesHeader, error) {
 			if err == nil {
 				err = salesOrderLine.Validate("line_discount_percent", salesBlanketOrderLine.Line_discount_percent)
 			}
+			if err == nil && !salesBlanketOrderLine.Reserved_qty_base.IsZero() {
+				err = reservmgt.New(rec).TransferSaleLineToSalesLine(salesBlanketOrderLine, salesOrderLine, salesBlanketOrderLine.Qty_to_ship_base)
+			}
 			if err != nil {
 				return nil, err
 			}
@@ -133,6 +138,8 @@ func resetSalesQuantityFields(tempSalesLine *gtables.SalesLine) {
 	tempSalesLine.Quantity_invoiced = types.Decimal{}
 	tempSalesLine.Qty_shipped_base = types.Decimal{}
 	tempSalesLine.Qty_invoiced_base = types.Decimal{}
+	tempSalesLine.Reserved_quantity = types.Decimal{}
+	tempSalesLine.Reserved_qty_base = types.Decimal{}
 }
 
 // PurchToOrder (codeunit 97 OnRun) makes the order of a purchase blanket order and returns it
@@ -205,6 +212,9 @@ func PurchToOrder(rec *gtables.PurchaseHeader) (*gtables.PurchaseHeader, error) 
 			if err == nil {
 				err = purchOrderLine.Validate("line_discount_percent", purchBlanketOrderLine.Line_discount_percent)
 			}
+			if err == nil && !purchBlanketOrderLine.Reserved_qty_base.IsZero() {
+				err = reservmgt.New(rec).TransferPurchLineToPurchLine(purchBlanketOrderLine, purchOrderLine, purchBlanketOrderLine.Qty_to_receive_base)
+			}
 			if err != nil {
 				return nil, err
 			}
@@ -255,4 +265,6 @@ func resetPurchQuantityFields(tempPurchLine *gtables.PurchaseLine) {
 	tempPurchLine.Qty_rcd_not_invd_base = types.Decimal{}
 	tempPurchLine.Qty_received_base = types.Decimal{}
 	tempPurchLine.Qty_invoiced_base = types.Decimal{}
+	tempPurchLine.Reserved_quantity = types.Decimal{}
+	tempPurchLine.Reserved_qty_base = types.Decimal{}
 }

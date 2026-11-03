@@ -3,6 +3,7 @@ package demodata
 import (
 	"fmt"
 	"github.com/hansjlachmann/openerp/backend/business-logic/blanketorder"
+	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
 	"math/rand"
 	"time"
 
@@ -263,6 +264,12 @@ func postDemoSales(src ftables.Source, open func(src ftables.Source) SalesPoster
 				return err
 			}
 		}
+		if i == 1 {
+			err = reserveFromInventory(src, order)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	_, err = newDocument(gtables.SalesHeader_Document_type.Invoice, today)
 	if err != nil {
@@ -390,4 +397,34 @@ func demoSalesMasters(src ftables.Source) ([]types.Code, []types.Code, []types.C
 		}
 	}
 	return customers, items, resources, nil
+}
+
+// reserveFromInventory: the order's item lines reserve what the inventory has for them (the
+// Reservation page's Auto Reserve)
+func reserveFromInventory(src ftables.Source, order *gtables.SalesHeader) error {
+	salesLine := gtables.NewSalesLine(src)
+	salesLine.SetRange("document_type", gtables.SalesLineDocument_type(order.Document_type))
+	salesLine.SetRange("document_no", order.No)
+	salesLine.SetRange("type", gtables.SalesLine_Type.Item)
+	var lines []*gtables.SalesLine
+	for found := salesLine.FindSetBuffered(); found; found = salesLine.Next() {
+		line := gtables.NewSalesLine(src)
+		line.Copy(salesLine)
+		lines = append(lines, line)
+	}
+	for _, line := range lines {
+		if line.Shipment_date.IsZero() {
+			continue
+		}
+		m := reservmgt.New(src)
+		err := m.SalesLineSetReservFor(line)
+		if err != nil {
+			return err
+		}
+		_, err = m.AutoReserve(line.Shipment_date.AddMonths(1), "", line.Shipment_date)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

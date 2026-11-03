@@ -300,6 +300,22 @@ master_data:
   - table: Inventory_Setup   # the single setup record (blank key)
     records:
       - {item_nos: ITEM, automatic_cost_posting: true}
+  # Reservations: orders and journals may reserve; the Reservation page shows the inventory
+  # first, then purchase orders, the other sources on request (Show 2 Always, 1 Optional)
+  - table: Reservation_Setup   # the single setup record (blank key)
+    records:
+      - {valid_to_formula: "1M", reserve_sales_order: true, reserve_purchase_order: true,
+         reserve_blanket_sales_order: true, reserve_blanket_purchase_order: true, reserve_sales_quote: true,
+         reserve_purchase_quote: true, reserve_requisition_line: true, reserve_item_jnl_line_sales: true,
+         reserve_item_jnl_line_neg: true, reserve_item_jnl_line_purch: true, reserve_item_jnl_line_pos: true,
+         reserve_bom_journal_line: true,
+         show_item_ledger_entry: 2, item_ledger_entry_priority: 1,
+         show_purchase_order: 2, purchase_order_priority: 2, auto_purchase_order: true,
+         show_requisition_line: 1, requisition_line_priority: 3,
+         show_item_jnl_line_purchases: 1, item_jnl_line_purch_priority: 4,
+         show_item_jnl_line_pos: 1, item_jnl_line_pos_priority: 5,
+         show_bom_journal_line: 1, bom_journal_line_priority: 6,
+         show_sales_credit_memo: 1, sales_credit_memo_priority: 7}
   # Intrastat (foreign trade statistics): the codes of the declaration
   - table: Tariff_Number
     records:

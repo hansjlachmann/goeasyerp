@@ -307,6 +307,7 @@ func (salesHeaderLogic) OnValidate_Bill_to_customer_no(rec *gtables.SalesHeader)
 	rec.Department_code = cust.Department_code
 	rec.Project_code = cust.Project_code
 	rec.Customer_posting_group = cust.Customer_posting_group
+	rec.Reserve = gtables.SalesHeaderReserve(cust.Reserve)
 	rec.Currency_code = cust.Currency_code
 	rec.Price_group_code = cust.Price_group_code
 	rec.Prices_including_tax = cust.Prices_including_tax

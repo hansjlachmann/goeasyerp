@@ -1,0 +1,46 @@
+page:
+  id: 500
+  type: List
+  name: Available - Requisition Lines
+  source_table: Requisition_Line
+  caption: Available - Requisition Lines
+  editable: false   # opened from the Reservation page for one line: the requisition lines that will bring the item, up to its date
+
+  layout:
+    repeater:
+      fields:
+        - source: worksheet_template_name
+          width: 120
+        - source: journal_batch_name
+          width: 120
+        - source: location_code
+          width: 120
+        - source: expected_receipt_date
+          width: 120
+        - source: quantity_base
+          width: 130
+        - source: reserved_qty_base
+          width: 130
+        - source: available_quantity
+          calculated: true
+          type: types.Decimal
+          decimal_places: "0:5"
+          width: 130
+        - source: current_reserved_quantity
+          calculated: true
+          type: types.Decimal
+          decimal_places: "0:5"
+          width: 160
+
+  actions:
+    # The line the page is for reserves from the selected line / its reservations from it are canceled
+    - name: Reserve
+      caption: Reserve
+      image: Approve
+      promoted: true
+      run_object: table:Requisition_Line.ReserveAvailable
+    - name: Cancel Reservation
+      caption: Cancel Reservation
+      image: Cancel
+      promoted: true
+      run_object: table:Requisition_Line.CancelAvailableReservation

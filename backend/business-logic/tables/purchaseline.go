@@ -31,7 +31,10 @@ func (purchaseLineLogic) OnInsert(rec *gtables.PurchaseLine) error {
 
 // OnDelete: a line received but not invoiced stays
 func (purchaseLineLogic) OnDelete(rec *gtables.PurchaseLine) error {
-	err := rec.TestField("qty_rcd_not_invoiced", types.Decimal{})
+	err := rec.TestField("reserved_qty_base", types.Decimal{})
+	if err == nil {
+		err = rec.TestField("qty_rcd_not_invoiced", types.Decimal{})
+	}
 	if err != nil {
 		return err
 	}
@@ -97,6 +100,9 @@ func testPurchLineNotReceived(rec *gtables.PurchaseLine) error {
 // OnValidate_Type: a new type starts the line again (not on a line already received)
 func (purchaseLineLogic) OnValidate_Type(rec *gtables.PurchaseLine) error {
 	err := testPurchLineNotReceived(rec)
+	if err == nil {
+		err = rec.TestField("reserved_qty_base", types.Decimal{})
+	}
 	if err != nil {
 		return err
 	}
@@ -116,6 +122,9 @@ func (purchaseLineLogic) OnValidate_Type(rec *gtables.PurchaseLine) error {
 // quantity it had
 func (purchaseLineLogic) OnValidate_No(rec *gtables.PurchaseLine) error {
 	err := testPurchLineNotReceived(rec)
+	if err == nil {
+		err = rec.TestField("reserved_qty_base", types.Decimal{})
+	}
 	if err != nil {
 		return err
 	}
@@ -203,6 +212,11 @@ func (purchaseLineLogic) OnValidate_No(rec *gtables.PurchaseLine) error {
 		rec.Gen_prod_posting_group = item.Gen_prod_posting_group
 		rec.Tax_prod_posting_group = item.Tax_prod_posting_group
 		rec.Tax_group_code = item.Tax_group_code
+		if item.Reserve == gtables.Item_Reserve.Optional {
+			rec.Reserve = gtables.PurchaseLineReserve(purchHeader.Reserve)
+		} else {
+			rec.Reserve = gtables.PurchaseLineReserve(item.Reserve)
+		}
 		if item.Price_includes_tax {
 			taxPostingSetup := gtables.NewTaxPostingSetup(rec)
 			if !taxPostingSetup.Get(map[string]interface{}{"tax_bus_posting_group": item.Tax_bus_posting_gr_price, "tax_prod_posting_group": item.Tax_prod_posting_group}) {
@@ -283,6 +297,9 @@ func (purchaseLineLogic) OnValidate_Quantity(rec *gtables.PurchaseLine) error {
 		return apperrors.PurchQtyLessThan(gtables.PurchaseLineTableName, "quantity_base", "qty_received_base")
 	}
 	err = initPurchLineOutstanding(rec)
+	if err == nil {
+		err = checkReservedNotAbove(gtables.PurchaseLineTableName, "reserved_qty_base", rec.Outstanding_qty_base, rec.Reserved_qty_base)
+	}
 	if err != nil {
 		return err
 	}
@@ -737,7 +754,11 @@ func (purchaseLineLogic) OnValidate_Unit_of_measure_code(rec *gtables.PurchaseLi
 	} else {
 		rec.Qty_per_unit_of_measure = types.NewDecimalFromInt(1)
 	}
-	return rec.Validate("quantity", rec.Quantity)
+	err = rec.Validate("quantity", rec.Quantity)
+	if err != nil {
+		return err
+	}
+	return rec.Validate("reserved_qty_base", rec.Reserved_qty_base)
 }
 
 // updatePurchLineUOMQtyPerStockQty (UpdateUOMQtyPerStockQty): the item's unit cost for the

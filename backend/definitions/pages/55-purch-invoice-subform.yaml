@@ -37,6 +37,12 @@ page:
           visible: false
         - source: quantity
           width: 100
+        - source: reserve
+          width: 100
+          visible: false
+        - source: reserved_quantity
+          width: 120
+          visible: false
         - source: unit_of_measure_code
           width: 110
         - source: direct_unit_cost
@@ -111,3 +117,15 @@ page:
       image: Delete
       shortcut: Ctrl+D
       promoted: true
+
+    # Reservations of the line: the Reservation page (the sources it can reserve from) and its entries
+    - name: Reserve
+      caption: Reserve
+      image: Lines
+      promoted: true
+      run_object: table:Purchase_Line.ShowReservation
+    - name: Reservation Entries
+      caption: Reservation Entries
+      image: Entries
+      promoted: true
+      run_object: table:Purchase_Line.ShowReservationEntries

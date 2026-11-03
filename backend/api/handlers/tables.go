@@ -579,6 +579,8 @@ func applyListQuery(c *fiber.Ctx, table ftables.Table, language string) error {
 type fixedFilterParam struct {
 	Field string      `json:"field"`
 	Value interface{} `json:"value"`
+	// Expression: Value is a filter expression (a page's OnOpenPage range), applied as such
+	Expression bool `json:"expression,omitempty"`
 }
 
 type filterParam struct {
@@ -608,16 +610,24 @@ func applyFixedFilters(table ftables.Table, fixed []fixedFilterParam, language s
 			return errors.New(apperrors.InvalidFilters().Message(language))
 		}
 		value := ""
+		expression := f.Expression
 		switch v := f.Value.(type) {
 		case string:
 			value = v
 		case float64:
 			value = strconv.FormatFloat(v, 'f', -1, 64)
 		case bool:
-			value = strconv.FormatBool(v)
+			// a Yes/No filter: the filter expression reads true/false (SetRange would compare text)
+			value, expression = strconv.FormatBool(v), true
 		case nil:
 		default:
 			value = fmt.Sprint(v)
+		}
+		if expression {
+			if err := ftables.ApplyFilter(table, ftables.FieldFilter{Field: f.Field, Expression: value}); err != nil {
+				return errors.New(apperrors.InvalidFilters().Message(language))
+			}
+			continue
 		}
 		ranger.SetRange(f.Field, value)
 	}

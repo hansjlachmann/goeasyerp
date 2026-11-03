@@ -931,7 +931,7 @@ func (t *ReqWkshTemplate) renameReferences(field string, oldValue, newValue inte
 		condValue  int
 	}
 	references := map[string][]reference{
-		"name": {{"Requisition_Line", false, "worksheet_template_name", "", 0}, {"Requisition_Wksh_Name", false, "worksheet_template_name", "", 0}},
+		"name": {{"Requisition_Line", false, "worksheet_template_name", "", 0}, {"Requisition_Wksh_Name", false, "worksheet_template_name", "", 0}, {"Reservation_Setup", false, "auto_req_wksh_template", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

@@ -195,6 +195,15 @@ common:
     entry_no: "Løbenr."
     description: "Beskrivelse"
     status: "Status"
+    reserve: "Reserver"
+    reservation_entries: "Reservationsposter"
+    cancel_reservation: "Annuller reservation"
+    auto_reserve: "Autoreserver"
+    reserve_from_current_line: "Reserver fra aktuel linje"
+    cancel_reservation_from_current_line: "Annuller reservation fra aktuel linje"
+    show_optional_lines: "Vis valgfrie linjer"
+    hide_optional_lines: "Skjul valgfrie linjer"
+    available_to_reserve: "Disponibel til reservation"
 
   # Card page sections (page YAML section name in snake case)
   sections:
@@ -245,6 +254,9 @@ common:
     rounding: "Afrunding"
     statistics: "Statistik"
     timestamps: "Tidsstempler"
+    item_ledger: "Varepost"
+    purchase: "Køb"
+    journals: "Kladder"
 
   # Common messages
   messages:

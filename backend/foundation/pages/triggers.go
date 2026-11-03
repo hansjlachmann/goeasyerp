@@ -189,6 +189,8 @@ func RunNewRecord(pageID int, rec, xRec any, belowXRec bool) error {
 type FixedFilter struct {
 	Field string      `json:"field"`
 	Value interface{} `json:"value"`
+	// Expression: Value is a filter expression (a range: ..2026-10-20, <0), not one value
+	Expression bool `json:"expression,omitempty"`
 }
 
 // SelectRequest asks the user to pick a record before the page opens (classic RUNMODAL of a
@@ -250,6 +252,19 @@ func (o *Open) SetFilter(field string, value interface{}) {
 		}
 	}
 	o.filters = append(o.filters, FixedFilter{Field: field, Value: value})
+}
+
+// SetFilterExpression limits the page with a filter expression on a field (filter group 2: a
+// range or a comparison — ..2026-10-20, <0); new records get no value from it
+func (o *Open) SetFilterExpression(field, expression string) {
+	field = strings.ToLower(field)
+	for i, f := range o.filters {
+		if f.Field == field {
+			o.filters[i].Value, o.filters[i].Expression = expression, true
+			return
+		}
+	}
+	o.filters = append(o.filters, FixedFilter{Field: field, Value: expression, Expression: true})
 }
 
 // Filters returns the filters the trigger set

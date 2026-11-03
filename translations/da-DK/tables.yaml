@@ -3771,6 +3771,9 @@ tables:
       variant_filter: "Variantfilter"
       sales_unit_of_measure: "Salgsenhed"
       purch_unit_of_measure: "Købsenhed"
+      reserved_qty_on_inventory: "Reserveret antal på lager"
+      reserved_qty_on_purch_orders: "Reserveret antal på købsordrer"
+      reserved_qty_on_sales_orders: "Reserveret antal på salgsordrer"
     options:
       price_profit_calculation:
         profit_price_cost: "Avance=Pris-Kostpris"
@@ -3910,6 +3913,10 @@ tables:
       unit_of_measure_code: "Enhedskode"
       quantity_base: "Antal (basis)"
       invoiced_qty_base: "Faktureret antal (basis)"
+      positive_reserved_quantity: "Positivt reserveret antal"
+      negative_reserved_quantity: "Negativt reserveret antal"
+      positive_reserved_qty_base: "Positivt reserveret antal (basis)"
+      negative_reserved_qty_base: "Negativt reserveret antal (basis)"
     options:
       recurring_method:
         fixed: "Fast"
@@ -4427,10 +4434,17 @@ tables:
       qty_per_unit_of_measure: "Antal pr. enhed"
       unit_of_measure_code: "Enhedskode"
       quantity_base: "Antal (basis)"
+      reserved_quantity: "Reserveret antal"
+      reserve: "Reserver"
+      reserved_qty_base: "Reserveret antal (basis)"
     options:
       recurring_method:
         fixed: "Fast"
         variable: "Variabel"
+      reserve:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
   bom_ledger_entry:
     caption: "Styklistepost"
     fields:
@@ -4547,6 +4561,7 @@ tables:
       last_posting_no: "Sidste bogføringsnr."
       posting_no_series: "Bogføringsnr.serie"
       shipping_no_series: "Leveringsnr.serie"
+      reserve: "Reserver"
     options:
       document_type:
         quote: "Tilbud"
@@ -4560,6 +4575,10 @@ tables:
         credit_memo: "Kreditnota"
         finance_charge_memo: "Rentenota"
         reminder: "Rykker"
+      reserve:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
   sales_line:
     caption: "Salgslinje"
     fields:
@@ -4639,6 +4658,10 @@ tables:
       qty_invoiced_base: "Faktureret antal (basis)"
       shipment_no: "Leverancenr."
       shipment_line_no: "Leverancelinjenr."
+      reserved_quantity: "Reserveret antal"
+      reserve: "Reserver"
+      reserved_qty_base: "Reserveret antal (basis)"
+      planned: "Planlagt"
     options:
       document_type:
         quote: "Tilbud"
@@ -4655,6 +4678,10 @@ tables:
         reverse_charge_vat: "Omvendt betalingspligt"
         full_vat: "Fuld moms"
         sales_tax: "Salgsafgift"
+      reserve:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
   sales_shipment_header:
     caption: "Salgsleverancehoved"
     fields:
@@ -5193,6 +5220,7 @@ tables:
       posting_no: "Bogføringsnr."
       last_receiving_no: "Sidste modtagelsesnr."
       last_posting_no: "Sidste bogføringsnr."
+      reserve: "Reserver"
     options:
       applies_to_doc_type:
         payment: "Betaling"
@@ -5206,6 +5234,10 @@ tables:
         invoice: "Faktura"
         credit_memo: "Kreditnota"
         blanket_order: "Rammeordre"
+      reserve:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
   purchase_line:
     caption: "Købslinje"
     fields:
@@ -5293,6 +5325,9 @@ tables:
       qty_rcd_not_invd_base: "Modt. ufakt. antal (basis)"
       qty_received_base: "Modtaget antal (basis)"
       qty_invoiced_base: "Faktureret antal (basis)"
+      reserved_quantity: "Reserveret antal"
+      reserve: "Reserver"
+      reserved_qty_base: "Reserveret antal (basis)"
     options:
       fa_posting_type:
         acquisition_cost: "Anskaffelsespris"
@@ -5312,6 +5347,10 @@ tables:
         reverse_charge_vat: "Omvendt betalingspligt"
         full_vat: "Fuld moms"
         sales_tax: "Salgsafgift"
+      reserve:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
   purch_comment_line:
     caption: "Købsbemærkningslinje"
     fields:
@@ -5970,6 +6009,9 @@ tables:
       qty_per_unit_of_measure: "Antal pr. enhed"
       unit_of_measure_code: "Enhedskode"
       quantity_base: "Antal (basis)"
+      reserved_quantity: "Reserveret antal"
+      reserve: "Reserver"
+      reserved_qty_base: "Reserveret antal (basis)"
     options:
       type:
         account_g_l: "Konto (finans)"
@@ -5977,6 +6019,10 @@ tables:
       recurring_method:
         fixed: "Fast"
         variable: "Variabel"
+      reserve:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
   requisition_method:
     caption: "Indkøbsmetode"
     fields:
@@ -6084,3 +6130,220 @@ tables:
       name: "Navn"
       company_name: "Regnskabsnavn"
       currency_code: "Valutakode"
+  reservation_setup:
+    caption: "Reservationsopsætning"
+    fields:
+      primary_key: "Primær nøgle"
+      track_changes: "Spor ændringer"
+      valid_to_formula: "Gyldig til-formel"
+      auto_req_wksh_template: "Skabelon til auto. indkøbskladde"
+      auto_req_wksh_name: "Navn på auto. indkøbskladde"
+      show_item_ledger_entry: "Vis varepost"
+      item_ledger_entry_priority: "Prioritet varepost"
+      show_purchase_quote: "Vis købsrekvisition"
+      purchase_quote_priority: "Prioritet købsrekvisition"
+      auto_purchase_quote: "Auto. købsrekvisition"
+      reserve_purchase_quote: "Reserver købsrekvisition"
+      show_blanket_purchase_order: "Vis rammekøbsordre"
+      blanket_purch_order_priority: "Prioritet rammekøbsordre"
+      auto_blanket_purchase_order: "Auto. rammekøbsordre"
+      reserve_blanket_purchase_order: "Reserver rammekøbsordre"
+      show_purchase_order: "Vis købsordre"
+      purchase_order_priority: "Prioritet købsordre"
+      auto_purchase_order: "Auto. købsordre"
+      reserve_purchase_order: "Reserver købsordre"
+      show_purchase_invoice: "Vis købsfaktura"
+      purchase_invoice_priority: "Prioritet købsfaktura"
+      auto_purchase_invoice: "Auto. købsfaktura"
+      reserve_purchase_invoice: "Reserver købsfaktura"
+      show_purchase_credit_memo: "Vis købskreditnota"
+      purchase_credit_memo_priority: "Prioritet købskreditnota"
+      auto_purchase_credit_memo: "Auto. købskreditnota"
+      reserve_purchase_credit_memo: "Reserver købskreditnota"
+      show_requisition_line: "Vis indkøbskladdelinje"
+      requisition_line_priority: "Prioritet indkøbskladdelinje"
+      auto_requisition_line: "Auto. indkøbskladdelinje"
+      reserve_requisition_line: "Reserver indkøbskladdelinje"
+      show_sales_quote: "Vis salgstilbud"
+      sales_quote_priority: "Prioritet salgstilbud"
+      auto_sales_quote: "Auto. salgstilbud"
+      reserve_sales_quote: "Reserver salgstilbud"
+      show_blanket_sales_order: "Vis rammesalgsordre"
+      blanket_sales_order_priority: "Prioritet rammesalgsordre"
+      auto_blanket_sales_order: "Auto. rammesalgsordre"
+      reserve_blanket_sales_order: "Reserver rammesalgsordre"
+      show_sales_order: "Vis salgsordre"
+      sales_order_priority: "Prioritet salgsordre"
+      auto_sales_order: "Auto. salgsordre"
+      reserve_sales_order: "Reserver salgsordre"
+      show_sales_invoice: "Vis salgsfaktura"
+      sales_invoice_priority: "Prioritet salgsfaktura"
+      auto_sales_invoice: "Auto. salgsfaktura"
+      reserve_sales_invoice: "Reserver salgsfaktura"
+      show_sales_credit_memo: "Vis salgskreditnota"
+      sales_credit_memo_priority: "Prioritet salgskreditnota"
+      auto_sales_credit_memo: "Auto. salgskreditnota"
+      reserve_sales_credit_memo: "Reserver salgskreditnota"
+      show_item_jnl_line_purchases: "Vis varekladdelinje køb"
+      item_jnl_line_purch_priority: "Prioritet varekladdelinje køb"
+      auto_item_jnl_line_purchases: "Auto. varekladdelinje køb"
+      reserve_item_jnl_line_purch: "Reserver varekladdelinje køb"
+      show_item_jnl_line_sales: "Vis varekladdelinje salg"
+      item_jnl_line_sales_priority: "Prioritet varekladdelinje salg"
+      auto_item_jnl_line_sales: "Auto. varekladdelinje salg"
+      reserve_item_jnl_line_sales: "Reserver varekladdelinje salg"
+      show_item_jnl_line_pos: "Vis varekladdelinje opreg."
+      item_jnl_line_pos_priority: "Prioritet varekladdelinje opreg."
+      auto_item_jnl_line_pos: "Auto. varekladdelinje opreg."
+      reserve_item_jnl_line_pos: "Reserver varekladdelinje opreg."
+      show_item_jnl_line_neg: "Vis varekladdelinje nedreg."
+      item_jnl_line_neg_priority: "Prioritet varekladdelinje nedreg."
+      auto_item_jnl_line_neg: "Auto. varekladdelinje nedreg."
+      reserve_item_jnl_line_neg: "Reserver varekladdelinje nedreg."
+      show_item_jnl_line_transfer: "Vis varekladdelinje overførsel"
+      item_jnl_line_trans_priority: "Prioritet varekladdelinje overførsel"
+      auto_item_jnl_line_transfer: "Auto. varekladdelinje overførsel"
+      reserve_item_jnl_line_trans: "Reserver varekladdelinje overførsel"
+      show_bom_journal_line: "Vis styklistekladdelinje"
+      bom_journal_line_priority: "Prioritet styklistekladdelinje"
+      auto_bom_journal_line: "Auto. styklistekladdelinje"
+      reserve_bom_journal_line: "Reserver styklistekladdelinje"
+    options:
+      show_item_ledger_entry:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_purchase_quote:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_blanket_purchase_order:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_purchase_order:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_purchase_invoice:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_purchase_credit_memo:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_requisition_line:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_sales_quote:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_blanket_sales_order:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_sales_order:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_sales_invoice:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_sales_credit_memo:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_item_jnl_line_purchases:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_item_jnl_line_sales:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_item_jnl_line_pos:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_item_jnl_line_neg:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_item_jnl_line_transfer:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+      show_bom_journal_line:
+        never: "Aldrig"
+        optional: "Valgfri"
+        always: "Altid"
+  reservation_entry:
+    caption: "Reservationspost"
+    fields:
+      entry_no: "Løbenr."
+      item_no: "Varenr."
+      location_code: "Lokationskode"
+      quantity: "Antal"
+      reservation_status: "Reservationsstatus"
+      valid_to_date: "Gyldig til-dato"
+      description: "Beskrivelse"
+      creation_date: "Oprettelsesdato"
+      transferred_from_entry_no: "Overført fra løbenr."
+      for_type: "For type"
+      for_subtype: "For undertype"
+      for_id: "For ID"
+      for_batch_name: "For kladdenavn"
+      for_prod_order_line: "For prod.ordrelinje"
+      for_ref_no: "For ref.nr."
+      from_type: "Fra type"
+      from_subtype: "Fra undertype"
+      from_id: "Fra ID"
+      from_batch_name: "Fra kladdenavn"
+      from_prod_order_line: "Fra prod.ordrelinje"
+      from_ref_no: "Fra ref.nr."
+      expected_receipt_date: "Forventet modt.dato"
+      shipment_date: "Afsendelsesdato"
+      created_by: "Oprettet af"
+      cancelation_date: "Annulleringsdato"
+      canceled_or_changed_by: "Annulleret eller ændret af"
+      variant_code: "Variantkode"
+    options:
+      reservation_status:
+        open: "Åben"
+        applied: "Udlignet"
+        rejected_overdue: "Afvist (forfalden)"
+        transferred: "Overført"
+        canceled_or_changed: "Annulleret eller ændret"
+      for_type:
+        sales: "Salg"
+        requisition_line: "Indkøbskladdelinje"
+        purchase: "Køb"
+        item_journal: "Varekladde"
+        bom_journal: "Styklistekladde"
+        item_ledger_entry: "Varepost"
+        prod_order_line: "Prod.ordrelinje"
+        prod_order_component: "Prod.ordrekomponent"
+      from_type:
+        sales: "Salg"
+        requisition_line: "Indkøbskladdelinje"
+        purchase: "Køb"
+        item_journal: "Varekladde"
+        bom_journal: "Styklistekladde"
+        item_ledger_entry: "Varepost"
+        prod_order_line: "Prod.ordrelinje"
+        prod_order_component: "Prod.ordrekomponent"
+  entry_summary:
+    caption: "Postoversigt"
+    fields:
+      entry_no: "Løbenr."
+      table_id: "Tabel-id"
+      summary_type: "Oversigtstype"
+      total_quantity: "Antal i alt"
+      total_reserved_quantity: "Reserveret antal i alt"
+      total_available_quantity: "Disponibelt antal i alt"
+      current_reserved_quantity: "Reserveret antal for linjen"
+      available_page_id: "Side-id for disponible"

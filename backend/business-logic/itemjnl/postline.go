@@ -2,6 +2,7 @@ package itemjnl
 
 import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
+	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
 	"github.com/hansjlachmann/openerp/backend/foundation/system"
@@ -27,7 +28,11 @@ var unitPrecision = types.MustDecimal("0.00001")
 // Cost (Inv Qty), the item's Add.-Curr. Average Cost) and the inventory posting carries it into
 // the G/L.
 //
-// Not migrated yet: reservations, item tracking (serial and lot numbers), bins; Costing Method
+// Reservations: a line that reserved from the inventory (Positive Reserved Qty.) takes the item
+// ledger entries it reserved first, the reservations of a supply line (Negative Reserved Qty.) go
+// to the entry it posts (codeunit 400 TransferItemJnlToItemLedgEntry).
+//
+// Not migrated yet: item tracking (serial and lot numbers), bins; Costing Method
 // Specific (it needs serial numbers) is refused.
 type ItemJnlPostLine struct {
 	src ftables.Source
@@ -144,7 +149,7 @@ func (p *ItemJnlPostLine) code() error {
 	}
 
 	if p.item.Reserve == gtables.Item_Reserve.Always &&
-		!itemJnlLine.Quantity_base.IsZero() &&
+		!itemJnlLine.Positive_reserved_qty_base.Abs().Equal(itemJnlLine.Quantity_base.Abs()) &&
 		(tables.ItemJnlLineSigned(itemJnlLine, itemJnlLine.Quantity_base).IsNegative() || itemJnlLine.Entry_type == gtables.ItemJournalLine_Entry_type.Transfer) {
 		return apperrors.ItemMustBeReserved(gtables.ItemTableName, "reserve", p.item.No.String(), p.item.Reserve)
 	}
@@ -269,6 +274,14 @@ func (p *ItemJnlPostLine) code() error {
 		itemLedgEntry.Unit_amount = types.Decimal{}
 	}
 
+	if itemJnlLine.Negative_reserved_qty_base.IsNegative() &&
+		itemLedgEntry.Entry_type != gtables.ItemLedgerEntry_Entry_type.Transfer {
+		err = reservmgt.New(p.src).TransferItemJnlToItemLedgEntry(itemJnlLine, itemLedgEntry)
+		if err != nil {
+			return err
+		}
+	}
+
 	err = p.applyItemLedgEntry(itemLedgEntry, false)
 	if err != nil {
 		return err
@@ -375,86 +388,152 @@ func (p *ItemJnlPostLine) applyItemLedgEntry(itemLedgEntry *gtables.ItemLedgerEn
 		return nil
 	}
 
+	itemJnlLine := p.itemJnlLine
 	oldItemLedgEntry := gtables.NewItemLedgerEntry(p.src)
 	itemLedgEntry6 := gtables.NewItemLedgerEntry(p.src)
+	reservMgt := reservmgt.New(p.src)
+	reservEntry := gtables.NewReservationEntry(p.src)
 	entryFindMethod := "-"
+	firstReservation := true
 	firstApplication := true
+	startApplication := false
 	for {
 		var appliedQty types.Decimal
-		if itemLedgEntry.Applies_to_entry != 0 {
-			if firstApplication {
-				firstApplication = false
-				err := oldItemLedgEntry.GetOrError(itemLedgEntry.Applies_to_entry)
-				if err != nil {
-					return err
+		// a line that reserved from the inventory takes the item ledger entries it reserved first
+		if !itemJnlLine.Positive_reserved_qty_base.IsZero() && !causedByTransfer {
+			if firstReservation {
+				firstReservation = false
+
+				if itemJnlLine.Positive_reserved_qty_base.IsNegative() {
+					return apperrors.ReservQtyNotPositive()
 				}
-				err = oldItemLedgEntry.TestField("item_no", itemLedgEntry.Item_no)
-				if err != nil {
-					return err
-				}
-				err = oldItemLedgEntry.TestField("variant_code", itemLedgEntry.Variant_code)
-				if err != nil {
-					return err
-				}
-				err = oldItemLedgEntry.TestField("open", true)
-				if err != nil {
-					return err
-				}
-				err = oldItemLedgEntry.TestField("positive", !itemLedgEntry.Positive)
-				if err != nil {
-					return err
-				}
-				err = oldItemLedgEntry.TestField("location_code", itemLedgEntry.Location_code)
-				if err != nil {
-					return err
-				}
-				if oldItemLedgEntry.Remaining_quantity.Add(oldItemLedgEntry.Reserved_quantity).Abs().LessThan(
-					itemLedgEntry.Remaining_quantity.Add(itemLedgEntry.Reserved_quantity).Abs()) {
-					return apperrors.FieldTooLow(itemLedgEntryTable, "remaining_quantity")
+
+				reservmgt.InitFilterAndSortingLookupFor(reservEntry, true)
+				reservmgt.FilterFor(reservEntry, reservmgt.ItemJnlLineSource(itemJnlLine))
+				if !reservEntry.FindFirst() {
+					return apperrors.ReservError()
 				}
 			} else {
-				return nil
+				if !reservEntry.FindFirst() {
+					return itemJnlLine.TestField("positive_reserved_qty_base", types.Decimal{})
+				}
 			}
+
+			if int(reservEntry.From_type) != reservmgt.TypeItemLedgerEntry {
+				return apperrors.ReservNotOnInventory(reservEntry.Item_no.String())
+			}
+			err := reservEntry.TestField("item_no", itemJnlLine.Item_no)
+			if err == nil {
+				err = reservEntry.TestField("variant_code", itemJnlLine.Variant_code)
+			}
+			if err == nil {
+				err = reservEntry.TestField("location_code", itemJnlLine.Location_code)
+			}
+			if err == nil {
+				err = reservEntry.TestField("shipment_date", itemJnlLine.Posting_date)
+			}
+			if err == nil {
+				err = reservMgt.CloseReservEntry(reservEntry.Entry_no, gtables.ReservationEntry_Reservation_status.Applied, false, false)
+			}
+			if err != nil {
+				return err
+			}
+			itemJnlLine.Positive_reserved_qty_base = itemJnlLine.Positive_reserved_qty_base.Sub(reservEntry.Quantity)
+			err = oldItemLedgEntry.GetOrError(reservEntry.From_ref_no)
+			if err == nil {
+				err = oldItemLedgEntry.TestField("item_no", reservEntry.Item_no)
+			}
+			if err == nil {
+				err = oldItemLedgEntry.TestField("variant_code", reservEntry.Variant_code)
+			}
+			if err == nil {
+				err = oldItemLedgEntry.TestField("location_code", reservEntry.Location_code)
+			}
+			if err != nil {
+				return err
+			}
+			oldItemLedgEntry.Reserved_quantity = oldItemLedgEntry.Reserved_quantity.Add(reservEntry.Quantity)
+			appliedQty = reservEntry.Quantity.Neg()
 		} else {
-			if firstApplication {
-				firstApplication = false
-				itemLedgEntry6.SetCurrentKey("item_no", "variant_code", "open", "positive", "location_code", "posting_date")
-				itemLedgEntry6.SetRange("item_no", itemLedgEntry.Item_no)
-				itemLedgEntry6.SetRange("variant_code", itemLedgEntry.Variant_code)
-				itemLedgEntry6.SetRange("open", true)
-				itemLedgEntry6.SetRange("positive", !itemLedgEntry.Positive)
-				itemLedgEntry6.SetRange("location_code", itemLedgEntry.Location_code)
-				if p.item.Costing_method == gtables.Item_Costing_method.Specific {
-					return apperrors.ItemSpecificNotYet(gtables.ItemTableName, "costing_method", p.item.Costing_method)
-				}
-				if p.item.Costing_method == gtables.Item_Costing_method.LIFO {
-					entryFindMethod = "+"
+			startApplication = true
+		}
+
+		if startApplication {
+			if itemLedgEntry.Applies_to_entry != 0 {
+				if firstApplication {
+					firstApplication = false
+					err := oldItemLedgEntry.GetOrError(itemLedgEntry.Applies_to_entry)
+					if err != nil {
+						return err
+					}
+					err = oldItemLedgEntry.TestField("item_no", itemLedgEntry.Item_no)
+					if err != nil {
+						return err
+					}
+					err = oldItemLedgEntry.TestField("variant_code", itemLedgEntry.Variant_code)
+					if err != nil {
+						return err
+					}
+					err = oldItemLedgEntry.TestField("open", true)
+					if err != nil {
+						return err
+					}
+					err = oldItemLedgEntry.TestField("positive", !itemLedgEntry.Positive)
+					if err != nil {
+						return err
+					}
+					err = oldItemLedgEntry.TestField("location_code", itemLedgEntry.Location_code)
+					if err != nil {
+						return err
+					}
+					if oldItemLedgEntry.Remaining_quantity.Add(oldItemLedgEntry.Reserved_quantity).Abs().LessThan(
+						itemLedgEntry.Remaining_quantity.Add(itemLedgEntry.Reserved_quantity).Abs()) {
+						return apperrors.FieldTooLow(itemLedgEntryTable, "remaining_quantity")
+					}
 				} else {
-					entryFindMethod = "-"
-				}
-				if !itemLedgEntry6.Find(entryFindMethod) {
 					return nil
 				}
 			} else {
-				switch entryFindMethod {
-				case "-":
-					if !itemLedgEntry6.Next() {
+				if firstApplication {
+					firstApplication = false
+					itemLedgEntry6.SetCurrentKey("item_no", "variant_code", "open", "positive", "location_code", "posting_date")
+					itemLedgEntry6.SetRange("item_no", itemLedgEntry.Item_no)
+					itemLedgEntry6.SetRange("variant_code", itemLedgEntry.Variant_code)
+					itemLedgEntry6.SetRange("open", true)
+					itemLedgEntry6.SetRange("positive", !itemLedgEntry.Positive)
+					itemLedgEntry6.SetRange("location_code", itemLedgEntry.Location_code)
+					if p.item.Costing_method == gtables.Item_Costing_method.Specific {
+						return apperrors.ItemSpecificNotYet(gtables.ItemTableName, "costing_method", p.item.Costing_method)
+					}
+					if p.item.Costing_method == gtables.Item_Costing_method.LIFO {
+						entryFindMethod = "+"
+					} else {
+						entryFindMethod = "-"
+					}
+					if !itemLedgEntry6.Find(entryFindMethod) {
 						return nil
 					}
-				case "+":
-					if !itemLedgEntry6.Next(-1) {
-						return nil
+				} else {
+					switch entryFindMethod {
+					case "-":
+						if !itemLedgEntry6.Next() {
+							return nil
+						}
+					case "+":
+						if !itemLedgEntry6.Next(-1) {
+							return nil
+						}
 					}
 				}
+				oldItemLedgEntry.Copy(itemLedgEntry6)
 			}
-			oldItemLedgEntry.Copy(itemLedgEntry6)
-		}
 
-		if oldItemLedgEntry.Remaining_quantity.Add(oldItemLedgEntry.Reserved_quantity).Abs().GreaterThan(
-			itemLedgEntry.Remaining_quantity.Add(itemLedgEntry.Reserved_quantity).Abs()) {
-			appliedQty = itemLedgEntry.Remaining_quantity.Add(itemLedgEntry.Reserved_quantity)
-		} else {
-			appliedQty = oldItemLedgEntry.Remaining_quantity.Neg().Sub(oldItemLedgEntry.Reserved_quantity)
+			if oldItemLedgEntry.Remaining_quantity.Add(oldItemLedgEntry.Reserved_quantity).Abs().GreaterThan(
+				itemLedgEntry.Remaining_quantity.Add(itemLedgEntry.Reserved_quantity).Abs()) {
+				appliedQty = itemLedgEntry.Remaining_quantity.Add(itemLedgEntry.Reserved_quantity)
+			} else {
+				appliedQty = oldItemLedgEntry.Remaining_quantity.Neg().Sub(oldItemLedgEntry.Reserved_quantity)
+			}
 		}
 
 		if !appliedQty.IsZero() {

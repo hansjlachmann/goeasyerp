@@ -138,6 +138,15 @@ reports:
     caption: "Date Compress Item Ledger"
     texts:
       WINDOW: "Date compressing item ledger entries...\n\nItem No.             #1##########\nDate                 #2######\n\nNo. of new entries   #3######\nNo. of entries del.  #4######"
+  "787":
+    caption: "Delete Reservation Entries"
+    texts:
+      WINDOW: "Deleting reservation entries...\n\nItem No.             #1##########\nDate                 #2######\n\nNo. of entries del.  #3######"
+      CONFIRM: "This batch job deletes entries. Therefore, it is important that you make a backup of the database before you run the batch job.\n\nDo you want to delete the entries?"
+  "788":
+    caption: "Change Reservation Status"
+    texts:
+      CONFIRM: "This batch job changes the status of reservation entries with valid-to dates until %1.\nDo you want to change the status of the reservation entries?"
   "789":
     caption: "Delete Phys. Inventory Ledger"
     texts:

@@ -132,6 +132,14 @@ func TestDemoDataFillsTheMainMenu(t *testing.T) {
 	if n := openBank.Count(); n != 0 {
 		t.Errorf("%d bank entries before October still open", n)
 	}
+	// an open sales order reserves from the inventory: its lines and the item entries say so
+	reservEntry := gtables.NewReservationEntry(src0)
+	reservEntry.SetRange("reservation_status", gtables.ReservationEntry_Reservation_status.Open)
+	reservedLines := gtables.NewSalesLine(src0)
+	reservedLines.SetFilter("reserved_qty_base", ">0")
+	if reservEntry.Count() == 0 || reservedLines.Count() == 0 {
+		t.Errorf("%d open reservations, %d reserved sales lines", reservEntry.Count(), reservedLines.Count())
+	}
 	b010 := gtables.NewBankAccount(src0)
 	if !b010.Get(types.Code("B010")) {
 		t.Fatal("no bank account B010")

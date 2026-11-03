@@ -138,6 +138,15 @@ reports:
     caption: "Datokomprimer vareposter"
     texts:
       WINDOW: "Datokomprimerer vareposter...\n\nVarenr.              #1##########\nDato                 #2######\n\nAntall nye poster    #3######\nAntall slettet       #4######"
+  "787":
+    caption: "Slett reservasjonsposter"
+    texts:
+      WINDOW: "Sletter reservasjonsposter...\n\nVarenr.              #1##########\nDato                 #2######\n\nAntall slettet       #3######"
+      CONFIRM: "Denne kjørselen sletter poster. Det er derfor viktig at du tar en sikkerhetskopi av databasen før du kjører den.\n\nVil du slette postene?"
+  "788":
+    caption: "Endre reservasjonsstatus"
+    texts:
+      CONFIRM: "Denne kjørselen endrer statusen til reservasjonsposter med gyldig til-dato til og med %1.\nVil du endre statusen til reservasjonspostene?"
   "789":
     caption: "Slett lageropptellingsposter"
     texts:

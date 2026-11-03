@@ -2,6 +2,7 @@ package bomjnl
 
 import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/itemjnl"
+	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
 	"github.com/hansjlachmann/openerp/backend/business-logic/resjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
@@ -25,7 +26,8 @@ var unitPrecision = types.MustDecimal("0.00001")
 // date's rate (its Additional-Currency Unit Cost, adjusted costs and the item's Add.-Curr.
 // Average Cost).
 //
-// Not migrated yet: reservations, item tracking (Lot No.), bins.
+// The assembled item's reservations go to the item journal line posting it (and from it to
+// the item ledger entry). Not migrated yet: item tracking (Lot No.), bins.
 type BOMJnlPostLine struct {
 	src ftables.Source
 
@@ -115,6 +117,13 @@ func (p *BOMJnlPostLine) code() error {
 		itemJnlLine.Invoiced_qty_base = types.Decimal{}
 	}
 	itemJnlLine.Posting_no_series = bomJnlLine.Posting_no_series
+
+	if !bomJnlLine.Reserved_qty_base.IsZero() {
+		err = reservmgt.New(p.src).TransfBOMJnlLineToItemJnlLine(bomJnlLine, itemJnlLine)
+		if err != nil {
+			return err
+		}
+	}
 	err = p.itemJnlPostLine.Run(itemJnlLine)
 	if err != nil {
 		return err

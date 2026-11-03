@@ -1204,6 +1204,99 @@ table:
       options: ["Never", "Optional", "Always"]
       default: 1
 
+    - name: reserved_qty_on_inventory
+      no: 101
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: Reservation_Entry
+      source_field: quantity
+      flow_filters:
+        - field: reservation_status
+          type: const
+          value: 0
+        - field: item_no
+          type: field
+          value: "no"
+        - field: location_code
+          type: filter
+          value: location_filter
+        - field: variant_code
+          type: filter
+          value: variant_filter
+        - field: from_type
+          type: const
+          value: 6
+        - field: from_subtype
+          type: const
+          value: 0
+        - field: expected_receipt_date
+          type: filter
+          value: date_filter
+
+    - name: reserved_qty_on_purch_orders
+      no: 102
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: Reservation_Entry
+      source_field: quantity
+      flow_filters:
+        - field: reservation_status
+          type: const
+          value: 0
+        - field: item_no
+          type: field
+          value: "no"
+        - field: location_code
+          type: filter
+          value: location_filter
+        - field: variant_code
+          type: filter
+          value: variant_filter
+        - field: from_type
+          type: const
+          value: 3
+        - field: from_subtype
+          type: const
+          value: 1
+        - field: expected_receipt_date
+          type: filter
+          value: date_filter
+
+    - name: reserved_qty_on_sales_orders
+      no: 103
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: Reservation_Entry
+      source_field: quantity
+      flow_filters:
+        - field: reservation_status
+          type: const
+          value: 0
+        - field: item_no
+          type: field
+          value: "no"
+        - field: location_code
+          type: filter
+          value: location_filter
+        - field: variant_code
+          type: filter
+          value: variant_filter
+        - field: from_type
+          type: const
+          value: 1
+        - field: from_subtype
+          type: const
+          value: 1
+        - field: expected_receipt_date
+          type: filter
+          value: date_filter
+
     - name: inventory_value_zero
       no: 5409
       type: bool

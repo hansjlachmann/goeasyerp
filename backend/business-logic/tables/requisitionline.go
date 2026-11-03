@@ -1,6 +1,7 @@
 package tables
 
 import (
+	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
 	"github.com/hansjlachmann/openerp/backend/foundation/system"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
@@ -26,14 +27,14 @@ func (requisitionLineLogic) OnInsert(rec *gtables.RequisitionLine) error {
 	return reqWkshName.GetOrError(map[string]interface{}{"worksheet_template_name": rec.Worksheet_template_name, "name": rec.Journal_batch_name})
 }
 
-// OnModify runs before a record is modified
+// OnModify: a line with reservations still matches them (ReqLineVerifyChange)
 func (requisitionLineLogic) OnModify(rec *gtables.RequisitionLine) error {
-	return nil
+	return reservmgt.New(rec).ReqLineVerifyChange(rec)
 }
 
-// OnDelete runs before a record is deleted
+// OnDelete: a line with reservations is not deleted
 func (requisitionLineLogic) OnDelete(rec *gtables.RequisitionLine) error {
-	return nil
+	return rec.TestField("reserved_qty_base", types.Decimal{})
 }
 
 // OnRename runs before a primary key field is changed (rec.OldValue has the old value)
@@ -84,6 +85,7 @@ func (requisitionLineLogic) OnValidate_No(rec *gtables.RequisitionLine) error {
 		if err != nil {
 			return err
 		}
+		rec.Reserve = gtables.RequisitionLineReserve(item.Reserve)
 		err = updateReqLineDescription(rec)
 		if err != nil {
 			return err
@@ -109,7 +111,7 @@ func (requisitionLineLogic) OnValidate_Quantity(rec *gtables.RequisitionLine) er
 	}
 	rec.Quantity_base = quantityBase
 	rec.Quantity_disc_percent = types.Decimal{}
-	return nil
+	return checkReservedNotAbove(gtables.RequisitionLineTableName, "reserved_qty_base", rec.Quantity_base, rec.Reserved_qty_base)
 }
 
 // OnValidate_Vendor_no: the vendor's department, project and currency (not blocked); an item's

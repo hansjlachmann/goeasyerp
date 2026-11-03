@@ -70,6 +70,9 @@ func (h *JobsHandler) StartJob(c *fiber.Ctx) error {
 		// The page's parameters (a page opened from code with parameters): its functions read
 		// them with system.PageParam
 		PageParams map[string]string `json:"page_params"`
+		// PageID: the page the function runs from — a page on a temporary source table
+		// (Reservation 498) fills its rows again, the function's record is one of them
+		PageID int `json:"page_id"`
 	}
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.InvalidRequestBody().Message(language)))
@@ -122,6 +125,11 @@ func (h *JobsHandler) StartJob(c *fiber.Ctx) error {
 		// its old values
 		if req.Function != "" {
 			fn, _ := functions.Lookup(req.Function)
+			err := fillTemporaryFunctionPage(h.db, company, h.dbType, req.PageID, tableName, req.PageParams, table)
+			if err != nil {
+				return c.Status(400).JSON(apitypes.NewErrorResponse(errorMessage(err, language)))
+			}
+			table.FromMap(req.Record) // the row the function runs on (the fill moved the record)
 			key, id := fullPrimaryKey(table)
 			switch {
 			case fn != nil && fn.AssistEdit:

@@ -94,6 +94,9 @@
 //	OnValidate_Insurance_no(rec *gtables.PurchaseLine) error
 //	OnValidate_Duplicate_in_depreciation_book(rec *gtables.PurchaseLine) error
 //	OnValidate_Use_duplication_list(rec *gtables.PurchaseLine) error
+//	OnValidate_Reserved_quantity(rec *gtables.PurchaseLine) error
+//	OnValidate_Reserve(rec *gtables.PurchaseLine) error
+//	OnValidate_Reserved_qty_base(rec *gtables.PurchaseLine) error
 
 package tables
 
@@ -185,6 +188,23 @@ func (o PurchaseLineFa_posting_type) IsValid() bool {
 	return o >= 0 && o < 3
 }
 
+// PurchaseLineReserve represents the reserve option field
+type PurchaseLineReserve int
+
+// String returns the text representation of PurchaseLineReserve
+func (o PurchaseLineReserve) String() string {
+	options := []string{"Never", "Optional", "Always"}
+	if o >= 0 && int(o) < len(options) {
+		return options[o]
+	}
+	return ""
+}
+
+// IsValid checks if the PurchaseLineReserve value is within valid range
+func (o PurchaseLineReserve) IsValid() bool {
+	return o >= 0 && o < 3
+}
+
 // PurchaseLine represents Table 39: Purchase_Line
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterPurchaseLineLogic.
@@ -273,6 +293,9 @@ type PurchaseLine struct {
 	Insurance_no                   types.Code                       `db:"insurance_no"`
 	Duplicate_in_depreciation_book types.Code                       `db:"duplicate_in_depreciation_book"`
 	Use_duplication_list           bool                             `db:"use_duplication_list"`
+	Reserved_quantity              types.Decimal                    `db:"reserved_quantity"`
+	Reserve                        PurchaseLineReserve              `db:"reserve"`
+	Reserved_qty_base              types.Decimal                    `db:"reserved_qty_base"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -390,6 +413,17 @@ var PurchaseLine_Fa_posting_type = struct {
 	Maintenance:     2,
 }
 
+// PurchaseLine_Reserve provides named constants for the reserve option field (FieldName.OptionValue syntax)
+var PurchaseLine_Reserve = struct {
+	Never    PurchaseLineReserve
+	Optional PurchaseLineReserve
+	Always   PurchaseLineReserve
+}{
+	Never:    0,
+	Optional: 1,
+	Always:   2,
+}
+
 // ========================================
 // Field numbers (field IDs)
 // ========================================
@@ -481,6 +515,9 @@ var PurchaseLine_FieldNo = struct {
 	Insurance_no                   int
 	Duplicate_in_depreciation_book int
 	Use_duplication_list           int
+	Reserved_quantity              int
+	Reserve                        int
+	Reserved_qty_base              int
 }{
 	Document_type:                  1,
 	Buy_from_vendor_no:             2,
@@ -566,6 +603,9 @@ var PurchaseLine_FieldNo = struct {
 	Insurance_no:                   5610,
 	Duplicate_in_depreciation_book: 5612,
 	Use_duplication_list:           5613,
+	Reserved_quantity:              95,
+	Reserve:                        96,
+	Reserved_qty_base:              5495,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -739,6 +779,12 @@ func (t *PurchaseLine) FieldNo(fieldName string) int {
 		return 5612
 	case "use_duplication_list":
 		return 5613
+	case "reserved_quantity":
+		return 95
+	case "reserve":
+		return 96
+	case "reserved_qty_base":
+		return 5495
 	}
 	return 0
 }
@@ -914,6 +960,12 @@ func (t *PurchaseLine) FieldName(fieldNo int) string {
 		return "duplicate_in_depreciation_book"
 	case 5613:
 		return "use_duplication_list"
+	case 95:
+		return "reserved_quantity"
+	case 96:
+		return "reserve"
+	case 5495:
+		return "reserved_qty_base"
 	}
 	return ""
 }
@@ -1091,6 +1143,9 @@ type (
 	PurchaseLineOnValidate_Insurance_no                   interface{ OnValidate_Insurance_no(rec *PurchaseLine) error }
 	PurchaseLineOnValidate_Duplicate_in_depreciation_book interface{ OnValidate_Duplicate_in_depreciation_book(rec *PurchaseLine) error }
 	PurchaseLineOnValidate_Use_duplication_list           interface{ OnValidate_Use_duplication_list(rec *PurchaseLine) error }
+	PurchaseLineOnValidate_Reserved_quantity              interface{ OnValidate_Reserved_quantity(rec *PurchaseLine) error }
+	PurchaseLineOnValidate_Reserve                        interface{ OnValidate_Reserve(rec *PurchaseLine) error }
+	PurchaseLineOnValidate_Reserved_qty_base              interface{ OnValidate_Reserved_qty_base(rec *PurchaseLine) error }
 )
 
 // purchaseLineLogic is the registered business logic of Purchase_Line, in
@@ -1288,6 +1343,12 @@ func purchaseLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PurchaseLineOnValidate_Duplicate_in_depreciation_book)
 	case "OnValidate_Use_duplication_list":
 		_, ok = logic.(PurchaseLineOnValidate_Use_duplication_list)
+	case "OnValidate_Reserved_quantity":
+		_, ok = logic.(PurchaseLineOnValidate_Reserved_quantity)
+	case "OnValidate_Reserve":
+		_, ok = logic.(PurchaseLineOnValidate_Reserve)
+	case "OnValidate_Reserved_qty_base":
+		_, ok = logic.(PurchaseLineOnValidate_Reserved_qty_base)
 	default:
 		return false, false
 	}
@@ -1575,6 +1636,9 @@ func GetPurchaseLineTableSchema() string {
 		insurance_no TEXT(20),
 		duplicate_in_depreciation_book TEXT(10),
 		use_duplication_list INTEGER,
+		reserved_quantity TEXT,
+		reserve INTEGER CHECK (reserve >= 0 AND reserve <= 2),
+		reserved_qty_base TEXT,
 		PRIMARY KEY (document_type, document_no, line_no)
 	`
 }
@@ -1666,6 +1730,9 @@ func GetPurchaseLinePostgresTableSchema() string {
 		insurance_no VARCHAR(20),
 		duplicate_in_depreciation_book VARCHAR(10),
 		use_duplication_list BOOLEAN,
+		reserved_quantity NUMERIC,
+		reserve INTEGER CHECK (reserve >= 0 AND reserve <= 2),
+		reserved_qty_base NUMERIC,
 		PRIMARY KEY (document_type, document_no, line_no)
 	`
 }
@@ -1893,6 +1960,9 @@ func (t *PurchaseLine) StoreOldValues() {
 	t.oldValues["insurance_no"] = t.Insurance_no
 	t.oldValues["duplicate_in_depreciation_book"] = t.Duplicate_in_depreciation_book
 	t.oldValues["use_duplication_list"] = t.Use_duplication_list
+	t.oldValues["reserved_quantity"] = t.Reserved_quantity
+	t.oldValues["reserve"] = t.Reserve
+	t.oldValues["reserved_qty_base"] = t.Reserved_qty_base
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -2159,6 +2229,15 @@ func (t *PurchaseLine) XRec() *PurchaseLine {
 	if v, ok := t.oldValues["use_duplication_list"].(bool); ok {
 		x.Use_duplication_list = v
 	}
+	if v, ok := t.oldValues["reserved_quantity"].(types.Decimal); ok {
+		x.Reserved_quantity = v
+	}
+	if v, ok := t.oldValues["reserve"].(PurchaseLineReserve); ok {
+		x.Reserve = v
+	}
+	if v, ok := t.oldValues["reserved_qty_base"].(types.Decimal); ok {
+		x.Reserved_qty_base = v
+	}
 	return x
 }
 
@@ -2328,6 +2407,9 @@ func (t *PurchaseLine) GetByPK(document_type PurchaseLineDocument_type, document
 	var insurance_noNull sql.NullString
 	var duplicate_in_depreciation_bookNull sql.NullString
 	var use_duplication_listBool sql.NullBool
+	var reserved_quantityNull sql.NullString
+	var reserveInt int
+	var reserved_qty_baseNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -2337,7 +2419,7 @@ func (t *PurchaseLine) GetByPK(document_type PurchaseLineDocument_type, document
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE 1=1 AND document_type = ? AND document_no = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, reserved_quantity, reserve, reserved_qty_base FROM "%s" WHERE 1=1 AND document_type = ? AND document_no = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2428,6 +2510,9 @@ func (t *PurchaseLine) GetByPK(document_type PurchaseLineDocument_type, document
 		&insurance_noNull,
 		&duplicate_in_depreciation_bookNull,
 		&use_duplication_listBool,
+		&reserved_quantityNull,
+		&reserveInt,
+		&reserved_qty_baseNull,
 	)
 
 	if err != nil {
@@ -2525,6 +2610,9 @@ func (t *PurchaseLine) GetByPK(document_type PurchaseLineDocument_type, document
 	t.Insurance_no = types.NewCode(insurance_noNull.String)
 	t.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
 	t.Use_duplication_list = use_duplication_listBool.Bool
+	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+	t.Reserve = PurchaseLineReserve(reserveInt)
+	t.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2631,11 +2719,14 @@ func (t *PurchaseLine) Insert(runTrigger bool) bool {
 		t.Insurance_no,
 		t.Duplicate_in_depreciation_book,
 		t.Use_duplication_list,
+		t.Reserved_quantity,
+		t.Reserve,
+		t.Reserved_qty_base,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_type, document_no, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, reserved_quantity, reserve, reserved_qty_base) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_type, document_no, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2757,10 +2848,13 @@ func (t *PurchaseLine) InsertAll(records []*PurchaseLine, runTrigger bool) error
 			r.Insurance_no,
 			r.Duplicate_in_depreciation_book,
 			r.Use_duplication_list,
+			r.Reserved_quantity,
+			r.Reserve,
+			r.Reserved_qty_base,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName)
-	columns := []string{"document_type", "buy_from_vendor_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "expected_receipt_date", "description", "description_2", "unit_of_measure", "quantity", "outstanding_quantity", "qty_to_invoice", "qty_to_receive", "direct_unit_cost", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "unit_price_lcy", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "department_code", "project_code", "indirect_cost_percent", "outstanding_amount", "qty_rcd_not_invoiced", "amt_rcd_not_invoiced", "quantity_received", "quantity_invoiced", "receipt_no", "receipt_line_no", "pay_to_vendor_no", "inv_discount_amount", "vendor_item_no", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "transaction_type", "transport_method", "entry_point", "area", "transaction_specification", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "outstanding_amount_lcy", "amt_rcd_not_invoiced_lcy", "blanket_order_no", "blanket_order_line_no", "tax_base_amount", "unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "outstanding_qty_base", "qty_to_invoice_base", "qty_to_receive_base", "qty_rcd_not_invd_base", "qty_received_base", "qty_invoiced_base", "fa_posting_date", "fa_posting_type", "depreciation_book_code", "salvage_value", "depr_until_fa_posting_date", "depr_acquisition_cost", "maintenance_code", "insurance_no", "duplicate_in_depreciation_book", "use_duplication_list"}
+	columns := []string{"document_type", "buy_from_vendor_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "expected_receipt_date", "description", "description_2", "unit_of_measure", "quantity", "outstanding_quantity", "qty_to_invoice", "qty_to_receive", "direct_unit_cost", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "unit_price_lcy", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "department_code", "project_code", "indirect_cost_percent", "outstanding_amount", "qty_rcd_not_invoiced", "amt_rcd_not_invoiced", "quantity_received", "quantity_invoiced", "receipt_no", "receipt_line_no", "pay_to_vendor_no", "inv_discount_amount", "vendor_item_no", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "transaction_type", "transport_method", "entry_point", "area", "transaction_specification", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "outstanding_amount_lcy", "amt_rcd_not_invoiced_lcy", "blanket_order_no", "blanket_order_line_no", "tax_base_amount", "unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "outstanding_qty_base", "qty_to_invoice_base", "qty_to_receive_base", "qty_rcd_not_invd_base", "qty_received_base", "qty_invoiced_base", "fa_posting_date", "fa_posting_type", "depreciation_book_code", "salvage_value", "depr_until_fa_posting_date", "depr_acquisition_cost", "maintenance_code", "insurance_no", "duplicate_in_depreciation_book", "use_duplication_list", "reserved_quantity", "reserve", "reserved_qty_base"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -3142,6 +3236,18 @@ func (t *PurchaseLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "use_duplication_list = ?")
 			values = append(values, t.Use_duplication_list)
 		}
+		if t.hasFieldChanged("reserved_quantity") {
+			setClauses = append(setClauses, "reserved_quantity = ?")
+			values = append(values, t.Reserved_quantity)
+		}
+		if t.hasFieldChanged("reserve") {
+			setClauses = append(setClauses, "reserve = ?")
+			values = append(values, t.Reserve)
+		}
+		if t.hasFieldChanged("reserved_qty_base") {
+			setClauses = append(setClauses, "reserved_qty_base = ?")
+			values = append(values, t.Reserved_qty_base)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -3311,6 +3417,12 @@ func (t *PurchaseLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Duplicate_in_depreciation_book)
 		setClauses = append(setClauses, "use_duplication_list = ?")
 		values = append(values, t.Use_duplication_list)
+		setClauses = append(setClauses, "reserved_quantity = ?")
+		values = append(values, t.Reserved_quantity)
+		setClauses = append(setClauses, "reserve = ?")
+		values = append(values, t.Reserve)
+		setClauses = append(setClauses, "reserved_qty_base = ?")
+		values = append(values, t.Reserved_qty_base)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -3710,6 +3822,18 @@ func (t *PurchaseLine) hasFieldChanged(fieldName string) bool {
 			return t.Use_duplication_list != old
 		}
 		return true // Type mismatch, assume changed
+	case "reserved_quantity":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Reserved_quantity.Equal(old)
+		}
+	case "reserve":
+		if old, ok := oldValue.(PurchaseLineReserve); ok {
+			return t.Reserve != old
+		}
+	case "reserved_qty_base":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Reserved_qty_base.Equal(old)
+		}
 	}
 
 	return false
@@ -4084,6 +4208,12 @@ func (t *PurchaseLine) columnName(fieldName string) (string, bool) {
 		return "duplicate_in_depreciation_book", true
 	case strings.ToLower("use_duplication_list"):
 		return "use_duplication_list", true
+	case strings.ToLower("reserved_quantity"):
+		return "reserved_quantity", true
+	case strings.ToLower("reserve"):
+		return "reserve", true
+	case strings.ToLower("reserved_qty_base"):
+		return "reserved_qty_base", true
 	}
 	return "", false
 }
@@ -4341,6 +4471,10 @@ func (t *PurchaseLine) isDecimalColumn(column string) bool {
 		return true
 	case "salvage_value":
 		return true
+	case "reserved_quantity":
+		return true
+	case "reserved_qty_base":
+		return true
 	}
 	return false
 }
@@ -4531,7 +4665,7 @@ func (t *PurchaseLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, reserved_quantity, reserve, reserved_qty_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4617,6 +4751,9 @@ func (t *PurchaseLine) FindFirst() bool {
 	var insurance_noNull sql.NullString
 	var duplicate_in_depreciation_bookNull sql.NullString
 	var use_duplication_listBool sql.NullBool
+	var reserved_quantityNull sql.NullString
+	var reserveInt int
+	var reserved_qty_baseNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&document_typeInt,
@@ -4703,6 +4840,9 @@ func (t *PurchaseLine) FindFirst() bool {
 		&insurance_noNull,
 		&duplicate_in_depreciation_bookNull,
 		&use_duplication_listBool,
+		&reserved_quantityNull,
+		&reserveInt,
+		&reserved_qty_baseNull,
 	)
 
 	if err != nil {
@@ -4795,6 +4935,9 @@ func (t *PurchaseLine) FindFirst() bool {
 	t.Insurance_no = types.NewCode(insurance_noNull.String)
 	t.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
 	t.Use_duplication_list = use_duplication_listBool.Bool
+	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+	t.Reserve = PurchaseLineReserve(reserveInt)
+	t.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -4815,7 +4958,7 @@ func (t *PurchaseLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, reserved_quantity, reserve, reserved_qty_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4901,6 +5044,9 @@ func (t *PurchaseLine) FindLast() bool {
 	var insurance_noNull sql.NullString
 	var duplicate_in_depreciation_bookNull sql.NullString
 	var use_duplication_listBool sql.NullBool
+	var reserved_quantityNull sql.NullString
+	var reserveInt int
+	var reserved_qty_baseNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&document_typeInt,
@@ -4987,6 +5133,9 @@ func (t *PurchaseLine) FindLast() bool {
 		&insurance_noNull,
 		&duplicate_in_depreciation_bookNull,
 		&use_duplication_listBool,
+		&reserved_quantityNull,
+		&reserveInt,
+		&reserved_qty_baseNull,
 	)
 
 	if err != nil {
@@ -5079,6 +5228,9 @@ func (t *PurchaseLine) FindLast() bool {
 	t.Insurance_no = types.NewCode(insurance_noNull.String)
 	t.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
 	t.Use_duplication_list = use_duplication_listBool.Bool
+	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+	t.Reserve = PurchaseLineReserve(reserveInt)
+	t.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -5129,7 +5281,7 @@ func (t *PurchaseLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, reserved_quantity, reserve, reserved_qty_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5279,6 +5431,9 @@ func (t *PurchaseLine) Next(steps ...int) bool {
 		var insurance_noNull sql.NullString
 		var duplicate_in_depreciation_bookNull sql.NullString
 		var use_duplication_listBool sql.NullBool
+		var reserved_quantityNull sql.NullString
+		var reserveInt int
+		var reserved_qty_baseNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&document_typeInt,
@@ -5365,6 +5520,9 @@ func (t *PurchaseLine) Next(steps ...int) bool {
 			&insurance_noNull,
 			&duplicate_in_depreciation_bookNull,
 			&use_duplication_listBool,
+			&reserved_quantityNull,
+			&reserveInt,
+			&reserved_qty_baseNull,
 		)
 
 		if err != nil {
@@ -5456,6 +5614,9 @@ func (t *PurchaseLine) Next(steps ...int) bool {
 		t.Insurance_no = types.NewCode(insurance_noNull.String)
 		t.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
 		t.Use_duplication_list = use_duplication_listBool.Bool
+		t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+		t.Reserve = PurchaseLineReserve(reserveInt)
+		t.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -5505,7 +5666,7 @@ func (t *PurchaseLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, outstanding_quantity, qty_to_invoice, qty_to_receive, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, outstanding_amount, qty_rcd_not_invoiced, amt_rcd_not_invoiced, quantity_received, quantity_invoiced, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, transaction_type, transport_method, entry_point, area, transaction_specification, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, outstanding_amount_lcy, amt_rcd_not_invoiced_lcy, blanket_order_no, blanket_order_line_no, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, outstanding_qty_base, qty_to_invoice_base, qty_to_receive_base, qty_rcd_not_invd_base, qty_received_base, qty_invoiced_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, reserved_quantity, reserve, reserved_qty_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5608,6 +5769,9 @@ func (t *PurchaseLine) FindSetBuffered() bool {
 		var insurance_noNull sql.NullString
 		var duplicate_in_depreciation_bookNull sql.NullString
 		var use_duplication_listBool sql.NullBool
+		var reserved_quantityNull sql.NullString
+		var reserveInt int
+		var reserved_qty_baseNull sql.NullString
 
 		err := rows.Scan(
 			&document_typeInt,
@@ -5694,6 +5858,9 @@ func (t *PurchaseLine) FindSetBuffered() bool {
 			&insurance_noNull,
 			&duplicate_in_depreciation_bookNull,
 			&use_duplication_listBool,
+			&reserved_quantityNull,
+			&reserveInt,
+			&reserved_qty_baseNull,
 		)
 
 		if err != nil {
@@ -5783,6 +5950,9 @@ func (t *PurchaseLine) FindSetBuffered() bool {
 		record.Insurance_no = types.NewCode(insurance_noNull.String)
 		record.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
 		record.Use_duplication_list = use_duplication_listBool.Bool
+		record.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+		record.Reserve = PurchaseLineReserve(reserveInt)
+		record.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -5895,6 +6065,9 @@ func (t *PurchaseLine) copyFromBuffered(record *PurchaseLine) {
 	t.Insurance_no = record.Insurance_no
 	t.Duplicate_in_depreciation_book = record.Duplicate_in_depreciation_book
 	t.Use_duplication_list = record.Use_duplication_list
+	t.Reserved_quantity = record.Reserved_quantity
+	t.Reserve = record.Reserve
+	t.Reserved_qty_base = record.Reserved_qty_base
 	t.StoreOldValues()
 }
 
@@ -8188,6 +8361,111 @@ func (t *PurchaseLine) ValidateField(fieldName string, value interface{}) error 
 			}
 		}
 		return nil
+	case "reserved_quantity":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Reserved_quantity = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Reserved_quantity, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field reserved_quantity: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Reserved_quantity = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Reserved_quantity = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Reserved_quantity = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field reserved_quantity (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchaseLineOnValidate_Reserved_quantity); ok {
+				if err := trg.OnValidate_Reserved_quantity(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "reserve":
+		// Set field value
+		// Accept enum type directly
+		if v, ok := value.(PurchaseLineReserve); ok {
+			t.Reserve = v
+			// Accept int (convert to enum)
+		} else if v, ok := value.(int); ok {
+			if v < 0 || v >= 3 {
+				return fmt.Errorf("invalid option value %d for field reserve (valid range: 0-%d)", v, 3-1)
+			}
+			t.Reserve = PurchaseLineReserve(v)
+			// Accept float64 (JSON numbers decode as float64)
+		} else if v, ok := value.(float64); ok {
+			intVal := int(v)
+			if intVal < 0 || intVal >= 3 {
+				return fmt.Errorf("invalid option value %d for field reserve (valid range: 0-%d)", intVal, 3-1)
+			}
+			t.Reserve = PurchaseLineReserve(intVal)
+			// Accept string (lookup in options and convert)
+		} else if v, ok := value.(string); ok {
+			if v == "" {
+				// Empty string defaults to first option (behavior)
+				t.Reserve = 0
+			} else {
+				options := []string{"Never", "Optional", "Always"}
+				found := false
+				for i, opt := range options {
+					if opt == v {
+						t.Reserve = PurchaseLineReserve(i)
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("invalid option '%s' for field reserve (valid options: %v)", v, options)
+				}
+			}
+		} else {
+			return fmt.Errorf("invalid type for field reserve (expected PurchaseLineReserve, int, or string)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchaseLineOnValidate_Reserve); ok {
+				if err := trg.OnValidate_Reserve(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "reserved_qty_base":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Reserved_qty_base = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Reserved_qty_base, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field reserved_qty_base: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Reserved_qty_base = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Reserved_qty_base = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Reserved_qty_base = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field reserved_qty_base (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchaseLineOnValidate_Reserved_qty_base); ok {
+				if err := trg.OnValidate_Reserved_qty_base(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -8368,6 +8646,12 @@ func (t *PurchaseLine) FieldValue(no int) (any, bool) {
 		return t.Duplicate_in_depreciation_book, true
 	case 5613:
 		return t.Use_duplication_list, true
+	case 95:
+		return t.Reserved_quantity, true
+	case 96:
+		return t.Reserve, true
+	case 5495:
+		return t.Reserved_qty_base, true
 	}
 	return nil, false
 }
@@ -8931,6 +9215,21 @@ func (t *PurchaseLine) SetFieldValue(no int, value any) bool {
 			t.Use_duplication_list = v
 			return true
 		}
+	case 95:
+		if v, ok := value.(types.Decimal); ok {
+			t.Reserved_quantity = v
+			return true
+		}
+	case 96:
+		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
+			t.Reserve = PurchaseLineReserve(i)
+			return true
+		}
+	case 5495:
+		if v, ok := value.(types.Decimal); ok {
+			t.Reserved_qty_base = v
+			return true
+		}
 	}
 	return false
 }
@@ -9084,6 +9383,10 @@ func (t *PurchaseLine) CalcSums(fieldNames ...string) error {
 			column = "qty_invoiced_base"
 		case "salvage_value":
 			column = "salvage_value"
+		case "reserved_quantity":
+			column = "reserved_quantity"
+		case "reserved_qty_base":
+			column = "reserved_qty_base"
 		default:
 			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Purchase_Line", name)
 		}
@@ -9333,6 +9636,18 @@ func (t *PurchaseLine) CalcSums(fieldNames ...string) error {
 				return fmt.Errorf("CalcSums Purchase_Line.%s: %w", column, err)
 			}
 			t.Salvage_value = d
+		case "reserved_quantity":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Purchase_Line.%s: %w", column, err)
+			}
+			t.Reserved_quantity = d
+		case "reserved_qty_base":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Purchase_Line.%s: %w", column, err)
+			}
+			t.Reserved_qty_base = d
 		}
 	}
 	return nil
@@ -9854,6 +10169,12 @@ func (t *PurchaseLine) columnValue(column string) (interface{}, bool) {
 		return t.Duplicate_in_depreciation_book, true
 	case "use_duplication_list":
 		return t.Use_duplication_list, true
+	case "reserved_quantity":
+		return t.Reserved_quantity, true
+	case "reserve":
+		return int(t.Reserve), true
+	case "reserved_qty_base":
+		return t.Reserved_qty_base, true
 	}
 	return nil, false
 }
@@ -9997,6 +10318,9 @@ func (t *PurchaseLine) Init() {
 	t.Insurance_no = *new(types.Code)
 	t.Duplicate_in_depreciation_book = *new(types.Code)
 	t.Use_duplication_list = *new(bool)
+	t.Reserved_quantity = *new(types.Decimal)
+	t.Reserve = 0
+	t.Reserved_qty_base = *new(types.Decimal)
 	t.applyDefaults()
 }
 
@@ -10115,6 +10439,9 @@ func (t *PurchaseLine) ToMap() map[string]interface{} {
 		"insurance_no":                   t.Insurance_no.String(),
 		"duplicate_in_depreciation_book": t.Duplicate_in_depreciation_book.String(),
 		"use_duplication_list":           t.Use_duplication_list,
+		"reserved_quantity":              t.Reserved_quantity.String(),
+		"reserve":                        int(t.Reserve),
+		"reserved_qty_base":              t.Reserved_qty_base.String(),
 	}
 }
 
@@ -10869,6 +11196,47 @@ func (t *PurchaseLine) FromMap(data map[string]interface{}) {
 	if v, ok := data["use_duplication_list"]; ok && v != nil {
 		if b, ok := v.(bool); ok {
 			t.Use_duplication_list = b
+		}
+	}
+	if v, ok := data["reserved_quantity"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Reserved_quantity, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Reserved_quantity = types.NewDecimal(val)
+		case int:
+			t.Reserved_quantity = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Reserved_quantity = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["reserve"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Reserve = PurchaseLineReserve(int(val))
+		case int:
+			t.Reserve = PurchaseLineReserve(val)
+		case string:
+			// Lookup string value in options
+			options := []string{"Never", "Optional", "Always"}
+			for i, opt := range options {
+				if opt == val {
+					t.Reserve = PurchaseLineReserve(i)
+					break
+				}
+			}
+		}
+	}
+	if v, ok := data["reserved_qty_base"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Reserved_qty_base, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Reserved_qty_base = types.NewDecimal(val)
+		case int:
+			t.Reserved_qty_base = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Reserved_qty_base = types.NewDecimalFromInt(val)
 		}
 	}
 }
@@ -11797,6 +12165,40 @@ func (t *PurchaseLine) GetFields() []tables.FieldInfo {
 			PrimaryKey: false,
 			FlowField:  false,
 		},
+		{
+			No:            95,
+			Name:          "reserved_quantity",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     false,
+			ReadOnly:      true,
+			DecimalPlaces: "0:5",
+		},
+		{
+			No:         96,
+			Name:       "reserve",
+			Type:       tables.FieldTypeOption,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:            5495,
+			Name:          "reserved_qty_base",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     false,
+			ReadOnly:      true,
+			DecimalPlaces: "0:5",
+		},
 	}
 }
 
@@ -11825,6 +12227,7 @@ func (t *PurchaseLine) GetOptionFields() map[string][]string {
 		"type":                 {" ", "G/L Account", "Item", "", "Fixed Asset"},
 		"tax_calculation_type": {"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"},
 		"fa_posting_type":      {" ", "Acquisition Cost", "Maintenance"},
+		"reserve":              {"Never", "Optional", "Always"},
 	}
 }
 

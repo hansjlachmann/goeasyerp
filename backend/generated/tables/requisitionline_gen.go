@@ -39,6 +39,9 @@
 //	OnValidate_Qty_per_unit_of_measure(rec *gtables.RequisitionLine) error
 //	OnValidate_Unit_of_measure_code(rec *gtables.RequisitionLine) error
 //	OnValidate_Quantity_base(rec *gtables.RequisitionLine) error
+//	OnValidate_Reserved_quantity(rec *gtables.RequisitionLine) error
+//	OnValidate_Reserve(rec *gtables.RequisitionLine) error
+//	OnValidate_Reserved_qty_base(rec *gtables.RequisitionLine) error
 
 package tables
 
@@ -96,6 +99,23 @@ func (o RequisitionLineRecurring_method) IsValid() bool {
 	return o >= 0 && o < 3
 }
 
+// RequisitionLineReserve represents the reserve option field
+type RequisitionLineReserve int
+
+// String returns the text representation of RequisitionLineReserve
+func (o RequisitionLineReserve) String() string {
+	options := []string{"Never", "Optional", "Always"}
+	if o >= 0 && int(o) < len(options) {
+		return options[o]
+	}
+	return ""
+}
+
+// IsValid checks if the RequisitionLineReserve value is within valid range
+func (o RequisitionLineReserve) IsValid() bool {
+	return o >= 0 && o < 3
+}
+
 // RequisitionLine represents Table 246: Requisition_Line
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterRequisitionLineLogic.
@@ -129,6 +149,9 @@ type RequisitionLine struct {
 	Qty_per_unit_of_measure types.Decimal                   `db:"qty_per_unit_of_measure"`
 	Unit_of_measure_code    types.Code                      `db:"unit_of_measure_code"`
 	Quantity_base           types.Decimal                   `db:"quantity_base"`
+	Reserved_quantity       types.Decimal                   `db:"reserved_quantity"`
+	Reserve                 RequisitionLineReserve          `db:"reserve"`
+	Reserved_qty_base       types.Decimal                   `db:"reserved_qty_base"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -214,6 +237,17 @@ var RequisitionLine_Recurring_method = struct {
 	Variable: 2,
 }
 
+// RequisitionLine_Reserve provides named constants for the reserve option field (FieldName.OptionValue syntax)
+var RequisitionLine_Reserve = struct {
+	Never    RequisitionLineReserve
+	Optional RequisitionLineReserve
+	Always   RequisitionLineReserve
+}{
+	Never:    0,
+	Optional: 1,
+	Always:   2,
+}
+
 // ========================================
 // Field numbers (field IDs)
 // ========================================
@@ -250,6 +284,9 @@ var RequisitionLine_FieldNo = struct {
 	Qty_per_unit_of_measure int
 	Unit_of_measure_code    int
 	Quantity_base           int
+	Reserved_quantity       int
+	Reserve                 int
+	Reserved_qty_base       int
 }{
 	Worksheet_template_name: 1,
 	Journal_batch_name:      2,
@@ -280,6 +317,9 @@ var RequisitionLine_FieldNo = struct {
 	Qty_per_unit_of_measure: 5404,
 	Unit_of_measure_code:    5407,
 	Quantity_base:           5408,
+	Reserved_quantity:       31,
+	Reserve:                 32,
+	Reserved_qty_base:       5431,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -343,6 +383,12 @@ func (t *RequisitionLine) FieldNo(fieldName string) int {
 		return 5407
 	case "quantity_base":
 		return 5408
+	case "reserved_quantity":
+		return 31
+	case "reserve":
+		return 32
+	case "reserved_qty_base":
+		return 5431
 	}
 	return 0
 }
@@ -408,6 +454,12 @@ func (t *RequisitionLine) FieldName(fieldNo int) string {
 		return "unit_of_measure_code"
 	case 5408:
 		return "quantity_base"
+	case 31:
+		return "reserved_quantity"
+	case 32:
+		return "reserve"
+	case 5431:
+		return "reserved_qty_base"
 	}
 	return ""
 }
@@ -596,6 +648,15 @@ type (
 	RequisitionLineOnValidate_Quantity_base interface {
 		OnValidate_Quantity_base(rec *RequisitionLine) error
 	}
+	RequisitionLineOnValidate_Reserved_quantity interface {
+		OnValidate_Reserved_quantity(rec *RequisitionLine) error
+	}
+	RequisitionLineOnValidate_Reserve interface {
+		OnValidate_Reserve(rec *RequisitionLine) error
+	}
+	RequisitionLineOnValidate_Reserved_qty_base interface {
+		OnValidate_Reserved_qty_base(rec *RequisitionLine) error
+	}
 )
 
 // requisitionLineLogic is the registered business logic of Requisition_Line, in
@@ -683,6 +744,12 @@ func requisitionLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(RequisitionLineOnValidate_Unit_of_measure_code)
 	case "OnValidate_Quantity_base":
 		_, ok = logic.(RequisitionLineOnValidate_Quantity_base)
+	case "OnValidate_Reserved_quantity":
+		_, ok = logic.(RequisitionLineOnValidate_Reserved_quantity)
+	case "OnValidate_Reserve":
+		_, ok = logic.(RequisitionLineOnValidate_Reserve)
+	case "OnValidate_Reserved_qty_base":
+		_, ok = logic.(RequisitionLineOnValidate_Reserved_qty_base)
 	default:
 		return false, false
 	}
@@ -870,6 +937,9 @@ func GetRequisitionLineTableSchema() string {
 		qty_per_unit_of_measure TEXT DEFAULT 1,
 		unit_of_measure_code TEXT(10),
 		quantity_base TEXT,
+		reserved_quantity TEXT,
+		reserve INTEGER CHECK (reserve >= 0 AND reserve <= 2),
+		reserved_qty_base TEXT,
 		PRIMARY KEY (worksheet_template_name, journal_batch_name, line_no)
 	`
 }
@@ -906,6 +976,9 @@ func GetRequisitionLinePostgresTableSchema() string {
 		qty_per_unit_of_measure NUMERIC DEFAULT 1,
 		unit_of_measure_code VARCHAR(10),
 		quantity_base NUMERIC,
+		reserved_quantity NUMERIC,
+		reserve INTEGER CHECK (reserve >= 0 AND reserve <= 2),
+		reserved_qty_base NUMERIC,
 		PRIMARY KEY (worksheet_template_name, journal_batch_name, line_no)
 	`
 }
@@ -1071,6 +1144,9 @@ func (t *RequisitionLine) StoreOldValues() {
 	t.oldValues["qty_per_unit_of_measure"] = t.Qty_per_unit_of_measure
 	t.oldValues["unit_of_measure_code"] = t.Unit_of_measure_code
 	t.oldValues["quantity_base"] = t.Quantity_base
+	t.oldValues["reserved_quantity"] = t.Reserved_quantity
+	t.oldValues["reserve"] = t.Reserve
+	t.oldValues["reserved_qty_base"] = t.Reserved_qty_base
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1171,6 +1247,15 @@ func (t *RequisitionLine) XRec() *RequisitionLine {
 	}
 	if v, ok := t.oldValues["quantity_base"].(types.Decimal); ok {
 		x.Quantity_base = v
+	}
+	if v, ok := t.oldValues["reserved_quantity"].(types.Decimal); ok {
+		x.Reserved_quantity = v
+	}
+	if v, ok := t.oldValues["reserve"].(RequisitionLineReserve); ok {
+		x.Reserve = v
+	}
+	if v, ok := t.oldValues["reserved_qty_base"].(types.Decimal); ok {
+		x.Reserved_qty_base = v
 	}
 	return x
 }
@@ -1280,6 +1365,9 @@ func (t *RequisitionLine) GetByPK(worksheet_template_name types.Code, journal_ba
 	var qty_per_unit_of_measureNull sql.NullString
 	var unit_of_measure_codeNull sql.NullString
 	var quantity_baseNull sql.NullString
+	var reserved_quantityNull sql.NullString
+	var reserveInt int
+	var reserved_qty_baseNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1289,7 +1377,7 @@ func (t *RequisitionLine) GetByPK(worksheet_template_name types.Code, journal_ba
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base FROM "%s" WHERE 1=1 AND worksheet_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base FROM "%s" WHERE 1=1 AND worksheet_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1325,6 +1413,9 @@ func (t *RequisitionLine) GetByPK(worksheet_template_name types.Code, journal_ba
 		&qty_per_unit_of_measureNull,
 		&unit_of_measure_codeNull,
 		&quantity_baseNull,
+		&reserved_quantityNull,
+		&reserveInt,
+		&reserved_qty_baseNull,
 	)
 
 	if err != nil {
@@ -1367,6 +1458,9 @@ func (t *RequisitionLine) GetByPK(worksheet_template_name types.Code, journal_ba
 	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 	t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
+	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+	t.Reserve = RequisitionLineReserve(reserveInt)
+	t.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1418,11 +1512,14 @@ func (t *RequisitionLine) Insert(runTrigger bool) bool {
 		t.Qty_per_unit_of_measure,
 		t.Unit_of_measure_code,
 		t.Quantity_base,
+		t.Reserved_quantity,
+		t.Reserve,
+		t.Reserved_qty_base,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (worksheet_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (worksheet_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1489,10 +1586,13 @@ func (t *RequisitionLine) InsertAll(records []*RequisitionLine, runTrigger bool)
 			r.Qty_per_unit_of_measure,
 			r.Unit_of_measure_code,
 			r.Quantity_base,
+			r.Reserved_quantity,
+			r.Reserve,
+			r.Reserved_qty_base,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, RequisitionLineTableName)
-	columns := []string{"worksheet_template_name", "journal_batch_name", "line_no", "type", "no", "description", "description_2", "quantity", "vendor_no", "direct_unit_cost", "quantity_disc_percent", "expected_receipt_date", "requester_id", "confirmed", "department_code", "project_code", "location_code", "recurring_method", "expiration_date", "recurring_frequency", "order_date", "vendor_item_no", "order_address_code", "currency_code", "currency_factor", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base"}
+	columns := []string{"worksheet_template_name", "journal_batch_name", "line_no", "type", "no", "description", "description_2", "quantity", "vendor_no", "direct_unit_cost", "quantity_disc_percent", "expected_receipt_date", "requester_id", "confirmed", "department_code", "project_code", "location_code", "recurring_method", "expiration_date", "recurring_frequency", "order_date", "vendor_item_no", "order_address_code", "currency_code", "currency_factor", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "reserved_quantity", "reserve", "reserved_qty_base"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1654,6 +1754,18 @@ func (t *RequisitionLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "quantity_base = ?")
 			values = append(values, t.Quantity_base)
 		}
+		if t.hasFieldChanged("reserved_quantity") {
+			setClauses = append(setClauses, "reserved_quantity = ?")
+			values = append(values, t.Reserved_quantity)
+		}
+		if t.hasFieldChanged("reserve") {
+			setClauses = append(setClauses, "reserve = ?")
+			values = append(values, t.Reserve)
+		}
+		if t.hasFieldChanged("reserved_qty_base") {
+			setClauses = append(setClauses, "reserved_qty_base = ?")
+			values = append(values, t.Reserved_qty_base)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -1713,6 +1825,12 @@ func (t *RequisitionLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Unit_of_measure_code)
 		setClauses = append(setClauses, "quantity_base = ?")
 		values = append(values, t.Quantity_base)
+		setClauses = append(setClauses, "reserved_quantity = ?")
+		values = append(values, t.Reserved_quantity)
+		setClauses = append(setClauses, "reserve = ?")
+		values = append(values, t.Reserve)
+		setClauses = append(setClauses, "reserved_qty_base = ?")
+		values = append(values, t.Reserved_qty_base)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -1884,6 +2002,18 @@ func (t *RequisitionLine) hasFieldChanged(fieldName string) bool {
 	case "quantity_base":
 		if old, ok := oldValue.(types.Decimal); ok {
 			return !t.Quantity_base.Equal(old)
+		}
+	case "reserved_quantity":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Reserved_quantity.Equal(old)
+		}
+	case "reserve":
+		if old, ok := oldValue.(RequisitionLineReserve); ok {
+			return t.Reserve != old
+		}
+	case "reserved_qty_base":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Reserved_qty_base.Equal(old)
 		}
 	}
 
@@ -2149,6 +2279,12 @@ func (t *RequisitionLine) columnName(fieldName string) (string, bool) {
 		return "unit_of_measure_code", true
 	case strings.ToLower("quantity_base"):
 		return "quantity_base", true
+	case strings.ToLower("reserved_quantity"):
+		return "reserved_quantity", true
+	case strings.ToLower("reserve"):
+		return "reserve", true
+	case strings.ToLower("reserved_qty_base"):
+		return "reserved_qty_base", true
 	}
 	return "", false
 }
@@ -2335,6 +2471,10 @@ func (t *RequisitionLine) isDecimalColumn(column string) bool {
 	case "qty_per_unit_of_measure":
 		return true
 	case "quantity_base":
+		return true
+	case "reserved_quantity":
+		return true
+	case "reserved_qty_base":
 		return true
 	}
 	return false
@@ -2526,7 +2666,7 @@ func (t *RequisitionLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2559,6 +2699,9 @@ func (t *RequisitionLine) FindFirst() bool {
 	var qty_per_unit_of_measureNull sql.NullString
 	var unit_of_measure_codeNull sql.NullString
 	var quantity_baseNull sql.NullString
+	var reserved_quantityNull sql.NullString
+	var reserveInt int
+	var reserved_qty_baseNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&worksheet_template_nameNull,
@@ -2590,6 +2733,9 @@ func (t *RequisitionLine) FindFirst() bool {
 		&qty_per_unit_of_measureNull,
 		&unit_of_measure_codeNull,
 		&quantity_baseNull,
+		&reserved_quantityNull,
+		&reserveInt,
+		&reserved_qty_baseNull,
 	)
 
 	if err != nil {
@@ -2629,6 +2775,9 @@ func (t *RequisitionLine) FindFirst() bool {
 	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 	t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
+	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+	t.Reserve = RequisitionLineReserve(reserveInt)
+	t.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2649,7 +2798,7 @@ func (t *RequisitionLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2682,6 +2831,9 @@ func (t *RequisitionLine) FindLast() bool {
 	var qty_per_unit_of_measureNull sql.NullString
 	var unit_of_measure_codeNull sql.NullString
 	var quantity_baseNull sql.NullString
+	var reserved_quantityNull sql.NullString
+	var reserveInt int
+	var reserved_qty_baseNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&worksheet_template_nameNull,
@@ -2713,6 +2865,9 @@ func (t *RequisitionLine) FindLast() bool {
 		&qty_per_unit_of_measureNull,
 		&unit_of_measure_codeNull,
 		&quantity_baseNull,
+		&reserved_quantityNull,
+		&reserveInt,
+		&reserved_qty_baseNull,
 	)
 
 	if err != nil {
@@ -2752,6 +2907,9 @@ func (t *RequisitionLine) FindLast() bool {
 	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 	t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
+	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+	t.Reserve = RequisitionLineReserve(reserveInt)
+	t.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2802,7 +2960,7 @@ func (t *RequisitionLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2899,6 +3057,9 @@ func (t *RequisitionLine) Next(steps ...int) bool {
 		var qty_per_unit_of_measureNull sql.NullString
 		var unit_of_measure_codeNull sql.NullString
 		var quantity_baseNull sql.NullString
+		var reserved_quantityNull sql.NullString
+		var reserveInt int
+		var reserved_qty_baseNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&worksheet_template_nameNull,
@@ -2930,6 +3091,9 @@ func (t *RequisitionLine) Next(steps ...int) bool {
 			&qty_per_unit_of_measureNull,
 			&unit_of_measure_codeNull,
 			&quantity_baseNull,
+			&reserved_quantityNull,
+			&reserveInt,
+			&reserved_qty_baseNull,
 		)
 
 		if err != nil {
@@ -2968,6 +3132,9 @@ func (t *RequisitionLine) Next(steps ...int) bool {
 		t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 		t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 		t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
+		t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+		t.Reserve = RequisitionLineReserve(reserveInt)
+		t.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -3017,7 +3184,7 @@ func (t *RequisitionLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3067,6 +3234,9 @@ func (t *RequisitionLine) FindSetBuffered() bool {
 		var qty_per_unit_of_measureNull sql.NullString
 		var unit_of_measure_codeNull sql.NullString
 		var quantity_baseNull sql.NullString
+		var reserved_quantityNull sql.NullString
+		var reserveInt int
+		var reserved_qty_baseNull sql.NullString
 
 		err := rows.Scan(
 			&worksheet_template_nameNull,
@@ -3098,6 +3268,9 @@ func (t *RequisitionLine) FindSetBuffered() bool {
 			&qty_per_unit_of_measureNull,
 			&unit_of_measure_codeNull,
 			&quantity_baseNull,
+			&reserved_quantityNull,
+			&reserveInt,
+			&reserved_qty_baseNull,
 		)
 
 		if err != nil {
@@ -3134,6 +3307,9 @@ func (t *RequisitionLine) FindSetBuffered() bool {
 		record.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 		record.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 		record.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
+		record.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+		record.Reserve = RequisitionLineReserve(reserveInt)
+		record.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -3191,6 +3367,9 @@ func (t *RequisitionLine) copyFromBuffered(record *RequisitionLine) {
 	t.Qty_per_unit_of_measure = record.Qty_per_unit_of_measure
 	t.Unit_of_measure_code = record.Unit_of_measure_code
 	t.Quantity_base = record.Quantity_base
+	t.Reserved_quantity = record.Reserved_quantity
+	t.Reserve = record.Reserve
+	t.Reserved_qty_base = record.Reserved_qty_base
 	t.StoreOldValues()
 }
 
@@ -4048,6 +4227,111 @@ func (t *RequisitionLine) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
+	case "reserved_quantity":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Reserved_quantity = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Reserved_quantity, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field reserved_quantity: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Reserved_quantity = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Reserved_quantity = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Reserved_quantity = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field reserved_quantity (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(RequisitionLineOnValidate_Reserved_quantity); ok {
+				if err := trg.OnValidate_Reserved_quantity(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "reserve":
+		// Set field value
+		// Accept enum type directly
+		if v, ok := value.(RequisitionLineReserve); ok {
+			t.Reserve = v
+			// Accept int (convert to enum)
+		} else if v, ok := value.(int); ok {
+			if v < 0 || v >= 3 {
+				return fmt.Errorf("invalid option value %d for field reserve (valid range: 0-%d)", v, 3-1)
+			}
+			t.Reserve = RequisitionLineReserve(v)
+			// Accept float64 (JSON numbers decode as float64)
+		} else if v, ok := value.(float64); ok {
+			intVal := int(v)
+			if intVal < 0 || intVal >= 3 {
+				return fmt.Errorf("invalid option value %d for field reserve (valid range: 0-%d)", intVal, 3-1)
+			}
+			t.Reserve = RequisitionLineReserve(intVal)
+			// Accept string (lookup in options and convert)
+		} else if v, ok := value.(string); ok {
+			if v == "" {
+				// Empty string defaults to first option (behavior)
+				t.Reserve = 0
+			} else {
+				options := []string{"Never", "Optional", "Always"}
+				found := false
+				for i, opt := range options {
+					if opt == v {
+						t.Reserve = RequisitionLineReserve(i)
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("invalid option '%s' for field reserve (valid options: %v)", v, options)
+				}
+			}
+		} else {
+			return fmt.Errorf("invalid type for field reserve (expected RequisitionLineReserve, int, or string)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(RequisitionLineOnValidate_Reserve); ok {
+				if err := trg.OnValidate_Reserve(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "reserved_qty_base":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Reserved_qty_base = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Reserved_qty_base, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field reserved_qty_base: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Reserved_qty_base = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Reserved_qty_base = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Reserved_qty_base = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field reserved_qty_base (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(RequisitionLineOnValidate_Reserved_qty_base); ok {
+				if err := trg.OnValidate_Reserved_qty_base(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -4118,6 +4402,12 @@ func (t *RequisitionLine) FieldValue(no int) (any, bool) {
 		return t.Unit_of_measure_code, true
 	case 5408:
 		return t.Quantity_base, true
+	case 31:
+		return t.Reserved_quantity, true
+	case 32:
+		return t.Reserve, true
+	case 5431:
+		return t.Reserved_qty_base, true
 	}
 	return nil, false
 }
@@ -4342,6 +4632,21 @@ func (t *RequisitionLine) SetFieldValue(no int, value any) bool {
 			t.Quantity_base = v
 			return true
 		}
+	case 31:
+		if v, ok := value.(types.Decimal); ok {
+			t.Reserved_quantity = v
+			return true
+		}
+	case 32:
+		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
+			t.Reserve = RequisitionLineReserve(i)
+			return true
+		}
+	case 5431:
+		if v, ok := value.(types.Decimal); ok {
+			t.Reserved_qty_base = v
+			return true
+		}
 	}
 	return false
 }
@@ -4429,6 +4734,10 @@ func (t *RequisitionLine) CalcSums(fieldNames ...string) error {
 			column = "qty_per_unit_of_measure"
 		case "quantity_base":
 			column = "quantity_base"
+		case "reserved_quantity":
+			column = "reserved_quantity"
+		case "reserved_qty_base":
+			column = "reserved_qty_base"
 		default:
 			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Requisition_Line", name)
 		}
@@ -4480,6 +4789,18 @@ func (t *RequisitionLine) CalcSums(fieldNames ...string) error {
 				return fmt.Errorf("CalcSums Requisition_Line.%s: %w", column, err)
 			}
 			t.Quantity_base = d
+		case "reserved_quantity":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Requisition_Line.%s: %w", column, err)
+			}
+			t.Reserved_quantity = d
+		case "reserved_qty_base":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Requisition_Line.%s: %w", column, err)
+			}
+			t.Reserved_qty_base = d
 		}
 	}
 	return nil
@@ -4891,6 +5212,12 @@ func (t *RequisitionLine) columnValue(column string) (interface{}, bool) {
 		return t.Unit_of_measure_code, true
 	case "quantity_base":
 		return t.Quantity_base, true
+	case "reserved_quantity":
+		return t.Reserved_quantity, true
+	case "reserve":
+		return int(t.Reserve), true
+	case "reserved_qty_base":
+		return t.Reserved_qty_base, true
 	}
 	return nil, false
 }
@@ -4979,6 +5306,9 @@ func (t *RequisitionLine) Init() {
 	t.Qty_per_unit_of_measure = *new(types.Decimal)
 	t.Unit_of_measure_code = *new(types.Code)
 	t.Quantity_base = *new(types.Decimal)
+	t.Reserved_quantity = *new(types.Decimal)
+	t.Reserve = 0
+	t.Reserved_qty_base = *new(types.Decimal)
 	t.applyDefaults()
 }
 
@@ -5042,6 +5372,9 @@ func (t *RequisitionLine) ToMap() map[string]interface{} {
 		"qty_per_unit_of_measure": t.Qty_per_unit_of_measure.String(),
 		"unit_of_measure_code":    t.Unit_of_measure_code.String(),
 		"quantity_base":           t.Quantity_base.String(),
+		"reserved_quantity":       t.Reserved_quantity.String(),
+		"reserve":                 int(t.Reserve),
+		"reserved_qty_base":       t.Reserved_qty_base.String(),
 	}
 }
 
@@ -5264,6 +5597,47 @@ func (t *RequisitionLine) FromMap(data map[string]interface{}) {
 			t.Quantity_base = types.NewDecimalFromInt(int64(val))
 		case int64:
 			t.Quantity_base = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["reserved_quantity"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Reserved_quantity, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Reserved_quantity = types.NewDecimal(val)
+		case int:
+			t.Reserved_quantity = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Reserved_quantity = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["reserve"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Reserve = RequisitionLineReserve(int(val))
+		case int:
+			t.Reserve = RequisitionLineReserve(val)
+		case string:
+			// Lookup string value in options
+			options := []string{"Never", "Optional", "Always"}
+			for i, opt := range options {
+				if opt == val {
+					t.Reserve = RequisitionLineReserve(i)
+					break
+				}
+			}
+		}
+	}
+	if v, ok := data["reserved_qty_base"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Reserved_qty_base, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Reserved_qty_base = types.NewDecimal(val)
+		case int:
+			t.Reserved_qty_base = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Reserved_qty_base = types.NewDecimalFromInt(val)
 		}
 	}
 }
@@ -5584,6 +5958,40 @@ func (t *RequisitionLine) GetFields() []tables.FieldInfo {
 			FlowField:     false,
 			DecimalPlaces: "0:5",
 		},
+		{
+			No:            31,
+			Name:          "reserved_quantity",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     false,
+			ReadOnly:      true,
+			DecimalPlaces: "0:5",
+		},
+		{
+			No:         32,
+			Name:       "reserve",
+			Type:       tables.FieldTypeOption,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:            5431,
+			Name:          "reserved_qty_base",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     false,
+			ReadOnly:      true,
+			DecimalPlaces: "0:5",
+		},
 	}
 }
 
@@ -5610,6 +6018,7 @@ func (t *RequisitionLine) GetOptionFields() map[string][]string {
 	return map[string][]string{
 		"type":             {" ", "Account (G/L)", "Item"},
 		"recurring_method": {" ", "Fixed", "Variable"},
+		"reserve":          {"Never", "Optional", "Always"},
 	}
 }
 
