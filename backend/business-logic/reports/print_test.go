@@ -242,7 +242,9 @@ func TestReadLayoutRefusesMistakes(t *testing.T) {
 	cases := map[string]string{
 		"two sources":     "report:\n  id: 99950\n  data_items:\n    - name: Line\n      sections:\n        - type: body\n          elements:\n            - {text: A, field: number}\n",
 		"no source":       "report:\n  id: 99950\n  data_items:\n    - name: Line\n      sections:\n        - type: body\n          elements:\n            - {x: 1}\n",
-		"section type":    "report:\n  id: 99950\n  data_items:\n    - name: Line\n      sections:\n        - type: group_footer\n",
+		"section type":    "report:\n  id: 99950\n  data_items:\n    - name: Line\n      sections:\n        - type: group\n",
+		"no group":        "report:\n  id: 99950\n  data_items:\n    - name: Line\n      sections:\n        - type: group_footer\n",
+		"group of body":   "report:\n  id: 99950\n  data_items:\n    - name: Line\n      sections:\n        - type: body\n          group: number\n",
 		"unknown key":     "report:\n  id: 99950\n  colour: red\n",
 		"wrong number":    "report:\n  id: 12\n",
 		"every page":      "report:\n  id: 99950\n  data_items:\n    - name: Line\n      sections:\n        - type: body\n          print_on_every_page: true\n",
