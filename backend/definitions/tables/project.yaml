@@ -6,7 +6,6 @@ table:
   data_caption_fields: [no, description]
   auto_key: true   # OnInsert gives a project without No. the next number of its series
   lookup_page_id: 89
-  # 46/47/48 Usage (Cost)/(Price) and Invoiced Price come with the Project Ledger Entry.
   fields:
     - name: no
       no: 1
@@ -254,6 +253,100 @@ table:
           type: filter
           value: type_filter
         - field: date
+          type: filter
+          value: date_filter
+
+    - name: usage_cost
+      no: 46
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: ProjectLedgerEntry
+      source_field: total_cost
+      flow_filters:
+        - field: entry_type
+          type: const
+          value: 0   # Usage
+        - field: project_no
+          type: field
+          value: no
+        - field: phase_code
+          type: filter
+          value: phase_filter
+        - field: task_code
+          type: filter
+          value: task_filter
+        - field: step_code
+          type: filter
+          value: step_filter
+        - field: type
+          type: filter
+          value: type_filter
+        - field: posting_date
+          type: filter
+          value: date_filter
+
+    - name: usage_price
+      no: 47
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: ProjectLedgerEntry
+      source_field: total_price
+      flow_filters:
+        - field: entry_type
+          type: const
+          value: 0   # Usage
+        - field: project_no
+          type: field
+          value: no
+        - field: phase_code
+          type: filter
+          value: phase_filter
+        - field: task_code
+          type: filter
+          value: task_filter
+        - field: step_code
+          type: filter
+          value: step_filter
+        - field: type
+          type: filter
+          value: type_filter
+        - field: posting_date
+          type: filter
+          value: date_filter
+
+    - name: invoiced_price
+      no: 48
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      reverse_sign: true
+      source_table: ProjectLedgerEntry
+      source_field: total_price
+      flow_filters:
+        - field: entry_type
+          type: const
+          value: 1   # Sale
+        - field: project_no
+          type: field
+          value: no
+        - field: phase_code
+          type: filter
+          value: phase_filter
+        - field: task_code
+          type: filter
+          value: task_filter
+        - field: step_code
+          type: filter
+          value: step_filter
+        - field: type
+          type: filter
+          value: type_filter
+        - field: posting_date
           type: filter
           value: date_filter
 

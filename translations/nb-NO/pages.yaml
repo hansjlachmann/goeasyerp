@@ -1079,3 +1079,25 @@ pages:
     caption: "Oppgaver"
   steps:
     caption: "Trinn"
+
+  # Project journal and ledger
+  project_journal_templates:
+    caption: "Prosjektkladdemaler"
+  project_journal_template_list:
+    caption: "Prosjektkladdemalliste"
+  project_jnl_batches:
+    caption: "Prosjektkladdenavn"
+  project_registers:
+    caption: "Prosjektjournaler"
+  project_journal:
+    caption: "Prosjektkladd"
+    fields:
+      project_description: "Prosjektbeskrivelse"
+      account_name: "Kontonavn"
+  recurring_project_jnl:
+    caption: "Gjentakende prosjektkladd"
+    fields:
+      project_description: "Prosjektbeskrivelse"
+      account_name: "Kontonavn"
+  project_ledger_entries:
+    caption: "Prosjektposter"

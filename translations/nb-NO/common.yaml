@@ -8,6 +8,8 @@ common:
 
   # Common actions
   actions:
+    project: "Prosjekt"
+    project_ledger: "Prosjektposter"
     budget: "Budsjett"
     quantity_allocated: "Fordelt antall"
     budget_entries: "Budsjettposter"
@@ -280,7 +282,7 @@ common:
   # Menu items
   menu:
     sales: "Salg"
-    purchase: "Innkjøp"
+    purchases: "Innkjøp"
     items_inventory: "Varer og lager"
     assets_depreciations: "Anleggsmidler og avskrivninger"
     items_by_bin: "Varer per hylle"

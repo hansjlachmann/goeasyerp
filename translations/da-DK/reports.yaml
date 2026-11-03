@@ -94,6 +94,11 @@ reports:
       retain_transaction_type: "Bevar Transaktionsart"
       retain_transport_method: "Bevar Transportmåde"
       retain_variant_code: "Bevar Variantkode"
+      retain_no: "Bevar Nr."
+      retain_resource_group_no: "Bevar Ressourcegruppenr."
+      retain_phase_code: "Bevar Fasekode"
+      retain_task_code: "Bevar Opgavekode"
+      retain_step_code: "Bevar Trinkode"
       retain_reclassification_entry: "Bevar Ompostering"
       retain_index_entry: "Bevar Indekseringspost"
       retain_maintenance_code: "Bevar Vedligeholdelseskode"
@@ -252,6 +257,15 @@ reports:
     caption: "Datokomprimer styklisteposter"
     texts:
       WINDOW: "Datokomprimerer styklisteposter...\n\nDato                 #1######\n\nAntal nye poster     #2######\nAntal slettet        #3######"
+  "1298":
+    caption: "Datokomprimer projektposter"
+    texts:
+      WINDOW: "Datokomprimerer projektposter...\n\nProjektnr.           #1##########\nDato                 #2######\n\nAntal nye poster     #3######\nAntal slettet        #4######"
+  "1299":
+    caption: "Slet tomme projektjournaler"
+    texts:
+      CONFIRM: "Vil du slette journalerne?"
+      WINDOW: "Sletter tomme projektjournaler...\n\nNr.                      #1######\nBogført                  #2######\n\nAntal journaler slettet  #3######"
   "1198":
     caption: "Datokomprimer ressourceposter"
     texts:
@@ -350,6 +364,7 @@ reports:
   "1191":
     caption: "Foreslå ressourceprisændr. (ress.)"
     options:
+      project_no: "Projektnr."
       work_type_code: "Arbejdstypekode"
       currency_code: "Valutakode"
       unit_price_factor: "Reguleringsfaktor"
@@ -362,6 +377,7 @@ reports:
   "1192":
     caption: "Foreslå ressourceprisændr. (pris)"
     options:
+      project_no: "Projektnr."
       currency_code: "Valutakode"
       work_type_code: "Arbejdstypekode"
       unit_price_factor: "Reguleringsfaktor"

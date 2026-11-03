@@ -879,7 +879,7 @@ func (t *Step) renameReferences(field string, oldValue, newValue interface{}) er
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Project_Budget_Entry", false, "step_code", "", 0}, {"Project_Budget_Line", false, "step_code", "", 0}},
+		"code": {{"Project_Budget_Entry", false, "step_code", "", 0}, {"Project_Budget_Line", false, "step_code", "", 0}, {"Project_Journal_Line", false, "step_code", "", 0}, {"Project_Ledger_Entry", false, "step_code", "", 0}, {"Purch_Cr_Memo_Line", false, "step_code", "", 0}, {"Purch_Inv_Line", false, "step_code", "", 0}, {"Purch_Rcpt_Line", false, "step_code", "", 0}, {"Purchase_Line", false, "step_code", "", 0}, {"Sales_Cr_Memo_Line", false, "step_code", "", 0}, {"Sales_Invoice_Line", false, "step_code", "", 0}, {"Sales_Line", false, "step_code", "", 0}, {"Sales_Shipment_Line", false, "step_code", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

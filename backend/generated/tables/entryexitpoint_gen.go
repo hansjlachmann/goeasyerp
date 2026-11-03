@@ -850,7 +850,7 @@ func (t *EntryExitPoint) renameReferences(field string, oldValue, newValue inter
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Intrastat_Jnl_Line", false, "entry_exit_point", "", 0}, {"Item_Journal_Line", false, "entry_exit_point", "", 0}, {"Item_Ledger_Entry", false, "entry_exit_point", "", 0}, {"Purchase_Header", false, "entry_point", "", 0}, {"Purchase_Line", false, "entry_point", "", 0}, {"Sales_Header", false, "exit_point", "", 0}, {"Sales_Line", false, "exit_point", "", 0}},
+		"code": {{"Intrastat_Jnl_Line", false, "entry_exit_point", "", 0}, {"Item_Journal_Line", false, "entry_exit_point", "", 0}, {"Item_Ledger_Entry", false, "entry_exit_point", "", 0}, {"Project_Journal_Line", false, "entry_exit_point", "", 0}, {"Project_Ledger_Entry", false, "entry_exit_point", "", 0}, {"Purchase_Header", false, "entry_point", "", 0}, {"Purchase_Line", false, "entry_point", "", 0}, {"Sales_Header", false, "exit_point", "", 0}, {"Sales_Line", false, "exit_point", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

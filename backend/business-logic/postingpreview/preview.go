@@ -42,6 +42,7 @@ var EntryTables = []EntryTable{
 	{gtables.ItemLedgerEntryTableName, gtables.ItemLedgerEntryTableID, 38},
 	{gtables.PhysInventoryLedgerEntryTableName, gtables.PhysInventoryLedgerEntryTableID, 390},
 	{gtables.ResLedgerEntryTableName, gtables.ResLedgerEntryTableID, 202},
+	{gtables.ProjectLedgerEntryTableName, gtables.ProjectLedgerEntryTableID, 92},
 	{gtables.FALedgerEntryTableName, gtables.FALedgerEntryTableID, 5604},
 	{gtables.MaintenanceLedgerEntryTableName, gtables.MaintenanceLedgerEntryTableID, 5641},
 	{gtables.InsCoverageLedgerEntryTableName, gtables.InsCoverageLedgerEntryTableID, 5647},

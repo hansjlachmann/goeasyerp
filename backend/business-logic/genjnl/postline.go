@@ -629,6 +629,7 @@ func (p *GenJnlPostLine) initGLEntry(glAccNo types.Code, amount, amountAddCurr t
 		p.glEntry.Source_type = gtables.GLEntrySource_type(genJnlLine.Account_type)
 		p.glEntry.Source_no = genJnlLine.Account_no
 	}
+	p.glEntry.Project_no = genJnlLine.Project_no
 	p.glEntry.Quantity = genJnlLine.Quantity
 	p.glEntry.Journal_batch_name = genJnlLine.Journal_batch_name
 	p.glEntry.Reason_code = genJnlLine.Reason_code

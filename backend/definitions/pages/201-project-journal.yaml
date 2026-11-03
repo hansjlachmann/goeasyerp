@@ -1,0 +1,195 @@
+page:
+  id: 201
+  type: List
+  name: Project Journal
+  source_table: Project_Journal_Line
+  caption: Project Journal
+  editable: true
+  auto_split_key: true      # a new line gets Line No. 10000, 20000 … or halfway between its neighbours
+  delayed_insert: true      # inserted when the user leaves the line
+  # classic form 201 (the recurring project journal is page 289)
+
+  # The batch the journal shows (classic Batch Name above the lines): the page's batch
+  # parameter; OnOpenPage (business-logic/pages/projectjournal.go) turns template and batch
+  # into the list's filters
+  header_fields:
+    - param: batch
+      source: journal_batch_name
+      lookup_page: 276
+      lookup_field: name
+      lookup_filters:
+        journal_template_name: journal_template_name
+
+  # Under the list for the cursor row (OnAfterGetRecord, business-logic/pages/projectjournal.go)
+  footer:
+    - source: project_description
+      calculated: true
+      type: types.Text
+    - source: account_name
+      calculated: true
+      type: types.Text
+
+  layout:
+    repeater:
+      fields:
+        - source: posting_date
+          width: 100
+        - source: document_date
+          width: 100
+          visible: false
+        - source: document_no
+          width: 110
+        - source: external_document_no
+          width: 130
+          visible: false
+        - source: project_no
+          width: 110
+        - source: type
+          width: 110
+        - source: "no"
+          width: 110
+        - source: variant_code
+          width: 100
+          visible: false
+        - source: description
+          width: 250
+        - source: gen_bus_posting_group
+          width: 140
+          visible: false
+        - source: gen_prod_posting_group
+          width: 140
+          visible: false
+        - source: dimension_1_code
+          width: 110
+          visible: false
+        - source: dimension_2_code
+          width: 110
+          visible: false
+        - source: location_code
+          width: 100
+          visible: false
+        - source: bin_code
+          width: 100
+          visible: false
+        - source: work_type_code
+          width: 110
+        - source: phase_code
+          width: 100
+          visible: false
+        - source: task_code
+          width: 100
+          visible: false
+        - source: step_code
+          width: 100
+          visible: false
+        - source: quantity
+          width: 100
+        - source: unit_of_measure_code
+          width: 110
+        - source: direct_unit_cost
+          width: 120
+          visible: false
+        - source: unit_cost
+          width: 120
+        - source: total_cost
+          width: 120
+        - source: profit_percent
+          width: 100
+          visible: false
+        - source: unit_price
+          width: 120
+        - source: total_price
+          width: 120
+        - source: price_group_code
+          width: 110
+          visible: false
+        - source: chargeable
+          width: 90
+          visible: false
+        - source: serial_no
+          width: 120
+          visible: false
+          on_lookup: "table:Project_Journal_Line.SelectItemEntry"
+        - source: lot_no
+          width: 120
+          visible: false
+          on_lookup: "table:Project_Journal_Line.SelectItemEntry"
+        - source: balancing_acc_no
+          width: 120
+          visible: false
+        - source: appl_to_item_entry
+          width: 110
+          visible: false
+          on_lookup: "table:Project_Journal_Line.SelectItemEntry"
+        - source: applies_to_entry
+          width: 110
+          visible: false
+        - source: apply_and_close_project
+          width: 110
+          visible: false
+        - source: transaction_type
+          width: 110
+          visible: false
+        - source: transport_method
+          width: 110
+          visible: false
+        - source: country_code
+          width: 100
+          visible: false
+        - source: reason_code
+          width: 110
+          visible: false
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    # The line's project: its card and its ledger entries
+    - name: Project
+      caption: Project
+      image: Card
+      promoted: true
+      items:
+        - name: Card
+          caption: Card
+          shortcut: Shift+F5
+          run_page: 88
+          run_page_filter_field: "no"
+          run_page_filter_value: project_no
+        - name: Ledger Entries
+          caption: Ledger Entries
+          shortcut: Ctrl+F5
+          run_page: 92
+          run_page_filter_field: project_no
+          run_page_filter_value: project_no
+
+    # Posting: the batch (codeunit 281 Project Jnl.-Post, after asking; the list's filters say which batch)
+    - name: Post
+      caption: Post
+      image: Post
+      shortcut: F11
+      promoted: true
+      run_object: codeunit:281
+
+    # what Post would write for the batch, nothing saved (Posting Preview 115)
+    - name: Preview Posting
+      caption: Preview Posting
+      image: Search
+      shortcut: Ctrl+Alt+F9
+      promoted: true
+      run_object: "table:Project_Journal_Line.PreviewPosting"

@@ -873,7 +873,7 @@ func (t *WorkType) renameReferences(field string, oldValue, newValue interface{}
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Res_Journal_Line", false, "work_type_code", "", 0}, {"Res_Ledger_Entry", false, "work_type_code", "", 0}, {"Resource_Cost", false, "work_type_code", "", 0}, {"Resource_Price", false, "work_type_code", "", 0}, {"Resource_Price_Change", false, "work_type_code", "", 0}, {"Sales_Cr_Memo_Line", false, "work_type_code", "", 0}, {"Sales_Invoice_Line", false, "work_type_code", "", 0}, {"Sales_Line", false, "work_type_code", "", 0}, {"Sales_Shipment_Line", false, "work_type_code", "", 0}},
+		"code": {{"Project_Journal_Line", false, "work_type_code", "", 0}, {"Project_Ledger_Entry", false, "work_type_code", "", 0}, {"Res_Journal_Line", false, "work_type_code", "", 0}, {"Res_Ledger_Entry", false, "work_type_code", "", 0}, {"Resource_Cost", false, "work_type_code", "", 0}, {"Resource_Price", false, "work_type_code", "", 0}, {"Resource_Price_Change", false, "work_type_code", "", 0}, {"Sales_Cr_Memo_Line", false, "work_type_code", "", 0}, {"Sales_Invoice_Line", false, "work_type_code", "", 0}, {"Sales_Line", false, "work_type_code", "", 0}, {"Sales_Shipment_Line", false, "work_type_code", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

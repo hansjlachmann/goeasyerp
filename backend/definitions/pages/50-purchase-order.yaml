@@ -65,6 +65,7 @@ page:
           - source: applies_to_doc_no
           - source: dimension_1_code
           - source: dimension_2_code
+          - source: project_no
           - source: vendor_posting_group
           - source: gen_bus_posting_group
           - source: tax_area_code

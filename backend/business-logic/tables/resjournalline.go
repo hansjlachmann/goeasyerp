@@ -9,8 +9,6 @@ import (
 )
 
 // resJournalLineLogic is the business logic of table 207 Res. Journal Line.
-//
-// Not migrated yet: Job No. (jobs) and the recurring fields.
 type resJournalLineLogic struct{}
 
 func init() { gtables.RegisterResJournalLineLogic(resJournalLineLogic{}) }
@@ -65,6 +63,11 @@ func (resJournalLineLogic) OnValidate_Resource_no(rec *gtables.ResJournalLine) e
 		return err
 	}
 	return rec.Validate("quantity", rec.Quantity)
+}
+
+// OnValidate_Project_no: the resource's price for the project
+func (resJournalLineLogic) OnValidate_Project_no(rec *gtables.ResJournalLine) error {
+	return findResJnlPrice(rec)
 }
 
 // OnValidate_Work_type_code: the work type's unit of measure (else the resource's), the cost
@@ -147,10 +150,11 @@ func findResJnlUnitCost(rec *gtables.ResJournalLine) error {
 	return rec.Validate("unit_cost", rec.Unit_cost)
 }
 
-// findResJnlPrice (FindResPrice): the resource's price for the work type (codeunit 221)
+// findResJnlPrice (FindResPrice): the resource's price for the project and work type (codeunit 221)
 func findResJnlPrice(rec *gtables.ResJournalLine) error {
 	resPrice := gtables.NewResourcePrice(rec)
 	resPrice.Init()
+	resPrice.Project_no = rec.Project_no
 	resPrice.Code = rec.Resource_no
 	resPrice.Work_type_code = rec.Work_type_code
 	err := resprice.FindResPrice(resPrice)

@@ -3161,6 +3161,7 @@ tables:
   gen_journal_line:
     caption: "Gen. Journal Line"
     fields:
+      project_no: "Project No."
       fa_add_currency_factor: "FA Add.-Currency Factor"
       additional_currency_posting: "Additional-Currency Posting"
       business_unit_code: "Business Unit Code"
@@ -3357,6 +3358,8 @@ tables:
   source_code_setup:
     caption: "Source Code Setup"
     fields:
+      project_journal: "Project Journal"
+      compress_project_ledger: "Compress Project Ledger"
       adjust_add_reporting_currency: "Adjust Add. Reporting Currency"
       consolidation: "Consolidation"
       compress_g_l: "Compress G/L"
@@ -4195,6 +4198,7 @@ tables:
   resource_price:
     caption: "Resource Price"
     fields:
+      project_no: "Project No."
       type: "Type"
       code: "Code"
       work_type_code: "Work Type Code"
@@ -4208,6 +4212,7 @@ tables:
   resource_price_change:
     caption: "Resource Price Change"
     fields:
+      project_no: "Project No."
       type: "Type"
       code: "Code"
       work_type_code: "Work Type Code"
@@ -4299,6 +4304,7 @@ tables:
   res_journal_line:
     caption: "Res. Journal Line"
     fields:
+      project_no: "Project No."
       recurring_method: "Recurring Method"
       expiration_date: "Expiration Date"
       recurring_frequency: "Recurring Frequency"
@@ -4339,6 +4345,7 @@ tables:
   res_ledger_entry:
     caption: "Res. Ledger Entry"
     fields:
+      project_no: "Project No."
       entry_no: "Entry No."
       entry_type: "Entry Type"
       document_no: "Document No."
@@ -4496,6 +4503,7 @@ tables:
   sales_header:
     caption: "Sales Header"
     fields:
+      project_no: "Project No."
       transaction_type: "Transaction Type"
       transport_method: "Transport Method"
       vat_country_code: "VAT Country Code"
@@ -4604,6 +4612,13 @@ tables:
   sales_line:
     caption: "Sales Line"
     fields:
+      project_no: "Project No."
+      appl_to_project_entry: "Appl.-to Project Entry"
+      phase_code: "Phase Code"
+      task_code: "Task Code"
+      step_code: "Step Code"
+      project_applies_to_id: "Project Applies-to ID"
+      apply_and_close_project: "Apply and Close (Project)"
       transaction_type: "Transaction Type"
       transport_method: "Transport Method"
       exit_point: "Exit Point"
@@ -4710,6 +4725,7 @@ tables:
   sales_shipment_header:
     caption: "Sales Shipment Header"
     fields:
+      project_no: "Project No."
       sell_to_customer_no: "Sell-to Customer No."
       no: "No."
       bill_to_customer_no: "Bill-to Customer No."
@@ -4784,6 +4800,13 @@ tables:
   sales_shipment_line:
     caption: "Sales Shipment Line"
     fields:
+      project_no: "Project No."
+      appl_to_project_entry: "Appl.-to Project Entry"
+      phase_code: "Phase Code"
+      task_code: "Task Code"
+      step_code: "Step Code"
+      project_applies_to_id: "Project Applies-to ID"
+      apply_and_close_project: "Apply and Close (Project)"
       sell_to_customer_no: "Sell-to Customer No."
       document_no: "Document No."
       line_no: "Line No."
@@ -4857,6 +4880,7 @@ tables:
   sales_invoice_header:
     caption: "Sales Invoice Header"
     fields:
+      project_no: "Project No."
       sell_to_customer_no: "Sell-to Customer No."
       no: "No."
       bill_to_customer_no: "Bill-to Customer No."
@@ -4943,6 +4967,13 @@ tables:
   sales_invoice_line:
     caption: "Sales Invoice Line"
     fields:
+      project_no: "Project No."
+      appl_to_project_entry: "Appl.-to Project Entry"
+      phase_code: "Phase Code"
+      task_code: "Task Code"
+      step_code: "Step Code"
+      project_applies_to_id: "Project Applies-to ID"
+      apply_and_close_project: "Apply and Close (Project)"
       sell_to_customer_no: "Sell-to Customer No."
       document_no: "Document No."
       line_no: "Line No."
@@ -5011,6 +5042,7 @@ tables:
   sales_cr_memo_header:
     caption: "Sales Cr.Memo Header"
     fields:
+      project_no: "Project No."
       sell_to_customer_no: "Sell-to Customer No."
       no: "No."
       bill_to_customer_no: "Bill-to Customer No."
@@ -5096,6 +5128,13 @@ tables:
   sales_cr_memo_line:
     caption: "Sales Cr.Memo Line"
     fields:
+      project_no: "Project No."
+      appl_to_project_entry: "Appl.-to Project Entry"
+      phase_code: "Phase Code"
+      task_code: "Task Code"
+      step_code: "Step Code"
+      project_applies_to_id: "Project Applies-to ID"
+      apply_and_close_project: "Apply and Close (Project)"
       sell_to_customer_no: "Sell-to Customer No."
       document_no: "Document No."
       line_no: "Line No."
@@ -5170,6 +5209,7 @@ tables:
   purchase_header:
     caption: "Purchase Header"
     fields:
+      project_no: "Project No."
       transaction_type: "Transaction Type"
       transport_method: "Transport Method"
       vat_country_code: "VAT Country Code"
@@ -5275,6 +5315,10 @@ tables:
   purchase_line:
     caption: "Purchase Line"
     fields:
+      project_no: "Project No."
+      phase_code: "Phase Code"
+      task_code: "Task Code"
+      step_code: "Step Code"
       transaction_type: "Transaction Type"
       transport_method: "Transport Method"
       entry_point: "Entry Point"
@@ -5410,6 +5454,7 @@ tables:
   purch_rcpt_header:
     caption: "Purch. Rcpt. Header"
     fields:
+      project_no: "Project No."
       buy_from_vendor_no: "Buy-from Vendor No."
       no: "No."
       pay_to_vendor_no: "Pay-to Vendor No."
@@ -5481,6 +5526,7 @@ tables:
   purch_inv_header:
     caption: "Purch. Inv. Header"
     fields:
+      project_no: "Project No."
       buy_from_vendor_no: "Buy-from Vendor No."
       no: "No."
       pay_to_vendor_no: "Pay-to Vendor No."
@@ -5564,6 +5610,7 @@ tables:
   purch_cr_memo_hdr:
     caption: "Purch. Cr. Memo Hdr."
     fields:
+      project_no: "Project No."
       buy_from_vendor_no: "Buy-from Vendor No."
       no: "No."
       pay_to_vendor_no: "Pay-to Vendor No."
@@ -5647,6 +5694,10 @@ tables:
   purch_rcpt_line:
     caption: "Purch. Rcpt. Line"
     fields:
+      project_no: "Project No."
+      phase_code: "Phase Code"
+      task_code: "Task Code"
+      step_code: "Step Code"
       buy_from_vendor_no: "Buy-from Vendor No."
       document_no: "Document No."
       line_no: "Line No."
@@ -5718,6 +5769,10 @@ tables:
   purch_inv_line:
     caption: "Purch. Inv. Line"
     fields:
+      project_no: "Project No."
+      phase_code: "Phase Code"
+      task_code: "Task Code"
+      step_code: "Step Code"
       fa_posting_date: "FA Posting Date"
       fa_posting_type: "FA Posting Type"
       depreciation_book_code: "Depreciation Book Code"
@@ -5797,6 +5852,10 @@ tables:
   purch_cr_memo_line:
     caption: "Purch. Cr. Memo Line"
     fields:
+      project_no: "Project No."
+      phase_code: "Phase Code"
+      task_code: "Task Code"
+      step_code: "Step Code"
       fa_posting_date: "FA Posting Date"
       fa_posting_type: "FA Posting Type"
       depreciation_book_code: "Depreciation Book Code"
@@ -6442,6 +6501,9 @@ tables:
   project:
     caption: "Project"
     fields:
+      usage_cost: "Usage (Cost)"
+      usage_price: "Usage (Price)"
+      invoiced_price: "Invoiced Price"
       no: "No."
       description: "Description"
       dimension_1_code: "Dimension 1 Code"
@@ -6562,3 +6624,186 @@ tables:
         quote: "Quote"
         order: "Order"
         completed: "Completed"
+
+  # Project journal and ledger (tables 169, 209, 210, 237, 241)
+  project_journal_template:
+    caption: "Project Journal Template"
+    fields:
+      name: "Name"
+      description: "Description"
+      test_report_id: "Test Report ID"
+      page_id: "Page ID"
+      posting_report_id: "Posting Report ID"
+      force_posting_report: "Force Posting Report"
+      source_code: "Source Code"
+      reason_code: "Reason Code"
+      recurring: "Recurring"
+      no_series: "No. Series"
+      posting_no_series: "Posting No. Series"
+  project_journal_batch:
+    caption: "Project Journal Batch"
+    fields:
+      journal_template_name: "Journal Template Name"
+      name: "Name"
+      description: "Description"
+      reason_code: "Reason Code"
+      no_series: "No. Series"
+      posting_no_series: "Posting No. Series"
+  project_journal_line:
+    caption: "Project Journal Line"
+    fields:
+      journal_template_name: "Journal Template Name"
+      journal_batch_name: "Journal Batch Name"
+      line_no: "Line No."
+      project_no: "Project No."
+      posting_date: "Posting Date"
+      document_no: "Document No."
+      type: "Type"
+      no: "No."
+      description: "Description"
+      quantity: "Quantity"
+      direct_unit_cost: "Direct Unit Cost"
+      unit_cost: "Unit Cost"
+      total_cost: "Total Cost"
+      unit_price: "Unit Price"
+      total_price: "Total Price"
+      resource_group_no: "Resource Group No."
+      unit_of_measure_code: "Unit of Measure Code"
+      location_code: "Location Code"
+      chargeable: "Chargeable"
+      posting_group: "Posting Group"
+      dimension_1_code: "Dimension 1 Code"
+      dimension_2_code: "Dimension 2 Code"
+      work_type_code: "Work Type Code"
+      price_group_code: "Price Group Code"
+      appl_to_item_entry: "Appl.-to Item Entry"
+      phase_code: "Phase Code"
+      task_code: "Task Code"
+      step_code: "Step Code"
+      entry_type: "Entry Type"
+      source_code: "Source Code"
+      profit_percent: "Profit %"
+      applies_to_entry: "Applies-to Entry"
+      applies_to_id: "Applies-to ID"
+      post_project_entry_only: "Post Project Entry Only"
+      apply_and_close_project: "Apply and Close (Project)"
+      reason_code: "Reason Code"
+      recurring_method: "Recurring Method"
+      expiration_date: "Expiration Date"
+      recurring_frequency: "Recurring Frequency"
+      gen_bus_posting_group: "Gen. Bus. Posting Group"
+      gen_prod_posting_group: "Gen. Prod. Posting Group"
+      transaction_type: "Transaction Type"
+      transport_method: "Transport Method"
+      country_code: "Country Code"
+      entry_exit_point: "Entry/Exit Point"
+      document_date: "Document Date"
+      external_document_no: "External Document No."
+      area: "Area"
+      transaction_specification: "Transaction Specification"
+      serial_no: "Serial No."
+      posting_no_series: "Posting No. Series"
+      source_currency_code: "Source Currency Code"
+      source_currency_total_cost: "Source Currency Total Cost"
+      source_currency_total_price: "Source Currency Total Price"
+      lot_no: "Lot No."
+      variant_code: "Variant Code"
+      bin_code: "Bin Code"
+      qty_per_unit_of_measure: "Qty. per Unit of Measure"
+      quantity_base: "Quantity (Base)"
+      balancing_acc_no: "Balancing Acc. No."
+    options:
+      type:
+        resource: "Resource"
+        item: "Item"
+        account_g_l: "Account (G/L)"
+      entry_type:
+        usage: "Usage"
+        sale: "Sale"
+      recurring_method:
+        fixed: "Fixed"
+        variable: "Variable"
+  project_ledger_entry:
+    caption: "Project Ledger Entry"
+    fields:
+      entry_no: "Entry No."
+      project_no: "Project No."
+      posting_date: "Posting Date"
+      document_no: "Document No."
+      type: "Type"
+      no: "No."
+      description: "Description"
+      quantity: "Quantity"
+      direct_unit_cost: "Direct Unit Cost"
+      unit_cost: "Unit Cost"
+      total_cost: "Total Cost"
+      unit_price: "Unit Price"
+      total_price: "Total Price"
+      resource_group_no: "Resource Group No."
+      unit_of_measure_code: "Unit of Measure Code"
+      location_code: "Location Code"
+      chargeable: "Chargeable"
+      project_posting_group: "Project Posting Group"
+      dimension_1_code: "Dimension 1 Code"
+      dimension_2_code: "Dimension 2 Code"
+      work_type_code: "Work Type Code"
+      price_group_code: "Price Group Code"
+      user_id: "User Name"
+      source_code: "Source Code"
+      related_to_budget: "Related to Budget"
+      phase_code: "Phase Code"
+      task_code: "Task Code"
+      step_code: "Step Code"
+      amt_to_post_to_g_l: "Amt. to Post to G/L"
+      amt_posted_to_g_l: "Amt. Posted to G/L"
+      amt_to_recognize: "Amt. to Recognize"
+      amt_recognized: "Amt. Recognized"
+      entry_type: "Entry Type"
+      positive: "Positive"
+      open: "Open"
+      remaining_amount: "Remaining Amount"
+      closed_by_entry_no: "Closed by Entry No."
+      closed_at_date: "Closed at Date"
+      closed_by_amount: "Closed by Amount"
+      applies_to_id: "Applies-to ID"
+      journal_batch_name: "Journal Batch Name"
+      reason_code: "Reason Code"
+      transaction_type: "Transaction Type"
+      transport_method: "Transport Method"
+      country_code: "Country Code"
+      gen_bus_posting_group: "Gen. Bus. Posting Group"
+      gen_prod_posting_group: "Gen. Prod. Posting Group"
+      entry_exit_point: "Entry/Exit Point"
+      document_date: "Document Date"
+      external_document_no: "External Document No."
+      area: "Area"
+      transaction_specification: "Transaction Specification"
+      no_series: "No. Series"
+      additional_currency_total_cost: "Additional-Currency Total Cost"
+      add_currency_total_price: "Add.-Currency Total Price"
+      add_curr_amount_to_recognize: "Add.-Curr. Amount to Recognize"
+      add_curr_amt_to_post_to_g_l: "Add.-Curr. Amt. to Post to G/L"
+      add_curr_amount_recognized: "Add.-Curr. Amount Recognized"
+      add_curr_amt_posted_to_g_l: "Add.-Curr. Amt. Posted to G/L"
+      lot_no: "Lot No."
+      variant_code: "Variant Code"
+      bin_code: "Bin Code"
+      qty_per_unit_of_measure: "Qty. per Unit of Measure"
+    options:
+      type:
+        resource: "Resource"
+        item: "Item"
+        account_g_l: "Account (G/L)"
+      entry_type:
+        usage: "Usage"
+        sale: "Sale"
+  project_register:
+    caption: "Project Register"
+    fields:
+      no: "No."
+      from_entry_no: "From Entry No."
+      to_entry_no: "To Entry No."
+      creation_date: "Creation Date"
+      source_code: "Source Code"
+      user_id: "User Name"
+      journal_batch_name: "Journal Batch Name"

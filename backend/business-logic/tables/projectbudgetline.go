@@ -170,11 +170,14 @@ func (projectBudgetLineLogic) OnValidate_No(rec *gtables.ProjectBudgetLine) erro
 			rec.Direct_unit_cost = resCost.Direct_unit_cost
 			rec.Unit_cost = resCost.Unit_cost
 		}
-		// the classic project's own price first: resource prices per project come with the
-		// project ledger
+		// the project's own price, else the price of every project
 		resPrice := gtables.NewResourcePrice(rec)
-		if resPrice.Get(map[string]interface{}{"type": gtables.ResourcePrice_Type.GroupResource, "code": rec.No, "work_type_code": "", "currency_code": ""}) {
+		if resPrice.Get(map[string]interface{}{"project_no": rec.Project_no, "type": gtables.ResourcePrice_Type.GroupResource, "code": rec.No, "work_type_code": "", "currency_code": ""}) {
 			rec.Unit_price = resPrice.Unit_price
+		} else {
+			if resPrice.Get(map[string]interface{}{"project_no": "", "type": gtables.ResourcePrice_Type.GroupResource, "code": rec.No, "work_type_code": "", "currency_code": ""}) {
+				rec.Unit_price = resPrice.Unit_price
+			}
 		}
 	}
 	return nil
@@ -291,10 +294,11 @@ func findBudgetLineResUnitCost(rec *gtables.ProjectBudgetLine) error {
 	return rec.Validate("unit_cost", rec.Unit_cost)
 }
 
-// findBudgetLineResPrice (FindResPrice): the resource's price (codeunit 221)
+// findBudgetLineResPrice (FindResPrice): the resource's price for the project (codeunit 221)
 func findBudgetLineResPrice(rec *gtables.ProjectBudgetLine) error {
 	resPrice := gtables.NewResourcePrice(rec)
 	resPrice.Init()
+	resPrice.Project_no = rec.Project_no
 	resPrice.Code = rec.No
 	resPrice.Work_type_code = ""
 	err := resprice.FindResPrice(resPrice)

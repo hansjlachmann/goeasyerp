@@ -77,6 +77,28 @@ page:
         - source: dimension_2_code
           width: 110
           visible: false
+        - source: project_no
+          width: 110
+          visible: false
+        - source: phase_code
+          width: 100
+          visible: false
+        - source: task_code
+          width: 100
+          visible: false
+        - source: step_code
+          width: 100
+          visible: false
+        - source: appl_to_project_entry
+          width: 110
+          visible: false
+        - source: project_applies_to_id
+          width: 130
+          visible: false
+          on_lookup: "table:Sales_Line.SelectProjectEntry"
+        - source: apply_and_close_project
+          width: 110
+          visible: false
         - source: serial_no
           width: 110
           visible: false

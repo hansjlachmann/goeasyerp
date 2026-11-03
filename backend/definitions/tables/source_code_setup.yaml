@@ -306,6 +306,34 @@ table:
           - source: description
             width: 250
 
+    - name: project_journal
+      no: 20
+      type: types.Code
+      db_name: project_journal
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: compress_project_ledger
+      no: 32
+      type: types.Code
+      db_name: compress_project_ledger
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
     - name: item_transfer_journal
       no: 33
       type: types.Code

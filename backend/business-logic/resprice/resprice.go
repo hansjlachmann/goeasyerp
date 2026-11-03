@@ -85,10 +85,10 @@ func copyResCost(to, from *gtables.ResourceCost) {
 }
 
 // FindResPrice (codeunit 221, Run with a Resource Price record whose Code is the resource):
-// the price of the resource for the record's work type and currency — the resource's own,
-// its group's, then the price for all resources, each in the currency or else in local
-// currency; without one the resource card's Unit Price in local currency. rec gets the price
-// found.
+// the price of the resource for the record's project, work type and currency — the project's
+// prices first, then those of every project (blank Project No.): the resource's own, its
+// group's, then the price for all resources, each in the currency or else in local currency;
+// without one the resource card's Unit Price in local currency. rec gets the price found.
 func FindResPrice(rec *gtables.ResourcePrice) error {
 	resPrice2 := gtables.NewResourcePrice(rec)
 	found, err := findResPrice(rec, resPrice2)
@@ -96,6 +96,7 @@ func FindResPrice(rec *gtables.ResourcePrice) error {
 		return err
 	}
 	if found {
+		rec.Project_no = resPrice2.Project_no
 		rec.Type = resPrice2.Type
 		rec.Code = resPrice2.Code
 		rec.Work_type_code = resPrice2.Work_type_code
@@ -107,6 +108,7 @@ func FindResPrice(rec *gtables.ResourcePrice) error {
 		if err != nil {
 			return err
 		}
+		rec.Project_no = ""
 		rec.Type = gtables.ResourcePrice_Type.Resource
 		rec.Code = res.No
 		rec.Currency_code = ""
@@ -115,33 +117,36 @@ func FindResPrice(rec *gtables.ResourcePrice) error {
 	return nil
 }
 
-// findResPrice (FindResPrice): the price nearest to the resource, work type and currency
+// findResPrice (FindResPrice): the price nearest to the project, resource, work type and
+// currency
 func findResPrice(resPrice, resPrice2 *gtables.ResourcePrice) (bool, error) {
-	get := func(priceType gtables.ResourcePriceType, code types.Code, currencyCode types.Code) bool {
-		return resPrice2.Get(map[string]interface{}{"type": priceType, "code": code, "work_type_code": resPrice.Work_type_code, "currency_code": currencyCode})
-	}
-	if get(gtables.ResourcePrice_Type.Resource, resPrice.Code, resPrice.Currency_code) {
-		return true, nil
-	}
-	if get(gtables.ResourcePrice_Type.Resource, resPrice.Code, "") {
-		return true, nil
+	get := func(projectNo types.Code, priceType gtables.ResourcePriceType, code types.Code, currencyCode types.Code) bool {
+		return resPrice2.Get(map[string]interface{}{"project_no": projectNo, "type": priceType, "code": code, "work_type_code": resPrice.Work_type_code, "currency_code": currencyCode})
 	}
 	res := gtables.NewResource(resPrice)
-	err := res.GetOrError(resPrice.Code)
-	if err != nil {
-		return false, err
-	}
-	if get(gtables.ResourcePrice_Type.GroupResource, res.Resource_group_no, resPrice.Currency_code) {
-		return true, nil
-	}
-	if get(gtables.ResourcePrice_Type.GroupResource, res.Resource_group_no, "") {
-		return true, nil
-	}
-	if get(gtables.ResourcePrice_Type.All, "", resPrice.Currency_code) {
-		return true, nil
-	}
-	if get(gtables.ResourcePrice_Type.All, "", "") {
-		return true, nil
+	for _, projectNo := range []types.Code{resPrice.Project_no, ""} {
+		if get(projectNo, gtables.ResourcePrice_Type.Resource, resPrice.Code, resPrice.Currency_code) {
+			return true, nil
+		}
+		if get(projectNo, gtables.ResourcePrice_Type.Resource, resPrice.Code, "") {
+			return true, nil
+		}
+		err := res.GetOrError(resPrice.Code)
+		if err != nil {
+			return false, err
+		}
+		if get(projectNo, gtables.ResourcePrice_Type.GroupResource, res.Resource_group_no, resPrice.Currency_code) {
+			return true, nil
+		}
+		if get(projectNo, gtables.ResourcePrice_Type.GroupResource, res.Resource_group_no, "") {
+			return true, nil
+		}
+		if get(projectNo, gtables.ResourcePrice_Type.All, "", resPrice.Currency_code) {
+			return true, nil
+		}
+		if get(projectNo, gtables.ResourcePrice_Type.All, "", "") {
+			return true, nil
+		}
 	}
 	return false, nil
 }

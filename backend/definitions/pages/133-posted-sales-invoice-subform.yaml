@@ -53,6 +53,18 @@ page:
         - source: dimension_2_code
           width: 110
           visible: false
+        - source: project_no
+          width: 110
+          visible: false
+        - source: phase_code
+          width: 100
+          visible: false
+        - source: task_code
+          width: 100
+          visible: false
+        - source: step_code
+          width: 100
+          visible: false
         - source: shipment_no
           width: 120
           visible: false

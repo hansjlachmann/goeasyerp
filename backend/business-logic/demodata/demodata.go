@@ -115,6 +115,10 @@ type Options struct {
 	// through it as Fixed Asset G/L Journal lines (codeunit 901: genjnl.NewGenJnlPostLine);
 	// without it their ledger entries are inserted
 	GenJnlPostLine func(src ftables.Source) GenJnlPoster
+	// ProjectJnlPostLine (optional) opens the project posting (codeunit 202) the same way: the
+	// project on Order uses resources and items every month, and an invoice with the project on
+	// its lines bills part of it (projects.go; codeunit 901: projectjnl.NewProjectJnlPostLine)
+	ProjectJnlPostLine func(src ftables.Source) ProjectJnlPoster
 	// Journals: the journals get lines ready to post, a depreciation table and resource price
 	// changes (journals.go; codeunit 901) — nothing posted
 	Journals bool
@@ -171,6 +175,7 @@ type Counts struct {
 	GLBudgetEntries      int // the demo budget's monthly amounts (budgets.go)
 	Projects             int // the demo projects (projects.go)
 	ProjectBudgetEntries int // their budget lines' monthly quantities
+	ProjectLedgerEntries int // the demo project's posted usage and sale
 	SalesBlanketOrders   int // blanket sales orders (sales.go)
 	PurchBlanketOrders   int // blanket purchase orders (purchases.go)
 	IntrastatJnlLines    int // the Intrastat journal's lines of this month (intrastat.go)
@@ -547,6 +552,13 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 		if opts.PurchPost != nil {
 			p.phase(PhasePurchases)
 			err = postDemoPurchases(ftables.DBSource(exec, company, dbType), opts.PurchPost, today, opts.Size, &counts, p)
+			if err != nil {
+				rollback()
+				return Counts{}, err
+			}
+		}
+		if opts.ProjectJnlPostLine != nil {
+			err = postDemoProjectUsage(ftables.DBSource(exec, company, dbType), opts.ProjectJnlPostLine, opts.SalesPost, today, &counts)
 			if err != nil {
 				rollback()
 				return Counts{}, err

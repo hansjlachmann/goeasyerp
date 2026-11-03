@@ -3,8 +3,23 @@ table:
   name: "Resource_Price_Change"
   description: "Resource Price Changes (table 335)"
   lookup_page_id: 493
-  # 1 Job No. (first key field) is left out until jobs exist, as in Resource Price
+  # 1 Project No.: a project's own prices; blank: the prices of every project
   fields:
+    - name: project_no
+      no: 1
+      type: types.Code
+      db_name: project_no
+      length: 20
+      primary_key: true
+      table_relation:
+        table: Project
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
+
     - name: type
       no: 2
       type: Option
@@ -85,5 +100,5 @@ table:
 
   keys:
     - name: Primary
-      fields: [type, code, work_type_code, currency_code]
+      fields: [project_no, type, code, work_type_code, currency_code]
       clustered: true

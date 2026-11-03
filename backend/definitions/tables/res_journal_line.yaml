@@ -310,6 +310,21 @@ table:
       length: 20
       date_formula: true
 
+    - name: project_no
+      no: 10
+      type: types.Code
+      db_name: project_no
+      length: 20
+      editable: false   # set by the posting that writes the line
+      table_relation:
+        table: Project
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
+
   keys:
     - name: Primary
       fields: [journal_template_name, journal_batch_name, line_no]

@@ -10,6 +10,7 @@
 //	OnModify(rec *gtables.ResourcePriceChange) error
 //	OnDelete(rec *gtables.ResourcePriceChange) error
 //	OnRename(rec *gtables.ResourcePriceChange) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnValidate_Project_no(rec *gtables.ResourcePriceChange) error
 //	OnValidate_Type(rec *gtables.ResourcePriceChange) error
 //	OnValidate_Code(rec *gtables.ResourcePriceChange) error
 //	OnValidate_Work_type_code(rec *gtables.ResourcePriceChange) error
@@ -59,6 +60,7 @@ func (o ResourcePriceChangeType) IsValid() bool {
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterResourcePriceChangeLogic.
 type ResourcePriceChange struct {
+	Project_no         types.Code              `db:"project_no,pk"`
 	Type               ResourcePriceChangeType `db:"type,pk"`
 	Code               types.Code              `db:"code,pk"`
 	Work_type_code     types.Code              `db:"work_type_code,pk"`
@@ -144,8 +146,9 @@ var ResourcePriceChange_Type = struct {
 // ========================================
 
 // ResourcePriceChange_FieldNo holds the field numbers of Resource_Price_Change (FieldNo):
-// ResourcePriceChange_FieldNo.Type is 2
+// ResourcePriceChange_FieldNo.Project_no is 1
 var ResourcePriceChange_FieldNo = struct {
+	Project_no         int
 	Type               int
 	Code               int
 	Work_type_code     int
@@ -153,6 +156,7 @@ var ResourcePriceChange_FieldNo = struct {
 	Current_unit_price int
 	New_unit_price     int
 }{
+	Project_no:         1,
 	Type:               2,
 	Code:               3,
 	Work_type_code:     4,
@@ -164,6 +168,8 @@ var ResourcePriceChange_FieldNo = struct {
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ResourcePriceChange) FieldNo(fieldName string) int {
 	switch strings.ToLower(fieldName) {
+	case "project_no":
+		return 1
 	case "type":
 		return 2
 	case "code":
@@ -183,6 +189,8 @@ func (t *ResourcePriceChange) FieldNo(fieldName string) int {
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ResourcePriceChange) FieldName(fieldNo int) string {
 	switch fieldNo {
+	case 1:
+		return "project_no"
 	case 2:
 		return "type"
 	case 3:
@@ -235,7 +243,7 @@ func (t *ResourcePriceChange) GetOrError(primaryKey interface{}) error {
 	}
 	key := fmt.Sprint(primaryKey)
 	if m, ok := primaryKey.(map[string]interface{}); ok {
-		key = strings.Join([]string{fmt.Sprint(m["type"]), fmt.Sprint(m["code"]), fmt.Sprint(m["work_type_code"]), fmt.Sprint(m["currency_code"])}, ",")
+		key = strings.Join([]string{fmt.Sprint(m["project_no"]), fmt.Sprint(m["type"]), fmt.Sprint(m["code"]), fmt.Sprint(m["work_type_code"]), fmt.Sprint(m["currency_code"])}, ",")
 	}
 	return apperrors.TableRecordNotFound(ResourcePriceChangeTableName, key)
 }
@@ -296,6 +304,9 @@ type (
 	ResourcePriceChangeOnRename interface {
 		OnRename(rec *ResourcePriceChange) error
 	}
+	ResourcePriceChangeOnValidate_Project_no interface {
+		OnValidate_Project_no(rec *ResourcePriceChange) error
+	}
 	ResourcePriceChangeOnValidate_Type interface {
 		OnValidate_Type(rec *ResourcePriceChange) error
 	}
@@ -343,6 +354,8 @@ func resourcePriceChangeTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ResourcePriceChangeOnDelete)
 	case "OnRename":
 		_, ok = logic.(ResourcePriceChangeOnRename)
+	case "OnValidate_Project_no":
+		_, ok = logic.(ResourcePriceChangeOnValidate_Project_no)
 	case "OnValidate_Type":
 		_, ok = logic.(ResourcePriceChangeOnValidate_Type)
 	case "OnValidate_Code":
@@ -429,6 +442,9 @@ func (t *ResourcePriceChange) runOnRename() error {
 // CheckFields checks the field rules of the definition (required, length, validation
 // range). Insert and Modify run it after the OnInsert/OnModify triggers.
 func (t *ResourcePriceChange) CheckFields() error {
+	if err := tables.CheckMaxLength(ResourcePriceChangeTableName, "project_no", string(t.Project_no), 20); err != nil {
+		return err
+	}
 	if err := tables.CheckMaxLength(ResourcePriceChangeTableName, "code", string(t.Code), 20); err != nil {
 		return err
 	}
@@ -465,26 +481,28 @@ func (t *ResourcePriceChange) IsSetupTable() bool {
 // GetResourcePriceChangeTableSchema returns the SQLite schema
 func GetResourcePriceChangeTableSchema() string {
 	return `
+		project_no TEXT(20),
 		type INTEGER CHECK (type >= 0 AND type <= 2),
 		code TEXT(20),
 		work_type_code TEXT(10),
 		currency_code TEXT(10),
 		current_unit_price TEXT,
 		new_unit_price TEXT,
-		PRIMARY KEY (type, code, work_type_code, currency_code)
+		PRIMARY KEY (project_no, type, code, work_type_code, currency_code)
 	`
 }
 
 // GetResourcePriceChangePostgresTableSchema returns the PostgreSQL schema
 func GetResourcePriceChangePostgresTableSchema() string {
 	return `
+		project_no VARCHAR(20),
 		type INTEGER CHECK (type >= 0 AND type <= 2),
 		code VARCHAR(20),
 		work_type_code VARCHAR(10),
 		currency_code VARCHAR(10),
 		current_unit_price NUMERIC,
 		new_unit_price NUMERIC,
-		PRIMARY KEY (type, code, work_type_code, currency_code)
+		PRIMARY KEY (project_no, type, code, work_type_code, currency_code)
 	`
 }
 
@@ -545,7 +563,7 @@ func (t *ResourcePriceChange) SyncKeys(db database.Executor, company string, dbT
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
-	if _, err := db.Exec(fmt.Sprintf(`CREATE INDEX IF NOT EXISTS "%s" ON "%s" (type, code, work_type_code, currency_code)`,
+	if _, err := db.Exec(fmt.Sprintf(`CREATE INDEX IF NOT EXISTS "%s" ON "%s" (project_no, type, code, work_type_code, currency_code)`,
 		fmt.Sprintf("%s$Resource_Price_Change$Primary", company), tableName)); err != nil {
 		return fmt.Errorf("failed to create index Primary: %w", err)
 	}
@@ -613,6 +631,7 @@ func (t *ResourcePriceChange) applyDefaults() {
 // Call this after loading a record from the database
 func (t *ResourcePriceChange) StoreOldValues() {
 	t.oldValues = make(map[string]interface{})
+	t.oldValues["project_no"] = t.Project_no
 	t.oldValues["type"] = t.Type
 	t.oldValues["code"] = t.Code
 	t.oldValues["work_type_code"] = t.Work_type_code
@@ -633,6 +652,9 @@ func (t *ResourcePriceChange) OldValue(fieldName string) interface{} {
 func (t *ResourcePriceChange) XRec() *ResourcePriceChange {
 	x := &ResourcePriceChange{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
+	if v, ok := t.oldValues["project_no"].(types.Code); ok {
+		x.Project_no = v
+	}
 	if v, ok := t.oldValues["type"].(ResourcePriceChangeType); ok {
 		x.Type = v
 	}
@@ -686,6 +708,15 @@ func (t *ResourcePriceChange) convertPlaceholders(sql string, count int) string 
 func (t *ResourcePriceChange) Get(primaryKey interface{}) bool {
 	// Handle composite primary key (map[string]interface{})
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
+		var project_noVal types.Code
+		if v, exists := pkMap["project_no"]; exists {
+			switch val := v.(type) {
+			case types.Code:
+				project_noVal = val
+			case string:
+				project_noVal = types.NewCode(val)
+			}
+		}
 		var type_Val ResourcePriceChangeType
 		if v, exists := pkMap["type"]; exists {
 			switch val := v.(type) {
@@ -728,7 +759,7 @@ func (t *ResourcePriceChange) Get(primaryKey interface{}) bool {
 				currency_codeVal = types.NewCode(val)
 			}
 		}
-		return t.GetByPK(type_Val, codeVal, work_type_codeVal, currency_codeVal)
+		return t.GetByPK(project_noVal, type_Val, codeVal, work_type_codeVal, currency_codeVal)
 	}
 	// For tables with composite keys, direct value is not supported
 	// Use a map[string]interface{} with field names as keys
@@ -738,8 +769,9 @@ func (t *ResourcePriceChange) Get(primaryKey interface{}) bool {
 }
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
-func (t *ResourcePriceChange) GetByPK(type_ ResourcePriceChangeType, code types.Code, work_type_code types.Code, currency_code types.Code) bool {
+func (t *ResourcePriceChange) GetByPK(project_no types.Code, type_ ResourcePriceChangeType, code types.Code, work_type_code types.Code, currency_code types.Code) bool {
 	tableName := fmt.Sprintf("%s$%s", t.company, ResourcePriceChangeTableName)
+	var project_noNull sql.NullString
 	var type_Int int
 	var codeNull sql.NullString
 	var work_type_codeNull sql.NullString
@@ -749,6 +781,7 @@ func (t *ResourcePriceChange) GetByPK(type_ ResourcePriceChangeType, code types.
 
 	// Collect arguments for query
 	args := []interface{}{
+		project_no,
 		type_,
 		code,
 		work_type_code,
@@ -756,13 +789,14 @@ func (t *ResourcePriceChange) GetByPK(type_ ResourcePriceChangeType, code types.
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT type, code, work_type_code, currency_code, current_unit_price, new_unit_price FROM "%s" WHERE 1=1 AND type = ? AND code = ? AND work_type_code = ? AND currency_code = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT project_no, type, code, work_type_code, currency_code, current_unit_price, new_unit_price FROM "%s" WHERE 1=1 AND project_no = ? AND type = ? AND code = ? AND work_type_code = ? AND currency_code = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
 	sqlStr += t.forUpdate()
 
 	err := t.exec().QueryRow(sqlStr, args...).Scan(
+		&project_noNull,
 		&type_Int,
 		&codeNull,
 		&work_type_codeNull,
@@ -782,6 +816,7 @@ func (t *ResourcePriceChange) GetByPK(type_ ResourcePriceChangeType, code types.
 	}
 
 	// Populate fields
+	t.Project_no = types.NewCode(project_noNull.String)
 	t.Type = ResourcePriceChangeType(type_Int)
 	t.Code = types.NewCode(codeNull.String)
 	t.Work_type_code = types.NewCode(work_type_codeNull.String)
@@ -810,6 +845,7 @@ func (t *ResourcePriceChange) Insert(runTrigger bool) bool {
 
 	// Collect arguments for INSERT
 	args := []interface{}{
+		t.Project_no,
 		t.Type,
 		t.Code,
 		t.Work_type_code,
@@ -820,7 +856,7 @@ func (t *ResourcePriceChange) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (type, code, work_type_code, currency_code, current_unit_price, new_unit_price) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (type, code, work_type_code, currency_code) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (project_no, type, code, work_type_code, currency_code, current_unit_price, new_unit_price) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (project_no, type, code, work_type_code, currency_code) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -858,6 +894,7 @@ func (t *ResourcePriceChange) InsertAll(records []*ResourcePriceChange, runTrigg
 			}
 		}
 		rows = append(rows, []interface{}{
+			r.Project_no,
 			r.Type,
 			r.Code,
 			r.Work_type_code,
@@ -867,7 +904,7 @@ func (t *ResourcePriceChange) InsertAll(records []*ResourcePriceChange, runTrigg
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ResourcePriceChangeTableName)
-	columns := []string{"type", "code", "work_type_code", "currency_code", "current_unit_price", "new_unit_price"}
+	columns := []string{"project_no", "type", "code", "work_type_code", "currency_code", "current_unit_price", "new_unit_price"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -886,6 +923,9 @@ func (t *ResourcePriceChange) Modify(runTrigger bool) bool {
 	// before it is written; xRec values are available through OldValue
 	keyChanged := false
 	if t.oldValues != nil {
+		if t.hasFieldChanged("project_no") {
+			keyChanged = true
+		}
 		if t.hasFieldChanged("type") {
 			keyChanged = true
 		}
@@ -916,6 +956,10 @@ func (t *ResourcePriceChange) Modify(runTrigger bool) bool {
 	// Changed primary key fields are renamed in place (Rename): they are SET to the
 	// new value while the WHERE clause matches the old one.
 	if t.oldValues != nil {
+		if t.hasFieldChanged("project_no") {
+			setClauses = append(setClauses, "project_no = ?")
+			values = append(values, t.Project_no)
+		}
 		if t.hasFieldChanged("type") {
 			setClauses = append(setClauses, "type = ?")
 			values = append(values, t.Type)
@@ -954,6 +998,11 @@ func (t *ResourcePriceChange) Modify(runTrigger bool) bool {
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
+	if old, ok := t.oldValues["project_no"]; ok {
+		values = append(values, old)
+	} else {
+		values = append(values, t.Project_no)
+	}
 	if old, ok := t.oldValues["type"]; ok {
 		values = append(values, old)
 	} else {
@@ -976,7 +1025,7 @@ func (t *ResourcePriceChange) Modify(runTrigger bool) bool {
 	}
 
 	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND type = ? AND code = ? AND work_type_code = ? AND currency_code = ?`,
+	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND project_no = ? AND type = ? AND code = ? AND work_type_code = ? AND currency_code = ?`,
 		tableName,
 		strings.Join(setClauses, ", "),
 	)
@@ -1010,6 +1059,10 @@ func (t *ResourcePriceChange) hasFieldChanged(fieldName string) bool {
 
 	// Compare old vs new value based on field name (with type assertion)
 	switch fieldName {
+	case "project_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Project_no.Equal(old)
+		}
 	case "type":
 		if old, ok := oldValue.(ResourcePriceChangeType); ok {
 			return t.Type != old
@@ -1060,6 +1113,7 @@ func (t *ResourcePriceChange) Delete(runTrigger bool) bool {
 
 	// Collect arguments for DELETE
 	args := []interface{}{
+		t.Project_no,
 		t.Type,
 		t.Code,
 		t.Work_type_code,
@@ -1067,7 +1121,7 @@ func (t *ResourcePriceChange) Delete(runTrigger bool) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND type = ? AND code = ? AND work_type_code = ? AND currency_code = ?`, tableName)
+	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND project_no = ? AND type = ? AND code = ? AND work_type_code = ? AND currency_code = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1241,6 +1295,8 @@ func (t *ResourcePriceChange) HasColumn(fieldName string) bool {
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ResourcePriceChange) columnName(fieldName string) (string, bool) {
 	switch strings.ToLower(fieldName) {
+	case strings.ToLower("project_no"):
+		return "project_no", true
 	case strings.ToLower("type"):
 		return "type", true
 	case strings.ToLower("code"):
@@ -1334,7 +1390,7 @@ func (t *ResourcePriceChange) buildWhereClause() (string, []interface{}) {
 		} else {
 			var keys []string
 			for _, key := range t.marks {
-				keys = append(keys, "(type = ? AND code = ? AND work_type_code = ? AND currency_code = ?)")
+				keys = append(keys, "(project_no = ? AND type = ? AND code = ? AND work_type_code = ? AND currency_code = ?)")
 				args = append(args, key...)
 			}
 			conditions = append(conditions, "("+strings.Join(keys, " OR ")+")")
@@ -1558,7 +1614,7 @@ func (t *ResourcePriceChange) parseFilterExpression(fieldName, expr string) (str
 // current key, so the order is unique and paging (SetPage) never repeats or skips rows
 // when the key has duplicate values.
 func (t *ResourcePriceChange) getOrderByClause() (string, []interface{}) {
-	pk := []string{"type", "code", "work_type_code", "currency_code"}
+	pk := []string{"project_no", "type", "code", "work_type_code", "currency_code"}
 	var columns []string
 	var args []interface{}
 	for _, column := range t.orderByFields {
@@ -1614,11 +1670,12 @@ func (t *ResourcePriceChange) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT type, code, work_type_code, currency_code, current_unit_price, new_unit_price FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT project_no, type, code, work_type_code, currency_code, current_unit_price, new_unit_price FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
 	query += t.forUpdate()
+	var project_noNull sql.NullString
 	var typeInt int
 	var codeNull sql.NullString
 	var work_type_codeNull sql.NullString
@@ -1627,6 +1684,7 @@ func (t *ResourcePriceChange) FindFirst() bool {
 	var new_unit_priceNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
+		&project_noNull,
 		&typeInt,
 		&codeNull,
 		&work_type_codeNull,
@@ -1644,6 +1702,7 @@ func (t *ResourcePriceChange) FindFirst() bool {
 	}
 
 	// Populate fields
+	t.Project_no = types.NewCode(project_noNull.String)
 	t.Type = ResourcePriceChangeType(typeInt)
 	t.Code = types.NewCode(codeNull.String)
 	t.Work_type_code = types.NewCode(work_type_codeNull.String)
@@ -1670,11 +1729,12 @@ func (t *ResourcePriceChange) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT type, code, work_type_code, currency_code, current_unit_price, new_unit_price FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT project_no, type, code, work_type_code, currency_code, current_unit_price, new_unit_price FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
 	query += t.forUpdate()
+	var project_noNull sql.NullString
 	var typeInt int
 	var codeNull sql.NullString
 	var work_type_codeNull sql.NullString
@@ -1683,6 +1743,7 @@ func (t *ResourcePriceChange) FindLast() bool {
 	var new_unit_priceNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
+		&project_noNull,
 		&typeInt,
 		&codeNull,
 		&work_type_codeNull,
@@ -1700,6 +1761,7 @@ func (t *ResourcePriceChange) FindLast() bool {
 	}
 
 	// Populate fields
+	t.Project_no = types.NewCode(project_noNull.String)
 	t.Type = ResourcePriceChangeType(typeInt)
 	t.Code = types.NewCode(codeNull.String)
 	t.Work_type_code = types.NewCode(work_type_codeNull.String)
@@ -1756,7 +1818,7 @@ func (t *ResourcePriceChange) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT type, code, work_type_code, currency_code, current_unit_price, new_unit_price FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT project_no, type, code, work_type_code, currency_code, current_unit_price, new_unit_price FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1825,6 +1887,7 @@ func (t *ResourcePriceChange) Next(steps ...int) bool {
 		}
 
 		// Scan the row
+		var project_noNull sql.NullString
 		var typeInt int
 		var codeNull sql.NullString
 		var work_type_codeNull sql.NullString
@@ -1833,6 +1896,7 @@ func (t *ResourcePriceChange) Next(steps ...int) bool {
 		var new_unit_priceNull sql.NullString
 
 		err := t.currentRows.Scan(
+			&project_noNull,
 			&typeInt,
 			&codeNull,
 			&work_type_codeNull,
@@ -1849,6 +1913,7 @@ func (t *ResourcePriceChange) Next(steps ...int) bool {
 		}
 
 		// Populate fields
+		t.Project_no = types.NewCode(project_noNull.String)
 		t.Type = ResourcePriceChangeType(typeInt)
 		t.Code = types.NewCode(codeNull.String)
 		t.Work_type_code = types.NewCode(work_type_codeNull.String)
@@ -1904,7 +1969,7 @@ func (t *ResourcePriceChange) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT type, code, work_type_code, currency_code, current_unit_price, new_unit_price FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT project_no, type, code, work_type_code, currency_code, current_unit_price, new_unit_price FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1926,6 +1991,7 @@ func (t *ResourcePriceChange) FindSetBuffered() bool {
 		record.dbType = t.dbType
 
 		// Scan the row
+		var project_noNull sql.NullString
 		var typeInt int
 		var codeNull sql.NullString
 		var work_type_codeNull sql.NullString
@@ -1934,6 +2000,7 @@ func (t *ResourcePriceChange) FindSetBuffered() bool {
 		var new_unit_priceNull sql.NullString
 
 		err := rows.Scan(
+			&project_noNull,
 			&typeInt,
 			&codeNull,
 			&work_type_codeNull,
@@ -1948,6 +2015,7 @@ func (t *ResourcePriceChange) FindSetBuffered() bool {
 		}
 
 		// Populate special type fields
+		record.Project_no = types.NewCode(project_noNull.String)
 		record.Type = ResourcePriceChangeType(typeInt)
 		record.Code = types.NewCode(codeNull.String)
 		record.Work_type_code = types.NewCode(work_type_codeNull.String)
@@ -1982,6 +2050,7 @@ func (t *ResourcePriceChange) FindSetBuffered() bool {
 
 // copyFromBuffered copies field values from a buffered record to the current instance
 func (t *ResourcePriceChange) copyFromBuffered(record *ResourcePriceChange) {
+	t.Project_no = record.Project_no
 	t.Type = record.Type
 	t.Code = record.Code
 	t.Work_type_code = record.Work_type_code
@@ -2122,6 +2191,28 @@ func (t *ResourcePriceChange) ValidateField(fieldName string, value interface{})
 	fieldNameLower := strings.ToLower(fieldName)
 
 	switch fieldNameLower {
+	case "project_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Project_no = v
+		} else if v, ok := value.(string); ok {
+			t.Project_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field project_no")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_no"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ResourcePriceChangeOnValidate_Project_no); ok {
+				if err := trg.OnValidate_Project_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	case "type":
 		// Set field value
 		// Accept enum type directly
@@ -2305,6 +2396,8 @@ func (t *ResourcePriceChange) ValidateField(fieldName string, value interface{})
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ResourcePriceChange) FieldValue(no int) (any, bool) {
 	switch no {
+	case 1:
+		return t.Project_no, true
 	case 2:
 		return t.Type, true
 	case 3:
@@ -2332,6 +2425,15 @@ func (t *ResourcePriceChange) flowFieldValue(no int) (any, bool) {
 // (options: any option value or int); it reports whether the field was set
 func (t *ResourcePriceChange) SetFieldValue(no int, value any) bool {
 	switch no {
+	case 1:
+		if v, ok := value.(types.Code); ok {
+			t.Project_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Project_no = types.NewCode(v)
+			return true
+		}
 	case 2:
 		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
 			t.Type = ResourcePriceChangeType(i)
@@ -2639,6 +2741,7 @@ func (t *ResourcePriceChange) GetRangeMax(fieldName string) interface{} {
 
 // SetRecFilter filters on the primary key of the current record (SetRecFilter)
 func (t *ResourcePriceChange) SetRecFilter() {
+	t.SetRange("project_no", t.Project_no)
 	t.SetRange("type", t.Type)
 	t.SetRange("code", t.Code)
 	t.SetRange("work_type_code", t.Work_type_code)
@@ -2647,7 +2750,7 @@ func (t *ResourcePriceChange) SetRecFilter() {
 
 // recordKey returns the primary key values of the current record and their text
 func (t *ResourcePriceChange) recordKey() ([]interface{}, string) {
-	values := []interface{}{t.Type, t.Code, t.Work_type_code, t.Currency_code}
+	values := []interface{}{t.Project_no, t.Type, t.Code, t.Work_type_code, t.Currency_code}
 	parts := make([]string, len(values))
 	for i, v := range values {
 		parts[i] = fmt.Sprint(v)
@@ -2698,7 +2801,7 @@ func (t *ResourcePriceChange) CountApprox() int {
 // modifies it with the OnRename trigger; fields of other tables that refer to it follow
 // (Rename). It reports false when a value has the wrong type or the modify fails.
 func (t *ResourcePriceChange) Rename(newKey ...interface{}) bool {
-	numbers := []int{2, 3, 4, 5}
+	numbers := []int{1, 2, 3, 4, 5}
 	if len(newKey) != len(numbers) {
 		return false
 	}
@@ -2815,7 +2918,7 @@ func (t *ResourcePriceChange) findInKey(seek string, reverse bool) bool {
 // sort order of FindSet)
 func (t *ResourcePriceChange) keyColumns() []string {
 	columns := slices.Clone(t.orderByFields)
-	for _, column := range []string{"type", "code", "work_type_code", "currency_code"} {
+	for _, column := range []string{"project_no", "type", "code", "work_type_code", "currency_code"} {
 		if !slices.Contains(columns, column) {
 			columns = append(columns, column)
 		}
@@ -2826,6 +2929,8 @@ func (t *ResourcePriceChange) keyColumns() []string {
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ResourcePriceChange) columnValue(column string) (interface{}, bool) {
 	switch column {
+	case "project_no":
+		return t.Project_no, true
 	case "type":
 		return int(t.Type), true
 	case "code":
@@ -2882,6 +2987,10 @@ func (t *ResourcePriceChange) SetSelectionFilter() {
 // setKeyValues sets the primary key fields from their values (recordKey order)
 func (t *ResourcePriceChange) setKeyValues(values []interface{}) {
 	i := 0
+	if v, ok := values[i].(types.Code); ok {
+		t.Project_no = v
+	}
+	i++
 	if v, ok := values[i].(ResourcePriceChangeType); ok {
 		t.Type = v
 	}
@@ -2940,6 +3049,7 @@ func (t *ResourcePriceChange) ClearFilters() {
 // ToMap converts the current record to a map for JSON serialization
 func (t *ResourcePriceChange) ToMap() map[string]interface{} {
 	return map[string]interface{}{
+		"project_no":         t.Project_no.String(),
 		"type":               int(t.Type),
 		"code":               t.Code.String(),
 		"work_type_code":     t.Work_type_code.String(),
@@ -2951,6 +3061,11 @@ func (t *ResourcePriceChange) ToMap() map[string]interface{} {
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ResourcePriceChange) FromMap(data map[string]interface{}) {
+	if v, ok := data["project_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Project_no = types.NewCode(s)
+		}
+	}
 	if v, ok := data["type"]; ok && v != nil {
 		switch val := v.(type) {
 		case float64:
@@ -3017,17 +3132,27 @@ func (t *ResourcePriceChange) UpdateFromMap(data map[string]interface{}) {
 
 // GetPrimaryKeyField returns the name of the primary key field
 func (t *ResourcePriceChange) GetPrimaryKeyField() string {
-	return "type"
+	return "project_no"
 }
 
 // GetPrimaryKeyValue returns the current primary key value as a string
 func (t *ResourcePriceChange) GetPrimaryKeyValue() string {
-	return fmt.Sprintf("%v", t.Type)
+	return t.Project_no.String()
 }
 
 // GetFields returns metadata about all fields
 func (t *ResourcePriceChange) GetFields() []tables.FieldInfo {
 	return []tables.FieldInfo{
+		{
+			No:         1,
+			Name:       "project_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   false,
+			PrimaryKey: true,
+			FlowField:  false,
+		},
 		{
 			No:         2,
 			Name:       "type",
@@ -3121,6 +3246,16 @@ func (t *ResourcePriceChange) GetOptionFields() map[string][]string {
 // GetTableRelationFields returns fields that have table relations (foreign keys)
 func (t *ResourcePriceChange) GetTableRelationFields() map[string]tables.TableRelationInfo {
 	return map[string]tables.TableRelationInfo{
+		"project_no": {
+			Table:        "Project",
+			Field:        "no",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "no", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
 		"code": {
 			Conditions: []tables.ConditionalRelationInfo{
 				{Field: "type", Value: 0, Relation: tables.TableRelationInfo{

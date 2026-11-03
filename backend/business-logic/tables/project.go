@@ -11,9 +11,7 @@ import (
 
 // projectLogic is the business logic of table 167 Project.
 //
-// Not migrated yet (their tables come with the project ledger): OnDelete's MoveEntries of the
-// project's ledger entries and its deletion of the project's resource prices. Status asks no
-// confirmation (no dialogs in table triggers): a status entered is taken.
+// Status asks no confirmation (no dialogs in table triggers): a status entered is taken.
 type projectLogic struct{}
 
 func init() {
@@ -47,11 +45,16 @@ func (projectLogic) OnModify(rec *gtables.Project) error {
 	return nil
 }
 
-// OnDelete: a project with status Order is not deleted; its budget lines, budget entries and
-// comment lines go with it
+// OnDelete: a project with status Order is not deleted; its ledger entries lose the project
+// (MoveEntries), its budget lines, budget entries, resource prices and comment lines go with it
 func (projectLogic) OnDelete(rec *gtables.Project) error {
 	if rec.Status == gtables.Project_Status.Order {
 		return apperrors.ProjectDeleteStatus(gtables.ProjectTableName, rec.Status)
+	}
+
+	err := MoveProjectEntries(rec)
+	if err != nil {
+		return err
 	}
 
 	projectBudgetLine := gtables.NewProjectBudgetLine(rec)
@@ -62,6 +65,10 @@ func (projectLogic) OnDelete(rec *gtables.Project) error {
 	projectBudgetEntry.SetCurrentKey("project_no")
 	projectBudgetEntry.SetRange("project_no", rec.No)
 	projectBudgetEntry.DeleteAll()
+
+	resPrice := gtables.NewResourcePrice(rec)
+	resPrice.SetRange("project_no", rec.No)
+	resPrice.DeleteAll()
 
 	DeleteComments(rec, gtables.CommentLine_Table_name.Project, rec.No)
 	return nil
@@ -158,4 +165,30 @@ func AssistEditProject(rec *gtables.Project) (bool, error) {
 		rec.No_series = noSeries
 	}
 	return picked, nil
+}
+
+// MoveProjectEntries (codeunit 361 MoveEntries MoveJobEntries): a project whose entries are not
+// all recognized, or with purchase order lines, is not deleted; its entries lose the project
+func MoveProjectEntries(project *gtables.Project) error {
+	projectLedgEntry := gtables.NewProjectLedgerEntry(project)
+	projectLedgEntry.SetCurrentKey("project_no")
+	projectLedgEntry.SetRange("project_no", project.No)
+
+	projectLedgEntry.LockTable()
+	for found := projectLedgEntry.FindSet(); found; found = projectLedgEntry.Next() {
+		if !projectLedgEntry.Amt_posted_to_g_l.Equal(projectLedgEntry.Amt_recognized) {
+			return apperrors.ProjectEntriesNotRecognized(gtables.ProjectTableName, project.No.String())
+		}
+	}
+
+	purchOrderLine := gtables.NewPurchaseLine(project)
+	purchOrderLine.SetCurrentKey("document_type")
+	purchOrderLine.SetRange("document_type", gtables.PurchaseLine_Document_type.Order)
+	purchOrderLine.SetRange("project_no", project.No)
+	if purchOrderLine.FindFirst() {
+		return apperrors.ProjectOutstandingPurchOrders(gtables.ProjectTableName, project.No.String())
+	}
+
+	projectLedgEntry.ModifyAll("project_no", types.Code(""))
+	return nil
 }

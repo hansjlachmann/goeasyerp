@@ -338,7 +338,7 @@ menu:
               - name: "Date Compression Registers"
                 page_id: 107
 
-  - name: "Purchase"
+  - name: "Purchases"
     icon: truck
     items:
       - name: "Vendors"
@@ -622,6 +622,7 @@ menu:
         page_id: 212
       - separator: true
       - name: "Project Journals"
+        page_id: 201
       - separator: true
       - name: "Reports"
       - name: "Registers"
@@ -648,6 +649,7 @@ menu:
       - name: "Activities"
         items:
           - name: "Recurring Journals"
+            page_id: 289
           - separator: true
           - name: "Calculate Project WIP Value"
             run_object: "report:1295"

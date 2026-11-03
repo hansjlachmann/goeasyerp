@@ -1,0 +1,18 @@
+page:
+  id: 275
+  type: List
+  name: Project Journal Template List
+  source_table: Project_Journal_Template
+  caption: Project Journal Template List
+  editable: false
+  # The template to open a project journal with (lookup)
+
+  layout:
+    repeater:
+      fields:
+        - source: name
+          width: 110
+        - source: description
+          width: 250
+        - source: recurring
+          width: 80

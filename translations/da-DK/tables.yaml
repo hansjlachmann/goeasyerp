@@ -3161,6 +3161,7 @@ tables:
   gen_journal_line:
     caption: "Finanskladdelinje"
     fields:
+      project_no: "Projektnr."
       fa_add_currency_factor: "Anlægsfaktor for ekstra valuta"
       additional_currency_posting: "Bogføring i ekstra valuta"
       business_unit_code: "Koncernenhedskode"
@@ -3357,6 +3358,8 @@ tables:
   source_code_setup:
     caption: "Kildekodeopsætning"
     fields:
+      project_journal: "Projektkladde"
+      compress_project_ledger: "Komprimer projektposter"
       adjust_add_reporting_currency: "Reguler ekstra rapporteringsvaluta"
       consolidation: "Konsolidering"
       compress_g_l: "Komprimer finans"
@@ -4195,6 +4198,7 @@ tables:
   resource_price:
     caption: "Ressourcepris"
     fields:
+      project_no: "Projektnr."
       type: "Type"
       code: "Kode"
       work_type_code: "Arbejdstypekode"
@@ -4208,6 +4212,7 @@ tables:
   resource_price_change:
     caption: "Ressourceprisændring"
     fields:
+      project_no: "Projektnr."
       type: "Type"
       code: "Kode"
       work_type_code: "Arbejdstypekode"
@@ -4299,6 +4304,7 @@ tables:
   res_journal_line:
     caption: "Ressourcekladdelinje"
     fields:
+      project_no: "Projektnr."
       recurring_method: "Gentagelsesmetode"
       expiration_date: "Udløbsdato"
       recurring_frequency: "Gentagelsesinterval"
@@ -4339,6 +4345,7 @@ tables:
   res_ledger_entry:
     caption: "Ressourcepost"
     fields:
+      project_no: "Projektnr."
       entry_no: "Løbenr."
       entry_type: "Posttype"
       document_no: "Bilagsnr."
@@ -4496,6 +4503,7 @@ tables:
   sales_header:
     caption: "Salgshoved"
     fields:
+      project_no: "Projektnr."
       transaction_type: "Transaktionstype"
       transport_method: "Transportmåde"
       vat_country_code: "Momslandekode"
@@ -4604,6 +4612,13 @@ tables:
   sales_line:
     caption: "Salgslinje"
     fields:
+      project_no: "Projektnr."
+      appl_to_project_entry: "Udlign. med projektpost"
+      phase_code: "Fasekode"
+      task_code: "Opgavekode"
+      step_code: "Trinkode"
+      project_applies_to_id: "Projektudlignings-id"
+      apply_and_close_project: "Udlign og luk (projekt)"
       transaction_type: "Transaktionstype"
       transport_method: "Transportmåde"
       exit_point: "Udførselssted"
@@ -4710,6 +4725,7 @@ tables:
   sales_shipment_header:
     caption: "Salgsleverancehoved"
     fields:
+      project_no: "Projektnr."
       sell_to_customer_no: "Kundenr."
       no: "Nr."
       bill_to_customer_no: "Faktureringskundenr."
@@ -4784,6 +4800,13 @@ tables:
   sales_shipment_line:
     caption: "Salgsleverancelinje"
     fields:
+      project_no: "Projektnr."
+      appl_to_project_entry: "Udlign. med projektpost"
+      phase_code: "Fasekode"
+      task_code: "Opgavekode"
+      step_code: "Trinkode"
+      project_applies_to_id: "Projektudlignings-id"
+      apply_and_close_project: "Udlign og luk (projekt)"
       sell_to_customer_no: "Kundenr."
       document_no: "Bilagsnr."
       line_no: "Linjenr."
@@ -4857,6 +4880,7 @@ tables:
   sales_invoice_header:
     caption: "Salgsfakturahoved"
     fields:
+      project_no: "Projektnr."
       sell_to_customer_no: "Kundenr."
       no: "Nr."
       bill_to_customer_no: "Faktureringskundenr."
@@ -4943,6 +4967,13 @@ tables:
   sales_invoice_line:
     caption: "Salgsfakturalinje"
     fields:
+      project_no: "Projektnr."
+      appl_to_project_entry: "Udlign. med projektpost"
+      phase_code: "Fasekode"
+      task_code: "Opgavekode"
+      step_code: "Trinkode"
+      project_applies_to_id: "Projektudlignings-id"
+      apply_and_close_project: "Udlign og luk (projekt)"
       sell_to_customer_no: "Kundenr."
       document_no: "Bilagsnr."
       line_no: "Linjenr."
@@ -5011,6 +5042,7 @@ tables:
   sales_cr_memo_header:
     caption: "Salgskreditnotahoved"
     fields:
+      project_no: "Projektnr."
       sell_to_customer_no: "Kundenr."
       no: "Nr."
       bill_to_customer_no: "Faktureringskundenr."
@@ -5096,6 +5128,13 @@ tables:
   sales_cr_memo_line:
     caption: "Salgskreditnotalinje"
     fields:
+      project_no: "Projektnr."
+      appl_to_project_entry: "Udlign. med projektpost"
+      phase_code: "Fasekode"
+      task_code: "Opgavekode"
+      step_code: "Trinkode"
+      project_applies_to_id: "Projektudlignings-id"
+      apply_and_close_project: "Udlign og luk (projekt)"
       sell_to_customer_no: "Kundenr."
       document_no: "Bilagsnr."
       line_no: "Linjenr."
@@ -5170,6 +5209,7 @@ tables:
   purchase_header:
     caption: "Købshoved"
     fields:
+      project_no: "Projektnr."
       transaction_type: "Transaktionstype"
       transport_method: "Transportmåde"
       vat_country_code: "Momslandekode"
@@ -5275,6 +5315,10 @@ tables:
   purchase_line:
     caption: "Købslinje"
     fields:
+      project_no: "Projektnr."
+      phase_code: "Fasekode"
+      task_code: "Opgavekode"
+      step_code: "Trinkode"
       transaction_type: "Transaktionstype"
       transport_method: "Transportmåde"
       entry_point: "Indførselssted"
@@ -5410,6 +5454,7 @@ tables:
   purch_rcpt_header:
     caption: "Købsmodtagelseshoved"
     fields:
+      project_no: "Projektnr."
       buy_from_vendor_no: "Leverandørnr."
       no: "Nr."
       pay_to_vendor_no: "Faktureringsleverandørnr."
@@ -5481,6 +5526,7 @@ tables:
   purch_inv_header:
     caption: "Købsfakturahoved"
     fields:
+      project_no: "Projektnr."
       buy_from_vendor_no: "Leverandørnr."
       no: "Nr."
       pay_to_vendor_no: "Faktureringsleverandørnr."
@@ -5564,6 +5610,7 @@ tables:
   purch_cr_memo_hdr:
     caption: "Købskreditnotahoved"
     fields:
+      project_no: "Projektnr."
       buy_from_vendor_no: "Leverandørnr."
       no: "Nr."
       pay_to_vendor_no: "Faktureringsleverandørnr."
@@ -5647,6 +5694,10 @@ tables:
   purch_rcpt_line:
     caption: "Købsmodtagelseslinje"
     fields:
+      project_no: "Projektnr."
+      phase_code: "Fasekode"
+      task_code: "Opgavekode"
+      step_code: "Trinkode"
       buy_from_vendor_no: "Leverandørnr."
       document_no: "Bilagsnr."
       line_no: "Linjenr."
@@ -5718,6 +5769,10 @@ tables:
   purch_inv_line:
     caption: "Købsfakturalinje"
     fields:
+      project_no: "Projektnr."
+      phase_code: "Fasekode"
+      task_code: "Opgavekode"
+      step_code: "Trinkode"
       fa_posting_date: "Anlægsbogføringsdato"
       fa_posting_type: "Anlægsbogføringstype"
       depreciation_book_code: "Afskrivningsprofilkode"
@@ -5797,6 +5852,10 @@ tables:
   purch_cr_memo_line:
     caption: "Købskreditnotalinje"
     fields:
+      project_no: "Projektnr."
+      phase_code: "Fasekode"
+      task_code: "Opgavekode"
+      step_code: "Trinkode"
       fa_posting_date: "Anlægsbogføringsdato"
       fa_posting_type: "Anlægsbogføringstype"
       depreciation_book_code: "Afskrivningsprofilkode"
@@ -6442,6 +6501,9 @@ tables:
   project:
     caption: "Projekt"
     fields:
+      usage_cost: "Forbrug (kostpris)"
+      usage_price: "Forbrug (pris)"
+      invoiced_price: "Faktureret pris"
       no: "Nr."
       description: "Beskrivelse"
       dimension_1_code: "Dimension 1-kode"
@@ -6562,3 +6624,186 @@ tables:
         quote: "Tilbud"
         order: "Ordre"
         completed: "Afsluttet"
+
+  # Project journal and ledger (tables 169, 209, 210, 237, 241)
+  project_journal_template:
+    caption: "Projektkladdeskabelon"
+    fields:
+      name: "Navn"
+      description: "Beskrivelse"
+      test_report_id: "Testrapport-id"
+      page_id: "Side-id"
+      posting_report_id: "Bogføringsrapport-id"
+      force_posting_report: "Gennemtving bogføringsrapport"
+      source_code: "Kildekode"
+      reason_code: "Årsagskode"
+      recurring: "Gentagelse"
+      no_series: "Nummerserie"
+      posting_no_series: "Bogføringsnummerserie"
+  project_journal_batch:
+    caption: "Projektkladdenavn"
+    fields:
+      journal_template_name: "Kladdeskabelonnavn"
+      name: "Navn"
+      description: "Beskrivelse"
+      reason_code: "Årsagskode"
+      no_series: "Nummerserie"
+      posting_no_series: "Bogføringsnummerserie"
+  project_journal_line:
+    caption: "Projektkladdelinje"
+    fields:
+      journal_template_name: "Kladdeskabelonnavn"
+      journal_batch_name: "Kladdenavn"
+      line_no: "Linjenr."
+      project_no: "Projektnr."
+      posting_date: "Bogføringsdato"
+      document_no: "Bilagsnr."
+      type: "Type"
+      no: "Nr."
+      description: "Beskrivelse"
+      quantity: "Antal"
+      direct_unit_cost: "Købspris"
+      unit_cost: "Kostpris"
+      total_cost: "Kostbeløb"
+      unit_price: "Enhedspris"
+      total_price: "Salgsbeløb"
+      resource_group_no: "Ressourcegruppenr."
+      unit_of_measure_code: "Enhedskode"
+      location_code: "Lokationskode"
+      chargeable: "Fakturerbar"
+      posting_group: "Bogføringsgruppe"
+      dimension_1_code: "Dimension 1-kode"
+      dimension_2_code: "Dimension 2-kode"
+      work_type_code: "Arbejdstypekode"
+      price_group_code: "Prisgruppekode"
+      appl_to_item_entry: "Udlign. med varepost"
+      phase_code: "Fasekode"
+      task_code: "Opgavekode"
+      step_code: "Trinkode"
+      entry_type: "Posttype"
+      source_code: "Kildekode"
+      profit_percent: "Avance %"
+      applies_to_entry: "Udlignes med post"
+      applies_to_id: "Udlignings-id"
+      post_project_entry_only: "Bogfør kun projektpost"
+      apply_and_close_project: "Udlign og luk (projekt)"
+      reason_code: "Årsagskode"
+      recurring_method: "Gentagelsesmetode"
+      expiration_date: "Udløbsdato"
+      recurring_frequency: "Gentagelsesinterval"
+      gen_bus_posting_group: "Virksomhedsbogføringsgruppe"
+      gen_prod_posting_group: "Produktbogføringsgruppe"
+      transaction_type: "Transaktionstype"
+      transport_method: "Transportmåde"
+      country_code: "Landekode"
+      entry_exit_point: "Indførsels-/udførselssted"
+      document_date: "Bilagsdato"
+      external_document_no: "Eksternt bilagsnr."
+      area: "Område"
+      transaction_specification: "Transaktionsspecifikation"
+      serial_no: "Serienr."
+      posting_no_series: "Bogføringsnummerserie"
+      source_currency_code: "Kildevalutakode"
+      source_currency_total_cost: "Kostpris i alt i kildevaluta"
+      source_currency_total_price: "Pris i alt i kildevaluta"
+      lot_no: "Lotnr."
+      variant_code: "Variantkode"
+      bin_code: "Placeringskode"
+      qty_per_unit_of_measure: "Antal pr. enhed"
+      quantity_base: "Antal (basis)"
+      balancing_acc_no: "Modkontonr."
+    options:
+      type:
+        resource: "Ressource"
+        item: "Vare"
+        account_g_l: "Konto (finans)"
+      entry_type:
+        usage: "Forbrug"
+        sale: "Salg"
+      recurring_method:
+        fixed: "Fast"
+        variable: "Variabel"
+  project_ledger_entry:
+    caption: "Projektpost"
+    fields:
+      entry_no: "Løbenr."
+      project_no: "Projektnr."
+      posting_date: "Bogføringsdato"
+      document_no: "Bilagsnr."
+      type: "Type"
+      no: "Nr."
+      description: "Beskrivelse"
+      quantity: "Antal"
+      direct_unit_cost: "Købspris"
+      unit_cost: "Kostpris"
+      total_cost: "Kostbeløb"
+      unit_price: "Enhedspris"
+      total_price: "Salgsbeløb"
+      resource_group_no: "Ressourcegruppenr."
+      unit_of_measure_code: "Enhedskode"
+      location_code: "Lokationskode"
+      chargeable: "Fakturerbar"
+      project_posting_group: "Projektbogføringsgruppe"
+      dimension_1_code: "Dimension 1-kode"
+      dimension_2_code: "Dimension 2-kode"
+      work_type_code: "Arbejdstypekode"
+      price_group_code: "Prisgruppekode"
+      user_id: "Brugernavn"
+      source_code: "Kildekode"
+      related_to_budget: "Knyttet til budget"
+      phase_code: "Fasekode"
+      task_code: "Opgavekode"
+      step_code: "Trinkode"
+      amt_to_post_to_g_l: "Beløb til bogføring i finans"
+      amt_posted_to_g_l: "Beløb bogført i finans"
+      amt_to_recognize: "Beløb til indtægtsføring"
+      amt_recognized: "Indtægtsført beløb"
+      entry_type: "Posttype"
+      positive: "Positiv"
+      open: "Åben"
+      remaining_amount: "Restbeløb"
+      closed_by_entry_no: "Lukket af løbenr."
+      closed_at_date: "Lukket den"
+      closed_by_amount: "Lukket med beløb"
+      applies_to_id: "Udlignings-id"
+      journal_batch_name: "Kladdenavn"
+      reason_code: "Årsagskode"
+      transaction_type: "Transaktionstype"
+      transport_method: "Transportmåde"
+      country_code: "Landekode"
+      gen_bus_posting_group: "Virksomhedsbogføringsgruppe"
+      gen_prod_posting_group: "Produktbogføringsgruppe"
+      entry_exit_point: "Indførsels-/udførselssted"
+      document_date: "Bilagsdato"
+      external_document_no: "Eksternt bilagsnr."
+      area: "Område"
+      transaction_specification: "Transaktionsspecifikation"
+      no_series: "Nummerserie"
+      additional_currency_total_cost: "Kostpris i alt i ekstra valuta"
+      add_currency_total_price: "Pris i alt i ekstra valuta"
+      add_curr_amount_to_recognize: "Ekstra valuta til indtægtsføring"
+      add_curr_amt_to_post_to_g_l: "Ekstra valuta til bogføring i finans"
+      add_curr_amount_recognized: "Ekstra valuta indtægtsført"
+      add_curr_amt_posted_to_g_l: "Ekstra valuta bogført i finans"
+      lot_no: "Lotnr."
+      variant_code: "Variantkode"
+      bin_code: "Placeringskode"
+      qty_per_unit_of_measure: "Antal pr. enhed"
+    options:
+      type:
+        resource: "Ressource"
+        item: "Vare"
+        account_g_l: "Konto (finans)"
+      entry_type:
+        usage: "Forbrug"
+        sale: "Salg"
+  project_register:
+    caption: "Projektjournal"
+    fields:
+      no: "Nr."
+      from_entry_no: "Fra løbenr."
+      to_entry_no: "Til løbenr."
+      creation_date: "Oprettelsesdato"
+      source_code: "Kildekode"
+      user_id: "Brugernavn"
+      journal_batch_name: "Kladdenavn"

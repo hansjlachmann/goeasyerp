@@ -12,6 +12,7 @@ import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/bomjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/demodata"
 	"github.com/hansjlachmann/openerp/backend/business-logic/itemjnl"
+	"github.com/hansjlachmann/openerp/backend/business-logic/projectjnl"
 	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
 	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
@@ -112,7 +113,7 @@ func (c *DemoDataCreate) create(jobQueue *gtables.JobQueue, ts *i18n.Translation
 		}
 	}
 
-	return demodata.Create(c.db, c.company, c.dbType, demodata.Options{Size: size, Progress: progress, ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost, GenJnlPostLine: openGenJnlPostLine, Journals: true,
+	return demodata.Create(c.db, c.company, c.dbType, demodata.Options{Size: size, Progress: progress, ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost, GenJnlPostLine: openGenJnlPostLine, ProjectJnlPostLine: openProjectJnlPostLine, Journals: true,
 		ReminderIssue: openReminderIssue, FinChrgMemoIssue: openFinChrgMemoIssue, AdjustExchRates: adjustExchRates})
 }
 
@@ -134,6 +135,11 @@ func (c *DemoDataCreate) errorMessage(err error, ts *i18n.TranslationService, la
 // openItemJnlPostLine opens the item posting (codeunit 22) for the demo items' postings
 func openItemJnlPostLine(src ftables.Source) demodata.ItemJnlPoster {
 	return itemjnl.NewItemJnlPostLine(src)
+}
+
+// openProjectJnlPostLine opens the project posting (codeunit 202) for the demo project usage
+func openProjectJnlPostLine(src ftables.Source) demodata.ProjectJnlPoster {
+	return projectjnl.NewProjectJnlPostLine(src)
 }
 
 // openBOMJnlPostLine opens the BOM posting (codeunit 32) for the demo assemblies

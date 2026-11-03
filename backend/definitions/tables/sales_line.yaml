@@ -885,6 +885,93 @@ table:
           - source: description
             width: 250
 
+    - name: project_no
+      no: 45
+      type: types.Code
+      db_name: project_no
+      length: 20
+      table_relation:
+        table: Project
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
+
+    - name: appl_to_project_entry
+      no: 46
+      type: int
+      db_name: appl_to_project_entry
+      table_relation:
+        table: Project_Ledger_Entry
+        field: entry_no
+        filters:
+          project_no: {field: project_no}
+          open: {const: true}
+        lookup_columns:
+          - source: entry_no
+            width: 90
+          - source: posting_date
+            width: 110
+          - source: description
+            width: 200
+          - source: remaining_amount
+            width: 120
+
+    - name: phase_code
+      no: 47
+      type: types.Code
+      db_name: phase_code
+      length: 10
+      table_relation:
+        table: Phase
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: task_code
+      no: 48
+      type: types.Code
+      db_name: task_code
+      length: 10
+      table_relation:
+        table: Task
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: step_code
+      no: 49
+      type: types.Code
+      db_name: step_code
+      length: 10
+      table_relation:
+        table: Step
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: project_applies_to_id
+      no: 50
+      type: types.Code
+      db_name: project_applies_to_id
+      length: 20
+
+    - name: apply_and_close_project
+      no: 51
+      type: bool
+      db_name: apply_and_close_project
+
   keys:
     - name: Primary
       fields: [document_type, document_no, line_no]

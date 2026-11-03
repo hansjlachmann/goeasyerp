@@ -23,6 +23,7 @@ type suggestResPriceChgRes struct {
 	priceLowerLimit types.Decimal
 	toCurrency      *gtables.Currency
 	toWorkTypeCode  types.Code
+	toProjectNo     types.Code
 	roundingMethod  *gtables.RoundingMethod
 	roundingCode    types.Code
 	resPriceChg     *gtables.ResourcePriceChange
@@ -33,6 +34,7 @@ func (r *suggestResPriceChgRes) Definition() *Definition {
 	return &Definition{
 		OptionsCaption: "COPY_TO",
 		Options: []Option{
+			{Name: "project_no", Type: "text", Relation: &OptionRelation{Table: "Project", Columns: []string{"no", "description"}}},
 			{Name: "work_type_code", Type: "text", Relation: &OptionRelation{Table: "Work_Type", Columns: []string{"code", "description"}}},
 			{Name: "currency_code", Type: "text", Relation: &OptionRelation{Table: "Currency", Columns: []string{"code", "description"}}},
 			{Name: "unit_price_factor", Type: "number", Default: "1"},
@@ -80,7 +82,17 @@ func (r *suggestResPriceChgRes) onPreReport(run *Run) error {
 		}
 	}
 
+	r.toProjectNo = types.Code(system.UpperCase(run.Option("project_no")))
+	if r.toProjectNo != "" {
+		toProject := gtables.NewProject(run)
+		err := toProject.GetOrError(r.toProjectNo)
+		if err != nil {
+			return err
+		}
+	}
+
 	r.resPriceChg = gtables.NewResourcePriceChange(run)
+	r.resPriceChg.Project_no = r.toProjectNo
 	r.resPriceChg.Currency_code = r.toCurrency.Code
 	r.resPriceChg.Work_type_code = r.toWorkTypeCode
 	return nil
@@ -121,6 +133,7 @@ func (r *suggestResPriceChgRes) resourceOnAfterGetRecord(resource *gtables.Resou
 func insertResPriceChange(run *Run, resPriceChg *gtables.ResourcePriceChange, createNewPrices bool) error {
 	priceAlreadyExists := false
 	resourcePrice := gtables.NewResourcePrice(run)
+	resourcePrice.SetRange("project_no", resPriceChg.Project_no)
 	resourcePrice.SetRange("type", resPriceChg.Type)
 	resourcePrice.SetRange("code", resPriceChg.Code)
 	resourcePrice.SetRange("currency_code", resPriceChg.Currency_code)
@@ -134,13 +147,14 @@ func insertResPriceChange(run *Run, resPriceChg *gtables.ResourcePriceChange, cr
 	}
 	if priceAlreadyExists || createNewPrices {
 		resPriceChg2 := gtables.NewResourcePriceChange(run)
-		key := map[string]interface{}{"type": resPriceChg.Type, "code": resPriceChg.Code, "work_type_code": resPriceChg.Work_type_code, "currency_code": resPriceChg.Currency_code}
+		key := map[string]interface{}{"project_no": resPriceChg.Project_no, "type": resPriceChg.Type, "code": resPriceChg.Code, "work_type_code": resPriceChg.Work_type_code, "currency_code": resPriceChg.Currency_code}
 		if resPriceChg2.Get(key) {
 			resPriceChg2.Current_unit_price = resPriceChg.Current_unit_price
 			resPriceChg2.New_unit_price = resPriceChg.New_unit_price
 			return resPriceChg2.ModifyOrError(false)
 		}
 		resPriceChg2.Init()
+		resPriceChg2.Project_no = resPriceChg.Project_no
 		resPriceChg2.Type = resPriceChg.Type
 		resPriceChg2.Code = resPriceChg.Code
 		resPriceChg2.Work_type_code = resPriceChg.Work_type_code
