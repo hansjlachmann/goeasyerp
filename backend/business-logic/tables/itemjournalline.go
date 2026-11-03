@@ -152,6 +152,13 @@ func validateItemJnlQuantity(rec *gtables.ItemJournalLine) error {
 		return err
 	}
 	rec.Quantity_base = quantityBase
+	err = checkReservedNotAbove(gtables.ItemJournalLineTableName, "positive_reserved_qty_base", rec.Quantity_base, rec.Positive_reserved_qty_base)
+	if err == nil {
+		err = checkReservedNotAbove(gtables.ItemJournalLineTableName, "negative_reserved_qty_base", rec.Quantity_base, rec.Negative_reserved_qty_base)
+	}
+	if err != nil {
+		return err
+	}
 	rec.Invoiced_quantity = rec.Quantity
 	rec.Invoiced_qty_base = rec.Quantity_base
 	rec.Amount = system.Round(rec.Quantity.Mul(rec.Unit_amount))

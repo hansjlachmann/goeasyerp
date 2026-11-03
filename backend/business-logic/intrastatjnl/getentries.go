@@ -1,6 +1,7 @@
 package intrastatjnl
 
 import (
+	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/system"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
@@ -10,10 +11,41 @@ import (
 // with countries that have an Intrastat Code become lines of the batch — one per item entry not
 // yet in an Intrastat journal, Receipt or Shipment by its sign, the amount the entry's (an entry
 // not invoiced: the invoices of it in the period, the rest at the item's average cost / unit
-// price), the item's tariff number, weight and country of origin, the cost regulation %. It
-// returns the number of lines made. Not migrated: job ledger entries, the additional reporting
-// currency.
+// price), the item's tariff number, weight and country of origin, the cost regulation %. A batch
+// with Amounts in Add. Currency takes the amounts in the additional reporting currency (at the
+// ending date's rate; costs not invoiced at the entries' additional-currency costs). It returns
+// the number of lines made. Not migrated: job ledger entries.
 func GetEntries(intraJnlBatch *gtables.IntrastatJnlBatch, startDate, endDate types.Date, indirectCostPctReq types.Decimal) (int, error) {
+	g := &getEntries{batch: intraJnlBatch, startDate: startDate, endDate: endDate}
+	if intraJnlBatch.Amounts_in_add_currency {
+		g.glSetup = gtables.GetGeneralLedgerSetup(intraJnlBatch)
+		err := g.glSetup.TestField("additional_reporting_currency")
+		if err != nil {
+			return 0, err
+		}
+		g.addCurrencyFactor, err = tables.ExchangeRates(intraJnlBatch).ExchangeRate(endDate, g.glSetup.Additional_reporting_currency)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return g.run(indirectCostPctReq)
+}
+
+// getEntries holds the run of report 594 (its globals)
+type getEntries struct {
+	batch              *gtables.IntrastatJnlBatch
+	startDate, endDate types.Date
+	glSetup            *gtables.GeneralLedgerSetup
+	addCurrencyFactor  types.Decimal
+}
+
+// exchangeToAddCurr: an LCY amount in the additional reporting currency at the ending date's rate
+func (g *getEntries) exchangeToAddCurr(amount types.Decimal) (types.Decimal, error) {
+	return tables.ExchangeRates(g.batch).ExchangeAmtLCYToFCY(g.endDate, g.glSetup.Additional_reporting_currency, amount, g.addCurrencyFactor)
+}
+
+func (g *getEntries) run(indirectCostPctReq types.Decimal) (int, error) {
+	intraJnlBatch, startDate, endDate := g.batch, g.startDate, g.endDate
 	intraJnlLine := gtables.NewIntrastatJnlLine(intraJnlBatch)
 	intraJnlLine.SetRange("journal_template_name", intraJnlBatch.Journal_template_name)
 	intraJnlLine.SetRange("journal_batch_name", intraJnlBatch.Name)
@@ -43,8 +75,19 @@ func GetEntries(intraJnlBatch *gtables.IntrastatJnlBatch, startDate, endDate typ
 				continue
 			}
 			amount := itemLedgEntry.Amount
-			if itemLedgEntry.Invoiced_quantity.IsZero() && itemLedgEntry.Unit_amount.IsZero() && itemLedgEntry.Amount.IsZero() {
-				amount = notInvoicedAmount(itemLedgEntry, startDate, endDate)
+			if intraJnlBatch.Amounts_in_add_currency {
+				var err error
+				amount, err = g.exchangeToAddCurr(amount)
+				if err != nil {
+					return inserted, err
+				}
+			}
+			if itemLedgEntry.Invoiced_quantity.IsZero() && itemLedgEntry.Unit_amount.IsZero() && amount.IsZero() {
+				var err error
+				amount, err = g.notInvoicedAmount(itemLedgEntry)
+				if err != nil {
+					return inserted, err
+				}
 			}
 			lineNo += 10000
 			err := insertItemJnlLine(intraJnlBatch, lineNo, itemLedgEntry, amount, indirectCostPctReq)
@@ -59,31 +102,52 @@ func GetEntries(intraJnlBatch *gtables.IntrastatJnlBatch, startDate, endDate typ
 
 // notInvoicedAmount: an entry not invoiced in full — the invoices of it in the period, the rest
 // at the item's average cost (purchases) or unit price (sales)
-func notInvoicedAmount(rec *gtables.ItemLedgerEntry, startDate, endDate types.Date) types.Decimal {
+func (g *getEntries) notInvoicedAmount(rec *gtables.ItemLedgerEntry) (types.Decimal, error) {
+	addCurr := g.batch.Amounts_in_add_currency
 	itemLedgEntry2 := gtables.NewItemLedgerEntry(rec)
 	itemLedgEntry2.SetCurrentKey("closed_by_entry_no")
 	itemLedgEntry2.SetRange("closed_by_entry_no", rec.Entry_no)
-	itemLedgEntry2.SetRange("posting_date", startDate, endDate)
+	itemLedgEntry2.SetRange("posting_date", g.startDate, g.endDate)
 	itemLedgEntry2.SetRange("entry_type", rec.Entry_type)
 	totalInvoicedQty := types.Decimal{}
 	totalAmount := types.Decimal{}
 	for found := itemLedgEntry2.FindSetBuffered(); found; found = itemLedgEntry2.Next() {
 		if rec.Quantity.IsPositive() == itemLedgEntry2.Invoiced_quantity.IsPositive() {
 			totalInvoicedQty = totalInvoicedQty.Add(itemLedgEntry2.Invoiced_quantity)
-			totalAmount = totalAmount.Add(itemLedgEntry2.Amount)
+			if addCurr {
+				// the invoice's amount at its additional-currency share of the cost (the classic
+				// divides by the unit cost unchecked)
+				if !itemLedgEntry2.Unit_cost.IsZero() {
+					totalAmount = totalAmount.Add(itemLedgEntry2.Amount.Mul(itemLedgEntry2.Additional_currency_unit_cost).Div(itemLedgEntry2.Unit_cost))
+				}
+			} else {
+				totalAmount = totalAmount.Add(itemLedgEntry2.Amount)
+			}
 		}
 	}
 	if !rec.Quantity.Equal(totalInvoicedQty) {
 		item := gtables.NewItem(rec)
 		if item.Get(rec.Item_no) {
 			if rec.Entry_type == gtables.ItemLedgerEntry_Entry_type.Purchase {
-				totalAmount = totalAmount.Add(rec.Quantity.Sub(totalInvoicedQty).Mul(item.Average_cost))
+				if addCurr {
+					totalAmount = totalAmount.Add(rec.Quantity.Sub(totalInvoicedQty).Mul(item.Add_curr_average_cost))
+				} else {
+					totalAmount = totalAmount.Add(rec.Quantity.Sub(totalInvoicedQty).Mul(item.Average_cost))
+				}
 			} else {
-				totalAmount = totalAmount.Add(rec.Quantity.Sub(totalInvoicedQty).Mul(item.Unit_price))
+				unitPrice := item.Unit_price
+				if addCurr {
+					var err error
+					unitPrice, err = g.exchangeToAddCurr(unitPrice)
+					if err != nil {
+						return types.Decimal{}, err
+					}
+				}
+				totalAmount = totalAmount.Add(rec.Quantity.Sub(totalInvoicedQty).Mul(unitPrice))
 			}
 		}
 	}
-	return totalAmount
+	return totalAmount, nil
 }
 
 // insertItemJnlLine (InsertItemJnlLine): an item entry as a journal line

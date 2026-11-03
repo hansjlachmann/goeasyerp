@@ -520,6 +520,43 @@ table:
       precision: 18
       scale: 5
 
+    # the additional reporting currency's costs (classic 67-69, 72)
+    - name: add_currency_adj_cost_qty
+      no: 67
+      type: types.Decimal
+      db_name: add_currency_adj_cost_qty
+      decimal_places: "2:2"
+      precision: 18
+      scale: 2
+      editable: false
+
+    - name: add_curr_adj_cost_inv_qty
+      no: 68
+      type: types.Decimal
+      db_name: add_curr_adj_cost_inv_qty
+      decimal_places: "2:2"
+      precision: 18
+      scale: 2
+      editable: false
+
+    - name: add_curr_cost_posted_to_gl
+      no: 69
+      type: types.Decimal
+      db_name: add_curr_cost_posted_to_gl
+      decimal_places: "2:2"
+      precision: 18
+      scale: 2
+      editable: false
+
+    - name: additional_currency_unit_cost
+      no: 72
+      type: types.Decimal
+      db_name: additional_currency_unit_cost
+      decimal_places: "2:5"
+      precision: 18
+      scale: 5
+      editable: false
+
     - name: variant_code
       no: 5402
       type: types.Code

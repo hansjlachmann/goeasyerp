@@ -14,6 +14,7 @@
 //	OnValidate_Name(rec *gtables.IntrastatJnlBatch) error
 //	OnValidate_Description(rec *gtables.IntrastatJnlBatch) error
 //	OnValidate_Reported(rec *gtables.IntrastatJnlBatch) error
+//	OnValidate_Amounts_in_add_currency(rec *gtables.IntrastatJnlBatch) error
 //	OnValidate_Statistics_period(rec *gtables.IntrastatJnlBatch) error
 //	OnValidate_Currency_identifier(rec *gtables.IntrastatJnlBatch) error
 
@@ -37,12 +38,13 @@ import (
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterIntrastatJnlBatchLogic.
 type IntrastatJnlBatch struct {
-	Journal_template_name types.Code `db:"journal_template_name,pk"`
-	Name                  types.Code `db:"name,pk"`
-	Description           types.Text `db:"description"`
-	Reported              bool       `db:"reported"`
-	Statistics_period     types.Code `db:"statistics_period"`
-	Currency_identifier   types.Code `db:"currency_identifier"`
+	Journal_template_name   types.Code `db:"journal_template_name,pk"`
+	Name                    types.Code `db:"name,pk"`
+	Description             types.Text `db:"description"`
+	Reported                bool       `db:"reported"`
+	Amounts_in_add_currency bool       `db:"amounts_in_add_currency"`
+	Statistics_period       types.Code `db:"statistics_period"`
+	Currency_identifier     types.Code `db:"currency_identifier"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -109,19 +111,21 @@ const IntrastatJnlBatchTableName = "Intrastat_Jnl_Batch"
 // IntrastatJnlBatch_FieldNo holds the field numbers of Intrastat_Jnl_Batch (FieldNo):
 // IntrastatJnlBatch_FieldNo.Journal_template_name is 1
 var IntrastatJnlBatch_FieldNo = struct {
-	Journal_template_name int
-	Name                  int
-	Description           int
-	Reported              int
-	Statistics_period     int
-	Currency_identifier   int
+	Journal_template_name   int
+	Name                    int
+	Description             int
+	Reported                int
+	Amounts_in_add_currency int
+	Statistics_period       int
+	Currency_identifier     int
 }{
-	Journal_template_name: 1,
-	Name:                  2,
-	Description:           3,
-	Reported:              13,
-	Statistics_period:     14,
-	Currency_identifier:   16,
+	Journal_template_name:   1,
+	Name:                    2,
+	Description:             3,
+	Reported:                13,
+	Amounts_in_add_currency: 15,
+	Statistics_period:       14,
+	Currency_identifier:     16,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -135,6 +139,8 @@ func (t *IntrastatJnlBatch) FieldNo(fieldName string) int {
 		return 3
 	case "reported":
 		return 13
+	case "amounts_in_add_currency":
+		return 15
 	case "statistics_period":
 		return 14
 	case "currency_identifier":
@@ -154,6 +160,8 @@ func (t *IntrastatJnlBatch) FieldName(fieldNo int) string {
 		return "description"
 	case 13:
 		return "reported"
+	case 15:
+		return "amounts_in_add_currency"
 	case 14:
 		return "statistics_period"
 	case 16:
@@ -271,6 +279,9 @@ type (
 	IntrastatJnlBatchOnValidate_Reported interface {
 		OnValidate_Reported(rec *IntrastatJnlBatch) error
 	}
+	IntrastatJnlBatchOnValidate_Amounts_in_add_currency interface {
+		OnValidate_Amounts_in_add_currency(rec *IntrastatJnlBatch) error
+	}
 	IntrastatJnlBatchOnValidate_Statistics_period interface {
 		OnValidate_Statistics_period(rec *IntrastatJnlBatch) error
 	}
@@ -314,6 +325,8 @@ func intrastatJnlBatchTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(IntrastatJnlBatchOnValidate_Description)
 	case "OnValidate_Reported":
 		_, ok = logic.(IntrastatJnlBatchOnValidate_Reported)
+	case "OnValidate_Amounts_in_add_currency":
+		_, ok = logic.(IntrastatJnlBatchOnValidate_Amounts_in_add_currency)
 	case "OnValidate_Statistics_period":
 		_, ok = logic.(IntrastatJnlBatchOnValidate_Statistics_period)
 	case "OnValidate_Currency_identifier":
@@ -444,6 +457,7 @@ func GetIntrastatJnlBatchTableSchema() string {
 		name TEXT(10),
 		description TEXT(50),
 		reported INTEGER,
+		amounts_in_add_currency INTEGER,
 		statistics_period TEXT(10),
 		currency_identifier TEXT(10),
 		PRIMARY KEY (journal_template_name, name)
@@ -457,6 +471,7 @@ func GetIntrastatJnlBatchPostgresTableSchema() string {
 		name VARCHAR(10),
 		description VARCHAR(50),
 		reported BOOLEAN,
+		amounts_in_add_currency BOOLEAN,
 		statistics_period VARCHAR(10),
 		currency_identifier VARCHAR(10),
 		PRIMARY KEY (journal_template_name, name)
@@ -586,6 +601,7 @@ func (t *IntrastatJnlBatch) StoreOldValues() {
 	t.oldValues["name"] = t.Name
 	t.oldValues["description"] = t.Description
 	t.oldValues["reported"] = t.Reported
+	t.oldValues["amounts_in_add_currency"] = t.Amounts_in_add_currency
 	t.oldValues["statistics_period"] = t.Statistics_period
 	t.oldValues["currency_identifier"] = t.Currency_identifier
 }
@@ -613,6 +629,9 @@ func (t *IntrastatJnlBatch) XRec() *IntrastatJnlBatch {
 	}
 	if v, ok := t.oldValues["reported"].(bool); ok {
 		x.Reported = v
+	}
+	if v, ok := t.oldValues["amounts_in_add_currency"].(bool); ok {
+		x.Amounts_in_add_currency = v
 	}
 	if v, ok := t.oldValues["statistics_period"].(types.Code); ok {
 		x.Statistics_period = v
@@ -689,6 +708,7 @@ func (t *IntrastatJnlBatch) GetByPK(journal_template_name types.Code, name types
 	var nameNull sql.NullString
 	var descriptionNull sql.NullString
 	var reportedBool sql.NullBool
+	var amounts_in_add_currencyBool sql.NullBool
 	var statistics_periodNull sql.NullString
 	var currency_identifierNull sql.NullString
 
@@ -699,7 +719,7 @@ func (t *IntrastatJnlBatch) GetByPK(journal_template_name types.Code, name types
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, name, description, reported, statistics_period, currency_identifier FROM "%s" WHERE 1=1 AND journal_template_name = ? AND name = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT journal_template_name, name, description, reported, amounts_in_add_currency, statistics_period, currency_identifier FROM "%s" WHERE 1=1 AND journal_template_name = ? AND name = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -710,6 +730,7 @@ func (t *IntrastatJnlBatch) GetByPK(journal_template_name types.Code, name types
 		&nameNull,
 		&descriptionNull,
 		&reportedBool,
+		&amounts_in_add_currencyBool,
 		&statistics_periodNull,
 		&currency_identifierNull,
 	)
@@ -729,6 +750,7 @@ func (t *IntrastatJnlBatch) GetByPK(journal_template_name types.Code, name types
 	t.Name = types.NewCode(nameNull.String)
 	t.Description = types.NewText(descriptionNull.String)
 	t.Reported = reportedBool.Bool
+	t.Amounts_in_add_currency = amounts_in_add_currencyBool.Bool
 	t.Statistics_period = types.NewCode(statistics_periodNull.String)
 	t.Currency_identifier = types.NewCode(currency_identifierNull.String)
 
@@ -757,13 +779,14 @@ func (t *IntrastatJnlBatch) Insert(runTrigger bool) bool {
 		t.Name,
 		t.Description,
 		t.Reported,
+		t.Amounts_in_add_currency,
 		t.Statistics_period,
 		t.Currency_identifier,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, name, description, reported, statistics_period, currency_identifier) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, name) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, name, description, reported, amounts_in_add_currency, statistics_period, currency_identifier) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, name) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -805,12 +828,13 @@ func (t *IntrastatJnlBatch) InsertAll(records []*IntrastatJnlBatch, runTrigger b
 			r.Name,
 			r.Description,
 			r.Reported,
+			r.Amounts_in_add_currency,
 			r.Statistics_period,
 			r.Currency_identifier,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, IntrastatJnlBatchTableName)
-	columns := []string{"journal_template_name", "name", "description", "reported", "statistics_period", "currency_identifier"}
+	columns := []string{"journal_template_name", "name", "description", "reported", "amounts_in_add_currency", "statistics_period", "currency_identifier"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -869,6 +893,10 @@ func (t *IntrastatJnlBatch) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "reported = ?")
 			values = append(values, t.Reported)
 		}
+		if t.hasFieldChanged("amounts_in_add_currency") {
+			setClauses = append(setClauses, "amounts_in_add_currency = ?")
+			values = append(values, t.Amounts_in_add_currency)
+		}
 		if t.hasFieldChanged("statistics_period") {
 			setClauses = append(setClauses, "statistics_period = ?")
 			values = append(values, t.Statistics_period)
@@ -888,6 +916,8 @@ func (t *IntrastatJnlBatch) Modify(runTrigger bool) bool {
 		values = append(values, t.Description)
 		setClauses = append(setClauses, "reported = ?")
 		values = append(values, t.Reported)
+		setClauses = append(setClauses, "amounts_in_add_currency = ?")
+		values = append(values, t.Amounts_in_add_currency)
 		setClauses = append(setClauses, "statistics_period = ?")
 		values = append(values, t.Statistics_period)
 		setClauses = append(setClauses, "currency_identifier = ?")
@@ -956,6 +986,11 @@ func (t *IntrastatJnlBatch) hasFieldChanged(fieldName string) bool {
 	case "reported":
 		if old, ok := oldValue.(bool); ok {
 			return t.Reported != old
+		}
+		return true // Type mismatch, assume changed
+	case "amounts_in_add_currency":
+		if old, ok := oldValue.(bool); ok {
+			return t.Amounts_in_add_currency != old
 		}
 		return true // Type mismatch, assume changed
 	case "statistics_period":
@@ -1179,6 +1214,8 @@ func (t *IntrastatJnlBatch) columnName(fieldName string) (string, bool) {
 		return "description", true
 	case strings.ToLower("reported"):
 		return "reported", true
+	case strings.ToLower("amounts_in_add_currency"):
+		return "amounts_in_add_currency", true
 	case strings.ToLower("statistics_period"):
 		return "statistics_period", true
 	case strings.ToLower("currency_identifier"):
@@ -1337,6 +1374,8 @@ func (t *IntrastatJnlBatch) isKeyDateColumn(column string) bool {
 func (t *IntrastatJnlBatch) isBoolColumn(column string) bool {
 	switch column {
 	case "reported":
+		return true
+	case "amounts_in_add_currency":
 		return true
 	}
 	return false
@@ -1542,7 +1581,7 @@ func (t *IntrastatJnlBatch) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, name, description, reported, statistics_period, currency_identifier FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, name, description, reported, amounts_in_add_currency, statistics_period, currency_identifier FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1551,6 +1590,7 @@ func (t *IntrastatJnlBatch) FindFirst() bool {
 	var nameNull sql.NullString
 	var descriptionNull sql.NullString
 	var reportedBool sql.NullBool
+	var amounts_in_add_currencyBool sql.NullBool
 	var statistics_periodNull sql.NullString
 	var currency_identifierNull sql.NullString
 
@@ -1559,6 +1599,7 @@ func (t *IntrastatJnlBatch) FindFirst() bool {
 		&nameNull,
 		&descriptionNull,
 		&reportedBool,
+		&amounts_in_add_currencyBool,
 		&statistics_periodNull,
 		&currency_identifierNull,
 	)
@@ -1576,6 +1617,7 @@ func (t *IntrastatJnlBatch) FindFirst() bool {
 	t.Name = types.NewCode(nameNull.String)
 	t.Description = types.NewText(descriptionNull.String)
 	t.Reported = reportedBool.Bool
+	t.Amounts_in_add_currency = amounts_in_add_currencyBool.Bool
 	t.Statistics_period = types.NewCode(statistics_periodNull.String)
 	t.Currency_identifier = types.NewCode(currency_identifierNull.String)
 
@@ -1598,7 +1640,7 @@ func (t *IntrastatJnlBatch) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, name, description, reported, statistics_period, currency_identifier FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, name, description, reported, amounts_in_add_currency, statistics_period, currency_identifier FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1607,6 +1649,7 @@ func (t *IntrastatJnlBatch) FindLast() bool {
 	var nameNull sql.NullString
 	var descriptionNull sql.NullString
 	var reportedBool sql.NullBool
+	var amounts_in_add_currencyBool sql.NullBool
 	var statistics_periodNull sql.NullString
 	var currency_identifierNull sql.NullString
 
@@ -1615,6 +1658,7 @@ func (t *IntrastatJnlBatch) FindLast() bool {
 		&nameNull,
 		&descriptionNull,
 		&reportedBool,
+		&amounts_in_add_currencyBool,
 		&statistics_periodNull,
 		&currency_identifierNull,
 	)
@@ -1632,6 +1676,7 @@ func (t *IntrastatJnlBatch) FindLast() bool {
 	t.Name = types.NewCode(nameNull.String)
 	t.Description = types.NewText(descriptionNull.String)
 	t.Reported = reportedBool.Bool
+	t.Amounts_in_add_currency = amounts_in_add_currencyBool.Bool
 	t.Statistics_period = types.NewCode(statistics_periodNull.String)
 	t.Currency_identifier = types.NewCode(currency_identifierNull.String)
 
@@ -1684,7 +1729,7 @@ func (t *IntrastatJnlBatch) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, name, description, reported, statistics_period, currency_identifier FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, name, description, reported, amounts_in_add_currency, statistics_period, currency_identifier FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1757,6 +1802,7 @@ func (t *IntrastatJnlBatch) Next(steps ...int) bool {
 		var nameNull sql.NullString
 		var descriptionNull sql.NullString
 		var reportedBool sql.NullBool
+		var amounts_in_add_currencyBool sql.NullBool
 		var statistics_periodNull sql.NullString
 		var currency_identifierNull sql.NullString
 
@@ -1765,6 +1811,7 @@ func (t *IntrastatJnlBatch) Next(steps ...int) bool {
 			&nameNull,
 			&descriptionNull,
 			&reportedBool,
+			&amounts_in_add_currencyBool,
 			&statistics_periodNull,
 			&currency_identifierNull,
 		)
@@ -1781,6 +1828,7 @@ func (t *IntrastatJnlBatch) Next(steps ...int) bool {
 		t.Name = types.NewCode(nameNull.String)
 		t.Description = types.NewText(descriptionNull.String)
 		t.Reported = reportedBool.Bool
+		t.Amounts_in_add_currency = amounts_in_add_currencyBool.Bool
 		t.Statistics_period = types.NewCode(statistics_periodNull.String)
 		t.Currency_identifier = types.NewCode(currency_identifierNull.String)
 
@@ -1832,7 +1880,7 @@ func (t *IntrastatJnlBatch) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, name, description, reported, statistics_period, currency_identifier FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, name, description, reported, amounts_in_add_currency, statistics_period, currency_identifier FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1858,6 +1906,7 @@ func (t *IntrastatJnlBatch) FindSetBuffered() bool {
 		var nameNull sql.NullString
 		var descriptionNull sql.NullString
 		var reportedBool sql.NullBool
+		var amounts_in_add_currencyBool sql.NullBool
 		var statistics_periodNull sql.NullString
 		var currency_identifierNull sql.NullString
 
@@ -1866,6 +1915,7 @@ func (t *IntrastatJnlBatch) FindSetBuffered() bool {
 			&nameNull,
 			&descriptionNull,
 			&reportedBool,
+			&amounts_in_add_currencyBool,
 			&statistics_periodNull,
 			&currency_identifierNull,
 		)
@@ -1880,6 +1930,7 @@ func (t *IntrastatJnlBatch) FindSetBuffered() bool {
 		record.Name = types.NewCode(nameNull.String)
 		record.Description = types.NewText(descriptionNull.String)
 		record.Reported = reportedBool.Bool
+		record.Amounts_in_add_currency = amounts_in_add_currencyBool.Bool
 		record.Statistics_period = types.NewCode(statistics_periodNull.String)
 		record.Currency_identifier = types.NewCode(currency_identifierNull.String)
 
@@ -1914,6 +1965,7 @@ func (t *IntrastatJnlBatch) copyFromBuffered(record *IntrastatJnlBatch) {
 	t.Name = record.Name
 	t.Description = record.Description
 	t.Reported = record.Reported
+	t.Amounts_in_add_currency = record.Amounts_in_add_currency
 	t.Statistics_period = record.Statistics_period
 	t.Currency_identifier = record.Currency_identifier
 	t.StoreOldValues()
@@ -2127,6 +2179,25 @@ func (t *IntrastatJnlBatch) ValidateField(fieldName string, value interface{}) e
 			}
 		}
 		return nil
+	case "amounts_in_add_currency":
+		// Set field value
+		if v, ok := value.(bool); ok {
+			t.Amounts_in_add_currency = v
+		} else if v, ok := value.(string); ok {
+			// Handle string boolean values from JSON/frontend
+			t.Amounts_in_add_currency = v == "true" || v == "1"
+		} else {
+			return fmt.Errorf("invalid type for field amounts_in_add_currency")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(IntrastatJnlBatchOnValidate_Amounts_in_add_currency); ok {
+				if err := trg.OnValidate_Amounts_in_add_currency(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	case "statistics_period":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
@@ -2183,6 +2254,8 @@ func (t *IntrastatJnlBatch) FieldValue(no int) (any, bool) {
 		return t.Description, true
 	case 13:
 		return t.Reported, true
+	case 15:
+		return t.Amounts_in_add_currency, true
 	case 14:
 		return t.Statistics_period, true
 	case 16:
@@ -2232,6 +2305,11 @@ func (t *IntrastatJnlBatch) SetFieldValue(no int, value any) bool {
 	case 13:
 		if v, ok := value.(bool); ok {
 			t.Reported = v
+			return true
+		}
+	case 15:
+		if v, ok := value.(bool); ok {
+			t.Amounts_in_add_currency = v
 			return true
 		}
 	case 14:
@@ -2681,6 +2759,8 @@ func (t *IntrastatJnlBatch) columnValue(column string) (interface{}, bool) {
 		return t.Description, true
 	case "reported":
 		return t.Reported, true
+	case "amounts_in_add_currency":
+		return t.Amounts_in_add_currency, true
 	case "statistics_period":
 		return t.Statistics_period, true
 	case "currency_identifier":
@@ -2745,6 +2825,7 @@ func (t *IntrastatJnlBatch) setKeyValues(values []interface{}) {
 func (t *IntrastatJnlBatch) Init() {
 	t.Description = *new(types.Text)
 	t.Reported = *new(bool)
+	t.Amounts_in_add_currency = *new(bool)
 	t.Statistics_period = *new(types.Code)
 	t.Currency_identifier = *new(types.Code)
 	t.applyDefaults()
@@ -2781,12 +2862,13 @@ func (t *IntrastatJnlBatch) ClearFilters() {
 // ToMap converts the current record to a map for JSON serialization
 func (t *IntrastatJnlBatch) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"journal_template_name": t.Journal_template_name.String(),
-		"name":                  t.Name.String(),
-		"description":           t.Description.String(),
-		"reported":              t.Reported,
-		"statistics_period":     t.Statistics_period.String(),
-		"currency_identifier":   t.Currency_identifier.String(),
+		"journal_template_name":   t.Journal_template_name.String(),
+		"name":                    t.Name.String(),
+		"description":             t.Description.String(),
+		"reported":                t.Reported,
+		"amounts_in_add_currency": t.Amounts_in_add_currency,
+		"statistics_period":       t.Statistics_period.String(),
+		"currency_identifier":     t.Currency_identifier.String(),
 	}
 }
 
@@ -2810,6 +2892,11 @@ func (t *IntrastatJnlBatch) FromMap(data map[string]interface{}) {
 	if v, ok := data["reported"]; ok && v != nil {
 		if b, ok := v.(bool); ok {
 			t.Reported = b
+		}
+	}
+	if v, ok := data["amounts_in_add_currency"]; ok && v != nil {
+		if b, ok := v.(bool); ok {
+			t.Amounts_in_add_currency = b
 		}
 	}
 	if v, ok := data["statistics_period"]; ok && v != nil {
@@ -2876,6 +2963,16 @@ func (t *IntrastatJnlBatch) GetFields() []tables.FieldInfo {
 		{
 			No:         13,
 			Name:       "reported",
+			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         15,
+			Name:       "amounts_in_add_currency",
 			Type:       tables.FieldTypeBoolean,
 			Length:     0,
 			Required:   false,

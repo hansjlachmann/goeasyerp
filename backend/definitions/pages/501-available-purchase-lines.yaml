@@ -1,0 +1,46 @@
+page:
+  id: 501
+  type: List
+  name: Available - Purchase Lines
+  source_table: Purchase_Line
+  caption: Available - Purchase Lines
+  editable: false   # opened from the Reservation page for one line: the purchase lines of one document type that bring the item, up to its date
+
+  layout:
+    repeater:
+      fields:
+        - source: document_type
+          width: 120
+        - source: document_no
+          width: 120
+        - source: location_code
+          width: 120
+        - source: expected_receipt_date
+          width: 120
+        - source: outstanding_qty_base
+          width: 130
+        - source: reserved_qty_base
+          width: 130
+        - source: available_quantity
+          calculated: true
+          type: types.Decimal
+          decimal_places: "0:5"
+          width: 130
+        - source: current_reserved_quantity
+          calculated: true
+          type: types.Decimal
+          decimal_places: "0:5"
+          width: 160
+
+  actions:
+    # The line the page is for reserves from the selected line / its reservations from it are canceled
+    - name: Reserve
+      caption: Reserve
+      image: Approve
+      promoted: true
+      run_object: table:Purchase_Line.ReserveAvailable
+    - name: Cancel Reservation
+      caption: Cancel Reservation
+      image: Cancel
+      promoted: true
+      run_object: table:Purchase_Line.CancelAvailableReservation

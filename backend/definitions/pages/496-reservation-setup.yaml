@@ -1,0 +1,109 @@
+page:
+  id: 496
+  type: Card
+  name: Reservation Setup
+  source_table: Reservation_Setup
+  caption: Reservation Setup
+  editable: true
+
+  # Per source of supply: Show (on the Reservation page: Never / Optional / Always), its Priority
+  # (Auto Reserve takes the sources by it), Auto Reserve and whether the lines may reserve
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: valid_to_formula
+          - source: auto_req_wksh_template
+          - source: auto_req_wksh_name
+          - source: track_changes
+      - name: Item Ledger
+        caption: Item Ledger
+        fields:
+          - source: show_item_ledger_entry
+          - source: item_ledger_entry_priority
+      - name: Purchase
+        caption: Purchase
+        fields:
+          - source: show_purchase_quote
+          - source: purchase_quote_priority
+          - source: auto_purchase_quote
+          - source: reserve_purchase_quote
+          - source: show_blanket_purchase_order
+          - source: blanket_purch_order_priority
+          - source: auto_blanket_purchase_order
+          - source: reserve_blanket_purchase_order
+          - source: show_purchase_order
+          - source: purchase_order_priority
+          - source: auto_purchase_order
+          - source: reserve_purchase_order
+          - source: show_purchase_invoice
+          - source: purchase_invoice_priority
+          - source: auto_purchase_invoice
+          - source: reserve_purchase_invoice
+          - source: show_purchase_credit_memo
+          - source: purchase_credit_memo_priority
+          - source: auto_purchase_credit_memo
+          - source: reserve_purchase_credit_memo
+          - source: show_requisition_line
+          - source: requisition_line_priority
+          - source: auto_requisition_line
+          - source: reserve_requisition_line
+      - name: Sales
+        caption: Sales
+        fields:
+          - source: show_sales_quote
+          - source: sales_quote_priority
+          - source: auto_sales_quote
+          - source: reserve_sales_quote
+          - source: show_blanket_sales_order
+          - source: blanket_sales_order_priority
+          - source: auto_blanket_sales_order
+          - source: reserve_blanket_sales_order
+          - source: show_sales_order
+          - source: sales_order_priority
+          - source: auto_sales_order
+          - source: reserve_sales_order
+          - source: show_sales_invoice
+          - source: sales_invoice_priority
+          - source: auto_sales_invoice
+          - source: reserve_sales_invoice
+          - source: show_sales_credit_memo
+          - source: sales_credit_memo_priority
+          - source: auto_sales_credit_memo
+          - source: reserve_sales_credit_memo
+      - name: Journals
+        caption: Journals
+        fields:
+          - source: show_item_jnl_line_purchases
+          - source: item_jnl_line_purch_priority
+          - source: auto_item_jnl_line_purchases
+          - source: reserve_item_jnl_line_purch
+          - source: show_item_jnl_line_sales
+          - source: item_jnl_line_sales_priority
+          - source: auto_item_jnl_line_sales
+          - source: reserve_item_jnl_line_sales
+          - source: show_item_jnl_line_pos
+          - source: item_jnl_line_pos_priority
+          - source: auto_item_jnl_line_pos
+          - source: reserve_item_jnl_line_pos
+          - source: show_item_jnl_line_neg
+          - source: item_jnl_line_neg_priority
+          - source: auto_item_jnl_line_neg
+          - source: reserve_item_jnl_line_neg
+          - source: show_item_jnl_line_transfer
+          - source: item_jnl_line_trans_priority
+          - source: auto_item_jnl_line_transfer
+          - source: reserve_item_jnl_line_trans
+          - source: show_bom_journal_line
+          - source: bom_journal_line_priority
+          - source: auto_bom_journal_line
+          - source: reserve_bom_journal_line
+
+  actions:
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+      enabled: true

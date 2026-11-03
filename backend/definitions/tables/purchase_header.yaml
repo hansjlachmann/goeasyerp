@@ -834,6 +834,12 @@ table:
           - source: description
             width: 250
 
+    - name: reserve
+      no: 117
+      type: Option
+      db_name: reserve
+      options: ["Never", "Optional", "Always"]
+
   keys:
     - name: Primary
       fields: [document_type, "no"]

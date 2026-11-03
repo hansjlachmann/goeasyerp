@@ -17,8 +17,11 @@ import (
 // Setup — per inventory posting group with one document no., or per item ledger entry with the
 // entry's document no. The entries' Cost Posted to G/L follows.
 //
+// The additional-currency costs go with them (Add.-Curr. Cost Posted to G/L; a line of the
+// additional-currency amount only where the LCY amount is 0).
+//
 // Not migrated yet: the printout (the posted amounts per item and per posting setup; the
-// report's message gives the totals) and the additional reporting currency.
+// report's message gives the totals).
 const PostInventoryCostToGLID = 1002
 
 func init() {
@@ -30,6 +33,16 @@ const (
 	postLevelPerPostingGroup = iota + 1
 	postLevelPerEntry
 )
+
+// invtPostBufAmounts are a buffer line's Amount and Additional-Currency Amount
+type invtPostBufAmounts struct {
+	amount, addCurrAmount types.Decimal
+}
+
+// add (UpdateInvtPostingBuffer) adds to a buffer line
+func (a invtPostBufAmounts) add(adjAmount, adjAmountAddCurr types.Decimal) invtPostBufAmounts {
+	return invtPostBufAmounts{amount: a.amount.Add(adjAmount), addCurrAmount: a.addCurrAmount.Add(adjAmountAddCurr)}
+}
 
 // invtPostBufKey is a line of the inventory posting buffer (classic temporary table 48 Invt.
 // Posting Buffer): the item side (an inventory posting group) or the matrix side (a general
@@ -62,7 +75,7 @@ type postInventoryCostToGL struct {
 	postingDocNo    types.Code
 	sourceCodeSetup *gtables.SourceCodeSetup
 	genJnlPostLine  *genjnl.GenJnlPostLine
-	invtPostBuf     map[invtPostBufKey]types.Decimal
+	invtPostBuf     map[invtPostBufKey]invtPostBufAmounts
 	totalUsage      types.Decimal
 	totalAdjAmount  types.Decimal
 	window          *system.Window
@@ -102,7 +115,7 @@ func (r *postInventoryCostToGL) onPreReport(run *Run) error {
 	r.postingDate = run.OptionDate("posting_date")
 	r.postingDocNo = types.Code(system.UpperCase(run.Option("document_no")))
 	r.sourceCodeSetup = gtables.GetSourceCodeSetup(run)
-	r.invtPostBuf = map[invtPostBufKey]types.Decimal{}
+	r.invtPostBuf = map[invtPostBufKey]invtPostBufAmounts{}
 	r.genJnlPostLine = genjnl.NewGenJnlPostLine(run)
 
 	language := fcodeunits.CurrentLanguage()
@@ -129,7 +142,8 @@ func (r *postInventoryCostToGL) itemLedgEntryOnPreDataItem(itemLedgEntry *gtable
 func (r *postInventoryCostToGL) itemLedgEntryOnAfterGetRecord(itemLedgEntry *gtables.ItemLedgerEntry, run *Run) error {
 	r.window.Update(1, itemLedgEntry.Item_no)
 	adjAmount := itemLedgEntry.Adjusted_cost_invoiced_qty.Sub(itemLedgEntry.Cost_posted_to_gl)
-	if adjAmount.IsZero() {
+	adjAmountAddCurr := itemLedgEntry.Add_curr_adj_cost_inv_qty.Sub(itemLedgEntry.Add_curr_cost_posted_to_gl)
+	if adjAmount.IsZero() && adjAmountAddCurr.IsZero() {
 		return Skip()
 	}
 	invtPostBuf1 := invtPostBufKey{postingGroupType: bufTypeItem, postingGroup: itemLedgEntry.Inventory_posting_group}
@@ -148,9 +162,10 @@ func (r *postInventoryCostToGL) itemLedgEntryOnAfterGetRecord(itemLedgEntry *gta
 	} else {
 		r.totalAdjAmount = r.totalAdjAmount.Add(adjAmount)
 	}
-	r.invtPostBuf[invtPostBuf1] = r.invtPostBuf[invtPostBuf1].Add(adjAmount)
-	r.invtPostBuf[invtPostBuf2] = r.invtPostBuf[invtPostBuf2].Sub(adjAmount)
+	r.invtPostBuf[invtPostBuf1] = r.invtPostBuf[invtPostBuf1].add(adjAmount, adjAmountAddCurr)
+	r.invtPostBuf[invtPostBuf2] = r.invtPostBuf[invtPostBuf2].add(adjAmount.Neg(), adjAmountAddCurr.Neg())
 	itemLedgEntry.Cost_posted_to_gl = itemLedgEntry.Adjusted_cost_invoiced_qty
+	itemLedgEntry.Add_curr_cost_posted_to_gl = itemLedgEntry.Add_curr_adj_cost_inv_qty
 	err := itemLedgEntry.ModifyOrError(false)
 	if err != nil {
 		return err
@@ -193,7 +208,8 @@ func (r *postInventoryCostToGL) postInvtPostingBuffer(run *Run, documentNo types
 	sort.Slice(keys, func(i, j int) bool { return invtPostBufLess(keys[i], keys[j]) })
 
 	for _, key := range keys {
-		if r.invtPostBuf[key].IsZero() {
+		buf := r.invtPostBuf[key]
+		if buf.amount.IsZero() && buf.addCurrAmount.IsZero() {
 			continue
 		}
 		genJnlLine := gtables.NewGenJournalLine(run)
@@ -252,9 +268,23 @@ func (r *postInventoryCostToGL) postInvtPostingBuffer(run *Run, documentNo types
 				}
 			}
 		}
-		err = genJnlLine.Validate("amount", r.invtPostBuf[key])
+		genJnlLine.Additional_currency_posting = gtables.GenJournalLine_Additional_currency_posting.None
+		err = genJnlLine.Validate("amount", buf.amount)
 		if err != nil {
 			return err
+		}
+		glSetup := gtables.GetGeneralLedgerSetup(run)
+		if glSetup.Additional_reporting_currency != "" {
+			genJnlLine.Source_currency_code = glSetup.Additional_reporting_currency
+			genJnlLine.Source_currency_amount = buf.addCurrAmount
+			if genJnlLine.Amount.IsZero() && !genJnlLine.Source_currency_amount.IsZero() {
+				genJnlLine.Additional_currency_posting = gtables.GenJournalLine_Additional_currency_posting.AdditionalCurrencyAmountOnly
+				err = genJnlLine.Validate("amount", genJnlLine.Source_currency_amount)
+				if err != nil {
+					return err
+				}
+				genJnlLine.Source_currency_amount = types.Decimal{}
+			}
 		}
 		genJnlLine.Department_code = key.departmentCode
 		genJnlLine.Project_code = key.projectCode
@@ -263,7 +293,7 @@ func (r *postInventoryCostToGL) postInvtPostingBuffer(run *Run, documentNo types
 			return err
 		}
 	}
-	r.invtPostBuf = map[invtPostBufKey]types.Decimal{}
+	r.invtPostBuf = map[invtPostBufKey]invtPostBufAmounts{}
 	return nil
 }
 

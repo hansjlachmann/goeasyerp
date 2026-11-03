@@ -82,3 +82,25 @@ func (h *TablesHandler) fillPreview(c *fiber.Ctx, table ftables.Table, tableName
 	}
 	return nil
 }
+
+// fillTemporaryFunctionPage: a function run from a page on a temporary source table works on one
+// of the page's rows — the table becomes temporary and the page's OnFindRecords fills it from
+// the page parameters again (as the list did), so the row is read by its key from there
+func fillTemporaryFunctionPage(db database.Executor, company string, dbType database.DBType, pageID int, tableName string, params map[string]string, table ftables.Table) error {
+	if pageID <= 0 {
+		return nil
+	}
+	page, err := pages.GetRegistry().GetPage(pageID)
+	if err != nil || !page.Page.SourceTableTemporary || !strings.EqualFold(page.Page.SourceTable, tableName) {
+		return nil
+	}
+	temp, ok := table.(temporaryRecord)
+	if !ok {
+		return nil
+	}
+	err = temp.InitTemporary(db, company, dbType)
+	if err != nil {
+		return err
+	}
+	return pages.RunFindRecords(pageID, table, params)
+}

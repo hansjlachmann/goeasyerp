@@ -10,8 +10,8 @@ import (
 // bomJournalLineLogic is the business logic of table 89 BOM Journal Line: a line assembles a
 // quantity of a bill of materials (its components are used when it is posted).
 //
-// Not migrated yet: reservations (Reserve, Reserved Qty.), the availability check of the
-// components (codeunit 311), item tracking (Lot No.), bins and recurring journals.
+// Not migrated yet: the availability check of the components (codeunit 311), item tracking
+// (Lot No.), bins and recurring journals.
 type bomJournalLineLogic struct{}
 
 func init() { gtables.RegisterBOMJournalLineLogic(bomJournalLineLogic{}) }
@@ -51,6 +51,7 @@ func (bomJournalLineLogic) OnValidate_Item_no(rec *gtables.BOMJournalLine) error
 	rec.Description = item.Description
 	rec.Unit_cost = item.Unit_cost
 	rec.Inventory_posting_group = item.Inventory_posting_group
+	rec.Reserve = gtables.BOMJournalLineReserve(item.Reserve)
 	rec.Total_cost = system.Round(rec.Quantity.Mul(rec.Unit_cost))
 	return rec.Validate("unit_of_measure_code", item.Base_unit_of_measure)
 }
@@ -68,7 +69,7 @@ func (bomJournalLineLogic) OnValidate_Quantity(rec *gtables.BOMJournalLine) erro
 	}
 	rec.Quantity_base = qtyBase
 	rec.Total_cost = system.Round(rec.Quantity.Mul(rec.Unit_cost))
-	return nil
+	return checkReservedNotAbove(gtables.BOMJournalLineTableName, "reserved_qty_base", rec.Quantity_base, rec.Reserved_qty_base)
 }
 
 // calcBOMJnlBaseQty (CalcBaseQty): a quantity in the base unit of measure

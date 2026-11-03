@@ -7,6 +7,7 @@ import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/itemjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/noseries"
 	"github.com/hansjlachmann/openerp/backend/business-logic/purchpost"
+	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
 	"github.com/hansjlachmann/openerp/backend/business-logic/salestax"
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
@@ -605,6 +606,8 @@ func (p *PurchPost) postItemJnlLine(purchLine *gtables.PurchaseLine, qtyToReceiv
 	itemJnlLine.Invoiced_quantity = qtyToInvoice.Mul(p.sign)
 	itemJnlLine.Invoiced_qty_base = qtyToInvoiceBase.Mul(p.sign)
 	itemJnlLine.Unit_cost = purchLine.Unit_cost_lcy
+	itemJnlLine.Source_currency_code = purchHeader.Currency_code
+	itemJnlLine.Source_currency_unit_cost = purchLine.Unit_cost
 	itemJnlLine.Indirect_cost_percent = purchLine.Indirect_cost_percent
 	itemJnlLine.Item_shpt_entry_no = itemRcptEntryNo
 	itemJnlLine.Amount = amounts[0].Mul(p.sign)
@@ -613,6 +616,19 @@ func (p *PurchPost) postItemJnlLine(purchLine *gtables.PurchaseLine, qtyToReceiv
 		itemJnlLine.Unit_amount = system.Round(amounts[0].Div(qtyToInvoice), types.MustDecimal("0.00001"))
 	} else {
 		itemJnlLine.Unit_amount = purchLine.Unit_cost_lcy
+	}
+	itemJnlLine.Reserve = gtables.ItemJournalLineReserve(purchLine.Reserve)
+
+	// the line's reservations go with the quantity received to the item journal line (codeunit
+	// 22 gives them to the entry it posts)
+	if !purchLine.Reserved_qty_base.IsZero() && !qtyToReceiveBase.IsZero() {
+		if !purchLine.Expected_receipt_date.Equal(itemJnlLine.Posting_date) {
+			return 0, apperrors.ReservShipmentDateNotPostingDate(gtables.PurchaseLineTableName, "expected_receipt_date")
+		}
+		err := reservmgt.New(p.src).TransferPurchLineToItemJnlLine(purchLine, itemJnlLine, qtyToReceiveBase)
+		if err != nil {
+			return 0, err
+		}
 	}
 	err := p.itemJnlPost.Run(itemJnlLine)
 	if err != nil {

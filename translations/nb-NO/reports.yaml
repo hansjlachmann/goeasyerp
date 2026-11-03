@@ -56,6 +56,7 @@ reports:
       ENTER_ENDING_DATE: "Du må angi sluttdatoen."
   shared:
     options:
+      use_add_rpt_curr: "Bruk ekstra rapporteringsvaluta"
       starting_date: "Startdato"
       ending_date: "Sluttdato"
       period_length: "Periodelengde"
@@ -94,6 +95,7 @@ reports:
       retain_maintenance_code: "Behold Vedlikeholdskode"
       retain_quantity: "Behold totaler: Antall"
     texts:
+      AMOUNTS_IN_CURRENCY: "Beløpene er i %1"
       OPTIONS: "Alternativer"
       DAY: "Dag"
       WEEK: "Uke"
@@ -136,6 +138,15 @@ reports:
     caption: "Datokomprimer vareposter"
     texts:
       WINDOW: "Datokomprimerer vareposter...\n\nVarenr.              #1##########\nDato                 #2######\n\nAntall nye poster    #3######\nAntall slettet       #4######"
+  "787":
+    caption: "Slett reservasjonsposter"
+    texts:
+      WINDOW: "Sletter reservasjonsposter...\n\nVarenr.              #1##########\nDato                 #2######\n\nAntall slettet       #3######"
+      CONFIRM: "Denne kjørselen sletter poster. Det er derfor viktig at du tar en sikkerhetskopi av databasen før du kjører den.\n\nVil du slette postene?"
+  "788":
+    caption: "Endre reservasjonsstatus"
+    texts:
+      CONFIRM: "Denne kjørselen endrer statusen til reservasjonsposter med gyldig til-dato til og med %1.\nVil du endre statusen til reservasjonspostene?"
   "789":
     caption: "Slett lageropptellingsposter"
     texts:
@@ -239,6 +250,7 @@ reports:
       AVERAGE_COST: "Gjennomsnittskost"
       LAST_DIRECT_COST: "Siste direkte kost"
       STANDARD_COST: "Standardkost"
+      ADD_CURR_AVERAGE_COST: "Gjennomsnittskost i tilleggsvaluta"
   "1191":
     caption: "Foreslå ressursprisendr. (ress.)"
     options:
@@ -510,6 +522,7 @@ reports:
   "502":
     caption: "Intrastat - kontrolliste"
     texts:
+      AMOUNTS_IN: "Alle beløp er i %1"
       TITLE: "Intrastat - kontrolliste"
       PAGE: "Side"
       STATISTICS_PERIOD: "Statistikkperiode: %1"
@@ -535,6 +548,8 @@ reports:
       DONE: "Intrastat-oppgaven med %1 poster ble laget; bunken er rapportert."
   "88":
     caption: "Mva - VIES-oppgave (fil)"
+    options:
+      show_amounts_in_add_currency: "Vis beløp i ekstra rapporteringsvaluta"
     texts:
       FILE_NAME: "VIES %1.txt"
       DONE: "VIES-oppgaven med %1 kunder ble laget."

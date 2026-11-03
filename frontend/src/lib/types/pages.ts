@@ -153,6 +153,7 @@ export interface Field {
 	drilldown_filter_field?: string;
 	drilldown_filter_value?: string;
 	drilldown_page_field?: string; // the drilldown opens the page whose number is in this record's field
+	check_box?: boolean; // a Yes/No FlowFilter above a matrix shown as a check box
 	drilldown_filters?: RunPageFilter[]; // with these filters (as an action's run_page_filters)
 	primary_key?: boolean;
 	required?: boolean;

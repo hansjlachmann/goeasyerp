@@ -2,6 +2,7 @@ package accsched
 
 import (
 	"github.com/hansjlachmann/openerp/backend/foundation/pages"
+	"github.com/hansjlachmann/openerp/backend/foundation/system"
 	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
@@ -43,6 +44,16 @@ func OpenColumnsPage(rec *gtables.AccSchedColumn, page *pages.Open) error {
 	return nil
 }
 
+// UseAddRptCurrFilter: the overview's Use Add. Reporting Currency, a Yes/No FlowFilter (Yes:
+// the amounts in the additional reporting currency)
+func UseAddRptCurrFilter(expression string) bool {
+	switch system.UpperCase(system.DelChr(expression, "<>", " ")) {
+	case "YES", "TRUE", "1":
+		return true
+	}
+	return false
+}
+
 // Overview calculates the overview of a schedule (page 490): its column layout's columns (those
 // not Never shown) and every line's cells for the line record's filters (the period, the
 // dimensions, the budget); a column formula with a percent shows a percent, a division by zero
@@ -72,6 +83,7 @@ func Overview(accSchedName *gtables.AccScheduleName, accSchedLine *gtables.AccSc
 		return headers, values, nil
 	}
 	accSchedManagement := New(accSchedLine)
+	accSchedManagement.SetParameters(UseAddRptCurrFilter(accSchedLine.Use_add_rpt_curr))
 	line := gtables.NewAccScheduleLine(accSchedLine)
 	line.Copy(accSchedLine)
 	for found := line.FindSetBuffered(); found; found = line.Next() {

@@ -264,6 +264,9 @@ type Field struct {
 	// (run_object "table:Customer.AssistEdit", registered WithAssistEdit) with the card's record
 	AssistEdit string `yaml:"assist_edit,omitempty" json:"assist_edit,omitempty"`
 	Type       string `yaml:"type,omitempty" json:"-"`
+	// CheckBox: a Yes/No FlowFilter above a matrix shown as a check box (checked: the filter
+	// Yes, else none) — a page variable switching the matrix, such as Use Add. Reporting Currency
+	CheckBox bool `yaml:"check_box,omitempty" json:"check_box,omitempty"`
 }
 
 // StyleExpr is a conditional style of a list cell: Style when Field = Equal (or <> NotEqual)

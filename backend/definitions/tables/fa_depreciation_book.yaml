@@ -650,7 +650,7 @@ table:
       type: types.Decimal
       db_name: fa_add_currency_factor
       precision: 18
-      scale: 2
+      scale: 15
       decimal_places: "0:15"
 
   keys:

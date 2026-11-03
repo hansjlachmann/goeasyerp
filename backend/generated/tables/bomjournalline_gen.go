@@ -36,6 +36,9 @@
 //	OnValidate_Recurring_method(rec *gtables.BOMJournalLine) error
 //	OnValidate_Expiration_date(rec *gtables.BOMJournalLine) error
 //	OnValidate_Recurring_frequency(rec *gtables.BOMJournalLine) error
+//	OnValidate_Reserved_quantity(rec *gtables.BOMJournalLine) error
+//	OnValidate_Reserve(rec *gtables.BOMJournalLine) error
+//	OnValidate_Reserved_qty_base(rec *gtables.BOMJournalLine) error
 
 package tables
 
@@ -76,6 +79,23 @@ func (o BOMJournalLineRecurring_method) IsValid() bool {
 	return o >= 0 && o < 3
 }
 
+// BOMJournalLineReserve represents the reserve option field
+type BOMJournalLineReserve int
+
+// String returns the text representation of BOMJournalLineReserve
+func (o BOMJournalLineReserve) String() string {
+	options := []string{"Never", "Optional", "Always"}
+	if o >= 0 && int(o) < len(options) {
+		return options[o]
+	}
+	return ""
+}
+
+// IsValid checks if the BOMJournalLineReserve value is within valid range
+func (o BOMJournalLineReserve) IsValid() bool {
+	return o >= 0 && o < 3
+}
+
 // BOMJournalLine represents Table 89: BOM_Journal_Line
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterBOMJournalLineLogic.
@@ -106,6 +126,9 @@ type BOMJournalLine struct {
 	Recurring_method        BOMJournalLineRecurring_method `db:"recurring_method"`
 	Expiration_date         types.Date                     `db:"expiration_date"`
 	Recurring_frequency     types.Code                     `db:"recurring_frequency"`
+	Reserved_quantity       types.Decimal                  `db:"reserved_quantity"`
+	Reserve                 BOMJournalLineReserve          `db:"reserve"`
+	Reserved_qty_base       types.Decimal                  `db:"reserved_qty_base"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -180,6 +203,17 @@ var BOMJournalLine_Recurring_method = struct {
 	Variable: 2,
 }
 
+// BOMJournalLine_Reserve provides named constants for the reserve option field (FieldName.OptionValue syntax)
+var BOMJournalLine_Reserve = struct {
+	Never    BOMJournalLineReserve
+	Optional BOMJournalLineReserve
+	Always   BOMJournalLineReserve
+}{
+	Never:    0,
+	Optional: 1,
+	Always:   2,
+}
+
 // ========================================
 // Field numbers (field IDs)
 // ========================================
@@ -213,6 +247,9 @@ var BOMJournalLine_FieldNo = struct {
 	Recurring_method        int
 	Expiration_date         int
 	Recurring_frequency     int
+	Reserved_quantity       int
+	Reserve                 int
+	Reserved_qty_base       int
 }{
 	Journal_template_name:   1,
 	Journal_batch_name:      15,
@@ -240,6 +277,9 @@ var BOMJournalLine_FieldNo = struct {
 	Recurring_method:        17,
 	Expiration_date:         18,
 	Recurring_frequency:     19,
+	Reserved_quantity:       23,
+	Reserve:                 24,
+	Reserved_qty_base:       5423,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -297,6 +337,12 @@ func (t *BOMJournalLine) FieldNo(fieldName string) int {
 		return 18
 	case "recurring_frequency":
 		return 19
+	case "reserved_quantity":
+		return 23
+	case "reserve":
+		return 24
+	case "reserved_qty_base":
+		return 5423
 	}
 	return 0
 }
@@ -356,6 +402,12 @@ func (t *BOMJournalLine) FieldName(fieldNo int) string {
 		return "expiration_date"
 	case 19:
 		return "recurring_frequency"
+	case 23:
+		return "reserved_quantity"
+	case 24:
+		return "reserve"
+	case 5423:
+		return "reserved_qty_base"
 	}
 	return ""
 }
@@ -535,6 +587,15 @@ type (
 	BOMJournalLineOnValidate_Recurring_frequency interface {
 		OnValidate_Recurring_frequency(rec *BOMJournalLine) error
 	}
+	BOMJournalLineOnValidate_Reserved_quantity interface {
+		OnValidate_Reserved_quantity(rec *BOMJournalLine) error
+	}
+	BOMJournalLineOnValidate_Reserve interface {
+		OnValidate_Reserve(rec *BOMJournalLine) error
+	}
+	BOMJournalLineOnValidate_Reserved_qty_base interface {
+		OnValidate_Reserved_qty_base(rec *BOMJournalLine) error
+	}
 )
 
 // bOMJournalLineLogic is the registered business logic of BOM_Journal_Line, in
@@ -616,6 +677,12 @@ func bOMJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(BOMJournalLineOnValidate_Expiration_date)
 	case "OnValidate_Recurring_frequency":
 		_, ok = logic.(BOMJournalLineOnValidate_Recurring_frequency)
+	case "OnValidate_Reserved_quantity":
+		_, ok = logic.(BOMJournalLineOnValidate_Reserved_quantity)
+	case "OnValidate_Reserve":
+		_, ok = logic.(BOMJournalLineOnValidate_Reserve)
+	case "OnValidate_Reserved_qty_base":
+		_, ok = logic.(BOMJournalLineOnValidate_Reserved_qty_base)
 	default:
 		return false, false
 	}
@@ -800,6 +867,9 @@ func GetBOMJournalLineTableSchema() string {
 		recurring_method INTEGER CHECK (recurring_method >= 0 AND recurring_method <= 2),
 		expiration_date TEXT,
 		recurring_frequency TEXT(20),
+		reserved_quantity TEXT,
+		reserve INTEGER CHECK (reserve >= 0 AND reserve <= 2),
+		reserved_qty_base TEXT,
 		PRIMARY KEY (journal_template_name, journal_batch_name, line_no)
 	`
 }
@@ -833,6 +903,9 @@ func GetBOMJournalLinePostgresTableSchema() string {
 		recurring_method INTEGER CHECK (recurring_method >= 0 AND recurring_method <= 2),
 		expiration_date TIMESTAMP,
 		recurring_frequency VARCHAR(20),
+		reserved_quantity NUMERIC,
+		reserve INTEGER CHECK (reserve >= 0 AND reserve <= 2),
+		reserved_qty_base NUMERIC,
 		PRIMARY KEY (journal_template_name, journal_batch_name, line_no)
 	`
 }
@@ -989,6 +1062,9 @@ func (t *BOMJournalLine) StoreOldValues() {
 	t.oldValues["recurring_method"] = t.Recurring_method
 	t.oldValues["expiration_date"] = t.Expiration_date
 	t.oldValues["recurring_frequency"] = t.Recurring_frequency
+	t.oldValues["reserved_quantity"] = t.Reserved_quantity
+	t.oldValues["reserve"] = t.Reserve
+	t.oldValues["reserved_qty_base"] = t.Reserved_qty_base
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1080,6 +1156,15 @@ func (t *BOMJournalLine) XRec() *BOMJournalLine {
 	}
 	if v, ok := t.oldValues["recurring_frequency"].(types.Code); ok {
 		x.Recurring_frequency = v
+	}
+	if v, ok := t.oldValues["reserved_quantity"].(types.Decimal); ok {
+		x.Reserved_quantity = v
+	}
+	if v, ok := t.oldValues["reserve"].(BOMJournalLineReserve); ok {
+		x.Reserve = v
+	}
+	if v, ok := t.oldValues["reserved_qty_base"].(types.Decimal); ok {
+		x.Reserved_qty_base = v
 	}
 	return x
 }
@@ -1186,6 +1271,9 @@ func (t *BOMJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	var recurring_methodInt int
 	var expiration_dateNull sql.NullString
 	var recurring_frequencyNull sql.NullString
+	var reserved_quantityNull sql.NullString
+	var reserveInt int
+	var reserved_qty_baseNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1195,7 +1283,7 @@ func (t *BOMJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1228,6 +1316,9 @@ func (t *BOMJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 		&recurring_methodInt,
 		&expiration_dateNull,
 		&recurring_frequencyNull,
+		&reserved_quantityNull,
+		&reserveInt,
+		&reserved_qty_baseNull,
 	)
 
 	if err != nil {
@@ -1267,6 +1358,9 @@ func (t *BOMJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	t.Recurring_method = BOMJournalLineRecurring_method(recurring_methodInt)
 	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
 	t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
+	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+	t.Reserve = BOMJournalLineReserve(reserveInt)
+	t.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1315,11 +1409,14 @@ func (t *BOMJournalLine) Insert(runTrigger bool) bool {
 		t.Recurring_method,
 		t.Expiration_date,
 		t.Recurring_frequency,
+		t.Reserved_quantity,
+		t.Reserve,
+		t.Reserved_qty_base,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1383,10 +1480,13 @@ func (t *BOMJournalLine) InsertAll(records []*BOMJournalLine, runTrigger bool) e
 			r.Recurring_method,
 			r.Expiration_date,
 			r.Recurring_frequency,
+			r.Reserved_quantity,
+			r.Reserve,
+			r.Reserved_qty_base,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, BOMJournalLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "item_no", "posting_date", "document_no", "description", "department_code", "project_code", "location_code", "quantity", "unit_cost", "total_cost", "inventory_posting_group", "source_code", "reason_code", "document_date", "external_document_no", "posting_no_series", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "recurring_method", "expiration_date", "recurring_frequency"}
+	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "item_no", "posting_date", "document_no", "description", "department_code", "project_code", "location_code", "quantity", "unit_cost", "total_cost", "inventory_posting_group", "source_code", "reason_code", "document_date", "external_document_no", "posting_no_series", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "recurring_method", "expiration_date", "recurring_frequency", "reserved_quantity", "reserve", "reserved_qty_base"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1536,6 +1636,18 @@ func (t *BOMJournalLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "recurring_frequency = ?")
 			values = append(values, t.Recurring_frequency)
 		}
+		if t.hasFieldChanged("reserved_quantity") {
+			setClauses = append(setClauses, "reserved_quantity = ?")
+			values = append(values, t.Reserved_quantity)
+		}
+		if t.hasFieldChanged("reserve") {
+			setClauses = append(setClauses, "reserve = ?")
+			values = append(values, t.Reserve)
+		}
+		if t.hasFieldChanged("reserved_qty_base") {
+			setClauses = append(setClauses, "reserved_qty_base = ?")
+			values = append(values, t.Reserved_qty_base)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -1589,6 +1701,12 @@ func (t *BOMJournalLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Expiration_date)
 		setClauses = append(setClauses, "recurring_frequency = ?")
 		values = append(values, t.Recurring_frequency)
+		setClauses = append(setClauses, "reserved_quantity = ?")
+		values = append(values, t.Reserved_quantity)
+		setClauses = append(setClauses, "reserve = ?")
+		values = append(values, t.Reserve)
+		setClauses = append(setClauses, "reserved_qty_base = ?")
+		values = append(values, t.Reserved_qty_base)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -1747,6 +1865,18 @@ func (t *BOMJournalLine) hasFieldChanged(fieldName string) bool {
 	case "recurring_frequency":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Recurring_frequency.Equal(old)
+		}
+	case "reserved_quantity":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Reserved_quantity.Equal(old)
+		}
+	case "reserve":
+		if old, ok := oldValue.(BOMJournalLineReserve); ok {
+			return t.Reserve != old
+		}
+	case "reserved_qty_base":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Reserved_qty_base.Equal(old)
 		}
 	}
 
@@ -2006,6 +2136,12 @@ func (t *BOMJournalLine) columnName(fieldName string) (string, bool) {
 		return "expiration_date", true
 	case strings.ToLower("recurring_frequency"):
 		return "recurring_frequency", true
+	case strings.ToLower("reserved_quantity"):
+		return "reserved_quantity", true
+	case strings.ToLower("reserve"):
+		return "reserve", true
+	case strings.ToLower("reserved_qty_base"):
+		return "reserved_qty_base", true
 	}
 	return "", false
 }
@@ -2188,6 +2324,10 @@ func (t *BOMJournalLine) isDecimalColumn(column string) bool {
 	case "qty_per_unit_of_measure":
 		return true
 	case "quantity_base":
+		return true
+	case "reserved_quantity":
+		return true
+	case "reserved_qty_base":
 		return true
 	}
 	return false
@@ -2379,7 +2519,7 @@ func (t *BOMJournalLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2409,6 +2549,9 @@ func (t *BOMJournalLine) FindFirst() bool {
 	var recurring_methodInt int
 	var expiration_dateNull sql.NullString
 	var recurring_frequencyNull sql.NullString
+	var reserved_quantityNull sql.NullString
+	var reserveInt int
+	var reserved_qty_baseNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&journal_template_nameNull,
@@ -2437,6 +2580,9 @@ func (t *BOMJournalLine) FindFirst() bool {
 		&recurring_methodInt,
 		&expiration_dateNull,
 		&recurring_frequencyNull,
+		&reserved_quantityNull,
+		&reserveInt,
+		&reserved_qty_baseNull,
 	)
 
 	if err != nil {
@@ -2473,6 +2619,9 @@ func (t *BOMJournalLine) FindFirst() bool {
 	t.Recurring_method = BOMJournalLineRecurring_method(recurring_methodInt)
 	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
 	t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
+	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+	t.Reserve = BOMJournalLineReserve(reserveInt)
+	t.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2493,7 +2642,7 @@ func (t *BOMJournalLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2523,6 +2672,9 @@ func (t *BOMJournalLine) FindLast() bool {
 	var recurring_methodInt int
 	var expiration_dateNull sql.NullString
 	var recurring_frequencyNull sql.NullString
+	var reserved_quantityNull sql.NullString
+	var reserveInt int
+	var reserved_qty_baseNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&journal_template_nameNull,
@@ -2551,6 +2703,9 @@ func (t *BOMJournalLine) FindLast() bool {
 		&recurring_methodInt,
 		&expiration_dateNull,
 		&recurring_frequencyNull,
+		&reserved_quantityNull,
+		&reserveInt,
+		&reserved_qty_baseNull,
 	)
 
 	if err != nil {
@@ -2587,6 +2742,9 @@ func (t *BOMJournalLine) FindLast() bool {
 	t.Recurring_method = BOMJournalLineRecurring_method(recurring_methodInt)
 	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
 	t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
+	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+	t.Reserve = BOMJournalLineReserve(reserveInt)
+	t.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2637,7 +2795,7 @@ func (t *BOMJournalLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2731,6 +2889,9 @@ func (t *BOMJournalLine) Next(steps ...int) bool {
 		var recurring_methodInt int
 		var expiration_dateNull sql.NullString
 		var recurring_frequencyNull sql.NullString
+		var reserved_quantityNull sql.NullString
+		var reserveInt int
+		var reserved_qty_baseNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&journal_template_nameNull,
@@ -2759,6 +2920,9 @@ func (t *BOMJournalLine) Next(steps ...int) bool {
 			&recurring_methodInt,
 			&expiration_dateNull,
 			&recurring_frequencyNull,
+			&reserved_quantityNull,
+			&reserveInt,
+			&reserved_qty_baseNull,
 		)
 
 		if err != nil {
@@ -2794,6 +2958,9 @@ func (t *BOMJournalLine) Next(steps ...int) bool {
 		t.Recurring_method = BOMJournalLineRecurring_method(recurring_methodInt)
 		t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
 		t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
+		t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+		t.Reserve = BOMJournalLineReserve(reserveInt)
+		t.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -2843,7 +3010,7 @@ func (t *BOMJournalLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2890,6 +3057,9 @@ func (t *BOMJournalLine) FindSetBuffered() bool {
 		var recurring_methodInt int
 		var expiration_dateNull sql.NullString
 		var recurring_frequencyNull sql.NullString
+		var reserved_quantityNull sql.NullString
+		var reserveInt int
+		var reserved_qty_baseNull sql.NullString
 
 		err := rows.Scan(
 			&journal_template_nameNull,
@@ -2918,6 +3088,9 @@ func (t *BOMJournalLine) FindSetBuffered() bool {
 			&recurring_methodInt,
 			&expiration_dateNull,
 			&recurring_frequencyNull,
+			&reserved_quantityNull,
+			&reserveInt,
+			&reserved_qty_baseNull,
 		)
 
 		if err != nil {
@@ -2951,6 +3124,9 @@ func (t *BOMJournalLine) FindSetBuffered() bool {
 		record.Recurring_method = BOMJournalLineRecurring_method(recurring_methodInt)
 		record.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
 		record.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
+		record.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+		record.Reserve = BOMJournalLineReserve(reserveInt)
+		record.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -3005,6 +3181,9 @@ func (t *BOMJournalLine) copyFromBuffered(record *BOMJournalLine) {
 	t.Recurring_method = record.Recurring_method
 	t.Expiration_date = record.Expiration_date
 	t.Recurring_frequency = record.Recurring_frequency
+	t.Reserved_quantity = record.Reserved_quantity
+	t.Reserve = record.Reserve
+	t.Reserved_qty_base = record.Reserved_qty_base
 	t.StoreOldValues()
 }
 
@@ -3766,6 +3945,111 @@ func (t *BOMJournalLine) ValidateField(fieldName string, value interface{}) erro
 			}
 		}
 		return nil
+	case "reserved_quantity":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Reserved_quantity = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Reserved_quantity, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field reserved_quantity: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Reserved_quantity = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Reserved_quantity = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Reserved_quantity = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field reserved_quantity (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(BOMJournalLineOnValidate_Reserved_quantity); ok {
+				if err := trg.OnValidate_Reserved_quantity(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "reserve":
+		// Set field value
+		// Accept enum type directly
+		if v, ok := value.(BOMJournalLineReserve); ok {
+			t.Reserve = v
+			// Accept int (convert to enum)
+		} else if v, ok := value.(int); ok {
+			if v < 0 || v >= 3 {
+				return fmt.Errorf("invalid option value %d for field reserve (valid range: 0-%d)", v, 3-1)
+			}
+			t.Reserve = BOMJournalLineReserve(v)
+			// Accept float64 (JSON numbers decode as float64)
+		} else if v, ok := value.(float64); ok {
+			intVal := int(v)
+			if intVal < 0 || intVal >= 3 {
+				return fmt.Errorf("invalid option value %d for field reserve (valid range: 0-%d)", intVal, 3-1)
+			}
+			t.Reserve = BOMJournalLineReserve(intVal)
+			// Accept string (lookup in options and convert)
+		} else if v, ok := value.(string); ok {
+			if v == "" {
+				// Empty string defaults to first option (behavior)
+				t.Reserve = 0
+			} else {
+				options := []string{"Never", "Optional", "Always"}
+				found := false
+				for i, opt := range options {
+					if opt == v {
+						t.Reserve = BOMJournalLineReserve(i)
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("invalid option '%s' for field reserve (valid options: %v)", v, options)
+				}
+			}
+		} else {
+			return fmt.Errorf("invalid type for field reserve (expected BOMJournalLineReserve, int, or string)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(BOMJournalLineOnValidate_Reserve); ok {
+				if err := trg.OnValidate_Reserve(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "reserved_qty_base":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Reserved_qty_base = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Reserved_qty_base, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field reserved_qty_base: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Reserved_qty_base = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Reserved_qty_base = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Reserved_qty_base = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field reserved_qty_base (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(BOMJournalLineOnValidate_Reserved_qty_base); ok {
+				if err := trg.OnValidate_Reserved_qty_base(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -3830,6 +4114,12 @@ func (t *BOMJournalLine) FieldValue(no int) (any, bool) {
 		return t.Expiration_date, true
 	case 19:
 		return t.Recurring_frequency, true
+	case 23:
+		return t.Reserved_quantity, true
+	case 24:
+		return t.Reserve, true
+	case 5423:
+		return t.Reserved_qty_base, true
 	}
 	return nil, false
 }
@@ -4039,6 +4329,21 @@ func (t *BOMJournalLine) SetFieldValue(no int, value any) bool {
 			t.Recurring_frequency = types.NewCode(v)
 			return true
 		}
+	case 23:
+		if v, ok := value.(types.Decimal); ok {
+			t.Reserved_quantity = v
+			return true
+		}
+	case 24:
+		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
+			t.Reserve = BOMJournalLineReserve(i)
+			return true
+		}
+	case 5423:
+		if v, ok := value.(types.Decimal); ok {
+			t.Reserved_qty_base = v
+			return true
+		}
 	}
 	return false
 }
@@ -4124,6 +4429,10 @@ func (t *BOMJournalLine) CalcSums(fieldNames ...string) error {
 			column = "qty_per_unit_of_measure"
 		case "quantity_base":
 			column = "quantity_base"
+		case "reserved_quantity":
+			column = "reserved_quantity"
+		case "reserved_qty_base":
+			column = "reserved_qty_base"
 		default:
 			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of BOM_Journal_Line", name)
 		}
@@ -4169,6 +4478,18 @@ func (t *BOMJournalLine) CalcSums(fieldNames ...string) error {
 				return fmt.Errorf("CalcSums BOM_Journal_Line.%s: %w", column, err)
 			}
 			t.Quantity_base = d
+		case "reserved_quantity":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums BOM_Journal_Line.%s: %w", column, err)
+			}
+			t.Reserved_quantity = d
+		case "reserved_qty_base":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums BOM_Journal_Line.%s: %w", column, err)
+			}
+			t.Reserved_qty_base = d
 		}
 	}
 	return nil
@@ -4574,6 +4895,12 @@ func (t *BOMJournalLine) columnValue(column string) (interface{}, bool) {
 		return t.Expiration_date, true
 	case "recurring_frequency":
 		return t.Recurring_frequency, true
+	case "reserved_quantity":
+		return t.Reserved_quantity, true
+	case "reserve":
+		return int(t.Reserve), true
+	case "reserved_qty_base":
+		return t.Reserved_qty_base, true
 	}
 	return nil, false
 }
@@ -4659,6 +4986,9 @@ func (t *BOMJournalLine) Init() {
 	t.Recurring_method = 0
 	t.Expiration_date = *new(types.Date)
 	t.Recurring_frequency = *new(types.Code)
+	t.Reserved_quantity = *new(types.Decimal)
+	t.Reserve = 0
+	t.Reserved_qty_base = *new(types.Decimal)
 	t.applyDefaults()
 }
 
@@ -4719,6 +5049,9 @@ func (t *BOMJournalLine) ToMap() map[string]interface{} {
 		"recurring_method":        int(t.Recurring_method),
 		"expiration_date":         t.Expiration_date.String(),
 		"recurring_frequency":     t.Recurring_frequency.String(),
+		"reserved_quantity":       t.Reserved_quantity.String(),
+		"reserve":                 int(t.Reserve),
+		"reserved_qty_base":       t.Reserved_qty_base.String(),
 	}
 }
 
@@ -4907,6 +5240,47 @@ func (t *BOMJournalLine) FromMap(data map[string]interface{}) {
 	if v, ok := data["recurring_frequency"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Recurring_frequency = types.NewCode(s)
+		}
+	}
+	if v, ok := data["reserved_quantity"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Reserved_quantity, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Reserved_quantity = types.NewDecimal(val)
+		case int:
+			t.Reserved_quantity = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Reserved_quantity = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["reserve"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Reserve = BOMJournalLineReserve(int(val))
+		case int:
+			t.Reserve = BOMJournalLineReserve(val)
+		case string:
+			// Lookup string value in options
+			options := []string{"Never", "Optional", "Always"}
+			for i, opt := range options {
+				if opt == val {
+					t.Reserve = BOMJournalLineReserve(i)
+					break
+				}
+			}
+		}
+	}
+	if v, ok := data["reserved_qty_base"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Reserved_qty_base, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Reserved_qty_base = types.NewDecimal(val)
+		case int:
+			t.Reserved_qty_base = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Reserved_qty_base = types.NewDecimalFromInt(val)
 		}
 	}
 }
@@ -5200,6 +5574,40 @@ func (t *BOMJournalLine) GetFields() []tables.FieldInfo {
 			PrimaryKey: false,
 			FlowField:  false,
 		},
+		{
+			No:            23,
+			Name:          "reserved_quantity",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     false,
+			ReadOnly:      true,
+			DecimalPlaces: "0:5",
+		},
+		{
+			No:         24,
+			Name:       "reserve",
+			Type:       tables.FieldTypeOption,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:            5423,
+			Name:          "reserved_qty_base",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     false,
+			ReadOnly:      true,
+			DecimalPlaces: "0:5",
+		},
 	}
 }
 
@@ -5225,6 +5633,7 @@ func (t *BOMJournalLine) GetFlowFields() []string {
 func (t *BOMJournalLine) GetOptionFields() map[string][]string {
 	return map[string][]string{
 		"recurring_method": {" ", "Fixed", "Variable"},
+		"reserve":          {"Never", "Optional", "Always"},
 	}
 }
 

@@ -35,8 +35,12 @@ func (salesLineLogic) OnInsert(rec *gtables.SalesLine) error {
 
 // OnDelete: an order line shipped but not invoiced stays
 func (salesLineLogic) OnDelete(rec *gtables.SalesLine) error {
+	err := rec.TestField("reserved_qty_base", types.Decimal{})
+	if err != nil {
+		return err
+	}
 	if rec.Document_type == gtables.SalesLine_Document_type.Order {
-		err := rec.TestField("qty_shipped_not_invoiced", types.Decimal{})
+		err = rec.TestField("qty_shipped_not_invoiced", types.Decimal{})
 		if err != nil {
 			return err
 		}
@@ -90,6 +94,9 @@ func salesLineDate(salesHeader *gtables.SalesHeader) types.Date {
 // OnValidate_Type: a new type starts the line again (not on a line already shipped)
 func (salesLineLogic) OnValidate_Type(rec *gtables.SalesLine) error {
 	err := testSalesLineNotShipped(rec)
+	if err == nil {
+		err = rec.TestField("reserved_qty_base", types.Decimal{})
+	}
 	if err != nil {
 		return err
 	}
@@ -104,6 +111,9 @@ func (salesLineLogic) OnValidate_Type(rec *gtables.SalesLine) error {
 // unit of measure, unit cost, posting groups, the price and the quantity it had
 func (salesLineLogic) OnValidate_No(rec *gtables.SalesLine) error {
 	err := testSalesLineNotShipped(rec)
+	if err == nil {
+		err = rec.TestField("reserved_qty_base", types.Decimal{})
+	}
 	if err != nil {
 		return err
 	}
@@ -196,6 +206,11 @@ func (salesLineLogic) OnValidate_No(rec *gtables.SalesLine) error {
 		rec.Gen_prod_posting_group = item.Gen_prod_posting_group
 		rec.Tax_prod_posting_group = item.Tax_prod_posting_group
 		rec.Tax_group_code = item.Tax_group_code
+		if item.Reserve == gtables.Item_Reserve.Optional {
+			rec.Reserve = gtables.SalesLineReserve(salesHeader.Reserve)
+		} else {
+			rec.Reserve = gtables.SalesLineReserve(item.Reserve)
+		}
 		if salesHeader.Language_code != "" {
 			itemTranslation := gtables.NewItemTranslation(rec)
 			if itemTranslation.Get(map[string]interface{}{"item_no": item.No, "variant_code": "", "language_code": salesHeader.Language_code}) {
@@ -282,6 +297,9 @@ func (salesLineLogic) OnValidate_Quantity(rec *gtables.SalesLine) error {
 		return apperrors.SalesQtyLessThan(gtables.SalesLineTableName, "quantity_base", "qty_invoiced_base")
 	}
 	err = initSalesLineOutstanding(rec)
+	if err == nil {
+		err = checkReservedNotAbove(gtables.SalesLineTableName, "reserved_qty_base", rec.Outstanding_qty_base, rec.Reserved_qty_base)
+	}
 	if err != nil {
 		return err
 	}
@@ -779,7 +797,11 @@ func (salesLineLogic) OnValidate_Unit_of_measure_code(rec *gtables.SalesLine) er
 	} else {
 		rec.Qty_per_unit_of_measure = types.NewDecimalFromInt(1)
 	}
-	return rec.Validate("quantity", rec.Quantity)
+	err := rec.Validate("quantity", rec.Quantity)
+	if err != nil {
+		return err
+	}
+	return rec.Validate("reserved_qty_base", rec.Reserved_qty_base)
 }
 
 // OnValidate_Quantity_base: only in the base unit of measure; the quantity follows

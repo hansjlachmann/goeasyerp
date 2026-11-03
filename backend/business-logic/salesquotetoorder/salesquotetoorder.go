@@ -4,12 +4,14 @@
 package salesquotetoorder
 
 import (
+	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
 
-// Run (OnRun) makes the order of a quote and returns it (GetSalesOrderHeader). Not migrated:
-// the credit limit check (codeunit 312), the availability check (311), reservations.
+// Run (OnRun) makes the order of a quote and returns it (GetSalesOrderHeader); the quote lines'
+// reservations go to the order lines. Not migrated: the credit limit check (codeunit 312), the
+// availability check (311).
 func Run(rec *gtables.SalesHeader) (*gtables.SalesHeader, error) {
 	err := rec.TestField("document_type", gtables.SalesHeader_Document_type.Quote)
 	if err != nil {
@@ -46,14 +48,30 @@ func Run(rec *gtables.SalesHeader) (*gtables.SalesHeader, error) {
 		return nil, err
 	}
 
+	reservMgt := reservmgt.New(rec)
 	salesQuoteLine := gtables.NewSalesLine(rec)
 	salesQuoteLine.SetRange("document_type", gtables.SalesLineDocument_type(rec.Document_type))
 	salesQuoteLine.SetRange("document_no", rec.No)
 	for found := salesQuoteLine.FindSet(); found; found = salesQuoteLine.Next() {
 		salesOrderLine = gtables.NewSalesLine(rec)
 		salesOrderLine.TransferFields(salesQuoteLine)
+		if !salesOrderLine.Reserved_qty_base.IsZero() {
+			err = salesOrderLine.Validate("reserved_qty_base", types.Decimal{})
+			if err != nil {
+				return nil, err
+			}
+		}
 		salesOrderLine.Document_type = gtables.SalesLineDocument_type(salesOrderHeader.Document_type)
 		salesOrderLine.Document_no = salesOrderHeader.No
+		if !salesQuoteLine.Reserved_qty_base.IsZero() {
+			err = reservMgt.TransferSaleLineToSalesLine(salesQuoteLine, salesOrderLine, salesQuoteLine.Reserved_qty_base)
+			if err == nil {
+				err = salesQuoteLine.TestField("reserved_qty_base", types.Decimal{})
+			}
+			if err != nil {
+				return nil, err
+			}
+		}
 		err = salesOrderLine.InsertOrError(false)
 		if err != nil {
 			return nil, err

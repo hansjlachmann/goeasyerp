@@ -1000,3 +1000,52 @@ pages:
     caption: "Setup Checklist Comment Sheet"
   business_units:
     caption: "Business Units"
+  reservation_setup:
+    caption: "Reservation Setup"
+  reservation_entries:
+    caption: "Reservation Entries"
+    fields:
+      reserved_for: "Reserved For"
+      reserved_from: "Reserved From"
+  reservation:
+    caption: "Reservation"
+    fields:
+      item_no: "Item No."
+      variant_code: "Variant Code"
+      location_code: "Location Code"
+      shipment_date: "Shipment Date"
+      valid_to_date: "Valid-to Date"
+      qty_to_reserve: "Quantity to Reserve"
+      qty_reserved: "Reserved Quantity"
+      unreserved_quantity: "Unreserved Quantity"
+      optional_lines: "Optional Lines"
+  available_sales_lines:
+    caption: "Available - Sales Lines"
+    fields:
+      available_quantity: "Available Quantity"
+      current_reserved_quantity: "Current Reserved Quantity"
+  available_requisition_lines:
+    caption: "Available - Requisition Lines"
+    fields:
+      available_quantity: "Available Quantity"
+      current_reserved_quantity: "Current Reserved Quantity"
+  available_purchase_lines:
+    caption: "Available - Purchase Lines"
+    fields:
+      available_quantity: "Available Quantity"
+      current_reserved_quantity: "Current Reserved Quantity"
+  available_item_jnl_lines:
+    caption: "Available - Item Jnl. Lines"
+    fields:
+      available_quantity: "Available Quantity"
+      current_reserved_quantity: "Current Reserved Quantity"
+  available_bom_jnl_lines:
+    caption: "Available - BOM Jnl. Lines"
+    fields:
+      available_quantity: "Available Quantity"
+      current_reserved_quantity: "Current Reserved Quantity"
+  available_item_ledg_entries:
+    caption: "Available - Item Ledg. Entries"
+    fields:
+      available_quantity: "Available Quantity"
+      current_reserved_quantity: "Current Reserved Quantity"

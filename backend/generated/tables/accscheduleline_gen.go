@@ -133,6 +133,8 @@ type AccScheduleLine struct {
 	Project_filter string
 	// FlowFilter budget_filter (types.Code): the filter expression FlowFields apply — not stored
 	Budget_filter string
+	// FlowFilter use_add_rpt_curr (bool): the filter expression FlowFields apply — not stored
+	Use_add_rpt_curr string
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -271,6 +273,7 @@ var AccScheduleLine_FieldNo = struct {
 	Department_filter int
 	Project_filter    int
 	Budget_filter     int
+	Use_add_rpt_curr  int
 }{
 	Schedule_name:     1,
 	Line_no:           2,
@@ -286,6 +289,7 @@ var AccScheduleLine_FieldNo = struct {
 	Department_filter: 12,
 	Project_filter:    13,
 	Budget_filter:     14,
+	Use_add_rpt_curr:  902,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -319,6 +323,8 @@ func (t *AccScheduleLine) FieldNo(fieldName string) int {
 		return 13
 	case "budget_filter":
 		return 14
+	case "use_add_rpt_curr":
+		return 902
 	}
 	return 0
 }
@@ -354,6 +360,8 @@ func (t *AccScheduleLine) FieldName(fieldNo int) string {
 		return "project_filter"
 	case 14:
 		return "budget_filter"
+	case 902:
+		return "use_add_rpt_curr"
 	}
 	return ""
 }
@@ -3675,6 +3683,12 @@ func (t *AccScheduleLine) SetFlowFilter(field, expr string) error {
 		}
 		t.Budget_filter = expr
 		return nil
+	case "use_add_rpt_curr":
+		if err := flowfilter.Validate(flowfilter.KindBool, expr); err != nil {
+			return err
+		}
+		t.Use_add_rpt_curr = expr
+		return nil
 	}
 	return fmt.Errorf("%q is not a FlowFilter field of Acc_Schedule_Line", field)
 }
@@ -3686,6 +3700,7 @@ func (t *AccScheduleLine) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 		{Name: "department_filter", Kind: string(flowfilter.KindCode)},
 		{Name: "project_filter", Kind: string(flowfilter.KindCode)},
 		{Name: "budget_filter", Kind: string(flowfilter.KindCode)},
+		{Name: "use_add_rpt_curr", Kind: string(flowfilter.KindBool)},
 	}
 }
 

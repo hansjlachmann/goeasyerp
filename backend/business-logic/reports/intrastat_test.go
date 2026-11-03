@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hansjlachmann/openerp/backend/business-logic/demodata"
+	"github.com/hansjlachmann/openerp/backend/business-logic/intrastatjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/itemjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/purchposting"
 	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
@@ -92,4 +93,38 @@ func TestIntrastat(t *testing.T) {
 	if !strings.Contains(string(result.File), "LIST") || !strings.Contains(string(result.File), "\r\n10") {
 		t.Errorf("VIES file:\n%s", result.File)
 	}
+
+	// in euro as the additional reporting currency: Get Entries in a batch with Amounts in Add.
+	// Currency takes the amounts in euro (11.50 a euro, rounded to whole euro), the checklist
+	// says so
+	lcyAmount := line.Amount
+	_, err = reports.Execute(reports.AdjustAddReportingCurrencyID, db, "demo", database.DBTypeSQLite, reports.RunOptions{
+		Options: map[string]string{"additional_reporting_currency": "EUR", "document_no": "ACY", "retained_earnings_acc": "2120"}})
+	mustOK(t, err)
+	lines := gtables.NewIntrastatJnlLine(src)
+	lines.SetRange("journal_template_name", batch.Journal_template_name)
+	lines.SetRange("journal_batch_name", batch.Name)
+	lines.DeleteAll()
+	batch.Reported = false
+	mustOK(t, batch.Validate("amounts_in_add_currency", true))
+	mustOK(t, batch.ModifyOrError(false))
+	n, err := intrastatjnl.GetEntries(batch, types.NewDate(2026, 10, 1), types.NewDate(2026, 10, 31), types.Decimal{})
+	mustOK(t, err)
+	if n != 4 {
+		t.Fatalf("%d lines in euro, want 4", n)
+	}
+	euroLine := gtables.NewIntrastatJnlLine(src)
+	euroLine.SetRange("item_no", types.Code("1300"))
+	if !euroLine.FindFirst() || !euroLine.Amount.Equal(lcyAmount.Div(types.MustDecimal("11.5")).Round(0)) {
+		t.Errorf("1300 in euro %s, want %s / 11.50", euroLine.Amount, lcyAmount)
+	}
+	result, err = reports.Execute(reports.IntrastatChecklistID, db, "demo", database.DBTypeSQLite, reports.RunOptions{Output: reports.OutputPDF, Context: context})
+	mustOK(t, err)
+	if texts := printedTexts(result, 0); !strings.Contains(texts, "All amounts are in EUR") {
+		t.Errorf("checklist in euro: %.300s", texts)
+	}
+	// (the demo's VIES file has no EU sales lines: the run with the option only)
+	_, err = reports.Execute(reports.VIESDeclarationDiskID, db, "demo", database.DBTypeSQLite, reports.RunOptions{
+		Options: map[string]string{"show_amounts_in_add_currency": "true"}})
+	mustOK(t, err)
 }

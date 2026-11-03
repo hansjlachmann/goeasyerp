@@ -717,6 +717,7 @@ tables:
   acc_schedule_line:
     caption: "Kontoskjemalinje"
     fields:
+      use_add_rpt_curr: "Bruk ekstra rapporteringsvaluta"
       schedule_name: "Skjemanavn"
       line_no: "Linjenr."
       row_no: "Radnr."
@@ -842,6 +843,7 @@ tables:
   intrastat_jnl_batch:
     caption: "Intrastat-kladdenavn"
     fields:
+      amounts_in_add_currency: "Beløp i ekstra valuta"
       journal_template_name: "Kladdemalnavn"
       name: "Navn"
       description: "Beskrivelse"
@@ -3157,6 +3159,7 @@ tables:
   gen_journal_line:
     caption: "Finanskladdelinje"
     fields:
+      fa_add_currency_factor: "Anleggsfaktor for tilleggsvaluta"
       additional_currency_posting: "Bokføring i tilleggsvaluta"
       business_unit_code: "Konsernenhetskode"
       fa_posting_date: "Anleggsbokføringsdato"
@@ -3678,6 +3681,7 @@ tables:
   item:
     caption: "Vare"
     fields:
+      add_curr_average_cost: "Gjennomsnittskost i tilleggsvaluta"
       qty_on_purch_order: "Antall i innkjøpsordre"
       qty_on_sales_order: "Antall i salgsordre"
       requisition_method_code: "Innkjøpsmetodekode"
@@ -3767,6 +3771,9 @@ tables:
       variant_filter: "Variantfilter"
       sales_unit_of_measure: "Salgsenhet"
       purch_unit_of_measure: "Innkjøpsenhet"
+      reserved_qty_on_inventory: "Reservert antall på lager"
+      reserved_qty_on_purch_orders: "Reservert antall i kjøpsordrer"
+      reserved_qty_on_sales_orders: "Reservert antall i salgsordrer"
     options:
       price_profit_calculation:
         profit_price_cost: "Avanse=Pris-Kost"
@@ -3849,6 +3856,8 @@ tables:
   item_journal_line:
     caption: "Varekladdelinje"
     fields:
+      source_currency_unit_cost: "Enhetskost i kildevaluta"
+      source_currency_code: "Kildevalutakode"
       transaction_type: "Transaksjonstype"
       transport_method: "Transportmåte"
       country_code: "Landkode"
@@ -3904,6 +3913,10 @@ tables:
       unit_of_measure_code: "Enhetskode"
       quantity_base: "Antall (basis)"
       invoiced_qty_base: "Fakturert antall (basis)"
+      positive_reserved_quantity: "Positivt reservert antall"
+      negative_reserved_quantity: "Negativt reservert antall"
+      positive_reserved_qty_base: "Positivt reservert antall (basis)"
+      negative_reserved_qty_base: "Negativt reservert antall (basis)"
     options:
       recurring_method:
         fixed: "Fast"
@@ -3925,6 +3938,10 @@ tables:
   item_ledger_entry:
     caption: "Varepost"
     fields:
+      add_currency_adj_cost_qty: "Justert kost (antall) i tilleggsvaluta"
+      add_curr_adj_cost_inv_qty: "Justert kost (fakt. antall) i tilleggsvaluta"
+      add_curr_cost_posted_to_gl: "Kost bokført i finans i tilleggsvaluta"
+      additional_currency_unit_cost: "Enhetskost i tilleggsvaluta"
       transaction_type: "Transaksjonstype"
       transport_method: "Transportmåte"
       country_code: "Landkode"
@@ -4417,10 +4434,17 @@ tables:
       qty_per_unit_of_measure: "Antall per enhet"
       unit_of_measure_code: "Enhetskode"
       quantity_base: "Antall (basis)"
+      reserved_quantity: "Reservert antall"
+      reserve: "Reserver"
+      reserved_qty_base: "Reservert antall (basis)"
     options:
       recurring_method:
         fixed: "Fast"
         variable: "Variabel"
+      reserve:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
   bom_ledger_entry:
     caption: "Stykklistepost"
     fields:
@@ -4537,6 +4561,7 @@ tables:
       last_posting_no: "Siste bokføringsnr."
       posting_no_series: "Bokføringsnr.serie"
       shipping_no_series: "Leveringsnr.serie"
+      reserve: "Reserver"
     options:
       document_type:
         quote: "Tilbud"
@@ -4550,6 +4575,10 @@ tables:
         credit_memo: "Kreditnota"
         finance_charge_memo: "Rentenota"
         reminder: "Purring"
+      reserve:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
   sales_line:
     caption: "Salgslinje"
     fields:
@@ -4629,6 +4658,10 @@ tables:
       qty_invoiced_base: "Antall fakturert (basis)"
       shipment_no: "Leveringsnr."
       shipment_line_no: "Leveringslinjenr."
+      reserved_quantity: "Reservert antall"
+      reserve: "Reserver"
+      reserved_qty_base: "Reservert antall (basis)"
+      planned: "Planlagt"
     options:
       document_type:
         quote: "Tilbud"
@@ -4645,6 +4678,10 @@ tables:
         reverse_charge_vat: "Omvendt avgiftsplikt"
         full_vat: "Full mva."
         sales_tax: "Salgsavgift"
+      reserve:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
   sales_shipment_header:
     caption: "Salgsleveringshode"
     fields:
@@ -5183,6 +5220,7 @@ tables:
       posting_no: "Bokføringsnr."
       last_receiving_no: "Siste mottaksnr."
       last_posting_no: "Siste bokføringsnr."
+      reserve: "Reserver"
     options:
       applies_to_doc_type:
         payment: "Betaling"
@@ -5196,6 +5234,10 @@ tables:
         invoice: "Faktura"
         credit_memo: "Kreditnota"
         blanket_order: "Rammeordre"
+      reserve:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
   purchase_line:
     caption: "Kjøpslinje"
     fields:
@@ -5283,6 +5325,9 @@ tables:
       qty_rcd_not_invd_base: "Ant. mottatt ikke fakt. (basis)"
       qty_received_base: "Antall mottatt (basis)"
       qty_invoiced_base: "Antall fakturert (basis)"
+      reserved_quantity: "Reservert antall"
+      reserve: "Reserver"
+      reserved_qty_base: "Reservert antall (basis)"
     options:
       fa_posting_type:
         acquisition_cost: "Anskaffelseskost"
@@ -5302,6 +5347,10 @@ tables:
         reverse_charge_vat: "Omvendt avgiftsplikt"
         full_vat: "Full mva."
         sales_tax: "Salgsavgift"
+      reserve:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
   purch_comment_line:
     caption: "Kjøpsmerknadslinje"
     fields:
@@ -5960,6 +6009,9 @@ tables:
       qty_per_unit_of_measure: "Antall per enhet"
       unit_of_measure_code: "Enhetskode"
       quantity_base: "Antall (basis)"
+      reserved_quantity: "Reservert antall"
+      reserve: "Reserver"
+      reserved_qty_base: "Reservert antall (basis)"
     options:
       type:
         account_g_l: "Konto (finans)"
@@ -5967,6 +6019,10 @@ tables:
       recurring_method:
         fixed: "Fast"
         variable: "Variabel"
+      reserve:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
   requisition_method:
     caption: "Innkjøpsmetode"
     fields:
@@ -6074,3 +6130,220 @@ tables:
       name: "Navn"
       company_name: "Selskapsnavn"
       currency_code: "Valutakode"
+  reservation_setup:
+    caption: "Reservasjonsoppsett"
+    fields:
+      primary_key: "Primærnøkkel"
+      track_changes: "Spor endringer"
+      valid_to_formula: "Gyldig til-formel"
+      auto_req_wksh_template: "Mal for auto. innkjøpsforslag"
+      auto_req_wksh_name: "Navn på auto. innkjøpsforslag"
+      show_item_ledger_entry: "Vis varepost"
+      item_ledger_entry_priority: "Prioritet varepost"
+      show_purchase_quote: "Vis kjøpstilbud"
+      purchase_quote_priority: "Prioritet kjøpstilbud"
+      auto_purchase_quote: "Auto. kjøpstilbud"
+      reserve_purchase_quote: "Reserver kjøpstilbud"
+      show_blanket_purchase_order: "Vis rammekjøpsordre"
+      blanket_purch_order_priority: "Prioritet rammekjøpsordre"
+      auto_blanket_purchase_order: "Auto. rammekjøpsordre"
+      reserve_blanket_purchase_order: "Reserver rammekjøpsordre"
+      show_purchase_order: "Vis kjøpsordre"
+      purchase_order_priority: "Prioritet kjøpsordre"
+      auto_purchase_order: "Auto. kjøpsordre"
+      reserve_purchase_order: "Reserver kjøpsordre"
+      show_purchase_invoice: "Vis kjøpsfaktura"
+      purchase_invoice_priority: "Prioritet kjøpsfaktura"
+      auto_purchase_invoice: "Auto. kjøpsfaktura"
+      reserve_purchase_invoice: "Reserver kjøpsfaktura"
+      show_purchase_credit_memo: "Vis kjøpskreditnota"
+      purchase_credit_memo_priority: "Prioritet kjøpskreditnota"
+      auto_purchase_credit_memo: "Auto. kjøpskreditnota"
+      reserve_purchase_credit_memo: "Reserver kjøpskreditnota"
+      show_requisition_line: "Vis innkjøpsforslagslinje"
+      requisition_line_priority: "Prioritet innkjøpsforslagslinje"
+      auto_requisition_line: "Auto. innkjøpsforslagslinje"
+      reserve_requisition_line: "Reserver innkjøpsforslagslinje"
+      show_sales_quote: "Vis salgstilbud"
+      sales_quote_priority: "Prioritet salgstilbud"
+      auto_sales_quote: "Auto. salgstilbud"
+      reserve_sales_quote: "Reserver salgstilbud"
+      show_blanket_sales_order: "Vis rammesalgsordre"
+      blanket_sales_order_priority: "Prioritet rammesalgsordre"
+      auto_blanket_sales_order: "Auto. rammesalgsordre"
+      reserve_blanket_sales_order: "Reserver rammesalgsordre"
+      show_sales_order: "Vis salgsordre"
+      sales_order_priority: "Prioritet salgsordre"
+      auto_sales_order: "Auto. salgsordre"
+      reserve_sales_order: "Reserver salgsordre"
+      show_sales_invoice: "Vis salgsfaktura"
+      sales_invoice_priority: "Prioritet salgsfaktura"
+      auto_sales_invoice: "Auto. salgsfaktura"
+      reserve_sales_invoice: "Reserver salgsfaktura"
+      show_sales_credit_memo: "Vis salgskreditnota"
+      sales_credit_memo_priority: "Prioritet salgskreditnota"
+      auto_sales_credit_memo: "Auto. salgskreditnota"
+      reserve_sales_credit_memo: "Reserver salgskreditnota"
+      show_item_jnl_line_purchases: "Vis varekladdlinje kjøp"
+      item_jnl_line_purch_priority: "Prioritet varekladdlinje kjøp"
+      auto_item_jnl_line_purchases: "Auto. varekladdlinje kjøp"
+      reserve_item_jnl_line_purch: "Reserver varekladdlinje kjøp"
+      show_item_jnl_line_sales: "Vis varekladdlinje salg"
+      item_jnl_line_sales_priority: "Prioritet varekladdlinje salg"
+      auto_item_jnl_line_sales: "Auto. varekladdlinje salg"
+      reserve_item_jnl_line_sales: "Reserver varekladdlinje salg"
+      show_item_jnl_line_pos: "Vis varekladdlinje oppjust."
+      item_jnl_line_pos_priority: "Prioritet varekladdlinje oppjust."
+      auto_item_jnl_line_pos: "Auto. varekladdlinje oppjust."
+      reserve_item_jnl_line_pos: "Reserver varekladdlinje oppjust."
+      show_item_jnl_line_neg: "Vis varekladdlinje nedjust."
+      item_jnl_line_neg_priority: "Prioritet varekladdlinje nedjust."
+      auto_item_jnl_line_neg: "Auto. varekladdlinje nedjust."
+      reserve_item_jnl_line_neg: "Reserver varekladdlinje nedjust."
+      show_item_jnl_line_transfer: "Vis varekladdlinje overføring"
+      item_jnl_line_trans_priority: "Prioritet varekladdlinje overføring"
+      auto_item_jnl_line_transfer: "Auto. varekladdlinje overføring"
+      reserve_item_jnl_line_trans: "Reserver varekladdlinje overføring"
+      show_bom_journal_line: "Vis stykklistekladdlinje"
+      bom_journal_line_priority: "Prioritet stykklistekladdlinje"
+      auto_bom_journal_line: "Auto. stykklistekladdlinje"
+      reserve_bom_journal_line: "Reserver stykklistekladdlinje"
+    options:
+      show_item_ledger_entry:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_purchase_quote:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_blanket_purchase_order:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_purchase_order:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_purchase_invoice:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_purchase_credit_memo:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_requisition_line:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_sales_quote:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_blanket_sales_order:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_sales_order:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_sales_invoice:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_sales_credit_memo:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_item_jnl_line_purchases:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_item_jnl_line_sales:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_item_jnl_line_pos:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_item_jnl_line_neg:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_item_jnl_line_transfer:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+      show_bom_journal_line:
+        never: "Aldri"
+        optional: "Valgfritt"
+        always: "Alltid"
+  reservation_entry:
+    caption: "Reservasjonspost"
+    fields:
+      entry_no: "Løpenr."
+      item_no: "Varenr."
+      location_code: "Lokasjonskode"
+      quantity: "Antall"
+      reservation_status: "Reservasjonsstatus"
+      valid_to_date: "Gyldig til-dato"
+      description: "Beskrivelse"
+      creation_date: "Opprettet dato"
+      transferred_from_entry_no: "Overført fra løpenr."
+      for_type: "For type"
+      for_subtype: "For undertype"
+      for_id: "For ID"
+      for_batch_name: "For kladdenavn"
+      for_prod_order_line: "For prod.ordrelinje"
+      for_ref_no: "For ref.nr."
+      from_type: "Fra type"
+      from_subtype: "Fra undertype"
+      from_id: "Fra ID"
+      from_batch_name: "Fra kladdenavn"
+      from_prod_order_line: "Fra prod.ordrelinje"
+      from_ref_no: "Fra ref.nr."
+      expected_receipt_date: "Forventet mottaksdato"
+      shipment_date: "Leveringsdato"
+      created_by: "Opprettet av"
+      cancelation_date: "Annulleringsdato"
+      canceled_or_changed_by: "Annullert eller endret av"
+      variant_code: "Variantkode"
+    options:
+      reservation_status:
+        open: "Åpen"
+        applied: "Utlignet"
+        rejected_overdue: "Avvist (forfalt)"
+        transferred: "Overført"
+        canceled_or_changed: "Annullert eller endret"
+      for_type:
+        sales: "Salg"
+        requisition_line: "Innkjøpsforslagslinje"
+        purchase: "Kjøp"
+        item_journal: "Varekladd"
+        bom_journal: "Stykklistekladd"
+        item_ledger_entry: "Varepost"
+        prod_order_line: "Prod.ordrelinje"
+        prod_order_component: "Prod.ordrekomponent"
+      from_type:
+        sales: "Salg"
+        requisition_line: "Innkjøpsforslagslinje"
+        purchase: "Kjøp"
+        item_journal: "Varekladd"
+        bom_journal: "Stykklistekladd"
+        item_ledger_entry: "Varepost"
+        prod_order_line: "Prod.ordrelinje"
+        prod_order_component: "Prod.ordrekomponent"
+  entry_summary:
+    caption: "Postoversikt"
+    fields:
+      entry_no: "Løpenr."
+      table_id: "Tabell-ID"
+      summary_type: "Oversiktstype"
+      total_quantity: "Antall i alt"
+      total_reserved_quantity: "Reservert antall i alt"
+      total_available_quantity: "Tilgjengelig antall i alt"
+      current_reserved_quantity: "Reservert antall for linjen"
+      available_page_id: "Side-ID for tilgjengelige"

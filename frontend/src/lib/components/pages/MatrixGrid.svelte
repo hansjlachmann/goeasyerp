@@ -377,15 +377,27 @@
 			{#each matrix.filters ?? [] as filter (filter.source)}
 				<label class="filter-field">
 					<span>{filter.caption ?? filter.source}</span>
-					<input
-						type="text"
-						class="filter-input"
-						value={filterValues[filter.source] ?? ''}
-						onchange={(e) => {
-							filterValues[filter.source] = (e.currentTarget as HTMLInputElement).value.toUpperCase();
-							load();
-						}}
-					/>
+					{#if filter.check_box}
+						<input
+							type="checkbox"
+							class="filter-check"
+							checked={filterValues[filter.source] === 'YES'}
+							onchange={(e) => {
+								filterValues[filter.source] = (e.currentTarget as HTMLInputElement).checked ? 'YES' : '';
+								load();
+							}}
+						/>
+					{:else}
+						<input
+							type="text"
+							class="filter-input"
+							value={filterValues[filter.source] ?? ''}
+							onchange={(e) => {
+								filterValues[filter.source] = (e.currentTarget as HTMLInputElement).value.toUpperCase();
+								load();
+							}}
+						/>
+					{/if}
 				</label>
 			{/each}
 		</div>
@@ -550,6 +562,13 @@
 		border: 1px solid rgb(var(--gray-300));
 		border-radius: 0.25rem;
 		min-width: 10rem;
+	}
+
+	.filter-check {
+		width: 1rem;
+		height: 1rem;
+		margin: 0.4rem 0;
+		accent-color: rgb(var(--accent-600));
 	}
 
 	:global(.dark) .filter-input {

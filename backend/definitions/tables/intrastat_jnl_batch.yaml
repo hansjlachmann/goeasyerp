@@ -41,6 +41,12 @@ table:
       type: bool
       db_name: reported
 
+    # the batch's amounts are in the additional reporting currency (Get Entries)
+    - name: amounts_in_add_currency
+      no: 15
+      type: bool
+      db_name: amounts_in_add_currency
+
     # the period declared: YYMM (2610 = October 2026)
     - name: statistics_period
       no: 14

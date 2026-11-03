@@ -124,8 +124,8 @@ func TestGetMenuMarksAvailableEntries(t *testing.T) {
 	}
 	inventory := find(modules, "Lager")
 	inventorySetup := find(inventory["items"].([]interface{}), "Oppsett")
-	if reservation := find(inventorySetup["items"].([]interface{}), "Reservasjonsoppsett"); reservation["enabled"] != false {
-		t.Errorf("Inventory › Setup › Reservation Setup (no page yet) enabled: %v", reservation)
+	if reservation := find(inventorySetup["items"].([]interface{}), "Reservasjonsoppsett"); reservation["enabled"] != true {
+		t.Errorf("Inventory › Setup › Reservation Setup not enabled: %v", reservation)
 	}
 	jobs := find(modules, "Jobber")
 	if jobsSetup := find(jobs["items"].([]interface{}), "Oppsett"); jobsSetup["enabled"] != false {

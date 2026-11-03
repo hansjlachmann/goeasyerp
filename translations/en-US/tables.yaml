@@ -717,6 +717,7 @@ tables:
   acc_schedule_line:
     caption: "Acc. Schedule Line"
     fields:
+      use_add_rpt_curr: "Use Add. Reporting Currency"
       schedule_name: "Schedule Name"
       line_no: "Line No."
       row_no: "Row No."
@@ -842,6 +843,7 @@ tables:
   intrastat_jnl_batch:
     caption: "Intrastat Jnl. Batch"
     fields:
+      amounts_in_add_currency: "Amounts in Add. Currency"
       journal_template_name: "Journal Template Name"
       name: "Name"
       description: "Description"
@@ -3157,6 +3159,7 @@ tables:
   gen_journal_line:
     caption: "Gen. Journal Line"
     fields:
+      fa_add_currency_factor: "FA Add.-Currency Factor"
       additional_currency_posting: "Additional-Currency Posting"
       business_unit_code: "Business Unit Code"
       fa_posting_date: "FA Posting Date"
@@ -3678,6 +3681,7 @@ tables:
   item:
     caption: "Item"
     fields:
+      add_curr_average_cost: "Add.-Curr. Average Cost"
       qty_on_purch_order: "Qty. on Purch. Order"
       qty_on_sales_order: "Qty. on Sales Order"
       requisition_method_code: "Requisition Method Code"
@@ -3767,6 +3771,9 @@ tables:
       variant_filter: "Variant Filter"
       sales_unit_of_measure: "Sales Unit of Measure"
       purch_unit_of_measure: "Purch. Unit of Measure"
+      reserved_qty_on_inventory: "Reserved Qty. on Inventory"
+      reserved_qty_on_purch_orders: "Reserved Qty. on Purch. Orders"
+      reserved_qty_on_sales_orders: "Reserved Qty. on Sales Orders"
     options:
       price_profit_calculation:
         profit_price_cost: "Profit=Price-Cost"
@@ -3849,6 +3856,8 @@ tables:
   item_journal_line:
     caption: "Item Journal Line"
     fields:
+      source_currency_unit_cost: "Source Currency Unit Cost"
+      source_currency_code: "Source Currency Code"
       transaction_type: "Transaction Type"
       transport_method: "Transport Method"
       country_code: "Country Code"
@@ -3904,6 +3913,10 @@ tables:
       unit_of_measure_code: "Unit of Measure Code"
       quantity_base: "Quantity (Base)"
       invoiced_qty_base: "Invoiced Qty. (Base)"
+      positive_reserved_quantity: "Positive Reserved Quantity"
+      negative_reserved_quantity: "Negative Reserved Quantity"
+      positive_reserved_qty_base: "Positive Reserved Qty. (Base)"
+      negative_reserved_qty_base: "Negative Reserved Qty. (Base)"
     options:
       recurring_method:
         fixed: "Fixed"
@@ -3925,6 +3938,10 @@ tables:
   item_ledger_entry:
     caption: "Item Ledger Entry"
     fields:
+      add_currency_adj_cost_qty: "Add.-Currency Adj. Cost (Qty.)"
+      add_curr_adj_cost_inv_qty: "Add.-Curr. Adj. Cost (Inv Qty)"
+      add_curr_cost_posted_to_gl: "Add.-Curr. Cost Posted to G/L"
+      additional_currency_unit_cost: "Additional-Currency Unit Cost"
       transaction_type: "Transaction Type"
       transport_method: "Transport Method"
       country_code: "Country Code"
@@ -4417,10 +4434,17 @@ tables:
       qty_per_unit_of_measure: "Qty. per Unit of Measure"
       unit_of_measure_code: "Unit of Measure Code"
       quantity_base: "Quantity (Base)"
+      reserved_quantity: "Reserved Quantity"
+      reserve: "Reserve"
+      reserved_qty_base: "Reserved Qty. (Base)"
     options:
       recurring_method:
         fixed: "Fixed"
         variable: "Variable"
+      reserve:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
   bom_ledger_entry:
     caption: "BOM Ledger Entry"
     fields:
@@ -4537,6 +4561,7 @@ tables:
       last_posting_no: "Last Posting No."
       posting_no_series: "Posting No. Series"
       shipping_no_series: "Shipping No. Series"
+      reserve: "Reserve"
     options:
       document_type:
         quote: "Quote"
@@ -4550,6 +4575,10 @@ tables:
         credit_memo: "Credit Memo"
         finance_charge_memo: "Finance Charge Memo"
         reminder: "Reminder"
+      reserve:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
   sales_line:
     caption: "Sales Line"
     fields:
@@ -4629,6 +4658,10 @@ tables:
       qty_invoiced_base: "Qty. Invoiced (Base)"
       shipment_no: "Shipment No."
       shipment_line_no: "Shipment Line No."
+      reserved_quantity: "Reserved Quantity"
+      reserve: "Reserve"
+      reserved_qty_base: "Reserved Qty. (Base)"
+      planned: "Planned"
     options:
       document_type:
         quote: "Quote"
@@ -4645,6 +4678,10 @@ tables:
         reverse_charge_vat: "Reverse Charge VAT"
         full_vat: "Full VAT"
         sales_tax: "Sales Tax"
+      reserve:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
   sales_shipment_header:
     caption: "Sales Shipment Header"
     fields:
@@ -5183,6 +5220,7 @@ tables:
       posting_no: "Posting No."
       last_receiving_no: "Last Receiving No."
       last_posting_no: "Last Posting No."
+      reserve: "Reserve"
     options:
       applies_to_doc_type:
         payment: "Payment"
@@ -5196,6 +5234,10 @@ tables:
         invoice: "Invoice"
         credit_memo: "Credit Memo"
         blanket_order: "Blanket Order"
+      reserve:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
   purchase_line:
     caption: "Purchase Line"
     fields:
@@ -5283,6 +5325,9 @@ tables:
       qty_rcd_not_invd_base: "Qty. Rcd. Not Invd. (Base)"
       qty_received_base: "Qty. Received (Base)"
       qty_invoiced_base: "Qty. Invoiced (Base)"
+      reserved_quantity: "Reserved Quantity"
+      reserve: "Reserve"
+      reserved_qty_base: "Reserved Qty. (Base)"
     options:
       fa_posting_type:
         acquisition_cost: "Acquisition Cost"
@@ -5302,6 +5347,10 @@ tables:
         reverse_charge_vat: "Reverse Charge VAT"
         full_vat: "Full VAT"
         sales_tax: "Sales Tax"
+      reserve:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
   purch_comment_line:
     caption: "Purch. Comment Line"
     fields:
@@ -5960,6 +6009,9 @@ tables:
       qty_per_unit_of_measure: "Qty. per Unit of Measure"
       unit_of_measure_code: "Unit of Measure Code"
       quantity_base: "Quantity (Base)"
+      reserved_quantity: "Reserved Quantity"
+      reserve: "Reserve"
+      reserved_qty_base: "Reserved Qty. (Base)"
     options:
       type:
         account_g_l: "Account (G/L)"
@@ -5967,6 +6019,10 @@ tables:
       recurring_method:
         fixed: "Fixed"
         variable: "Variable"
+      reserve:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
   requisition_method:
     caption: "Requisition Method"
     fields:
@@ -6074,3 +6130,220 @@ tables:
       name: "Name"
       company_name: "Company Name"
       currency_code: "Currency Code"
+  reservation_setup:
+    caption: "Reservation Setup"
+    fields:
+      primary_key: "Primary Key"
+      track_changes: "Track Changes"
+      valid_to_formula: "Valid-to Formula"
+      auto_req_wksh_template: "Auto Req. Wksh. Template"
+      auto_req_wksh_name: "Auto Req. Wksh. Name"
+      show_item_ledger_entry: "Show Item Ledger Entry"
+      item_ledger_entry_priority: "Item Ledger Entry Priority"
+      show_purchase_quote: "Show Purchase Quote"
+      purchase_quote_priority: "Purchase Quote Priority"
+      auto_purchase_quote: "Auto Purchase Quote"
+      reserve_purchase_quote: "Reserve Purchase Quote"
+      show_blanket_purchase_order: "Show Blanket Purchase Order"
+      blanket_purch_order_priority: "Blanket Purchase Order Priority"
+      auto_blanket_purchase_order: "Auto Blanket Purchase Order"
+      reserve_blanket_purchase_order: "Reserve Blanket Purchase Order"
+      show_purchase_order: "Show Purchase Order"
+      purchase_order_priority: "Purchase Order Priority"
+      auto_purchase_order: "Auto Purchase Order"
+      reserve_purchase_order: "Reserve Purchase Order"
+      show_purchase_invoice: "Show Purchase Invoice"
+      purchase_invoice_priority: "Purchase Invoice Priority"
+      auto_purchase_invoice: "Auto Purchase Invoice"
+      reserve_purchase_invoice: "Reserve Purchase Invoice"
+      show_purchase_credit_memo: "Show Purchase Credit Memo"
+      purchase_credit_memo_priority: "Purchase Credit Memo Priority"
+      auto_purchase_credit_memo: "Auto Purchase Credit Memo"
+      reserve_purchase_credit_memo: "Reserve Purchase Credit Memo"
+      show_requisition_line: "Show Requisition Line"
+      requisition_line_priority: "Requisition Line Priority"
+      auto_requisition_line: "Auto Requisition Line"
+      reserve_requisition_line: "Reserve Requisition Line"
+      show_sales_quote: "Show Sales Quote"
+      sales_quote_priority: "Sales Quote Priority"
+      auto_sales_quote: "Auto Sales Quote"
+      reserve_sales_quote: "Reserve Sales Quote"
+      show_blanket_sales_order: "Show Blanket Sales Order"
+      blanket_sales_order_priority: "Blanket Sales Order Priority"
+      auto_blanket_sales_order: "Auto Blanket Sales Order"
+      reserve_blanket_sales_order: "Reserve Blanket Sales Order"
+      show_sales_order: "Show Sales Order"
+      sales_order_priority: "Sales Order Priority"
+      auto_sales_order: "Auto Sales Order"
+      reserve_sales_order: "Reserve Sales Order"
+      show_sales_invoice: "Show Sales Invoice"
+      sales_invoice_priority: "Sales Invoice Priority"
+      auto_sales_invoice: "Auto Sales Invoice"
+      reserve_sales_invoice: "Reserve Sales Invoice"
+      show_sales_credit_memo: "Show Sales Credit Memo"
+      sales_credit_memo_priority: "Sales Credit Memo Priority"
+      auto_sales_credit_memo: "Auto Sales Credit Memo"
+      reserve_sales_credit_memo: "Reserve Sales Credit Memo"
+      show_item_jnl_line_purchases: "Show Item Jnl. Line Purchases"
+      item_jnl_line_purch_priority: "Item Jnl. Line Purchases Priority"
+      auto_item_jnl_line_purchases: "Auto Item Jnl. Line Purchases"
+      reserve_item_jnl_line_purch: "Reserve Item Jnl. Line Purchases"
+      show_item_jnl_line_sales: "Show Item Jnl. Line Sales"
+      item_jnl_line_sales_priority: "Item Jnl. Line Sales Priority"
+      auto_item_jnl_line_sales: "Auto Item Jnl. Line Sales"
+      reserve_item_jnl_line_sales: "Reserve Item Jnl. Line Sales"
+      show_item_jnl_line_pos: "Show Item Jnl. Line Pos."
+      item_jnl_line_pos_priority: "Item Jnl. Line Pos. Priority"
+      auto_item_jnl_line_pos: "Auto Item Jnl. Line Pos."
+      reserve_item_jnl_line_pos: "Reserve Item Jnl. Line Pos."
+      show_item_jnl_line_neg: "Show Item Jnl. Line Neg."
+      item_jnl_line_neg_priority: "Item Jnl. Line Neg. Priority"
+      auto_item_jnl_line_neg: "Auto Item Jnl. Line Neg."
+      reserve_item_jnl_line_neg: "Reserve Item Jnl. Line Neg."
+      show_item_jnl_line_transfer: "Show Item Jnl. Line Transfer"
+      item_jnl_line_trans_priority: "Item Jnl. Line Transfer Priority"
+      auto_item_jnl_line_transfer: "Auto Item Jnl. Line Transfer"
+      reserve_item_jnl_line_trans: "Reserve Item Jnl. Line Transfer"
+      show_bom_journal_line: "Show BOM Journal Line"
+      bom_journal_line_priority: "BOM Journal Line Priority"
+      auto_bom_journal_line: "Auto BOM Journal Line"
+      reserve_bom_journal_line: "Reserve BOM Journal Line"
+    options:
+      show_item_ledger_entry:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_purchase_quote:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_blanket_purchase_order:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_purchase_order:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_purchase_invoice:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_purchase_credit_memo:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_requisition_line:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_sales_quote:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_blanket_sales_order:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_sales_order:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_sales_invoice:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_sales_credit_memo:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_item_jnl_line_purchases:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_item_jnl_line_sales:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_item_jnl_line_pos:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_item_jnl_line_neg:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_item_jnl_line_transfer:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+      show_bom_journal_line:
+        never: "Never"
+        optional: "Optional"
+        always: "Always"
+  reservation_entry:
+    caption: "Reservation Entry"
+    fields:
+      entry_no: "Entry No."
+      item_no: "Item No."
+      location_code: "Location Code"
+      quantity: "Quantity"
+      reservation_status: "Reservation Status"
+      valid_to_date: "Valid-to Date"
+      description: "Description"
+      creation_date: "Creation Date"
+      transferred_from_entry_no: "Transferred from Entry No."
+      for_type: "For Type"
+      for_subtype: "For Subtype"
+      for_id: "For ID"
+      for_batch_name: "For Batch Name"
+      for_prod_order_line: "For Prod. Order Line"
+      for_ref_no: "For Ref. No."
+      from_type: "From Type"
+      from_subtype: "From Subtype"
+      from_id: "From ID"
+      from_batch_name: "From Batch Name"
+      from_prod_order_line: "From Prod. Order Line"
+      from_ref_no: "From Ref. No."
+      expected_receipt_date: "Expected Receipt Date"
+      shipment_date: "Shipment Date"
+      created_by: "Created By"
+      cancelation_date: "Cancelation Date"
+      canceled_or_changed_by: "Canceled or Changed by"
+      variant_code: "Variant Code"
+    options:
+      reservation_status:
+        open: "Open"
+        applied: "Applied"
+        rejected_overdue: "Rejected (Overdue)"
+        transferred: "Transferred"
+        canceled_or_changed: "Canceled or Changed"
+      for_type:
+        sales: "Sales"
+        requisition_line: "Requisition Line"
+        purchase: "Purchase"
+        item_journal: "Item Journal"
+        bom_journal: "BOM Journal"
+        item_ledger_entry: "Item Ledger Entry"
+        prod_order_line: "Prod. Order Line"
+        prod_order_component: "Prod. Order Component"
+      from_type:
+        sales: "Sales"
+        requisition_line: "Requisition Line"
+        purchase: "Purchase"
+        item_journal: "Item Journal"
+        bom_journal: "BOM Journal"
+        item_ledger_entry: "Item Ledger Entry"
+        prod_order_line: "Prod. Order Line"
+        prod_order_component: "Prod. Order Component"
+  entry_summary:
+    caption: "Entry Summary"
+    fields:
+      entry_no: "Entry No."
+      table_id: "Table ID"
+      summary_type: "Summary Type"
+      total_quantity: "Total Quantity"
+      total_reserved_quantity: "Total Reserved Quantity"
+      total_available_quantity: "Total Available Quantity"
+      current_reserved_quantity: "Current Reserved Quantity"
+      available_page_id: "Available Page ID"

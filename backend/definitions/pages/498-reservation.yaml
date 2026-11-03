@@ -1,0 +1,90 @@
+page:
+  id: 498
+  type: List
+  name: Reservation
+  source_table: Entry_Summary
+  caption: Reservation
+  editable: false
+  source_table_temporary: true   # the sources the line can reserve from, found again on every load (OnFindRecords)
+
+  # Under the list: the line reserved for (OnAfterGetRecord with the page parameters)
+  footer:
+    - source: item_no
+      calculated: true
+      type: types.Code
+    - source: variant_code
+      calculated: true
+      type: types.Code
+    - source: location_code
+      calculated: true
+      type: types.Code
+    - source: shipment_date
+      calculated: true
+      type: types.Date
+    - source: valid_to_date
+      calculated: true
+      type: types.Date
+    - source: qty_to_reserve
+      calculated: true
+      type: types.Decimal
+      decimal_places: "0:5"
+    - source: qty_reserved
+      calculated: true
+      type: types.Decimal
+      decimal_places: "0:5"
+    - source: unreserved_quantity
+      calculated: true
+      type: types.Decimal
+      decimal_places: "0:5"
+    - source: optional_lines
+      calculated: true
+      type: bool
+
+  layout:
+    repeater:
+      fields:
+        - source: summary_type
+          width: 260
+        - source: total_quantity
+          width: 130
+        - source: total_reserved_quantity
+          width: 150
+        - source: total_available_quantity
+          width: 150
+        - source: current_reserved_quantity
+          width: 160
+
+  actions:
+    - name: Functions
+      caption: Functions
+      promoted: true
+      items:
+        - name: Auto Reserve
+          caption: Auto Reserve
+          image: Calculate
+          run_object: table:Entry_Summary.AutoReserve
+        - name: Reserve from Current Line
+          caption: Reserve from Current Line
+          image: Approve
+          run_object: table:Entry_Summary.ReserveFromCurrentLine
+        - name: Cancel Reservation from Current Line
+          caption: Cancel Reservation from Current Line
+          image: Cancel
+          run_object: table:Entry_Summary.CancelReservation
+        - name: Show Optional Lines
+          caption: Show Optional Lines
+          run_object: table:Entry_Summary.ShowOptionalLines
+        - name: Hide Optional Lines
+          caption: Hide Optional Lines
+          run_object: table:Entry_Summary.HideOptionalLines
+    - name: Available to Reserve
+      caption: Available to Reserve
+      image: Lines
+      shortcut: Ctrl+F5
+      promoted: true
+      run_object: table:Entry_Summary.ShowAvailable
+    - name: Reservation Entries
+      caption: Reservation Entries
+      image: Entries
+      promoted: true
+      run_object: table:Entry_Summary.ShowReservationEntries

@@ -29,11 +29,20 @@ func init() {
 // Report 7 Trial Balance/Previous Year
 type trialBalancePrevYear struct {
 	prevYearFilter string
+	useAddRptCurr  bool
 }
 
 func (r *trialBalancePrevYear) Definition() *Definition {
 	return &Definition{
-		OnPreReport: reportHead,
+		Options: []Option{{Name: "use_add_rpt_curr", Type: "bool", Default: "false"}},
+		OnPreReport: func(run *Run) error {
+			err := reportHead(run)
+			if err != nil {
+				return err
+			}
+			r.useAddRptCurr, err = useAddRptCurrOption(run)
+			return err
+		},
 		DataItems: []*DataItem{{
 			Name:                "GLAccount",
 			Table:               gtables.GLAccountTableName,
@@ -75,7 +84,7 @@ func previousYearFilter(expr string) string {
 }
 
 func (r *trialBalancePrevYear) glAccOnAfterGetRecord(rec *gtables.GLAccount, run *Run) error {
-	rec.CalcFields("net_change", "balance_at_date")
+	netChange, balanceAtDate := netChangeAndBalance(rec, r.useAddRptCurr)
 	prev := gtables.NewGLAccount(run)
 	prev.No = rec.No
 	prev.Account_type, prev.Totaling = rec.Account_type, rec.Totaling
@@ -86,15 +95,15 @@ func (r *trialBalancePrevYear) glAccOnAfterGetRecord(rec *gtables.GLAccount, run
 			return err
 		}
 	}
-	prev.CalcFields("net_change", "balance_at_date")
+	netChangePrev, balanceAtDatePrev := netChangeAndBalance(prev, r.useAddRptCurr)
 	run.SetValue("name", indentedName(rec))
 	run.SetValue("is_total", isTotalAccount(rec))
-	run.SetValue("net_change", rec.Net_change)
-	run.SetValue("net_change_prev", prev.Net_change)
-	run.SetValue("net_change_pct", changePercent(rec.Net_change, prev.Net_change))
-	run.SetValue("balance", rec.Balance_at_date)
-	run.SetValue("balance_prev", prev.Balance_at_date)
-	run.SetValue("balance_pct", changePercent(rec.Balance_at_date, prev.Balance_at_date))
+	run.SetValue("net_change", netChange)
+	run.SetValue("net_change_prev", netChangePrev)
+	run.SetValue("net_change_pct", changePercent(netChange, netChangePrev))
+	run.SetValue("balance", balanceAtDate)
+	run.SetValue("balance_prev", balanceAtDatePrev)
+	run.SetValue("balance_pct", changePercent(balanceAtDate, balanceAtDatePrev))
 	return nil
 }
 

@@ -1,0 +1,436 @@
+table:
+  id: 336
+  name: "Reservation_Setup"
+  caption: Reservation Setup
+  description: "Reservation Setup (table 336, one record): which documents and journals reserve, which sources the Reservation page shows (Never/Optional/Always) and their priorities for Auto Reserve"
+  setup_table: true
+  fields:
+    - name: primary_key
+      no: 1
+      type: types.Code
+      db_name: primary_key
+      length: 10
+      primary_key: true
+
+    - name: track_changes
+      no: 2
+      type: bool
+      db_name: track_changes
+
+    - name: valid_to_formula
+      no: 3
+      type: types.Code
+      db_name: valid_to_formula
+      length: 20
+      date_formula: true
+
+    - name: auto_req_wksh_template
+      no: 4
+      type: types.Code
+      db_name: auto_req_wksh_template
+      length: 10
+      table_relation:
+        table: Req_Wksh_Template
+        field: name
+
+    - name: auto_req_wksh_name
+      no: 5
+      type: types.Code
+      db_name: auto_req_wksh_name
+      length: 10
+      table_relation:
+        table: Requisition_Wksh_Name
+        field: name
+        filters:
+          worksheet_template_name: {field: auto_req_wksh_template}
+
+    - name: show_item_ledger_entry
+      no: 6
+      type: Option
+      db_name: show_item_ledger_entry
+      options: ["Never", "Optional", "Always"]
+
+    - name: item_ledger_entry_priority
+      no: 7
+      type: int
+      db_name: item_ledger_entry_priority
+      validation: {min: 0, max: 9}
+
+    - name: show_purchase_quote
+      no: 8
+      type: Option
+      db_name: show_purchase_quote
+      options: ["Never", "Optional", "Always"]
+
+    - name: purchase_quote_priority
+      no: 9
+      type: int
+      db_name: purchase_quote_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_purchase_quote
+      no: 10
+      type: bool
+      db_name: auto_purchase_quote
+
+    - name: show_blanket_purchase_order
+      no: 11
+      type: Option
+      db_name: show_blanket_purchase_order
+      options: ["Never", "Optional", "Always"]
+
+    - name: blanket_purch_order_priority
+      no: 12
+      type: int
+      db_name: blanket_purch_order_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_blanket_purchase_order
+      no: 13
+      type: bool
+      db_name: auto_blanket_purchase_order
+
+    - name: show_purchase_order
+      no: 14
+      type: Option
+      db_name: show_purchase_order
+      options: ["Never", "Optional", "Always"]
+
+    - name: purchase_order_priority
+      no: 15
+      type: int
+      db_name: purchase_order_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_purchase_order
+      no: 16
+      type: bool
+      db_name: auto_purchase_order
+
+    - name: show_purchase_invoice
+      no: 17
+      type: Option
+      db_name: show_purchase_invoice
+      options: ["Never", "Optional", "Always"]
+
+    - name: purchase_invoice_priority
+      no: 18
+      type: int
+      db_name: purchase_invoice_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_purchase_invoice
+      no: 19
+      type: bool
+      db_name: auto_purchase_invoice
+
+    - name: show_purchase_credit_memo
+      no: 20
+      type: Option
+      db_name: show_purchase_credit_memo
+      options: ["Never", "Optional", "Always"]
+
+    - name: purchase_credit_memo_priority
+      no: 21
+      type: int
+      db_name: purchase_credit_memo_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_purchase_credit_memo
+      no: 22
+      type: bool
+      db_name: auto_purchase_credit_memo
+
+    - name: show_requisition_line
+      no: 23
+      type: Option
+      db_name: show_requisition_line
+      options: ["Never", "Optional", "Always"]
+
+    - name: requisition_line_priority
+      no: 24
+      type: int
+      db_name: requisition_line_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_requisition_line
+      no: 25
+      type: bool
+      db_name: auto_requisition_line
+
+    - name: show_sales_quote
+      no: 26
+      type: Option
+      db_name: show_sales_quote
+      options: ["Never", "Optional", "Always"]
+
+    - name: sales_quote_priority
+      no: 27
+      type: int
+      db_name: sales_quote_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_sales_quote
+      no: 28
+      type: bool
+      db_name: auto_sales_quote
+
+    - name: show_blanket_sales_order
+      no: 29
+      type: Option
+      db_name: show_blanket_sales_order
+      options: ["Never", "Optional", "Always"]
+
+    - name: blanket_sales_order_priority
+      no: 30
+      type: int
+      db_name: blanket_sales_order_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_blanket_sales_order
+      no: 31
+      type: bool
+      db_name: auto_blanket_sales_order
+
+    - name: show_sales_order
+      no: 32
+      type: Option
+      db_name: show_sales_order
+      options: ["Never", "Optional", "Always"]
+
+    - name: sales_order_priority
+      no: 33
+      type: int
+      db_name: sales_order_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_sales_order
+      no: 34
+      type: bool
+      db_name: auto_sales_order
+
+    - name: show_sales_invoice
+      no: 35
+      type: Option
+      db_name: show_sales_invoice
+      options: ["Never", "Optional", "Always"]
+
+    - name: sales_invoice_priority
+      no: 36
+      type: int
+      db_name: sales_invoice_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_sales_invoice
+      no: 37
+      type: bool
+      db_name: auto_sales_invoice
+
+    - name: show_sales_credit_memo
+      no: 38
+      type: Option
+      db_name: show_sales_credit_memo
+      options: ["Never", "Optional", "Always"]
+
+    - name: sales_credit_memo_priority
+      no: 39
+      type: int
+      db_name: sales_credit_memo_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_sales_credit_memo
+      no: 40
+      type: bool
+      db_name: auto_sales_credit_memo
+
+    - name: show_item_jnl_line_purchases
+      no: 41
+      type: Option
+      db_name: show_item_jnl_line_purchases
+      options: ["Never", "Optional", "Always"]
+
+    - name: item_jnl_line_purch_priority
+      no: 42
+      type: int
+      db_name: item_jnl_line_purch_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_item_jnl_line_purchases
+      no: 43
+      type: bool
+      db_name: auto_item_jnl_line_purchases
+
+    - name: show_item_jnl_line_sales
+      no: 44
+      type: Option
+      db_name: show_item_jnl_line_sales
+      options: ["Never", "Optional", "Always"]
+
+    - name: item_jnl_line_sales_priority
+      no: 45
+      type: int
+      db_name: item_jnl_line_sales_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_item_jnl_line_sales
+      no: 46
+      type: bool
+      db_name: auto_item_jnl_line_sales
+
+    - name: show_item_jnl_line_pos
+      no: 47
+      type: Option
+      db_name: show_item_jnl_line_pos
+      options: ["Never", "Optional", "Always"]
+
+    - name: item_jnl_line_pos_priority
+      no: 48
+      type: int
+      db_name: item_jnl_line_pos_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_item_jnl_line_pos
+      no: 49
+      type: bool
+      db_name: auto_item_jnl_line_pos
+
+    - name: show_item_jnl_line_neg
+      no: 50
+      type: Option
+      db_name: show_item_jnl_line_neg
+      options: ["Never", "Optional", "Always"]
+
+    - name: item_jnl_line_neg_priority
+      no: 51
+      type: int
+      db_name: item_jnl_line_neg_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_item_jnl_line_neg
+      no: 52
+      type: bool
+      db_name: auto_item_jnl_line_neg
+
+    - name: show_item_jnl_line_transfer
+      no: 53
+      type: Option
+      db_name: show_item_jnl_line_transfer
+      options: ["Never", "Optional", "Always"]
+
+    - name: item_jnl_line_trans_priority
+      no: 54
+      type: int
+      db_name: item_jnl_line_trans_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_item_jnl_line_transfer
+      no: 55
+      type: bool
+      db_name: auto_item_jnl_line_transfer
+
+    - name: show_bom_journal_line
+      no: 56
+      type: Option
+      db_name: show_bom_journal_line
+      options: ["Never", "Optional", "Always"]
+
+    - name: bom_journal_line_priority
+      no: 57
+      type: int
+      db_name: bom_journal_line_priority
+      validation: {min: 0, max: 9}
+
+    - name: auto_bom_journal_line
+      no: 58
+      type: bool
+      db_name: auto_bom_journal_line
+
+    - name: reserve_purchase_quote
+      no: 59
+      type: bool
+      db_name: reserve_purchase_quote
+
+    - name: reserve_blanket_purchase_order
+      no: 60
+      type: bool
+      db_name: reserve_blanket_purchase_order
+
+    - name: reserve_purchase_order
+      no: 61
+      type: bool
+      db_name: reserve_purchase_order
+
+    - name: reserve_purchase_invoice
+      no: 62
+      type: bool
+      db_name: reserve_purchase_invoice
+
+    - name: reserve_purchase_credit_memo
+      no: 63
+      type: bool
+      db_name: reserve_purchase_credit_memo
+
+    - name: reserve_requisition_line
+      no: 64
+      type: bool
+      db_name: reserve_requisition_line
+
+    - name: reserve_sales_quote
+      no: 65
+      type: bool
+      db_name: reserve_sales_quote
+
+    - name: reserve_blanket_sales_order
+      no: 66
+      type: bool
+      db_name: reserve_blanket_sales_order
+
+    - name: reserve_sales_order
+      no: 67
+      type: bool
+      db_name: reserve_sales_order
+
+    - name: reserve_sales_invoice
+      no: 68
+      type: bool
+      db_name: reserve_sales_invoice
+
+    - name: reserve_sales_credit_memo
+      no: 69
+      type: bool
+      db_name: reserve_sales_credit_memo
+
+    - name: reserve_item_jnl_line_purch
+      no: 70
+      type: bool
+      db_name: reserve_item_jnl_line_purch
+
+    - name: reserve_item_jnl_line_sales
+      no: 71
+      type: bool
+      db_name: reserve_item_jnl_line_sales
+
+    - name: reserve_item_jnl_line_pos
+      no: 72
+      type: bool
+      db_name: reserve_item_jnl_line_pos
+
+    - name: reserve_item_jnl_line_neg
+      no: 73
+      type: bool
+      db_name: reserve_item_jnl_line_neg
+
+    - name: reserve_item_jnl_line_trans
+      no: 74
+      type: bool
+      db_name: reserve_item_jnl_line_trans
+
+    - name: reserve_bom_journal_line
+      no: 75
+      type: bool
+      db_name: reserve_bom_journal_line
+
+  keys:
+    - name: Primary
+      fields: [primary_key]
+      clustered: true

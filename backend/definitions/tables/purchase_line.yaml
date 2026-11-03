@@ -880,6 +880,31 @@ table:
       type: bool
       db_name: use_duplication_list
 
+    # reservations (codeunit 400): + reserved for the line, − reserved from it
+    - name: reserved_quantity
+      no: 95
+      type: types.Decimal
+      db_name: reserved_quantity
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+      editable: false
+
+    - name: reserve
+      no: 96
+      type: Option
+      db_name: reserve
+      options: ["Never", "Optional", "Always"]
+
+    - name: reserved_qty_base
+      no: 5495
+      type: types.Decimal
+      db_name: reserved_qty_base
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+      editable: false
+
   keys:
     - name: Primary
       fields: [document_type, document_no, line_no]

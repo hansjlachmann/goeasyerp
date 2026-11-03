@@ -29,13 +29,19 @@ type viesGroup struct {
 }
 
 type viesDeclarationDisk struct {
-	groups []*viesGroup
-	period types.Date
+	groups           []*viesGroup
+	period           types.Date
+	useAmtsInAddCurr bool
 }
 
 func (r *viesDeclarationDisk) Definition() *Definition {
 	return &Definition{
 		Transaction: true,
+		Options:     []Option{{Name: "show_amounts_in_add_currency", Type: "bool", Default: "false"}},
+		OnPreReport: func(run *Run) error {
+			r.useAmtsInAddCurr = run.OptionBool("show_amounts_in_add_currency")
+			return nil
+		},
 		DataItems: []*DataItem{{
 			Name:                "TaxEntry",
 			Table:               gtables.TaxEntryTableName,
@@ -62,9 +68,13 @@ func (r *viesDeclarationDisk) taxEntryOnAfterGetRecord(rec *gtables.TaxEntry, ru
 		r.groups = append(r.groups, &viesGroup{countryCode: rec.Country_code, customerNo: rec.Sell_to_buy_from_no})
 	}
 	group := r.groups[len(r.groups)-1]
-	group.salesToCust = group.salesToCust.Add(rec.Base)
+	salesToCust := rec.Base
+	if r.useAmtsInAddCurr {
+		salesToCust = rec.Additional_currency_base
+	}
+	group.salesToCust = group.salesToCust.Add(salesToCust)
 	if rec.Eu_3_party_trade {
-		group.eu3Party = group.eu3Party.Add(rec.Base)
+		group.eu3Party = group.eu3Party.Add(salesToCust)
 	}
 	return nil
 }

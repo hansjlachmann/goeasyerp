@@ -215,3 +215,42 @@ func TestGenJnlFAMaintenanceAndChecks(t *testing.T) {
 		t.Errorf("G/L line with a depreciation book: %v", err)
 	}
 }
+
+// With euro as the additional reporting currency and a book posting acquisitions at the asset's
+// own rate: the line takes the FA depreciation book's FA Add.-Currency Factor and codeunit 12
+// exchanges the line's G/L entries with it (0.1: 50000 → 5000 euro), not with the day's rate
+func TestGenJnlFAAddCurrencyFactor(t *testing.T) {
+	src, rollback := inTransaction(t, demoDB(t))
+	defer rollback()
+	glSetup := gtables.GetGeneralLedgerSetup(src)
+	glSetup.Additional_reporting_currency = "EUR"
+	must(t, glSetup.ModifyOrError(false))
+	deprBook := gtables.NewDepreciationBook(src)
+	must(t, deprBook.GetOrError(types.Code("COMPANY")))
+	deprBook.Add_curr_exch_rate_acq_cost = true
+	must(t, deprBook.ModifyOrError(false))
+	newAsset(t, src)
+	faDeprBook := gtables.NewFADepreciationBook(src)
+	must(t, faDeprBook.GetOrError(map[string]interface{}{"fa_no": "FA0090", "depreciation_book_code": "COMPANY"}))
+	faDeprBook.Fa_add_currency_factor = dec("0.1")
+	must(t, faDeprBook.ModifyOrError(false))
+
+	line := faLine(t, src, 10000, gtables.GenJournalLine_Fa_posting_type.AcquisitionCost, "50000", "1520")
+	if !line.Fa_add_currency_factor.Equal(dec("0.1")) {
+		t.Fatalf("the line's FA Add.-Currency Factor %s, want 0.1", line.Fa_add_currency_factor)
+	}
+	must(t, genjnl.NewGenJnlPostLine(src).Run(line))
+	entries := glEntries(t, src)
+	if acq := entries["1230"]; acq == nil || !acq.Additional_currency_amount.Equal(dec("5000")) {
+		t.Errorf("acquisition cost account in euro: %+v", acq)
+	}
+	if bank := entries["1520"]; bank == nil || !bank.Additional_currency_amount.Equal(dec("-5000")) {
+		t.Errorf("balancing account in euro: %+v", bank)
+	}
+
+	// a depreciation the book posts at the day's rate: no factor
+	depr := faLine(t, src, 20000, gtables.GenJournalLine_Fa_posting_type.Depreciation, "-1000", "1520")
+	if !depr.Fa_add_currency_factor.IsZero() {
+		t.Errorf("depreciation line's factor %s, want 0", depr.Fa_add_currency_factor)
+	}
+}

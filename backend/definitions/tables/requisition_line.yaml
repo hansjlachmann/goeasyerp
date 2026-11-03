@@ -334,6 +334,31 @@ table:
       precision: 18
       scale: 5
 
+    # reservations (codeunit 400)
+    - name: reserved_quantity
+      no: 31
+      type: types.Decimal
+      db_name: reserved_quantity
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+      editable: false
+
+    - name: reserve
+      no: 32
+      type: Option
+      db_name: reserve
+      options: ["Never", "Optional", "Always"]
+
+    - name: reserved_qty_base
+      no: 5431
+      type: types.Decimal
+      db_name: reserved_qty_base
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+      editable: false
+
   keys:
     - name: Primary
       fields: [worksheet_template_name, journal_batch_name, line_no]

@@ -19,6 +19,8 @@ page:
           width: 250
         - source: statistics_period
           width: 130
+        - source: amounts_in_add_currency
+          width: 130
         - source: currency_identifier
           width: 130
         - source: reported

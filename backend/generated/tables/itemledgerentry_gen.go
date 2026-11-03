@@ -61,6 +61,10 @@
 //	OnValidate_Transaction_specification(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_No_series(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Reserved_quantity(rec *gtables.ItemLedgerEntry) error
+//	OnValidate_Add_currency_adj_cost_qty(rec *gtables.ItemLedgerEntry) error
+//	OnValidate_Add_curr_adj_cost_inv_qty(rec *gtables.ItemLedgerEntry) error
+//	OnValidate_Add_curr_cost_posted_to_gl(rec *gtables.ItemLedgerEntry) error
+//	OnValidate_Additional_currency_unit_cost(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Variant_code(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Qty_per_unit_of_measure(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Unit_of_measure_code(rec *gtables.ItemLedgerEntry) error
@@ -125,60 +129,64 @@ func (o ItemLedgerEntrySource_type) IsValid() bool {
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterItemLedgerEntryLogic.
 type ItemLedgerEntry struct {
-	Entry_no                   int                        `db:"entry_no,pk"`
-	Item_no                    types.Code                 `db:"item_no"`
-	Posting_date               types.Date                 `db:"posting_date"`
-	Entry_type                 ItemLedgerEntryEntry_type  `db:"entry_type"`
-	Source_no                  types.Code                 `db:"source_no"`
-	Document_no                types.Code                 `db:"document_no"`
-	Description                types.Text                 `db:"description"`
-	Location_code              types.Code                 `db:"location_code"`
-	Inventory_posting_group    types.Code                 `db:"inventory_posting_group"`
-	Source_posting_group       types.Code                 `db:"source_posting_group"`
-	Quantity                   types.Decimal              `db:"quantity"`
-	Remaining_quantity         types.Decimal              `db:"remaining_quantity"`
-	Invoiced_quantity          types.Decimal              `db:"invoiced_quantity"`
-	Unit_amount                types.Decimal              `db:"unit_amount"`
-	Unit_cost                  types.Decimal              `db:"unit_cost"`
-	Amount                     types.Decimal              `db:"amount"`
-	Discount_amount            types.Decimal              `db:"discount_amount"`
-	Salespers_purch_code       types.Code                 `db:"salespers_purch_code"`
-	User_id                    types.Code                 `db:"user_id"`
-	Source_code                types.Code                 `db:"source_code"`
-	Applies_to_entry           int                        `db:"applies_to_entry"`
-	Open                       bool                       `db:"open"`
-	Cost_is_adjusted           bool                       `db:"cost_is_adjusted"`
-	Department_code            types.Code                 `db:"department_code"`
-	Project_code               types.Code                 `db:"project_code"`
-	Positive                   bool                       `db:"positive"`
-	Closed_by_entry_no         int                        `db:"closed_by_entry_no"`
-	Closed_at_date             types.Date                 `db:"closed_at_date"`
-	Closed_by_quantity         types.Decimal              `db:"closed_by_quantity"`
-	Source_type                ItemLedgerEntrySource_type `db:"source_type"`
-	Adjusted_cost_qty          types.Decimal              `db:"adjusted_cost_qty"`
-	Adjusted_cost_invoiced_qty types.Decimal              `db:"adjusted_cost_invoiced_qty"`
-	Cost_posted_to_gl          types.Decimal              `db:"cost_posted_to_gl"`
-	Journal_batch_name         types.Code                 `db:"journal_batch_name"`
-	Reason_code                types.Code                 `db:"reason_code"`
-	Drop_shipment              bool                       `db:"drop_shipment"`
-	Invt_qty_not_adjusted      types.Decimal              `db:"invt_qty_not_adjusted"`
-	Adjust_invoice_cost        bool                       `db:"adjust_invoice_cost"`
-	Transaction_type           types.Code                 `db:"transaction_type"`
-	Transport_method           types.Code                 `db:"transport_method"`
-	Country_code               types.Code                 `db:"country_code"`
-	Transferred_from_entry_no  int                        `db:"transferred_from_entry_no"`
-	Gen_bus_posting_group      types.Code                 `db:"gen_bus_posting_group"`
-	Gen_prod_posting_group     types.Code                 `db:"gen_prod_posting_group"`
-	Entry_exit_point           types.Code                 `db:"entry_exit_point"`
-	Document_date              types.Date                 `db:"document_date"`
-	External_document_no       types.Code                 `db:"external_document_no"`
-	Area                       types.Code                 `db:"area"`
-	Transaction_specification  types.Code                 `db:"transaction_specification"`
-	No_series                  types.Code                 `db:"no_series"`
-	Reserved_quantity          types.Decimal              `db:"reserved_quantity"`
-	Variant_code               types.Code                 `db:"variant_code"`
-	Qty_per_unit_of_measure    types.Decimal              `db:"qty_per_unit_of_measure"`
-	Unit_of_measure_code       types.Code                 `db:"unit_of_measure_code"`
+	Entry_no                      int                        `db:"entry_no,pk"`
+	Item_no                       types.Code                 `db:"item_no"`
+	Posting_date                  types.Date                 `db:"posting_date"`
+	Entry_type                    ItemLedgerEntryEntry_type  `db:"entry_type"`
+	Source_no                     types.Code                 `db:"source_no"`
+	Document_no                   types.Code                 `db:"document_no"`
+	Description                   types.Text                 `db:"description"`
+	Location_code                 types.Code                 `db:"location_code"`
+	Inventory_posting_group       types.Code                 `db:"inventory_posting_group"`
+	Source_posting_group          types.Code                 `db:"source_posting_group"`
+	Quantity                      types.Decimal              `db:"quantity"`
+	Remaining_quantity            types.Decimal              `db:"remaining_quantity"`
+	Invoiced_quantity             types.Decimal              `db:"invoiced_quantity"`
+	Unit_amount                   types.Decimal              `db:"unit_amount"`
+	Unit_cost                     types.Decimal              `db:"unit_cost"`
+	Amount                        types.Decimal              `db:"amount"`
+	Discount_amount               types.Decimal              `db:"discount_amount"`
+	Salespers_purch_code          types.Code                 `db:"salespers_purch_code"`
+	User_id                       types.Code                 `db:"user_id"`
+	Source_code                   types.Code                 `db:"source_code"`
+	Applies_to_entry              int                        `db:"applies_to_entry"`
+	Open                          bool                       `db:"open"`
+	Cost_is_adjusted              bool                       `db:"cost_is_adjusted"`
+	Department_code               types.Code                 `db:"department_code"`
+	Project_code                  types.Code                 `db:"project_code"`
+	Positive                      bool                       `db:"positive"`
+	Closed_by_entry_no            int                        `db:"closed_by_entry_no"`
+	Closed_at_date                types.Date                 `db:"closed_at_date"`
+	Closed_by_quantity            types.Decimal              `db:"closed_by_quantity"`
+	Source_type                   ItemLedgerEntrySource_type `db:"source_type"`
+	Adjusted_cost_qty             types.Decimal              `db:"adjusted_cost_qty"`
+	Adjusted_cost_invoiced_qty    types.Decimal              `db:"adjusted_cost_invoiced_qty"`
+	Cost_posted_to_gl             types.Decimal              `db:"cost_posted_to_gl"`
+	Journal_batch_name            types.Code                 `db:"journal_batch_name"`
+	Reason_code                   types.Code                 `db:"reason_code"`
+	Drop_shipment                 bool                       `db:"drop_shipment"`
+	Invt_qty_not_adjusted         types.Decimal              `db:"invt_qty_not_adjusted"`
+	Adjust_invoice_cost           bool                       `db:"adjust_invoice_cost"`
+	Transaction_type              types.Code                 `db:"transaction_type"`
+	Transport_method              types.Code                 `db:"transport_method"`
+	Country_code                  types.Code                 `db:"country_code"`
+	Transferred_from_entry_no     int                        `db:"transferred_from_entry_no"`
+	Gen_bus_posting_group         types.Code                 `db:"gen_bus_posting_group"`
+	Gen_prod_posting_group        types.Code                 `db:"gen_prod_posting_group"`
+	Entry_exit_point              types.Code                 `db:"entry_exit_point"`
+	Document_date                 types.Date                 `db:"document_date"`
+	External_document_no          types.Code                 `db:"external_document_no"`
+	Area                          types.Code                 `db:"area"`
+	Transaction_specification     types.Code                 `db:"transaction_specification"`
+	No_series                     types.Code                 `db:"no_series"`
+	Reserved_quantity             types.Decimal              `db:"reserved_quantity"`
+	Add_currency_adj_cost_qty     types.Decimal              `db:"add_currency_adj_cost_qty"`
+	Add_curr_adj_cost_inv_qty     types.Decimal              `db:"add_curr_adj_cost_inv_qty"`
+	Add_curr_cost_posted_to_gl    types.Decimal              `db:"add_curr_cost_posted_to_gl"`
+	Additional_currency_unit_cost types.Decimal              `db:"additional_currency_unit_cost"`
+	Variant_code                  types.Code                 `db:"variant_code"`
+	Qty_per_unit_of_measure       types.Decimal              `db:"qty_per_unit_of_measure"`
+	Unit_of_measure_code          types.Code                 `db:"unit_of_measure_code"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -277,115 +285,123 @@ var ItemLedgerEntry_Source_type = struct {
 // ItemLedgerEntry_FieldNo holds the field numbers of Item_Ledger_Entry (FieldNo):
 // ItemLedgerEntry_FieldNo.Entry_no is 1
 var ItemLedgerEntry_FieldNo = struct {
-	Entry_no                   int
-	Item_no                    int
-	Posting_date               int
-	Entry_type                 int
-	Source_no                  int
-	Document_no                int
-	Description                int
-	Location_code              int
-	Inventory_posting_group    int
-	Source_posting_group       int
-	Quantity                   int
-	Remaining_quantity         int
-	Invoiced_quantity          int
-	Unit_amount                int
-	Unit_cost                  int
-	Amount                     int
-	Discount_amount            int
-	Salespers_purch_code       int
-	User_id                    int
-	Source_code                int
-	Applies_to_entry           int
-	Open                       int
-	Cost_is_adjusted           int
-	Department_code            int
-	Project_code               int
-	Positive                   int
-	Closed_by_entry_no         int
-	Closed_at_date             int
-	Closed_by_quantity         int
-	Source_type                int
-	Adjusted_cost_qty          int
-	Adjusted_cost_invoiced_qty int
-	Cost_posted_to_gl          int
-	Journal_batch_name         int
-	Reason_code                int
-	Drop_shipment              int
-	Invt_qty_not_adjusted      int
-	Adjust_invoice_cost        int
-	Transaction_type           int
-	Transport_method           int
-	Country_code               int
-	Transferred_from_entry_no  int
-	Gen_bus_posting_group      int
-	Gen_prod_posting_group     int
-	Entry_exit_point           int
-	Document_date              int
-	External_document_no       int
-	Area                       int
-	Transaction_specification  int
-	No_series                  int
-	Reserved_quantity          int
-	Variant_code               int
-	Qty_per_unit_of_measure    int
-	Unit_of_measure_code       int
+	Entry_no                      int
+	Item_no                       int
+	Posting_date                  int
+	Entry_type                    int
+	Source_no                     int
+	Document_no                   int
+	Description                   int
+	Location_code                 int
+	Inventory_posting_group       int
+	Source_posting_group          int
+	Quantity                      int
+	Remaining_quantity            int
+	Invoiced_quantity             int
+	Unit_amount                   int
+	Unit_cost                     int
+	Amount                        int
+	Discount_amount               int
+	Salespers_purch_code          int
+	User_id                       int
+	Source_code                   int
+	Applies_to_entry              int
+	Open                          int
+	Cost_is_adjusted              int
+	Department_code               int
+	Project_code                  int
+	Positive                      int
+	Closed_by_entry_no            int
+	Closed_at_date                int
+	Closed_by_quantity            int
+	Source_type                   int
+	Adjusted_cost_qty             int
+	Adjusted_cost_invoiced_qty    int
+	Cost_posted_to_gl             int
+	Journal_batch_name            int
+	Reason_code                   int
+	Drop_shipment                 int
+	Invt_qty_not_adjusted         int
+	Adjust_invoice_cost           int
+	Transaction_type              int
+	Transport_method              int
+	Country_code                  int
+	Transferred_from_entry_no     int
+	Gen_bus_posting_group         int
+	Gen_prod_posting_group        int
+	Entry_exit_point              int
+	Document_date                 int
+	External_document_no          int
+	Area                          int
+	Transaction_specification     int
+	No_series                     int
+	Reserved_quantity             int
+	Add_currency_adj_cost_qty     int
+	Add_curr_adj_cost_inv_qty     int
+	Add_curr_cost_posted_to_gl    int
+	Additional_currency_unit_cost int
+	Variant_code                  int
+	Qty_per_unit_of_measure       int
+	Unit_of_measure_code          int
 }{
-	Entry_no:                   1,
-	Item_no:                    2,
-	Posting_date:               3,
-	Entry_type:                 4,
-	Source_no:                  5,
-	Document_no:                6,
-	Description:                7,
-	Location_code:              8,
-	Inventory_posting_group:    9,
-	Source_posting_group:       10,
-	Quantity:                   12,
-	Remaining_quantity:         13,
-	Invoiced_quantity:          14,
-	Unit_amount:                15,
-	Unit_cost:                  16,
-	Amount:                     17,
-	Discount_amount:            21,
-	Salespers_purch_code:       22,
-	User_id:                    24,
-	Source_code:                25,
-	Applies_to_entry:           28,
-	Open:                       29,
-	Cost_is_adjusted:           30,
-	Department_code:            33,
-	Project_code:               34,
-	Positive:                   36,
-	Closed_by_entry_no:         37,
-	Closed_at_date:             38,
-	Closed_by_quantity:         39,
-	Source_type:                41,
-	Adjusted_cost_qty:          42,
-	Adjusted_cost_invoiced_qty: 43,
-	Cost_posted_to_gl:          44,
-	Journal_batch_name:         45,
-	Reason_code:                46,
-	Drop_shipment:              47,
-	Invt_qty_not_adjusted:      48,
-	Adjust_invoice_cost:        49,
-	Transaction_type:           50,
-	Transport_method:           51,
-	Country_code:               52,
-	Transferred_from_entry_no:  53,
-	Gen_bus_posting_group:      57,
-	Gen_prod_posting_group:     58,
-	Entry_exit_point:           59,
-	Document_date:              60,
-	External_document_no:       61,
-	Area:                       62,
-	Transaction_specification:  63,
-	No_series:                  64,
-	Reserved_quantity:          70,
-	Variant_code:               5402,
-	Qty_per_unit_of_measure:    5404,
-	Unit_of_measure_code:       5407,
+	Entry_no:                      1,
+	Item_no:                       2,
+	Posting_date:                  3,
+	Entry_type:                    4,
+	Source_no:                     5,
+	Document_no:                   6,
+	Description:                   7,
+	Location_code:                 8,
+	Inventory_posting_group:       9,
+	Source_posting_group:          10,
+	Quantity:                      12,
+	Remaining_quantity:            13,
+	Invoiced_quantity:             14,
+	Unit_amount:                   15,
+	Unit_cost:                     16,
+	Amount:                        17,
+	Discount_amount:               21,
+	Salespers_purch_code:          22,
+	User_id:                       24,
+	Source_code:                   25,
+	Applies_to_entry:              28,
+	Open:                          29,
+	Cost_is_adjusted:              30,
+	Department_code:               33,
+	Project_code:                  34,
+	Positive:                      36,
+	Closed_by_entry_no:            37,
+	Closed_at_date:                38,
+	Closed_by_quantity:            39,
+	Source_type:                   41,
+	Adjusted_cost_qty:             42,
+	Adjusted_cost_invoiced_qty:    43,
+	Cost_posted_to_gl:             44,
+	Journal_batch_name:            45,
+	Reason_code:                   46,
+	Drop_shipment:                 47,
+	Invt_qty_not_adjusted:         48,
+	Adjust_invoice_cost:           49,
+	Transaction_type:              50,
+	Transport_method:              51,
+	Country_code:                  52,
+	Transferred_from_entry_no:     53,
+	Gen_bus_posting_group:         57,
+	Gen_prod_posting_group:        58,
+	Entry_exit_point:              59,
+	Document_date:                 60,
+	External_document_no:          61,
+	Area:                          62,
+	Transaction_specification:     63,
+	No_series:                     64,
+	Reserved_quantity:             70,
+	Add_currency_adj_cost_qty:     67,
+	Add_curr_adj_cost_inv_qty:     68,
+	Add_curr_cost_posted_to_gl:    69,
+	Additional_currency_unit_cost: 72,
+	Variant_code:                  5402,
+	Qty_per_unit_of_measure:       5404,
+	Unit_of_measure_code:          5407,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -493,6 +509,14 @@ func (t *ItemLedgerEntry) FieldNo(fieldName string) int {
 		return 64
 	case "reserved_quantity":
 		return 70
+	case "add_currency_adj_cost_qty":
+		return 67
+	case "add_curr_adj_cost_inv_qty":
+		return 68
+	case "add_curr_cost_posted_to_gl":
+		return 69
+	case "additional_currency_unit_cost":
+		return 72
 	case "variant_code":
 		return 5402
 	case "qty_per_unit_of_measure":
@@ -608,6 +632,14 @@ func (t *ItemLedgerEntry) FieldName(fieldNo int) string {
 		return "no_series"
 	case 70:
 		return "reserved_quantity"
+	case 67:
+		return "add_currency_adj_cost_qty"
+	case 68:
+		return "add_curr_adj_cost_inv_qty"
+	case 69:
+		return "add_curr_cost_posted_to_gl"
+	case 72:
+		return "additional_currency_unit_cost"
 	case 5402:
 		return "variant_code"
 	case 5404:
@@ -868,6 +900,18 @@ type (
 	ItemLedgerEntryOnValidate_Reserved_quantity interface {
 		OnValidate_Reserved_quantity(rec *ItemLedgerEntry) error
 	}
+	ItemLedgerEntryOnValidate_Add_currency_adj_cost_qty interface {
+		OnValidate_Add_currency_adj_cost_qty(rec *ItemLedgerEntry) error
+	}
+	ItemLedgerEntryOnValidate_Add_curr_adj_cost_inv_qty interface {
+		OnValidate_Add_curr_adj_cost_inv_qty(rec *ItemLedgerEntry) error
+	}
+	ItemLedgerEntryOnValidate_Add_curr_cost_posted_to_gl interface {
+		OnValidate_Add_curr_cost_posted_to_gl(rec *ItemLedgerEntry) error
+	}
+	ItemLedgerEntryOnValidate_Additional_currency_unit_cost interface {
+		OnValidate_Additional_currency_unit_cost(rec *ItemLedgerEntry) error
+	}
 	ItemLedgerEntryOnValidate_Variant_code interface {
 		OnValidate_Variant_code(rec *ItemLedgerEntry) error
 	}
@@ -1008,6 +1052,14 @@ func itemLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemLedgerEntryOnValidate_No_series)
 	case "OnValidate_Reserved_quantity":
 		_, ok = logic.(ItemLedgerEntryOnValidate_Reserved_quantity)
+	case "OnValidate_Add_currency_adj_cost_qty":
+		_, ok = logic.(ItemLedgerEntryOnValidate_Add_currency_adj_cost_qty)
+	case "OnValidate_Add_curr_adj_cost_inv_qty":
+		_, ok = logic.(ItemLedgerEntryOnValidate_Add_curr_adj_cost_inv_qty)
+	case "OnValidate_Add_curr_cost_posted_to_gl":
+		_, ok = logic.(ItemLedgerEntryOnValidate_Add_curr_cost_posted_to_gl)
+	case "OnValidate_Additional_currency_unit_cost":
+		_, ok = logic.(ItemLedgerEntryOnValidate_Additional_currency_unit_cost)
 	case "OnValidate_Variant_code":
 		_, ok = logic.(ItemLedgerEntryOnValidate_Variant_code)
 	case "OnValidate_Qty_per_unit_of_measure":
@@ -1244,6 +1296,10 @@ func GetItemLedgerEntryTableSchema() string {
 		transaction_specification TEXT(10),
 		no_series TEXT(10),
 		reserved_quantity TEXT,
+		add_currency_adj_cost_qty TEXT,
+		add_curr_adj_cost_inv_qty TEXT,
+		add_curr_cost_posted_to_gl TEXT,
+		additional_currency_unit_cost TEXT,
 		variant_code TEXT(10),
 		qty_per_unit_of_measure TEXT,
 		unit_of_measure_code TEXT(10)
@@ -1304,6 +1360,10 @@ func GetItemLedgerEntryPostgresTableSchema() string {
 		transaction_specification VARCHAR(10),
 		no_series VARCHAR(10),
 		reserved_quantity NUMERIC,
+		add_currency_adj_cost_qty NUMERIC,
+		add_curr_adj_cost_inv_qty NUMERIC,
+		add_curr_cost_posted_to_gl NUMERIC,
+		additional_currency_unit_cost NUMERIC,
 		variant_code VARCHAR(10),
 		qty_per_unit_of_measure NUMERIC,
 		unit_of_measure_code VARCHAR(10)
@@ -1545,6 +1605,10 @@ func (t *ItemLedgerEntry) StoreOldValues() {
 	t.oldValues["transaction_specification"] = t.Transaction_specification
 	t.oldValues["no_series"] = t.No_series
 	t.oldValues["reserved_quantity"] = t.Reserved_quantity
+	t.oldValues["add_currency_adj_cost_qty"] = t.Add_currency_adj_cost_qty
+	t.oldValues["add_curr_adj_cost_inv_qty"] = t.Add_curr_adj_cost_inv_qty
+	t.oldValues["add_curr_cost_posted_to_gl"] = t.Add_curr_cost_posted_to_gl
+	t.oldValues["additional_currency_unit_cost"] = t.Additional_currency_unit_cost
 	t.oldValues["variant_code"] = t.Variant_code
 	t.oldValues["qty_per_unit_of_measure"] = t.Qty_per_unit_of_measure
 	t.oldValues["unit_of_measure_code"] = t.Unit_of_measure_code
@@ -1715,6 +1779,18 @@ func (t *ItemLedgerEntry) XRec() *ItemLedgerEntry {
 	if v, ok := t.oldValues["reserved_quantity"].(types.Decimal); ok {
 		x.Reserved_quantity = v
 	}
+	if v, ok := t.oldValues["add_currency_adj_cost_qty"].(types.Decimal); ok {
+		x.Add_currency_adj_cost_qty = v
+	}
+	if v, ok := t.oldValues["add_curr_adj_cost_inv_qty"].(types.Decimal); ok {
+		x.Add_curr_adj_cost_inv_qty = v
+	}
+	if v, ok := t.oldValues["add_curr_cost_posted_to_gl"].(types.Decimal); ok {
+		x.Add_curr_cost_posted_to_gl = v
+	}
+	if v, ok := t.oldValues["additional_currency_unit_cost"].(types.Decimal); ok {
+		x.Additional_currency_unit_cost = v
+	}
 	if v, ok := t.oldValues["variant_code"].(types.Code); ok {
 		x.Variant_code = v
 	}
@@ -1846,6 +1922,10 @@ func (t *ItemLedgerEntry) GetByPK(entry_no int) bool {
 	var transaction_specificationNull sql.NullString
 	var no_seriesNull sql.NullString
 	var reserved_quantityNull sql.NullString
+	var add_currency_adj_cost_qtyNull sql.NullString
+	var add_curr_adj_cost_inv_qtyNull sql.NullString
+	var add_curr_cost_posted_to_glNull sql.NullString
+	var additional_currency_unit_costNull sql.NullString
 	var variant_codeNull sql.NullString
 	var qty_per_unit_of_measureNull sql.NullString
 	var unit_of_measure_codeNull sql.NullString
@@ -1856,7 +1936,7 @@ func (t *ItemLedgerEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1914,6 +1994,10 @@ func (t *ItemLedgerEntry) GetByPK(entry_no int) bool {
 		&transaction_specificationNull,
 		&no_seriesNull,
 		&reserved_quantityNull,
+		&add_currency_adj_cost_qtyNull,
+		&add_curr_adj_cost_inv_qtyNull,
+		&add_curr_cost_posted_to_glNull,
+		&additional_currency_unit_costNull,
 		&variant_codeNull,
 		&qty_per_unit_of_measureNull,
 		&unit_of_measure_codeNull,
@@ -1981,6 +2065,10 @@ func (t *ItemLedgerEntry) GetByPK(entry_no int) bool {
 	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.No_series = types.NewCode(no_seriesNull.String)
 	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+	t.Add_currency_adj_cost_qty, _ = types.NewDecimalFromString(add_currency_adj_cost_qtyNull.String)
+	t.Add_curr_adj_cost_inv_qty, _ = types.NewDecimalFromString(add_curr_adj_cost_inv_qtyNull.String)
+	t.Add_curr_cost_posted_to_gl, _ = types.NewDecimalFromString(add_curr_cost_posted_to_glNull.String)
+	t.Additional_currency_unit_cost, _ = types.NewDecimalFromString(additional_currency_unit_costNull.String)
 	t.Variant_code = types.NewCode(variant_codeNull.String)
 	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
@@ -2057,6 +2145,10 @@ func (t *ItemLedgerEntry) Insert(runTrigger bool) bool {
 		t.Transaction_specification,
 		t.No_series,
 		t.Reserved_quantity,
+		t.Add_currency_adj_cost_qty,
+		t.Add_curr_adj_cost_inv_qty,
+		t.Add_curr_cost_posted_to_gl,
+		t.Additional_currency_unit_cost,
 		t.Variant_code,
 		t.Qty_per_unit_of_measure,
 		t.Unit_of_measure_code,
@@ -2064,7 +2156,7 @@ func (t *ItemLedgerEntry) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2153,13 +2245,17 @@ func (t *ItemLedgerEntry) InsertAll(records []*ItemLedgerEntry, runTrigger bool)
 			r.Transaction_specification,
 			r.No_series,
 			r.Reserved_quantity,
+			r.Add_currency_adj_cost_qty,
+			r.Add_curr_adj_cost_inv_qty,
+			r.Add_curr_cost_posted_to_gl,
+			r.Additional_currency_unit_cost,
 			r.Variant_code,
 			r.Qty_per_unit_of_measure,
 			r.Unit_of_measure_code,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ItemLedgerEntryTableName)
-	columns := []string{"entry_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "remaining_quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "user_id", "source_code", "applies_to_entry", "open", "cost_is_adjusted", "department_code", "project_code", "positive", "closed_by_entry_no", "closed_at_date", "closed_by_quantity", "source_type", "adjusted_cost_qty", "adjusted_cost_invoiced_qty", "cost_posted_to_gl", "journal_batch_name", "reason_code", "drop_shipment", "invt_qty_not_adjusted", "adjust_invoice_cost", "transaction_type", "transport_method", "country_code", "transferred_from_entry_no", "gen_bus_posting_group", "gen_prod_posting_group", "entry_exit_point", "document_date", "external_document_no", "area", "transaction_specification", "no_series", "reserved_quantity", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code"}
+	columns := []string{"entry_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "remaining_quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "user_id", "source_code", "applies_to_entry", "open", "cost_is_adjusted", "department_code", "project_code", "positive", "closed_by_entry_no", "closed_at_date", "closed_by_quantity", "source_type", "adjusted_cost_qty", "adjusted_cost_invoiced_qty", "cost_posted_to_gl", "journal_batch_name", "reason_code", "drop_shipment", "invt_qty_not_adjusted", "adjust_invoice_cost", "transaction_type", "transport_method", "country_code", "transferred_from_entry_no", "gen_bus_posting_group", "gen_prod_posting_group", "entry_exit_point", "document_date", "external_document_no", "area", "transaction_specification", "no_series", "reserved_quantity", "add_currency_adj_cost_qty", "add_curr_adj_cost_inv_qty", "add_curr_cost_posted_to_gl", "additional_currency_unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2403,6 +2499,22 @@ func (t *ItemLedgerEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "reserved_quantity = ?")
 			values = append(values, t.Reserved_quantity)
 		}
+		if t.hasFieldChanged("add_currency_adj_cost_qty") {
+			setClauses = append(setClauses, "add_currency_adj_cost_qty = ?")
+			values = append(values, t.Add_currency_adj_cost_qty)
+		}
+		if t.hasFieldChanged("add_curr_adj_cost_inv_qty") {
+			setClauses = append(setClauses, "add_curr_adj_cost_inv_qty = ?")
+			values = append(values, t.Add_curr_adj_cost_inv_qty)
+		}
+		if t.hasFieldChanged("add_curr_cost_posted_to_gl") {
+			setClauses = append(setClauses, "add_curr_cost_posted_to_gl = ?")
+			values = append(values, t.Add_curr_cost_posted_to_gl)
+		}
+		if t.hasFieldChanged("additional_currency_unit_cost") {
+			setClauses = append(setClauses, "additional_currency_unit_cost = ?")
+			values = append(values, t.Additional_currency_unit_cost)
+		}
 		if t.hasFieldChanged("variant_code") {
 			setClauses = append(setClauses, "variant_code = ?")
 			values = append(values, t.Variant_code)
@@ -2522,6 +2634,14 @@ func (t *ItemLedgerEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.No_series)
 		setClauses = append(setClauses, "reserved_quantity = ?")
 		values = append(values, t.Reserved_quantity)
+		setClauses = append(setClauses, "add_currency_adj_cost_qty = ?")
+		values = append(values, t.Add_currency_adj_cost_qty)
+		setClauses = append(setClauses, "add_curr_adj_cost_inv_qty = ?")
+		values = append(values, t.Add_curr_adj_cost_inv_qty)
+		setClauses = append(setClauses, "add_curr_cost_posted_to_gl = ?")
+		values = append(values, t.Add_curr_cost_posted_to_gl)
+		setClauses = append(setClauses, "additional_currency_unit_cost = ?")
+		values = append(values, t.Additional_currency_unit_cost)
 		setClauses = append(setClauses, "variant_code = ?")
 		values = append(values, t.Variant_code)
 		setClauses = append(setClauses, "qty_per_unit_of_measure = ?")
@@ -2806,6 +2926,22 @@ func (t *ItemLedgerEntry) hasFieldChanged(fieldName string) bool {
 	case "reserved_quantity":
 		if old, ok := oldValue.(types.Decimal); ok {
 			return !t.Reserved_quantity.Equal(old)
+		}
+	case "add_currency_adj_cost_qty":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Add_currency_adj_cost_qty.Equal(old)
+		}
+	case "add_curr_adj_cost_inv_qty":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Add_curr_adj_cost_inv_qty.Equal(old)
+		}
+	case "add_curr_cost_posted_to_gl":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Add_curr_cost_posted_to_gl.Equal(old)
+		}
+	case "additional_currency_unit_cost":
+		if old, ok := oldValue.(types.Decimal); ok {
+			return !t.Additional_currency_unit_cost.Equal(old)
 		}
 	case "variant_code":
 		if old, ok := oldValue.(types.Code); ok {
@@ -3165,6 +3301,14 @@ func (t *ItemLedgerEntry) columnName(fieldName string) (string, bool) {
 		return "no_series", true
 	case strings.ToLower("reserved_quantity"):
 		return "reserved_quantity", true
+	case strings.ToLower("add_currency_adj_cost_qty"):
+		return "add_currency_adj_cost_qty", true
+	case strings.ToLower("add_curr_adj_cost_inv_qty"):
+		return "add_curr_adj_cost_inv_qty", true
+	case strings.ToLower("add_curr_cost_posted_to_gl"):
+		return "add_curr_cost_posted_to_gl", true
+	case strings.ToLower("additional_currency_unit_cost"):
+		return "additional_currency_unit_cost", true
 	case strings.ToLower("variant_code"):
 		return "variant_code", true
 	case strings.ToLower("qty_per_unit_of_measure"):
@@ -3380,6 +3524,14 @@ func (t *ItemLedgerEntry) isDecimalColumn(column string) bool {
 		return true
 	case "reserved_quantity":
 		return true
+	case "add_currency_adj_cost_qty":
+		return true
+	case "add_curr_adj_cost_inv_qty":
+		return true
+	case "add_curr_cost_posted_to_gl":
+		return true
+	case "additional_currency_unit_cost":
+		return true
 	case "qty_per_unit_of_measure":
 		return true
 	}
@@ -3572,7 +3724,7 @@ func (t *ItemLedgerEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3624,6 +3776,10 @@ func (t *ItemLedgerEntry) FindFirst() bool {
 	var transaction_specificationNull sql.NullString
 	var no_seriesNull sql.NullString
 	var reserved_quantityNull sql.NullString
+	var add_currency_adj_cost_qtyNull sql.NullString
+	var add_curr_adj_cost_inv_qtyNull sql.NullString
+	var add_curr_cost_posted_to_glNull sql.NullString
+	var additional_currency_unit_costNull sql.NullString
 	var variant_codeNull sql.NullString
 	var qty_per_unit_of_measureNull sql.NullString
 	var unit_of_measure_codeNull sql.NullString
@@ -3680,6 +3836,10 @@ func (t *ItemLedgerEntry) FindFirst() bool {
 		&transaction_specificationNull,
 		&no_seriesNull,
 		&reserved_quantityNull,
+		&add_currency_adj_cost_qtyNull,
+		&add_curr_adj_cost_inv_qtyNull,
+		&add_curr_cost_posted_to_glNull,
+		&additional_currency_unit_costNull,
 		&variant_codeNull,
 		&qty_per_unit_of_measureNull,
 		&unit_of_measure_codeNull,
@@ -3741,6 +3901,10 @@ func (t *ItemLedgerEntry) FindFirst() bool {
 	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.No_series = types.NewCode(no_seriesNull.String)
 	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+	t.Add_currency_adj_cost_qty, _ = types.NewDecimalFromString(add_currency_adj_cost_qtyNull.String)
+	t.Add_curr_adj_cost_inv_qty, _ = types.NewDecimalFromString(add_curr_adj_cost_inv_qtyNull.String)
+	t.Add_curr_cost_posted_to_gl, _ = types.NewDecimalFromString(add_curr_cost_posted_to_glNull.String)
+	t.Additional_currency_unit_cost, _ = types.NewDecimalFromString(additional_currency_unit_costNull.String)
 	t.Variant_code = types.NewCode(variant_codeNull.String)
 	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
@@ -3764,7 +3928,7 @@ func (t *ItemLedgerEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3816,6 +3980,10 @@ func (t *ItemLedgerEntry) FindLast() bool {
 	var transaction_specificationNull sql.NullString
 	var no_seriesNull sql.NullString
 	var reserved_quantityNull sql.NullString
+	var add_currency_adj_cost_qtyNull sql.NullString
+	var add_curr_adj_cost_inv_qtyNull sql.NullString
+	var add_curr_cost_posted_to_glNull sql.NullString
+	var additional_currency_unit_costNull sql.NullString
 	var variant_codeNull sql.NullString
 	var qty_per_unit_of_measureNull sql.NullString
 	var unit_of_measure_codeNull sql.NullString
@@ -3872,6 +4040,10 @@ func (t *ItemLedgerEntry) FindLast() bool {
 		&transaction_specificationNull,
 		&no_seriesNull,
 		&reserved_quantityNull,
+		&add_currency_adj_cost_qtyNull,
+		&add_curr_adj_cost_inv_qtyNull,
+		&add_curr_cost_posted_to_glNull,
+		&additional_currency_unit_costNull,
 		&variant_codeNull,
 		&qty_per_unit_of_measureNull,
 		&unit_of_measure_codeNull,
@@ -3933,6 +4105,10 @@ func (t *ItemLedgerEntry) FindLast() bool {
 	t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 	t.No_series = types.NewCode(no_seriesNull.String)
 	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+	t.Add_currency_adj_cost_qty, _ = types.NewDecimalFromString(add_currency_adj_cost_qtyNull.String)
+	t.Add_curr_adj_cost_inv_qty, _ = types.NewDecimalFromString(add_curr_adj_cost_inv_qtyNull.String)
+	t.Add_curr_cost_posted_to_gl, _ = types.NewDecimalFromString(add_curr_cost_posted_to_glNull.String)
+	t.Additional_currency_unit_cost, _ = types.NewDecimalFromString(additional_currency_unit_costNull.String)
 	t.Variant_code = types.NewCode(variant_codeNull.String)
 	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
@@ -3986,7 +4162,7 @@ func (t *ItemLedgerEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4102,6 +4278,10 @@ func (t *ItemLedgerEntry) Next(steps ...int) bool {
 		var transaction_specificationNull sql.NullString
 		var no_seriesNull sql.NullString
 		var reserved_quantityNull sql.NullString
+		var add_currency_adj_cost_qtyNull sql.NullString
+		var add_curr_adj_cost_inv_qtyNull sql.NullString
+		var add_curr_cost_posted_to_glNull sql.NullString
+		var additional_currency_unit_costNull sql.NullString
 		var variant_codeNull sql.NullString
 		var qty_per_unit_of_measureNull sql.NullString
 		var unit_of_measure_codeNull sql.NullString
@@ -4158,6 +4338,10 @@ func (t *ItemLedgerEntry) Next(steps ...int) bool {
 			&transaction_specificationNull,
 			&no_seriesNull,
 			&reserved_quantityNull,
+			&add_currency_adj_cost_qtyNull,
+			&add_curr_adj_cost_inv_qtyNull,
+			&add_curr_cost_posted_to_glNull,
+			&additional_currency_unit_costNull,
 			&variant_codeNull,
 			&qty_per_unit_of_measureNull,
 			&unit_of_measure_codeNull,
@@ -4218,6 +4402,10 @@ func (t *ItemLedgerEntry) Next(steps ...int) bool {
 		t.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 		t.No_series = types.NewCode(no_seriesNull.String)
 		t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+		t.Add_currency_adj_cost_qty, _ = types.NewDecimalFromString(add_currency_adj_cost_qtyNull.String)
+		t.Add_curr_adj_cost_inv_qty, _ = types.NewDecimalFromString(add_curr_adj_cost_inv_qtyNull.String)
+		t.Add_curr_cost_posted_to_gl, _ = types.NewDecimalFromString(add_curr_cost_posted_to_glNull.String)
+		t.Additional_currency_unit_cost, _ = types.NewDecimalFromString(additional_currency_unit_costNull.String)
 		t.Variant_code = types.NewCode(variant_codeNull.String)
 		t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 		t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
@@ -4270,7 +4458,7 @@ func (t *ItemLedgerEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4339,6 +4527,10 @@ func (t *ItemLedgerEntry) FindSetBuffered() bool {
 		var transaction_specificationNull sql.NullString
 		var no_seriesNull sql.NullString
 		var reserved_quantityNull sql.NullString
+		var add_currency_adj_cost_qtyNull sql.NullString
+		var add_curr_adj_cost_inv_qtyNull sql.NullString
+		var add_curr_cost_posted_to_glNull sql.NullString
+		var additional_currency_unit_costNull sql.NullString
 		var variant_codeNull sql.NullString
 		var qty_per_unit_of_measureNull sql.NullString
 		var unit_of_measure_codeNull sql.NullString
@@ -4395,6 +4587,10 @@ func (t *ItemLedgerEntry) FindSetBuffered() bool {
 			&transaction_specificationNull,
 			&no_seriesNull,
 			&reserved_quantityNull,
+			&add_currency_adj_cost_qtyNull,
+			&add_curr_adj_cost_inv_qtyNull,
+			&add_curr_cost_posted_to_glNull,
+			&additional_currency_unit_costNull,
 			&variant_codeNull,
 			&qty_per_unit_of_measureNull,
 			&unit_of_measure_codeNull,
@@ -4453,6 +4649,10 @@ func (t *ItemLedgerEntry) FindSetBuffered() bool {
 		record.Transaction_specification = types.NewCode(transaction_specificationNull.String)
 		record.No_series = types.NewCode(no_seriesNull.String)
 		record.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
+		record.Add_currency_adj_cost_qty, _ = types.NewDecimalFromString(add_currency_adj_cost_qtyNull.String)
+		record.Add_curr_adj_cost_inv_qty, _ = types.NewDecimalFromString(add_curr_adj_cost_inv_qtyNull.String)
+		record.Add_curr_cost_posted_to_gl, _ = types.NewDecimalFromString(add_curr_cost_posted_to_glNull.String)
+		record.Additional_currency_unit_cost, _ = types.NewDecimalFromString(additional_currency_unit_costNull.String)
 		record.Variant_code = types.NewCode(variant_codeNull.String)
 		record.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 		record.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
@@ -4535,6 +4735,10 @@ func (t *ItemLedgerEntry) copyFromBuffered(record *ItemLedgerEntry) {
 	t.Transaction_specification = record.Transaction_specification
 	t.No_series = record.No_series
 	t.Reserved_quantity = record.Reserved_quantity
+	t.Add_currency_adj_cost_qty = record.Add_currency_adj_cost_qty
+	t.Add_curr_adj_cost_inv_qty = record.Add_curr_adj_cost_inv_qty
+	t.Add_curr_cost_posted_to_gl = record.Add_curr_cost_posted_to_gl
+	t.Additional_currency_unit_cost = record.Additional_currency_unit_cost
 	t.Variant_code = record.Variant_code
 	t.Qty_per_unit_of_measure = record.Qty_per_unit_of_measure
 	t.Unit_of_measure_code = record.Unit_of_measure_code
@@ -5921,6 +6125,118 @@ func (t *ItemLedgerEntry) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
+	case "add_currency_adj_cost_qty":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Add_currency_adj_cost_qty = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Add_currency_adj_cost_qty, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field add_currency_adj_cost_qty: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Add_currency_adj_cost_qty = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Add_currency_adj_cost_qty = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Add_currency_adj_cost_qty = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field add_currency_adj_cost_qty (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemLedgerEntryOnValidate_Add_currency_adj_cost_qty); ok {
+				if err := trg.OnValidate_Add_currency_adj_cost_qty(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "add_curr_adj_cost_inv_qty":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Add_curr_adj_cost_inv_qty = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Add_curr_adj_cost_inv_qty, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field add_curr_adj_cost_inv_qty: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Add_curr_adj_cost_inv_qty = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Add_curr_adj_cost_inv_qty = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Add_curr_adj_cost_inv_qty = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field add_curr_adj_cost_inv_qty (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemLedgerEntryOnValidate_Add_curr_adj_cost_inv_qty); ok {
+				if err := trg.OnValidate_Add_curr_adj_cost_inv_qty(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "add_curr_cost_posted_to_gl":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Add_curr_cost_posted_to_gl = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Add_curr_cost_posted_to_gl, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field add_curr_cost_posted_to_gl: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Add_curr_cost_posted_to_gl = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Add_curr_cost_posted_to_gl = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Add_curr_cost_posted_to_gl = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field add_curr_cost_posted_to_gl (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemLedgerEntryOnValidate_Add_curr_cost_posted_to_gl); ok {
+				if err := trg.OnValidate_Add_curr_cost_posted_to_gl(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "additional_currency_unit_cost":
+		// Set field value
+		if v, ok := value.(types.Decimal); ok {
+			t.Additional_currency_unit_cost = v
+		} else if v, ok := value.(string); ok {
+			var err error
+			t.Additional_currency_unit_cost, err = types.NewDecimalFromString(v)
+			if err != nil {
+				return fmt.Errorf("invalid decimal value for field additional_currency_unit_cost: %w", err)
+			}
+		} else if v, ok := value.(float64); ok {
+			t.Additional_currency_unit_cost = types.NewDecimal(v)
+		} else if v, ok := value.(int); ok {
+			t.Additional_currency_unit_cost = types.NewDecimalFromInt(int64(v))
+		} else if v, ok := value.(int64); ok {
+			t.Additional_currency_unit_cost = types.NewDecimalFromInt(v)
+		} else {
+			return fmt.Errorf("invalid type for field additional_currency_unit_cost (expected Decimal, string, float64, int, or int64)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemLedgerEntryOnValidate_Additional_currency_unit_cost); ok {
+				if err := trg.OnValidate_Additional_currency_unit_cost(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	case "variant_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
@@ -6103,6 +6419,14 @@ func (t *ItemLedgerEntry) FieldValue(no int) (any, bool) {
 		return t.No_series, true
 	case 70:
 		return t.Reserved_quantity, true
+	case 67:
+		return t.Add_currency_adj_cost_qty, true
+	case 68:
+		return t.Add_curr_adj_cost_inv_qty, true
+	case 69:
+		return t.Add_curr_cost_posted_to_gl, true
+	case 72:
+		return t.Additional_currency_unit_cost, true
 	case 5402:
 		return t.Variant_code, true
 	case 5404:
@@ -6475,6 +6799,26 @@ func (t *ItemLedgerEntry) SetFieldValue(no int, value any) bool {
 			t.Reserved_quantity = v
 			return true
 		}
+	case 67:
+		if v, ok := value.(types.Decimal); ok {
+			t.Add_currency_adj_cost_qty = v
+			return true
+		}
+	case 68:
+		if v, ok := value.(types.Decimal); ok {
+			t.Add_curr_adj_cost_inv_qty = v
+			return true
+		}
+	case 69:
+		if v, ok := value.(types.Decimal); ok {
+			t.Add_curr_cost_posted_to_gl = v
+			return true
+		}
+	case 72:
+		if v, ok := value.(types.Decimal); ok {
+			t.Additional_currency_unit_cost = v
+			return true
+		}
 	case 5402:
 		if v, ok := value.(types.Code); ok {
 			t.Variant_code = v
@@ -6605,6 +6949,14 @@ func (t *ItemLedgerEntry) CalcSums(fieldNames ...string) error {
 			column = "transferred_from_entry_no"
 		case "reserved_quantity":
 			column = "reserved_quantity"
+		case "add_currency_adj_cost_qty":
+			column = "add_currency_adj_cost_qty"
+		case "add_curr_adj_cost_inv_qty":
+			column = "add_curr_adj_cost_inv_qty"
+		case "add_curr_cost_posted_to_gl":
+			column = "add_curr_cost_posted_to_gl"
+		case "additional_currency_unit_cost":
+			column = "additional_currency_unit_cost"
 		case "qty_per_unit_of_measure":
 			column = "qty_per_unit_of_measure"
 		default:
@@ -6718,6 +7070,30 @@ func (t *ItemLedgerEntry) CalcSums(fieldNames ...string) error {
 				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
 			}
 			t.Reserved_quantity = d
+		case "add_currency_adj_cost_qty":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
+			}
+			t.Add_currency_adj_cost_qty = d
+		case "add_curr_adj_cost_inv_qty":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
+			}
+			t.Add_curr_adj_cost_inv_qty = d
+		case "add_curr_cost_posted_to_gl":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
+			}
+			t.Add_curr_cost_posted_to_gl = d
+		case "additional_currency_unit_cost":
+			d, err := types.NewDecimalFromString(total)
+			if err != nil {
+				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
+			}
+			t.Additional_currency_unit_cost = d
 		case "qty_per_unit_of_measure":
 			d, err := types.NewDecimalFromString(total)
 			if err != nil {
@@ -7177,6 +7553,14 @@ func (t *ItemLedgerEntry) columnValue(column string) (interface{}, bool) {
 		return t.No_series, true
 	case "reserved_quantity":
 		return t.Reserved_quantity, true
+	case "add_currency_adj_cost_qty":
+		return t.Add_currency_adj_cost_qty, true
+	case "add_curr_adj_cost_inv_qty":
+		return t.Add_curr_adj_cost_inv_qty, true
+	case "add_curr_cost_posted_to_gl":
+		return t.Add_curr_cost_posted_to_gl, true
+	case "additional_currency_unit_cost":
+		return t.Additional_currency_unit_cost, true
 	case "variant_code":
 		return t.Variant_code, true
 	case "qty_per_unit_of_measure":
@@ -7287,6 +7671,10 @@ func (t *ItemLedgerEntry) Init() {
 	t.Transaction_specification = *new(types.Code)
 	t.No_series = *new(types.Code)
 	t.Reserved_quantity = *new(types.Decimal)
+	t.Add_currency_adj_cost_qty = *new(types.Decimal)
+	t.Add_curr_adj_cost_inv_qty = *new(types.Decimal)
+	t.Add_curr_cost_posted_to_gl = *new(types.Decimal)
+	t.Additional_currency_unit_cost = *new(types.Decimal)
 	t.Variant_code = *new(types.Code)
 	t.Qty_per_unit_of_measure = *new(types.Decimal)
 	t.Unit_of_measure_code = *new(types.Code)
@@ -7324,60 +7712,64 @@ func (t *ItemLedgerEntry) ClearFilters() {
 // ToMap converts the current record to a map for JSON serialization
 func (t *ItemLedgerEntry) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"entry_no":                   t.Entry_no,
-		"item_no":                    t.Item_no.String(),
-		"posting_date":               t.Posting_date.String(),
-		"entry_type":                 int(t.Entry_type),
-		"source_no":                  t.Source_no.String(),
-		"document_no":                t.Document_no.String(),
-		"description":                t.Description.String(),
-		"location_code":              t.Location_code.String(),
-		"inventory_posting_group":    t.Inventory_posting_group.String(),
-		"source_posting_group":       t.Source_posting_group.String(),
-		"quantity":                   t.Quantity.String(),
-		"remaining_quantity":         t.Remaining_quantity.String(),
-		"invoiced_quantity":          t.Invoiced_quantity.String(),
-		"unit_amount":                t.Unit_amount.String(),
-		"unit_cost":                  t.Unit_cost.String(),
-		"amount":                     t.Amount.String(),
-		"discount_amount":            t.Discount_amount.String(),
-		"salespers_purch_code":       t.Salespers_purch_code.String(),
-		"user_id":                    t.User_id.String(),
-		"source_code":                t.Source_code.String(),
-		"applies_to_entry":           t.Applies_to_entry,
-		"open":                       t.Open,
-		"cost_is_adjusted":           t.Cost_is_adjusted,
-		"department_code":            t.Department_code.String(),
-		"project_code":               t.Project_code.String(),
-		"positive":                   t.Positive,
-		"closed_by_entry_no":         t.Closed_by_entry_no,
-		"closed_at_date":             t.Closed_at_date.String(),
-		"closed_by_quantity":         t.Closed_by_quantity.String(),
-		"source_type":                int(t.Source_type),
-		"adjusted_cost_qty":          t.Adjusted_cost_qty.String(),
-		"adjusted_cost_invoiced_qty": t.Adjusted_cost_invoiced_qty.String(),
-		"cost_posted_to_gl":          t.Cost_posted_to_gl.String(),
-		"journal_batch_name":         t.Journal_batch_name.String(),
-		"reason_code":                t.Reason_code.String(),
-		"drop_shipment":              t.Drop_shipment,
-		"invt_qty_not_adjusted":      t.Invt_qty_not_adjusted.String(),
-		"adjust_invoice_cost":        t.Adjust_invoice_cost,
-		"transaction_type":           t.Transaction_type.String(),
-		"transport_method":           t.Transport_method.String(),
-		"country_code":               t.Country_code.String(),
-		"transferred_from_entry_no":  t.Transferred_from_entry_no,
-		"gen_bus_posting_group":      t.Gen_bus_posting_group.String(),
-		"gen_prod_posting_group":     t.Gen_prod_posting_group.String(),
-		"entry_exit_point":           t.Entry_exit_point.String(),
-		"document_date":              t.Document_date.String(),
-		"external_document_no":       t.External_document_no.String(),
-		"area":                       t.Area.String(),
-		"transaction_specification":  t.Transaction_specification.String(),
-		"no_series":                  t.No_series.String(),
-		"reserved_quantity":          t.Reserved_quantity.String(),
-		"variant_code":               t.Variant_code.String(),
-		"qty_per_unit_of_measure":    t.Qty_per_unit_of_measure.String(),
-		"unit_of_measure_code":       t.Unit_of_measure_code.String(),
+		"entry_no":                      t.Entry_no,
+		"item_no":                       t.Item_no.String(),
+		"posting_date":                  t.Posting_date.String(),
+		"entry_type":                    int(t.Entry_type),
+		"source_no":                     t.Source_no.String(),
+		"document_no":                   t.Document_no.String(),
+		"description":                   t.Description.String(),
+		"location_code":                 t.Location_code.String(),
+		"inventory_posting_group":       t.Inventory_posting_group.String(),
+		"source_posting_group":          t.Source_posting_group.String(),
+		"quantity":                      t.Quantity.String(),
+		"remaining_quantity":            t.Remaining_quantity.String(),
+		"invoiced_quantity":             t.Invoiced_quantity.String(),
+		"unit_amount":                   t.Unit_amount.String(),
+		"unit_cost":                     t.Unit_cost.String(),
+		"amount":                        t.Amount.String(),
+		"discount_amount":               t.Discount_amount.String(),
+		"salespers_purch_code":          t.Salespers_purch_code.String(),
+		"user_id":                       t.User_id.String(),
+		"source_code":                   t.Source_code.String(),
+		"applies_to_entry":              t.Applies_to_entry,
+		"open":                          t.Open,
+		"cost_is_adjusted":              t.Cost_is_adjusted,
+		"department_code":               t.Department_code.String(),
+		"project_code":                  t.Project_code.String(),
+		"positive":                      t.Positive,
+		"closed_by_entry_no":            t.Closed_by_entry_no,
+		"closed_at_date":                t.Closed_at_date.String(),
+		"closed_by_quantity":            t.Closed_by_quantity.String(),
+		"source_type":                   int(t.Source_type),
+		"adjusted_cost_qty":             t.Adjusted_cost_qty.String(),
+		"adjusted_cost_invoiced_qty":    t.Adjusted_cost_invoiced_qty.String(),
+		"cost_posted_to_gl":             t.Cost_posted_to_gl.String(),
+		"journal_batch_name":            t.Journal_batch_name.String(),
+		"reason_code":                   t.Reason_code.String(),
+		"drop_shipment":                 t.Drop_shipment,
+		"invt_qty_not_adjusted":         t.Invt_qty_not_adjusted.String(),
+		"adjust_invoice_cost":           t.Adjust_invoice_cost,
+		"transaction_type":              t.Transaction_type.String(),
+		"transport_method":              t.Transport_method.String(),
+		"country_code":                  t.Country_code.String(),
+		"transferred_from_entry_no":     t.Transferred_from_entry_no,
+		"gen_bus_posting_group":         t.Gen_bus_posting_group.String(),
+		"gen_prod_posting_group":        t.Gen_prod_posting_group.String(),
+		"entry_exit_point":              t.Entry_exit_point.String(),
+		"document_date":                 t.Document_date.String(),
+		"external_document_no":          t.External_document_no.String(),
+		"area":                          t.Area.String(),
+		"transaction_specification":     t.Transaction_specification.String(),
+		"no_series":                     t.No_series.String(),
+		"reserved_quantity":             t.Reserved_quantity.String(),
+		"add_currency_adj_cost_qty":     t.Add_currency_adj_cost_qty.String(),
+		"add_curr_adj_cost_inv_qty":     t.Add_curr_adj_cost_inv_qty.String(),
+		"add_curr_cost_posted_to_gl":    t.Add_curr_cost_posted_to_gl.String(),
+		"additional_currency_unit_cost": t.Additional_currency_unit_cost.String(),
+		"variant_code":                  t.Variant_code.String(),
+		"qty_per_unit_of_measure":       t.Qty_per_unit_of_measure.String(),
+		"unit_of_measure_code":          t.Unit_of_measure_code.String(),
 	}
 }
 
@@ -7783,6 +8175,54 @@ func (t *ItemLedgerEntry) FromMap(data map[string]interface{}) {
 			t.Reserved_quantity = types.NewDecimalFromInt(int64(val))
 		case int64:
 			t.Reserved_quantity = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["add_currency_adj_cost_qty"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Add_currency_adj_cost_qty, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Add_currency_adj_cost_qty = types.NewDecimal(val)
+		case int:
+			t.Add_currency_adj_cost_qty = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Add_currency_adj_cost_qty = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["add_curr_adj_cost_inv_qty"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Add_curr_adj_cost_inv_qty, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Add_curr_adj_cost_inv_qty = types.NewDecimal(val)
+		case int:
+			t.Add_curr_adj_cost_inv_qty = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Add_curr_adj_cost_inv_qty = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["add_curr_cost_posted_to_gl"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Add_curr_cost_posted_to_gl, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Add_curr_cost_posted_to_gl = types.NewDecimal(val)
+		case int:
+			t.Add_curr_cost_posted_to_gl = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Add_curr_cost_posted_to_gl = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["additional_currency_unit_cost"]; ok && v != nil {
+		switch val := v.(type) {
+		case string:
+			t.Additional_currency_unit_cost, _ = types.NewDecimalFromString(val)
+		case float64:
+			t.Additional_currency_unit_cost = types.NewDecimal(val)
+		case int:
+			t.Additional_currency_unit_cost = types.NewDecimalFromInt(int64(val))
+		case int64:
+			t.Additional_currency_unit_cost = types.NewDecimalFromInt(val)
 		}
 	}
 	if v, ok := data["variant_code"]; ok && v != nil {
@@ -8350,6 +8790,54 @@ func (t *ItemLedgerEntry) GetFields() []tables.FieldInfo {
 			PrimaryKey:    false,
 			FlowField:     false,
 			DecimalPlaces: "0:5",
+		},
+		{
+			No:            67,
+			Name:          "add_currency_adj_cost_qty",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     false,
+			ReadOnly:      true,
+			DecimalPlaces: "2:2",
+		},
+		{
+			No:            68,
+			Name:          "add_curr_adj_cost_inv_qty",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     false,
+			ReadOnly:      true,
+			DecimalPlaces: "2:2",
+		},
+		{
+			No:            69,
+			Name:          "add_curr_cost_posted_to_gl",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     false,
+			ReadOnly:      true,
+			DecimalPlaces: "2:2",
+		},
+		{
+			No:            72,
+			Name:          "additional_currency_unit_cost",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     false,
+			ReadOnly:      true,
+			DecimalPlaces: "2:5",
 		},
 		{
 			No:         5402,

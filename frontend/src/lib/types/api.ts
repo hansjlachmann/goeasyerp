@@ -68,6 +68,7 @@ export interface TableFilter {
 export interface FixedFilter {
 	field: string;
 	value: unknown;
+	expression?: boolean; // value is a filter expression (a range from the page's OnOpenPage)
 }
 
 export interface ListOptions {

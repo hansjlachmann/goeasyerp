@@ -1000,3 +1000,52 @@ pages:
     caption: "Merknader til oppsettsjekkliste"
   business_units:
     caption: "Konsernenheter"
+  reservation_setup:
+    caption: "Reservasjonsoppsett"
+  reservation_entries:
+    caption: "Reservasjonsposter"
+    fields:
+      reserved_for: "Reservert for"
+      reserved_from: "Reservert fra"
+  reservation:
+    caption: "Reservasjon"
+    fields:
+      item_no: "Varenr."
+      variant_code: "Variantkode"
+      location_code: "Lokasjonskode"
+      shipment_date: "Leveringsdato"
+      valid_to_date: "Gyldig til-dato"
+      qty_to_reserve: "Antall å reservere"
+      qty_reserved: "Reservert antall"
+      unreserved_quantity: "Ikke reservert antall"
+      optional_lines: "Valgfrie linjer"
+  available_sales_lines:
+    caption: "Tilgjengelig - salgslinjer"
+    fields:
+      available_quantity: "Tilgjengelig antall"
+      current_reserved_quantity: "Reservert antall for linjen"
+  available_requisition_lines:
+    caption: "Tilgjengelig - innkjøpsforslagslinjer"
+    fields:
+      available_quantity: "Tilgjengelig antall"
+      current_reserved_quantity: "Reservert antall for linjen"
+  available_purchase_lines:
+    caption: "Tilgjengelig - kjøpslinjer"
+    fields:
+      available_quantity: "Tilgjengelig antall"
+      current_reserved_quantity: "Reservert antall for linjen"
+  available_item_jnl_lines:
+    caption: "Tilgjengelig - varekladdlinjer"
+    fields:
+      available_quantity: "Tilgjengelig antall"
+      current_reserved_quantity: "Reservert antall for linjen"
+  available_bom_jnl_lines:
+    caption: "Tilgjengelig - stykklistekladdlinjer"
+    fields:
+      available_quantity: "Tilgjengelig antall"
+      current_reserved_quantity: "Reservert antall for linjen"
+  available_item_ledg_entries:
+    caption: "Tilgjengelig - vareposter"
+    fields:
+      available_quantity: "Tilgjengelig antall"
+      current_reserved_quantity: "Reservert antall for linjen"

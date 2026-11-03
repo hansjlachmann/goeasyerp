@@ -195,6 +195,15 @@ common:
     entry_no: "Entry No."
     description: "Description"
     status: "Status"
+    reserve: "Reserve"
+    reservation_entries: "Reservation Entries"
+    cancel_reservation: "Cancel Reservation"
+    auto_reserve: "Auto Reserve"
+    reserve_from_current_line: "Reserve from Current Line"
+    cancel_reservation_from_current_line: "Cancel Reservation from Current Line"
+    show_optional_lines: "Show Optional Lines"
+    hide_optional_lines: "Hide Optional Lines"
+    available_to_reserve: "Available to Reserve"
 
   # Card page sections (page YAML section name in snake case)
   sections:
@@ -245,6 +254,9 @@ common:
     rounding: "Rounding"
     statistics: "Statistics"
     timestamps: "Timestamps"
+    item_ledger: "Item Ledger"
+    purchase: "Purchase"
+    journals: "Journals"
 
   # Common messages
   messages:

@@ -349,6 +349,7 @@ func (purchaseHeaderLogic) OnValidate_Pay_to_vendor_no(rec *gtables.PurchaseHead
 	rec.Department_code = vend.Department_code
 	rec.Project_code = vend.Project_code
 	rec.Vendor_posting_group = vend.Vendor_posting_group
+	rec.Reserve = gtables.PurchaseHeaderReserve(vend.Reserve)
 	rec.Currency_code = vend.Currency_code
 	rec.Invoice_disc_code = vend.Invoice_disc_code
 	rec.Language_code = vend.Language_code

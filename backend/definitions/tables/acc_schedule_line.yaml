@@ -130,6 +130,14 @@ table:
       db_name: sign_control
       options: ["Normal", "Reverse"]
 
+    # the overview's Use Add. Reporting Currency (classic form 490's page variable), set above
+    # its matrix: the cells in the additional reporting currency
+    - name: use_add_rpt_curr
+      no: 902
+      type: bool
+      db_name: use_add_rpt_curr
+      flow_filter: true
+
   keys:
     - name: Primary
       fields: [schedule_name, line_no]

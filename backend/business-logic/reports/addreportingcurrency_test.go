@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hansjlachmann/openerp/backend/business-logic/accsched"
 	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/glcheck"
 	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
@@ -267,5 +268,59 @@ func TestCloseIncomeStatementAddCurrency(t *testing.T) {
 	}
 	if r := glcheck.Check(src, nil); !r.Balanced() {
 		t.Errorf("G/L check: %+v", r)
+	}
+}
+
+// The G/L reports in euro (Use Additional Reporting Currency): the trial balances print the
+// accounts' euro amounts under "Amounts are in Euro", the account schedule and its overview
+// calculate the cells from the euro amounts
+func TestGLReportsAddCurrency(t *testing.T) {
+	src := listCompany(t)
+	_, err := reports.Execute(reports.AdjustAddReportingCurrencyID, src.GetDB(), src.GetCompany(), src.GetDBType(), reports.RunOptions{
+		Options: map[string]string{"additional_reporting_currency": "EUR", "document_no": "ACY", "retained_earnings_acc": "2120"}})
+	mustOK(t, err)
+	glAcc := gtables.NewGLAccount(src)
+	mustOK(t, glAcc.GetOrError(types.Code("1210")))
+	glAcc.CalcFields("add_currency_balance_at_date", "balance_at_date")
+	euro := glAcc.Add_currency_balance_at_date
+	if euro.IsZero() || euro.Equal(glAcc.Balance_at_date) {
+		t.Fatalf("1210 in euro %s (LCY %s)", euro, glAcc.Balance_at_date)
+	}
+	for _, id := range []int{reports.TrialBalanceID, reports.TrialBalancePrevYearID} {
+		texts := runList(t, src, id, map[string]string{"use_add_rpt_curr": "true"})
+		if !strings.Contains(texts, "Amounts are in Euro") || !strings.Contains(texts, amountText(euro.Abs())) {
+			t.Errorf("report %d in euro: %s not printed: %.300s", id, amountText(euro.Abs()), texts)
+		}
+		if lcy := runList(t, src, id, nil); strings.Contains(lcy, "Amounts are in") {
+			t.Errorf("report %d in LCY names a currency", id)
+		}
+	}
+	texts := runList(t, src, reports.AccountScheduleID, map[string]string{"use_add_rpt_curr": "true"})
+	if !strings.Contains(texts, "Amounts are in Euro") {
+		t.Errorf("account schedule in euro: %.300s", texts)
+	}
+
+	name := gtables.NewAccScheduleName(src)
+	if !name.FindFirst() {
+		t.Fatal("no account schedule")
+	}
+	line := gtables.NewAccScheduleLine(src)
+	line.SetRange("schedule_name", name.Name)
+	mustOK(t, line.SetFlowFilter("date_filter", "2025-11-01..2026-10-31"))
+	_, lcyCells, err := accsched.Overview(name, line)
+	mustOK(t, err)
+	mustOK(t, line.SetFlowFilter("use_add_rpt_curr", "Yes"))
+	_, euroCells, err := accsched.Overview(name, line)
+	mustOK(t, err)
+	different := false
+	for key, row := range lcyCells {
+		for i := range row {
+			if euroCells[key][i] != row[i] {
+				different = true
+			}
+		}
+	}
+	if !different {
+		t.Error("the overview in euro shows the LCY cells")
 	}
 }

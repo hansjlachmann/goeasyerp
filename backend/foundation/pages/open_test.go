@@ -44,7 +44,7 @@ func TestRunOpenPage(t *testing.T) {
 		t.Fatalf("template given: %v %+v ran %d", err, open.Selection(), ran)
 	}
 	filters := open.Filters()
-	if len(filters) != 2 || filters[0] != (FixedFilter{"journal_template_name", "GENERAL"}) || filters[1] != (FixedFilter{"journal_batch_name", "DEFAULT"}) {
+	if len(filters) != 2 || filters[0] != (FixedFilter{Field: "journal_template_name", Value: "GENERAL"}) || filters[1] != (FixedFilter{Field: "journal_batch_name", Value: "DEFAULT"}) {
 		t.Errorf("filters %+v", filters)
 	}
 	if open.Params()["batch"] != "DEFAULT" || open.Params()["template"] != "GENERAL" {

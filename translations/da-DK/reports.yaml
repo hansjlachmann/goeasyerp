@@ -56,6 +56,7 @@ reports:
       ENTER_ENDING_DATE: "Du skal angive slutdatoen."
   shared:
     options:
+      use_add_rpt_curr: "Brug ekstra rapporteringsvaluta"
       starting_date: "Startdato"
       ending_date: "Slutdato"
       period_length: "Periodelængde"
@@ -94,6 +95,7 @@ reports:
       retain_maintenance_code: "Bevar Vedligeholdelseskode"
       retain_quantity: "Bevar totaler: Antal"
     texts:
+      AMOUNTS_IN_CURRENCY: "Beløbene er i %1"
       OPTIONS: "Indstillinger"
       DAY: "Dag"
       WEEK: "Uge"
@@ -136,6 +138,15 @@ reports:
     caption: "Datokomprimer vareposter"
     texts:
       WINDOW: "Datokomprimerer vareposter...\n\nVarenr.              #1##########\nDato                 #2######\n\nAntal nye poster     #3######\nAntal slettet        #4######"
+  "787":
+    caption: "Slet reservationsposter"
+    texts:
+      WINDOW: "Sletter reservationsposter...\n\nVarenr.              #1##########\nDato                 #2######\n\nAntal slettet        #3######"
+      CONFIRM: "Denne kørsel sletter poster. Det er derfor vigtigt, at du tager en sikkerhedskopi af databasen, før du kører den.\n\nVil du slette posterne?"
+  "788":
+    caption: "Rediger reservationsstatus"
+    texts:
+      CONFIRM: "Denne kørsel ændrer status for reservationsposter med gyldig til-dato til og med %1.\nVil du ændre status for reservationsposterne?"
   "789":
     caption: "Slet lageroptællingsposter"
     texts:
@@ -239,6 +250,7 @@ reports:
       AVERAGE_COST: "Gennemsnitskostpris"
       LAST_DIRECT_COST: "Sidste købspris"
       STANDARD_COST: "Standardkostpris"
+      ADD_CURR_AVERAGE_COST: "Gennemsnitskostpris i ekstra valuta"
   "1191":
     caption: "Foreslå ressourceprisændr. (ress.)"
     options:
@@ -510,6 +522,7 @@ reports:
   "502":
     caption: "Intrastat - kontrolliste"
     texts:
+      AMOUNTS_IN: "Alle beløb er i %1"
       TITLE: "Intrastat - kontrolliste"
       PAGE: "Side"
       STATISTICS_PERIOD: "Statistikperiode: %1"
@@ -535,6 +548,8 @@ reports:
       DONE: "Intrastat-angivelsen med %1 poster blev lavet; kladden er indberettet."
   "88":
     caption: "Moms - VIES-angivelse (fil)"
+    options:
+      show_amounts_in_add_currency: "Vis beløb i ekstra rapporteringsvaluta"
     texts:
       FILE_NAME: "VIES %1.txt"
       DONE: "VIES-angivelsen med %1 kunder blev lavet."

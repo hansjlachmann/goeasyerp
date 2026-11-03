@@ -106,14 +106,49 @@ func (r *chartOfAccounts) Definition() *Definition {
 
 // Report 6 Trial Balance: each G/L account's net change in the period and its balance at the
 // period's end, as debit and credit columns (heading and total accounts in bold); the totals
-// of the posting accounts
+// of the posting accounts; with Use Additional Reporting Currency the amounts in that currency
+// (the option of the classic local trial balance)
 type trialBalance struct {
-	totals [4]types.Decimal
+	totals        [4]types.Decimal
+	useAddRptCurr bool
+}
+
+// netChangeAndBalance: a G/L account's Net Change and Balance at Date, or their
+// additional-currency FlowFields (Additional-Currency Net Change, Add.-Currency Balance at Date)
+func netChangeAndBalance(rec *gtables.GLAccount, useAddRptCurr bool) (types.Decimal, types.Decimal) {
+	if useAddRptCurr {
+		rec.CalcFields("additional_currency_net_change", "add_currency_balance_at_date")
+		return rec.Additional_currency_net_change, rec.Add_currency_balance_at_date
+	}
+	rec.CalcFields("net_change", "balance_at_date")
+	return rec.Net_change, rec.Balance_at_date
+}
+
+// useAddRptCurrOption: the request page's Use Additional Reporting Currency; when set the head
+// says "Amounts are in <the currency's description>" (value add_curr_text)
+func useAddRptCurrOption(run *Run) (bool, error) {
+	if !run.OptionBool("use_add_rpt_curr") {
+		return false, nil
+	}
+	glSetup := gtables.GetGeneralLedgerSetup(run)
+	currency := gtables.NewCurrency(run)
+	err := currency.GetOrError(glSetup.Additional_reporting_currency)
+	if err != nil {
+		return false, err
+	}
+	run.SetValue("add_curr_text", run.Text("AMOUNTS_IN_CURRENCY", currency.Description))
+	return true, nil
 }
 
 func (r *trialBalance) Definition() *Definition {
 	return &Definition{
-		OnPreReport: func(run *Run) error { setReportHeadValues(run); return nil },
+		Options: []Option{{Name: "use_add_rpt_curr", Type: "bool", Default: "false"}},
+		OnPreReport: func(run *Run) error {
+			setReportHeadValues(run)
+			var err error
+			r.useAddRptCurr, err = useAddRptCurrOption(run)
+			return err
+		},
 		DataItems: []*DataItem{{
 			Name:                "GLAccount",
 			Table:               gtables.GLAccountTableName,
@@ -130,9 +165,9 @@ func (r *trialBalance) Definition() *Definition {
 }
 
 func (r *trialBalance) glAccOnAfterGetRecord(rec *gtables.GLAccount, run *Run) error {
-	rec.CalcFields("net_change", "balance_at_date")
-	netDebit, netCredit := debitCredit(rec.Net_change)
-	balDebit, balCredit := debitCredit(rec.Balance_at_date)
+	netChange, balanceAtDate := netChangeAndBalance(rec, r.useAddRptCurr)
+	netDebit, netCredit := debitCredit(netChange)
+	balDebit, balCredit := debitCredit(balanceAtDate)
 	run.SetValue("name", indentedName(rec))
 	run.SetValue("is_total", isTotalAccount(rec))
 	run.SetValue("net_change_debit", netDebit)

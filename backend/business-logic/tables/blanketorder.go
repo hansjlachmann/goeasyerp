@@ -1,6 +1,7 @@
 package tables
 
 import (
+	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
 
@@ -8,7 +9,8 @@ import (
 // taken from a blanket order line has its type, number and customer/vendor; a blanket order line
 // with order lines keeps its type and number and is not deleted
 
-// OnModify: a blanket order line whose order lines take from it keeps its type and number
+// OnModify: a blanket order line whose order lines take from it keeps its type and number; a
+// line with reservations still matches them
 func (salesLineLogic) OnModify(rec *gtables.SalesLine) error {
 	xRec := rec.XRec()
 	if rec.Document_type == gtables.SalesLine_Document_type.BlanketOrder &&
@@ -28,7 +30,8 @@ func (salesLineLogic) OnModify(rec *gtables.SalesLine) error {
 			}
 		}
 	}
-	return nil
+	// the line's reservations (classic ReservMgt.…VerifyChange)
+	return reservmgt.New(rec).SalesLineVerifyChange(rec)
 }
 
 // checkSalesBlanketOrderLineDelete: a blanket order line that order lines take from stays
@@ -79,7 +82,8 @@ func (salesLineLogic) OnValidate_Blanket_order_line_no(rec *gtables.SalesLine) e
 	return nil
 }
 
-// OnModify: a blanket order line whose order lines take from it keeps its type and number
+// OnModify: a blanket order line whose order lines take from it keeps its type and number; a
+// line with reservations still matches them
 func (purchaseLineLogic) OnModify(rec *gtables.PurchaseLine) error {
 	xRec := rec.XRec()
 	if rec.Document_type == gtables.PurchaseLine_Document_type.BlanketOrder &&
@@ -99,7 +103,8 @@ func (purchaseLineLogic) OnModify(rec *gtables.PurchaseLine) error {
 			}
 		}
 	}
-	return nil
+	// the line's reservations (classic ReservMgt.…VerifyChange)
+	return reservmgt.New(rec).PurchLineVerifyChange(rec)
 }
 
 // checkPurchBlanketOrderLineDelete: a blanket order line that order lines take from stays

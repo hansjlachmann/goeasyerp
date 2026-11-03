@@ -759,12 +759,15 @@
 					// The function asked the page to reload (e.g. it changed the lines)
 					if (syncResult.refresh) onaction?.('Refresh');
 					if (syncResult.success) {
+						// the page the result opens (a line's Reservation page), after its message box
+						pendingOpen = openPagePath(syncResult.data?.open_page);
 						if (syncResult.dialog) {
 							dialogData = syncResult.dialog;
 							dialogOpen = true;
-						} else {
+						} else if (!pendingOpen) {
 							toast.success(syncResult.message || t(MSG.CODEUNIT_SUCCESS));
 						}
+						if (!dialogOpen) openPending();
 					} else {
 						toast.error(syncResult.message || t(ERR.CODEUNIT_FAILED));
 					}
@@ -772,7 +775,8 @@
 			}, jobSelection, isFunction ? 'function' : isReport ? 'report' : 'codeunit', isFunction ? runObject : undefined, {
 				filters: cardNavigationQuery?.filters,
 				fixed_filters: cardNavigationQuery?.fixed_filters,
-				page_params: pageParams
+				page_params: pageParams,
+				...(page.page.source_table_temporary ? { page_id: page.page.id } : {})
 			});
 
 			// For async jobs, keep modal open briefly to show 100%
@@ -811,6 +815,7 @@
 	}
 	function formatFooterValue(value: any, field: Field): string {
 		if (value === undefined || value === null) return '';
+		if (isDateType(fieldTypes[field.source])) return formatDate(String(value), locale);
 		if (typeof value === 'number' || (typeof value === 'string' && field.decimal_places)) return formatDecimal(value, field.decimal_places);
 		return String(value);
 	}
@@ -3661,7 +3666,11 @@
 			{#each page.page.footer as field (field.source)}
 				<div class="footer-field" data-footer-field={field.source}>
 					<span class="footer-caption">{getFieldCaption(field.source, captions, field.caption)}</span>
-					<span class="footer-value">{footerRow ? formatFooterValue(footerRow[field.source], field) : ''}</span>
+					{#if typeof footerRow?.[field.source] === 'boolean'}
+						<input type="checkbox" class="footer-value" checked={footerRow[field.source]} disabled />
+					{:else}
+						<span class="footer-value">{footerRow ? formatFooterValue(footerRow[field.source], field) : ''}</span>
+					{/if}
 				</div>
 			{/each}
 		</div>

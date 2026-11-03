@@ -1,0 +1,190 @@
+table:
+  id: 337
+  name: "Reservation_Entry"
+  caption: Reservation Entry
+  description: "Reservation Entry (table 337): a quantity of an item reserved for a demand line (For: the line that takes the item) from a supply (From: the inventory, a document or journal line that brings it); Open until it is applied, transferred or canceled"
+  posted: true
+  lookup_page_id: 497
+  fields:
+    - name: entry_no
+      no: 1
+      type: int
+      db_name: entry_no
+      primary_key: true
+
+    - name: item_no
+      no: 2
+      type: types.Code
+      db_name: item_no
+      length: 20
+      table_relation:
+        table: Item
+        field: "no"
+        lookup_columns:
+          - source: "no"
+            width: 100
+          - source: description
+            width: 250
+
+    - name: location_code
+      no: 3
+      type: types.Code
+      db_name: location_code
+      length: 10
+      table_relation:
+        table: Location
+        field: code
+
+    - name: quantity
+      no: 4
+      type: types.Decimal
+      db_name: quantity
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+
+    - name: reservation_status
+      no: 5
+      type: Option
+      db_name: reservation_status
+      options: ["Open", "Applied", "Rejected (Overdue)", "Transferred", "Canceled or Changed"]
+
+    - name: valid_to_date
+      no: 6
+      type: types.Date
+      db_name: valid_to_date
+
+    - name: description
+      no: 7
+      type: types.Text
+      db_name: description
+      length: 50
+
+    - name: creation_date
+      no: 8
+      type: types.Date
+      db_name: creation_date
+
+    - name: transferred_from_entry_no
+      no: 9
+      type: int
+      db_name: transferred_from_entry_no
+
+    - name: for_type
+      no: 10
+      type: Option
+      db_name: for_type
+      options: [" ", "Sales", "Requisition Line", "Purchase", "Item Journal", "BOM Journal", "Item Ledger Entry", "Prod. Order Line", "Prod. Order Component"]
+
+    - name: for_subtype
+      no: 11
+      type: int
+      db_name: for_subtype
+
+    - name: for_id
+      no: 12
+      type: types.Code
+      db_name: for_id
+      length: 20
+
+    - name: for_batch_name
+      no: 13
+      type: types.Code
+      db_name: for_batch_name
+      length: 10
+
+    - name: for_prod_order_line
+      no: 14
+      type: int
+      db_name: for_prod_order_line
+
+    - name: for_ref_no
+      no: 15
+      type: int
+      db_name: for_ref_no
+
+    - name: from_type
+      no: 16
+      type: Option
+      db_name: from_type
+      options: [" ", "Sales", "Requisition Line", "Purchase", "Item Journal", "BOM Journal", "Item Ledger Entry", "Prod. Order Line", "Prod. Order Component"]
+
+    - name: from_subtype
+      no: 17
+      type: int
+      db_name: from_subtype
+
+    - name: from_id
+      no: 18
+      type: types.Code
+      db_name: from_id
+      length: 20
+
+    - name: from_batch_name
+      no: 19
+      type: types.Code
+      db_name: from_batch_name
+      length: 10
+
+    - name: from_prod_order_line
+      no: 20
+      type: int
+      db_name: from_prod_order_line
+
+    - name: from_ref_no
+      no: 21
+      type: int
+      db_name: from_ref_no
+
+    - name: expected_receipt_date
+      no: 22
+      type: types.Date
+      db_name: expected_receipt_date
+
+    - name: shipment_date
+      no: 23
+      type: types.Date
+      db_name: shipment_date
+
+    - name: created_by
+      no: 25
+      type: types.Code
+      db_name: created_by
+      length: 50
+
+    - name: cancelation_date
+      no: 26
+      type: types.Date
+      db_name: cancelation_date
+
+    - name: canceled_or_changed_by
+      no: 27
+      type: types.Code
+      db_name: canceled_or_changed_by
+      length: 50
+
+    - name: variant_code
+      no: 5401
+      type: types.Code
+      db_name: variant_code
+      length: 10
+      table_relation:
+        table: Item_Variant
+        field: code
+        filters:
+          item_no: {field: item_no}
+
+  keys:
+    - name: Primary
+      fields: [entry_no]
+      clustered: true
+    - name: status_item_for
+      fields: [reservation_status, item_no, variant_code, location_code, expected_receipt_date, for_type, for_subtype, for_id, for_batch_name, for_prod_order_line, for_ref_no, from_type, from_subtype, from_id, from_batch_name, from_prod_order_line, from_ref_no]
+    - name: status_item_from
+      fields: [reservation_status, item_no, variant_code, location_code, from_type, from_subtype, expected_receipt_date]
+    - name: status_for
+      fields: [reservation_status, for_type, for_subtype, for_id, for_batch_name, for_prod_order_line, for_ref_no, expected_receipt_date]
+    - name: status_from
+      fields: [reservation_status, from_type, from_subtype, from_id, from_batch_name, from_prod_order_line, from_ref_no, shipment_date]
+    - name: status_item_valid_to
+      fields: [reservation_status, item_no, valid_to_date]

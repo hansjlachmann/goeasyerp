@@ -91,6 +91,7 @@
 //	OnValidate_Tax_area_code(rec *gtables.PurchaseHeader) error
 //	OnValidate_Tax_liable(rec *gtables.PurchaseHeader) error
 //	OnValidate_Tax_bus_posting_group(rec *gtables.PurchaseHeader) error
+//	OnValidate_Reserve(rec *gtables.PurchaseHeader) error
 
 package tables
 
@@ -147,6 +148,23 @@ func (o PurchaseHeaderApplies_to_doc_type) String() string {
 // IsValid checks if the PurchaseHeaderApplies_to_doc_type value is within valid range
 func (o PurchaseHeaderApplies_to_doc_type) IsValid() bool {
 	return o >= 0 && o < 6
+}
+
+// PurchaseHeaderReserve represents the reserve option field
+type PurchaseHeaderReserve int
+
+// String returns the text representation of PurchaseHeaderReserve
+func (o PurchaseHeaderReserve) String() string {
+	options := []string{"Never", "Optional", "Always"}
+	if o >= 0 && int(o) < len(options) {
+		return options[o]
+	}
+	return ""
+}
+
+// IsValid checks if the PurchaseHeaderReserve value is within valid range
+func (o PurchaseHeaderReserve) IsValid() bool {
+	return o >= 0 && o < 3
 }
 
 // PurchaseHeader represents Table 38: Purchase_Header
@@ -240,6 +258,7 @@ type PurchaseHeader struct {
 	Tax_area_code             types.Code                        `db:"tax_area_code"`
 	Tax_liable                bool                              `db:"tax_liable"`
 	Tax_bus_posting_group     types.Code                        `db:"tax_bus_posting_group"`
+	Reserve                   PurchaseHeaderReserve             `db:"reserve"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -335,6 +354,17 @@ var PurchaseHeader_Applies_to_doc_type = struct {
 	Reminder:          5,
 }
 
+// PurchaseHeader_Reserve provides named constants for the reserve option field (FieldName.OptionValue syntax)
+var PurchaseHeader_Reserve = struct {
+	Never    PurchaseHeaderReserve
+	Optional PurchaseHeaderReserve
+	Always   PurchaseHeaderReserve
+}{
+	Never:    0,
+	Optional: 1,
+	Always:   2,
+}
+
 // ========================================
 // Field numbers (field IDs)
 // ========================================
@@ -426,6 +456,7 @@ var PurchaseHeader_FieldNo = struct {
 	Tax_area_code             int
 	Tax_liable                int
 	Tax_bus_posting_group     int
+	Reserve                   int
 }{
 	Document_type:             1,
 	Buy_from_vendor_no:        2,
@@ -511,6 +542,7 @@ var PurchaseHeader_FieldNo = struct {
 	Tax_area_code:             114,
 	Tax_liable:                115,
 	Tax_bus_posting_group:     116,
+	Reserve:                   117,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -684,6 +716,8 @@ func (t *PurchaseHeader) FieldNo(fieldName string) int {
 		return 115
 	case "tax_bus_posting_group":
 		return 116
+	case "reserve":
+		return 117
 	}
 	return 0
 }
@@ -859,6 +893,8 @@ func (t *PurchaseHeader) FieldName(fieldNo int) string {
 		return "tax_liable"
 	case 116:
 		return "tax_bus_posting_group"
+	case 117:
+		return "reserve"
 	}
 	return ""
 }
@@ -1203,6 +1239,9 @@ type (
 	PurchaseHeaderOnValidate_Tax_bus_posting_group interface {
 		OnValidate_Tax_bus_posting_group(rec *PurchaseHeader) error
 	}
+	PurchaseHeaderOnValidate_Reserve interface {
+		OnValidate_Reserve(rec *PurchaseHeader) error
+	}
 )
 
 // purchaseHeaderLogic is the registered business logic of Purchase_Header, in
@@ -1394,6 +1433,8 @@ func purchaseHeaderTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PurchaseHeaderOnValidate_Tax_liable)
 	case "OnValidate_Tax_bus_posting_group":
 		_, ok = logic.(PurchaseHeaderOnValidate_Tax_bus_posting_group)
+	case "OnValidate_Reserve":
+		_, ok = logic.(PurchaseHeaderOnValidate_Reserve)
 	default:
 		return false, false
 	}
@@ -1783,6 +1824,7 @@ func GetPurchaseHeaderTableSchema() string {
 		tax_area_code TEXT(20),
 		tax_liable INTEGER,
 		tax_bus_posting_group TEXT(10),
+		reserve INTEGER CHECK (reserve >= 0 AND reserve <= 2),
 		PRIMARY KEY (document_type, no)
 	`
 }
@@ -1874,6 +1916,7 @@ func GetPurchaseHeaderPostgresTableSchema() string {
 		tax_area_code VARCHAR(20),
 		tax_liable BOOLEAN,
 		tax_bus_posting_group VARCHAR(10),
+		reserve INTEGER CHECK (reserve >= 0 AND reserve <= 2),
 		PRIMARY KEY (document_type, no)
 	`
 }
@@ -2090,6 +2133,7 @@ func (t *PurchaseHeader) StoreOldValues() {
 	t.oldValues["tax_area_code"] = t.Tax_area_code
 	t.oldValues["tax_liable"] = t.Tax_liable
 	t.oldValues["tax_bus_posting_group"] = t.Tax_bus_posting_group
+	t.oldValues["reserve"] = t.Reserve
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -2347,6 +2391,9 @@ func (t *PurchaseHeader) XRec() *PurchaseHeader {
 	if v, ok := t.oldValues["tax_bus_posting_group"].(types.Code); ok {
 		x.Tax_bus_posting_group = v
 	}
+	if v, ok := t.oldValues["reserve"].(PurchaseHeaderReserve); ok {
+		x.Reserve = v
+	}
 	return x
 }
 
@@ -2499,6 +2546,7 @@ func (t *PurchaseHeader) GetByPK(document_type PurchaseHeaderDocument_type, no t
 	var tax_area_codeNull sql.NullString
 	var tax_liableBool sql.NullBool
 	var tax_bus_posting_groupNull sql.NullString
+	var reserveInt int
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -2507,7 +2555,7 @@ func (t *PurchaseHeader) GetByPK(document_type PurchaseHeaderDocument_type, no t
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group FROM "%s" WHERE 1=1 AND document_type = ? AND no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve FROM "%s" WHERE 1=1 AND document_type = ? AND no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2595,6 +2643,7 @@ func (t *PurchaseHeader) GetByPK(document_type PurchaseHeaderDocument_type, no t
 		&tax_area_codeNull,
 		&tax_liableBool,
 		&tax_bus_posting_groupNull,
+		&reserveInt,
 	)
 
 	if err != nil {
@@ -2689,6 +2738,7 @@ func (t *PurchaseHeader) GetByPK(document_type PurchaseHeaderDocument_type, no t
 	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
 	t.Tax_liable = tax_liableBool.Bool
 	t.Tax_bus_posting_group = types.NewCode(tax_bus_posting_groupNull.String)
+	t.Reserve = PurchaseHeaderReserve(reserveInt)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2792,11 +2842,12 @@ func (t *PurchaseHeader) Insert(runTrigger bool) bool {
 		t.Tax_area_code,
 		t.Tax_liable,
 		t.Tax_bus_posting_group,
+		t.Reserve,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_type, no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_type, no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2915,10 +2966,11 @@ func (t *PurchaseHeader) InsertAll(records []*PurchaseHeader, runTrigger bool) e
 			r.Tax_area_code,
 			r.Tax_liable,
 			r.Tax_bus_posting_group,
+			r.Reserve,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, PurchaseHeaderTableName)
-	columns := []string{"document_type", "buy_from_vendor_no", "no", "pay_to_vendor_no", "pay_to_name", "pay_to_name_2", "pay_to_address", "pay_to_address_2", "pay_to_city", "pay_to_contact", "your_reference", "ship_to_name", "ship_to_name_2", "ship_to_address", "ship_to_address_2", "ship_to_city", "ship_to_contact", "order_date", "posting_date", "expected_receipt_date", "posting_description", "payment_terms_code", "due_date", "payment_discount_percent", "pmt_discount_date", "shipment_method_code", "location_code", "department_code", "project_code", "vendor_posting_group", "currency_code", "currency_factor", "invoice_disc_code", "language_code", "purchaser_code", "no_printed", "applies_to_doc_type", "applies_to_doc_no", "receive", "invoice", "receiving_no", "posting_no", "last_receiving_no", "last_posting_no", "vendor_order_no", "vendor_shipment_no", "vendor_invoice_no", "vendor_cr_memo_no", "vat_registration_no", "reason_code", "gen_bus_posting_group", "transaction_type", "transport_method", "vat_country_code", "buy_from_vendor_name", "buy_from_vendor_name_2", "buy_from_address", "buy_from_address_2", "buy_from_city", "buy_from_contact", "pay_to_post_code", "pay_to_state", "pay_to_country_code", "buy_from_post_code", "buy_from_state", "buy_from_country_code", "ship_to_post_code", "ship_to_state", "ship_to_country_code", "order_address_code", "entry_point", "document_date", "area", "transaction_specification", "payment_method_code", "no_series", "posting_no_series", "receiving_no_series", "tax_area_code", "tax_liable", "tax_bus_posting_group"}
+	columns := []string{"document_type", "buy_from_vendor_no", "no", "pay_to_vendor_no", "pay_to_name", "pay_to_name_2", "pay_to_address", "pay_to_address_2", "pay_to_city", "pay_to_contact", "your_reference", "ship_to_name", "ship_to_name_2", "ship_to_address", "ship_to_address_2", "ship_to_city", "ship_to_contact", "order_date", "posting_date", "expected_receipt_date", "posting_description", "payment_terms_code", "due_date", "payment_discount_percent", "pmt_discount_date", "shipment_method_code", "location_code", "department_code", "project_code", "vendor_posting_group", "currency_code", "currency_factor", "invoice_disc_code", "language_code", "purchaser_code", "no_printed", "applies_to_doc_type", "applies_to_doc_no", "receive", "invoice", "receiving_no", "posting_no", "last_receiving_no", "last_posting_no", "vendor_order_no", "vendor_shipment_no", "vendor_invoice_no", "vendor_cr_memo_no", "vat_registration_no", "reason_code", "gen_bus_posting_group", "transaction_type", "transport_method", "vat_country_code", "buy_from_vendor_name", "buy_from_vendor_name_2", "buy_from_address", "buy_from_address_2", "buy_from_city", "buy_from_contact", "pay_to_post_code", "pay_to_state", "pay_to_country_code", "buy_from_post_code", "buy_from_state", "buy_from_country_code", "ship_to_post_code", "ship_to_state", "ship_to_country_code", "order_address_code", "entry_point", "document_date", "area", "transaction_specification", "payment_method_code", "no_series", "posting_no_series", "receiving_no_series", "tax_area_code", "tax_liable", "tax_bus_posting_group", "reserve"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -3285,6 +3337,10 @@ func (t *PurchaseHeader) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "tax_bus_posting_group = ?")
 			values = append(values, t.Tax_bus_posting_group)
 		}
+		if t.hasFieldChanged("reserve") {
+			setClauses = append(setClauses, "reserve = ?")
+			values = append(values, t.Reserve)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -3450,6 +3506,8 @@ func (t *PurchaseHeader) Modify(runTrigger bool) bool {
 		values = append(values, t.Tax_liable)
 		setClauses = append(setClauses, "tax_bus_posting_group = ?")
 		values = append(values, t.Tax_bus_posting_group)
+		setClauses = append(setClauses, "reserve = ?")
+		values = append(values, t.Reserve)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -3848,6 +3906,10 @@ func (t *PurchaseHeader) hasFieldChanged(fieldName string) bool {
 	case "tax_bus_posting_group":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Tax_bus_posting_group.Equal(old)
+		}
+	case "reserve":
+		if old, ok := oldValue.(PurchaseHeaderReserve); ok {
+			return t.Reserve != old
 		}
 	}
 
@@ -4528,6 +4590,8 @@ func (t *PurchaseHeader) columnName(fieldName string) (string, bool) {
 		return "tax_liable", true
 	case strings.ToLower("tax_bus_posting_group"):
 		return "tax_bus_posting_group", true
+	case strings.ToLower("reserve"):
+		return "reserve", true
 	}
 	return "", false
 }
@@ -4925,7 +4989,7 @@ func (t *PurchaseHeader) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5010,6 +5074,7 @@ func (t *PurchaseHeader) FindFirst() bool {
 	var tax_area_codeNull sql.NullString
 	var tax_liableBool sql.NullBool
 	var tax_bus_posting_groupNull sql.NullString
+	var reserveInt int
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&document_typeInt,
@@ -5093,6 +5158,7 @@ func (t *PurchaseHeader) FindFirst() bool {
 		&tax_area_codeNull,
 		&tax_liableBool,
 		&tax_bus_posting_groupNull,
+		&reserveInt,
 	)
 
 	if err != nil {
@@ -5184,6 +5250,7 @@ func (t *PurchaseHeader) FindFirst() bool {
 	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
 	t.Tax_liable = tax_liableBool.Bool
 	t.Tax_bus_posting_group = types.NewCode(tax_bus_posting_groupNull.String)
+	t.Reserve = PurchaseHeaderReserve(reserveInt)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -5204,7 +5271,7 @@ func (t *PurchaseHeader) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5289,6 +5356,7 @@ func (t *PurchaseHeader) FindLast() bool {
 	var tax_area_codeNull sql.NullString
 	var tax_liableBool sql.NullBool
 	var tax_bus_posting_groupNull sql.NullString
+	var reserveInt int
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&document_typeInt,
@@ -5372,6 +5440,7 @@ func (t *PurchaseHeader) FindLast() bool {
 		&tax_area_codeNull,
 		&tax_liableBool,
 		&tax_bus_posting_groupNull,
+		&reserveInt,
 	)
 
 	if err != nil {
@@ -5463,6 +5532,7 @@ func (t *PurchaseHeader) FindLast() bool {
 	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
 	t.Tax_liable = tax_liableBool.Bool
 	t.Tax_bus_posting_group = types.NewCode(tax_bus_posting_groupNull.String)
+	t.Reserve = PurchaseHeaderReserve(reserveInt)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -5513,7 +5583,7 @@ func (t *PurchaseHeader) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5662,6 +5732,7 @@ func (t *PurchaseHeader) Next(steps ...int) bool {
 		var tax_area_codeNull sql.NullString
 		var tax_liableBool sql.NullBool
 		var tax_bus_posting_groupNull sql.NullString
+		var reserveInt int
 
 		err := t.currentRows.Scan(
 			&document_typeInt,
@@ -5745,6 +5816,7 @@ func (t *PurchaseHeader) Next(steps ...int) bool {
 			&tax_area_codeNull,
 			&tax_liableBool,
 			&tax_bus_posting_groupNull,
+			&reserveInt,
 		)
 
 		if err != nil {
@@ -5835,6 +5907,7 @@ func (t *PurchaseHeader) Next(steps ...int) bool {
 		t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
 		t.Tax_liable = tax_liableBool.Bool
 		t.Tax_bus_posting_group = types.NewCode(tax_bus_posting_groupNull.String)
+		t.Reserve = PurchaseHeaderReserve(reserveInt)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -5884,7 +5957,7 @@ func (t *PurchaseHeader) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5986,6 +6059,7 @@ func (t *PurchaseHeader) FindSetBuffered() bool {
 		var tax_area_codeNull sql.NullString
 		var tax_liableBool sql.NullBool
 		var tax_bus_posting_groupNull sql.NullString
+		var reserveInt int
 
 		err := rows.Scan(
 			&document_typeInt,
@@ -6069,6 +6143,7 @@ func (t *PurchaseHeader) FindSetBuffered() bool {
 			&tax_area_codeNull,
 			&tax_liableBool,
 			&tax_bus_posting_groupNull,
+			&reserveInt,
 		)
 
 		if err != nil {
@@ -6157,6 +6232,7 @@ func (t *PurchaseHeader) FindSetBuffered() bool {
 		record.Tax_area_code = types.NewCode(tax_area_codeNull.String)
 		record.Tax_liable = tax_liableBool.Bool
 		record.Tax_bus_posting_group = types.NewCode(tax_bus_posting_groupNull.String)
+		record.Reserve = PurchaseHeaderReserve(reserveInt)
 
 		// Store old values
 		record.StoreOldValues()
@@ -6269,6 +6345,7 @@ func (t *PurchaseHeader) copyFromBuffered(record *PurchaseHeader) {
 	t.Tax_area_code = record.Tax_area_code
 	t.Tax_liable = record.Tax_liable
 	t.Tax_bus_posting_group = record.Tax_bus_posting_group
+	t.Reserve = record.Reserve
 	t.StoreOldValues()
 }
 
@@ -8131,6 +8208,55 @@ func (t *PurchaseHeader) ValidateField(fieldName string, value interface{}) erro
 			}
 		}
 		return nil
+	case "reserve":
+		// Set field value
+		// Accept enum type directly
+		if v, ok := value.(PurchaseHeaderReserve); ok {
+			t.Reserve = v
+			// Accept int (convert to enum)
+		} else if v, ok := value.(int); ok {
+			if v < 0 || v >= 3 {
+				return fmt.Errorf("invalid option value %d for field reserve (valid range: 0-%d)", v, 3-1)
+			}
+			t.Reserve = PurchaseHeaderReserve(v)
+			// Accept float64 (JSON numbers decode as float64)
+		} else if v, ok := value.(float64); ok {
+			intVal := int(v)
+			if intVal < 0 || intVal >= 3 {
+				return fmt.Errorf("invalid option value %d for field reserve (valid range: 0-%d)", intVal, 3-1)
+			}
+			t.Reserve = PurchaseHeaderReserve(intVal)
+			// Accept string (lookup in options and convert)
+		} else if v, ok := value.(string); ok {
+			if v == "" {
+				// Empty string defaults to first option (behavior)
+				t.Reserve = 0
+			} else {
+				options := []string{"Never", "Optional", "Always"}
+				found := false
+				for i, opt := range options {
+					if opt == v {
+						t.Reserve = PurchaseHeaderReserve(i)
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("invalid option '%s' for field reserve (valid options: %v)", v, options)
+				}
+			}
+		} else {
+			return fmt.Errorf("invalid type for field reserve (expected PurchaseHeaderReserve, int, or string)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchaseHeaderOnValidate_Reserve); ok {
+				if err := trg.OnValidate_Reserve(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -8305,6 +8431,8 @@ func (t *PurchaseHeader) FieldValue(no int) (any, bool) {
 		return t.Tax_liable, true
 	case 116:
 		return t.Tax_bus_posting_group, true
+	case 117:
+		return t.Reserve, true
 	}
 	return nil, false
 }
@@ -8999,6 +9127,11 @@ func (t *PurchaseHeader) SetFieldValue(no int, value any) bool {
 			t.Tax_bus_posting_group = types.NewCode(v)
 			return true
 		}
+	case 117:
+		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
+			t.Reserve = PurchaseHeaderReserve(i)
+			return true
+		}
 	}
 	return false
 }
@@ -9622,6 +9755,8 @@ func (t *PurchaseHeader) columnValue(column string) (interface{}, bool) {
 		return t.Tax_liable, true
 	case "tax_bus_posting_group":
 		return t.Tax_bus_posting_group, true
+	case "reserve":
+		return int(t.Reserve), true
 	}
 	return nil, false
 }
@@ -9759,6 +9894,7 @@ func (t *PurchaseHeader) Init() {
 	t.Tax_area_code = *new(types.Code)
 	t.Tax_liable = *new(bool)
 	t.Tax_bus_posting_group = *new(types.Code)
+	t.Reserve = 0
 	t.applyDefaults()
 }
 
@@ -9880,6 +10016,7 @@ func (t *PurchaseHeader) ToMap() map[string]interface{} {
 		"tax_area_code":             t.Tax_area_code.String(),
 		"tax_liable":                t.Tax_liable,
 		"tax_bus_posting_group":     t.Tax_bus_posting_group.String(),
+		"reserve":                   int(t.Reserve),
 	}
 }
 
@@ -10334,6 +10471,23 @@ func (t *PurchaseHeader) FromMap(data map[string]interface{}) {
 	if v, ok := data["tax_bus_posting_group"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Tax_bus_posting_group = types.NewCode(s)
+		}
+	}
+	if v, ok := data["reserve"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Reserve = PurchaseHeaderReserve(int(val))
+		case int:
+			t.Reserve = PurchaseHeaderReserve(val)
+		case string:
+			// Lookup string value in options
+			options := []string{"Never", "Optional", "Always"}
+			for i, opt := range options {
+				if opt == val {
+					t.Reserve = PurchaseHeaderReserve(i)
+					break
+				}
+			}
 		}
 	}
 }
@@ -11207,6 +11361,16 @@ func (t *PurchaseHeader) GetFields() []tables.FieldInfo {
 			PrimaryKey: false,
 			FlowField:  false,
 		},
+		{
+			No:         117,
+			Name:       "reserve",
+			Type:       tables.FieldTypeOption,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
 	}
 }
 
@@ -11237,6 +11401,7 @@ func (t *PurchaseHeader) GetOptionFields() map[string][]string {
 	return map[string][]string{
 		"document_type":       {"Quote", "Order", "Invoice", "Credit Memo", "Blanket Order"},
 		"applies_to_doc_type": {" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"},
+		"reserve":             {"Never", "Optional", "Always"},
 	}
 }
 

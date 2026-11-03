@@ -68,6 +68,9 @@ page:
           width: 110
         - source: fa_posting_type
           width: 140
+        - source: fa_add_currency_factor
+          width: 140
+          visible: false
         - source: description
           width: 250
 

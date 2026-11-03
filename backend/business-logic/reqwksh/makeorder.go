@@ -1,6 +1,7 @@
 package reqwksh
 
 import (
+	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
@@ -281,6 +282,16 @@ func (m *MakeOrder) insertPurchOrderLine(reqLine2 *gtables.RequisitionLine, purc
 	purchOrderLine.Description = reqLine2.Description
 	purchOrderLine.Description_2 = reqLine2.Description_2
 	purchOrderLine.Variant_code = reqLine2.Variant_code
+	purchOrderLine.Reserve = gtables.PurchaseLineReserve(reqLine2.Reserve)
+	if !reqLine2.Reserved_qty_base.IsZero() {
+		err = reservmgt.New(reqLine2).TransferReqLineToPurchLine(reqLine2, purchOrderLine)
+		if err == nil {
+			err = reqLine2.ModifyOrError(false)
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
 	err = purchOrderLine.InsertOrError(true)
 	if err != nil {
 		return nil, err

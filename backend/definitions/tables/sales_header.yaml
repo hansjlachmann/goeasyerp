@@ -874,6 +874,12 @@ table:
       db_name: tax_exemption_no
       length: 30
 
+    - name: reserve
+      no: 117
+      type: Option
+      db_name: reserve
+      options: ["Never", "Optional", "Always"]
+
   keys:
     - name: Primary
       fields: [document_type, "no"]

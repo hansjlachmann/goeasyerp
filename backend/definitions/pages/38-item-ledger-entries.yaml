@@ -58,6 +58,18 @@ page:
         - source: cost_posted_to_gl
           width: 130
           visible: false
+        - source: add_currency_adj_cost_qty
+          width: 140
+          visible: false
+        - source: add_curr_adj_cost_inv_qty
+          width: 140
+          visible: false
+        - source: add_curr_cost_posted_to_gl
+          width: 140
+          visible: false
+        - source: additional_currency_unit_cost
+          width: 140
+          visible: false
         - source: unit_cost
           width: 110
           visible: false

@@ -6,6 +6,7 @@ import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/itemjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/noseries"
+	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
 	"github.com/hansjlachmann/openerp/backend/business-logic/resjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/salespost"
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
@@ -591,6 +592,8 @@ func (p *SalesPost) postItemJnlLine(salesLine *gtables.SalesLine, qtyToShip, qty
 	itemJnlLine.Invoiced_quantity = qtyToInvoice.Mul(p.sign)
 	itemJnlLine.Invoiced_qty_base = qtyToInvoiceBase.Mul(p.sign)
 	itemJnlLine.Unit_cost = salesLine.Unit_cost_lcy
+	itemJnlLine.Source_currency_code = salesHeader.Currency_code
+	itemJnlLine.Source_currency_unit_cost = salesLine.Unit_cost
 	itemJnlLine.Item_shpt_entry_no = itemShptEntryNo
 	itemJnlLine.Amount = amounts[0].Mul(p.sign)
 	itemJnlLine.Discount_amount = amounts[1].Mul(p.sign)
@@ -598,6 +601,19 @@ func (p *SalesPost) postItemJnlLine(salesLine *gtables.SalesLine, qtyToShip, qty
 		itemJnlLine.Unit_amount = system.Round(amounts[0].Div(qtyToInvoice), types.MustDecimal("0.00001"))
 	} else {
 		itemJnlLine.Unit_amount = salesLine.Unit_price
+	}
+	itemJnlLine.Reserve = gtables.ItemJournalLineReserve(salesLine.Reserve)
+
+	// the line's reservations go with the quantity shipped to the item journal line (codeunit 22
+	// applies the reserved entries)
+	if !salesLine.Reserved_qty_base.IsZero() && !qtyToShipBase.IsZero() {
+		if !salesLine.Shipment_date.Equal(itemJnlLine.Posting_date) {
+			return 0, apperrors.ReservShipmentDateNotPostingDate(gtables.SalesLineTableName, "shipment_date")
+		}
+		err := reservmgt.New(p.src).TransferSalesLineToItemJnlLine(salesLine, itemJnlLine, qtyToShipBase)
+		if err != nil {
+			return 0, err
+		}
 	}
 	err := p.itemJnlPost.Run(itemJnlLine)
 	if err != nil {

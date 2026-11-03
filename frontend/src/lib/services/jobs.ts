@@ -118,7 +118,7 @@ export async function startJob(
 	functionName?: string, // objectType 'function': "table:Job_Queue_Entry.ShowLineNo"
 	// The list's filters: the codeunit's record carries them (a journal's Post works on the batch
 	// the list shows)
-	listFilters?: Pick<ListOptions, 'filters' | 'fixed_filters' | 'page_params'>
+	listFilters?: Pick<ListOptions, 'filters' | 'fixed_filters' | 'page_params' | 'page_id'>
 ): Promise<ProgressEvent | SyncJobResult | null> {
 	// Start the job; a list's selection (all: with the list's query) goes along for
 	// rec.SetSelectionFilter in the codeunit
@@ -136,7 +136,10 @@ export async function startJob(
 			...(selection ? { selection: { keys: selection.keys, all: selection.all } } : {}),
 			...(listFilters?.filters?.length ? { filters: listFilters.filters } : {}),
 			...(listFilters?.fixed_filters?.length ? { fixed_filters: listFilters.fixed_filters } : {}),
-			...(listFilters?.page_params && Object.keys(listFilters.page_params).length ? { page_params: listFilters.page_params } : {})
+			...(listFilters?.page_params && Object.keys(listFilters.page_params).length ? { page_params: listFilters.page_params } : {}),
+			// a page on a temporary source table: the server fills its rows again (the function's
+			// record is one of them)
+			...(listFilters?.page_id ? { page_id: listFilters.page_id } : {})
 		})
 	});
 

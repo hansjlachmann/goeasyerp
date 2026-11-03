@@ -1,0 +1,85 @@
+page:
+  id: 497
+  type: List
+  name: Reservation Entries
+  source_table: Reservation_Entry
+  caption: Reservation Entries
+  editable: false   # entries are made by the reservation functions; opened from a line: its open entries
+
+  layout:
+    repeater:
+      fields:
+        - source: reservation_status
+          width: 130
+        - source: item_no
+          width: 100
+        - source: variant_code
+          width: 90
+          visible: false
+        - source: location_code
+          width: 100
+        - source: valid_to_date
+          width: 110
+        - source: expected_receipt_date
+          width: 110
+        - source: shipment_date
+          width: 110
+        - source: quantity
+          width: 110
+        - source: reserved_for
+          calculated: true
+          type: types.Text
+          width: 260
+        - source: reserved_from
+          calculated: true
+          type: types.Text
+          width: 260
+        - source: description
+          width: 200
+          visible: false
+        - source: for_type
+          width: 130
+          visible: false
+        - source: for_subtype
+          width: 90
+          visible: false
+        - source: for_id
+          width: 110
+          visible: false
+        - source: for_batch_name
+          width: 110
+          visible: false
+        - source: for_ref_no
+          width: 90
+          visible: false
+        - source: from_type
+          width: 130
+          visible: false
+        - source: from_subtype
+          width: 90
+          visible: false
+        - source: from_id
+          width: 110
+          visible: false
+        - source: from_batch_name
+          width: 110
+          visible: false
+        - source: from_ref_no
+          width: 90
+          visible: false
+        - source: entry_no
+          width: 90
+        - source: creation_date
+          width: 110
+          visible: false
+        - source: transferred_from_entry_no
+          width: 110
+          visible: false
+
+  actions:
+    # Cancel the selected open entries, each after a question (the classic Cancel Reservation)
+    - name: Cancel Reservation
+      caption: Cancel Reservation
+      image: Cancel
+      promoted: true
+      run_object: table:Reservation_Entry.CancelReservation

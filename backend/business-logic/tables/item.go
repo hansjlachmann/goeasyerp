@@ -2,8 +2,10 @@ package tables
 
 import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/noseries"
+	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
 	"github.com/hansjlachmann/openerp/backend/foundation/functions"
+	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/openerp/backend/foundation/system"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
@@ -206,7 +208,49 @@ func (itemLogic) OnValidate_Standard_cost(rec *gtables.Item) error {
 
 // OnValidate_Average_cost: the unit cost of the other costing methods follows
 func (itemLogic) OnValidate_Average_cost(rec *gtables.Item) error {
+	err := updateAddCurAverageCost(rec)
+	if err != nil {
+		return err
+	}
 	return updateItemUnitCost(rec)
+}
+
+// OnValidate_Add_curr_average_cost: the unit cost again
+func (itemLogic) OnValidate_Add_curr_average_cost(rec *gtables.Item) error {
+	return updateItemUnitCost(rec)
+}
+
+// updateAddCurAverageCost (UpdateAddCurAverageCost): a changed average cost, with an additional
+// reporting currency, gives the Add.-Curr. Average Cost at the work date's rate (the classic asks
+// first, default Yes; asked only with a dialog). Postings set the additional-currency average
+// cost before they validate the average cost (the classic: CurrFieldNo = 0), so a record whose
+// additional-currency average cost changed already keeps it and nothing is asked.
+func updateAddCurAverageCost(rec *gtables.Item) error {
+	xRec := rec.XRec()
+	glSetup := gtables.GetGeneralLedgerSetup(rec)
+	if !rec.Average_cost.Equal(xRec.Average_cost) && glSetup.Additional_reporting_currency != "" &&
+		rec.Add_curr_average_cost.Equal(xRec.Add_curr_average_cost) {
+		if system.GuiAllowed() && !system.Confirm(i18n.GetInstance().Message("ITEM_UPDATE_ADD_CURR_AVERAGE_COST", fcodeunits.CurrentLanguage()),
+			rec.FieldCaption("add_curr_average_cost")) {
+			return nil
+		}
+		currency := gtables.NewCurrency(rec)
+		err := currency.GetOrError(glSetup.Additional_reporting_currency)
+		if err != nil {
+			return err
+		}
+		currExchRate := ExchangeRates(rec)
+		factor, err := currExchRate.ExchangeRate(system.WorkDate(), glSetup.Additional_reporting_currency)
+		if err != nil {
+			return err
+		}
+		amount, err := currExchRate.ExchangeAmtLCYToFCY(system.WorkDate(), glSetup.Additional_reporting_currency, rec.Average_cost, factor)
+		if err != nil {
+			return err
+		}
+		return rec.Validate("add_curr_average_cost", system.Round(amount, currency.Amount_rounding_precision))
+	}
+	return nil
 }
 
 // OnValidate_Indirect_cost_percent: the unit cost again

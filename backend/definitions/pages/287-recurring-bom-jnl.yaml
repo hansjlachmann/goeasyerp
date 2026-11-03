@@ -57,6 +57,12 @@ page:
           width: 100
         - source: quantity
           width: 100
+        - source: reserve
+          width: 100
+          visible: false
+        - source: reserved_quantity
+          width: 120
+          visible: false
         - source: unit_of_measure_code
           width: 110
         - source: unit_cost
@@ -120,3 +126,15 @@ page:
       shortcut: F11
       promoted: true
       run_object: codeunit:251
+
+    # Reservations of the line: the Reservation page (the sources it can reserve from) and its entries
+    - name: Reserve
+      caption: Reserve
+      image: Lines
+      promoted: true
+      run_object: table:BOM_Journal_Line.ShowReservation
+    - name: Reservation Entries
+      caption: Reservation Entries
+      image: Entries
+      promoted: true
+      run_object: table:BOM_Journal_Line.ShowReservationEntries

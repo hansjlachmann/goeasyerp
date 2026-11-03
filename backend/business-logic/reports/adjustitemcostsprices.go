@@ -18,8 +18,7 @@ func init() {
 	Register(AdjustItemCostsPricesID, "adjust-item-costs-prices", func() Report { return &adjustItemCostsPrices{} })
 }
 
-// The fields the report can adjust (classic Selection; the additional-currency average cost
-// is left out — no additional reporting currency)
+// The fields the report can adjust (classic Selection)
 const (
 	adjustItemUnitPrice = iota + 1
 	adjustItemProfitPercent
@@ -27,6 +26,7 @@ const (
 	adjustItemAverageCost
 	adjustItemLastDirectCost
 	adjustItemStandardCost
+	adjustItemAddCurrAverageCost
 )
 
 type adjustItemCostsPrices struct {
@@ -42,7 +42,7 @@ func (r *adjustItemCostsPrices) Definition() *Definition {
 		OptionsCaption: "OPTIONS",
 		Options: []Option{
 			{Name: "adjust_field", Type: "option", Default: "1",
-				Options: []string{"UNIT_PRICE", "PROFIT_PERCENT", "INDIRECT_COST_PERCENT", "AVERAGE_COST", "LAST_DIRECT_COST", "STANDARD_COST"}},
+				Options: []string{"UNIT_PRICE", "PROFIT_PERCENT", "INDIRECT_COST_PERCENT", "AVERAGE_COST", "LAST_DIRECT_COST", "STANDARD_COST", "ADD_CURR_AVERAGE_COST"}},
 			{Name: "adjustment_factor", Type: "number", Default: "1"},
 			{Name: "rounding_method", Type: "text", Relation: &OptionRelation{Table: "Rounding_Method", Columns: []string{"code"}}},
 		},
@@ -71,11 +71,22 @@ func (r *adjustItemCostsPrices) itemOnPreDataItem(item *gtables.Item, run *Run) 
 
 func (r *adjustItemCostsPrices) itemOnAfterGetRecord(item *gtables.Item, run *Run) error {
 	r.window.Update(1, item.No)
-	if item.Costing_method == gtables.Item_Costing_method.Average && r.selection == adjustItemAverageCost {
+	if r.selection == adjustItemAddCurrAverageCost {
+		err := gtables.GetGeneralLedgerSetup(run).TestField("additional_reporting_currency")
+		if err != nil {
+			return err
+		}
+	}
+	if item.Costing_method == gtables.Item_Costing_method.Average &&
+		(r.selection == adjustItemAverageCost || r.selection == adjustItemAddCurrAverageCost) {
 		itemLedgEntry := gtables.NewItemLedgerEntry(run)
 		itemLedgEntry.SetRange("item_no", item.No)
 		if itemLedgEntry.FindFirst() {
-			return apperrors.ItemAdjustAverageCost(item.No.String(), item.Costing_method)
+			field := "average_cost"
+			if r.selection == adjustItemAddCurrAverageCost {
+				field = "add_curr_average_cost"
+			}
+			return apperrors.ItemAdjustAverageCost(field, item.No.String(), item.Costing_method)
 		}
 	}
 
@@ -93,6 +104,8 @@ func (r *adjustItemCostsPrices) itemOnAfterGetRecord(item *gtables.Item, run *Ru
 		oldFieldNo = item.Last_direct_cost
 	case adjustItemStandardCost:
 		oldFieldNo = item.Standard_cost
+	case adjustItemAddCurrAverageCost:
+		oldFieldNo = item.Add_curr_average_cost
 	}
 	newFieldNo := oldFieldNo.Mul(r.adjFactor)
 	rounded := tables.ApplyRoundingMethod(r.roundingMethod, r.roundingCode, newFieldNo)
@@ -116,6 +129,8 @@ func (r *adjustItemCostsPrices) itemOnAfterGetRecord(item *gtables.Item, run *Ru
 		err = item.Validate("last_direct_cost", newFieldNo)
 	case adjustItemStandardCost:
 		err = item.Validate("standard_cost", newFieldNo)
+	case adjustItemAddCurrAverageCost:
+		err = item.Validate("add_curr_average_cost", newFieldNo)
 	}
 	if err != nil {
 		return err

@@ -1,0 +1,65 @@
+table:
+  id: 338
+  name: "Entry_Summary"
+  caption: Entry Summary
+  description: "Entry Summary (table 338): the Reservation page's lines — per source of supply (inventory, purchase orders, …) the item's total, reserved and available quantity and what the current line reserves from it; a temporary table, filled by codeunit 400"
+  fields:
+    - name: entry_no
+      no: 1
+      type: int
+      db_name: entry_no
+      primary_key: true
+
+    - name: table_id
+      no: 2
+      type: int
+      db_name: table_id
+
+    - name: summary_type
+      no: 3
+      type: types.Text
+      db_name: summary_type
+      length: 80
+
+    - name: total_quantity
+      no: 4
+      type: types.Decimal
+      db_name: total_quantity
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+
+    - name: total_reserved_quantity
+      no: 5
+      type: types.Decimal
+      db_name: total_reserved_quantity
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+
+    - name: total_available_quantity
+      no: 6
+      type: types.Decimal
+      db_name: total_available_quantity
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+
+    - name: current_reserved_quantity
+      no: 7
+      type: types.Decimal
+      db_name: current_reserved_quantity
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+
+    # the page of the source's lines (Available - Sales Lines …): the drilldowns open it
+    - name: available_page_id
+      no: 900
+      type: int
+      db_name: available_page_id
+
+  keys:
+    - name: Primary
+      fields: [entry_no]
+      clustered: true

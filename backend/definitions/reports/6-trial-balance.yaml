@@ -27,6 +27,11 @@ report:
           elements:
             - {value: period_text, x: 0, y: 0, width: 273}
         - type: header
+          print_if: add_curr_text
+          height: 5
+          elements:
+            - {value: add_curr_text, x: 0, y: 0, width: 273}
+        - type: header
           print_if: filter_text
           height: 5
           elements:

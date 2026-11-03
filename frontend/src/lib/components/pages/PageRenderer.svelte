@@ -107,7 +107,8 @@
 	const listFixedFilters = $derived([...fixedFilters, ...openFilters]);
 	const listNewRecordDefaults = $derived({
 		...newRecordDefaults,
-		...Object.fromEntries(openFilters.map((f) => [f.field, f.value]))
+		// a filter expression (a range) gives a new record no value
+		...Object.fromEntries(openFilters.filter((f) => !f.expression).map((f) => [f.field, f.value]))
 	});
 
 	// Runs the page's OnOpenPage trigger; false when the user must pick a record first

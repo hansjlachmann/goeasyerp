@@ -555,6 +555,30 @@ table:
           - source: description
             width: 250
 
+    - name: source_currency_unit_cost
+      no: 72
+      type: types.Decimal
+      db_name: source_currency_unit_cost
+      decimal_places: "2:5"
+      precision: 18
+      scale: 5
+      editable: false
+
+    - name: source_currency_code
+      no: 73
+      type: types.Code
+      db_name: source_currency_code
+      length: 10
+      editable: false
+      table_relation:
+        table: Currency
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
     - name: reserve
       no: 70
       type: Option
@@ -638,6 +662,43 @@ table:
       db_name: recurring_frequency
       length: 20
       date_formula: true
+
+    # reservations (codeunit 400): Positive = reserved for the line, Negative = from it
+    - name: positive_reserved_quantity
+      no: 68
+      type: types.Decimal
+      db_name: positive_reserved_quantity
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+      editable: false
+
+    - name: negative_reserved_quantity
+      no: 69
+      type: types.Decimal
+      db_name: negative_reserved_quantity
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+      editable: false
+
+    - name: positive_reserved_qty_base
+      no: 5468
+      type: types.Decimal
+      db_name: positive_reserved_qty_base
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+      editable: false
+
+    - name: negative_reserved_qty_base
+      no: 5469
+      type: types.Decimal
+      db_name: negative_reserved_qty_base
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+      editable: false
 
   keys:
     - name: Primary
