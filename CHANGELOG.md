@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.132](https://github.com/hansjlachmann/openerp/compare/v0.1.131...v0.1.132) (2026-11-03)
+
+
+### Features
+
+* group headers and footers in the report engine ([#211](https://github.com/hansjlachmann/openerp/issues/211)) ([7143bf2](https://github.com/hansjlachmann/openerp/commit/7143bf270abf4a959822e94e2934f1446f96e97f))
+
+
+### Bug Fixes
+
+* pages opened from a modal page stack over it; Esc goes back the way pages were opened ([#212](https://github.com/hansjlachmann/openerp/issues/212)) ([c371241](https://github.com/hansjlachmann/openerp/commit/c371241bcbb44e98d9fbbd25afc7bc6317574a93))
+
 ## [0.1.131](https://github.com/hansjlachmann/openerp/compare/v0.1.130...v0.1.131) (2026-11-03)
 
 
