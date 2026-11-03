@@ -79,6 +79,21 @@ func (r *Run) NewPage() {
 	}
 }
 
+// GroupTotal is the total of a field or value over the records of the group whose footer
+// prints (in OnGroupFooter) — of a total or total_value element of the data item's layout; 0
+// outside a group footer
+func (r *Run) GroupTotal(name string) types.Decimal {
+	if r.printer == nil || r.printer.footer == nil {
+		return types.Decimal{}
+	}
+	sums := r.printer.footer
+	total, ok := sums.values[name]
+	if !ok {
+		total = sums.fields[name]
+	}
+	return total
+}
+
 // Preview reports whether the printout is only shown (CurrReport.PREVIEW): a document is not
 // counted as printed
 func (r *Run) Preview() bool { return r.output == OutputPreview }
@@ -640,7 +655,7 @@ func (r *Run) beginItem(item *DataItem, rec interface{}) *frame {
 	if r.printer == nil {
 		return nil
 	}
-	return r.printer.beginItem(item.Name, rec)
+	return r.printer.beginItem(item, rec)
 }
 
 // allDataItems returns the data items and their nested ones, in order

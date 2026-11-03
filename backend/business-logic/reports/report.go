@@ -114,8 +114,33 @@ type DataItem struct {
 	OnPreDataItem    TriggerFunc // before the loop (filters can still be set); Break skips the data item
 	OnAfterGetRecord TriggerFunc // for each record; Skip: the next record, Break: end of the loop
 	OnPostDataItem   TriggerFunc // after the loop
+	// GroupFields: the data item's groups, outermost first (classic GroupTotalFields; the key
+	// sorts by them) — where a field's value changes, the groups from it inwards end, their
+	// group_footer sections print, and new ones start with their group_header sections. A name
+	// the table has no field of is a report value OnAfterGetRecord sets (the groups of rows a
+	// report computes, in an Integer data item).
+	GroupFields []string
+	// OnGroupFooter runs before a group's footer sections print (classic OnPreSection of a
+	// GroupFooter with CurrReport.TOTALSCAUSEDBY): group is the group field that ends, rec and
+	// the values are the group's last record's, Run.GroupTotal gives the group's totals; Skip
+	// leaves the footer out
+	OnGroupFooter GroupTriggerFunc
 	// Nested data items: run for each record of this one (DataItemIndent)
 	DataItems []*DataItem
+}
+
+// GroupTriggerFunc is a trigger of a data item's group; group is the group field
+type GroupTriggerFunc func(rec any, group string, run *Run) error
+
+// GroupTrigger makes a group trigger of a function on the typed record
+func GroupTrigger[T any](fn func(rec T, group string, run *Run) error) GroupTriggerFunc {
+	return func(rec any, group string, run *Run) error {
+		r, ok := rec.(T)
+		if !ok {
+			return errors.New("report group trigger: wrong record type")
+		}
+		return fn(r, group, run)
+	}
 }
 
 // Trigger makes a data item trigger of a function on the typed record:

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -16,8 +17,8 @@ import (
 )
 
 // A printed report has a layout: backend/definitions/reports/<id>-<name>.yaml, the page and,
-// per data item, its sections (classic Header, Body, Footer, TransHeader, TransFooter) with
-// the elements printed in them:
+// per data item, its sections (classic Header, GroupHeader, Body, GroupFooter, Footer,
+// TransHeader, TransFooter) with the elements printed in them:
 //
 //	report:
 //	  id: 204
@@ -36,7 +37,8 @@ import (
 // caption (a field caption: <field> of the section's data item or <DataItem>.<field>), field
 // (a field's value, formatted in the user's language), value (a report value the triggers set
 // with Run.SetValue), total (the sum of a field of the data item over the records printed so
-// far), total_value (the same of a value its trigger sets per record), lines (a value holding lines, one under the other), image (a value holding a
+// far — in a group footer over the group's records), total_value (the same of a value its
+// trigger sets per record), lines (a value holding lines, one under the other), image (a value holding a
 // picture), page_no, line (a line of the width, or of the height: vertical), box.
 
 // Layout is a printed report's layout
@@ -69,27 +71,36 @@ type Margins struct {
 type LayoutDataItem struct {
 	Name string `yaml:"name"` // the data item's name in the report's Definition
 	// NewPagePerRecord: each record (after the first) starts on a new page
-	NewPagePerRecord bool       `yaml:"new_page_per_record"`
-	Sections         []*Section `yaml:"sections"`
-	totals           []string   // the fields its total elements sum
-	totalValues      []string   // the values its total_value elements sum
+	NewPagePerRecord bool `yaml:"new_page_per_record"`
+	// NewPagePerGroup: each group of the outermost group field (after the first) starts on a
+	// new page
+	NewPagePerGroup bool       `yaml:"new_page_per_group"`
+	Sections        []*Section `yaml:"sections"`
+	totals          []string   // the fields its total elements sum
+	totalValues     []string   // the values its total_value elements sum
 }
 
 // Section types
 const (
-	SectionHeader      = "header"       // before the first record; with print_on_every_page at the top of every page too
-	SectionBody        = "body"         // for each record
-	SectionFooter      = "footer"       // after the last record
+	SectionHeader = "header" // before the first record; with print_on_every_page at the top of every page too
+	SectionBody   = "body"   // for each record
+	SectionFooter = "footer" // after the last record
+	// The groups of the data item's GroupFields: a group header before the first record of a
+	// group (with print_on_every_page at the top of every page the group goes on to too), a
+	// group footer after its last record — printed with that record's fields and values
+	SectionGroupHeader = "group_header"
+	SectionGroupFooter = "group_footer"
 	SectionTransHeader = "trans_header" // at the top of a page the data item goes on to (carried-over totals)
 	SectionTransFooter = "trans_footer" // at the bottom of a page the data item goes on from
 )
 
-var sectionTypes = map[string]bool{SectionHeader: true, SectionBody: true, SectionFooter: true, SectionTransHeader: true, SectionTransFooter: true}
+var sectionTypes = map[string]bool{SectionHeader: true, SectionGroupHeader: true, SectionBody: true, SectionGroupFooter: true, SectionFooter: true, SectionTransHeader: true, SectionTransFooter: true}
 
 // Section is a part of the printout of a data item
 type Section struct {
 	Type             string     `yaml:"type"`
-	PrintOnEveryPage bool       `yaml:"print_on_every_page"` // header: at the top of every page
+	Group            string     `yaml:"group"`               // group_header, group_footer: the group field (of the data item's GroupFields)
+	PrintOnEveryPage bool       `yaml:"print_on_every_page"` // header, group_header: at the top of every page
 	Height           float64    `yaml:"height"`              // millimetres; 0: as high as its elements
 	PrintIf          string     `yaml:"print_if"`            // printed only when this value is set (not blank, not 0, true)
 	PrintUnless      string     `yaml:"print_unless"`        // not printed when this value is set
@@ -170,6 +181,17 @@ func (i *LayoutDataItem) sections(sectionType string) []*Section {
 	var sections []*Section
 	for _, s := range i.Sections {
 		if s.Type == sectionType {
+			sections = append(sections, s)
+		}
+	}
+	return sections
+}
+
+// groupSections returns the data item's sections of a type of a group
+func (i *LayoutDataItem) groupSections(sectionType, group string) []*Section {
+	var sections []*Section
+	for _, s := range i.Sections {
+		if s.Type == sectionType && s.Group == group {
 			sections = append(sections, s)
 		}
 	}
@@ -275,8 +297,12 @@ func readLayout(file string) (*Layout, error) {
 			if !sectionTypes[s.Type] {
 				return nil, fmt.Errorf("data item %s: section %d: type %q", item.Name, i+1, s.Type)
 			}
-			if s.PrintOnEveryPage && s.Type != SectionHeader {
+			if s.PrintOnEveryPage && s.Type != SectionHeader && s.Type != SectionGroupHeader {
 				return nil, fmt.Errorf("data item %s: section %d: print_on_every_page is for headers", item.Name, i+1)
+			}
+			grouped := s.Type == SectionGroupHeader || s.Type == SectionGroupFooter
+			if grouped != (s.Group != "") {
+				return nil, fmt.Errorf("data item %s: section %d (%s): group is for group_header and group_footer, which need it", item.Name, i+1, s.Type)
 			}
 			for j, e := range s.Elements {
 				kinds := e.kinds()
@@ -317,8 +343,10 @@ func CheckLayout(layout *Layout) error {
 	}
 	def := factory().Definition()
 	tables := map[string]string{}
+	groups := map[string][]string{}
 	for _, item := range allDataItems(def.DataItems) {
 		tables[item.Name] = item.Table
+		groups[item.Name] = item.GroupFields
 	}
 	fields := func(table string) map[string]bool {
 		names := map[string]bool{}
@@ -340,7 +368,13 @@ func CheckLayout(layout *Layout) error {
 		if !ok {
 			return fmt.Errorf("layout %s: report %d has no data item %s", layout.file, layout.ID, item.Name)
 		}
+		if item.NewPagePerGroup && len(groups[item.Name]) == 0 {
+			return fmt.Errorf("layout %s: %s: new_page_per_group without GroupFields", layout.file, item.Name)
+		}
 		for _, s := range item.Sections {
+			if s.Group != "" && !slices.Contains(groups[item.Name], s.Group) {
+				return fmt.Errorf("layout %s: %s: %s section of group %s: the data item's GroupFields are %v", layout.file, item.Name, s.Type, s.Group, groups[item.Name])
+			}
 			for _, e := range s.Elements {
 				for _, ref := range []string{e.Field, e.Caption, e.Total} {
 					if ref == "" {
