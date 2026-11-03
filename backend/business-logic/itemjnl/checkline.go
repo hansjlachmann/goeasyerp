@@ -92,6 +92,19 @@ func (c *ItemJnlCheckLine) RunCheck(rec *gtables.ItemJournalLine) error {
 		}
 	}
 
+	if rec.Serial_no != "" {
+		one := types.NewDecimalFromInt(1)
+		if rec.Quantity.Equal(rec.Invoiced_quantity) || rec.Invoiced_quantity.IsZero() {
+			if !rec.Quantity.Abs().Equal(one) {
+				return apperrors.SerialQtyMustBeOne(gtables.ItemJournalLineTableName, "quantity")
+			}
+		} else {
+			if !rec.Invoiced_quantity.Abs().Equal(one) {
+				return apperrors.SerialQtyMustBeOne(gtables.ItemJournalLineTableName, "invoiced_quantity")
+			}
+		}
+	}
+
 	if rec.Entry_type == gtables.ItemJournalLine_Entry_type.Transfer {
 		err = rec.TestField("amount", types.Decimal{})
 		if err != nil {

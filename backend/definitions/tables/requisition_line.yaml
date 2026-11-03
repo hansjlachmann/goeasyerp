@@ -359,6 +359,18 @@ table:
       scale: 5
       editable: false
 
+    - name: serial_no
+      no: 27
+      type: types.Code
+      db_name: serial_no
+      length: 20
+
+    - name: lot_no
+      no: 5400
+      type: types.Code
+      db_name: lot_no
+      length: 20
+
   keys:
     - name: Primary
       fields: [worksheet_template_name, journal_batch_name, line_no]

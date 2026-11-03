@@ -58,13 +58,13 @@ func glBalance(src ftables.Source, account string) types.Decimal {
 	return glEntry.Amount.Round(2)
 }
 
-// The demo items' year: opening stock, purchases and sales posted through codeunit 22 — every
-// item's inventory adds up, the inventory value is in the G/L, the G/L balances
+// The demo items' year: opening stock, purchases and sales posted through codeunit 22 (and the
+// office chairs with serial numbers: three in, one out) — every item's inventory adds up, the inventory value is in the G/L, the G/L balances
 func TestDemoInventory(t *testing.T) {
 	src := demoCompany(t)
 	itemLedgEntry := gtables.NewItemLedgerEntry(src)
-	if n := itemLedgEntry.Count(); n != 19*13 {
-		t.Fatalf("%d item ledger entries, want %d", n, 19*13)
+	if n := itemLedgEntry.Count(); n != 19*13+4 {
+		t.Fatalf("%d item ledger entries, want %d", n, 19*13+4)
 	}
 	var invValue types.Decimal
 	for found := itemLedgEntry.FindSet(); found; found = itemLedgEntry.Next() {

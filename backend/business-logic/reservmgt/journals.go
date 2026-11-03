@@ -26,9 +26,10 @@ func ItemLedgEntrySource(itemLedgEntry *gtables.ItemLedgerEntry) Source {
 }
 
 // checkCreateReservFor: the checks every …CreateReservFor makes — the line's date not before
-// the supply's (but any inventory), no more than its quantity, the supply's location and variant
+// the supply's (but any inventory), no more than its quantity, the supply's location, variant,
+// serial and lot number
 func checkCreateReservFor(table, dateField string, date, expectedReceiptDate types.Date, from Source, qtyBase, reservedQtyBase, quantity types.Decimal,
-	locationCode, fromLocationCode, variantCode, fromVariantCode types.Code) error {
+	locationCode, fromLocationCode, variantCode, fromVariantCode, serialNo, fromSerialNo, lotNo, fromLotNo types.Code) error {
 	if date.Before(expectedReceiptDate) && from.Type != TypeItemLedgerEntry {
 		return apperrors.ReservDateBeforeExpected(table, dateField)
 	}
@@ -41,12 +42,18 @@ func checkCreateReservFor(table, dateField string, date, expectedReceiptDate typ
 	if variantCode != fromVariantCode {
 		return apperrors.FieldMustBe(table, "variant_code", fromVariantCode.String())
 	}
+	if serialNo != fromSerialNo {
+		return apperrors.FieldMustBe(table, "serial_no", fromSerialNo.String())
+	}
+	if lotNo != fromLotNo {
+		return apperrors.FieldMustBe(table, "lot_no", fromLotNo.String())
+	}
 	return nil
 }
 
 // reqLineCreateReservFor (ReqLineCreateReservFor): a negative requisition line reserves from a
 // supply
-func (m *ReservationManagement) reqLineCreateReservFor(reqLine *gtables.RequisitionLine, validToDate types.Date, description types.Text, expectedReceiptDate types.Date, quantity types.Decimal, from Source, fromVariantCode, fromLocationCode types.Code) error {
+func (m *ReservationManagement) reqLineCreateReservFor(reqLine *gtables.RequisitionLine, validToDate types.Date, description types.Text, expectedReceiptDate types.Date, quantity types.Decimal, from Source, fromVariantCode, fromLocationCode, fromSerialNo, fromLotNo types.Code) error {
 	err := reqLine.TestField("type", gtables.RequisitionLine_Type.Item)
 	if err == nil {
 		err = reqLine.TestField("no")
@@ -56,7 +63,7 @@ func (m *ReservationManagement) reqLineCreateReservFor(reqLine *gtables.Requisit
 	}
 	if err == nil {
 		err = checkCreateReservFor(gtables.RequisitionLineTableName, "expected_receipt_date", reqLine.Expected_receipt_date, expectedReceiptDate, from,
-			reqLine.Quantity_base, reqLine.Reserved_qty_base, quantity, reqLine.Location_code, fromLocationCode, reqLine.Variant_code, fromVariantCode)
+			reqLine.Quantity_base, reqLine.Reserved_qty_base, quantity, reqLine.Location_code, fromLocationCode, reqLine.Variant_code, fromVariantCode, reqLine.Serial_no, fromSerialNo, reqLine.Lot_no, fromLotNo)
 	}
 	if err != nil {
 		return err
@@ -70,6 +77,7 @@ func (m *ReservationManagement) reqLineCreateReservFor(reqLine *gtables.Requisit
 	}
 	return m.createReservEntry(ReqLineSource(reqLine), from, reservEntryValues{
 		itemNo: reqLine.No, variantCode: reqLine.Variant_code, locationCode: reqLine.Location_code,
+		serialNo: reqLine.Serial_no, lotNo: reqLine.Lot_no,
 		validToDate: validToDate, description: description,
 		expectedReceiptDate: expectedReceiptDate, shipmentDate: reqLine.Expected_receipt_date, quantity: quantity})
 }
@@ -98,7 +106,7 @@ func (m *ReservationManagement) ReqLineSetReservFor(currentReqLine *gtables.Requ
 	}
 	m.forReqLine = gtables.NewRequisitionLine(m.src)
 	m.forReqLine.Copy(currentReqLine)
-	m.setReservFor(TypeRequisitionLine, currentReqLine.No, currentReqLine.Variant_code, currentReqLine.Location_code,
+	m.setReservFor(TypeRequisitionLine, currentReqLine.No, currentReqLine.Variant_code, currentReqLine.Location_code, currentReqLine.Serial_no, currentReqLine.Lot_no,
 		currentReqLine.Expected_receipt_date, ReqLineSource(currentReqLine))
 	return nil
 }
@@ -119,6 +127,7 @@ func (m *ReservationManagement) ReqLineVerifyChange(newReqLine *gtables.Requisit
 		table: gtables.RequisitionLineTableName, src: ReqLineSource(newReqLine),
 		reservedQtyBase: newReqLine.Reserved_qty_base, qtyBase: newReqLine.Quantity_base, validSignNegative: true,
 		itemNo: newReqLine.No, locationCode: newReqLine.Location_code, variantCode: newReqLine.Variant_code,
+		serialNo: newReqLine.Serial_no, lotNo: newReqLine.Lot_no, serialField: "serial_no", lotField: "lot_no",
 		itemField: "no", locationField: "location_code",
 		date: newReqLine.Expected_receipt_date, dateField: "expected_receipt_date"})
 }
@@ -135,7 +144,7 @@ func itemJnlLineTakes(entryType gtables.ItemJournalLineEntry_type) bool {
 
 // itemJnlLineCreateReservFor (ItemJnlLineCreateReservFor): an item journal line that takes the
 // item reserves from a supply
-func (m *ReservationManagement) itemJnlLineCreateReservFor(itemJnlLine *gtables.ItemJournalLine, validToDate types.Date, description types.Text, expectedReceiptDate types.Date, quantity types.Decimal, from Source, fromVariantCode, fromLocationCode types.Code) error {
+func (m *ReservationManagement) itemJnlLineCreateReservFor(itemJnlLine *gtables.ItemJournalLine, validToDate types.Date, description types.Text, expectedReceiptDate types.Date, quantity types.Decimal, from Source, fromVariantCode, fromLocationCode, fromSerialNo, fromLotNo types.Code) error {
 	err := itemJnlLine.TestField("item_no")
 	if err == nil {
 		err = itemJnlLine.TestField("posting_date")
@@ -145,7 +154,7 @@ func (m *ReservationManagement) itemJnlLineCreateReservFor(itemJnlLine *gtables.
 	}
 	if err == nil {
 		err = checkCreateReservFor(gtables.ItemJournalLineTableName, "posting_date", itemJnlLine.Posting_date, expectedReceiptDate, from,
-			itemJnlLine.Quantity_base, itemJnlLine.Positive_reserved_qty_base, quantity, itemJnlLine.Location_code, fromLocationCode, itemJnlLine.Variant_code, fromVariantCode)
+			itemJnlLine.Quantity_base, itemJnlLine.Positive_reserved_qty_base, quantity, itemJnlLine.Location_code, fromLocationCode, itemJnlLine.Variant_code, fromVariantCode, itemJnlLine.Serial_no, fromSerialNo, itemJnlLine.Lot_no, fromLotNo)
 	}
 	if err != nil {
 		return err
@@ -163,6 +172,7 @@ func (m *ReservationManagement) itemJnlLineCreateReservFor(itemJnlLine *gtables.
 	}
 	return m.createReservEntry(ItemJnlLineSource(itemJnlLine), from, reservEntryValues{
 		itemNo: itemJnlLine.Item_no, variantCode: itemJnlLine.Variant_code, locationCode: itemJnlLine.Location_code,
+		serialNo: itemJnlLine.Serial_no, lotNo: itemJnlLine.Lot_no,
 		validToDate: validToDate, description: description,
 		expectedReceiptDate: expectedReceiptDate, shipmentDate: itemJnlLine.Posting_date, quantity: quantity})
 }
@@ -203,7 +213,7 @@ func (m *ReservationManagement) ItemJnlLineSetReservFor(currentItemJnlLine *gtab
 	}
 	m.forItemJnlLine = gtables.NewItemJournalLine(m.src)
 	m.forItemJnlLine.Copy(currentItemJnlLine)
-	m.setReservFor(TypeItemJournal, currentItemJnlLine.Item_no, currentItemJnlLine.Variant_code, currentItemJnlLine.Location_code,
+	m.setReservFor(TypeItemJournal, currentItemJnlLine.Item_no, currentItemJnlLine.Variant_code, currentItemJnlLine.Location_code, currentItemJnlLine.Serial_no, currentItemJnlLine.Lot_no,
 		currentItemJnlLine.Posting_date, ItemJnlLineSource(currentItemJnlLine))
 	return nil
 }
@@ -242,6 +252,7 @@ func (m *ReservationManagement) ItemJnlLineVerifyChange(newItemJnlLine *gtables.
 		table: gtables.ItemJournalLineTableName, src: ItemJnlLineSource(newItemJnlLine), qtyBase: newItemJnlLine.Quantity_base,
 		itemNo: newItemJnlLine.Item_no, variantCode: newItemJnlLine.Variant_code, itemField: "item_no",
 		locationCode: newItemJnlLine.Location_code, locationField: "location_code",
+		serialNo: newItemJnlLine.Serial_no, lotNo: newItemJnlLine.Lot_no, serialField: "serial_no", lotField: "lot_no",
 		date: newItemJnlLine.Posting_date, dateField: "posting_date"}
 	if !newItemJnlLine.Positive_reserved_qty_base.IsZero() {
 		lp := l
@@ -249,6 +260,8 @@ func (m *ReservationManagement) ItemJnlLineVerifyChange(newItemJnlLine *gtables.
 		lp.validSignNegative = !itemJnlLineTakes(newItemJnlLine.Entry_type)
 		if transfer && newItemJnlLine.Quantity_base.IsNegative() {
 			lp.locationCode, lp.locationField = newItemJnlLine.New_location_code, "new_location_code"
+			lp.serialNo, lp.serialField = newItemJnlLine.New_serial_no, "new_serial_no"
+			lp.lotNo, lp.lotField = newItemJnlLine.New_lot_no, "new_lot_no"
 		}
 		err := m.verifyChange(lp)
 		if err != nil {
@@ -264,6 +277,8 @@ func (m *ReservationManagement) ItemJnlLineVerifyChange(newItemJnlLine *gtables.
 		}
 		if transfer && newItemJnlLine.Quantity_base.IsPositive() {
 			ln.locationCode, ln.locationField = newItemJnlLine.New_location_code, "new_location_code"
+			ln.serialNo, ln.serialField = newItemJnlLine.New_serial_no, "new_serial_no"
+			ln.lotNo, ln.lotField = newItemJnlLine.New_lot_no, "new_lot_no"
 		}
 		return m.verifyChange(ln)
 	}
@@ -272,14 +287,14 @@ func (m *ReservationManagement) ItemJnlLineVerifyChange(newItemJnlLine *gtables.
 
 // bomJnlLineCreateReservFor (BOMJnlLineCreateReservFor): a negative BOM journal line reserves
 // from a supply
-func (m *ReservationManagement) bomJnlLineCreateReservFor(bomJnlLine *gtables.BOMJournalLine, validToDate types.Date, description types.Text, expectedReceiptDate types.Date, quantity types.Decimal, from Source, fromVariantCode, fromLocationCode types.Code) error {
+func (m *ReservationManagement) bomJnlLineCreateReservFor(bomJnlLine *gtables.BOMJournalLine, validToDate types.Date, description types.Text, expectedReceiptDate types.Date, quantity types.Decimal, from Source, fromVariantCode, fromLocationCode, fromSerialNo, fromLotNo types.Code) error {
 	err := bomJnlLine.TestField("item_no")
 	if err == nil {
 		err = bomJnlLine.TestField("posting_date")
 	}
 	if err == nil {
 		err = checkCreateReservFor(gtables.BOMJournalLineTableName, "posting_date", bomJnlLine.Posting_date, expectedReceiptDate, from,
-			bomJnlLine.Quantity_base, bomJnlLine.Reserved_qty_base, quantity, bomJnlLine.Location_code, fromLocationCode, bomJnlLine.Variant_code, fromVariantCode)
+			bomJnlLine.Quantity_base, bomJnlLine.Reserved_qty_base, quantity, bomJnlLine.Location_code, fromLocationCode, bomJnlLine.Variant_code, fromVariantCode, "", fromSerialNo, bomJnlLine.Lot_no, fromLotNo)
 	}
 	if err != nil {
 		return err
@@ -293,6 +308,7 @@ func (m *ReservationManagement) bomJnlLineCreateReservFor(bomJnlLine *gtables.BO
 	}
 	return m.createReservEntry(BOMJnlLineSource(bomJnlLine), from, reservEntryValues{
 		itemNo: bomJnlLine.Item_no, variantCode: bomJnlLine.Variant_code, locationCode: bomJnlLine.Location_code,
+		lotNo:       bomJnlLine.Lot_no,
 		validToDate: validToDate, description: description,
 		expectedReceiptDate: expectedReceiptDate, shipmentDate: bomJnlLine.Posting_date, quantity: quantity})
 }
@@ -318,7 +334,7 @@ func (m *ReservationManagement) BOMJnlLineSetReservFor(currentBOMJnlLine *gtable
 	}
 	m.forBOMJnlLine = gtables.NewBOMJournalLine(m.src)
 	m.forBOMJnlLine.Copy(currentBOMJnlLine)
-	m.setReservFor(TypeBOMJournal, currentBOMJnlLine.Item_no, currentBOMJnlLine.Variant_code, currentBOMJnlLine.Location_code,
+	m.setReservFor(TypeBOMJournal, currentBOMJnlLine.Item_no, currentBOMJnlLine.Variant_code, currentBOMJnlLine.Location_code, "", currentBOMJnlLine.Lot_no,
 		currentBOMJnlLine.Posting_date, BOMJnlLineSource(currentBOMJnlLine))
 	return nil
 }
@@ -339,6 +355,7 @@ func (m *ReservationManagement) BOMJnlLineVerifyChange(newBOMJnlLine *gtables.BO
 		table: gtables.BOMJournalLineTableName, src: BOMJnlLineSource(newBOMJnlLine),
 		reservedQtyBase: newBOMJnlLine.Reserved_qty_base, qtyBase: newBOMJnlLine.Quantity_base, validSignNegative: true,
 		itemNo: newBOMJnlLine.Item_no, locationCode: newBOMJnlLine.Location_code, variantCode: newBOMJnlLine.Variant_code,
+		lotNo: newBOMJnlLine.Lot_no, serialField: "serial_no", lotField: "lot_no",
 		itemField: "item_no", locationField: "location_code",
 		date: newBOMJnlLine.Posting_date, dateField: "posting_date"})
 }

@@ -932,7 +932,7 @@
 								fieldCaptions={captions}
 								tabindex={fieldTabIndex}
 								onblur={(e) => handleFieldBlur(field, e)}
-								onassistedit={field.assist_edit && fieldEditable ? () => handleAssistEdit(field.assist_edit!) : undefined}
+								onassistedit={(field.assist_edit || field.on_lookup) && fieldEditable ? () => handleAssistEdit((field.assist_edit || field.on_lookup)!) : undefined}
 								ondrilldown={field.drilldown && !fieldEditable && !checkIsNewRecord() ? () => openDrilldown(field) : undefined}
 							/>
 							{/if}

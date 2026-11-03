@@ -189,9 +189,9 @@ func (m *ReservationManagement) TransferItemJnlToItemLedgEntry(itemJnlLine *gtab
 	if itemJnlLine.Negative_reserved_qty_base.IsZero() {
 		return nil
 	}
-	locationCode := itemJnlLine.Location_code
+	locationCode, serialNo, lotNo := itemJnlLine.Location_code, itemJnlLine.Serial_no, itemJnlLine.Lot_no
 	if itemJnlLine.Entry_type == gtables.ItemJournalLine_Entry_type.Transfer {
-		locationCode = itemJnlLine.New_location_code
+		locationCode, serialNo, lotNo = itemJnlLine.New_location_code, itemJnlLine.New_serial_no, itemJnlLine.New_lot_no
 	}
 	err := itemLedgEntry.TestField("item_no", itemJnlLine.Item_no)
 	if err == nil {
@@ -199,6 +199,12 @@ func (m *ReservationManagement) TransferItemJnlToItemLedgEntry(itemJnlLine *gtab
 	}
 	if err == nil {
 		err = itemLedgEntry.TestField("location_code", locationCode)
+	}
+	if err == nil {
+		err = itemLedgEntry.TestField("serial_no", serialNo)
+	}
+	if err == nil {
+		err = itemLedgEntry.TestField("lot_no", lotNo)
 	}
 	if err == nil {
 		err = itemLedgEntry.TestField("posting_date", itemJnlLine.Posting_date)
@@ -226,6 +232,12 @@ func (m *ReservationManagement) TransferItemJnlToItemLedgEntry(itemJnlLine *gtab
 		}
 		if err == nil {
 			err = e.TestField("location_code", locationCode)
+		}
+		if err == nil {
+			err = e.TestField("serial_no", serialNo)
+		}
+		if err == nil {
+			err = e.TestField("lot_no", lotNo)
 		}
 		if err == nil {
 			err = e.TestField("expected_receipt_date", itemJnlLine.Posting_date)

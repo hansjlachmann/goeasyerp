@@ -104,6 +104,10 @@ page:
           visible: false
         - source: entry_no
           width: 90
+        - source: serial_no   # shown: the lines' Serial No./Lot No. lookup picks from this page
+          width: 110
+        - source: lot_no
+          width: 110
 
   actions:
 

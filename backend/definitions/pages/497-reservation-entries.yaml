@@ -75,6 +75,12 @@ page:
         - source: transferred_from_entry_no
           width: 110
           visible: false
+        - source: serial_no
+          width: 110
+          visible: false
+        - source: lot_no
+          width: 110
+          visible: false
 
   actions:
     # Cancel the selected open entries, each after a question (the classic Cancel Reservation)

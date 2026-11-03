@@ -700,6 +700,30 @@ table:
       scale: 5
       editable: false
 
+    - name: serial_no
+      no: 38
+      type: types.Code
+      db_name: serial_no
+      length: 20
+
+    - name: new_serial_no
+      no: 61
+      type: types.Code
+      db_name: new_serial_no
+      length: 20
+
+    - name: lot_no
+      no: 5400
+      type: types.Code
+      db_name: lot_no
+      length: 20
+
+    - name: new_lot_no
+      no: 5405
+      type: types.Code
+      db_name: new_lot_no
+      length: 20
+
   keys:
     - name: Primary
       fields: [journal_template_name, journal_batch_name, line_no]

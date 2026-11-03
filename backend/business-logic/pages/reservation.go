@@ -94,6 +94,8 @@ func init() {
 		page.SetFilter("no", f.ItemNo)
 		page.SetFilter("variant_code", f.VariantCode)
 		page.SetFilter("location_code", f.LocationCode)
+		page.SetFilter("serial_no", f.SerialNo)
+		page.SetFilter("lot_no", f.LotNo)
 		page.SetFilterExpression("shipment_date", ".."+f.ShipmentDate.String())
 		if fromSubtype == int(gtables.SalesLine_Document_type.CreditMemo) {
 			page.SetFilterExpression("quantity_base", ">0")
@@ -118,6 +120,8 @@ func init() {
 		page.SetFilter("no", f.ItemNo)
 		page.SetFilter("variant_code", f.VariantCode)
 		page.SetFilter("location_code", f.LocationCode)
+		page.SetFilter("serial_no", f.SerialNo)
+		page.SetFilter("lot_no", f.LotNo)
 		page.SetFilterExpression("expected_receipt_date", ".."+f.ShipmentDate.String())
 		page.SetFilterExpression("quantity_base", ">0")
 		return nil
@@ -140,6 +144,8 @@ func init() {
 		page.SetFilter("no", f.ItemNo)
 		page.SetFilter("variant_code", f.VariantCode)
 		page.SetFilter("location_code", f.LocationCode)
+		page.SetFilter("serial_no", f.SerialNo)
+		page.SetFilter("lot_no", f.LotNo)
 		page.SetFilterExpression("expected_receipt_date", ".."+f.ShipmentDate.String())
 		if fromSubtype == int(gtables.PurchaseLine_Document_type.CreditMemo) {
 			page.SetFilterExpression("quantity_base", "<0")
@@ -166,8 +172,12 @@ func init() {
 		page.SetFilter("variant_code", f.VariantCode)
 		if fromSubtype == int(gtables.ItemJournalLine_Entry_type.Transfer) {
 			page.SetFilter("new_location_code", f.LocationCode)
+			page.SetFilter("new_serial_no", f.SerialNo)
+			page.SetFilter("new_lot_no", f.LotNo)
 		} else {
 			page.SetFilter("location_code", f.LocationCode)
+			page.SetFilter("serial_no", f.SerialNo)
+			page.SetFilter("lot_no", f.LotNo)
 		}
 		page.SetFilterExpression("posting_date", ".."+f.ShipmentDate.String())
 		switch fromSubtype {
@@ -193,6 +203,7 @@ func init() {
 		page.SetFilter("item_no", f.ItemNo)
 		page.SetFilter("variant_code", f.VariantCode)
 		page.SetFilter("location_code", f.LocationCode)
+		page.SetFilter("lot_no", f.LotNo)
 		page.SetFilterExpression("posting_date", ".."+f.ShipmentDate.String())
 		page.SetFilterExpression("quantity_base", ">0")
 		return nil
@@ -212,6 +223,8 @@ func init() {
 		page.SetFilter("item_no", f.ItemNo)
 		page.SetFilter("variant_code", f.VariantCode)
 		page.SetFilter("location_code", f.LocationCode)
+		page.SetFilter("serial_no", f.SerialNo)
+		page.SetFilter("lot_no", f.LotNo)
 		page.SetFilter("drop_shipment", false)
 		page.SetFilter("open", true)
 		page.SetFilter("positive", true)

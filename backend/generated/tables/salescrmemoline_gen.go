@@ -60,6 +60,8 @@
 //	OnValidate_Qty_per_unit_of_measure(rec *gtables.SalesCrMemoLine) error
 //	OnValidate_Unit_of_measure_code(rec *gtables.SalesCrMemoLine) error
 //	OnValidate_Quantity_base(rec *gtables.SalesCrMemoLine) error
+//	OnValidate_Serial_no(rec *gtables.SalesCrMemoLine) error
+//	OnValidate_Lot_no(rec *gtables.SalesCrMemoLine) error
 
 package tables
 
@@ -171,6 +173,8 @@ type SalesCrMemoLine struct {
 	Qty_per_unit_of_measure types.Decimal                       `db:"qty_per_unit_of_measure"`
 	Unit_of_measure_code    types.Code                          `db:"unit_of_measure_code"`
 	Quantity_base           types.Decimal                       `db:"quantity_base"`
+	Serial_no               types.Code                          `db:"serial_no"`
+	Lot_no                  types.Code                          `db:"lot_no"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -317,6 +321,8 @@ var SalesCrMemoLine_FieldNo = struct {
 	Qty_per_unit_of_measure int
 	Unit_of_measure_code    int
 	Quantity_base           int
+	Serial_no               int
+	Lot_no                  int
 }{
 	Sell_to_customer_no:     2,
 	Document_no:             3,
@@ -368,6 +374,8 @@ var SalesCrMemoLine_FieldNo = struct {
 	Qty_per_unit_of_measure: 5404,
 	Unit_of_measure_code:    5407,
 	Quantity_base:           5415,
+	Serial_no:               53,
+	Lot_no:                  5400,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -473,6 +481,10 @@ func (t *SalesCrMemoLine) FieldNo(fieldName string) int {
 		return 5407
 	case "quantity_base":
 		return 5415
+	case "serial_no":
+		return 53
+	case "lot_no":
+		return 5400
 	}
 	return 0
 }
@@ -580,6 +592,10 @@ func (t *SalesCrMemoLine) FieldName(fieldNo int) string {
 		return "unit_of_measure_code"
 	case 5415:
 		return "quantity_base"
+	case 53:
+		return "serial_no"
+	case 5400:
+		return "lot_no"
 	}
 	return ""
 }
@@ -831,6 +847,12 @@ type (
 	SalesCrMemoLineOnValidate_Quantity_base interface {
 		OnValidate_Quantity_base(rec *SalesCrMemoLine) error
 	}
+	SalesCrMemoLineOnValidate_Serial_no interface {
+		OnValidate_Serial_no(rec *SalesCrMemoLine) error
+	}
+	SalesCrMemoLineOnValidate_Lot_no interface {
+		OnValidate_Lot_no(rec *SalesCrMemoLine) error
+	}
 )
 
 // salesCrMemoLineLogic is the registered business logic of Sales_Cr_Memo_Line, in
@@ -960,6 +982,10 @@ func salesCrMemoLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SalesCrMemoLineOnValidate_Unit_of_measure_code)
 	case "OnValidate_Quantity_base":
 		_, ok = logic.(SalesCrMemoLineOnValidate_Quantity_base)
+	case "OnValidate_Serial_no":
+		_, ok = logic.(SalesCrMemoLineOnValidate_Serial_no)
+	case "OnValidate_Lot_no":
+		_, ok = logic.(SalesCrMemoLineOnValidate_Lot_no)
 	default:
 		return false, false
 	}
@@ -1106,6 +1132,12 @@ func (t *SalesCrMemoLine) CheckFields() error {
 	if err := tables.CheckMaxLength(SalesCrMemoLineTableName, "unit_of_measure_code", string(t.Unit_of_measure_code), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(SalesCrMemoLineTableName, "serial_no", string(t.Serial_no), 20); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(SalesCrMemoLineTableName, "lot_no", string(t.Lot_no), 20); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -1183,6 +1215,8 @@ func GetSalesCrMemoLineTableSchema() string {
 		qty_per_unit_of_measure TEXT DEFAULT 1,
 		unit_of_measure_code TEXT(10),
 		quantity_base TEXT,
+		serial_no TEXT(20),
+		lot_no TEXT(20),
 		PRIMARY KEY (document_no, line_no)
 	`
 }
@@ -1240,6 +1274,8 @@ func GetSalesCrMemoLinePostgresTableSchema() string {
 		qty_per_unit_of_measure NUMERIC DEFAULT 1,
 		unit_of_measure_code VARCHAR(10),
 		quantity_base NUMERIC,
+		serial_no VARCHAR(20),
+		lot_no VARCHAR(20),
 		PRIMARY KEY (document_no, line_no)
 	`
 }
@@ -1428,6 +1464,8 @@ func (t *SalesCrMemoLine) StoreOldValues() {
 	t.oldValues["qty_per_unit_of_measure"] = t.Qty_per_unit_of_measure
 	t.oldValues["unit_of_measure_code"] = t.Unit_of_measure_code
 	t.oldValues["quantity_base"] = t.Quantity_base
+	t.oldValues["serial_no"] = t.Serial_no
+	t.oldValues["lot_no"] = t.Lot_no
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1592,6 +1630,12 @@ func (t *SalesCrMemoLine) XRec() *SalesCrMemoLine {
 	if v, ok := t.oldValues["quantity_base"].(types.Decimal); ok {
 		x.Quantity_base = v
 	}
+	if v, ok := t.oldValues["serial_no"].(types.Code); ok {
+		x.Serial_no = v
+	}
+	if v, ok := t.oldValues["lot_no"].(types.Code); ok {
+		x.Lot_no = v
+	}
 	return x
 }
 
@@ -1712,6 +1756,8 @@ func (t *SalesCrMemoLine) GetByPK(document_no types.Code, line_no int) bool {
 	var qty_per_unit_of_measureNull sql.NullString
 	var unit_of_measure_codeNull sql.NullString
 	var quantity_baseNull sql.NullString
+	var serial_noNull sql.NullString
+	var lot_noNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1720,7 +1766,7 @@ func (t *SalesCrMemoLine) GetByPK(document_no types.Code, line_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base FROM "%s" WHERE 1=1 AND document_no = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no FROM "%s" WHERE 1=1 AND document_no = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1777,6 +1823,8 @@ func (t *SalesCrMemoLine) GetByPK(document_no types.Code, line_no int) bool {
 		&qty_per_unit_of_measureNull,
 		&unit_of_measure_codeNull,
 		&quantity_baseNull,
+		&serial_noNull,
+		&lot_noNull,
 	)
 
 	if err != nil {
@@ -1840,6 +1888,8 @@ func (t *SalesCrMemoLine) GetByPK(document_no types.Code, line_no int) bool {
 	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 	t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
+	t.Serial_no = types.NewCode(serial_noNull.String)
+	t.Lot_no = types.NewCode(lot_noNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1912,11 +1962,13 @@ func (t *SalesCrMemoLine) Insert(runTrigger bool) bool {
 		t.Qty_per_unit_of_measure,
 		t.Unit_of_measure_code,
 		t.Quantity_base,
+		t.Serial_no,
+		t.Lot_no,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_no, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_no, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2004,10 +2056,12 @@ func (t *SalesCrMemoLine) InsertAll(records []*SalesCrMemoLine, runTrigger bool)
 			r.Qty_per_unit_of_measure,
 			r.Unit_of_measure_code,
 			r.Quantity_base,
+			r.Serial_no,
+			r.Lot_no,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, SalesCrMemoLineTableName)
-	columns := []string{"sell_to_customer_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "quantity_disc_code", "shipment_date", "description", "description_2", "unit_of_measure", "quantity", "unit_price", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "department_code", "project_code", "price_group_code", "allow_quantity_disc", "work_type_code", "cust_item_disc_percent", "profit_percent", "bill_to_customer_no", "inv_discount_amount", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_area_code", "tax_liable", "tax_group_code", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "tax_base_amount", "unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base"}
+	columns := []string{"sell_to_customer_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "quantity_disc_code", "shipment_date", "description", "description_2", "unit_of_measure", "quantity", "unit_price", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "department_code", "project_code", "price_group_code", "allow_quantity_disc", "work_type_code", "cust_item_disc_percent", "profit_percent", "bill_to_customer_no", "inv_discount_amount", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_area_code", "tax_liable", "tax_group_code", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "tax_base_amount", "unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "serial_no", "lot_no"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2250,6 +2304,14 @@ func (t *SalesCrMemoLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "quantity_base = ?")
 			values = append(values, t.Quantity_base)
 		}
+		if t.hasFieldChanged("serial_no") {
+			setClauses = append(setClauses, "serial_no = ?")
+			values = append(values, t.Serial_no)
+		}
+		if t.hasFieldChanged("lot_no") {
+			setClauses = append(setClauses, "lot_no = ?")
+			values = append(values, t.Lot_no)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -2353,6 +2415,10 @@ func (t *SalesCrMemoLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Unit_of_measure_code)
 		setClauses = append(setClauses, "quantity_base = ?")
 		values = append(values, t.Quantity_base)
+		setClauses = append(setClauses, "serial_no = ?")
+		values = append(values, t.Serial_no)
+		setClauses = append(setClauses, "lot_no = ?")
+		values = append(values, t.Lot_no)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -2605,6 +2671,14 @@ func (t *SalesCrMemoLine) hasFieldChanged(fieldName string) bool {
 	case "quantity_base":
 		if old, ok := oldValue.(types.Decimal); ok {
 			return !t.Quantity_base.Equal(old)
+		}
+	case "serial_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Serial_no.Equal(old)
+		}
+	case "lot_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Lot_no.Equal(old)
 		}
 	}
 
@@ -2911,6 +2985,10 @@ func (t *SalesCrMemoLine) columnName(fieldName string) (string, bool) {
 		return "unit_of_measure_code", true
 	case strings.ToLower("quantity_base"):
 		return "quantity_base", true
+	case strings.ToLower("serial_no"):
+		return "serial_no", true
+	case strings.ToLower("lot_no"):
+		return "lot_no", true
 	}
 	return "", false
 }
@@ -3316,7 +3394,7 @@ func (t *SalesCrMemoLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3370,6 +3448,8 @@ func (t *SalesCrMemoLine) FindFirst() bool {
 	var qty_per_unit_of_measureNull sql.NullString
 	var unit_of_measure_codeNull sql.NullString
 	var quantity_baseNull sql.NullString
+	var serial_noNull sql.NullString
+	var lot_noNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&sell_to_customer_noNull,
@@ -3422,6 +3502,8 @@ func (t *SalesCrMemoLine) FindFirst() bool {
 		&qty_per_unit_of_measureNull,
 		&unit_of_measure_codeNull,
 		&quantity_baseNull,
+		&serial_noNull,
+		&lot_noNull,
 	)
 
 	if err != nil {
@@ -3482,6 +3564,8 @@ func (t *SalesCrMemoLine) FindFirst() bool {
 	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 	t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
+	t.Serial_no = types.NewCode(serial_noNull.String)
+	t.Lot_no = types.NewCode(lot_noNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -3502,7 +3586,7 @@ func (t *SalesCrMemoLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3556,6 +3640,8 @@ func (t *SalesCrMemoLine) FindLast() bool {
 	var qty_per_unit_of_measureNull sql.NullString
 	var unit_of_measure_codeNull sql.NullString
 	var quantity_baseNull sql.NullString
+	var serial_noNull sql.NullString
+	var lot_noNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&sell_to_customer_noNull,
@@ -3608,6 +3694,8 @@ func (t *SalesCrMemoLine) FindLast() bool {
 		&qty_per_unit_of_measureNull,
 		&unit_of_measure_codeNull,
 		&quantity_baseNull,
+		&serial_noNull,
+		&lot_noNull,
 	)
 
 	if err != nil {
@@ -3668,6 +3756,8 @@ func (t *SalesCrMemoLine) FindLast() bool {
 	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 	t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
+	t.Serial_no = types.NewCode(serial_noNull.String)
+	t.Lot_no = types.NewCode(lot_noNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -3718,7 +3808,7 @@ func (t *SalesCrMemoLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3836,6 +3926,8 @@ func (t *SalesCrMemoLine) Next(steps ...int) bool {
 		var qty_per_unit_of_measureNull sql.NullString
 		var unit_of_measure_codeNull sql.NullString
 		var quantity_baseNull sql.NullString
+		var serial_noNull sql.NullString
+		var lot_noNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&sell_to_customer_noNull,
@@ -3888,6 +3980,8 @@ func (t *SalesCrMemoLine) Next(steps ...int) bool {
 			&qty_per_unit_of_measureNull,
 			&unit_of_measure_codeNull,
 			&quantity_baseNull,
+			&serial_noNull,
+			&lot_noNull,
 		)
 
 		if err != nil {
@@ -3947,6 +4041,8 @@ func (t *SalesCrMemoLine) Next(steps ...int) bool {
 		t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 		t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 		t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
+		t.Serial_no = types.NewCode(serial_noNull.String)
+		t.Lot_no = types.NewCode(lot_noNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -3996,7 +4092,7 @@ func (t *SalesCrMemoLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4067,6 +4163,8 @@ func (t *SalesCrMemoLine) FindSetBuffered() bool {
 		var qty_per_unit_of_measureNull sql.NullString
 		var unit_of_measure_codeNull sql.NullString
 		var quantity_baseNull sql.NullString
+		var serial_noNull sql.NullString
+		var lot_noNull sql.NullString
 
 		err := rows.Scan(
 			&sell_to_customer_noNull,
@@ -4119,6 +4217,8 @@ func (t *SalesCrMemoLine) FindSetBuffered() bool {
 			&qty_per_unit_of_measureNull,
 			&unit_of_measure_codeNull,
 			&quantity_baseNull,
+			&serial_noNull,
+			&lot_noNull,
 		)
 
 		if err != nil {
@@ -4176,6 +4276,8 @@ func (t *SalesCrMemoLine) FindSetBuffered() bool {
 		record.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
 		record.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 		record.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
+		record.Serial_no = types.NewCode(serial_noNull.String)
+		record.Lot_no = types.NewCode(lot_noNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -4254,6 +4356,8 @@ func (t *SalesCrMemoLine) copyFromBuffered(record *SalesCrMemoLine) {
 	t.Qty_per_unit_of_measure = record.Qty_per_unit_of_measure
 	t.Unit_of_measure_code = record.Unit_of_measure_code
 	t.Quantity_base = record.Quantity_base
+	t.Serial_no = record.Serial_no
+	t.Lot_no = record.Lot_no
 	t.StoreOldValues()
 }
 
@@ -5640,6 +5744,42 @@ func (t *SalesCrMemoLine) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
+	case "serial_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Serial_no = v
+		} else if v, ok := value.(string); ok {
+			t.Serial_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field serial_no")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesCrMemoLineOnValidate_Serial_no); ok {
+				if err := trg.OnValidate_Serial_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "lot_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Lot_no = v
+		} else if v, ok := value.(string); ok {
+			t.Lot_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field lot_no")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesCrMemoLineOnValidate_Lot_no); ok {
+				if err := trg.OnValidate_Lot_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -5752,6 +5892,10 @@ func (t *SalesCrMemoLine) FieldValue(no int) (any, bool) {
 		return t.Unit_of_measure_code, true
 	case 5415:
 		return t.Quantity_base, true
+	case 53:
+		return t.Serial_no, true
+	case 5400:
+		return t.Lot_no, true
 	}
 	return nil, false
 }
@@ -6107,6 +6251,24 @@ func (t *SalesCrMemoLine) SetFieldValue(no int, value any) bool {
 	case 5415:
 		if v, ok := value.(types.Decimal); ok {
 			t.Quantity_base = v
+			return true
+		}
+	case 53:
+		if v, ok := value.(types.Code); ok {
+			t.Serial_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Serial_no = types.NewCode(v)
+			return true
+		}
+	case 5400:
+		if v, ok := value.(types.Code); ok {
+			t.Lot_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Lot_no = types.NewCode(v)
 			return true
 		}
 	}
@@ -6811,6 +6973,10 @@ func (t *SalesCrMemoLine) columnValue(column string) (interface{}, bool) {
 		return t.Unit_of_measure_code, true
 	case "quantity_base":
 		return t.Quantity_base, true
+	case "serial_no":
+		return t.Serial_no, true
+	case "lot_no":
+		return t.Lot_no, true
 	}
 	return nil, false
 }
@@ -6917,6 +7083,8 @@ func (t *SalesCrMemoLine) Init() {
 	t.Qty_per_unit_of_measure = *new(types.Decimal)
 	t.Unit_of_measure_code = *new(types.Code)
 	t.Quantity_base = *new(types.Decimal)
+	t.Serial_no = *new(types.Code)
+	t.Lot_no = *new(types.Code)
 	t.applyDefaults()
 }
 
@@ -7001,6 +7169,8 @@ func (t *SalesCrMemoLine) ToMap() map[string]interface{} {
 		"qty_per_unit_of_measure": t.Qty_per_unit_of_measure.String(),
 		"unit_of_measure_code":    t.Unit_of_measure_code.String(),
 		"quantity_base":           t.Quantity_base.String(),
+		"serial_no":               t.Serial_no.String(),
+		"lot_no":                  t.Lot_no.String(),
 	}
 }
 
@@ -7426,6 +7596,16 @@ func (t *SalesCrMemoLine) FromMap(data map[string]interface{}) {
 			t.Quantity_base = types.NewDecimalFromInt(int64(val))
 		case int64:
 			t.Quantity_base = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["serial_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Serial_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["lot_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Lot_no = types.NewCode(s)
 		}
 	}
 }
@@ -7986,6 +8166,26 @@ func (t *SalesCrMemoLine) GetFields() []tables.FieldInfo {
 			PrimaryKey:    false,
 			FlowField:     false,
 			DecimalPlaces: "0:5",
+		},
+		{
+			No:         53,
+			Name:       "serial_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5400,
+			Name:       "lot_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
 		},
 	}
 }

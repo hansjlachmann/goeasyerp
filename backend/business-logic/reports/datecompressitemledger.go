@@ -34,9 +34,9 @@ type dateCompressItemLedger struct {
 
 func (r *dateCompressItemLedger) Definition() *Definition {
 	r.tableID = gtables.ItemLedgerEntryTableID
-	r.fields = []retainField{{name: "document_no"}, {name: "location_code"}, {name: "source_type"}, {name: "source_no"},
+	r.fields = []retainField{{name: "document_no"}, {name: "location_code"}, {name: "serial_no"}, {name: "source_type"}, {name: "source_no"},
 		{name: "source_posting_group"}, {name: "salespers_purch_code"}, {name: "transaction_type"}, {name: "transport_method"},
-		{name: "country_code"}, {name: "department_code"}, {name: "project_code"}, {name: "variant_code"}}
+		{name: "country_code"}, {name: "department_code"}, {name: "project_code"}, {name: "variant_code"}, {name: "lot_no"}}
 	return &Definition{
 		OptionsCaption: "OPTIONS",
 		Options:        dateComprOptions(true, r.fields),
@@ -151,6 +151,14 @@ func (r *dateCompressItemLedger) onAfterGetRecord(itemLedgEntry *gtables.ItemLed
 	if r.retainNo("location_code") {
 		itemLedgEntry2.SetRange("location_code", itemLedgEntry2.Location_code)
 		newItemLedgEntry.Location_code = itemLedgEntry2.Location_code
+	}
+	if r.retainNo("serial_no") {
+		itemLedgEntry2.SetRange("serial_no", itemLedgEntry2.Serial_no)
+		newItemLedgEntry.Serial_no = itemLedgEntry2.Serial_no
+	}
+	if r.retainNo("lot_no") {
+		itemLedgEntry2.SetRange("lot_no", itemLedgEntry2.Lot_no)
+		newItemLedgEntry.Lot_no = itemLedgEntry2.Lot_no
 	}
 	if r.retainNo("source_type") {
 		itemLedgEntry2.SetRange("source_type", itemLedgEntry2.Source_type)

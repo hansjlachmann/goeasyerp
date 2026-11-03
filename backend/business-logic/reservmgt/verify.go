@@ -16,7 +16,9 @@ type verifyLine struct {
 	reservedQtyBase, qtyBase          types.Decimal
 	validSignNegative                 bool
 	itemNo, locationCode, variantCode types.Code
+	serialNo, lotNo                   types.Code
 	itemField, locationField          string
+	serialField, lotField             string // "" when the line has no such field (blank: none)
 	date                              types.Date
 	dateField                         string
 }
@@ -24,7 +26,7 @@ type verifyLine struct {
 // verifyChange is the classic …VerifyChange shared by the lines: the line's first open entry —
 // as a demand the last one of its supplies (the inventory last), as a supply the first — must
 // still match the line: date filled in, a reserved quantity of a valid sign, the same item,
-// location and variant; a demand's date may not come before its supply's expected receipt (a
+// location, variant, serial and lot number; a demand's date may not come before its supply's expected receipt (a
 // supply's not after its demand's shipment) and a new date goes to the entries
 func (m *ReservationManagement) verifyChange(l verifyLine) error {
 	if l.reservedQtyBase.IsZero() {
@@ -65,6 +67,12 @@ func (m *ReservationManagement) verifyChange(l verifyLine) error {
 	}
 	if l.variantCode != tempReservEntry.Variant_code {
 		return apperrors.ReservFieldMustNotChange(l.table, "variant_code")
+	}
+	if l.serialNo != tempReservEntry.Serial_no {
+		return apperrors.ReservFieldMustNotChange(l.table, l.serialField)
+	}
+	if l.lotNo != tempReservEntry.Lot_no {
+		return apperrors.ReservFieldMustNotChange(l.table, l.lotField)
 	}
 	if l.reservedQtyBase.IsPositive() {
 		if l.date.Before(tempReservEntry.Expected_receipt_date) && int(tempReservEntry.From_type) != TypeItemLedgerEntry {

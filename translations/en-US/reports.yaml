@@ -83,6 +83,8 @@ reports:
       retain_unit_of_measure_code: "Retain Unit of Measure Code"
       retain_chargeable: "Retain Chargeable"
       retain_location_code: "Retain Location Code"
+      retain_serial_no: "Retain Serial No."
+      retain_lot_no: "Retain Lot No."
       retain_source_type: "Retain Source Type"
       retain_source_no: "Retain Source No."
       retain_source_posting_group: "Retain Source Posting Group"
@@ -206,6 +208,30 @@ reports:
       STATUS_2: "Full Posting"
       STATUS_3: "Partial Posting"
       STATUS_4: "No Posting"
+  "704":
+    caption: "Serial Number Sold History"
+    texts:
+      PAGE: "Page"
+      SERIAL_NO: "Serial No."
+      POSTING_DATE: "Posting Date"
+      UNIT_COST: "Unit Cost"
+      TITLE: "Serial Number Sold History"
+      CUSTOMER_NO: "Customer No."
+      CUSTOMER_NAME: "Customer Name"
+      UNIT_AMOUNT: "Unit Price"
+  "705":
+    caption: "Serial Number Status/Aging"
+    texts:
+      PAGE: "Page"
+      SERIAL_NO: "Serial No."
+      POSTING_DATE: "Posting Date"
+      UNIT_COST: "Unit Cost"
+      TITLE: "Serial Number Status/Aging"
+      AS_OF: "As of"
+      LOCATION_CODE: "Location Code"
+      DAYS_AGED: "Days Aged"
+      AVERAGE_AGE: "Average Age"
+      TOTAL_QUANTITY: "Total Quantity: %1"
   "787":
     caption: "Delete Reservation Entries"
     texts:

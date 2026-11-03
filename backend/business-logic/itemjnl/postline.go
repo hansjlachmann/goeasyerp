@@ -4,7 +4,9 @@ import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
+	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
+	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/openerp/backend/foundation/system"
 	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
@@ -32,8 +34,10 @@ var unitPrecision = types.MustDecimal("0.00001")
 // ledger entries it reserved first, the reservations of a supply line (Negative Reserved Qty.) go
 // to the entry it posts (codeunit 400 TransferItemJnlToItemLedgEntry).
 //
-// Not migrated yet: item tracking (serial and lot numbers), bins; Costing Method
-// Specific (it needs serial numbers) is refused.
+// Item tracking: the entries carry the line's Serial No. and Lot No. (a transfer's New Serial
+// No./New Lot No. at its new location); an outbound entry with a serial number takes that
+// serial number's inbound entry (Costing Method Specific needs one), with a lot number only that
+// lot's; a serial number is on inventory once. Not migrated yet: bins.
 type ItemJnlPostLine struct {
 	src ftables.Source
 
@@ -430,6 +434,12 @@ func (p *ItemJnlPostLine) applyItemLedgEntry(itemLedgEntry *gtables.ItemLedgerEn
 				err = reservEntry.TestField("location_code", itemJnlLine.Location_code)
 			}
 			if err == nil {
+				err = reservEntry.TestField("serial_no", itemJnlLine.Serial_no)
+			}
+			if err == nil {
+				err = reservEntry.TestField("lot_no", itemJnlLine.Lot_no)
+			}
+			if err == nil {
 				err = reservEntry.TestField("shipment_date", itemJnlLine.Posting_date)
 			}
 			if err == nil {
@@ -448,6 +458,12 @@ func (p *ItemJnlPostLine) applyItemLedgEntry(itemLedgEntry *gtables.ItemLedgerEn
 			}
 			if err == nil {
 				err = oldItemLedgEntry.TestField("location_code", reservEntry.Location_code)
+			}
+			if err == nil {
+				err = oldItemLedgEntry.TestField("serial_no", reservEntry.Serial_no)
+			}
+			if err == nil {
+				err = oldItemLedgEntry.TestField("lot_no", reservEntry.Lot_no)
 			}
 			if err != nil {
 				return err
@@ -486,6 +502,18 @@ func (p *ItemJnlPostLine) applyItemLedgEntry(itemLedgEntry *gtables.ItemLedgerEn
 					if err != nil {
 						return err
 					}
+					if itemLedgEntry.Serial_no != "" {
+						err = oldItemLedgEntry.TestField("serial_no", itemLedgEntry.Serial_no)
+						if err != nil {
+							return err
+						}
+					}
+					if itemLedgEntry.Lot_no != "" {
+						err = oldItemLedgEntry.TestField("lot_no", itemLedgEntry.Lot_no)
+						if err != nil {
+							return err
+						}
+					}
 					if oldItemLedgEntry.Remaining_quantity.Add(oldItemLedgEntry.Reserved_quantity).Abs().LessThan(
 						itemLedgEntry.Remaining_quantity.Add(itemLedgEntry.Reserved_quantity).Abs()) {
 						return apperrors.FieldTooLow(itemLedgEntryTable, "remaining_quantity")
@@ -501,17 +529,49 @@ func (p *ItemJnlPostLine) applyItemLedgEntry(itemLedgEntry *gtables.ItemLedgerEn
 					itemLedgEntry6.SetRange("variant_code", itemLedgEntry.Variant_code)
 					itemLedgEntry6.SetRange("open", true)
 					itemLedgEntry6.SetRange("positive", !itemLedgEntry.Positive)
-					itemLedgEntry6.SetRange("location_code", itemLedgEntry.Location_code)
+					if itemLedgEntry.Serial_no == "" {
+						itemLedgEntry6.SetRange("location_code", itemLedgEntry.Location_code)
+						if !itemLedgEntry.Positive && itemLedgEntry.Lot_no != "" {
+							itemLedgEntry6.SetRange("lot_no", itemLedgEntry.Lot_no)
+						}
+					}
 					if p.item.Costing_method == gtables.Item_Costing_method.Specific {
-						return apperrors.ItemSpecificNotYet(gtables.ItemTableName, "costing_method", p.item.Costing_method)
+						var err error
+						if !causedByTransfer {
+							err = itemJnlLine.TestField("serial_no")
+						} else {
+							err = itemJnlLine.TestField("new_serial_no")
+						}
+						if err != nil {
+							return err
+						}
+					}
+					if !itemLedgEntry.Positive && itemLedgEntry.Serial_no != "" {
+						itemLedgEntry6.SetRange("serial_no", itemLedgEntry.Serial_no)
 					}
 					if p.item.Costing_method == gtables.Item_Costing_method.LIFO {
 						entryFindMethod = "+"
 					} else {
 						entryFindMethod = "-"
 					}
-					if !itemLedgEntry6.Find(entryFindMethod) {
-						return nil
+					if itemLedgEntry6.Find(entryFindMethod) {
+						err := itemLedgEntry6.TestField("location_code", itemLedgEntry.Location_code)
+						if err == nil && !itemLedgEntry.Positive && itemLedgEntry.Lot_no != "" {
+							err = itemLedgEntry6.TestField("lot_no", itemLedgEntry.Lot_no)
+						}
+						if err != nil {
+							return err
+						}
+					} else {
+						if p.item.Costing_method == gtables.Item_Costing_method.Specific || itemLedgEntry.Serial_no == "" {
+							return nil
+						}
+						itemLedgEntry6.SetRange("serial_no", types.Code(""))
+						itemLedgEntry6.SetRange("location_code", itemLedgEntry.Location_code)
+						itemLedgEntry6.SetRange("lot_no", itemLedgEntry.Lot_no)
+						if !itemLedgEntry6.Find(entryFindMethod) {
+							return nil
+						}
 					}
 				} else {
 					switch entryFindMethod {
@@ -670,6 +730,8 @@ func (p *ItemJnlPostLine) insertTransferEntry(itemLedgEntry, oldItemLedgEntry *g
 	itemLedgEntry4.Additional_currency_unit_cost = oldItemLedgEntry.Additional_currency_unit_cost
 
 	itemLedgEntry4.Location_code = itemJnlLine.New_location_code
+	itemLedgEntry4.Serial_no = itemJnlLine.New_serial_no
+	itemLedgEntry4.Lot_no = itemJnlLine.New_lot_no
 	itemLedgEntry4.Department_code = itemJnlLine.New_department_code
 	itemLedgEntry4.Project_code = itemJnlLine.New_project_code
 
@@ -754,6 +816,8 @@ func (p *ItemJnlPostLine) initItemLedgEntry(itemLedgEntry2 *gtables.ItemLedgerEn
 		itemLedgEntry2.Description = ""
 	}
 	itemLedgEntry2.Variant_code = itemJnlLine.Variant_code
+	itemLedgEntry2.Serial_no = itemJnlLine.Serial_no
+	itemLedgEntry2.Lot_no = itemJnlLine.Lot_no
 	itemLedgEntry2.Unit_of_measure_code = itemJnlLine.Unit_of_measure_code
 	itemLedgEntry2.Qty_per_unit_of_measure = itemJnlLine.Qty_per_unit_of_measure
 
@@ -787,8 +851,35 @@ func (p *ItemJnlPostLine) insertItemLedgEntry(itemLedgEntry3 *gtables.ItemLedger
 				itemLedgEntry3.Quantity.IsNegative() {
 			return apperrors.ItemNotOnInventory(itemLedgEntry3.Item_no.String())
 		}
-		if p.item.Reserve == gtables.Item_Reserve.Always && itemLedgEntry3.Quantity.IsNegative() {
-			return apperrors.ItemNotOnInventory(itemLedgEntry3.Item_no.String())
+		if (p.item.Reserve == gtables.Item_Reserve.Always ||
+			itemLedgEntry3.Serial_no != "" ||
+			itemLedgEntry3.Lot_no != "") &&
+			itemLedgEntry3.Quantity.IsNegative() {
+			ts := i18n.GetInstance()
+			lang := fcodeunits.CurrentLanguage()
+			errorText := ""
+			if itemLedgEntry3.Lot_no != "" {
+				errorText = system.StrSubstNo(ts.Message("ITEM_TRACKING_LOT", lang), itemLedgEntry3.Lot_no)
+			}
+			if itemLedgEntry3.Serial_no != "" {
+				errorText = errorText + system.StrSubstNo(ts.Message("ITEM_TRACKING_SERIAL", lang), itemLedgEntry3.Serial_no)
+			}
+			return apperrors.ItemTrackingNotOnInventory(itemLedgEntry3.Item_no.String(), errorText)
+		}
+
+		if itemLedgEntry3.Serial_no != "" {
+			oldItemLedgEntry := gtables.NewItemLedgerEntry(p.src)
+			oldItemLedgEntry.SetCurrentKey("item_no", "variant_code", "open", "positive")
+			oldItemLedgEntry.SetRange("item_no", itemLedgEntry3.Item_no)
+			oldItemLedgEntry.SetRange("open", true)
+			oldItemLedgEntry.SetRange("positive", itemLedgEntry3.Positive)
+			oldItemLedgEntry.SetRange("serial_no", itemLedgEntry3.Serial_no)
+			if oldItemLedgEntry.FindFirst() {
+				if itemLedgEntry3.Quantity.IsPositive() {
+					return apperrors.SerialAlreadyOnInventory(itemLedgEntry3.Serial_no.String())
+				}
+				return apperrors.SerialShippedNotReceived(itemLedgEntry3.Serial_no.String())
+			}
 		}
 	}
 	if p.invtSetup.Automatic_cost_posting &&
@@ -1056,6 +1147,8 @@ func (p *ItemJnlPostLine) insertPhysInventoryEntry() error {
 		physInvtLedgEntry.Description = ""
 	}
 	physInvtLedgEntry.Variant_code = itemJnlLine.Variant_code
+	physInvtLedgEntry.Serial_no = itemJnlLine.Serial_no
+	physInvtLedgEntry.Lot_no = itemJnlLine.Lot_no
 	physInvtLedgEntry.Unit_of_measure_code = itemJnlLine.Unit_of_measure_code
 
 	physInvtLedgEntry.Quantity = itemJnlLine.Quantity

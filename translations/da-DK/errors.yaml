@@ -322,3 +322,7 @@ errors:
   ERR_RESERV_ONLY_POSITIVE: "Kun positive reservationer kan overføres."
   ERR_RESERV_MUST_BE_REDUCED: "%1 skal reduceres."
   ERR_RESERV_DATE_NOT_POSTING_DATE: "%1 skal være lig med bogføringsdatoen, når et antal er reserveret."
+  ERR_ITEM_TRACKING_NOT_ON_INVENTORY: "Vare %1%2 er ikke på lager."
+  ERR_SERIAL_ALREADY_ON_INVENTORY: "Serienr. %1 er allerede på lager."
+  ERR_SERIAL_SHIPPED_NOT_RECEIVED: "Serienr. %1 er allerede leveret til en debitor, men er endnu ikke modtaget fra en kreditor."
+  ERR_SERIAL_QTY_MUST_BE_ONE: "%1 skal være 1 eller -1, når Serienr. er angivet."

@@ -1359,6 +1359,20 @@ table:
           - source: qty_per_unit_of_measure
             width: 120
 
+    - name: serial_nos
+      no: 5402
+      type: types.Code
+      db_name: serial_nos
+      length: 10
+      table_relation:
+        table: No_Series
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
   keys:
     - name: Primary
       fields: [no]

@@ -83,6 +83,8 @@ reports:
       retain_unit_of_measure_code: "Behold Enhetskode"
       retain_chargeable: "Behold Fakturerbar"
       retain_location_code: "Behold Lokasjonskode"
+      retain_serial_no: "Behold Serienr."
+      retain_lot_no: "Behold Lotnr."
       retain_source_type: "Behold Kildetype"
       retain_source_no: "Behold Kildenr."
       retain_source_posting_group: "Behold Kildebokføringsgruppe"
@@ -206,6 +208,30 @@ reports:
       STATUS_2: "Full bokføring"
       STATUS_3: "Delvis bokføring"
       STATUS_4: "Ingen bokføring"
+  "704":
+    caption: "Solgte serienumre"
+    texts:
+      PAGE: "Side"
+      SERIAL_NO: "Serienr."
+      POSTING_DATE: "Bokføringsdato"
+      UNIT_COST: "Kostpris"
+      TITLE: "Solgte serienumre"
+      CUSTOMER_NO: "Kundenr."
+      CUSTOMER_NAME: "Kundenavn"
+      UNIT_AMOUNT: "Enhetspris"
+  "705":
+    caption: "Serienumre - status/alder"
+    texts:
+      PAGE: "Side"
+      SERIAL_NO: "Serienr."
+      POSTING_DATE: "Bokføringsdato"
+      UNIT_COST: "Kostpris"
+      TITLE: "Serienumre - status/alder"
+      AS_OF: "Per"
+      LOCATION_CODE: "Lokasjonskode"
+      DAYS_AGED: "Antall dager"
+      AVERAGE_AGE: "Gjennomsnittsalder"
+      TOTAL_QUANTITY: "Antall i alt: %1"
   "787":
     caption: "Slett reservasjonsposter"
     texts:

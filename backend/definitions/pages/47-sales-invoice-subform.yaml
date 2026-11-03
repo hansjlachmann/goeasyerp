@@ -77,6 +77,14 @@ page:
         - source: project_code
           width: 110
           visible: false
+        - source: serial_no
+          width: 110
+          visible: false
+          on_lookup: table:Sales_Line.SelectItemEntry
+        - source: lot_no
+          width: 110
+          visible: false
+          on_lookup: table:Sales_Line.SelectItemEntry
 
   actions:
     - name: New

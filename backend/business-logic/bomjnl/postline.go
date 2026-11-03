@@ -117,6 +117,7 @@ func (p *BOMJnlPostLine) code() error {
 		itemJnlLine.Invoiced_qty_base = types.Decimal{}
 	}
 	itemJnlLine.Posting_no_series = bomJnlLine.Posting_no_series
+	itemJnlLine.Lot_no = bomJnlLine.Lot_no
 
 	if !bomJnlLine.Reserved_qty_base.IsZero() {
 		err = reservmgt.New(p.src).TransfBOMJnlLineToItemJnlLine(bomJnlLine, itemJnlLine)

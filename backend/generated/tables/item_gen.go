@@ -76,6 +76,7 @@
 //	OnValidate_Rounding_precision(rec *gtables.Item) error
 //	OnValidate_Sales_unit_of_measure(rec *gtables.Item) error
 //	OnValidate_Purch_unit_of_measure(rec *gtables.Item) error
+//	OnValidate_Serial_nos(rec *gtables.Item) error
 
 package tables
 
@@ -264,6 +265,7 @@ type Item struct {
 	Rounding_precision           types.Decimal `db:"rounding_precision"`
 	Sales_unit_of_measure        types.Code    `db:"sales_unit_of_measure"`
 	Purch_unit_of_measure        types.Code    `db:"purch_unit_of_measure"`
+	Serial_nos                   types.Code    `db:"serial_nos"`
 	// FlowFilter date_filter (types.Date): the filter expression FlowFields apply — not stored
 	Date_filter string
 	// FlowFilter department_filter (types.Code): the filter expression FlowFields apply — not stored
@@ -470,6 +472,7 @@ var Item_FieldNo = struct {
 	Rounding_precision           int
 	Sales_unit_of_measure        int
 	Purch_unit_of_measure        int
+	Serial_nos                   int
 	Date_filter                  int
 	Department_filter            int
 	Project_filter               int
@@ -564,6 +567,7 @@ var Item_FieldNo = struct {
 	Rounding_precision:           5422,
 	Sales_unit_of_measure:        5425,
 	Purch_unit_of_measure:        5426,
+	Serial_nos:                   5402,
 	Date_filter:                  64,
 	Department_filter:            65,
 	Project_filter:               66,
@@ -749,6 +753,8 @@ func (t *Item) FieldNo(fieldName string) int {
 		return 5425
 	case "purch_unit_of_measure":
 		return 5426
+	case "serial_nos":
+		return 5402
 	case "date_filter":
 		return 64
 	case "department_filter":
@@ -942,6 +948,8 @@ func (t *Item) FieldName(fieldNo int) string {
 		return "sales_unit_of_measure"
 	case 5426:
 		return "purch_unit_of_measure"
+	case 5402:
+		return "serial_nos"
 	case 64:
 		return "date_filter"
 	case 65:
@@ -1113,6 +1121,7 @@ type (
 	ItemOnValidate_Rounding_precision       interface{ OnValidate_Rounding_precision(rec *Item) error }
 	ItemOnValidate_Sales_unit_of_measure    interface{ OnValidate_Sales_unit_of_measure(rec *Item) error }
 	ItemOnValidate_Purch_unit_of_measure    interface{ OnValidate_Purch_unit_of_measure(rec *Item) error }
+	ItemOnValidate_Serial_nos               interface{ OnValidate_Serial_nos(rec *Item) error }
 )
 
 // itemLogic is the registered business logic of Item, in
@@ -1274,6 +1283,8 @@ func itemTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemOnValidate_Sales_unit_of_measure)
 	case "OnValidate_Purch_unit_of_measure":
 		_, ok = logic.(ItemOnValidate_Purch_unit_of_measure)
+	case "OnValidate_Serial_nos":
+		_, ok = logic.(ItemOnValidate_Serial_nos)
 	default:
 		return false, false
 	}
@@ -1489,6 +1500,9 @@ func (t *Item) CheckFields() error {
 	if err := tables.CheckMaxLength(ItemTableName, "purch_unit_of_measure", string(t.Purch_unit_of_measure), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(ItemTableName, "serial_nos", string(t.Serial_nos), 10); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -1602,7 +1616,8 @@ func GetItemTableSchema() string {
 		inventory_value_zero INTEGER,
 		rounding_precision TEXT DEFAULT 1,
 		sales_unit_of_measure TEXT(10),
-		purch_unit_of_measure TEXT(10)
+		purch_unit_of_measure TEXT(10),
+		serial_nos TEXT(10)
 	`
 }
 
@@ -1695,7 +1710,8 @@ func GetItemPostgresTableSchema() string {
 		inventory_value_zero BOOLEAN,
 		rounding_precision NUMERIC DEFAULT 1,
 		sales_unit_of_measure VARCHAR(10),
-		purch_unit_of_measure VARCHAR(10)
+		purch_unit_of_measure VARCHAR(10),
+		serial_nos VARCHAR(10)
 	`
 }
 
@@ -1923,6 +1939,7 @@ func (t *Item) StoreOldValues() {
 	t.oldValues["rounding_precision"] = t.Rounding_precision
 	t.oldValues["sales_unit_of_measure"] = t.Sales_unit_of_measure
 	t.oldValues["purch_unit_of_measure"] = t.Purch_unit_of_measure
+	t.oldValues["serial_nos"] = t.Serial_nos
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -2135,6 +2152,9 @@ func (t *Item) XRec() *Item {
 	if v, ok := t.oldValues["purch_unit_of_measure"].(types.Code); ok {
 		x.Purch_unit_of_measure = v
 	}
+	if v, ok := t.oldValues["serial_nos"].(types.Code); ok {
+		x.Serial_nos = v
+	}
 	return x
 }
 
@@ -2262,6 +2282,7 @@ func (t *Item) GetByPK(no types.Code) bool {
 	var rounding_precisionNull sql.NullString
 	var sales_unit_of_measureNull sql.NullString
 	var purch_unit_of_measureNull sql.NullString
+	var serial_nosNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -2269,7 +2290,7 @@ func (t *Item) GetByPK(no types.Code) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, add_curr_average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure FROM "%s" WHERE 1=1 AND no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, add_curr_average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure, serial_nos FROM "%s" WHERE 1=1 AND no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2342,6 +2363,7 @@ func (t *Item) GetByPK(no types.Code) bool {
 		&rounding_precisionNull,
 		&sales_unit_of_measureNull,
 		&purch_unit_of_measureNull,
+		&serial_nosNull,
 	)
 
 	if err != nil {
@@ -2421,6 +2443,7 @@ func (t *Item) GetByPK(no types.Code) bool {
 	t.Rounding_precision, _ = types.NewDecimalFromString(rounding_precisionNull.String)
 	t.Sales_unit_of_measure = types.NewCode(sales_unit_of_measureNull.String)
 	t.Purch_unit_of_measure = types.NewCode(purch_unit_of_measureNull.String)
+	t.Serial_nos = types.NewCode(serial_nosNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2509,11 +2532,12 @@ func (t *Item) Insert(runTrigger bool) bool {
 		t.Rounding_precision,
 		t.Sales_unit_of_measure,
 		t.Purch_unit_of_measure,
+		t.Serial_nos,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, add_curr_average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, add_curr_average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure, serial_nos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2617,10 +2641,11 @@ func (t *Item) InsertAll(records []*Item, runTrigger bool) error {
 			r.Rounding_precision,
 			r.Sales_unit_of_measure,
 			r.Purch_unit_of_measure,
+			r.Serial_nos,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ItemTableName)
-	columns := []string{"no", "no_2", "description", "search_description", "description_2", "class", "base_unit_of_measure", "price_unit_conversion", "inventory_posting_group", "shelf_bin_no", "sales_qty_disc_code", "item_cust_disc_gr", "allow_invoice_disc", "statistics_group", "commission_group", "unit_price", "price_profit_calculation", "profit_percent", "costing_method", "unit_cost", "standard_cost", "last_direct_cost", "average_cost", "add_curr_average_cost", "minimum_unit_price", "indirect_cost_percent", "vendor_no", "vendor_item_no", "lead_time_calculation", "reorder_point", "maximum_inventory", "reorder_quantity", "requisition_method_code", "order_multiple", "reorder_cycle", "alternative_item_no", "unit_list_price", "duty_due_percent", "duty_code", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "durability", "freight_type", "tariff_no", "duty_unit_conversion", "country_purchased_code", "budget_quantity", "budgeted_amount", "budget_profit", "blocked", "last_date_modified", "price_includes_tax", "tax_bus_posting_gr_price", "gen_prod_posting_group", "picture", "country_of_origin_code", "no_series", "tax_group_code", "tax_prod_posting_group", "reserve", "inventory_value_zero", "rounding_precision", "sales_unit_of_measure", "purch_unit_of_measure"}
+	columns := []string{"no", "no_2", "description", "search_description", "description_2", "class", "base_unit_of_measure", "price_unit_conversion", "inventory_posting_group", "shelf_bin_no", "sales_qty_disc_code", "item_cust_disc_gr", "allow_invoice_disc", "statistics_group", "commission_group", "unit_price", "price_profit_calculation", "profit_percent", "costing_method", "unit_cost", "standard_cost", "last_direct_cost", "average_cost", "add_curr_average_cost", "minimum_unit_price", "indirect_cost_percent", "vendor_no", "vendor_item_no", "lead_time_calculation", "reorder_point", "maximum_inventory", "reorder_quantity", "requisition_method_code", "order_multiple", "reorder_cycle", "alternative_item_no", "unit_list_price", "duty_due_percent", "duty_code", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "durability", "freight_type", "tariff_no", "duty_unit_conversion", "country_purchased_code", "budget_quantity", "budgeted_amount", "budget_profit", "blocked", "last_date_modified", "price_includes_tax", "tax_bus_posting_gr_price", "gen_prod_posting_group", "picture", "country_of_origin_code", "no_series", "tax_group_code", "tax_prod_posting_group", "reserve", "inventory_value_zero", "rounding_precision", "sales_unit_of_measure", "purch_unit_of_measure", "serial_nos"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2924,6 +2949,10 @@ func (t *Item) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "purch_unit_of_measure = ?")
 			values = append(values, t.Purch_unit_of_measure)
 		}
+		if t.hasFieldChanged("serial_nos") {
+			setClauses = append(setClauses, "serial_nos = ?")
+			values = append(values, t.Serial_nos)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -3061,6 +3090,8 @@ func (t *Item) Modify(runTrigger bool) bool {
 		values = append(values, t.Sales_unit_of_measure)
 		setClauses = append(setClauses, "purch_unit_of_measure = ?")
 		values = append(values, t.Purch_unit_of_measure)
+		setClauses = append(setClauses, "serial_nos = ?")
+		values = append(values, t.Serial_nos)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -3396,6 +3427,10 @@ func (t *Item) hasFieldChanged(fieldName string) bool {
 	case "purch_unit_of_measure":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Purch_unit_of_measure.Equal(old)
+		}
+	case "serial_nos":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Serial_nos.Equal(old)
 		}
 	}
 
@@ -8979,6 +9014,8 @@ func (t *Item) columnName(fieldName string) (string, bool) {
 		return "sales_unit_of_measure", true
 	case strings.ToLower("purch_unit_of_measure"):
 		return "purch_unit_of_measure", true
+	case strings.ToLower("serial_nos"):
+		return "serial_nos", true
 	}
 	return "", false
 }
@@ -9412,7 +9449,7 @@ func (t *Item) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, add_curr_average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, add_curr_average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure, serial_nos FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -9479,6 +9516,7 @@ func (t *Item) FindFirst() bool {
 	var rounding_precisionNull sql.NullString
 	var sales_unit_of_measureNull sql.NullString
 	var purch_unit_of_measureNull sql.NullString
+	var serial_nosNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&noNull,
@@ -9547,6 +9585,7 @@ func (t *Item) FindFirst() bool {
 		&rounding_precisionNull,
 		&sales_unit_of_measureNull,
 		&purch_unit_of_measureNull,
+		&serial_nosNull,
 	)
 
 	if err != nil {
@@ -9620,6 +9659,7 @@ func (t *Item) FindFirst() bool {
 	t.Rounding_precision, _ = types.NewDecimalFromString(rounding_precisionNull.String)
 	t.Sales_unit_of_measure = types.NewCode(sales_unit_of_measureNull.String)
 	t.Purch_unit_of_measure = types.NewCode(purch_unit_of_measureNull.String)
+	t.Serial_nos = types.NewCode(serial_nosNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -9640,7 +9680,7 @@ func (t *Item) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, add_curr_average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, add_curr_average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure, serial_nos FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -9707,6 +9747,7 @@ func (t *Item) FindLast() bool {
 	var rounding_precisionNull sql.NullString
 	var sales_unit_of_measureNull sql.NullString
 	var purch_unit_of_measureNull sql.NullString
+	var serial_nosNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&noNull,
@@ -9775,6 +9816,7 @@ func (t *Item) FindLast() bool {
 		&rounding_precisionNull,
 		&sales_unit_of_measureNull,
 		&purch_unit_of_measureNull,
+		&serial_nosNull,
 	)
 
 	if err != nil {
@@ -9848,6 +9890,7 @@ func (t *Item) FindLast() bool {
 	t.Rounding_precision, _ = types.NewDecimalFromString(rounding_precisionNull.String)
 	t.Sales_unit_of_measure = types.NewCode(sales_unit_of_measureNull.String)
 	t.Purch_unit_of_measure = types.NewCode(purch_unit_of_measureNull.String)
+	t.Serial_nos = types.NewCode(serial_nosNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -9898,7 +9941,7 @@ func (t *Item) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, add_curr_average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, add_curr_average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure, serial_nos FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -10029,6 +10072,7 @@ func (t *Item) Next(steps ...int) bool {
 		var rounding_precisionNull sql.NullString
 		var sales_unit_of_measureNull sql.NullString
 		var purch_unit_of_measureNull sql.NullString
+		var serial_nosNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&noNull,
@@ -10097,6 +10141,7 @@ func (t *Item) Next(steps ...int) bool {
 			&rounding_precisionNull,
 			&sales_unit_of_measureNull,
 			&purch_unit_of_measureNull,
+			&serial_nosNull,
 		)
 
 		if err != nil {
@@ -10169,6 +10214,7 @@ func (t *Item) Next(steps ...int) bool {
 		t.Rounding_precision, _ = types.NewDecimalFromString(rounding_precisionNull.String)
 		t.Sales_unit_of_measure = types.NewCode(sales_unit_of_measureNull.String)
 		t.Purch_unit_of_measure = types.NewCode(purch_unit_of_measureNull.String)
+		t.Serial_nos = types.NewCode(serial_nosNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -10218,7 +10264,7 @@ func (t *Item) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, add_curr_average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, add_curr_average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure, serial_nos FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -10302,6 +10348,7 @@ func (t *Item) FindSetBuffered() bool {
 		var rounding_precisionNull sql.NullString
 		var sales_unit_of_measureNull sql.NullString
 		var purch_unit_of_measureNull sql.NullString
+		var serial_nosNull sql.NullString
 
 		err := rows.Scan(
 			&noNull,
@@ -10370,6 +10417,7 @@ func (t *Item) FindSetBuffered() bool {
 			&rounding_precisionNull,
 			&sales_unit_of_measureNull,
 			&purch_unit_of_measureNull,
+			&serial_nosNull,
 		)
 
 		if err != nil {
@@ -10440,6 +10488,7 @@ func (t *Item) FindSetBuffered() bool {
 		record.Rounding_precision, _ = types.NewDecimalFromString(rounding_precisionNull.String)
 		record.Sales_unit_of_measure = types.NewCode(sales_unit_of_measureNull.String)
 		record.Purch_unit_of_measure = types.NewCode(purch_unit_of_measureNull.String)
+		record.Serial_nos = types.NewCode(serial_nosNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -10555,6 +10604,7 @@ func (t *Item) copyFromBuffered(record *Item) {
 	t.Rounding_precision = record.Rounding_precision
 	t.Sales_unit_of_measure = record.Sales_unit_of_measure
 	t.Purch_unit_of_measure = record.Purch_unit_of_measure
+	t.Serial_nos = record.Serial_nos
 	t.StoreOldValues()
 }
 
@@ -12333,6 +12383,28 @@ func (t *Item) ValidateField(fieldName string, value interface{}) error {
 			}
 		}
 		return nil
+	case "serial_nos":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Serial_nos = v
+		} else if v, ok := value.(string); ok {
+			t.Serial_nos = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field serial_nos")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "serial_nos"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemOnValidate_Serial_nos); ok {
+				if err := trg.OnValidate_Serial_nos(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -12477,6 +12549,8 @@ func (t *Item) FieldValue(no int) (any, bool) {
 		return t.Sales_unit_of_measure, true
 	case 5426:
 		return t.Purch_unit_of_measure, true
+	case 5402:
+		return t.Serial_nos, true
 	}
 	return nil, false
 }
@@ -12982,6 +13056,15 @@ func (t *Item) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.Purch_unit_of_measure = types.NewCode(v)
+			return true
+		}
+	case 5402:
+		if v, ok := value.(types.Code); ok {
+			t.Serial_nos = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Serial_nos = types.NewCode(v)
 			return true
 		}
 	}
@@ -13768,6 +13851,8 @@ func (t *Item) columnValue(column string) (interface{}, bool) {
 		return t.Sales_unit_of_measure, true
 	case "purch_unit_of_measure":
 		return t.Purch_unit_of_measure, true
+	case "serial_nos":
+		return t.Serial_nos, true
 	}
 	return nil, false
 }
@@ -13887,6 +13972,7 @@ func (t *Item) Init() {
 	t.Rounding_precision = *new(types.Decimal)
 	t.Sales_unit_of_measure = *new(types.Code)
 	t.Purch_unit_of_measure = *new(types.Code)
+	t.Serial_nos = *new(types.Code)
 	t.applyDefaults()
 }
 
@@ -14029,6 +14115,7 @@ func (t *Item) ToMap() map[string]interface{} {
 		"rounding_precision":           t.Rounding_precision.String(),
 		"sales_unit_of_measure":        t.Sales_unit_of_measure.String(),
 		"purch_unit_of_measure":        t.Purch_unit_of_measure.String(),
+		"serial_nos":                   t.Serial_nos.String(),
 	}
 }
 
@@ -14587,6 +14674,11 @@ func (t *Item) FromMap(data map[string]interface{}) {
 	if v, ok := data["purch_unit_of_measure"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Purch_unit_of_measure = types.NewCode(s)
+		}
+	}
+	if v, ok := data["serial_nos"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Serial_nos = types.NewCode(s)
 		}
 	}
 }
@@ -15526,6 +15618,16 @@ func (t *Item) GetFields() []tables.FieldInfo {
 			PrimaryKey: false,
 			FlowField:  false,
 		},
+		{
+			No:         5402,
+			Name:       "serial_nos",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
 	}
 }
 
@@ -15804,6 +15906,16 @@ func (t *Item) GetTableRelationFields() map[string]tables.TableRelationInfo {
 			Filters: []tables.RelationFilterInfo{
 				{Column: "item_no", Field: "no", Const: ""},
 			},
+		},
+		"serial_nos": {
+			Table:        "No_Series",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
 		},
 	}
 }

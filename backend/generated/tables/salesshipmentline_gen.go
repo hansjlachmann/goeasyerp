@@ -67,6 +67,8 @@
 //	OnValidate_Quantity_base(rec *gtables.SalesShipmentLine) error
 //	OnValidate_Qty_shpd_not_invd_base(rec *gtables.SalesShipmentLine) error
 //	OnValidate_Qty_invoiced_base(rec *gtables.SalesShipmentLine) error
+//	OnValidate_Serial_no(rec *gtables.SalesShipmentLine) error
+//	OnValidate_Lot_no(rec *gtables.SalesShipmentLine) error
 
 package tables
 
@@ -185,6 +187,8 @@ type SalesShipmentLine struct {
 	Quantity_base            types.Decimal                         `db:"quantity_base"`
 	Qty_shpd_not_invd_base   types.Decimal                         `db:"qty_shpd_not_invd_base"`
 	Qty_invoiced_base        types.Decimal                         `db:"qty_invoiced_base"`
+	Serial_no                types.Code                            `db:"serial_no"`
+	Lot_no                   types.Code                            `db:"lot_no"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -338,6 +342,8 @@ var SalesShipmentLine_FieldNo = struct {
 	Quantity_base            int
 	Qty_shpd_not_invd_base   int
 	Qty_invoiced_base        int
+	Serial_no                int
+	Lot_no                   int
 }{
 	Sell_to_customer_no:      2,
 	Document_no:              3,
@@ -396,6 +402,8 @@ var SalesShipmentLine_FieldNo = struct {
 	Quantity_base:            5415,
 	Qty_shpd_not_invd_base:   5458,
 	Qty_invoiced_base:        5461,
+	Serial_no:                53,
+	Lot_no:                   5400,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -515,6 +523,10 @@ func (t *SalesShipmentLine) FieldNo(fieldName string) int {
 		return 5458
 	case "qty_invoiced_base":
 		return 5461
+	case "serial_no":
+		return 53
+	case "lot_no":
+		return 5400
 	}
 	return 0
 }
@@ -636,6 +648,10 @@ func (t *SalesShipmentLine) FieldName(fieldNo int) string {
 		return "qty_shpd_not_invd_base"
 	case 5461:
 		return "qty_invoiced_base"
+	case 53:
+		return "serial_no"
+	case 5400:
+		return "lot_no"
 	}
 	return ""
 }
@@ -908,6 +924,12 @@ type (
 	SalesShipmentLineOnValidate_Qty_invoiced_base interface {
 		OnValidate_Qty_invoiced_base(rec *SalesShipmentLine) error
 	}
+	SalesShipmentLineOnValidate_Serial_no interface {
+		OnValidate_Serial_no(rec *SalesShipmentLine) error
+	}
+	SalesShipmentLineOnValidate_Lot_no interface {
+		OnValidate_Lot_no(rec *SalesShipmentLine) error
+	}
 )
 
 // salesShipmentLineLogic is the registered business logic of Sales_Shipment_Line, in
@@ -1051,6 +1073,10 @@ func salesShipmentLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SalesShipmentLineOnValidate_Qty_shpd_not_invd_base)
 	case "OnValidate_Qty_invoiced_base":
 		_, ok = logic.(SalesShipmentLineOnValidate_Qty_invoiced_base)
+	case "OnValidate_Serial_no":
+		_, ok = logic.(SalesShipmentLineOnValidate_Serial_no)
+	case "OnValidate_Lot_no":
+		_, ok = logic.(SalesShipmentLineOnValidate_Lot_no)
 	default:
 		return false, false
 	}
@@ -1200,6 +1226,12 @@ func (t *SalesShipmentLine) CheckFields() error {
 	if err := tables.CheckMaxLength(SalesShipmentLineTableName, "unit_of_measure_code", string(t.Unit_of_measure_code), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(SalesShipmentLineTableName, "serial_no", string(t.Serial_no), 20); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(SalesShipmentLineTableName, "lot_no", string(t.Lot_no), 20); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -1284,6 +1316,8 @@ func GetSalesShipmentLineTableSchema() string {
 		quantity_base TEXT,
 		qty_shpd_not_invd_base TEXT,
 		qty_invoiced_base TEXT,
+		serial_no TEXT(20),
+		lot_no TEXT(20),
 		PRIMARY KEY (document_no, line_no)
 	`
 }
@@ -1348,6 +1382,8 @@ func GetSalesShipmentLinePostgresTableSchema() string {
 		quantity_base NUMERIC,
 		qty_shpd_not_invd_base NUMERIC,
 		qty_invoiced_base NUMERIC,
+		serial_no VARCHAR(20),
+		lot_no VARCHAR(20),
 		PRIMARY KEY (document_no, line_no)
 	`
 }
@@ -1543,6 +1579,8 @@ func (t *SalesShipmentLine) StoreOldValues() {
 	t.oldValues["quantity_base"] = t.Quantity_base
 	t.oldValues["qty_shpd_not_invd_base"] = t.Qty_shpd_not_invd_base
 	t.oldValues["qty_invoiced_base"] = t.Qty_invoiced_base
+	t.oldValues["serial_no"] = t.Serial_no
+	t.oldValues["lot_no"] = t.Lot_no
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1728,6 +1766,12 @@ func (t *SalesShipmentLine) XRec() *SalesShipmentLine {
 	if v, ok := t.oldValues["qty_invoiced_base"].(types.Decimal); ok {
 		x.Qty_invoiced_base = v
 	}
+	if v, ok := t.oldValues["serial_no"].(types.Code); ok {
+		x.Serial_no = v
+	}
+	if v, ok := t.oldValues["lot_no"].(types.Code); ok {
+		x.Lot_no = v
+	}
 	return x
 }
 
@@ -1855,6 +1899,8 @@ func (t *SalesShipmentLine) GetByPK(document_no types.Code, line_no int) bool {
 	var quantity_baseNull sql.NullString
 	var qty_shpd_not_invd_baseNull sql.NullString
 	var qty_invoiced_baseNull sql.NullString
+	var serial_noNull sql.NullString
+	var lot_noNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1863,7 +1909,7 @@ func (t *SalesShipmentLine) GetByPK(document_no types.Code, line_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base FROM "%s" WHERE 1=1 AND document_no = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no FROM "%s" WHERE 1=1 AND document_no = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1927,6 +1973,8 @@ func (t *SalesShipmentLine) GetByPK(document_no types.Code, line_no int) bool {
 		&quantity_baseNull,
 		&qty_shpd_not_invd_baseNull,
 		&qty_invoiced_baseNull,
+		&serial_noNull,
+		&lot_noNull,
 	)
 
 	if err != nil {
@@ -1997,6 +2045,8 @@ func (t *SalesShipmentLine) GetByPK(document_no types.Code, line_no int) bool {
 	t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
 	t.Qty_shpd_not_invd_base, _ = types.NewDecimalFromString(qty_shpd_not_invd_baseNull.String)
 	t.Qty_invoiced_base, _ = types.NewDecimalFromString(qty_invoiced_baseNull.String)
+	t.Serial_no = types.NewCode(serial_noNull.String)
+	t.Lot_no = types.NewCode(lot_noNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2076,11 +2126,13 @@ func (t *SalesShipmentLine) Insert(runTrigger bool) bool {
 		t.Quantity_base,
 		t.Qty_shpd_not_invd_base,
 		t.Qty_invoiced_base,
+		t.Serial_no,
+		t.Lot_no,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_no, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_no, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2175,10 +2227,12 @@ func (t *SalesShipmentLine) InsertAll(records []*SalesShipmentLine, runTrigger b
 			r.Quantity_base,
 			r.Qty_shpd_not_invd_base,
 			r.Qty_invoiced_base,
+			r.Serial_no,
+			r.Lot_no,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, SalesShipmentLineTableName)
-	columns := []string{"sell_to_customer_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "quantity_disc_code", "shipment_date", "description", "description_2", "unit_of_measure", "quantity", "unit_price", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "department_code", "project_code", "price_group_code", "allow_quantity_disc", "work_type_code", "cust_item_disc_percent", "qty_shipped_not_invoiced", "quantity_invoiced", "order_no", "order_line_no", "profit_percent", "bill_to_customer_no", "inv_discount_amount", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_area_code", "tax_liable", "tax_group_code", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "tax_base_amount", "unit_cost", "item_shpt_entry_no", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "qty_shpd_not_invd_base", "qty_invoiced_base"}
+	columns := []string{"sell_to_customer_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "quantity_disc_code", "shipment_date", "description", "description_2", "unit_of_measure", "quantity", "unit_price", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "department_code", "project_code", "price_group_code", "allow_quantity_disc", "work_type_code", "cust_item_disc_percent", "qty_shipped_not_invoiced", "quantity_invoiced", "order_no", "order_line_no", "profit_percent", "bill_to_customer_no", "inv_discount_amount", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_area_code", "tax_liable", "tax_group_code", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "tax_base_amount", "unit_cost", "item_shpt_entry_no", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "qty_shpd_not_invd_base", "qty_invoiced_base", "serial_no", "lot_no"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2449,6 +2503,14 @@ func (t *SalesShipmentLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "qty_invoiced_base = ?")
 			values = append(values, t.Qty_invoiced_base)
 		}
+		if t.hasFieldChanged("serial_no") {
+			setClauses = append(setClauses, "serial_no = ?")
+			values = append(values, t.Serial_no)
+		}
+		if t.hasFieldChanged("lot_no") {
+			setClauses = append(setClauses, "lot_no = ?")
+			values = append(values, t.Lot_no)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -2566,6 +2628,10 @@ func (t *SalesShipmentLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Qty_shpd_not_invd_base)
 		setClauses = append(setClauses, "qty_invoiced_base = ?")
 		values = append(values, t.Qty_invoiced_base)
+		setClauses = append(setClauses, "serial_no = ?")
+		values = append(values, t.Serial_no)
+		setClauses = append(setClauses, "lot_no = ?")
+		values = append(values, t.Lot_no)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -2848,6 +2914,14 @@ func (t *SalesShipmentLine) hasFieldChanged(fieldName string) bool {
 	case "qty_invoiced_base":
 		if old, ok := oldValue.(types.Decimal); ok {
 			return !t.Qty_invoiced_base.Equal(old)
+		}
+	case "serial_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Serial_no.Equal(old)
+		}
+	case "lot_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Lot_no.Equal(old)
 		}
 	}
 
@@ -3168,6 +3242,10 @@ func (t *SalesShipmentLine) columnName(fieldName string) (string, bool) {
 		return "qty_shpd_not_invd_base", true
 	case strings.ToLower("qty_invoiced_base"):
 		return "qty_invoiced_base", true
+	case strings.ToLower("serial_no"):
+		return "serial_no", true
+	case strings.ToLower("lot_no"):
+		return "lot_no", true
 	}
 	return "", false
 }
@@ -3581,7 +3659,7 @@ func (t *SalesShipmentLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3640,6 +3718,8 @@ func (t *SalesShipmentLine) FindFirst() bool {
 	var quantity_baseNull sql.NullString
 	var qty_shpd_not_invd_baseNull sql.NullString
 	var qty_invoiced_baseNull sql.NullString
+	var serial_noNull sql.NullString
+	var lot_noNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&sell_to_customer_noNull,
@@ -3699,6 +3779,8 @@ func (t *SalesShipmentLine) FindFirst() bool {
 		&quantity_baseNull,
 		&qty_shpd_not_invd_baseNull,
 		&qty_invoiced_baseNull,
+		&serial_noNull,
+		&lot_noNull,
 	)
 
 	if err != nil {
@@ -3764,6 +3846,8 @@ func (t *SalesShipmentLine) FindFirst() bool {
 	t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
 	t.Qty_shpd_not_invd_base, _ = types.NewDecimalFromString(qty_shpd_not_invd_baseNull.String)
 	t.Qty_invoiced_base, _ = types.NewDecimalFromString(qty_invoiced_baseNull.String)
+	t.Serial_no = types.NewCode(serial_noNull.String)
+	t.Lot_no = types.NewCode(lot_noNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -3784,7 +3868,7 @@ func (t *SalesShipmentLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3843,6 +3927,8 @@ func (t *SalesShipmentLine) FindLast() bool {
 	var quantity_baseNull sql.NullString
 	var qty_shpd_not_invd_baseNull sql.NullString
 	var qty_invoiced_baseNull sql.NullString
+	var serial_noNull sql.NullString
+	var lot_noNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&sell_to_customer_noNull,
@@ -3902,6 +3988,8 @@ func (t *SalesShipmentLine) FindLast() bool {
 		&quantity_baseNull,
 		&qty_shpd_not_invd_baseNull,
 		&qty_invoiced_baseNull,
+		&serial_noNull,
+		&lot_noNull,
 	)
 
 	if err != nil {
@@ -3967,6 +4055,8 @@ func (t *SalesShipmentLine) FindLast() bool {
 	t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
 	t.Qty_shpd_not_invd_base, _ = types.NewDecimalFromString(qty_shpd_not_invd_baseNull.String)
 	t.Qty_invoiced_base, _ = types.NewDecimalFromString(qty_invoiced_baseNull.String)
+	t.Serial_no = types.NewCode(serial_noNull.String)
+	t.Lot_no = types.NewCode(lot_noNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -4017,7 +4107,7 @@ func (t *SalesShipmentLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4140,6 +4230,8 @@ func (t *SalesShipmentLine) Next(steps ...int) bool {
 		var quantity_baseNull sql.NullString
 		var qty_shpd_not_invd_baseNull sql.NullString
 		var qty_invoiced_baseNull sql.NullString
+		var serial_noNull sql.NullString
+		var lot_noNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&sell_to_customer_noNull,
@@ -4199,6 +4291,8 @@ func (t *SalesShipmentLine) Next(steps ...int) bool {
 			&quantity_baseNull,
 			&qty_shpd_not_invd_baseNull,
 			&qty_invoiced_baseNull,
+			&serial_noNull,
+			&lot_noNull,
 		)
 
 		if err != nil {
@@ -4263,6 +4357,8 @@ func (t *SalesShipmentLine) Next(steps ...int) bool {
 		t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
 		t.Qty_shpd_not_invd_base, _ = types.NewDecimalFromString(qty_shpd_not_invd_baseNull.String)
 		t.Qty_invoiced_base, _ = types.NewDecimalFromString(qty_invoiced_baseNull.String)
+		t.Serial_no = types.NewCode(serial_noNull.String)
+		t.Lot_no = types.NewCode(lot_noNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -4312,7 +4408,7 @@ func (t *SalesShipmentLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4388,6 +4484,8 @@ func (t *SalesShipmentLine) FindSetBuffered() bool {
 		var quantity_baseNull sql.NullString
 		var qty_shpd_not_invd_baseNull sql.NullString
 		var qty_invoiced_baseNull sql.NullString
+		var serial_noNull sql.NullString
+		var lot_noNull sql.NullString
 
 		err := rows.Scan(
 			&sell_to_customer_noNull,
@@ -4447,6 +4545,8 @@ func (t *SalesShipmentLine) FindSetBuffered() bool {
 			&quantity_baseNull,
 			&qty_shpd_not_invd_baseNull,
 			&qty_invoiced_baseNull,
+			&serial_noNull,
+			&lot_noNull,
 		)
 
 		if err != nil {
@@ -4509,6 +4609,8 @@ func (t *SalesShipmentLine) FindSetBuffered() bool {
 		record.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
 		record.Qty_shpd_not_invd_base, _ = types.NewDecimalFromString(qty_shpd_not_invd_baseNull.String)
 		record.Qty_invoiced_base, _ = types.NewDecimalFromString(qty_invoiced_baseNull.String)
+		record.Serial_no = types.NewCode(serial_noNull.String)
+		record.Lot_no = types.NewCode(lot_noNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -4594,6 +4696,8 @@ func (t *SalesShipmentLine) copyFromBuffered(record *SalesShipmentLine) {
 	t.Quantity_base = record.Quantity_base
 	t.Qty_shpd_not_invd_base = record.Qty_shpd_not_invd_base
 	t.Qty_invoiced_base = record.Qty_invoiced_base
+	t.Serial_no = record.Serial_no
+	t.Lot_no = record.Lot_no
 	t.StoreOldValues()
 }
 
@@ -6164,6 +6268,42 @@ func (t *SalesShipmentLine) ValidateField(fieldName string, value interface{}) e
 			}
 		}
 		return nil
+	case "serial_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Serial_no = v
+		} else if v, ok := value.(string); ok {
+			t.Serial_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field serial_no")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesShipmentLineOnValidate_Serial_no); ok {
+				if err := trg.OnValidate_Serial_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "lot_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Lot_no = v
+		} else if v, ok := value.(string); ok {
+			t.Lot_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field lot_no")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesShipmentLineOnValidate_Lot_no); ok {
+				if err := trg.OnValidate_Lot_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -6290,6 +6430,10 @@ func (t *SalesShipmentLine) FieldValue(no int) (any, bool) {
 		return t.Qty_shpd_not_invd_base, true
 	case 5461:
 		return t.Qty_invoiced_base, true
+	case 53:
+		return t.Serial_no, true
+	case 5400:
+		return t.Lot_no, true
 	}
 	return nil, false
 }
@@ -6684,6 +6828,24 @@ func (t *SalesShipmentLine) SetFieldValue(no int, value any) bool {
 	case 5461:
 		if v, ok := value.(types.Decimal); ok {
 			t.Qty_invoiced_base = v
+			return true
+		}
+	case 53:
+		if v, ok := value.(types.Code); ok {
+			t.Serial_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Serial_no = types.NewCode(v)
+			return true
+		}
+	case 5400:
+		if v, ok := value.(types.Code); ok {
+			t.Lot_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Lot_no = types.NewCode(v)
 			return true
 		}
 	}
@@ -7450,6 +7612,10 @@ func (t *SalesShipmentLine) columnValue(column string) (interface{}, bool) {
 		return t.Qty_shpd_not_invd_base, true
 	case "qty_invoiced_base":
 		return t.Qty_invoiced_base, true
+	case "serial_no":
+		return t.Serial_no, true
+	case "lot_no":
+		return t.Lot_no, true
 	}
 	return nil, false
 }
@@ -7563,6 +7729,8 @@ func (t *SalesShipmentLine) Init() {
 	t.Quantity_base = *new(types.Decimal)
 	t.Qty_shpd_not_invd_base = *new(types.Decimal)
 	t.Qty_invoiced_base = *new(types.Decimal)
+	t.Serial_no = *new(types.Code)
+	t.Lot_no = *new(types.Code)
 	t.applyDefaults()
 }
 
@@ -7654,6 +7822,8 @@ func (t *SalesShipmentLine) ToMap() map[string]interface{} {
 		"quantity_base":            t.Quantity_base.String(),
 		"qty_shpd_not_invd_base":   t.Qty_shpd_not_invd_base.String(),
 		"qty_invoiced_base":        t.Qty_invoiced_base.String(),
+		"serial_no":                t.Serial_no.String(),
+		"lot_no":                   t.Lot_no.String(),
 	}
 }
 
@@ -8158,6 +8328,16 @@ func (t *SalesShipmentLine) FromMap(data map[string]interface{}) {
 			t.Qty_invoiced_base = types.NewDecimalFromInt(int64(val))
 		case int64:
 			t.Qty_invoiced_base = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["serial_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Serial_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["lot_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Lot_no = types.NewCode(s)
 		}
 	}
 }
@@ -8796,6 +8976,26 @@ func (t *SalesShipmentLine) GetFields() []tables.FieldInfo {
 			FlowField:     false,
 			ReadOnly:      true,
 			DecimalPlaces: "0:5",
+		},
+		{
+			No:         53,
+			Name:       "serial_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5400,
+			Name:       "lot_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
 		},
 	}
 }

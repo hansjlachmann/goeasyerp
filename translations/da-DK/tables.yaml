@@ -3774,6 +3774,7 @@ tables:
       reserved_qty_on_inventory: "Reserveret antal på lager"
       reserved_qty_on_purch_orders: "Reserveret antal på købsordrer"
       reserved_qty_on_sales_orders: "Reserveret antal på salgsordrer"
+      serial_nos: "Serienr.serie"
     options:
       price_profit_calculation:
         profit_price_cost: "Avance=Pris-Kostpris"
@@ -3917,6 +3918,10 @@ tables:
       negative_reserved_quantity: "Negativt reserveret antal"
       positive_reserved_qty_base: "Positivt reserveret antal (basis)"
       negative_reserved_qty_base: "Negativt reserveret antal (basis)"
+      serial_no: "Serienr."
+      lot_no: "Lotnr."
+      new_serial_no: "Nyt serienr."
+      new_lot_no: "Nyt lotnr."
     options:
       recurring_method:
         fixed: "Fast"
@@ -3996,6 +4001,8 @@ tables:
       variant_code: "Variantkode"
       qty_per_unit_of_measure: "Antal pr. enhed"
       unit_of_measure_code: "Enhedskode"
+      serial_no: "Serienr."
+      lot_no: "Lotnr."
     options:
       entry_type:
         purchase: "Køb"
@@ -4084,6 +4091,8 @@ tables:
       no_series: "Nummerserie"
       variant_code: "Variantkode"
       unit_of_measure_code: "Enhedskode"
+      serial_no: "Serienr."
+      lot_no: "Lotnr."
     options:
       entry_type:
         purchase: "Køb"
@@ -4437,6 +4446,7 @@ tables:
       reserved_quantity: "Reserveret antal"
       reserve: "Reserver"
       reserved_qty_base: "Reserveret antal (basis)"
+      lot_no: "Lotnr."
     options:
       recurring_method:
         fixed: "Fast"
@@ -4662,6 +4672,8 @@ tables:
       reserve: "Reserver"
       reserved_qty_base: "Reserveret antal (basis)"
       planned: "Planlagt"
+      serial_no: "Serienr."
+      lot_no: "Lotnr."
     options:
       document_type:
         quote: "Tilbud"
@@ -4816,6 +4828,8 @@ tables:
       quantity_base: "Antal (basis)"
       qty_shpd_not_invd_base: "Lev. antal ufaktureret (basis)"
       qty_invoiced_base: "Faktureret antal (basis)"
+      serial_no: "Serienr."
+      lot_no: "Lotnr."
     options:
       type:
         g_l_account: "Finanskonto"
@@ -4967,6 +4981,8 @@ tables:
       qty_per_unit_of_measure: "Antal pr. enhed"
       unit_of_measure_code: "Enhedskode"
       quantity_base: "Antal (basis)"
+      serial_no: "Serienr."
+      lot_no: "Lotnr."
     options:
       type:
         g_l_account: "Finanskonto"
@@ -5115,6 +5131,8 @@ tables:
       qty_per_unit_of_measure: "Antal pr. enhed"
       unit_of_measure_code: "Enhedskode"
       quantity_base: "Antal (basis)"
+      serial_no: "Serienr."
+      lot_no: "Lotnr."
     options:
       type:
         g_l_account: "Finanskonto"
@@ -5328,6 +5346,8 @@ tables:
       reserved_quantity: "Reserveret antal"
       reserve: "Reserver"
       reserved_qty_base: "Reserveret antal (basis)"
+      serial_no: "Serienr."
+      lot_no: "Lotnr."
     options:
       fa_posting_type:
         acquisition_cost: "Anskaffelsespris"
@@ -5665,6 +5685,8 @@ tables:
       qty_rcd_not_invd_base: "Modt. ufakt. antal (basis)"
       qty_invoiced_base: "Faktureret antal (basis)"
       item_rcpt_entry_no: "Varemodtagelseslø.nr."
+      serial_no: "Serienr."
+      lot_no: "Lotnr."
     options:
       type:
         fixed_asset: "Anlæg"
@@ -5738,6 +5760,8 @@ tables:
       qty_per_unit_of_measure: "Antal pr. enhed"
       unit_of_measure_code: "Enhedskode"
       quantity_base: "Antal (basis)"
+      serial_no: "Serienr."
+      lot_no: "Lotnr."
     options:
       fa_posting_type:
         acquisition_cost: "Anskaffelsespris"
@@ -5812,6 +5836,8 @@ tables:
       qty_per_unit_of_measure: "Antal pr. enhed"
       unit_of_measure_code: "Enhedskode"
       quantity_base: "Antal (basis)"
+      serial_no: "Serienr."
+      lot_no: "Lotnr."
     options:
       fa_posting_type:
         acquisition_cost: "Anskaffelsespris"
@@ -6012,6 +6038,8 @@ tables:
       reserved_quantity: "Reserveret antal"
       reserve: "Reserver"
       reserved_qty_base: "Reserveret antal (basis)"
+      serial_no: "Serienr."
+      lot_no: "Lotnr."
     options:
       type:
         account_g_l: "Konto (finans)"
@@ -6311,6 +6339,8 @@ tables:
       cancelation_date: "Annulleringsdato"
       canceled_or_changed_by: "Annulleret eller ændret af"
       variant_code: "Variantkode"
+      serial_no: "Serienr."
+      lot_no: "Lotnr."
     options:
       reservation_status:
         open: "Åben"

@@ -83,6 +83,8 @@ reports:
       retain_unit_of_measure_code: "Bevar Enhedskode"
       retain_chargeable: "Bevar Fakturerbar"
       retain_location_code: "Bevar Lokationskode"
+      retain_serial_no: "Bevar Serienr."
+      retain_lot_no: "Bevar Lotnr."
       retain_source_type: "Bevar Kildetype"
       retain_source_no: "Bevar Kildenr."
       retain_source_posting_group: "Bevar Kildebogføringsgruppe"
@@ -206,6 +208,30 @@ reports:
       STATUS_2: "Fuld bogføring"
       STATUS_3: "Delvis bogføring"
       STATUS_4: "Ingen bogføring"
+  "704":
+    caption: "Solgte serienumre"
+    texts:
+      PAGE: "Side"
+      SERIAL_NO: "Serienr."
+      POSTING_DATE: "Bogføringsdato"
+      UNIT_COST: "Kostpris"
+      TITLE: "Solgte serienumre"
+      CUSTOMER_NO: "Debitornr."
+      CUSTOMER_NAME: "Debitornavn"
+      UNIT_AMOUNT: "Enhedspris"
+  "705":
+    caption: "Serienumre - status/alder"
+    texts:
+      PAGE: "Side"
+      SERIAL_NO: "Serienr."
+      POSTING_DATE: "Bogføringsdato"
+      UNIT_COST: "Kostpris"
+      TITLE: "Serienumre - status/alder"
+      AS_OF: "Pr."
+      LOCATION_CODE: "Lokationskode"
+      DAYS_AGED: "Antal dage"
+      AVERAGE_AGE: "Gennemsnitsalder"
+      TOTAL_QUANTITY: "Antal i alt: %1"
   "787":
     caption: "Slet reservationsposter"
     texts:

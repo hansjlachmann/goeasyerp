@@ -55,6 +55,15 @@ func TestPageFunctionsAreRegistered(t *testing.T) {
 			fields = append(fields, s.Fields...)
 		}
 		for _, f := range fields {
+			if f.OnLookup != "" {
+				found++
+				fn, ok := functions.Lookup(f.OnLookup)
+				if !ok || !fn.AssistEdit {
+					t.Errorf("page %d field %s: %s is not a registered lookup (AssistEdit) function", id, f.Source, f.OnLookup)
+				} else if factory, ok := gtables.GetTableFactory(fn.Table); !ok || factory().GetTableName() != tableName(p.Page.SourceTable) {
+					t.Errorf("page %d field %s: %s takes a %s record", id, f.Source, f.OnLookup, fn.Table)
+				}
+			}
 			if f.OnAfterValidate == "" {
 				continue
 			}

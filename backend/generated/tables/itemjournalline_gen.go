@@ -71,6 +71,10 @@
 //	OnValidate_Negative_reserved_quantity(rec *gtables.ItemJournalLine) error
 //	OnValidate_Positive_reserved_qty_base(rec *gtables.ItemJournalLine) error
 //	OnValidate_Negative_reserved_qty_base(rec *gtables.ItemJournalLine) error
+//	OnValidate_Serial_no(rec *gtables.ItemJournalLine) error
+//	OnValidate_New_serial_no(rec *gtables.ItemJournalLine) error
+//	OnValidate_Lot_no(rec *gtables.ItemJournalLine) error
+//	OnValidate_New_lot_no(rec *gtables.ItemJournalLine) error
 
 package tables
 
@@ -227,6 +231,10 @@ type ItemJournalLine struct {
 	Negative_reserved_quantity types.Decimal                   `db:"negative_reserved_quantity"`
 	Positive_reserved_qty_base types.Decimal                   `db:"positive_reserved_qty_base"`
 	Negative_reserved_qty_base types.Decimal                   `db:"negative_reserved_qty_base"`
+	Serial_no                  types.Code                      `db:"serial_no"`
+	New_serial_no              types.Code                      `db:"new_serial_no"`
+	Lot_no                     types.Code                      `db:"lot_no"`
+	New_lot_no                 types.Code                      `db:"new_lot_no"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -408,6 +416,10 @@ var ItemJournalLine_FieldNo = struct {
 	Negative_reserved_quantity int
 	Positive_reserved_qty_base int
 	Negative_reserved_qty_base int
+	Serial_no                  int
+	New_serial_no              int
+	Lot_no                     int
+	New_lot_no                 int
 }{
 	Journal_template_name:      1,
 	Journal_batch_name:         41,
@@ -470,6 +482,10 @@ var ItemJournalLine_FieldNo = struct {
 	Negative_reserved_quantity: 69,
 	Positive_reserved_qty_base: 5468,
 	Negative_reserved_qty_base: 5469,
+	Serial_no:                  38,
+	New_serial_no:              61,
+	Lot_no:                     5400,
+	New_lot_no:                 5405,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -597,6 +613,14 @@ func (t *ItemJournalLine) FieldNo(fieldName string) int {
 		return 5468
 	case "negative_reserved_qty_base":
 		return 5469
+	case "serial_no":
+		return 38
+	case "new_serial_no":
+		return 61
+	case "lot_no":
+		return 5400
+	case "new_lot_no":
+		return 5405
 	}
 	return 0
 }
@@ -726,6 +750,14 @@ func (t *ItemJournalLine) FieldName(fieldNo int) string {
 		return "positive_reserved_qty_base"
 	case 5469:
 		return "negative_reserved_qty_base"
+	case 38:
+		return "serial_no"
+	case 61:
+		return "new_serial_no"
+	case 5400:
+		return "lot_no"
+	case 5405:
+		return "new_lot_no"
 	}
 	return ""
 }
@@ -1010,6 +1042,18 @@ type (
 	ItemJournalLineOnValidate_Negative_reserved_qty_base interface {
 		OnValidate_Negative_reserved_qty_base(rec *ItemJournalLine) error
 	}
+	ItemJournalLineOnValidate_Serial_no interface {
+		OnValidate_Serial_no(rec *ItemJournalLine) error
+	}
+	ItemJournalLineOnValidate_New_serial_no interface {
+		OnValidate_New_serial_no(rec *ItemJournalLine) error
+	}
+	ItemJournalLineOnValidate_Lot_no interface {
+		OnValidate_Lot_no(rec *ItemJournalLine) error
+	}
+	ItemJournalLineOnValidate_New_lot_no interface {
+		OnValidate_New_lot_no(rec *ItemJournalLine) error
+	}
 )
 
 // itemJournalLineLogic is the registered business logic of Item_Journal_Line, in
@@ -1161,6 +1205,14 @@ func itemJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemJournalLineOnValidate_Positive_reserved_qty_base)
 	case "OnValidate_Negative_reserved_qty_base":
 		_, ok = logic.(ItemJournalLineOnValidate_Negative_reserved_qty_base)
+	case "OnValidate_Serial_no":
+		_, ok = logic.(ItemJournalLineOnValidate_Serial_no)
+	case "OnValidate_New_serial_no":
+		_, ok = logic.(ItemJournalLineOnValidate_New_serial_no)
+	case "OnValidate_Lot_no":
+		_, ok = logic.(ItemJournalLineOnValidate_Lot_no)
+	case "OnValidate_New_lot_no":
+		_, ok = logic.(ItemJournalLineOnValidate_New_lot_no)
 	default:
 		return false, false
 	}
@@ -1340,6 +1392,18 @@ func (t *ItemJournalLine) CheckFields() error {
 	if err := tables.CheckDateFormula(ItemJournalLineTableName, "recurring_frequency", string(t.Recurring_frequency)); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(ItemJournalLineTableName, "serial_no", string(t.Serial_no), 20); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(ItemJournalLineTableName, "new_serial_no", string(t.New_serial_no), 20); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(ItemJournalLineTableName, "lot_no", string(t.Lot_no), 20); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(ItemJournalLineTableName, "new_lot_no", string(t.New_lot_no), 20); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -1428,6 +1492,10 @@ func GetItemJournalLineTableSchema() string {
 		negative_reserved_quantity TEXT,
 		positive_reserved_qty_base TEXT,
 		negative_reserved_qty_base TEXT,
+		serial_no TEXT(20),
+		new_serial_no TEXT(20),
+		lot_no TEXT(20),
+		new_lot_no TEXT(20),
 		PRIMARY KEY (journal_template_name, journal_batch_name, line_no)
 	`
 }
@@ -1496,6 +1564,10 @@ func GetItemJournalLinePostgresTableSchema() string {
 		negative_reserved_quantity NUMERIC,
 		positive_reserved_qty_base NUMERIC,
 		negative_reserved_qty_base NUMERIC,
+		serial_no VARCHAR(20),
+		new_serial_no VARCHAR(20),
+		lot_no VARCHAR(20),
+		new_lot_no VARCHAR(20),
 		PRIMARY KEY (journal_template_name, journal_batch_name, line_no)
 	`
 }
@@ -1693,6 +1765,10 @@ func (t *ItemJournalLine) StoreOldValues() {
 	t.oldValues["negative_reserved_quantity"] = t.Negative_reserved_quantity
 	t.oldValues["positive_reserved_qty_base"] = t.Positive_reserved_qty_base
 	t.oldValues["negative_reserved_qty_base"] = t.Negative_reserved_qty_base
+	t.oldValues["serial_no"] = t.Serial_no
+	t.oldValues["new_serial_no"] = t.New_serial_no
+	t.oldValues["lot_no"] = t.Lot_no
+	t.oldValues["new_lot_no"] = t.New_lot_no
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1890,6 +1966,18 @@ func (t *ItemJournalLine) XRec() *ItemJournalLine {
 	if v, ok := t.oldValues["negative_reserved_qty_base"].(types.Decimal); ok {
 		x.Negative_reserved_qty_base = v
 	}
+	if v, ok := t.oldValues["serial_no"].(types.Code); ok {
+		x.Serial_no = v
+	}
+	if v, ok := t.oldValues["new_serial_no"].(types.Code); ok {
+		x.New_serial_no = v
+	}
+	if v, ok := t.oldValues["lot_no"].(types.Code); ok {
+		x.Lot_no = v
+	}
+	if v, ok := t.oldValues["new_lot_no"].(types.Code); ok {
+		x.New_lot_no = v
+	}
 	return x
 }
 
@@ -2030,6 +2118,10 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 	var negative_reserved_quantityNull sql.NullString
 	var positive_reserved_qty_baseNull sql.NullString
 	var negative_reserved_qty_baseNull sql.NullString
+	var serial_noNull sql.NullString
+	var new_serial_noNull sql.NullString
+	var lot_noNull sql.NullString
+	var new_lot_noNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -2039,7 +2131,7 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2107,6 +2199,10 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 		&negative_reserved_quantityNull,
 		&positive_reserved_qty_baseNull,
 		&negative_reserved_qty_baseNull,
+		&serial_noNull,
+		&new_serial_noNull,
+		&lot_noNull,
+		&new_lot_noNull,
 	)
 
 	if err != nil {
@@ -2181,6 +2277,10 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 	t.Negative_reserved_quantity, _ = types.NewDecimalFromString(negative_reserved_quantityNull.String)
 	t.Positive_reserved_qty_base, _ = types.NewDecimalFromString(positive_reserved_qty_baseNull.String)
 	t.Negative_reserved_qty_base, _ = types.NewDecimalFromString(negative_reserved_qty_baseNull.String)
+	t.Serial_no = types.NewCode(serial_noNull.String)
+	t.New_serial_no = types.NewCode(new_serial_noNull.String)
+	t.Lot_no = types.NewCode(lot_noNull.String)
+	t.New_lot_no = types.NewCode(new_lot_noNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2264,11 +2364,15 @@ func (t *ItemJournalLine) Insert(runTrigger bool) bool {
 		t.Negative_reserved_quantity,
 		t.Positive_reserved_qty_base,
 		t.Negative_reserved_qty_base,
+		t.Serial_no,
+		t.New_serial_no,
+		t.Lot_no,
+		t.New_lot_no,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2367,10 +2471,14 @@ func (t *ItemJournalLine) InsertAll(records []*ItemJournalLine, runTrigger bool)
 			r.Negative_reserved_quantity,
 			r.Positive_reserved_qty_base,
 			r.Negative_reserved_qty_base,
+			r.Serial_no,
+			r.New_serial_no,
+			r.Lot_no,
+			r.New_lot_no,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ItemJournalLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "source_code", "applies_to_entry", "item_shpt_entry_no", "department_code", "project_code", "indirect_cost_percent", "source_type", "reason_code", "drop_shipment", "transaction_type", "transport_method", "country_code", "new_location_code", "new_department_code", "new_project_code", "qty_calculated", "qty_phys_inventory", "last_item_ledger_entry_no", "phys_inventory", "gen_bus_posting_group", "gen_prod_posting_group", "entry_exit_point", "document_date", "external_document_no", "area", "transaction_specification", "posting_no_series", "source_currency_unit_cost", "source_currency_code", "reserve", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "invoiced_qty_base", "recurring_method", "expiration_date", "recurring_frequency", "positive_reserved_quantity", "negative_reserved_quantity", "positive_reserved_qty_base", "negative_reserved_qty_base"}
+	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "source_code", "applies_to_entry", "item_shpt_entry_no", "department_code", "project_code", "indirect_cost_percent", "source_type", "reason_code", "drop_shipment", "transaction_type", "transport_method", "country_code", "new_location_code", "new_department_code", "new_project_code", "qty_calculated", "qty_phys_inventory", "last_item_ledger_entry_no", "phys_inventory", "gen_bus_posting_group", "gen_prod_posting_group", "entry_exit_point", "document_date", "external_document_no", "area", "transaction_specification", "posting_no_series", "source_currency_unit_cost", "source_currency_code", "reserve", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "invoiced_qty_base", "recurring_method", "expiration_date", "recurring_frequency", "positive_reserved_quantity", "negative_reserved_quantity", "positive_reserved_qty_base", "negative_reserved_qty_base", "serial_no", "new_serial_no", "lot_no", "new_lot_no"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2660,6 +2768,22 @@ func (t *ItemJournalLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "negative_reserved_qty_base = ?")
 			values = append(values, t.Negative_reserved_qty_base)
 		}
+		if t.hasFieldChanged("serial_no") {
+			setClauses = append(setClauses, "serial_no = ?")
+			values = append(values, t.Serial_no)
+		}
+		if t.hasFieldChanged("new_serial_no") {
+			setClauses = append(setClauses, "new_serial_no = ?")
+			values = append(values, t.New_serial_no)
+		}
+		if t.hasFieldChanged("lot_no") {
+			setClauses = append(setClauses, "lot_no = ?")
+			values = append(values, t.Lot_no)
+		}
+		if t.hasFieldChanged("new_lot_no") {
+			setClauses = append(setClauses, "new_lot_no = ?")
+			values = append(values, t.New_lot_no)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -2783,6 +2907,14 @@ func (t *ItemJournalLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Positive_reserved_qty_base)
 		setClauses = append(setClauses, "negative_reserved_qty_base = ?")
 		values = append(values, t.Negative_reserved_qty_base)
+		setClauses = append(setClauses, "serial_no = ?")
+		values = append(values, t.Serial_no)
+		setClauses = append(setClauses, "new_serial_no = ?")
+		values = append(values, t.New_serial_no)
+		setClauses = append(setClauses, "lot_no = ?")
+		values = append(values, t.Lot_no)
+		setClauses = append(setClauses, "new_lot_no = ?")
+		values = append(values, t.New_lot_no)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -3086,6 +3218,22 @@ func (t *ItemJournalLine) hasFieldChanged(fieldName string) bool {
 	case "negative_reserved_qty_base":
 		if old, ok := oldValue.(types.Decimal); ok {
 			return !t.Negative_reserved_qty_base.Equal(old)
+		}
+	case "serial_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Serial_no.Equal(old)
+		}
+	case "new_serial_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.New_serial_no.Equal(old)
+		}
+	case "lot_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Lot_no.Equal(old)
+		}
+	case "new_lot_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.New_lot_no.Equal(old)
 		}
 	}
 
@@ -3415,6 +3563,14 @@ func (t *ItemJournalLine) columnName(fieldName string) (string, bool) {
 		return "positive_reserved_qty_base", true
 	case strings.ToLower("negative_reserved_qty_base"):
 		return "negative_reserved_qty_base", true
+	case strings.ToLower("serial_no"):
+		return "serial_no", true
+	case strings.ToLower("new_serial_no"):
+		return "new_serial_no", true
+	case strings.ToLower("lot_no"):
+		return "lot_no", true
+	case strings.ToLower("new_lot_no"):
+		return "new_lot_no", true
 	}
 	return "", false
 }
@@ -3816,7 +3972,7 @@ func (t *ItemJournalLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3878,6 +4034,10 @@ func (t *ItemJournalLine) FindFirst() bool {
 	var negative_reserved_quantityNull sql.NullString
 	var positive_reserved_qty_baseNull sql.NullString
 	var negative_reserved_qty_baseNull sql.NullString
+	var serial_noNull sql.NullString
+	var new_serial_noNull sql.NullString
+	var lot_noNull sql.NullString
+	var new_lot_noNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&journal_template_nameNull,
@@ -3941,6 +4101,10 @@ func (t *ItemJournalLine) FindFirst() bool {
 		&negative_reserved_quantityNull,
 		&positive_reserved_qty_baseNull,
 		&negative_reserved_qty_baseNull,
+		&serial_noNull,
+		&new_serial_noNull,
+		&lot_noNull,
+		&new_lot_noNull,
 	)
 
 	if err != nil {
@@ -4009,6 +4173,10 @@ func (t *ItemJournalLine) FindFirst() bool {
 	t.Negative_reserved_quantity, _ = types.NewDecimalFromString(negative_reserved_quantityNull.String)
 	t.Positive_reserved_qty_base, _ = types.NewDecimalFromString(positive_reserved_qty_baseNull.String)
 	t.Negative_reserved_qty_base, _ = types.NewDecimalFromString(negative_reserved_qty_baseNull.String)
+	t.Serial_no = types.NewCode(serial_noNull.String)
+	t.New_serial_no = types.NewCode(new_serial_noNull.String)
+	t.Lot_no = types.NewCode(lot_noNull.String)
+	t.New_lot_no = types.NewCode(new_lot_noNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -4029,7 +4197,7 @@ func (t *ItemJournalLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4091,6 +4259,10 @@ func (t *ItemJournalLine) FindLast() bool {
 	var negative_reserved_quantityNull sql.NullString
 	var positive_reserved_qty_baseNull sql.NullString
 	var negative_reserved_qty_baseNull sql.NullString
+	var serial_noNull sql.NullString
+	var new_serial_noNull sql.NullString
+	var lot_noNull sql.NullString
+	var new_lot_noNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&journal_template_nameNull,
@@ -4154,6 +4326,10 @@ func (t *ItemJournalLine) FindLast() bool {
 		&negative_reserved_quantityNull,
 		&positive_reserved_qty_baseNull,
 		&negative_reserved_qty_baseNull,
+		&serial_noNull,
+		&new_serial_noNull,
+		&lot_noNull,
+		&new_lot_noNull,
 	)
 
 	if err != nil {
@@ -4222,6 +4398,10 @@ func (t *ItemJournalLine) FindLast() bool {
 	t.Negative_reserved_quantity, _ = types.NewDecimalFromString(negative_reserved_quantityNull.String)
 	t.Positive_reserved_qty_base, _ = types.NewDecimalFromString(positive_reserved_qty_baseNull.String)
 	t.Negative_reserved_qty_base, _ = types.NewDecimalFromString(negative_reserved_qty_baseNull.String)
+	t.Serial_no = types.NewCode(serial_noNull.String)
+	t.New_serial_no = types.NewCode(new_serial_noNull.String)
+	t.Lot_no = types.NewCode(lot_noNull.String)
+	t.New_lot_no = types.NewCode(new_lot_noNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -4272,7 +4452,7 @@ func (t *ItemJournalLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4398,6 +4578,10 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 		var negative_reserved_quantityNull sql.NullString
 		var positive_reserved_qty_baseNull sql.NullString
 		var negative_reserved_qty_baseNull sql.NullString
+		var serial_noNull sql.NullString
+		var new_serial_noNull sql.NullString
+		var lot_noNull sql.NullString
+		var new_lot_noNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&journal_template_nameNull,
@@ -4461,6 +4645,10 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 			&negative_reserved_quantityNull,
 			&positive_reserved_qty_baseNull,
 			&negative_reserved_qty_baseNull,
+			&serial_noNull,
+			&new_serial_noNull,
+			&lot_noNull,
+			&new_lot_noNull,
 		)
 
 		if err != nil {
@@ -4528,6 +4716,10 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 		t.Negative_reserved_quantity, _ = types.NewDecimalFromString(negative_reserved_quantityNull.String)
 		t.Positive_reserved_qty_base, _ = types.NewDecimalFromString(positive_reserved_qty_baseNull.String)
 		t.Negative_reserved_qty_base, _ = types.NewDecimalFromString(negative_reserved_qty_baseNull.String)
+		t.Serial_no = types.NewCode(serial_noNull.String)
+		t.New_serial_no = types.NewCode(new_serial_noNull.String)
+		t.Lot_no = types.NewCode(lot_noNull.String)
+		t.New_lot_no = types.NewCode(new_lot_noNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -4577,7 +4769,7 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4656,6 +4848,10 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 		var negative_reserved_quantityNull sql.NullString
 		var positive_reserved_qty_baseNull sql.NullString
 		var negative_reserved_qty_baseNull sql.NullString
+		var serial_noNull sql.NullString
+		var new_serial_noNull sql.NullString
+		var lot_noNull sql.NullString
+		var new_lot_noNull sql.NullString
 
 		err := rows.Scan(
 			&journal_template_nameNull,
@@ -4719,6 +4915,10 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 			&negative_reserved_quantityNull,
 			&positive_reserved_qty_baseNull,
 			&negative_reserved_qty_baseNull,
+			&serial_noNull,
+			&new_serial_noNull,
+			&lot_noNull,
+			&new_lot_noNull,
 		)
 
 		if err != nil {
@@ -4784,6 +4984,10 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 		record.Negative_reserved_quantity, _ = types.NewDecimalFromString(negative_reserved_quantityNull.String)
 		record.Positive_reserved_qty_base, _ = types.NewDecimalFromString(positive_reserved_qty_baseNull.String)
 		record.Negative_reserved_qty_base, _ = types.NewDecimalFromString(negative_reserved_qty_baseNull.String)
+		record.Serial_no = types.NewCode(serial_noNull.String)
+		record.New_serial_no = types.NewCode(new_serial_noNull.String)
+		record.Lot_no = types.NewCode(lot_noNull.String)
+		record.New_lot_no = types.NewCode(new_lot_noNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -4873,6 +5077,10 @@ func (t *ItemJournalLine) copyFromBuffered(record *ItemJournalLine) {
 	t.Negative_reserved_quantity = record.Negative_reserved_quantity
 	t.Positive_reserved_qty_base = record.Positive_reserved_qty_base
 	t.Negative_reserved_qty_base = record.Negative_reserved_qty_base
+	t.Serial_no = record.Serial_no
+	t.New_serial_no = record.New_serial_no
+	t.Lot_no = record.Lot_no
+	t.New_lot_no = record.New_lot_no
 	t.StoreOldValues()
 }
 
@@ -6570,6 +6778,78 @@ func (t *ItemJournalLine) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
+	case "serial_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Serial_no = v
+		} else if v, ok := value.(string); ok {
+			t.Serial_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field serial_no")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemJournalLineOnValidate_Serial_no); ok {
+				if err := trg.OnValidate_Serial_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "new_serial_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.New_serial_no = v
+		} else if v, ok := value.(string); ok {
+			t.New_serial_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field new_serial_no")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemJournalLineOnValidate_New_serial_no); ok {
+				if err := trg.OnValidate_New_serial_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "lot_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Lot_no = v
+		} else if v, ok := value.(string); ok {
+			t.Lot_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field lot_no")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemJournalLineOnValidate_Lot_no); ok {
+				if err := trg.OnValidate_Lot_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "new_lot_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.New_lot_no = v
+		} else if v, ok := value.(string); ok {
+			t.New_lot_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field new_lot_no")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemJournalLineOnValidate_New_lot_no); ok {
+				if err := trg.OnValidate_New_lot_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -6704,6 +6984,14 @@ func (t *ItemJournalLine) FieldValue(no int) (any, bool) {
 		return t.Positive_reserved_qty_base, true
 	case 5469:
 		return t.Negative_reserved_qty_base, true
+	case 38:
+		return t.Serial_no, true
+	case 61:
+		return t.New_serial_no, true
+	case 5400:
+		return t.Lot_no, true
+	case 5405:
+		return t.New_lot_no, true
 	}
 	return nil, false
 }
@@ -7146,6 +7434,42 @@ func (t *ItemJournalLine) SetFieldValue(no int, value any) bool {
 	case 5469:
 		if v, ok := value.(types.Decimal); ok {
 			t.Negative_reserved_qty_base = v
+			return true
+		}
+	case 38:
+		if v, ok := value.(types.Code); ok {
+			t.Serial_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Serial_no = types.NewCode(v)
+			return true
+		}
+	case 61:
+		if v, ok := value.(types.Code); ok {
+			t.New_serial_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.New_serial_no = types.NewCode(v)
+			return true
+		}
+	case 5400:
+		if v, ok := value.(types.Code); ok {
+			t.Lot_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Lot_no = types.NewCode(v)
+			return true
+		}
+	case 5405:
+		if v, ok := value.(types.Code); ok {
+			t.New_lot_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.New_lot_no = types.NewCode(v)
 			return true
 		}
 	}
@@ -7873,6 +8197,14 @@ func (t *ItemJournalLine) columnValue(column string) (interface{}, bool) {
 		return t.Positive_reserved_qty_base, true
 	case "negative_reserved_qty_base":
 		return t.Negative_reserved_qty_base, true
+	case "serial_no":
+		return t.Serial_no, true
+	case "new_serial_no":
+		return t.New_serial_no, true
+	case "lot_no":
+		return t.Lot_no, true
+	case "new_lot_no":
+		return t.New_lot_no, true
 	}
 	return nil, false
 }
@@ -7993,6 +8325,10 @@ func (t *ItemJournalLine) Init() {
 	t.Negative_reserved_quantity = *new(types.Decimal)
 	t.Positive_reserved_qty_base = *new(types.Decimal)
 	t.Negative_reserved_qty_base = *new(types.Decimal)
+	t.Serial_no = *new(types.Code)
+	t.New_serial_no = *new(types.Code)
+	t.Lot_no = *new(types.Code)
+	t.New_lot_no = *new(types.Code)
 	t.applyDefaults()
 }
 
@@ -8088,6 +8424,10 @@ func (t *ItemJournalLine) ToMap() map[string]interface{} {
 		"negative_reserved_quantity": t.Negative_reserved_quantity.String(),
 		"positive_reserved_qty_base": t.Positive_reserved_qty_base.String(),
 		"negative_reserved_qty_base": t.Negative_reserved_qty_base.String(),
+		"serial_no":                  t.Serial_no.String(),
+		"new_serial_no":              t.New_serial_no.String(),
+		"lot_no":                     t.Lot_no.String(),
+		"new_lot_no":                 t.New_lot_no.String(),
 	}
 }
 
@@ -8595,6 +8935,26 @@ func (t *ItemJournalLine) FromMap(data map[string]interface{}) {
 			t.Negative_reserved_qty_base = types.NewDecimalFromInt(int64(val))
 		case int64:
 			t.Negative_reserved_qty_base = types.NewDecimalFromInt(val)
+		}
+	}
+	if v, ok := data["serial_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Serial_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["new_serial_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.New_serial_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["lot_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Lot_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["new_lot_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.New_lot_no = types.NewCode(s)
 		}
 	}
 }
@@ -9264,6 +9624,46 @@ func (t *ItemJournalLine) GetFields() []tables.FieldInfo {
 			FlowField:     false,
 			ReadOnly:      true,
 			DecimalPlaces: "0:5",
+		},
+		{
+			No:         38,
+			Name:       "serial_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         61,
+			Name:       "new_serial_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5400,
+			Name:       "lot_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5405,
+			Name:       "new_lot_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
 		},
 	}
 }
