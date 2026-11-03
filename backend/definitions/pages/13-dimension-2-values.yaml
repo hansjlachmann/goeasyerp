@@ -1,9 +1,9 @@
 page:
   id: 13
   type: List
-  name: Projects
-  source_table: Project
-  caption: Projects
+  name: Dimension 2 Values
+  source_table: Dimension_2
+  caption: Dimension 2 Values
   editable: true
   copy_paste_allowed: true   # Ctrl+C / Ctrl+V copy and paste selected records
 

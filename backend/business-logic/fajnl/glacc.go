@@ -10,15 +10,15 @@ import (
 
 // FAGLPostBuffer is table 5637 FA G/L Posting Buffer (temporary): a G/L amount an FA posting
 // makes — the account (from the FA posting group, codeunit 5602, or an FA allocation), its
-// department and project, and the FA or maintenance entry it belongs to. Codeunit 12 posts each
+// dimension 1 and dimension 2, and the FA or maintenance entry it belongs to. Codeunit 12 posts each
 // as a G/L entry.
 type FAGLPostBuffer struct {
 	EntryNo                int // the G/L entry no. it becomes
 	AccountNo              types.Code
 	Amount                 types.Decimal
 	Correction             bool
-	DepartmentCode         types.Code
-	ProjectCode            types.Code
+	Dimension1Code         types.Code
+	Dimension2Code         types.Code
 	FAEntryType            gtables.GLEntryFa_entry_type
 	FAEntryNo              int
 	AutomaticEntry         bool
@@ -53,7 +53,7 @@ func (g *faInsertGLAcc) insertFAEntry(src ftables.Source, entry *gtables.FALedge
 		return err
 	}
 	b := &FAGLPostBuffer{AccountNo: accNo, Amount: entry.Amount, Correction: entry.Correction,
-		DepartmentCode: entry.Department_code, ProjectCode: entry.Project_code, FAEntryNo: entry.Entry_no,
+		Dimension1Code: entry.Dimension_1_code, Dimension2Code: entry.Dimension_2_code, FAEntryNo: entry.Entry_no,
 		AutomaticEntry: entry.Automatic_entry}
 	if entry.Entry_no > 0 {
 		b.FAEntryType = gtables.GLEntry_Fa_entry_type.FixedAsset
@@ -77,7 +77,7 @@ func (g *faInsertGLAcc) insertMaintenanceAccNo(src ftables.Source, entry *gtable
 	}
 	g.glEntryNo = entry.G_l_entry_no
 	b := g.insertBufferEntry(&FAGLPostBuffer{AccountNo: faPostingGr.Maintenance_expense_account, Amount: entry.Amount,
-		Correction: entry.Correction, DepartmentCode: entry.Department_code, ProjectCode: entry.Project_code,
+		Correction: entry.Correction, Dimension1Code: entry.Dimension_1_code, Dimension2Code: entry.Dimension_2_code,
 		FAEntryNo: entry.Entry_no, FAEntryType: gtables.GLEntry_Fa_entry_type.Maintenance})
 	entry.G_l_entry_no = b.EntryNo
 	return nil
@@ -204,7 +204,7 @@ func balAccount(faPostingGr *gtables.FAPostingGroup, allocType allocationType) (
 // the posting group's FA allocations of the type (rounded per the book), the rest on the group's
 // balancing account
 func (g *faInsertGLAcc) insertBufferBalAcc(src ftables.Source, allocType allocationType, allocAmount types.Decimal, deprBookCode, postingGrCode,
-	departmentCode, projectCode types.Code, automaticEntry, correction bool) error {
+	dimension1Code, dimension2Code types.Code, automaticEntry, correction bool) error {
 	faPostingGr := gtables.NewFAPostingGroup(src)
 	err := faPostingGr.GetOrError(postingGrCode)
 	if err != nil {
@@ -247,14 +247,14 @@ func (g *faInsertGLAcc) insertBufferBalAcc(src ftables.Source, allocType allocat
 			newAmount = allocAmount.Sub(totalAllocAmount.Sub(newAmount))
 		}
 		if !newAmount.IsZero() {
-			g.insertBufferEntry(&FAGLPostBuffer{AccountNo: faAlloc.Account_no, DepartmentCode: faAlloc.Department_code,
-				ProjectCode: faAlloc.Project_code, Amount: newAmount, AutomaticEntry: automaticEntry, Correction: correction})
+			g.insertBufferEntry(&FAGLPostBuffer{AccountNo: faAlloc.Account_no, Dimension1Code: faAlloc.Dimension_1_code,
+				Dimension2Code: faAlloc.Dimension_2_code, Amount: newAmount, AutomaticEntry: automaticEntry, Correction: correction})
 		}
 	}
 	if totalAllocAmount.Abs().LessThan(allocAmount.Abs()) {
 		newAmount := allocAmount.Sub(totalAllocAmount)
-		g.insertBufferEntry(&FAGLPostBuffer{AccountNo: glAccNo, Amount: newAmount, DepartmentCode: departmentCode,
-			ProjectCode: projectCode, AutomaticEntry: automaticEntry, Correction: correction})
+		g.insertBufferEntry(&FAGLPostBuffer{AccountNo: glAccNo, Amount: newAmount, Dimension1Code: dimension1Code,
+			Dimension2Code: dimension2Code, AutomaticEntry: automaticEntry, Correction: correction})
 	}
 	return nil
 }
@@ -282,5 +282,5 @@ func allocTypeOfEntry(entry *gtables.FALedgerEntry) allocationType {
 // other way)
 func (g *faInsertGLAcc) insertBalAcc(src ftables.Source, entry *gtables.FALedgerEntry) error {
 	return g.insertBufferBalAcc(src, allocTypeOfEntry(entry), entry.Amount.Neg(), entry.Depreciation_book_code,
-		entry.Fa_posting_group, entry.Department_code, entry.Project_code, entry.Automatic_entry, entry.Correction)
+		entry.Fa_posting_group, entry.Dimension_1_code, entry.Dimension_2_code, entry.Automatic_entry, entry.Correction)
 }

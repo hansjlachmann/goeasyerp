@@ -17,8 +17,8 @@
 //	OnValidate_Posting_date(rec *gtables.BOMJournalLine) error
 //	OnValidate_Document_no(rec *gtables.BOMJournalLine) error
 //	OnValidate_Description(rec *gtables.BOMJournalLine) error
-//	OnValidate_Department_code(rec *gtables.BOMJournalLine) error
-//	OnValidate_Project_code(rec *gtables.BOMJournalLine) error
+//	OnValidate_Dimension_1_code(rec *gtables.BOMJournalLine) error
+//	OnValidate_Dimension_2_code(rec *gtables.BOMJournalLine) error
 //	OnValidate_Location_code(rec *gtables.BOMJournalLine) error
 //	OnValidate_Quantity(rec *gtables.BOMJournalLine) error
 //	OnValidate_Unit_cost(rec *gtables.BOMJournalLine) error
@@ -109,8 +109,8 @@ type BOMJournalLine struct {
 	Posting_date            types.Date                     `db:"posting_date"`
 	Document_no             types.Code                     `db:"document_no"`
 	Description             types.Text                     `db:"description"`
-	Department_code         types.Code                     `db:"department_code"`
-	Project_code            types.Code                     `db:"project_code"`
+	Dimension_1_code        types.Code                     `db:"dimension_1_code"`
+	Dimension_2_code        types.Code                     `db:"dimension_2_code"`
 	Location_code           types.Code                     `db:"location_code"`
 	Quantity                types.Decimal                  `db:"quantity"`
 	Unit_cost               types.Decimal                  `db:"unit_cost"`
@@ -232,8 +232,8 @@ var BOMJournalLine_FieldNo = struct {
 	Posting_date            int
 	Document_no             int
 	Description             int
-	Department_code         int
-	Project_code            int
+	Dimension_1_code        int
+	Dimension_2_code        int
 	Location_code           int
 	Quantity                int
 	Unit_cost               int
@@ -264,8 +264,8 @@ var BOMJournalLine_FieldNo = struct {
 	Posting_date:            4,
 	Document_no:             5,
 	Description:             6,
-	Department_code:         7,
-	Project_code:            8,
+	Dimension_1_code:        7,
+	Dimension_2_code:        8,
 	Location_code:           9,
 	Quantity:                10,
 	Unit_cost:               11,
@@ -307,9 +307,9 @@ func (t *BOMJournalLine) FieldNo(fieldName string) int {
 		return 5
 	case "description":
 		return 6
-	case "department_code":
+	case "dimension_1_code":
 		return 7
-	case "project_code":
+	case "dimension_2_code":
 		return 8
 	case "location_code":
 		return 9
@@ -377,9 +377,9 @@ func (t *BOMJournalLine) FieldName(fieldNo int) string {
 	case 6:
 		return "description"
 	case 7:
-		return "department_code"
+		return "dimension_1_code"
 	case 8:
-		return "project_code"
+		return "dimension_2_code"
 	case 9:
 		return "location_code"
 	case 10:
@@ -546,11 +546,11 @@ type (
 	BOMJournalLineOnValidate_Description interface {
 		OnValidate_Description(rec *BOMJournalLine) error
 	}
-	BOMJournalLineOnValidate_Department_code interface {
-		OnValidate_Department_code(rec *BOMJournalLine) error
+	BOMJournalLineOnValidate_Dimension_1_code interface {
+		OnValidate_Dimension_1_code(rec *BOMJournalLine) error
 	}
-	BOMJournalLineOnValidate_Project_code interface {
-		OnValidate_Project_code(rec *BOMJournalLine) error
+	BOMJournalLineOnValidate_Dimension_2_code interface {
+		OnValidate_Dimension_2_code(rec *BOMJournalLine) error
 	}
 	BOMJournalLineOnValidate_Location_code interface {
 		OnValidate_Location_code(rec *BOMJournalLine) error
@@ -661,10 +661,10 @@ func bOMJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(BOMJournalLineOnValidate_Document_no)
 	case "OnValidate_Description":
 		_, ok = logic.(BOMJournalLineOnValidate_Description)
-	case "OnValidate_Department_code":
-		_, ok = logic.(BOMJournalLineOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(BOMJournalLineOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(BOMJournalLineOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(BOMJournalLineOnValidate_Dimension_2_code)
 	case "OnValidate_Location_code":
 		_, ok = logic.(BOMJournalLineOnValidate_Location_code)
 	case "OnValidate_Quantity":
@@ -804,10 +804,10 @@ func (t *BOMJournalLine) CheckFields() error {
 	if err := tables.CheckMaxLength(BOMJournalLineTableName, "description", string(t.Description), 50); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(BOMJournalLineTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(BOMJournalLineTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(BOMJournalLineTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(BOMJournalLineTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(BOMJournalLineTableName, "location_code", string(t.Location_code), 10); err != nil {
@@ -880,8 +880,8 @@ func GetBOMJournalLineTableSchema() string {
 		posting_date TEXT,
 		document_no TEXT(20),
 		description TEXT(50),
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		location_code TEXT(10),
 		quantity TEXT,
 		unit_cost TEXT,
@@ -918,8 +918,8 @@ func GetBOMJournalLinePostgresTableSchema() string {
 		posting_date TIMESTAMP,
 		document_no VARCHAR(20),
 		description VARCHAR(50),
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		location_code VARCHAR(10),
 		quantity NUMERIC,
 		unit_cost NUMERIC,
@@ -1079,8 +1079,8 @@ func (t *BOMJournalLine) StoreOldValues() {
 	t.oldValues["posting_date"] = t.Posting_date
 	t.oldValues["document_no"] = t.Document_no
 	t.oldValues["description"] = t.Description
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["location_code"] = t.Location_code
 	t.oldValues["quantity"] = t.Quantity
 	t.oldValues["unit_cost"] = t.Unit_cost
@@ -1138,11 +1138,11 @@ func (t *BOMJournalLine) XRec() *BOMJournalLine {
 	if v, ok := t.oldValues["description"].(types.Text); ok {
 		x.Description = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["location_code"].(types.Code); ok {
 		x.Location_code = v
@@ -1296,8 +1296,8 @@ func (t *BOMJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	var posting_dateNull sql.NullString
 	var document_noNull sql.NullString
 	var descriptionNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var location_codeNull sql.NullString
 	var quantityNull sql.NullString
 	var unit_costNull sql.NullString
@@ -1329,7 +1329,7 @@ func (t *BOMJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, dimension_1_code, dimension_2_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1343,8 +1343,8 @@ func (t *BOMJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 		&posting_dateNull,
 		&document_noNull,
 		&descriptionNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&location_codeNull,
 		&quantityNull,
 		&unit_costNull,
@@ -1387,8 +1387,8 @@ func (t *BOMJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
 	t.Document_no = types.NewCode(document_noNull.String)
 	t.Description = types.NewText(descriptionNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Location_code = types.NewCode(location_codeNull.String)
 	t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
 	t.Unit_cost, _ = types.NewDecimalFromString(unit_costNull.String)
@@ -1440,8 +1440,8 @@ func (t *BOMJournalLine) Insert(runTrigger bool) bool {
 		t.Posting_date,
 		t.Document_no,
 		t.Description,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Location_code,
 		t.Quantity,
 		t.Unit_cost,
@@ -1468,7 +1468,7 @@ func (t *BOMJournalLine) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, dimension_1_code, dimension_2_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1513,8 +1513,8 @@ func (t *BOMJournalLine) InsertAll(records []*BOMJournalLine, runTrigger bool) e
 			r.Posting_date,
 			r.Document_no,
 			r.Description,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Location_code,
 			r.Quantity,
 			r.Unit_cost,
@@ -1540,7 +1540,7 @@ func (t *BOMJournalLine) InsertAll(records []*BOMJournalLine, runTrigger bool) e
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, BOMJournalLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "item_no", "posting_date", "document_no", "description", "department_code", "project_code", "location_code", "quantity", "unit_cost", "total_cost", "inventory_posting_group", "source_code", "reason_code", "document_date", "external_document_no", "posting_no_series", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "recurring_method", "expiration_date", "recurring_frequency", "reserved_quantity", "reserve", "reserved_qty_base", "lot_no", "bin_code"}
+	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "item_no", "posting_date", "document_no", "description", "dimension_1_code", "dimension_2_code", "location_code", "quantity", "unit_cost", "total_cost", "inventory_posting_group", "source_code", "reason_code", "document_date", "external_document_no", "posting_no_series", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "recurring_method", "expiration_date", "recurring_frequency", "reserved_quantity", "reserve", "reserved_qty_base", "lot_no", "bin_code"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1614,13 +1614,13 @@ func (t *BOMJournalLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "description = ?")
 			values = append(values, t.Description)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("location_code") {
 			setClauses = append(setClauses, "location_code = ?")
@@ -1725,10 +1725,10 @@ func (t *BOMJournalLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Document_no)
 		setClauses = append(setClauses, "description = ?")
 		values = append(values, t.Description)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "location_code = ?")
 		values = append(values, t.Location_code)
 		setClauses = append(setClauses, "quantity = ?")
@@ -1856,13 +1856,13 @@ func (t *BOMJournalLine) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Text); ok {
 			return !t.Description.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "location_code":
 		if old, ok := oldValue.(types.Code); ok {
@@ -2172,10 +2172,10 @@ func (t *BOMJournalLine) columnName(fieldName string) (string, bool) {
 		return "document_no", true
 	case strings.ToLower("description"):
 		return "description", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("location_code"):
 		return "location_code", true
 	case strings.ToLower("quantity"):
@@ -2597,7 +2597,7 @@ func (t *BOMJournalLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, dimension_1_code, dimension_2_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2608,8 +2608,8 @@ func (t *BOMJournalLine) FindFirst() bool {
 	var posting_dateNull sql.NullString
 	var document_noNull sql.NullString
 	var descriptionNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var location_codeNull sql.NullString
 	var quantityNull sql.NullString
 	var unit_costNull sql.NullString
@@ -2641,8 +2641,8 @@ func (t *BOMJournalLine) FindFirst() bool {
 		&posting_dateNull,
 		&document_noNull,
 		&descriptionNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&location_codeNull,
 		&quantityNull,
 		&unit_costNull,
@@ -2682,8 +2682,8 @@ func (t *BOMJournalLine) FindFirst() bool {
 	t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
 	t.Document_no = types.NewCode(document_noNull.String)
 	t.Description = types.NewText(descriptionNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Location_code = types.NewCode(location_codeNull.String)
 	t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
 	t.Unit_cost, _ = types.NewDecimalFromString(unit_costNull.String)
@@ -2726,7 +2726,7 @@ func (t *BOMJournalLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, dimension_1_code, dimension_2_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2737,8 +2737,8 @@ func (t *BOMJournalLine) FindLast() bool {
 	var posting_dateNull sql.NullString
 	var document_noNull sql.NullString
 	var descriptionNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var location_codeNull sql.NullString
 	var quantityNull sql.NullString
 	var unit_costNull sql.NullString
@@ -2770,8 +2770,8 @@ func (t *BOMJournalLine) FindLast() bool {
 		&posting_dateNull,
 		&document_noNull,
 		&descriptionNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&location_codeNull,
 		&quantityNull,
 		&unit_costNull,
@@ -2811,8 +2811,8 @@ func (t *BOMJournalLine) FindLast() bool {
 	t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
 	t.Document_no = types.NewCode(document_noNull.String)
 	t.Description = types.NewText(descriptionNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Location_code = types.NewCode(location_codeNull.String)
 	t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
 	t.Unit_cost, _ = types.NewDecimalFromString(unit_costNull.String)
@@ -2885,7 +2885,7 @@ func (t *BOMJournalLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, dimension_1_code, dimension_2_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2960,8 +2960,8 @@ func (t *BOMJournalLine) Next(steps ...int) bool {
 		var posting_dateNull sql.NullString
 		var document_noNull sql.NullString
 		var descriptionNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var location_codeNull sql.NullString
 		var quantityNull sql.NullString
 		var unit_costNull sql.NullString
@@ -2993,8 +2993,8 @@ func (t *BOMJournalLine) Next(steps ...int) bool {
 			&posting_dateNull,
 			&document_noNull,
 			&descriptionNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&location_codeNull,
 			&quantityNull,
 			&unit_costNull,
@@ -3033,8 +3033,8 @@ func (t *BOMJournalLine) Next(steps ...int) bool {
 		t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
 		t.Document_no = types.NewCode(document_noNull.String)
 		t.Description = types.NewText(descriptionNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Location_code = types.NewCode(location_codeNull.String)
 		t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
 		t.Unit_cost, _ = types.NewDecimalFromString(unit_costNull.String)
@@ -3106,7 +3106,7 @@ func (t *BOMJournalLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, department_code, project_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, dimension_1_code, dimension_2_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3134,8 +3134,8 @@ func (t *BOMJournalLine) FindSetBuffered() bool {
 		var posting_dateNull sql.NullString
 		var document_noNull sql.NullString
 		var descriptionNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var location_codeNull sql.NullString
 		var quantityNull sql.NullString
 		var unit_costNull sql.NullString
@@ -3167,8 +3167,8 @@ func (t *BOMJournalLine) FindSetBuffered() bool {
 			&posting_dateNull,
 			&document_noNull,
 			&descriptionNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&location_codeNull,
 			&quantityNull,
 			&unit_costNull,
@@ -3205,8 +3205,8 @@ func (t *BOMJournalLine) FindSetBuffered() bool {
 		record.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
 		record.Document_no = types.NewCode(document_noNull.String)
 		record.Description = types.NewText(descriptionNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Location_code = types.NewCode(location_codeNull.String)
 		record.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
 		record.Unit_cost, _ = types.NewDecimalFromString(unit_costNull.String)
@@ -3264,8 +3264,8 @@ func (t *BOMJournalLine) copyFromBuffered(record *BOMJournalLine) {
 	t.Posting_date = record.Posting_date
 	t.Document_no = record.Document_no
 	t.Description = record.Description
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Location_code = record.Location_code
 	t.Quantity = record.Quantity
 	t.Unit_cost = record.Unit_cost
@@ -3575,45 +3575,45 @@ func (t *BOMJournalLine) ValidateField(fieldName string, value interface{}) erro
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BOMJournalLineOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(BOMJournalLineOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BOMJournalLineOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(BOMJournalLineOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -4221,9 +4221,9 @@ func (t *BOMJournalLine) FieldValue(no int) (any, bool) {
 	case 6:
 		return t.Description, true
 	case 7:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 8:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 9:
 		return t.Location_code, true
 	case 10:
@@ -4340,20 +4340,20 @@ func (t *BOMJournalLine) SetFieldValue(no int, value any) bool {
 		}
 	case 7:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 8:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 9:
@@ -5023,10 +5023,10 @@ func (t *BOMJournalLine) columnValue(column string) (interface{}, bool) {
 		return t.Document_no, true
 	case "description":
 		return t.Description, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "location_code":
 		return t.Location_code, true
 	case "quantity":
@@ -5137,8 +5137,8 @@ func (t *BOMJournalLine) Init() {
 	t.Posting_date = *new(types.Date)
 	t.Document_no = *new(types.Code)
 	t.Description = *new(types.Text)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Location_code = *new(types.Code)
 	t.Quantity = *new(types.Decimal)
 	t.Unit_cost = *new(types.Decimal)
@@ -5202,8 +5202,8 @@ func (t *BOMJournalLine) ToMap() map[string]interface{} {
 		"posting_date":            t.Posting_date.String(),
 		"document_no":             t.Document_no.String(),
 		"description":             t.Description.String(),
-		"department_code":         t.Department_code.String(),
-		"project_code":            t.Project_code.String(),
+		"dimension_1_code":        t.Dimension_1_code.String(),
+		"dimension_2_code":        t.Dimension_2_code.String(),
 		"location_code":           t.Location_code.String(),
 		"quantity":                t.Quantity.String(),
 		"unit_cost":               t.Unit_cost.String(),
@@ -5274,14 +5274,14 @@ func (t *BOMJournalLine) FromMap(data map[string]interface{}) {
 			t.Description = types.NewText(s)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["location_code"]; ok && v != nil {
@@ -5560,7 +5560,7 @@ func (t *BOMJournalLine) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         7,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -5570,7 +5570,7 @@ func (t *BOMJournalLine) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         8,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -5877,8 +5877,8 @@ func (t *BOMJournalLine) GetTableRelationFields() map[string]tables.TableRelatio
 			},
 			SearchTimeout: 0,
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -5887,8 +5887,8 @@ func (t *BOMJournalLine) GetTableRelationFields() map[string]tables.TableRelatio
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

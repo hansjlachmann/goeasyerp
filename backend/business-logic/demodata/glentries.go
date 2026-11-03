@@ -16,7 +16,7 @@ import (
 
 // The demo G/L entries post a year of business onto the demo chart of accounts (setup.yaml):
 // opening balances, sales invoices with sales tax and their payments, purchases with purchase
-// tax and their payments, payroll, running costs by department and project, loan interest and
+// tax and their payments, payroll, running costs by dimension 1 and dimension 2, loan interest and
 // installments, depreciation and the quarterly tax settlement. Every transaction balances.
 
 // Accounts of the demo chart the transactions use
@@ -149,7 +149,7 @@ func (g *glGenerator) purchase(date time.Time, cost string, foreign bool, prod, 
 		lines: []glLine{{account: payable, amount: net + tax}, {account: accBank, amount: -(net + tax)}}})
 }
 
-// expense: a cost paid from the bank at once (department, project)
+// expense: a cost paid from the bank at once (dimension 1, dimension 2)
 func (g *glGenerator) expense(date time.Time, account, department, project, description string, amount float64) {
 	g.add(glTx{date: date, docNo: g.docNo("GJ", date), description: description, sourceCode: "GENJNL",
 		lines: []glLine{
@@ -340,8 +340,8 @@ func generateGLEntries(today time.Time, size Size, customers []string, fixedAsse
 			} else {
 				e.Credit_amount = types.NewDecimal(-amount)
 			}
-			e.Department_code = types.NewCode(l.department)
-			e.Project_code = types.NewCode(l.project)
+			e.Dimension_1_code = types.NewCode(l.department)
+			e.Dimension_2_code = types.NewCode(l.project)
 			e.Gen_posting_type = l.postingType
 			e.Gen_bus_posting_group = types.NewCode(l.genBus)
 			e.Gen_prod_posting_group = types.NewCode(l.genProd)

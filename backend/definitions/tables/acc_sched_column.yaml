@@ -87,13 +87,13 @@ table:
       options: ["None", "1", "1000", "1000000"]
 
     # 900-901: the classic local fields Department Filter and Project Filter (of the column)
-    - name: department_filter
+    - name: dimension_1_filter
       no: 900
       type: types.Text
-      db_name: department_filter
+      db_name: dimension_1_filter
       length: 80
       table_relation:
-        table: Department
+        table: Dimension_1
         field: code
         validate: false   # a filter (A|B, A..C)
         lookup_columns:
@@ -102,13 +102,13 @@ table:
           - source: name
             width: 250
 
-    - name: project_filter
+    - name: dimension_2_filter
       no: 901
       type: types.Text
-      db_name: project_filter
+      db_name: dimension_2_filter
       length: 80
       table_relation:
-        table: Project
+        table: Dimension_2
         field: code
         validate: false   # a filter (A|B, A..C)
         lookup_columns:

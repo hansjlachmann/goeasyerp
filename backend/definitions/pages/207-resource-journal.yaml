@@ -44,10 +44,10 @@ page:
           width: 250
         - source: work_type_code
           width: 110
-        - source: department_code
+        - source: dimension_1_code
           width: 110
           visible: false
-        - source: project_code
+        - source: dimension_2_code
           width: 110
           visible: false
         - source: gen_bus_posting_group

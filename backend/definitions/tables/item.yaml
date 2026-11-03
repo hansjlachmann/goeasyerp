@@ -502,13 +502,13 @@ table:
       db_name: date_filter
       flow_filter: true
 
-    - name: department_filter
+    - name: dimension_1_filter
       no: 65
       type: types.Code
-      db_name: department_filter
+      db_name: dimension_1_filter
       flow_filter: true
       table_relation:
-        table: Department
+        table: Dimension_1
         field: code
         lookup_columns:
           - source: code
@@ -516,13 +516,13 @@ table:
           - source: name
             width: 250
 
-    - name: project_filter
+    - name: dimension_2_filter
       no: 66
       type: types.Code
-      db_name: project_filter
+      db_name: dimension_2_filter
       flow_filter: true
       table_relation:
-        table: Project
+        table: Dimension_2
         field: code
         lookup_columns:
           - source: code
@@ -557,12 +557,12 @@ table:
         - field: item_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: location_code
           type: filter
           value: location_filter
@@ -595,12 +595,12 @@ table:
         - field: "no"
           type: field
           value: "no"
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: location_code
           type: filter
           value: location_filter
@@ -633,12 +633,12 @@ table:
         - field: "no"
           type: field
           value: "no"
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: location_code
           type: filter
           value: location_filter
@@ -665,12 +665,12 @@ table:
         - field: item_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: location_code
           type: filter
           value: location_filter
@@ -697,12 +697,12 @@ table:
         - field: item_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: location_code
           type: filter
           value: location_filter
@@ -735,12 +735,12 @@ table:
         - field: item_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: location_code
           type: filter
           value: location_filter
@@ -774,12 +774,12 @@ table:
         - field: item_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: location_code
           type: filter
           value: location_filter
@@ -812,12 +812,12 @@ table:
         - field: item_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: location_code
           type: filter
           value: location_filter
@@ -851,12 +851,12 @@ table:
         - field: item_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: location_code
           type: filter
           value: location_filter
@@ -889,12 +889,12 @@ table:
         - field: item_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: location_code
           type: filter
           value: location_filter
@@ -928,12 +928,12 @@ table:
         - field: item_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: location_code
           type: filter
           value: location_filter
@@ -966,12 +966,12 @@ table:
         - field: item_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: location_code
           type: filter
           value: location_filter
@@ -1005,12 +1005,12 @@ table:
         - field: item_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: location_code
           type: filter
           value: location_filter
@@ -1044,12 +1044,12 @@ table:
         - field: item_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: location_code
           type: filter
           value: location_filter
@@ -1088,12 +1088,12 @@ table:
         - field: item_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: location_code
           type: filter
           value: location_filter
@@ -1126,12 +1126,12 @@ table:
         - field: item_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: location_code
           type: filter
           value: location_filter

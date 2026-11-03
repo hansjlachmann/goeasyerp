@@ -59,8 +59,8 @@ page:
           - source: payment_method_code
           - source: applies_to_doc_type
           - source: applies_to_doc_no
-          - source: department_code
-          - source: project_code
+          - source: dimension_1_code
+          - source: dimension_2_code
           - source: customer_posting_group
           - source: gen_bus_posting_group
           - source: tax_area_code

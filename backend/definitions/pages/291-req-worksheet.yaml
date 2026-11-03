@@ -54,10 +54,10 @@ page:
         - source: description_2
           width: 160
           visible: false
-        - source: department_code
+        - source: dimension_1_code
           width: 100
           visible: false
-        - source: project_code
+        - source: dimension_2_code
           width: 100
           visible: false
         - source: location_code

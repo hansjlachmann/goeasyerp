@@ -26,15 +26,15 @@ report:
             - {value: column_layout_description, x: 0, y: 10, width: 273, align: center}
             - {value: period_text, x: 0, y: 15, width: 273, align: center}
         - type: header
-          print_if: department_text
+          print_if: dimension_1_text
           height: 4.5
           elements:
-            - {value: department_text, x: 0, y: 0, width: 273, align: center}
+            - {value: dimension_1_text, x: 0, y: 0, width: 273, align: center}
         - type: header
-          print_if: project_text
+          print_if: dimension_2_text
           height: 4.5
           elements:
-            - {value: project_text, x: 0, y: 0, width: 273, align: center}
+            - {value: dimension_2_text, x: 0, y: 0, width: 273, align: center}
         - type: header
           print_if: budget_text
           height: 4.5

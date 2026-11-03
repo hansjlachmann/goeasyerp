@@ -32,8 +32,8 @@
 //	OnValidate_Source_code(rec *gtables.ItemJournalLine) error
 //	OnValidate_Applies_to_entry(rec *gtables.ItemJournalLine) error
 //	OnValidate_Item_shpt_entry_no(rec *gtables.ItemJournalLine) error
-//	OnValidate_Department_code(rec *gtables.ItemJournalLine) error
-//	OnValidate_Project_code(rec *gtables.ItemJournalLine) error
+//	OnValidate_Dimension_1_code(rec *gtables.ItemJournalLine) error
+//	OnValidate_Dimension_2_code(rec *gtables.ItemJournalLine) error
 //	OnValidate_Indirect_cost_percent(rec *gtables.ItemJournalLine) error
 //	OnValidate_Source_type(rec *gtables.ItemJournalLine) error
 //	OnValidate_Reason_code(rec *gtables.ItemJournalLine) error
@@ -42,8 +42,8 @@
 //	OnValidate_Transport_method(rec *gtables.ItemJournalLine) error
 //	OnValidate_Country_code(rec *gtables.ItemJournalLine) error
 //	OnValidate_New_location_code(rec *gtables.ItemJournalLine) error
-//	OnValidate_New_department_code(rec *gtables.ItemJournalLine) error
-//	OnValidate_New_project_code(rec *gtables.ItemJournalLine) error
+//	OnValidate_New_dimension_1_code(rec *gtables.ItemJournalLine) error
+//	OnValidate_New_dimension_2_code(rec *gtables.ItemJournalLine) error
 //	OnValidate_Qty_calculated(rec *gtables.ItemJournalLine) error
 //	OnValidate_Qty_phys_inventory(rec *gtables.ItemJournalLine) error
 //	OnValidate_Last_item_ledger_entry_no(rec *gtables.ItemJournalLine) error
@@ -194,8 +194,8 @@ type ItemJournalLine struct {
 	Source_code                types.Code                      `db:"source_code"`
 	Applies_to_entry           int                             `db:"applies_to_entry"`
 	Item_shpt_entry_no         int                             `db:"item_shpt_entry_no"`
-	Department_code            types.Code                      `db:"department_code"`
-	Project_code               types.Code                      `db:"project_code"`
+	Dimension_1_code           types.Code                      `db:"dimension_1_code"`
+	Dimension_2_code           types.Code                      `db:"dimension_2_code"`
 	Indirect_cost_percent      types.Decimal                   `db:"indirect_cost_percent"`
 	Source_type                ItemJournalLineSource_type      `db:"source_type"`
 	Reason_code                types.Code                      `db:"reason_code"`
@@ -204,8 +204,8 @@ type ItemJournalLine struct {
 	Transport_method           types.Code                      `db:"transport_method"`
 	Country_code               types.Code                      `db:"country_code"`
 	New_location_code          types.Code                      `db:"new_location_code"`
-	New_department_code        types.Code                      `db:"new_department_code"`
-	New_project_code           types.Code                      `db:"new_project_code"`
+	New_dimension_1_code       types.Code                      `db:"new_dimension_1_code"`
+	New_dimension_2_code       types.Code                      `db:"new_dimension_2_code"`
 	Qty_calculated             types.Decimal                   `db:"qty_calculated"`
 	Qty_phys_inventory         types.Decimal                   `db:"qty_phys_inventory"`
 	Last_item_ledger_entry_no  int                             `db:"last_item_ledger_entry_no"`
@@ -381,8 +381,8 @@ var ItemJournalLine_FieldNo = struct {
 	Source_code                int
 	Applies_to_entry           int
 	Item_shpt_entry_no         int
-	Department_code            int
-	Project_code               int
+	Dimension_1_code           int
+	Dimension_2_code           int
 	Indirect_cost_percent      int
 	Source_type                int
 	Reason_code                int
@@ -391,8 +391,8 @@ var ItemJournalLine_FieldNo = struct {
 	Transport_method           int
 	Country_code               int
 	New_location_code          int
-	New_department_code        int
-	New_project_code           int
+	New_dimension_1_code       int
+	New_dimension_2_code       int
 	Qty_calculated             int
 	Qty_phys_inventory         int
 	Last_item_ledger_entry_no  int
@@ -449,8 +449,8 @@ var ItemJournalLine_FieldNo = struct {
 	Source_code:                26,
 	Applies_to_entry:           29,
 	Item_shpt_entry_no:         32,
-	Department_code:            34,
-	Project_code:               35,
+	Dimension_1_code:           34,
+	Dimension_2_code:           35,
 	Indirect_cost_percent:      37,
 	Source_type:                39,
 	Reason_code:                42,
@@ -459,8 +459,8 @@ var ItemJournalLine_FieldNo = struct {
 	Transport_method:           48,
 	Country_code:               49,
 	New_location_code:          50,
-	New_department_code:        51,
-	New_project_code:           52,
+	New_dimension_1_code:       51,
+	New_dimension_2_code:       52,
 	Qty_calculated:             53,
 	Qty_phys_inventory:         54,
 	Last_item_ledger_entry_no:  55,
@@ -543,9 +543,9 @@ func (t *ItemJournalLine) FieldNo(fieldName string) int {
 		return 29
 	case "item_shpt_entry_no":
 		return 32
-	case "department_code":
+	case "dimension_1_code":
 		return 34
-	case "project_code":
+	case "dimension_2_code":
 		return 35
 	case "indirect_cost_percent":
 		return 37
@@ -563,9 +563,9 @@ func (t *ItemJournalLine) FieldNo(fieldName string) int {
 		return 49
 	case "new_location_code":
 		return 50
-	case "new_department_code":
+	case "new_dimension_1_code":
 		return 51
-	case "new_project_code":
+	case "new_dimension_2_code":
 		return 52
 	case "qty_calculated":
 		return 53
@@ -685,9 +685,9 @@ func (t *ItemJournalLine) FieldName(fieldNo int) string {
 	case 32:
 		return "item_shpt_entry_no"
 	case 34:
-		return "department_code"
+		return "dimension_1_code"
 	case 35:
-		return "project_code"
+		return "dimension_2_code"
 	case 37:
 		return "indirect_cost_percent"
 	case 39:
@@ -705,9 +705,9 @@ func (t *ItemJournalLine) FieldName(fieldNo int) string {
 	case 50:
 		return "new_location_code"
 	case 51:
-		return "new_department_code"
+		return "new_dimension_1_code"
 	case 52:
-		return "new_project_code"
+		return "new_dimension_2_code"
 	case 53:
 		return "qty_calculated"
 	case 54:
@@ -941,11 +941,11 @@ type (
 	ItemJournalLineOnValidate_Item_shpt_entry_no interface {
 		OnValidate_Item_shpt_entry_no(rec *ItemJournalLine) error
 	}
-	ItemJournalLineOnValidate_Department_code interface {
-		OnValidate_Department_code(rec *ItemJournalLine) error
+	ItemJournalLineOnValidate_Dimension_1_code interface {
+		OnValidate_Dimension_1_code(rec *ItemJournalLine) error
 	}
-	ItemJournalLineOnValidate_Project_code interface {
-		OnValidate_Project_code(rec *ItemJournalLine) error
+	ItemJournalLineOnValidate_Dimension_2_code interface {
+		OnValidate_Dimension_2_code(rec *ItemJournalLine) error
 	}
 	ItemJournalLineOnValidate_Indirect_cost_percent interface {
 		OnValidate_Indirect_cost_percent(rec *ItemJournalLine) error
@@ -971,11 +971,11 @@ type (
 	ItemJournalLineOnValidate_New_location_code interface {
 		OnValidate_New_location_code(rec *ItemJournalLine) error
 	}
-	ItemJournalLineOnValidate_New_department_code interface {
-		OnValidate_New_department_code(rec *ItemJournalLine) error
+	ItemJournalLineOnValidate_New_dimension_1_code interface {
+		OnValidate_New_dimension_1_code(rec *ItemJournalLine) error
 	}
-	ItemJournalLineOnValidate_New_project_code interface {
-		OnValidate_New_project_code(rec *ItemJournalLine) error
+	ItemJournalLineOnValidate_New_dimension_2_code interface {
+		OnValidate_New_dimension_2_code(rec *ItemJournalLine) error
 	}
 	ItemJournalLineOnValidate_Qty_calculated interface {
 		OnValidate_Qty_calculated(rec *ItemJournalLine) error
@@ -1149,10 +1149,10 @@ func itemJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemJournalLineOnValidate_Applies_to_entry)
 	case "OnValidate_Item_shpt_entry_no":
 		_, ok = logic.(ItemJournalLineOnValidate_Item_shpt_entry_no)
-	case "OnValidate_Department_code":
-		_, ok = logic.(ItemJournalLineOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(ItemJournalLineOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(ItemJournalLineOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(ItemJournalLineOnValidate_Dimension_2_code)
 	case "OnValidate_Indirect_cost_percent":
 		_, ok = logic.(ItemJournalLineOnValidate_Indirect_cost_percent)
 	case "OnValidate_Source_type":
@@ -1169,10 +1169,10 @@ func itemJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemJournalLineOnValidate_Country_code)
 	case "OnValidate_New_location_code":
 		_, ok = logic.(ItemJournalLineOnValidate_New_location_code)
-	case "OnValidate_New_department_code":
-		_, ok = logic.(ItemJournalLineOnValidate_New_department_code)
-	case "OnValidate_New_project_code":
-		_, ok = logic.(ItemJournalLineOnValidate_New_project_code)
+	case "OnValidate_New_dimension_1_code":
+		_, ok = logic.(ItemJournalLineOnValidate_New_dimension_1_code)
+	case "OnValidate_New_dimension_2_code":
+		_, ok = logic.(ItemJournalLineOnValidate_New_dimension_2_code)
 	case "OnValidate_Qty_calculated":
 		_, ok = logic.(ItemJournalLineOnValidate_Qty_calculated)
 	case "OnValidate_Qty_phys_inventory":
@@ -1352,10 +1352,10 @@ func (t *ItemJournalLine) CheckFields() error {
 	if err := tables.CheckMaxLength(ItemJournalLineTableName, "source_code", string(t.Source_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(ItemJournalLineTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(ItemJournalLineTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(ItemJournalLineTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(ItemJournalLineTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckDecimalRange(ItemJournalLineTableName, "indirect_cost_percent", t.Indirect_cost_percent, "0", ""); err != nil {
@@ -1376,10 +1376,10 @@ func (t *ItemJournalLine) CheckFields() error {
 	if err := tables.CheckMaxLength(ItemJournalLineTableName, "new_location_code", string(t.New_location_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(ItemJournalLineTableName, "new_department_code", string(t.New_department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(ItemJournalLineTableName, "new_dimension_1_code", string(t.New_dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(ItemJournalLineTableName, "new_project_code", string(t.New_project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(ItemJournalLineTableName, "new_dimension_2_code", string(t.New_dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(ItemJournalLineTableName, "gen_bus_posting_group", string(t.Gen_bus_posting_group), 10); err != nil {
@@ -1485,8 +1485,8 @@ func GetItemJournalLineTableSchema() string {
 		source_code TEXT(10),
 		applies_to_entry INTEGER,
 		item_shpt_entry_no INTEGER,
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		indirect_cost_percent TEXT,
 		source_type INTEGER CHECK (source_type >= 0 AND source_type <= 3),
 		reason_code TEXT(10),
@@ -1495,8 +1495,8 @@ func GetItemJournalLineTableSchema() string {
 		transport_method TEXT(10),
 		country_code TEXT(10),
 		new_location_code TEXT(10),
-		new_department_code TEXT(10),
-		new_project_code TEXT(10),
+		new_dimension_1_code TEXT(10),
+		new_dimension_2_code TEXT(10),
 		qty_calculated TEXT,
 		qty_phys_inventory TEXT,
 		last_item_ledger_entry_no INTEGER,
@@ -1559,8 +1559,8 @@ func GetItemJournalLinePostgresTableSchema() string {
 		source_code VARCHAR(10),
 		applies_to_entry INTEGER,
 		item_shpt_entry_no INTEGER,
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		indirect_cost_percent NUMERIC,
 		source_type INTEGER CHECK (source_type >= 0 AND source_type <= 3),
 		reason_code VARCHAR(10),
@@ -1569,8 +1569,8 @@ func GetItemJournalLinePostgresTableSchema() string {
 		transport_method VARCHAR(10),
 		country_code VARCHAR(10),
 		new_location_code VARCHAR(10),
-		new_department_code VARCHAR(10),
-		new_project_code VARCHAR(10),
+		new_dimension_1_code VARCHAR(10),
+		new_dimension_2_code VARCHAR(10),
 		qty_calculated NUMERIC,
 		qty_phys_inventory NUMERIC,
 		last_item_ledger_entry_no INTEGER,
@@ -1762,8 +1762,8 @@ func (t *ItemJournalLine) StoreOldValues() {
 	t.oldValues["source_code"] = t.Source_code
 	t.oldValues["applies_to_entry"] = t.Applies_to_entry
 	t.oldValues["item_shpt_entry_no"] = t.Item_shpt_entry_no
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["indirect_cost_percent"] = t.Indirect_cost_percent
 	t.oldValues["source_type"] = t.Source_type
 	t.oldValues["reason_code"] = t.Reason_code
@@ -1772,8 +1772,8 @@ func (t *ItemJournalLine) StoreOldValues() {
 	t.oldValues["transport_method"] = t.Transport_method
 	t.oldValues["country_code"] = t.Country_code
 	t.oldValues["new_location_code"] = t.New_location_code
-	t.oldValues["new_department_code"] = t.New_department_code
-	t.oldValues["new_project_code"] = t.New_project_code
+	t.oldValues["new_dimension_1_code"] = t.New_dimension_1_code
+	t.oldValues["new_dimension_2_code"] = t.New_dimension_2_code
 	t.oldValues["qty_calculated"] = t.Qty_calculated
 	t.oldValues["qty_phys_inventory"] = t.Qty_phys_inventory
 	t.oldValues["last_item_ledger_entry_no"] = t.Last_item_ledger_entry_no
@@ -1887,11 +1887,11 @@ func (t *ItemJournalLine) XRec() *ItemJournalLine {
 	if v, ok := t.oldValues["item_shpt_entry_no"].(int); ok {
 		x.Item_shpt_entry_no = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["indirect_cost_percent"].(types.Decimal); ok {
 		x.Indirect_cost_percent = v
@@ -1917,11 +1917,11 @@ func (t *ItemJournalLine) XRec() *ItemJournalLine {
 	if v, ok := t.oldValues["new_location_code"].(types.Code); ok {
 		x.New_location_code = v
 	}
-	if v, ok := t.oldValues["new_department_code"].(types.Code); ok {
-		x.New_department_code = v
+	if v, ok := t.oldValues["new_dimension_1_code"].(types.Code); ok {
+		x.New_dimension_1_code = v
 	}
-	if v, ok := t.oldValues["new_project_code"].(types.Code); ok {
-		x.New_project_code = v
+	if v, ok := t.oldValues["new_dimension_2_code"].(types.Code); ok {
+		x.New_dimension_2_code = v
 	}
 	if v, ok := t.oldValues["qty_calculated"].(types.Decimal); ok {
 		x.Qty_calculated = v
@@ -2123,8 +2123,8 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 	var source_codeNull sql.NullString
 	var applies_to_entryVal int
 	var item_shpt_entry_noVal int
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var indirect_cost_percentNull sql.NullString
 	var source_typeInt int
 	var reason_codeNull sql.NullString
@@ -2133,8 +2133,8 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 	var transport_methodNull sql.NullString
 	var country_codeNull sql.NullString
 	var new_location_codeNull sql.NullString
-	var new_department_codeNull sql.NullString
-	var new_project_codeNull sql.NullString
+	var new_dimension_1_codeNull sql.NullString
+	var new_dimension_2_codeNull sql.NullString
 	var qty_calculatedNull sql.NullString
 	var qty_phys_inventoryNull sql.NullString
 	var last_item_ledger_entry_noVal int
@@ -2177,7 +2177,7 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no, bin_code, new_bin_code FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, dimension_1_code, dimension_2_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_dimension_1_code, new_dimension_2_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no, bin_code, new_bin_code FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2206,8 +2206,8 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 		&source_codeNull,
 		&applies_to_entryVal,
 		&item_shpt_entry_noVal,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&indirect_cost_percentNull,
 		&source_typeInt,
 		&reason_codeNull,
@@ -2216,8 +2216,8 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 		&transport_methodNull,
 		&country_codeNull,
 		&new_location_codeNull,
-		&new_department_codeNull,
-		&new_project_codeNull,
+		&new_dimension_1_codeNull,
+		&new_dimension_2_codeNull,
 		&qty_calculatedNull,
 		&qty_phys_inventoryNull,
 		&last_item_ledger_entry_noVal,
@@ -2286,8 +2286,8 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.Applies_to_entry = applies_to_entryVal
 	t.Item_shpt_entry_no = item_shpt_entry_noVal
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Indirect_cost_percent, _ = types.NewDecimalFromString(indirect_cost_percentNull.String)
 	t.Source_type = ItemJournalLineSource_type(source_typeInt)
 	t.Reason_code = types.NewCode(reason_codeNull.String)
@@ -2296,8 +2296,8 @@ func (t *ItemJournalLine) GetByPK(journal_template_name types.Code, journal_batc
 	t.Transport_method = types.NewCode(transport_methodNull.String)
 	t.Country_code = types.NewCode(country_codeNull.String)
 	t.New_location_code = types.NewCode(new_location_codeNull.String)
-	t.New_department_code = types.NewCode(new_department_codeNull.String)
-	t.New_project_code = types.NewCode(new_project_codeNull.String)
+	t.New_dimension_1_code = types.NewCode(new_dimension_1_codeNull.String)
+	t.New_dimension_2_code = types.NewCode(new_dimension_2_codeNull.String)
 	t.Qty_calculated, _ = types.NewDecimalFromString(qty_calculatedNull.String)
 	t.Qty_phys_inventory, _ = types.NewDecimalFromString(qty_phys_inventoryNull.String)
 	t.Last_item_ledger_entry_no = last_item_ledger_entry_noVal
@@ -2375,8 +2375,8 @@ func (t *ItemJournalLine) Insert(runTrigger bool) bool {
 		t.Source_code,
 		t.Applies_to_entry,
 		t.Item_shpt_entry_no,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Indirect_cost_percent,
 		t.Source_type,
 		t.Reason_code,
@@ -2385,8 +2385,8 @@ func (t *ItemJournalLine) Insert(runTrigger bool) bool {
 		t.Transport_method,
 		t.Country_code,
 		t.New_location_code,
-		t.New_department_code,
-		t.New_project_code,
+		t.New_dimension_1_code,
+		t.New_dimension_2_code,
 		t.Qty_calculated,
 		t.Qty_phys_inventory,
 		t.Last_item_ledger_entry_no,
@@ -2424,7 +2424,7 @@ func (t *ItemJournalLine) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no, bin_code, new_bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, dimension_1_code, dimension_2_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_dimension_1_code, new_dimension_2_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no, bin_code, new_bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2484,8 +2484,8 @@ func (t *ItemJournalLine) InsertAll(records []*ItemJournalLine, runTrigger bool)
 			r.Source_code,
 			r.Applies_to_entry,
 			r.Item_shpt_entry_no,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Indirect_cost_percent,
 			r.Source_type,
 			r.Reason_code,
@@ -2494,8 +2494,8 @@ func (t *ItemJournalLine) InsertAll(records []*ItemJournalLine, runTrigger bool)
 			r.Transport_method,
 			r.Country_code,
 			r.New_location_code,
-			r.New_department_code,
-			r.New_project_code,
+			r.New_dimension_1_code,
+			r.New_dimension_2_code,
 			r.Qty_calculated,
 			r.Qty_phys_inventory,
 			r.Last_item_ledger_entry_no,
@@ -2532,7 +2532,7 @@ func (t *ItemJournalLine) InsertAll(records []*ItemJournalLine, runTrigger bool)
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ItemJournalLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "source_code", "applies_to_entry", "item_shpt_entry_no", "department_code", "project_code", "indirect_cost_percent", "source_type", "reason_code", "drop_shipment", "transaction_type", "transport_method", "country_code", "new_location_code", "new_department_code", "new_project_code", "qty_calculated", "qty_phys_inventory", "last_item_ledger_entry_no", "phys_inventory", "gen_bus_posting_group", "gen_prod_posting_group", "entry_exit_point", "document_date", "external_document_no", "area", "transaction_specification", "posting_no_series", "source_currency_unit_cost", "source_currency_code", "reserve", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "invoiced_qty_base", "recurring_method", "expiration_date", "recurring_frequency", "positive_reserved_quantity", "negative_reserved_quantity", "positive_reserved_qty_base", "negative_reserved_qty_base", "serial_no", "new_serial_no", "lot_no", "new_lot_no", "bin_code", "new_bin_code"}
+	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "source_code", "applies_to_entry", "item_shpt_entry_no", "dimension_1_code", "dimension_2_code", "indirect_cost_percent", "source_type", "reason_code", "drop_shipment", "transaction_type", "transport_method", "country_code", "new_location_code", "new_dimension_1_code", "new_dimension_2_code", "qty_calculated", "qty_phys_inventory", "last_item_ledger_entry_no", "phys_inventory", "gen_bus_posting_group", "gen_prod_posting_group", "entry_exit_point", "document_date", "external_document_no", "area", "transaction_specification", "posting_no_series", "source_currency_unit_cost", "source_currency_code", "reserve", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "invoiced_qty_base", "recurring_method", "expiration_date", "recurring_frequency", "positive_reserved_quantity", "negative_reserved_quantity", "positive_reserved_qty_base", "negative_reserved_qty_base", "serial_no", "new_serial_no", "lot_no", "new_lot_no", "bin_code", "new_bin_code"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2666,13 +2666,13 @@ func (t *ItemJournalLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "item_shpt_entry_no = ?")
 			values = append(values, t.Item_shpt_entry_no)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("indirect_cost_percent") {
 			setClauses = append(setClauses, "indirect_cost_percent = ?")
@@ -2706,13 +2706,13 @@ func (t *ItemJournalLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "new_location_code = ?")
 			values = append(values, t.New_location_code)
 		}
-		if t.hasFieldChanged("new_department_code") {
-			setClauses = append(setClauses, "new_department_code = ?")
-			values = append(values, t.New_department_code)
+		if t.hasFieldChanged("new_dimension_1_code") {
+			setClauses = append(setClauses, "new_dimension_1_code = ?")
+			values = append(values, t.New_dimension_1_code)
 		}
-		if t.hasFieldChanged("new_project_code") {
-			setClauses = append(setClauses, "new_project_code = ?")
-			values = append(values, t.New_project_code)
+		if t.hasFieldChanged("new_dimension_2_code") {
+			setClauses = append(setClauses, "new_dimension_2_code = ?")
+			values = append(values, t.New_dimension_2_code)
 		}
 		if t.hasFieldChanged("qty_calculated") {
 			setClauses = append(setClauses, "qty_calculated = ?")
@@ -2891,10 +2891,10 @@ func (t *ItemJournalLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Applies_to_entry)
 		setClauses = append(setClauses, "item_shpt_entry_no = ?")
 		values = append(values, t.Item_shpt_entry_no)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "indirect_cost_percent = ?")
 		values = append(values, t.Indirect_cost_percent)
 		setClauses = append(setClauses, "source_type = ?")
@@ -2911,10 +2911,10 @@ func (t *ItemJournalLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Country_code)
 		setClauses = append(setClauses, "new_location_code = ?")
 		values = append(values, t.New_location_code)
-		setClauses = append(setClauses, "new_department_code = ?")
-		values = append(values, t.New_department_code)
-		setClauses = append(setClauses, "new_project_code = ?")
-		values = append(values, t.New_project_code)
+		setClauses = append(setClauses, "new_dimension_1_code = ?")
+		values = append(values, t.New_dimension_1_code)
+		setClauses = append(setClauses, "new_dimension_2_code = ?")
+		values = append(values, t.New_dimension_2_code)
 		setClauses = append(setClauses, "qty_calculated = ?")
 		values = append(values, t.Qty_calculated)
 		setClauses = append(setClauses, "qty_phys_inventory = ?")
@@ -3126,13 +3126,13 @@ func (t *ItemJournalLine) hasFieldChanged(fieldName string) bool {
 			return t.Item_shpt_entry_no != old
 		}
 		return true // Type mismatch, assume changed
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "indirect_cost_percent":
 		if old, ok := oldValue.(types.Decimal); ok {
@@ -3167,13 +3167,13 @@ func (t *ItemJournalLine) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.New_location_code.Equal(old)
 		}
-	case "new_department_code":
+	case "new_dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.New_department_code.Equal(old)
+			return !t.New_dimension_1_code.Equal(old)
 		}
-	case "new_project_code":
+	case "new_dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.New_project_code.Equal(old)
+			return !t.New_dimension_2_code.Equal(old)
 		}
 	case "qty_calculated":
 		if old, ok := oldValue.(types.Decimal); ok {
@@ -3559,10 +3559,10 @@ func (t *ItemJournalLine) columnName(fieldName string) (string, bool) {
 		return "applies_to_entry", true
 	case strings.ToLower("item_shpt_entry_no"):
 		return "item_shpt_entry_no", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("indirect_cost_percent"):
 		return "indirect_cost_percent", true
 	case strings.ToLower("source_type"):
@@ -3579,10 +3579,10 @@ func (t *ItemJournalLine) columnName(fieldName string) (string, bool) {
 		return "country_code", true
 	case strings.ToLower("new_location_code"):
 		return "new_location_code", true
-	case strings.ToLower("new_department_code"):
-		return "new_department_code", true
-	case strings.ToLower("new_project_code"):
-		return "new_project_code", true
+	case strings.ToLower("new_dimension_1_code"):
+		return "new_dimension_1_code", true
+	case strings.ToLower("new_dimension_2_code"):
+		return "new_dimension_2_code", true
 	case strings.ToLower("qty_calculated"):
 		return "qty_calculated", true
 	case strings.ToLower("qty_phys_inventory"):
@@ -4050,7 +4050,7 @@ func (t *ItemJournalLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no, bin_code, new_bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, dimension_1_code, dimension_2_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_dimension_1_code, new_dimension_2_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no, bin_code, new_bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4074,8 +4074,8 @@ func (t *ItemJournalLine) FindFirst() bool {
 	var discount_amountNull sql.NullString
 	var salespers_purch_codeNull sql.NullString
 	var source_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var indirect_cost_percentNull sql.NullString
 	var source_typeInt int
 	var reason_codeNull sql.NullString
@@ -4084,8 +4084,8 @@ func (t *ItemJournalLine) FindFirst() bool {
 	var transport_methodNull sql.NullString
 	var country_codeNull sql.NullString
 	var new_location_codeNull sql.NullString
-	var new_department_codeNull sql.NullString
-	var new_project_codeNull sql.NullString
+	var new_dimension_1_codeNull sql.NullString
+	var new_dimension_2_codeNull sql.NullString
 	var qty_calculatedNull sql.NullString
 	var qty_phys_inventoryNull sql.NullString
 	var phys_inventoryBool sql.NullBool
@@ -4142,8 +4142,8 @@ func (t *ItemJournalLine) FindFirst() bool {
 		&source_codeNull,
 		&t.Applies_to_entry,
 		&t.Item_shpt_entry_no,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&indirect_cost_percentNull,
 		&source_typeInt,
 		&reason_codeNull,
@@ -4152,8 +4152,8 @@ func (t *ItemJournalLine) FindFirst() bool {
 		&transport_methodNull,
 		&country_codeNull,
 		&new_location_codeNull,
-		&new_department_codeNull,
-		&new_project_codeNull,
+		&new_dimension_1_codeNull,
+		&new_dimension_2_codeNull,
 		&qty_calculatedNull,
 		&qty_phys_inventoryNull,
 		&t.Last_item_ledger_entry_no,
@@ -4217,8 +4217,8 @@ func (t *ItemJournalLine) FindFirst() bool {
 	t.Discount_amount, _ = types.NewDecimalFromString(discount_amountNull.String)
 	t.Salespers_purch_code = types.NewCode(salespers_purch_codeNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Indirect_cost_percent, _ = types.NewDecimalFromString(indirect_cost_percentNull.String)
 	t.Source_type = ItemJournalLineSource_type(source_typeInt)
 	t.Reason_code = types.NewCode(reason_codeNull.String)
@@ -4227,8 +4227,8 @@ func (t *ItemJournalLine) FindFirst() bool {
 	t.Transport_method = types.NewCode(transport_methodNull.String)
 	t.Country_code = types.NewCode(country_codeNull.String)
 	t.New_location_code = types.NewCode(new_location_codeNull.String)
-	t.New_department_code = types.NewCode(new_department_codeNull.String)
-	t.New_project_code = types.NewCode(new_project_codeNull.String)
+	t.New_dimension_1_code = types.NewCode(new_dimension_1_codeNull.String)
+	t.New_dimension_2_code = types.NewCode(new_dimension_2_codeNull.String)
 	t.Qty_calculated, _ = types.NewDecimalFromString(qty_calculatedNull.String)
 	t.Qty_phys_inventory, _ = types.NewDecimalFromString(qty_phys_inventoryNull.String)
 	t.Phys_inventory = phys_inventoryBool.Bool
@@ -4281,7 +4281,7 @@ func (t *ItemJournalLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no, bin_code, new_bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, dimension_1_code, dimension_2_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_dimension_1_code, new_dimension_2_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no, bin_code, new_bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4305,8 +4305,8 @@ func (t *ItemJournalLine) FindLast() bool {
 	var discount_amountNull sql.NullString
 	var salespers_purch_codeNull sql.NullString
 	var source_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var indirect_cost_percentNull sql.NullString
 	var source_typeInt int
 	var reason_codeNull sql.NullString
@@ -4315,8 +4315,8 @@ func (t *ItemJournalLine) FindLast() bool {
 	var transport_methodNull sql.NullString
 	var country_codeNull sql.NullString
 	var new_location_codeNull sql.NullString
-	var new_department_codeNull sql.NullString
-	var new_project_codeNull sql.NullString
+	var new_dimension_1_codeNull sql.NullString
+	var new_dimension_2_codeNull sql.NullString
 	var qty_calculatedNull sql.NullString
 	var qty_phys_inventoryNull sql.NullString
 	var phys_inventoryBool sql.NullBool
@@ -4373,8 +4373,8 @@ func (t *ItemJournalLine) FindLast() bool {
 		&source_codeNull,
 		&t.Applies_to_entry,
 		&t.Item_shpt_entry_no,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&indirect_cost_percentNull,
 		&source_typeInt,
 		&reason_codeNull,
@@ -4383,8 +4383,8 @@ func (t *ItemJournalLine) FindLast() bool {
 		&transport_methodNull,
 		&country_codeNull,
 		&new_location_codeNull,
-		&new_department_codeNull,
-		&new_project_codeNull,
+		&new_dimension_1_codeNull,
+		&new_dimension_2_codeNull,
 		&qty_calculatedNull,
 		&qty_phys_inventoryNull,
 		&t.Last_item_ledger_entry_no,
@@ -4448,8 +4448,8 @@ func (t *ItemJournalLine) FindLast() bool {
 	t.Discount_amount, _ = types.NewDecimalFromString(discount_amountNull.String)
 	t.Salespers_purch_code = types.NewCode(salespers_purch_codeNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Indirect_cost_percent, _ = types.NewDecimalFromString(indirect_cost_percentNull.String)
 	t.Source_type = ItemJournalLineSource_type(source_typeInt)
 	t.Reason_code = types.NewCode(reason_codeNull.String)
@@ -4458,8 +4458,8 @@ func (t *ItemJournalLine) FindLast() bool {
 	t.Transport_method = types.NewCode(transport_methodNull.String)
 	t.Country_code = types.NewCode(country_codeNull.String)
 	t.New_location_code = types.NewCode(new_location_codeNull.String)
-	t.New_department_code = types.NewCode(new_department_codeNull.String)
-	t.New_project_code = types.NewCode(new_project_codeNull.String)
+	t.New_dimension_1_code = types.NewCode(new_dimension_1_codeNull.String)
+	t.New_dimension_2_code = types.NewCode(new_dimension_2_codeNull.String)
 	t.Qty_calculated, _ = types.NewDecimalFromString(qty_calculatedNull.String)
 	t.Qty_phys_inventory, _ = types.NewDecimalFromString(qty_phys_inventoryNull.String)
 	t.Phys_inventory = phys_inventoryBool.Bool
@@ -4542,7 +4542,7 @@ func (t *ItemJournalLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no, bin_code, new_bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, dimension_1_code, dimension_2_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_dimension_1_code, new_dimension_2_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no, bin_code, new_bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4630,8 +4630,8 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 		var discount_amountNull sql.NullString
 		var salespers_purch_codeNull sql.NullString
 		var source_codeNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var indirect_cost_percentNull sql.NullString
 		var source_typeInt int
 		var reason_codeNull sql.NullString
@@ -4640,8 +4640,8 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 		var transport_methodNull sql.NullString
 		var country_codeNull sql.NullString
 		var new_location_codeNull sql.NullString
-		var new_department_codeNull sql.NullString
-		var new_project_codeNull sql.NullString
+		var new_dimension_1_codeNull sql.NullString
+		var new_dimension_2_codeNull sql.NullString
 		var qty_calculatedNull sql.NullString
 		var qty_phys_inventoryNull sql.NullString
 		var phys_inventoryBool sql.NullBool
@@ -4698,8 +4698,8 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 			&source_codeNull,
 			&t.Applies_to_entry,
 			&t.Item_shpt_entry_no,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&indirect_cost_percentNull,
 			&source_typeInt,
 			&reason_codeNull,
@@ -4708,8 +4708,8 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 			&transport_methodNull,
 			&country_codeNull,
 			&new_location_codeNull,
-			&new_department_codeNull,
-			&new_project_codeNull,
+			&new_dimension_1_codeNull,
+			&new_dimension_2_codeNull,
 			&qty_calculatedNull,
 			&qty_phys_inventoryNull,
 			&t.Last_item_ledger_entry_no,
@@ -4772,8 +4772,8 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 		t.Discount_amount, _ = types.NewDecimalFromString(discount_amountNull.String)
 		t.Salespers_purch_code = types.NewCode(salespers_purch_codeNull.String)
 		t.Source_code = types.NewCode(source_codeNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Indirect_cost_percent, _ = types.NewDecimalFromString(indirect_cost_percentNull.String)
 		t.Source_type = ItemJournalLineSource_type(source_typeInt)
 		t.Reason_code = types.NewCode(reason_codeNull.String)
@@ -4782,8 +4782,8 @@ func (t *ItemJournalLine) Next(steps ...int) bool {
 		t.Transport_method = types.NewCode(transport_methodNull.String)
 		t.Country_code = types.NewCode(country_codeNull.String)
 		t.New_location_code = types.NewCode(new_location_codeNull.String)
-		t.New_department_code = types.NewCode(new_department_codeNull.String)
-		t.New_project_code = types.NewCode(new_project_codeNull.String)
+		t.New_dimension_1_code = types.NewCode(new_dimension_1_codeNull.String)
+		t.New_dimension_2_code = types.NewCode(new_dimension_2_codeNull.String)
 		t.Qty_calculated, _ = types.NewDecimalFromString(qty_calculatedNull.String)
 		t.Qty_phys_inventory, _ = types.NewDecimalFromString(qty_phys_inventoryNull.String)
 		t.Phys_inventory = phys_inventoryBool.Bool
@@ -4865,7 +4865,7 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, department_code, project_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_department_code, new_project_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no, bin_code, new_bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, source_code, applies_to_entry, item_shpt_entry_no, dimension_1_code, dimension_2_code, indirect_cost_percent, source_type, reason_code, drop_shipment, transaction_type, transport_method, country_code, new_location_code, new_dimension_1_code, new_dimension_2_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, phys_inventory, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, posting_no_series, source_currency_unit_cost, source_currency_code, reserve, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, invoiced_qty_base, recurring_method, expiration_date, recurring_frequency, positive_reserved_quantity, negative_reserved_quantity, positive_reserved_qty_base, negative_reserved_qty_base, serial_no, new_serial_no, lot_no, new_lot_no, bin_code, new_bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4906,8 +4906,8 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 		var discount_amountNull sql.NullString
 		var salespers_purch_codeNull sql.NullString
 		var source_codeNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var indirect_cost_percentNull sql.NullString
 		var source_typeInt int
 		var reason_codeNull sql.NullString
@@ -4916,8 +4916,8 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 		var transport_methodNull sql.NullString
 		var country_codeNull sql.NullString
 		var new_location_codeNull sql.NullString
-		var new_department_codeNull sql.NullString
-		var new_project_codeNull sql.NullString
+		var new_dimension_1_codeNull sql.NullString
+		var new_dimension_2_codeNull sql.NullString
 		var qty_calculatedNull sql.NullString
 		var qty_phys_inventoryNull sql.NullString
 		var phys_inventoryBool sql.NullBool
@@ -4974,8 +4974,8 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 			&source_codeNull,
 			&record.Applies_to_entry,
 			&record.Item_shpt_entry_no,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&indirect_cost_percentNull,
 			&source_typeInt,
 			&reason_codeNull,
@@ -4984,8 +4984,8 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 			&transport_methodNull,
 			&country_codeNull,
 			&new_location_codeNull,
-			&new_department_codeNull,
-			&new_project_codeNull,
+			&new_dimension_1_codeNull,
+			&new_dimension_2_codeNull,
 			&qty_calculatedNull,
 			&qty_phys_inventoryNull,
 			&record.Last_item_ledger_entry_no,
@@ -5046,8 +5046,8 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 		record.Discount_amount, _ = types.NewDecimalFromString(discount_amountNull.String)
 		record.Salespers_purch_code = types.NewCode(salespers_purch_codeNull.String)
 		record.Source_code = types.NewCode(source_codeNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Indirect_cost_percent, _ = types.NewDecimalFromString(indirect_cost_percentNull.String)
 		record.Source_type = ItemJournalLineSource_type(source_typeInt)
 		record.Reason_code = types.NewCode(reason_codeNull.String)
@@ -5056,8 +5056,8 @@ func (t *ItemJournalLine) FindSetBuffered() bool {
 		record.Transport_method = types.NewCode(transport_methodNull.String)
 		record.Country_code = types.NewCode(country_codeNull.String)
 		record.New_location_code = types.NewCode(new_location_codeNull.String)
-		record.New_department_code = types.NewCode(new_department_codeNull.String)
-		record.New_project_code = types.NewCode(new_project_codeNull.String)
+		record.New_dimension_1_code = types.NewCode(new_dimension_1_codeNull.String)
+		record.New_dimension_2_code = types.NewCode(new_dimension_2_codeNull.String)
 		record.Qty_calculated, _ = types.NewDecimalFromString(qty_calculatedNull.String)
 		record.Qty_phys_inventory, _ = types.NewDecimalFromString(qty_phys_inventoryNull.String)
 		record.Phys_inventory = phys_inventoryBool.Bool
@@ -5140,8 +5140,8 @@ func (t *ItemJournalLine) copyFromBuffered(record *ItemJournalLine) {
 	t.Source_code = record.Source_code
 	t.Applies_to_entry = record.Applies_to_entry
 	t.Item_shpt_entry_no = record.Item_shpt_entry_no
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Indirect_cost_percent = record.Indirect_cost_percent
 	t.Source_type = record.Source_type
 	t.Reason_code = record.Reason_code
@@ -5150,8 +5150,8 @@ func (t *ItemJournalLine) copyFromBuffered(record *ItemJournalLine) {
 	t.Transport_method = record.Transport_method
 	t.Country_code = record.Country_code
 	t.New_location_code = record.New_location_code
-	t.New_department_code = record.New_department_code
-	t.New_project_code = record.New_project_code
+	t.New_dimension_1_code = record.New_dimension_1_code
+	t.New_dimension_2_code = record.New_dimension_2_code
 	t.Qty_calculated = record.Qty_calculated
 	t.Qty_phys_inventory = record.Qty_phys_inventory
 	t.Last_item_ledger_entry_no = record.Last_item_ledger_entry_no
@@ -5879,45 +5879,45 @@ func (t *ItemJournalLine) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemJournalLineOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(ItemJournalLineOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemJournalLineOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(ItemJournalLineOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -6129,45 +6129,45 @@ func (t *ItemJournalLine) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
-	case "new_department_code":
+	case "new_dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.New_department_code = v
+			t.New_dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.New_department_code = types.NewCode(v)
+			t.New_dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field new_department_code")
+			return fmt.Errorf("invalid type for field new_dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "new_department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "new_dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemJournalLineOnValidate_New_department_code); ok {
-				if err := trg.OnValidate_New_department_code(t); err != nil {
+			if trg, ok := l.(ItemJournalLineOnValidate_New_dimension_1_code); ok {
+				if err := trg.OnValidate_New_dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "new_project_code":
+	case "new_dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.New_project_code = v
+			t.New_dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.New_project_code = types.NewCode(v)
+			t.New_dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field new_project_code")
+			return fmt.Errorf("invalid type for field new_dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "new_project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "new_dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemJournalLineOnValidate_New_project_code); ok {
-				if err := trg.OnValidate_New_project_code(t); err != nil {
+			if trg, ok := l.(ItemJournalLineOnValidate_New_dimension_2_code); ok {
+				if err := trg.OnValidate_New_dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -7055,9 +7055,9 @@ func (t *ItemJournalLine) FieldValue(no int) (any, bool) {
 	case 32:
 		return t.Item_shpt_entry_no, true
 	case 34:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 35:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 37:
 		return t.Indirect_cost_percent, true
 	case 39:
@@ -7075,9 +7075,9 @@ func (t *ItemJournalLine) FieldValue(no int) (any, bool) {
 	case 50:
 		return t.New_location_code, true
 	case 51:
-		return t.New_department_code, true
+		return t.New_dimension_1_code, true
 	case 52:
-		return t.New_project_code, true
+		return t.New_dimension_2_code, true
 	case 53:
 		return t.Qty_calculated, true
 	case 54:
@@ -7315,20 +7315,20 @@ func (t *ItemJournalLine) SetFieldValue(no int, value any) bool {
 		}
 	case 34:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 35:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 37:
@@ -7393,20 +7393,20 @@ func (t *ItemJournalLine) SetFieldValue(no int, value any) bool {
 		}
 	case 51:
 		if v, ok := value.(types.Code); ok {
-			t.New_department_code = v
+			t.New_dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.New_department_code = types.NewCode(v)
+			t.New_dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 52:
 		if v, ok := value.(types.Code); ok {
-			t.New_project_code = v
+			t.New_dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.New_project_code = types.NewCode(v)
+			t.New_dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 53:
@@ -8289,10 +8289,10 @@ func (t *ItemJournalLine) columnValue(column string) (interface{}, bool) {
 		return t.Applies_to_entry, true
 	case "item_shpt_entry_no":
 		return t.Item_shpt_entry_no, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "indirect_cost_percent":
 		return t.Indirect_cost_percent, true
 	case "source_type":
@@ -8309,10 +8309,10 @@ func (t *ItemJournalLine) columnValue(column string) (interface{}, bool) {
 		return t.Country_code, true
 	case "new_location_code":
 		return t.New_location_code, true
-	case "new_department_code":
-		return t.New_department_code, true
-	case "new_project_code":
-		return t.New_project_code, true
+	case "new_dimension_1_code":
+		return t.New_dimension_1_code, true
+	case "new_dimension_2_code":
+		return t.New_dimension_2_code, true
 	case "qty_calculated":
 		return t.Qty_calculated, true
 	case "qty_phys_inventory":
@@ -8460,8 +8460,8 @@ func (t *ItemJournalLine) Init() {
 	t.Source_code = *new(types.Code)
 	t.Applies_to_entry = *new(int)
 	t.Item_shpt_entry_no = *new(int)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Indirect_cost_percent = *new(types.Decimal)
 	t.Source_type = 0
 	t.Reason_code = *new(types.Code)
@@ -8470,8 +8470,8 @@ func (t *ItemJournalLine) Init() {
 	t.Transport_method = *new(types.Code)
 	t.Country_code = *new(types.Code)
 	t.New_location_code = *new(types.Code)
-	t.New_department_code = *new(types.Code)
-	t.New_project_code = *new(types.Code)
+	t.New_dimension_1_code = *new(types.Code)
+	t.New_dimension_2_code = *new(types.Code)
 	t.Qty_calculated = *new(types.Decimal)
 	t.Qty_phys_inventory = *new(types.Decimal)
 	t.Last_item_ledger_entry_no = *new(int)
@@ -8561,8 +8561,8 @@ func (t *ItemJournalLine) ToMap() map[string]interface{} {
 		"source_code":                t.Source_code.String(),
 		"applies_to_entry":           t.Applies_to_entry,
 		"item_shpt_entry_no":         t.Item_shpt_entry_no,
-		"department_code":            t.Department_code.String(),
-		"project_code":               t.Project_code.String(),
+		"dimension_1_code":           t.Dimension_1_code.String(),
+		"dimension_2_code":           t.Dimension_2_code.String(),
 		"indirect_cost_percent":      t.Indirect_cost_percent.String(),
 		"source_type":                int(t.Source_type),
 		"reason_code":                t.Reason_code.String(),
@@ -8571,8 +8571,8 @@ func (t *ItemJournalLine) ToMap() map[string]interface{} {
 		"transport_method":           t.Transport_method.String(),
 		"country_code":               t.Country_code.String(),
 		"new_location_code":          t.New_location_code.String(),
-		"new_department_code":        t.New_department_code.String(),
-		"new_project_code":           t.New_project_code.String(),
+		"new_dimension_1_code":       t.New_dimension_1_code.String(),
+		"new_dimension_2_code":       t.New_dimension_2_code.String(),
 		"qty_calculated":             t.Qty_calculated.String(),
 		"qty_phys_inventory":         t.Qty_phys_inventory.String(),
 		"last_item_ledger_entry_no":  t.Last_item_ledger_entry_no,
@@ -8799,14 +8799,14 @@ func (t *ItemJournalLine) FromMap(data map[string]interface{}) {
 			}
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["indirect_cost_percent"]; ok && v != nil {
@@ -8868,14 +8868,14 @@ func (t *ItemJournalLine) FromMap(data map[string]interface{}) {
 			t.New_location_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["new_department_code"]; ok && v != nil {
+	if v, ok := data["new_dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.New_department_code = types.NewCode(s)
+			t.New_dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["new_project_code"]; ok && v != nil {
+	if v, ok := data["new_dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.New_project_code = types.NewCode(s)
+			t.New_dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["qty_calculated"]; ok && v != nil {
@@ -9401,7 +9401,7 @@ func (t *ItemJournalLine) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         34,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -9411,7 +9411,7 @@ func (t *ItemJournalLine) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         35,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -9504,7 +9504,7 @@ func (t *ItemJournalLine) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         51,
-			Name:       "new_department_code",
+			Name:       "new_dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -9514,7 +9514,7 @@ func (t *ItemJournalLine) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         52,
-			Name:       "new_project_code",
+			Name:       "new_dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -10036,8 +10036,8 @@ func (t *ItemJournalLine) GetTableRelationFields() map[string]tables.TableRelati
 				{Column: "open", Field: "", Const: "true"},
 			},
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -10046,8 +10046,8 @@ func (t *ItemJournalLine) GetTableRelationFields() map[string]tables.TableRelati
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -10106,8 +10106,8 @@ func (t *ItemJournalLine) GetTableRelationFields() map[string]tables.TableRelati
 			},
 			SearchTimeout: 0,
 		},
-		"new_department_code": {
-			Table:        "Department",
+		"new_dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -10116,8 +10116,8 @@ func (t *ItemJournalLine) GetTableRelationFields() map[string]tables.TableRelati
 			},
 			SearchTimeout: 0,
 		},
-		"new_project_code": {
-			Table:        "Project",
+		"new_dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

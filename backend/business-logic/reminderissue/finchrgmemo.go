@@ -273,8 +273,8 @@ func (c *FinChrgMemoIssue) initGenJnlLine(accountType gtables.GenJournalLineAcco
 	genJnlLine.Currency_factor = c.currencyFactor
 	genJnlLine.Source_currency_code = h.Currency_code
 	genJnlLine.Description = h.Posting_description
-	genJnlLine.Department_code = h.Department_code
-	genJnlLine.Project_code = h.Project_code
+	genJnlLine.Dimension_1_code = h.Dimension_1_code
+	genJnlLine.Dimension_2_code = h.Dimension_2_code
 	genJnlLine.Source_type = gtables.GenJournalLine_Source_type.Customer
 	genJnlLine.Source_no = h.Customer_no
 	genJnlLine.Source_code = c.sourceCode

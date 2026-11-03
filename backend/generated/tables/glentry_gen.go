@@ -18,8 +18,8 @@
 //	OnValidate_Description(rec *gtables.GLEntry) error
 //	OnValidate_Bal_account_no(rec *gtables.GLEntry) error
 //	OnValidate_Amount(rec *gtables.GLEntry) error
-//	OnValidate_Department_code(rec *gtables.GLEntry) error
-//	OnValidate_Project_code(rec *gtables.GLEntry) error
+//	OnValidate_Dimension_1_code(rec *gtables.GLEntry) error
+//	OnValidate_Dimension_2_code(rec *gtables.GLEntry) error
 //	OnValidate_User_id(rec *gtables.GLEntry) error
 //	OnValidate_Source_code(rec *gtables.GLEntry) error
 //	OnValidate_System_created_entry(rec *gtables.GLEntry) error
@@ -173,8 +173,8 @@ type GLEntry struct {
 	Description                types.Text              `db:"description"`
 	Bal_account_no             types.Code              `db:"bal_account_no"`
 	Amount                     types.Decimal           `db:"amount"`
-	Department_code            types.Code              `db:"department_code"`
-	Project_code               types.Code              `db:"project_code"`
+	Dimension_1_code           types.Code              `db:"dimension_1_code"`
+	Dimension_2_code           types.Code              `db:"dimension_2_code"`
 	User_id                    types.Code              `db:"user_id"`
 	Source_code                types.Code              `db:"source_code"`
 	System_created_entry       bool                    `db:"system_created_entry"`
@@ -361,8 +361,8 @@ var GLEntry_FieldNo = struct {
 	Description                int
 	Bal_account_no             int
 	Amount                     int
-	Department_code            int
-	Project_code               int
+	Dimension_1_code           int
+	Dimension_2_code           int
 	User_id                    int
 	Source_code                int
 	System_created_entry       int
@@ -405,8 +405,8 @@ var GLEntry_FieldNo = struct {
 	Description:                7,
 	Bal_account_no:             10,
 	Amount:                     17,
-	Department_code:            23,
-	Project_code:               24,
+	Dimension_1_code:           23,
+	Dimension_2_code:           24,
 	User_id:                    27,
 	Source_code:                28,
 	System_created_entry:       29,
@@ -461,9 +461,9 @@ func (t *GLEntry) FieldNo(fieldName string) int {
 		return 10
 	case "amount":
 		return 17
-	case "department_code":
+	case "dimension_1_code":
 		return 23
-	case "project_code":
+	case "dimension_2_code":
 		return 24
 	case "user_id":
 		return 27
@@ -555,9 +555,9 @@ func (t *GLEntry) FieldName(fieldNo int) string {
 	case 17:
 		return "amount"
 	case 23:
-		return "department_code"
+		return "dimension_1_code"
 	case 24:
-		return "project_code"
+		return "dimension_2_code"
 	case 27:
 		return "user_id"
 	case 28:
@@ -725,8 +725,8 @@ type (
 	GLEntryOnValidate_Description                interface{ OnValidate_Description(rec *GLEntry) error }
 	GLEntryOnValidate_Bal_account_no             interface{ OnValidate_Bal_account_no(rec *GLEntry) error }
 	GLEntryOnValidate_Amount                     interface{ OnValidate_Amount(rec *GLEntry) error }
-	GLEntryOnValidate_Department_code            interface{ OnValidate_Department_code(rec *GLEntry) error }
-	GLEntryOnValidate_Project_code               interface{ OnValidate_Project_code(rec *GLEntry) error }
+	GLEntryOnValidate_Dimension_1_code           interface{ OnValidate_Dimension_1_code(rec *GLEntry) error }
+	GLEntryOnValidate_Dimension_2_code           interface{ OnValidate_Dimension_2_code(rec *GLEntry) error }
 	GLEntryOnValidate_User_id                    interface{ OnValidate_User_id(rec *GLEntry) error }
 	GLEntryOnValidate_Source_code                interface{ OnValidate_Source_code(rec *GLEntry) error }
 	GLEntryOnValidate_System_created_entry       interface{ OnValidate_System_created_entry(rec *GLEntry) error }
@@ -805,10 +805,10 @@ func gLEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GLEntryOnValidate_Bal_account_no)
 	case "OnValidate_Amount":
 		_, ok = logic.(GLEntryOnValidate_Amount)
-	case "OnValidate_Department_code":
-		_, ok = logic.(GLEntryOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(GLEntryOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(GLEntryOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(GLEntryOnValidate_Dimension_2_code)
 	case "OnValidate_User_id":
 		_, ok = logic.(GLEntryOnValidate_User_id)
 	case "OnValidate_Source_code":
@@ -961,10 +961,10 @@ func (t *GLEntry) CheckFields() error {
 	if err := tables.CheckMaxLength(GLEntryTableName, "bal_account_no", string(t.Bal_account_no), 20); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(GLEntryTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(GLEntryTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(GLEntryTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(GLEntryTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(GLEntryTableName, "user_id", string(t.User_id), 20); err != nil {
@@ -1047,8 +1047,8 @@ func GetGLEntryTableSchema() string {
 		description TEXT(50),
 		bal_account_no TEXT(20),
 		amount TEXT,
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		user_id TEXT(20),
 		source_code TEXT(10),
 		system_created_entry INTEGER,
@@ -1096,8 +1096,8 @@ func GetGLEntryPostgresTableSchema() string {
 		description VARCHAR(50),
 		bal_account_no VARCHAR(20),
 		amount NUMERIC,
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		user_id VARCHAR(20),
 		source_code VARCHAR(10),
 		system_created_entry BOOLEAN,
@@ -1203,7 +1203,7 @@ func (t *GLEntry) SyncKeys(db database.Executor, company string, dbType database
 	}
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
-	if _, err := db.Exec(fmt.Sprintf(`CREATE INDEX IF NOT EXISTS "%s" ON "%s" (gl_account_no, business_unit_code, department_code, project_code, posting_date)`,
+	if _, err := db.Exec(fmt.Sprintf(`CREATE INDEX IF NOT EXISTS "%s" ON "%s" (gl_account_no, business_unit_code, dimension_1_code, dimension_2_code, posting_date)`,
 		fmt.Sprintf("%s$G_L_Entry$gl_account_dimensions", company), tableName)); err != nil {
 		return fmt.Errorf("failed to create index gl_account_dimensions: %w", err)
 	}
@@ -1236,7 +1236,7 @@ func gLEntrySIFTSpecs() []sift.KeySpec {
 		},
 		{
 			Name:   "gl_account_dimensions",
-			Fields: []sift.Column{{Name: "gl_account_no", Kind: sift.KindText}, {Name: "business_unit_code", Kind: sift.KindText}, {Name: "department_code", Kind: sift.KindText}, {Name: "project_code", Kind: sift.KindText}, {Name: "posting_date", Kind: sift.KindDate}},
+			Fields: []sift.Column{{Name: "gl_account_no", Kind: sift.KindText}, {Name: "business_unit_code", Kind: sift.KindText}, {Name: "dimension_1_code", Kind: sift.KindText}, {Name: "dimension_2_code", Kind: sift.KindText}, {Name: "posting_date", Kind: sift.KindDate}},
 			Sums:   []sift.Column{{Name: "amount", Kind: sift.KindDecimal}, {Name: "debit_amount", Kind: sift.KindDecimal}, {Name: "credit_amount", Kind: sift.KindDecimal}, {Name: "additional_currency_amount", Kind: sift.KindDecimal}, {Name: "add_currency_debit_amount", Kind: sift.KindDecimal}, {Name: "add_currency_credit_amount", Kind: sift.KindDecimal}},
 		},
 	}
@@ -1302,8 +1302,8 @@ func (t *GLEntry) StoreOldValues() {
 	t.oldValues["description"] = t.Description
 	t.oldValues["bal_account_no"] = t.Bal_account_no
 	t.oldValues["amount"] = t.Amount
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["user_id"] = t.User_id
 	t.oldValues["source_code"] = t.Source_code
 	t.oldValues["system_created_entry"] = t.System_created_entry
@@ -1375,11 +1375,11 @@ func (t *GLEntry) XRec() *GLEntry {
 	if v, ok := t.oldValues["amount"].(types.Decimal); ok {
 		x.Amount = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["user_id"].(types.Code); ok {
 		x.User_id = v
@@ -1559,8 +1559,8 @@ func (t *GLEntry) GetByPK(entry_no int) bool {
 	var descriptionNull sql.NullString
 	var bal_account_noNull sql.NullString
 	var amountNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
 	var system_created_entryBool sql.NullBool
@@ -1601,7 +1601,7 @@ func (t *GLEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, dimension_1_code, dimension_2_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1616,8 +1616,8 @@ func (t *GLEntry) GetByPK(entry_no int) bool {
 		&descriptionNull,
 		&bal_account_noNull,
 		&amountNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&user_idNull,
 		&source_codeNull,
 		&system_created_entryBool,
@@ -1672,8 +1672,8 @@ func (t *GLEntry) GetByPK(entry_no int) bool {
 	t.Description = types.NewText(descriptionNull.String)
 	t.Bal_account_no = types.NewCode(bal_account_noNull.String)
 	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.System_created_entry = system_created_entryBool.Bool
@@ -1737,8 +1737,8 @@ func (t *GLEntry) Insert(runTrigger bool) bool {
 		t.Description,
 		t.Bal_account_no,
 		t.Amount,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.User_id,
 		t.Source_code,
 		t.System_created_entry,
@@ -1776,7 +1776,7 @@ func (t *GLEntry) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, dimension_1_code, dimension_2_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1822,8 +1822,8 @@ func (t *GLEntry) InsertAll(records []*GLEntry, runTrigger bool) error {
 			r.Description,
 			r.Bal_account_no,
 			r.Amount,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.User_id,
 			r.Source_code,
 			r.System_created_entry,
@@ -1860,7 +1860,7 @@ func (t *GLEntry) InsertAll(records []*GLEntry, runTrigger bool) error {
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, GLEntryTableName)
-	columns := []string{"entry_no", "gl_account_no", "posting_date", "document_type", "document_no", "description", "bal_account_no", "amount", "department_code", "project_code", "user_id", "source_code", "system_created_entry", "prior_year_entry", "job_no", "quantity", "tax_amount", "business_unit_code", "journal_batch_name", "reason_code", "gen_posting_type", "gen_bus_posting_group", "gen_prod_posting_group", "bal_account_type", "transaction_no", "debit_amount", "credit_amount", "document_date", "external_document_no", "source_type", "source_no", "no_series", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "additional_currency_amount", "add_currency_debit_amount", "add_currency_credit_amount", "fa_entry_type", "fa_entry_no"}
+	columns := []string{"entry_no", "gl_account_no", "posting_date", "document_type", "document_no", "description", "bal_account_no", "amount", "dimension_1_code", "dimension_2_code", "user_id", "source_code", "system_created_entry", "prior_year_entry", "job_no", "quantity", "tax_amount", "business_unit_code", "journal_batch_name", "reason_code", "gen_posting_type", "gen_bus_posting_group", "gen_prod_posting_group", "bal_account_type", "transaction_no", "debit_amount", "credit_amount", "document_date", "external_document_no", "source_type", "source_no", "no_series", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "additional_currency_amount", "add_currency_debit_amount", "add_currency_credit_amount", "fa_entry_type", "fa_entry_no"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1932,13 +1932,13 @@ func (t *GLEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "amount = ?")
 			values = append(values, t.Amount)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("user_id") {
 			setClauses = append(setClauses, "user_id = ?")
@@ -2093,10 +2093,10 @@ func (t *GLEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.Bal_account_no)
 		setClauses = append(setClauses, "amount = ?")
 		values = append(values, t.Amount)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "user_id = ?")
 		values = append(values, t.User_id)
 		setClauses = append(setClauses, "source_code = ?")
@@ -2240,13 +2240,13 @@ func (t *GLEntry) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Decimal); ok {
 			return !t.Amount.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "user_id":
 		if old, ok := oldValue.(types.Code); ok {
@@ -2606,10 +2606,10 @@ func (t *GLEntry) columnName(fieldName string) (string, bool) {
 		return "bal_account_no", true
 	case strings.ToLower("amount"):
 		return "amount", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("user_id"):
 		return "user_id", true
 	case strings.ToLower("source_code"):
@@ -3061,7 +3061,7 @@ func (t *GLEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, dimension_1_code, dimension_2_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3073,8 +3073,8 @@ func (t *GLEntry) FindFirst() bool {
 	var descriptionNull sql.NullString
 	var bal_account_noNull sql.NullString
 	var amountNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
 	var system_created_entryBool sql.NullBool
@@ -3116,8 +3116,8 @@ func (t *GLEntry) FindFirst() bool {
 		&descriptionNull,
 		&bal_account_noNull,
 		&amountNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&user_idNull,
 		&source_codeNull,
 		&system_created_entryBool,
@@ -3169,8 +3169,8 @@ func (t *GLEntry) FindFirst() bool {
 	t.Description = types.NewText(descriptionNull.String)
 	t.Bal_account_no = types.NewCode(bal_account_noNull.String)
 	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.System_created_entry = system_created_entryBool.Bool
@@ -3222,7 +3222,7 @@ func (t *GLEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, dimension_1_code, dimension_2_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3234,8 +3234,8 @@ func (t *GLEntry) FindLast() bool {
 	var descriptionNull sql.NullString
 	var bal_account_noNull sql.NullString
 	var amountNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
 	var system_created_entryBool sql.NullBool
@@ -3277,8 +3277,8 @@ func (t *GLEntry) FindLast() bool {
 		&descriptionNull,
 		&bal_account_noNull,
 		&amountNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&user_idNull,
 		&source_codeNull,
 		&system_created_entryBool,
@@ -3330,8 +3330,8 @@ func (t *GLEntry) FindLast() bool {
 	t.Description = types.NewText(descriptionNull.String)
 	t.Bal_account_no = types.NewCode(bal_account_noNull.String)
 	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.System_created_entry = system_created_entryBool.Bool
@@ -3413,7 +3413,7 @@ func (t *GLEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, dimension_1_code, dimension_2_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3489,8 +3489,8 @@ func (t *GLEntry) Next(steps ...int) bool {
 		var descriptionNull sql.NullString
 		var bal_account_noNull sql.NullString
 		var amountNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var user_idNull sql.NullString
 		var source_codeNull sql.NullString
 		var system_created_entryBool sql.NullBool
@@ -3532,8 +3532,8 @@ func (t *GLEntry) Next(steps ...int) bool {
 			&descriptionNull,
 			&bal_account_noNull,
 			&amountNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&user_idNull,
 			&source_codeNull,
 			&system_created_entryBool,
@@ -3584,8 +3584,8 @@ func (t *GLEntry) Next(steps ...int) bool {
 		t.Description = types.NewText(descriptionNull.String)
 		t.Bal_account_no = types.NewCode(bal_account_noNull.String)
 		t.Amount, _ = types.NewDecimalFromString(amountNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.User_id = types.NewCode(user_idNull.String)
 		t.Source_code = types.NewCode(source_codeNull.String)
 		t.System_created_entry = system_created_entryBool.Bool
@@ -3666,7 +3666,7 @@ func (t *GLEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, department_code, project_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, dimension_1_code, dimension_2_code, user_id, source_code, system_created_entry, prior_year_entry, job_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3695,8 +3695,8 @@ func (t *GLEntry) FindSetBuffered() bool {
 		var descriptionNull sql.NullString
 		var bal_account_noNull sql.NullString
 		var amountNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var user_idNull sql.NullString
 		var source_codeNull sql.NullString
 		var system_created_entryBool sql.NullBool
@@ -3738,8 +3738,8 @@ func (t *GLEntry) FindSetBuffered() bool {
 			&descriptionNull,
 			&bal_account_noNull,
 			&amountNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&user_idNull,
 			&source_codeNull,
 			&system_created_entryBool,
@@ -3788,8 +3788,8 @@ func (t *GLEntry) FindSetBuffered() bool {
 		record.Description = types.NewText(descriptionNull.String)
 		record.Bal_account_no = types.NewCode(bal_account_noNull.String)
 		record.Amount, _ = types.NewDecimalFromString(amountNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.User_id = types.NewCode(user_idNull.String)
 		record.Source_code = types.NewCode(source_codeNull.String)
 		record.System_created_entry = system_created_entryBool.Bool
@@ -3857,8 +3857,8 @@ func (t *GLEntry) copyFromBuffered(record *GLEntry) {
 	t.Description = record.Description
 	t.Bal_account_no = record.Bal_account_no
 	t.Amount = record.Amount
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.User_id = record.User_id
 	t.Source_code = record.Source_code
 	t.System_created_entry = record.System_created_entry
@@ -4234,45 +4234,45 @@ func (t *GLEntry) ValidateField(fieldName string, value interface{}) error {
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLEntryOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(GLEntryOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLEntryOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(GLEntryOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -5171,9 +5171,9 @@ func (t *GLEntry) FieldValue(no int) (any, bool) {
 	case 17:
 		return t.Amount, true
 	case 23:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 24:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 27:
 		return t.User_id, true
 	case 28:
@@ -5313,20 +5313,20 @@ func (t *GLEntry) SetFieldValue(no int, value any) bool {
 		}
 	case 23:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 24:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 27:
@@ -6091,10 +6091,10 @@ func (t *GLEntry) columnValue(column string) (interface{}, bool) {
 		return t.Bal_account_no, true
 	case "amount":
 		return t.Amount, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "user_id":
 		return t.User_id, true
 	case "source_code":
@@ -6222,8 +6222,8 @@ func (t *GLEntry) Init() {
 	t.Description = *new(types.Text)
 	t.Bal_account_no = *new(types.Code)
 	t.Amount = *new(types.Decimal)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.User_id = *new(types.Code)
 	t.Source_code = *new(types.Code)
 	t.System_created_entry = *new(bool)
@@ -6299,8 +6299,8 @@ func (t *GLEntry) ToMap() map[string]interface{} {
 		"description":                t.Description.String(),
 		"bal_account_no":             t.Bal_account_no.String(),
 		"amount":                     t.Amount.String(),
-		"department_code":            t.Department_code.String(),
-		"project_code":               t.Project_code.String(),
+		"dimension_1_code":           t.Dimension_1_code.String(),
+		"dimension_2_code":           t.Dimension_2_code.String(),
 		"user_id":                    t.User_id.String(),
 		"source_code":                t.Source_code.String(),
 		"system_created_entry":       t.System_created_entry,
@@ -6406,14 +6406,14 @@ func (t *GLEntry) FromMap(data map[string]interface{}) {
 			t.Amount = types.NewDecimalFromInt(val)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["user_id"]; ok && v != nil {
@@ -6798,7 +6798,7 @@ func (t *GLEntry) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         23,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -6808,7 +6808,7 @@ func (t *GLEntry) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         24,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -7233,8 +7233,8 @@ func (t *GLEntry) GetTableRelationFields() map[string]tables.TableRelationInfo {
 				}},
 			},
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -7243,8 +7243,8 @@ func (t *GLEntry) GetTableRelationFields() map[string]tables.TableRelationInfo {
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

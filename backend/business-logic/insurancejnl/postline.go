@@ -152,8 +152,8 @@ func copyFromJnlLine(insCoverageLedgEntry *gtables.InsCoverageLedgerEntry, insur
 	insCoverageLedgEntry.Amount = insuranceJnlLine.Amount
 	insCoverageLedgEntry.Description = insuranceJnlLine.Description
 	insCoverageLedgEntry.Index_entry = insuranceJnlLine.Index_entry
-	insCoverageLedgEntry.Department_code = insuranceJnlLine.Department_code
-	insCoverageLedgEntry.Project_code = insuranceJnlLine.Project_code
+	insCoverageLedgEntry.Dimension_1_code = insuranceJnlLine.Dimension_1_code
+	insCoverageLedgEntry.Dimension_2_code = insuranceJnlLine.Dimension_2_code
 	insCoverageLedgEntry.Source_code = insuranceJnlLine.Source_code
 	insCoverageLedgEntry.Journal_batch_name = insuranceJnlLine.Journal_batch_name
 	insCoverageLedgEntry.Reason_code = insuranceJnlLine.Reason_code

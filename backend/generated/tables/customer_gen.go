@@ -22,8 +22,8 @@
 //	OnValidate_Telex_no(rec *gtables.Customer) error
 //	OnValidate_Our_account_no(rec *gtables.Customer) error
 //	OnValidate_Territory_code(rec *gtables.Customer) error
-//	OnValidate_Department_code(rec *gtables.Customer) error
-//	OnValidate_Project_code(rec *gtables.Customer) error
+//	OnValidate_Dimension_1_code(rec *gtables.Customer) error
+//	OnValidate_Dimension_2_code(rec *gtables.Customer) error
 //	OnValidate_Chain_name(rec *gtables.Customer) error
 //	OnValidate_Budgeted_amount(rec *gtables.Customer) error
 //	OnValidate_Credit_limit_lcy(rec *gtables.Customer) error
@@ -146,8 +146,8 @@ type Customer struct {
 	Telex_no               types.Text    `db:"telex_no"`
 	Our_account_no         types.Text    `db:"our_account_no"`
 	Territory_code         types.Code    `db:"territory_code"`
-	Department_code        types.Code    `db:"department_code"`
-	Project_code           types.Code    `db:"project_code"`
+	Dimension_1_code       types.Code    `db:"dimension_1_code"`
+	Dimension_2_code       types.Code    `db:"dimension_2_code"`
 	Chain_name             types.Code    `db:"chain_name"`
 	Budgeted_amount        types.Decimal `db:"budgeted_amount"`
 	Credit_limit_lcy       types.Decimal `db:"credit_limit_lcy"`
@@ -257,10 +257,10 @@ type Customer struct {
 	No_of_ledger_entries int
 	// FlowFilter date_filter (types.Date): the filter expression FlowFields apply — not stored
 	Date_filter string
-	// FlowFilter department_filter (types.Code): the filter expression FlowFields apply — not stored
-	Department_filter string
-	// FlowFilter project_filter (types.Code): the filter expression FlowFields apply — not stored
-	Project_filter string
+	// FlowFilter dimension_1_filter (types.Code): the filter expression FlowFields apply — not stored
+	Dimension_1_filter string
+	// FlowFilter dimension_2_filter (types.Code): the filter expression FlowFields apply — not stored
+	Dimension_2_filter string
 	// FlowFilter currency_filter (types.Code): the filter expression FlowFields apply — not stored
 	Currency_filter string
 
@@ -365,8 +365,8 @@ var Customer_FieldNo = struct {
 	Telex_no                    int
 	Our_account_no              int
 	Territory_code              int
-	Department_code             int
-	Project_code                int
+	Dimension_1_code            int
+	Dimension_2_code            int
 	Chain_name                  int
 	Budgeted_amount             int
 	Credit_limit_lcy            int
@@ -445,8 +445,8 @@ var Customer_FieldNo = struct {
 	Shipped_not_invoiced_lcy    int
 	No_of_ledger_entries        int
 	Date_filter                 int
-	Department_filter           int
-	Project_filter              int
+	Dimension_1_filter          int
+	Dimension_2_filter          int
 	Currency_filter             int
 }{
 	No:                          1,
@@ -461,8 +461,8 @@ var Customer_FieldNo = struct {
 	Telex_no:                    10,
 	Our_account_no:              14,
 	Territory_code:              15,
-	Department_code:             16,
-	Project_code:                17,
+	Dimension_1_code:            16,
+	Dimension_2_code:            17,
 	Chain_name:                  18,
 	Budgeted_amount:             19,
 	Credit_limit_lcy:            20,
@@ -541,8 +541,8 @@ var Customer_FieldNo = struct {
 	Shipped_not_invoiced_lcy:    114,
 	No_of_ledger_entries:        903,
 	Date_filter:                 55,
-	Department_filter:           56,
-	Project_filter:              57,
+	Dimension_1_filter:          56,
+	Dimension_2_filter:          57,
 	Currency_filter:             111,
 }
 
@@ -573,9 +573,9 @@ func (t *Customer) FieldNo(fieldName string) int {
 		return 14
 	case "territory_code":
 		return 15
-	case "department_code":
+	case "dimension_1_code":
 		return 16
-	case "project_code":
+	case "dimension_2_code":
 		return 17
 	case "chain_name":
 		return 18
@@ -733,9 +733,9 @@ func (t *Customer) FieldNo(fieldName string) int {
 		return 903
 	case "date_filter":
 		return 55
-	case "department_filter":
+	case "dimension_1_filter":
 		return 56
-	case "project_filter":
+	case "dimension_2_filter":
 		return 57
 	case "currency_filter":
 		return 111
@@ -771,9 +771,9 @@ func (t *Customer) FieldName(fieldNo int) string {
 	case 15:
 		return "territory_code"
 	case 16:
-		return "department_code"
+		return "dimension_1_code"
 	case 17:
-		return "project_code"
+		return "dimension_2_code"
 	case 18:
 		return "chain_name"
 	case 19:
@@ -931,9 +931,9 @@ func (t *Customer) FieldName(fieldNo int) string {
 	case 55:
 		return "date_filter"
 	case 56:
-		return "department_filter"
+		return "dimension_1_filter"
 	case 57:
-		return "project_filter"
+		return "dimension_2_filter"
 	case 111:
 		return "currency_filter"
 	}
@@ -1041,8 +1041,8 @@ type (
 	CustomerOnValidate_Telex_no               interface{ OnValidate_Telex_no(rec *Customer) error }
 	CustomerOnValidate_Our_account_no         interface{ OnValidate_Our_account_no(rec *Customer) error }
 	CustomerOnValidate_Territory_code         interface{ OnValidate_Territory_code(rec *Customer) error }
-	CustomerOnValidate_Department_code        interface{ OnValidate_Department_code(rec *Customer) error }
-	CustomerOnValidate_Project_code           interface{ OnValidate_Project_code(rec *Customer) error }
+	CustomerOnValidate_Dimension_1_code       interface{ OnValidate_Dimension_1_code(rec *Customer) error }
+	CustomerOnValidate_Dimension_2_code       interface{ OnValidate_Dimension_2_code(rec *Customer) error }
 	CustomerOnValidate_Chain_name             interface{ OnValidate_Chain_name(rec *Customer) error }
 	CustomerOnValidate_Budgeted_amount        interface{ OnValidate_Budgeted_amount(rec *Customer) error }
 	CustomerOnValidate_Credit_limit_lcy       interface{ OnValidate_Credit_limit_lcy(rec *Customer) error }
@@ -1143,10 +1143,10 @@ func customerTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CustomerOnValidate_Our_account_no)
 	case "OnValidate_Territory_code":
 		_, ok = logic.(CustomerOnValidate_Territory_code)
-	case "OnValidate_Department_code":
-		_, ok = logic.(CustomerOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(CustomerOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(CustomerOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(CustomerOnValidate_Dimension_2_code)
 	case "OnValidate_Chain_name":
 		_, ok = logic.(CustomerOnValidate_Chain_name)
 	case "OnValidate_Budgeted_amount":
@@ -1354,10 +1354,10 @@ func (t *Customer) CheckFields() error {
 	if err := tables.CheckMaxLength(CustomerTableName, "territory_code", string(t.Territory_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(CustomerTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(CustomerTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(CustomerTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(CustomerTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(CustomerTableName, "chain_name", string(t.Chain_name), 10); err != nil {
@@ -1489,8 +1489,8 @@ func GetCustomerTableSchema() string {
 		telex_no TEXT(20),
 		our_account_no TEXT(20),
 		territory_code TEXT(10),
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		chain_name TEXT(10),
 		budgeted_amount TEXT,
 		credit_limit_lcy TEXT,
@@ -1586,8 +1586,8 @@ func GetCustomerPostgresTableSchema() string {
 		telex_no VARCHAR(20),
 		our_account_no VARCHAR(20),
 		territory_code VARCHAR(10),
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		chain_name VARCHAR(10),
 		budgeted_amount NUMERIC,
 		credit_limit_lcy NUMERIC,
@@ -1843,8 +1843,8 @@ func (t *Customer) StoreOldValues() {
 	t.oldValues["telex_no"] = t.Telex_no
 	t.oldValues["our_account_no"] = t.Our_account_no
 	t.oldValues["territory_code"] = t.Territory_code
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["chain_name"] = t.Chain_name
 	t.oldValues["budgeted_amount"] = t.Budgeted_amount
 	t.oldValues["credit_limit_lcy"] = t.Credit_limit_lcy
@@ -1942,11 +1942,11 @@ func (t *Customer) XRec() *Customer {
 	if v, ok := t.oldValues["territory_code"].(types.Code); ok {
 		x.Territory_code = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["chain_name"].(types.Code); ok {
 		x.Chain_name = v
@@ -2162,8 +2162,8 @@ func (t *Customer) GetByPK(no types.Code) bool {
 	var telex_noNull sql.NullString
 	var our_account_noNull sql.NullString
 	var territory_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var chain_nameNull sql.NullString
 	var budgeted_amountNull sql.NullString
 	var credit_limit_lcyNull sql.NullString
@@ -2218,7 +2218,7 @@ func (t *Customer) GetByPK(no types.Code) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, our_account_no, territory_code, department_code, project_code, chain_name, budgeted_amount, credit_limit_lcy, customer_posting_group, currency_code, price_group_code, language_code, statistics_group, payment_terms_code, fin_charge_terms_code, salesperson_code, shipment_method_code, shipping_agent_code, place_of_export, invoice_disc_code, cust_item_disc_gr, country_code, collection_method, amount, blocked, invoice_copies, last_statement_no, print_statements, bill_to_customer_no, priority, payment_method_code, last_date_modified, application_method, allow_quantity_disc, prices_including_tax, location_code, fax_no, telex_answer_back, vat_registration_no, combine_shipments, gen_bus_posting_group, picture, post_code, state, e_mail, home_page, reminder_terms_code, no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve FROM "%s" WHERE 1=1 AND no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, our_account_no, territory_code, dimension_1_code, dimension_2_code, chain_name, budgeted_amount, credit_limit_lcy, customer_posting_group, currency_code, price_group_code, language_code, statistics_group, payment_terms_code, fin_charge_terms_code, salesperson_code, shipment_method_code, shipping_agent_code, place_of_export, invoice_disc_code, cust_item_disc_gr, country_code, collection_method, amount, blocked, invoice_copies, last_statement_no, print_statements, bill_to_customer_no, priority, payment_method_code, last_date_modified, application_method, allow_quantity_disc, prices_including_tax, location_code, fax_no, telex_answer_back, vat_registration_no, combine_shipments, gen_bus_posting_group, picture, post_code, state, e_mail, home_page, reminder_terms_code, no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve FROM "%s" WHERE 1=1 AND no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2237,8 +2237,8 @@ func (t *Customer) GetByPK(no types.Code) bool {
 		&telex_noNull,
 		&our_account_noNull,
 		&territory_codeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&chain_nameNull,
 		&budgeted_amountNull,
 		&credit_limit_lcyNull,
@@ -2311,8 +2311,8 @@ func (t *Customer) GetByPK(no types.Code) bool {
 	t.Telex_no = types.NewText(telex_noNull.String)
 	t.Our_account_no = types.NewText(our_account_noNull.String)
 	t.Territory_code = types.NewCode(territory_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Chain_name = types.NewCode(chain_nameNull.String)
 	t.Budgeted_amount, _ = types.NewDecimalFromString(budgeted_amountNull.String)
 	t.Credit_limit_lcy, _ = types.NewDecimalFromString(credit_limit_lcyNull.String)
@@ -2394,8 +2394,8 @@ func (t *Customer) Insert(runTrigger bool) bool {
 		t.Telex_no,
 		t.Our_account_no,
 		t.Territory_code,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Chain_name,
 		t.Budgeted_amount,
 		t.Credit_limit_lcy,
@@ -2447,7 +2447,7 @@ func (t *Customer) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, our_account_no, territory_code, department_code, project_code, chain_name, budgeted_amount, credit_limit_lcy, customer_posting_group, currency_code, price_group_code, language_code, statistics_group, payment_terms_code, fin_charge_terms_code, salesperson_code, shipment_method_code, shipping_agent_code, place_of_export, invoice_disc_code, cust_item_disc_gr, country_code, collection_method, amount, blocked, invoice_copies, last_statement_no, print_statements, bill_to_customer_no, priority, payment_method_code, last_date_modified, application_method, allow_quantity_disc, prices_including_tax, location_code, fax_no, telex_answer_back, vat_registration_no, combine_shipments, gen_bus_posting_group, picture, post_code, state, e_mail, home_page, reminder_terms_code, no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, our_account_no, territory_code, dimension_1_code, dimension_2_code, chain_name, budgeted_amount, credit_limit_lcy, customer_posting_group, currency_code, price_group_code, language_code, statistics_group, payment_terms_code, fin_charge_terms_code, salesperson_code, shipment_method_code, shipping_agent_code, place_of_export, invoice_disc_code, cust_item_disc_gr, country_code, collection_method, amount, blocked, invoice_copies, last_statement_no, print_statements, bill_to_customer_no, priority, payment_method_code, last_date_modified, application_method, allow_quantity_disc, prices_including_tax, location_code, fax_no, telex_answer_back, vat_registration_no, combine_shipments, gen_bus_posting_group, picture, post_code, state, e_mail, home_page, reminder_terms_code, no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2497,8 +2497,8 @@ func (t *Customer) InsertAll(records []*Customer, runTrigger bool) error {
 			r.Telex_no,
 			r.Our_account_no,
 			r.Territory_code,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Chain_name,
 			r.Budgeted_amount,
 			r.Credit_limit_lcy,
@@ -2549,7 +2549,7 @@ func (t *Customer) InsertAll(records []*Customer, runTrigger bool) error {
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, CustomerTableName)
-	columns := []string{"no", "name", "search_name", "name_2", "address", "address_2", "city", "contact", "phone_no", "telex_no", "our_account_no", "territory_code", "department_code", "project_code", "chain_name", "budgeted_amount", "credit_limit_lcy", "customer_posting_group", "currency_code", "price_group_code", "language_code", "statistics_group", "payment_terms_code", "fin_charge_terms_code", "salesperson_code", "shipment_method_code", "shipping_agent_code", "place_of_export", "invoice_disc_code", "cust_item_disc_gr", "country_code", "collection_method", "amount", "blocked", "invoice_copies", "last_statement_no", "print_statements", "bill_to_customer_no", "priority", "payment_method_code", "last_date_modified", "application_method", "allow_quantity_disc", "prices_including_tax", "location_code", "fax_no", "telex_answer_back", "vat_registration_no", "combine_shipments", "gen_bus_posting_group", "picture", "post_code", "state", "e_mail", "home_page", "reminder_terms_code", "no_series", "tax_area_code", "tax_liable", "tax_bus_posting_group", "reserve"}
+	columns := []string{"no", "name", "search_name", "name_2", "address", "address_2", "city", "contact", "phone_no", "telex_no", "our_account_no", "territory_code", "dimension_1_code", "dimension_2_code", "chain_name", "budgeted_amount", "credit_limit_lcy", "customer_posting_group", "currency_code", "price_group_code", "language_code", "statistics_group", "payment_terms_code", "fin_charge_terms_code", "salesperson_code", "shipment_method_code", "shipping_agent_code", "place_of_export", "invoice_disc_code", "cust_item_disc_gr", "country_code", "collection_method", "amount", "blocked", "invoice_copies", "last_statement_no", "print_statements", "bill_to_customer_no", "priority", "payment_method_code", "last_date_modified", "application_method", "allow_quantity_disc", "prices_including_tax", "location_code", "fax_no", "telex_answer_back", "vat_registration_no", "combine_shipments", "gen_bus_posting_group", "picture", "post_code", "state", "e_mail", "home_page", "reminder_terms_code", "no_series", "tax_area_code", "tax_liable", "tax_bus_posting_group", "reserve"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2637,13 +2637,13 @@ func (t *Customer) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "territory_code = ?")
 			values = append(values, t.Territory_code)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("chain_name") {
 			setClauses = append(setClauses, "chain_name = ?")
@@ -2862,10 +2862,10 @@ func (t *Customer) Modify(runTrigger bool) bool {
 		values = append(values, t.Our_account_no)
 		setClauses = append(setClauses, "territory_code = ?")
 		values = append(values, t.Territory_code)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "chain_name = ?")
 		values = append(values, t.Chain_name)
 		setClauses = append(setClauses, "budgeted_amount = ?")
@@ -3074,13 +3074,13 @@ func (t *Customer) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Territory_code.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "chain_name":
 		if old, ok := oldValue.(types.Code); ok {
@@ -3805,7 +3805,7 @@ func (t *Customer) calcForRecords_comment(records []map[string]interface{}) {
 func (t *Customer) calcForRecords_balance(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -3835,16 +3835,16 @@ func (t *Customer) calcForRecords_balance(records []map[string]interface{}) {
 
 		var whereClauses []string
 		var args []interface{}
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -3898,7 +3898,7 @@ func (t *Customer) calcForRecords_balance_lcy(records []map[string]interface{}) 
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, CustomerLedgerEntryTableName, "customer_open"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -3928,16 +3928,16 @@ func (t *Customer) calcForRecords_balance_lcy(records []map[string]interface{}) 
 
 		var whereClauses []string
 		var args []interface{}
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -3990,7 +3990,7 @@ func (t *Customer) calcForRecords_balance_lcy(records []map[string]interface{}) 
 func (t *Customer) calcForRecords_net_change(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -4020,16 +4020,16 @@ func (t *Customer) calcForRecords_net_change(records []map[string]interface{}) {
 
 		var whereClauses []string
 		var args []interface{}
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -4090,7 +4090,7 @@ func (t *Customer) calcForRecords_net_change_lcy(records []map[string]interface{
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, CustomerLedgerEntryTableName, "customer_open"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -4120,16 +4120,16 @@ func (t *Customer) calcForRecords_net_change_lcy(records []map[string]interface{
 
 		var whereClauses []string
 		var args []interface{}
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -4190,7 +4190,7 @@ func (t *Customer) calcForRecords_sales_lcy(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, CustomerLedgerEntryTableName, "customer_open"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -4220,16 +4220,16 @@ func (t *Customer) calcForRecords_sales_lcy(records []map[string]interface{}) {
 
 		var whereClauses []string
 		var args []interface{}
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -4289,7 +4289,7 @@ func (t *Customer) calcForRecords_sales_lcy(records []map[string]interface{}) {
 func (t *Customer) calcForRecords_profit_lcy(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -4319,16 +4319,16 @@ func (t *Customer) calcForRecords_profit_lcy(records []map[string]interface{}) {
 
 		var whereClauses []string
 		var args []interface{}
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -4388,7 +4388,7 @@ func (t *Customer) calcForRecords_profit_lcy(records []map[string]interface{}) {
 func (t *Customer) calcForRecords_inv_discounts_lcy(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -4418,16 +4418,16 @@ func (t *Customer) calcForRecords_inv_discounts_lcy(records []map[string]interfa
 
 		var whereClauses []string
 		var args []interface{}
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -4487,7 +4487,7 @@ func (t *Customer) calcForRecords_inv_discounts_lcy(records []map[string]interfa
 func (t *Customer) calcForRecords_pmt_discounts_lcy(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -4517,16 +4517,16 @@ func (t *Customer) calcForRecords_pmt_discounts_lcy(records []map[string]interfa
 
 		var whereClauses []string
 		var args []interface{}
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -4586,7 +4586,7 @@ func (t *Customer) calcForRecords_pmt_discounts_lcy(records []map[string]interfa
 func (t *Customer) calcForRecords_balance_due(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -4618,16 +4618,16 @@ func (t *Customer) calcForRecords_balance_due(records []map[string]interface{}) 
 		var args []interface{}
 		whereClauses = append(whereClauses, "open = ?")
 		args = append(args, true)
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -4688,7 +4688,7 @@ func (t *Customer) calcForRecords_balance_due_lcy(records []map[string]interface
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, CustomerLedgerEntryTableName, "customer_open"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -4720,16 +4720,16 @@ func (t *Customer) calcForRecords_balance_due_lcy(records []map[string]interface
 		var args []interface{}
 		whereClauses = append(whereClauses, "open = ?")
 		args = append(args, true)
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -4789,7 +4789,7 @@ func (t *Customer) calcForRecords_balance_due_lcy(records []map[string]interface
 func (t *Customer) calcForRecords_payments(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -4821,16 +4821,16 @@ func (t *Customer) calcForRecords_payments(records []map[string]interface{}) {
 		var args []interface{}
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 1)
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -4890,7 +4890,7 @@ func (t *Customer) calcForRecords_payments(records []map[string]interface{}) {
 func (t *Customer) calcForRecords_invoice_amounts(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -4922,16 +4922,16 @@ func (t *Customer) calcForRecords_invoice_amounts(records []map[string]interface
 		var args []interface{}
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 2)
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -4991,7 +4991,7 @@ func (t *Customer) calcForRecords_invoice_amounts(records []map[string]interface
 func (t *Customer) calcForRecords_cr_memo_amounts(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -5023,16 +5023,16 @@ func (t *Customer) calcForRecords_cr_memo_amounts(records []map[string]interface
 		var args []interface{}
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 3)
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -5092,7 +5092,7 @@ func (t *Customer) calcForRecords_cr_memo_amounts(records []map[string]interface
 func (t *Customer) calcForRecords_finance_charge_memo_amounts(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -5124,16 +5124,16 @@ func (t *Customer) calcForRecords_finance_charge_memo_amounts(records []map[stri
 		var args []interface{}
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 4)
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -5193,7 +5193,7 @@ func (t *Customer) calcForRecords_finance_charge_memo_amounts(records []map[stri
 func (t *Customer) calcForRecords_payments_lcy(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -5225,16 +5225,16 @@ func (t *Customer) calcForRecords_payments_lcy(records []map[string]interface{})
 		var args []interface{}
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 1)
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -5294,7 +5294,7 @@ func (t *Customer) calcForRecords_payments_lcy(records []map[string]interface{})
 func (t *Customer) calcForRecords_inv_amounts_lcy(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -5326,16 +5326,16 @@ func (t *Customer) calcForRecords_inv_amounts_lcy(records []map[string]interface
 		var args []interface{}
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 2)
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -5395,7 +5395,7 @@ func (t *Customer) calcForRecords_inv_amounts_lcy(records []map[string]interface
 func (t *Customer) calcForRecords_cr_memo_amounts_lcy(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -5427,16 +5427,16 @@ func (t *Customer) calcForRecords_cr_memo_amounts_lcy(records []map[string]inter
 		var args []interface{}
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 3)
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -5496,7 +5496,7 @@ func (t *Customer) calcForRecords_cr_memo_amounts_lcy(records []map[string]inter
 func (t *Customer) calcForRecords_fin_charge_memo_amounts_lcy(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -5528,16 +5528,16 @@ func (t *Customer) calcForRecords_fin_charge_memo_amounts_lcy(records []map[stri
 		var args []interface{}
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 4)
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -5597,7 +5597,7 @@ func (t *Customer) calcForRecords_fin_charge_memo_amounts_lcy(records []map[stri
 func (t *Customer) calcForRecords_debit_amount(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -5627,16 +5627,16 @@ func (t *Customer) calcForRecords_debit_amount(records []map[string]interface{})
 
 		var whereClauses []string
 		var args []interface{}
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -5696,7 +5696,7 @@ func (t *Customer) calcForRecords_debit_amount(records []map[string]interface{})
 func (t *Customer) calcForRecords_credit_amount(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -5726,16 +5726,16 @@ func (t *Customer) calcForRecords_credit_amount(records []map[string]interface{}
 
 		var whereClauses []string
 		var args []interface{}
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -5795,7 +5795,7 @@ func (t *Customer) calcForRecords_credit_amount(records []map[string]interface{}
 func (t *Customer) calcForRecords_debit_amount_lcy(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -5825,16 +5825,16 @@ func (t *Customer) calcForRecords_debit_amount_lcy(records []map[string]interfac
 
 		var whereClauses []string
 		var args []interface{}
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -5894,7 +5894,7 @@ func (t *Customer) calcForRecords_debit_amount_lcy(records []map[string]interfac
 func (t *Customer) calcForRecords_credit_amount_lcy(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -5924,16 +5924,16 @@ func (t *Customer) calcForRecords_credit_amount_lcy(records []map[string]interfa
 
 		var whereClauses []string
 		var args []interface{}
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -5993,7 +5993,7 @@ func (t *Customer) calcForRecords_credit_amount_lcy(records []map[string]interfa
 func (t *Customer) calcForRecords_reminder_amounts(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -6025,16 +6025,16 @@ func (t *Customer) calcForRecords_reminder_amounts(records []map[string]interfac
 		var args []interface{}
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 5)
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -6087,7 +6087,7 @@ func (t *Customer) calcForRecords_reminder_amounts(records []map[string]interfac
 func (t *Customer) calcForRecords_reminder_amounts_lcy(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -6119,16 +6119,16 @@ func (t *Customer) calcForRecords_reminder_amounts_lcy(records []map[string]inte
 		var args []interface{}
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 5)
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -6188,7 +6188,7 @@ func (t *Customer) calcForRecords_reminder_amounts_lcy(records []map[string]inte
 func (t *Customer) calcForRecords_outstanding_orders(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
 	}
@@ -6220,16 +6220,16 @@ func (t *Customer) calcForRecords_outstanding_orders(records []map[string]interf
 		var args []interface{}
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 1)
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -6282,7 +6282,7 @@ func (t *Customer) calcForRecords_outstanding_orders(records []map[string]interf
 func (t *Customer) calcForRecords_shipped_not_invoiced(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
 	}
@@ -6314,16 +6314,16 @@ func (t *Customer) calcForRecords_shipped_not_invoiced(records []map[string]inte
 		var args []interface{}
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 1)
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -6376,7 +6376,7 @@ func (t *Customer) calcForRecords_shipped_not_invoiced(records []map[string]inte
 func (t *Customer) calcForRecords_outstanding_orders_lcy(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
 	}
@@ -6408,16 +6408,16 @@ func (t *Customer) calcForRecords_outstanding_orders_lcy(records []map[string]in
 		var args []interface{}
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 1)
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -6463,7 +6463,7 @@ func (t *Customer) calcForRecords_outstanding_orders_lcy(records []map[string]in
 func (t *Customer) calcForRecords_shipped_not_invoiced_lcy(records []map[string]interface{}) {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
 	}
@@ -6495,16 +6495,16 @@ func (t *Customer) calcForRecords_shipped_not_invoiced_lcy(records []map[string]
 		var args []interface{}
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 1)
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -6666,7 +6666,7 @@ func (t *Customer) calcCount_comment() int {
 func (t *Customer) calcSum_balance() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -6677,16 +6677,16 @@ func (t *Customer) calcSum_balance() types.Decimal {
 	var args []interface{}
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -6724,7 +6724,7 @@ func (t *Customer) calcSum_balance_lcy() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, CustomerLedgerEntryTableName, "customer_open"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -6735,16 +6735,16 @@ func (t *Customer) calcSum_balance_lcy() types.Decimal {
 	var args []interface{}
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -6781,7 +6781,7 @@ func (t *Customer) calcSum_balance_lcy() types.Decimal {
 func (t *Customer) calcSum_net_change() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -6792,16 +6792,16 @@ func (t *Customer) calcSum_net_change() types.Decimal {
 	var args []interface{}
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -6846,7 +6846,7 @@ func (t *Customer) calcSum_net_change_lcy() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, CustomerLedgerEntryTableName, "customer_open"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -6857,16 +6857,16 @@ func (t *Customer) calcSum_net_change_lcy() types.Decimal {
 	var args []interface{}
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -6911,7 +6911,7 @@ func (t *Customer) calcSum_sales_lcy() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, CustomerLedgerEntryTableName, "customer_open"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -6922,16 +6922,16 @@ func (t *Customer) calcSum_sales_lcy() types.Decimal {
 	var args []interface{}
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -6975,7 +6975,7 @@ func (t *Customer) calcSum_sales_lcy() types.Decimal {
 func (t *Customer) calcSum_profit_lcy() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -6986,16 +6986,16 @@ func (t *Customer) calcSum_profit_lcy() types.Decimal {
 	var args []interface{}
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -7039,7 +7039,7 @@ func (t *Customer) calcSum_profit_lcy() types.Decimal {
 func (t *Customer) calcSum_inv_discounts_lcy() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -7050,16 +7050,16 @@ func (t *Customer) calcSum_inv_discounts_lcy() types.Decimal {
 	var args []interface{}
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -7103,7 +7103,7 @@ func (t *Customer) calcSum_inv_discounts_lcy() types.Decimal {
 func (t *Customer) calcSum_pmt_discounts_lcy() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -7114,16 +7114,16 @@ func (t *Customer) calcSum_pmt_discounts_lcy() types.Decimal {
 	var args []interface{}
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -7167,7 +7167,7 @@ func (t *Customer) calcSum_pmt_discounts_lcy() types.Decimal {
 func (t *Customer) calcSum_balance_due() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -7180,16 +7180,16 @@ func (t *Customer) calcSum_balance_due() types.Decimal {
 	args = append(args, true)
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -7234,7 +7234,7 @@ func (t *Customer) calcSum_balance_due_lcy() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, CustomerLedgerEntryTableName, "customer_open"), true
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -7247,16 +7247,16 @@ func (t *Customer) calcSum_balance_due_lcy() types.Decimal {
 	args = append(args, true)
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -7300,7 +7300,7 @@ func (t *Customer) calcSum_balance_due_lcy() types.Decimal {
 func (t *Customer) calcSum_payments() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -7313,16 +7313,16 @@ func (t *Customer) calcSum_payments() types.Decimal {
 	args = append(args, 1)
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -7366,7 +7366,7 @@ func (t *Customer) calcSum_payments() types.Decimal {
 func (t *Customer) calcSum_invoice_amounts() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -7379,16 +7379,16 @@ func (t *Customer) calcSum_invoice_amounts() types.Decimal {
 	args = append(args, 2)
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -7432,7 +7432,7 @@ func (t *Customer) calcSum_invoice_amounts() types.Decimal {
 func (t *Customer) calcSum_cr_memo_amounts() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -7445,16 +7445,16 @@ func (t *Customer) calcSum_cr_memo_amounts() types.Decimal {
 	args = append(args, 3)
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -7498,7 +7498,7 @@ func (t *Customer) calcSum_cr_memo_amounts() types.Decimal {
 func (t *Customer) calcSum_finance_charge_memo_amounts() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -7511,16 +7511,16 @@ func (t *Customer) calcSum_finance_charge_memo_amounts() types.Decimal {
 	args = append(args, 4)
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -7564,7 +7564,7 @@ func (t *Customer) calcSum_finance_charge_memo_amounts() types.Decimal {
 func (t *Customer) calcSum_payments_lcy() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -7577,16 +7577,16 @@ func (t *Customer) calcSum_payments_lcy() types.Decimal {
 	args = append(args, 1)
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -7630,7 +7630,7 @@ func (t *Customer) calcSum_payments_lcy() types.Decimal {
 func (t *Customer) calcSum_inv_amounts_lcy() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -7643,16 +7643,16 @@ func (t *Customer) calcSum_inv_amounts_lcy() types.Decimal {
 	args = append(args, 2)
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -7696,7 +7696,7 @@ func (t *Customer) calcSum_inv_amounts_lcy() types.Decimal {
 func (t *Customer) calcSum_cr_memo_amounts_lcy() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -7709,16 +7709,16 @@ func (t *Customer) calcSum_cr_memo_amounts_lcy() types.Decimal {
 	args = append(args, 3)
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -7762,7 +7762,7 @@ func (t *Customer) calcSum_cr_memo_amounts_lcy() types.Decimal {
 func (t *Customer) calcSum_fin_charge_memo_amounts_lcy() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -7775,16 +7775,16 @@ func (t *Customer) calcSum_fin_charge_memo_amounts_lcy() types.Decimal {
 	args = append(args, 4)
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -7828,7 +7828,7 @@ func (t *Customer) calcSum_fin_charge_memo_amounts_lcy() types.Decimal {
 func (t *Customer) calcSum_debit_amount() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -7839,16 +7839,16 @@ func (t *Customer) calcSum_debit_amount() types.Decimal {
 	var args []interface{}
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -7892,7 +7892,7 @@ func (t *Customer) calcSum_debit_amount() types.Decimal {
 func (t *Customer) calcSum_credit_amount() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -7903,16 +7903,16 @@ func (t *Customer) calcSum_credit_amount() types.Decimal {
 	var args []interface{}
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -7956,7 +7956,7 @@ func (t *Customer) calcSum_credit_amount() types.Decimal {
 func (t *Customer) calcSum_debit_amount_lcy() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -7967,16 +7967,16 @@ func (t *Customer) calcSum_debit_amount_lcy() types.Decimal {
 	var args []interface{}
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -8020,7 +8020,7 @@ func (t *Customer) calcSum_debit_amount_lcy() types.Decimal {
 func (t *Customer) calcSum_credit_amount_lcy() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -8031,16 +8031,16 @@ func (t *Customer) calcSum_credit_amount_lcy() types.Decimal {
 	var args []interface{}
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -8084,7 +8084,7 @@ func (t *Customer) calcSum_credit_amount_lcy() types.Decimal {
 func (t *Customer) calcSum_reminder_amounts() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -8097,16 +8097,16 @@ func (t *Customer) calcSum_reminder_amounts() types.Decimal {
 	args = append(args, 5)
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -8143,7 +8143,7 @@ func (t *Customer) calcSum_reminder_amounts() types.Decimal {
 func (t *Customer) calcSum_reminder_amounts_lcy() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 	}
@@ -8156,16 +8156,16 @@ func (t *Customer) calcSum_reminder_amounts_lcy() types.Decimal {
 	args = append(args, 5)
 	whereClauses = append(whereClauses, "customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -8209,7 +8209,7 @@ func (t *Customer) calcSum_reminder_amounts_lcy() types.Decimal {
 func (t *Customer) calcSum_outstanding_orders() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
 	}
@@ -8222,16 +8222,16 @@ func (t *Customer) calcSum_outstanding_orders() types.Decimal {
 	args = append(args, 1)
 	whereClauses = append(whereClauses, "bill_to_customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -8268,7 +8268,7 @@ func (t *Customer) calcSum_outstanding_orders() types.Decimal {
 func (t *Customer) calcSum_shipped_not_invoiced() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" || t.Currency_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Currency_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
 	}
@@ -8281,16 +8281,16 @@ func (t *Customer) calcSum_shipped_not_invoiced() types.Decimal {
 	args = append(args, 1)
 	whereClauses = append(whereClauses, "bill_to_customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -8327,7 +8327,7 @@ func (t *Customer) calcSum_shipped_not_invoiced() types.Decimal {
 func (t *Customer) calcSum_outstanding_orders_lcy() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
 	}
@@ -8340,16 +8340,16 @@ func (t *Customer) calcSum_outstanding_orders_lcy() types.Decimal {
 	args = append(args, 1)
 	whereClauses = append(whereClauses, "bill_to_customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -8379,7 +8379,7 @@ func (t *Customer) calcSum_outstanding_orders_lcy() types.Decimal {
 func (t *Customer) calcSum_shipped_not_invoiced_lcy() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
-	if t.Department_filter != "" || t.Project_filter != "" {
+	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
 	}
@@ -8392,16 +8392,16 @@ func (t *Customer) calcSum_shipped_not_invoiced_lcy() types.Decimal {
 	args = append(args, 1)
 	whereClauses = append(whereClauses, "bill_to_customer_no = ?")
 	args = append(args, t.No)
-	if t.Department_filter != "" {
-		// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
 	}
-	if t.Project_filter != "" {
-		// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 			whereClauses = append(whereClauses, clause)
 			args = append(args, filterArgs...)
 		}
@@ -8665,7 +8665,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "balance":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -8673,16 +8673,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		var whereClauses []string
 		var args []interface{}
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -8704,7 +8704,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		tableName, useSIFT = sift.TableName(t.company, CustomerLedgerEntryTableName, "customer_open"), true
-		if t.Department_filter != "" || t.Project_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -8712,16 +8712,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		var whereClauses []string
 		var args []interface{}
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -8742,7 +8742,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "net_change":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -8750,16 +8750,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		var whereClauses []string
 		var args []interface{}
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -8788,7 +8788,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		tableName, useSIFT = sift.TableName(t.company, CustomerLedgerEntryTableName, "customer_open"), true
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -8796,16 +8796,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		var whereClauses []string
 		var args []interface{}
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -8834,7 +8834,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		tableName, useSIFT = sift.TableName(t.company, CustomerLedgerEntryTableName, "customer_open"), true
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -8842,16 +8842,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		var whereClauses []string
 		var args []interface{}
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -8879,7 +8879,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "profit_lcy":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -8887,16 +8887,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		var whereClauses []string
 		var args []interface{}
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -8924,7 +8924,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "inv_discounts_lcy":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -8932,16 +8932,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		var whereClauses []string
 		var args []interface{}
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -8969,7 +8969,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "pmt_discounts_lcy":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -8977,16 +8977,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		var whereClauses []string
 		var args []interface{}
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9014,7 +9014,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "balance_due":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -9024,16 +9024,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		whereClauses = append(whereClauses, "open = ?")
 		args = append(args, true)
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9062,7 +9062,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		tableName, useSIFT = sift.TableName(t.company, CustomerLedgerEntryTableName, "customer_open"), true
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -9072,16 +9072,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		whereClauses = append(whereClauses, "open = ?")
 		args = append(args, true)
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9109,7 +9109,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "payments":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -9119,16 +9119,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 1)
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9156,7 +9156,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "invoice_amounts":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -9166,16 +9166,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 2)
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9203,7 +9203,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "cr_memo_amounts":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -9213,16 +9213,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 3)
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9250,7 +9250,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "finance_charge_memo_amounts":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -9260,16 +9260,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 4)
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9297,7 +9297,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "payments_lcy":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -9307,16 +9307,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 1)
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9344,7 +9344,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "inv_amounts_lcy":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -9354,16 +9354,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 2)
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9391,7 +9391,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "cr_memo_amounts_lcy":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -9401,16 +9401,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 3)
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9438,7 +9438,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "fin_charge_memo_amounts_lcy":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -9448,16 +9448,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 4)
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9485,7 +9485,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "debit_amount":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -9493,16 +9493,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		var whereClauses []string
 		var args []interface{}
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9530,7 +9530,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "credit_amount":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -9538,16 +9538,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		var whereClauses []string
 		var args []interface{}
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9575,7 +9575,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "debit_amount_lcy":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -9583,16 +9583,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		var whereClauses []string
 		var args []interface{}
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9620,7 +9620,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "credit_amount_lcy":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -9628,16 +9628,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		var whereClauses []string
 		var args []interface{}
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9665,7 +9665,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "reminder_amounts":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -9675,16 +9675,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 5)
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9705,7 +9705,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "reminder_amounts_lcy":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
 		}
@@ -9715,16 +9715,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 5)
 		whereClauses = append(whereClauses, "customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9752,7 +9752,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "outstanding_orders":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
 		}
@@ -9762,16 +9762,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 1)
 		whereClauses = append(whereClauses, "bill_to_customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9792,7 +9792,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "shipped_not_invoiced":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" || t.Currency_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Currency_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
 		}
@@ -9802,16 +9802,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 1)
 		whereClauses = append(whereClauses, "bill_to_customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9832,7 +9832,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "outstanding_orders_lcy":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
 		}
@@ -9842,16 +9842,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 1)
 		whereClauses = append(whereClauses, "bill_to_customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -9865,7 +9865,7 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 	case "shipped_not_invoiced_lcy":
 		// Source: the SIFT totals table of a key covering the filters, else the entries
 		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
-		if t.Department_filter != "" || t.Project_filter != "" {
+		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
 			// A FlowFilter is set: the key must contain the filtered fields too
 			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
 		}
@@ -9875,16 +9875,16 @@ func (t *Customer) flowFieldExpr(field string) (string, []interface{}) {
 		whereClauses = append(whereClauses, "document_type = ?")
 		args = append(args, 1)
 		whereClauses = append(whereClauses, "bill_to_customer_no = "+outer+".no")
-		if t.Department_filter != "" {
-			// FlowFilter department_filter applied to department_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("department_code", flowfilter.KindCode, t.Department_filter); clause != "" {
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
 		}
-		if t.Project_filter != "" {
-			// FlowFilter project_filter applied to project_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("project_code", flowfilter.KindCode, t.Project_filter); clause != "" {
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
 				whereClauses = append(whereClauses, clause)
 				args = append(args, filterArgs...)
 			}
@@ -10004,10 +10004,10 @@ func (t *Customer) columnName(fieldName string) (string, bool) {
 		return "our_account_no", true
 	case strings.ToLower("territory_code"):
 		return "territory_code", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("chain_name"):
 		return "chain_name", true
 	case strings.ToLower("budgeted_amount"):
@@ -10497,7 +10497,7 @@ func (t *Customer) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, our_account_no, territory_code, department_code, project_code, chain_name, budgeted_amount, credit_limit_lcy, customer_posting_group, currency_code, price_group_code, language_code, statistics_group, payment_terms_code, fin_charge_terms_code, salesperson_code, shipment_method_code, shipping_agent_code, place_of_export, invoice_disc_code, cust_item_disc_gr, country_code, collection_method, amount, blocked, invoice_copies, last_statement_no, print_statements, bill_to_customer_no, priority, payment_method_code, last_date_modified, application_method, allow_quantity_disc, prices_including_tax, location_code, fax_no, telex_answer_back, vat_registration_no, combine_shipments, gen_bus_posting_group, picture, post_code, state, e_mail, home_page, reminder_terms_code, no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, our_account_no, territory_code, dimension_1_code, dimension_2_code, chain_name, budgeted_amount, credit_limit_lcy, customer_posting_group, currency_code, price_group_code, language_code, statistics_group, payment_terms_code, fin_charge_terms_code, salesperson_code, shipment_method_code, shipping_agent_code, place_of_export, invoice_disc_code, cust_item_disc_gr, country_code, collection_method, amount, blocked, invoice_copies, last_statement_no, print_statements, bill_to_customer_no, priority, payment_method_code, last_date_modified, application_method, allow_quantity_disc, prices_including_tax, location_code, fax_no, telex_answer_back, vat_registration_no, combine_shipments, gen_bus_posting_group, picture, post_code, state, e_mail, home_page, reminder_terms_code, no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -10514,8 +10514,8 @@ func (t *Customer) FindFirst() bool {
 	var telex_noNull sql.NullString
 	var our_account_noNull sql.NullString
 	var territory_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var chain_nameNull sql.NullString
 	var budgeted_amountNull sql.NullString
 	var credit_limit_lcyNull sql.NullString
@@ -10572,8 +10572,8 @@ func (t *Customer) FindFirst() bool {
 		&telex_noNull,
 		&our_account_noNull,
 		&territory_codeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&chain_nameNull,
 		&budgeted_amountNull,
 		&credit_limit_lcyNull,
@@ -10644,8 +10644,8 @@ func (t *Customer) FindFirst() bool {
 	t.Telex_no = types.NewText(telex_noNull.String)
 	t.Our_account_no = types.NewText(our_account_noNull.String)
 	t.Territory_code = types.NewCode(territory_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Chain_name = types.NewCode(chain_nameNull.String)
 	t.Budgeted_amount, _ = types.NewDecimalFromString(budgeted_amountNull.String)
 	t.Credit_limit_lcy, _ = types.NewDecimalFromString(credit_limit_lcyNull.String)
@@ -10708,7 +10708,7 @@ func (t *Customer) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, our_account_no, territory_code, department_code, project_code, chain_name, budgeted_amount, credit_limit_lcy, customer_posting_group, currency_code, price_group_code, language_code, statistics_group, payment_terms_code, fin_charge_terms_code, salesperson_code, shipment_method_code, shipping_agent_code, place_of_export, invoice_disc_code, cust_item_disc_gr, country_code, collection_method, amount, blocked, invoice_copies, last_statement_no, print_statements, bill_to_customer_no, priority, payment_method_code, last_date_modified, application_method, allow_quantity_disc, prices_including_tax, location_code, fax_no, telex_answer_back, vat_registration_no, combine_shipments, gen_bus_posting_group, picture, post_code, state, e_mail, home_page, reminder_terms_code, no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, our_account_no, territory_code, dimension_1_code, dimension_2_code, chain_name, budgeted_amount, credit_limit_lcy, customer_posting_group, currency_code, price_group_code, language_code, statistics_group, payment_terms_code, fin_charge_terms_code, salesperson_code, shipment_method_code, shipping_agent_code, place_of_export, invoice_disc_code, cust_item_disc_gr, country_code, collection_method, amount, blocked, invoice_copies, last_statement_no, print_statements, bill_to_customer_no, priority, payment_method_code, last_date_modified, application_method, allow_quantity_disc, prices_including_tax, location_code, fax_no, telex_answer_back, vat_registration_no, combine_shipments, gen_bus_posting_group, picture, post_code, state, e_mail, home_page, reminder_terms_code, no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -10725,8 +10725,8 @@ func (t *Customer) FindLast() bool {
 	var telex_noNull sql.NullString
 	var our_account_noNull sql.NullString
 	var territory_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var chain_nameNull sql.NullString
 	var budgeted_amountNull sql.NullString
 	var credit_limit_lcyNull sql.NullString
@@ -10783,8 +10783,8 @@ func (t *Customer) FindLast() bool {
 		&telex_noNull,
 		&our_account_noNull,
 		&territory_codeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&chain_nameNull,
 		&budgeted_amountNull,
 		&credit_limit_lcyNull,
@@ -10855,8 +10855,8 @@ func (t *Customer) FindLast() bool {
 	t.Telex_no = types.NewText(telex_noNull.String)
 	t.Our_account_no = types.NewText(our_account_noNull.String)
 	t.Territory_code = types.NewCode(territory_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Chain_name = types.NewCode(chain_nameNull.String)
 	t.Budgeted_amount, _ = types.NewDecimalFromString(budgeted_amountNull.String)
 	t.Credit_limit_lcy, _ = types.NewDecimalFromString(credit_limit_lcyNull.String)
@@ -10949,7 +10949,7 @@ func (t *Customer) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, our_account_no, territory_code, department_code, project_code, chain_name, budgeted_amount, credit_limit_lcy, customer_posting_group, currency_code, price_group_code, language_code, statistics_group, payment_terms_code, fin_charge_terms_code, salesperson_code, shipment_method_code, shipping_agent_code, place_of_export, invoice_disc_code, cust_item_disc_gr, country_code, collection_method, amount, blocked, invoice_copies, last_statement_no, print_statements, bill_to_customer_no, priority, payment_method_code, last_date_modified, application_method, allow_quantity_disc, prices_including_tax, location_code, fax_no, telex_answer_back, vat_registration_no, combine_shipments, gen_bus_posting_group, picture, post_code, state, e_mail, home_page, reminder_terms_code, no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, our_account_no, territory_code, dimension_1_code, dimension_2_code, chain_name, budgeted_amount, credit_limit_lcy, customer_posting_group, currency_code, price_group_code, language_code, statistics_group, payment_terms_code, fin_charge_terms_code, salesperson_code, shipment_method_code, shipping_agent_code, place_of_export, invoice_disc_code, cust_item_disc_gr, country_code, collection_method, amount, blocked, invoice_copies, last_statement_no, print_statements, bill_to_customer_no, priority, payment_method_code, last_date_modified, application_method, allow_quantity_disc, prices_including_tax, location_code, fax_no, telex_answer_back, vat_registration_no, combine_shipments, gen_bus_posting_group, picture, post_code, state, e_mail, home_page, reminder_terms_code, no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -11030,8 +11030,8 @@ func (t *Customer) Next(steps ...int) bool {
 		var telex_noNull sql.NullString
 		var our_account_noNull sql.NullString
 		var territory_codeNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var chain_nameNull sql.NullString
 		var budgeted_amountNull sql.NullString
 		var credit_limit_lcyNull sql.NullString
@@ -11088,8 +11088,8 @@ func (t *Customer) Next(steps ...int) bool {
 			&telex_noNull,
 			&our_account_noNull,
 			&territory_codeNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&chain_nameNull,
 			&budgeted_amountNull,
 			&credit_limit_lcyNull,
@@ -11159,8 +11159,8 @@ func (t *Customer) Next(steps ...int) bool {
 		t.Telex_no = types.NewText(telex_noNull.String)
 		t.Our_account_no = types.NewText(our_account_noNull.String)
 		t.Territory_code = types.NewCode(territory_codeNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Chain_name = types.NewCode(chain_nameNull.String)
 		t.Budgeted_amount, _ = types.NewDecimalFromString(budgeted_amountNull.String)
 		t.Credit_limit_lcy, _ = types.NewDecimalFromString(credit_limit_lcyNull.String)
@@ -11252,7 +11252,7 @@ func (t *Customer) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, our_account_no, territory_code, department_code, project_code, chain_name, budgeted_amount, credit_limit_lcy, customer_posting_group, currency_code, price_group_code, language_code, statistics_group, payment_terms_code, fin_charge_terms_code, salesperson_code, shipment_method_code, shipping_agent_code, place_of_export, invoice_disc_code, cust_item_disc_gr, country_code, collection_method, amount, blocked, invoice_copies, last_statement_no, print_statements, bill_to_customer_no, priority, payment_method_code, last_date_modified, application_method, allow_quantity_disc, prices_including_tax, location_code, fax_no, telex_answer_back, vat_registration_no, combine_shipments, gen_bus_posting_group, picture, post_code, state, e_mail, home_page, reminder_terms_code, no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, our_account_no, territory_code, dimension_1_code, dimension_2_code, chain_name, budgeted_amount, credit_limit_lcy, customer_posting_group, currency_code, price_group_code, language_code, statistics_group, payment_terms_code, fin_charge_terms_code, salesperson_code, shipment_method_code, shipping_agent_code, place_of_export, invoice_disc_code, cust_item_disc_gr, country_code, collection_method, amount, blocked, invoice_copies, last_statement_no, print_statements, bill_to_customer_no, priority, payment_method_code, last_date_modified, application_method, allow_quantity_disc, prices_including_tax, location_code, fax_no, telex_answer_back, vat_registration_no, combine_shipments, gen_bus_posting_group, picture, post_code, state, e_mail, home_page, reminder_terms_code, no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -11286,8 +11286,8 @@ func (t *Customer) FindSetBuffered() bool {
 		var telex_noNull sql.NullString
 		var our_account_noNull sql.NullString
 		var territory_codeNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var chain_nameNull sql.NullString
 		var budgeted_amountNull sql.NullString
 		var credit_limit_lcyNull sql.NullString
@@ -11344,8 +11344,8 @@ func (t *Customer) FindSetBuffered() bool {
 			&telex_noNull,
 			&our_account_noNull,
 			&territory_codeNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&chain_nameNull,
 			&budgeted_amountNull,
 			&credit_limit_lcyNull,
@@ -11413,8 +11413,8 @@ func (t *Customer) FindSetBuffered() bool {
 		record.Telex_no = types.NewText(telex_noNull.String)
 		record.Our_account_no = types.NewText(our_account_noNull.String)
 		record.Territory_code = types.NewCode(territory_codeNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Chain_name = types.NewCode(chain_nameNull.String)
 		record.Budgeted_amount, _ = types.NewDecimalFromString(budgeted_amountNull.String)
 		record.Credit_limit_lcy, _ = types.NewDecimalFromString(credit_limit_lcyNull.String)
@@ -11497,8 +11497,8 @@ func (t *Customer) copyFromBuffered(record *Customer) {
 	t.Telex_no = record.Telex_no
 	t.Our_account_no = record.Our_account_no
 	t.Territory_code = record.Territory_code
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Chain_name = record.Chain_name
 	t.Budgeted_amount = record.Budgeted_amount
 	t.Credit_limit_lcy = record.Credit_limit_lcy
@@ -11930,45 +11930,45 @@ func (t *Customer) ValidateField(fieldName string, value interface{}) error {
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CustomerOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(CustomerOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CustomerOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(CustomerOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -13093,9 +13093,9 @@ func (t *Customer) FieldValue(no int) (any, bool) {
 	case 15:
 		return t.Territory_code, true
 	case 16:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 17:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 18:
 		return t.Chain_name, true
 	case 19:
@@ -13375,20 +13375,20 @@ func (t *Customer) SetFieldValue(no int, value any) bool {
 		}
 	case 16:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 17:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 18:
@@ -14262,10 +14262,10 @@ func (t *Customer) columnValue(column string) (interface{}, bool) {
 		return t.Our_account_no, true
 	case "territory_code":
 		return t.Territory_code, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "chain_name":
 		return t.Chain_name, true
 	case "budgeted_amount":
@@ -14425,8 +14425,8 @@ func (t *Customer) Init() {
 	t.Telex_no = *new(types.Text)
 	t.Our_account_no = *new(types.Text)
 	t.Territory_code = *new(types.Code)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Chain_name = *new(types.Code)
 	t.Budgeted_amount = *new(types.Decimal)
 	t.Credit_limit_lcy = *new(types.Decimal)
@@ -14520,8 +14520,8 @@ func (t *Customer) ToMap() map[string]interface{} {
 		"telex_no":               t.Telex_no.String(),
 		"our_account_no":         t.Our_account_no.String(),
 		"territory_code":         t.Territory_code.String(),
-		"department_code":        t.Department_code.String(),
-		"project_code":           t.Project_code.String(),
+		"dimension_1_code":       t.Dimension_1_code.String(),
+		"dimension_2_code":       t.Dimension_2_code.String(),
 		"chain_name":             t.Chain_name.String(),
 		"budgeted_amount":        t.Budgeted_amount.String(),
 		"credit_limit_lcy":       t.Credit_limit_lcy.String(),
@@ -14694,14 +14694,14 @@ func (t *Customer) FromMap(data map[string]interface{}) {
 			t.Territory_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["chain_name"]; ok && v != nil {
@@ -15156,7 +15156,7 @@ func (t *Customer) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         16,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -15166,7 +15166,7 @@ func (t *Customer) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         17,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -15990,17 +15990,17 @@ func (t *Customer) SetFlowFilter(field, expr string) error {
 		}
 		t.Date_filter = expr
 		return nil
-	case "department_filter":
+	case "dimension_1_filter":
 		if err := flowfilter.Validate(flowfilter.KindCode, expr); err != nil {
 			return err
 		}
-		t.Department_filter = expr
+		t.Dimension_1_filter = expr
 		return nil
-	case "project_filter":
+	case "dimension_2_filter":
 		if err := flowfilter.Validate(flowfilter.KindCode, expr); err != nil {
 			return err
 		}
-		t.Project_filter = expr
+		t.Dimension_2_filter = expr
 		return nil
 	case "currency_filter":
 		if err := flowfilter.Validate(flowfilter.KindCode, expr); err != nil {
@@ -16016,8 +16016,8 @@ func (t *Customer) SetFlowFilter(field, expr string) error {
 func (t *Customer) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 	return []tables.FlowFilterFieldInfo{
 		{Name: "date_filter", Kind: string(flowfilter.KindDate)},
-		{Name: "department_filter", Kind: string(flowfilter.KindCode)},
-		{Name: "project_filter", Kind: string(flowfilter.KindCode)},
+		{Name: "dimension_1_filter", Kind: string(flowfilter.KindCode)},
+		{Name: "dimension_2_filter", Kind: string(flowfilter.KindCode)},
 		{Name: "currency_filter", Kind: string(flowfilter.KindCode)},
 	}
 }
@@ -16079,8 +16079,8 @@ func (t *Customer) GetTableRelationFields() map[string]tables.TableRelationInfo 
 			},
 			SearchTimeout: 0,
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -16089,8 +16089,8 @@ func (t *Customer) GetTableRelationFields() map[string]tables.TableRelationInfo 
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

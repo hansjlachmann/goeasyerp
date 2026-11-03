@@ -80,8 +80,9 @@ func (s *Server) Setup() {
 	permLoader := handlers.NewPermissionLoader(s.db, s.dbType)
 	s.app.Use(middleware.AuthMiddleware(s.jwtConfig, s.db, s.dbType, s.sessionCache, permLoader))
 
-	// API routes
-	api := s.app.Group("/api")
+	// API routes; every request runs in the user's context (company: the dimension names in the
+	// captions, user: work date and formats)
+	api := s.app.Group("/api", middleware.UserContext())
 
 	// Initialize handlers
 	sessionHandler := handlers.NewSessionHandler()
@@ -166,6 +167,8 @@ func (s *Server) Setup() {
 	api.Put("/my-settings", mySettingsHandler.SaveMySettings)
 	// the code that runs for a user gets the user's work date and formats
 	fcodeunits.RegionalLoader = handlers.RegionalLoader(s.db, s.dbType)
+	// the captions of the dimension fields use the company's names of its dimensions
+	fcodeunits.DimensionLabelsLoader = handlers.DimensionLabelsLoader(s.db, s.dbType)
 	api.Get("/appearance", themesHandler.GetAppearance)
 	api.Put("/appearance", themesHandler.SaveAppearance)
 

@@ -131,7 +131,7 @@ func JnlNeedsRounding(table, field, value string) *AppError {
 	return &AppError{Code: ErrJnlNeedsRounding, Table: table, Field: field, Params: []string{value}}
 }
 
-// JnlPostingCodeMandatory / Same / Blank: the G/L account's Department/Project Posting rule
+// JnlPostingCodeMandatory / Same / Blank: the G/L account's Dimension 1/2 Posting rule
 func JnlPostingCodeMandatory(table, field, glAccNo string) *AppError {
 	return &AppError{Code: ErrJnlPostingCodeMandatory, Table: table, Field: field, Params: []string{glAccNo}}
 }

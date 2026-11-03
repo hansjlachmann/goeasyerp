@@ -25,8 +25,8 @@
 //	OnValidate_Fa_class_code(rec *gtables.InsCoverageLedgerEntry) error
 //	OnValidate_Fa_subclass_code(rec *gtables.InsCoverageLedgerEntry) error
 //	OnValidate_Fa_location_code(rec *gtables.InsCoverageLedgerEntry) error
-//	OnValidate_Department_code(rec *gtables.InsCoverageLedgerEntry) error
-//	OnValidate_Project_code(rec *gtables.InsCoverageLedgerEntry) error
+//	OnValidate_Dimension_1_code(rec *gtables.InsCoverageLedgerEntry) error
+//	OnValidate_Dimension_2_code(rec *gtables.InsCoverageLedgerEntry) error
 //	OnValidate_Location_code(rec *gtables.InsCoverageLedgerEntry) error
 //	OnValidate_User_id(rec *gtables.InsCoverageLedgerEntry) error
 //	OnValidate_Source_code(rec *gtables.InsCoverageLedgerEntry) error
@@ -93,8 +93,8 @@ type InsCoverageLedgerEntry struct {
 	Fa_class_code        types.Code                          `db:"fa_class_code"`
 	Fa_subclass_code     types.Code                          `db:"fa_subclass_code"`
 	Fa_location_code     types.Code                          `db:"fa_location_code"`
-	Department_code      types.Code                          `db:"department_code"`
-	Project_code         types.Code                          `db:"project_code"`
+	Dimension_1_code     types.Code                          `db:"dimension_1_code"`
+	Dimension_2_code     types.Code                          `db:"dimension_2_code"`
 	Location_code        types.Code                          `db:"location_code"`
 	User_id              types.Code                          `db:"user_id"`
 	Source_code          types.Code                          `db:"source_code"`
@@ -204,8 +204,8 @@ var InsCoverageLedgerEntry_FieldNo = struct {
 	Fa_class_code        int
 	Fa_subclass_code     int
 	Fa_location_code     int
-	Department_code      int
-	Project_code         int
+	Dimension_1_code     int
+	Dimension_2_code     int
 	Location_code        int
 	User_id              int
 	Source_code          int
@@ -229,8 +229,8 @@ var InsCoverageLedgerEntry_FieldNo = struct {
 	Fa_class_code:        17,
 	Fa_subclass_code:     18,
 	Fa_location_code:     19,
-	Department_code:      20,
-	Project_code:         21,
+	Dimension_1_code:     20,
+	Dimension_2_code:     21,
 	Location_code:        22,
 	User_id:              23,
 	Source_code:          24,
@@ -273,9 +273,9 @@ func (t *InsCoverageLedgerEntry) FieldNo(fieldName string) int {
 		return 18
 	case "fa_location_code":
 		return 19
-	case "department_code":
+	case "dimension_1_code":
 		return 20
-	case "project_code":
+	case "dimension_2_code":
 		return 21
 	case "location_code":
 		return 22
@@ -329,9 +329,9 @@ func (t *InsCoverageLedgerEntry) FieldName(fieldNo int) string {
 	case 19:
 		return "fa_location_code"
 	case 20:
-		return "department_code"
+		return "dimension_1_code"
 	case 21:
-		return "project_code"
+		return "dimension_2_code"
 	case 22:
 		return "location_code"
 	case 23:
@@ -492,11 +492,11 @@ type (
 	InsCoverageLedgerEntryOnValidate_Fa_location_code interface {
 		OnValidate_Fa_location_code(rec *InsCoverageLedgerEntry) error
 	}
-	InsCoverageLedgerEntryOnValidate_Department_code interface {
-		OnValidate_Department_code(rec *InsCoverageLedgerEntry) error
+	InsCoverageLedgerEntryOnValidate_Dimension_1_code interface {
+		OnValidate_Dimension_1_code(rec *InsCoverageLedgerEntry) error
 	}
-	InsCoverageLedgerEntryOnValidate_Project_code interface {
-		OnValidate_Project_code(rec *InsCoverageLedgerEntry) error
+	InsCoverageLedgerEntryOnValidate_Dimension_2_code interface {
+		OnValidate_Dimension_2_code(rec *InsCoverageLedgerEntry) error
 	}
 	InsCoverageLedgerEntryOnValidate_Location_code interface {
 		OnValidate_Location_code(rec *InsCoverageLedgerEntry) error
@@ -578,10 +578,10 @@ func insCoverageLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Fa_subclass_code)
 	case "OnValidate_Fa_location_code":
 		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Fa_location_code)
-	case "OnValidate_Department_code":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Dimension_2_code)
 	case "OnValidate_Location_code":
 		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Location_code)
 	case "OnValidate_User_id":
@@ -697,10 +697,10 @@ func (t *InsCoverageLedgerEntry) CheckFields() error {
 	if err := tables.CheckMaxLength(InsCoverageLedgerEntryTableName, "fa_location_code", string(t.Fa_location_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(InsCoverageLedgerEntryTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(InsCoverageLedgerEntryTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(InsCoverageLedgerEntryTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(InsCoverageLedgerEntryTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(InsCoverageLedgerEntryTableName, "location_code", string(t.Location_code), 10); err != nil {
@@ -763,8 +763,8 @@ func GetInsCoverageLedgerEntryTableSchema() string {
 		fa_class_code TEXT(10),
 		fa_subclass_code TEXT(10),
 		fa_location_code TEXT(10),
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		location_code TEXT(10),
 		user_id TEXT(20),
 		source_code TEXT(10),
@@ -793,8 +793,8 @@ func GetInsCoverageLedgerEntryPostgresTableSchema() string {
 		fa_class_code VARCHAR(10),
 		fa_subclass_code VARCHAR(10),
 		fa_location_code VARCHAR(10),
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		location_code VARCHAR(10),
 		user_id VARCHAR(20),
 		source_code VARCHAR(10),
@@ -991,8 +991,8 @@ func (t *InsCoverageLedgerEntry) StoreOldValues() {
 	t.oldValues["fa_class_code"] = t.Fa_class_code
 	t.oldValues["fa_subclass_code"] = t.Fa_subclass_code
 	t.oldValues["fa_location_code"] = t.Fa_location_code
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["location_code"] = t.Location_code
 	t.oldValues["user_id"] = t.User_id
 	t.oldValues["source_code"] = t.Source_code
@@ -1059,11 +1059,11 @@ func (t *InsCoverageLedgerEntry) XRec() *InsCoverageLedgerEntry {
 	if v, ok := t.oldValues["fa_location_code"].(types.Code); ok {
 		x.Fa_location_code = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["location_code"].(types.Code); ok {
 		x.Location_code = v
@@ -1172,8 +1172,8 @@ func (t *InsCoverageLedgerEntry) GetByPK(entry_no int) bool {
 	var fa_class_codeNull sql.NullString
 	var fa_subclass_codeNull sql.NullString
 	var fa_location_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var location_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
@@ -1188,7 +1188,7 @@ func (t *InsCoverageLedgerEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, insurance_no, disposed_fa, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, fa_class_code, fa_subclass_code, fa_location_code, department_code, project_code, location_code, user_id, source_code, journal_batch_name, reason_code, index_entry, no_series FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, insurance_no, disposed_fa, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, fa_class_code, fa_subclass_code, fa_location_code, dimension_1_code, dimension_2_code, location_code, user_id, source_code, journal_batch_name, reason_code, index_entry, no_series FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1210,8 +1210,8 @@ func (t *InsCoverageLedgerEntry) GetByPK(entry_no int) bool {
 		&fa_class_codeNull,
 		&fa_subclass_codeNull,
 		&fa_location_codeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&location_codeNull,
 		&user_idNull,
 		&source_codeNull,
@@ -1247,8 +1247,8 @@ func (t *InsCoverageLedgerEntry) GetByPK(entry_no int) bool {
 	t.Fa_class_code = types.NewCode(fa_class_codeNull.String)
 	t.Fa_subclass_code = types.NewCode(fa_subclass_codeNull.String)
 	t.Fa_location_code = types.NewCode(fa_location_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Location_code = types.NewCode(location_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
@@ -1293,8 +1293,8 @@ func (t *InsCoverageLedgerEntry) Insert(runTrigger bool) bool {
 		t.Fa_class_code,
 		t.Fa_subclass_code,
 		t.Fa_location_code,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Location_code,
 		t.User_id,
 		t.Source_code,
@@ -1306,7 +1306,7 @@ func (t *InsCoverageLedgerEntry) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, insurance_no, disposed_fa, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, fa_class_code, fa_subclass_code, fa_location_code, department_code, project_code, location_code, user_id, source_code, journal_batch_name, reason_code, index_entry, no_series) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, insurance_no, disposed_fa, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, fa_class_code, fa_subclass_code, fa_location_code, dimension_1_code, dimension_2_code, location_code, user_id, source_code, journal_batch_name, reason_code, index_entry, no_series) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1359,8 +1359,8 @@ func (t *InsCoverageLedgerEntry) InsertAll(records []*InsCoverageLedgerEntry, ru
 			r.Fa_class_code,
 			r.Fa_subclass_code,
 			r.Fa_location_code,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Location_code,
 			r.User_id,
 			r.Source_code,
@@ -1371,7 +1371,7 @@ func (t *InsCoverageLedgerEntry) InsertAll(records []*InsCoverageLedgerEntry, ru
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, InsCoverageLedgerEntryTableName)
-	columns := []string{"entry_no", "insurance_no", "disposed_fa", "fa_no", "fa_description", "posting_date", "document_type", "document_date", "document_no", "external_document_no", "amount", "description", "fa_class_code", "fa_subclass_code", "fa_location_code", "department_code", "project_code", "location_code", "user_id", "source_code", "journal_batch_name", "reason_code", "index_entry", "no_series"}
+	columns := []string{"entry_no", "insurance_no", "disposed_fa", "fa_no", "fa_description", "posting_date", "document_type", "document_date", "document_no", "external_document_no", "amount", "description", "fa_class_code", "fa_subclass_code", "fa_location_code", "dimension_1_code", "dimension_2_code", "location_code", "user_id", "source_code", "journal_batch_name", "reason_code", "index_entry", "no_series"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1471,13 +1471,13 @@ func (t *InsCoverageLedgerEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "fa_location_code = ?")
 			values = append(values, t.Fa_location_code)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("location_code") {
 			setClauses = append(setClauses, "location_code = ?")
@@ -1542,10 +1542,10 @@ func (t *InsCoverageLedgerEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.Fa_subclass_code)
 		setClauses = append(setClauses, "fa_location_code = ?")
 		values = append(values, t.Fa_location_code)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "location_code = ?")
 		values = append(values, t.Location_code)
 		setClauses = append(setClauses, "user_id = ?")
@@ -1688,13 +1688,13 @@ func (t *InsCoverageLedgerEntry) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Fa_location_code.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "location_code":
 		if old, ok := oldValue.(types.Code); ok {
@@ -1999,10 +1999,10 @@ func (t *InsCoverageLedgerEntry) columnName(fieldName string) (string, bool) {
 		return "fa_subclass_code", true
 	case strings.ToLower("fa_location_code"):
 		return "fa_location_code", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("location_code"):
 		return "location_code", true
 	case strings.ToLower("user_id"):
@@ -2384,7 +2384,7 @@ func (t *InsCoverageLedgerEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, insurance_no, disposed_fa, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, fa_class_code, fa_subclass_code, fa_location_code, department_code, project_code, location_code, user_id, source_code, journal_batch_name, reason_code, index_entry, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, insurance_no, disposed_fa, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, fa_class_code, fa_subclass_code, fa_location_code, dimension_1_code, dimension_2_code, location_code, user_id, source_code, journal_batch_name, reason_code, index_entry, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2403,8 +2403,8 @@ func (t *InsCoverageLedgerEntry) FindFirst() bool {
 	var fa_class_codeNull sql.NullString
 	var fa_subclass_codeNull sql.NullString
 	var fa_location_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var location_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
@@ -2429,8 +2429,8 @@ func (t *InsCoverageLedgerEntry) FindFirst() bool {
 		&fa_class_codeNull,
 		&fa_subclass_codeNull,
 		&fa_location_codeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&location_codeNull,
 		&user_idNull,
 		&source_codeNull,
@@ -2463,8 +2463,8 @@ func (t *InsCoverageLedgerEntry) FindFirst() bool {
 	t.Fa_class_code = types.NewCode(fa_class_codeNull.String)
 	t.Fa_subclass_code = types.NewCode(fa_subclass_codeNull.String)
 	t.Fa_location_code = types.NewCode(fa_location_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Location_code = types.NewCode(location_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
@@ -2492,7 +2492,7 @@ func (t *InsCoverageLedgerEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, insurance_no, disposed_fa, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, fa_class_code, fa_subclass_code, fa_location_code, department_code, project_code, location_code, user_id, source_code, journal_batch_name, reason_code, index_entry, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, insurance_no, disposed_fa, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, fa_class_code, fa_subclass_code, fa_location_code, dimension_1_code, dimension_2_code, location_code, user_id, source_code, journal_batch_name, reason_code, index_entry, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2511,8 +2511,8 @@ func (t *InsCoverageLedgerEntry) FindLast() bool {
 	var fa_class_codeNull sql.NullString
 	var fa_subclass_codeNull sql.NullString
 	var fa_location_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var location_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
@@ -2537,8 +2537,8 @@ func (t *InsCoverageLedgerEntry) FindLast() bool {
 		&fa_class_codeNull,
 		&fa_subclass_codeNull,
 		&fa_location_codeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&location_codeNull,
 		&user_idNull,
 		&source_codeNull,
@@ -2571,8 +2571,8 @@ func (t *InsCoverageLedgerEntry) FindLast() bool {
 	t.Fa_class_code = types.NewCode(fa_class_codeNull.String)
 	t.Fa_subclass_code = types.NewCode(fa_subclass_codeNull.String)
 	t.Fa_location_code = types.NewCode(fa_location_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Location_code = types.NewCode(location_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
@@ -2630,7 +2630,7 @@ func (t *InsCoverageLedgerEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, insurance_no, disposed_fa, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, fa_class_code, fa_subclass_code, fa_location_code, department_code, project_code, location_code, user_id, source_code, journal_batch_name, reason_code, index_entry, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, insurance_no, disposed_fa, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, fa_class_code, fa_subclass_code, fa_location_code, dimension_1_code, dimension_2_code, location_code, user_id, source_code, journal_batch_name, reason_code, index_entry, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2713,8 +2713,8 @@ func (t *InsCoverageLedgerEntry) Next(steps ...int) bool {
 		var fa_class_codeNull sql.NullString
 		var fa_subclass_codeNull sql.NullString
 		var fa_location_codeNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var location_codeNull sql.NullString
 		var user_idNull sql.NullString
 		var source_codeNull sql.NullString
@@ -2739,8 +2739,8 @@ func (t *InsCoverageLedgerEntry) Next(steps ...int) bool {
 			&fa_class_codeNull,
 			&fa_subclass_codeNull,
 			&fa_location_codeNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&location_codeNull,
 			&user_idNull,
 			&source_codeNull,
@@ -2772,8 +2772,8 @@ func (t *InsCoverageLedgerEntry) Next(steps ...int) bool {
 		t.Fa_class_code = types.NewCode(fa_class_codeNull.String)
 		t.Fa_subclass_code = types.NewCode(fa_subclass_codeNull.String)
 		t.Fa_location_code = types.NewCode(fa_location_codeNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Location_code = types.NewCode(location_codeNull.String)
 		t.User_id = types.NewCode(user_idNull.String)
 		t.Source_code = types.NewCode(source_codeNull.String)
@@ -2830,7 +2830,7 @@ func (t *InsCoverageLedgerEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, insurance_no, disposed_fa, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, fa_class_code, fa_subclass_code, fa_location_code, department_code, project_code, location_code, user_id, source_code, journal_batch_name, reason_code, index_entry, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, insurance_no, disposed_fa, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, fa_class_code, fa_subclass_code, fa_location_code, dimension_1_code, dimension_2_code, location_code, user_id, source_code, journal_batch_name, reason_code, index_entry, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2866,8 +2866,8 @@ func (t *InsCoverageLedgerEntry) FindSetBuffered() bool {
 		var fa_class_codeNull sql.NullString
 		var fa_subclass_codeNull sql.NullString
 		var fa_location_codeNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var location_codeNull sql.NullString
 		var user_idNull sql.NullString
 		var source_codeNull sql.NullString
@@ -2892,8 +2892,8 @@ func (t *InsCoverageLedgerEntry) FindSetBuffered() bool {
 			&fa_class_codeNull,
 			&fa_subclass_codeNull,
 			&fa_location_codeNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&location_codeNull,
 			&user_idNull,
 			&source_codeNull,
@@ -2923,8 +2923,8 @@ func (t *InsCoverageLedgerEntry) FindSetBuffered() bool {
 		record.Fa_class_code = types.NewCode(fa_class_codeNull.String)
 		record.Fa_subclass_code = types.NewCode(fa_subclass_codeNull.String)
 		record.Fa_location_code = types.NewCode(fa_location_codeNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Location_code = types.NewCode(location_codeNull.String)
 		record.User_id = types.NewCode(user_idNull.String)
 		record.Source_code = types.NewCode(source_codeNull.String)
@@ -2975,8 +2975,8 @@ func (t *InsCoverageLedgerEntry) copyFromBuffered(record *InsCoverageLedgerEntry
 	t.Fa_class_code = record.Fa_class_code
 	t.Fa_subclass_code = record.Fa_subclass_code
 	t.Fa_location_code = record.Fa_location_code
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Location_code = record.Location_code
 	t.User_id = record.User_id
 	t.Source_code = record.Source_code
@@ -3471,45 +3471,45 @@ func (t *InsCoverageLedgerEntry) ValidateField(fieldName string, value interface
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -3705,9 +3705,9 @@ func (t *InsCoverageLedgerEntry) FieldValue(no int) (any, bool) {
 	case 19:
 		return t.Fa_location_code, true
 	case 20:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 21:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 22:
 		return t.Location_code, true
 	case 23:
@@ -3850,20 +3850,20 @@ func (t *InsCoverageLedgerEntry) SetFieldValue(no int, value any) bool {
 		}
 	case 20:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 21:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 22:
@@ -4404,10 +4404,10 @@ func (t *InsCoverageLedgerEntry) columnValue(column string) (interface{}, bool) 
 		return t.Fa_subclass_code, true
 	case "fa_location_code":
 		return t.Fa_location_code, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "location_code":
 		return t.Location_code, true
 	case "user_id":
@@ -4490,8 +4490,8 @@ func (t *InsCoverageLedgerEntry) Init() {
 	t.Fa_class_code = *new(types.Code)
 	t.Fa_subclass_code = *new(types.Code)
 	t.Fa_location_code = *new(types.Code)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Location_code = *new(types.Code)
 	t.User_id = *new(types.Code)
 	t.Source_code = *new(types.Code)
@@ -4548,8 +4548,8 @@ func (t *InsCoverageLedgerEntry) ToMap() map[string]interface{} {
 		"fa_class_code":        t.Fa_class_code.String(),
 		"fa_subclass_code":     t.Fa_subclass_code.String(),
 		"fa_location_code":     t.Fa_location_code.String(),
-		"department_code":      t.Department_code.String(),
-		"project_code":         t.Project_code.String(),
+		"dimension_1_code":     t.Dimension_1_code.String(),
+		"dimension_2_code":     t.Dimension_2_code.String(),
 		"location_code":        t.Location_code.String(),
 		"user_id":              t.User_id.String(),
 		"source_code":          t.Source_code.String(),
@@ -4664,14 +4664,14 @@ func (t *InsCoverageLedgerEntry) FromMap(data map[string]interface{}) {
 			t.Fa_location_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["location_code"]; ok && v != nil {
@@ -4883,7 +4883,7 @@ func (t *InsCoverageLedgerEntry) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         20,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -4893,7 +4893,7 @@ func (t *InsCoverageLedgerEntry) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         21,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -5052,8 +5052,8 @@ func (t *InsCoverageLedgerEntry) GetTableRelationFields() map[string]tables.Tabl
 			},
 			SearchTimeout: 0,
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -5062,8 +5062,8 @@ func (t *InsCoverageLedgerEntry) GetTableRelationFields() map[string]tables.Tabl
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

@@ -25,6 +25,13 @@ page:
           - source: appln_rounding_precision
           - source: register_time
 
+      # the names of the two dimensions: the captions of the Dimension 1/2 fields show them
+      - name: Dimensions
+        caption: Dimensions
+        fields:
+          - source: dimension_1
+          - source: dimension_2
+
       - name: Numbering
         caption: Numbering
         fields:

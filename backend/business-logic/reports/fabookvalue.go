@@ -12,7 +12,7 @@ import (
 // depreciation, write-down, appreciation, custom 1 and custom 2 before the starting date, their
 // net change in the period and — disposed in the period — their disposal, the totals at the ending
 // date and the book value at both dates (codeunit 5626 FA General Report's CalcFAPostedAmount);
-// group totals by class, subclass, location, main asset, department or project; Print per Fixed
+// group totals by class, subclass, location, main asset, dimension 1 or 2; Print per Fixed
 // Asset (PrintDetails). Budget reports are left out (budgeted assets are not migrated).
 //
 // The values set for the layouts, per prefix ("" the asset, "grp_" the group total before the
@@ -45,7 +45,7 @@ type faBookValue struct {
 	reclassify               bool // 5606: Include Reclassification
 	deprBookCode             types.Code
 	startingDate, endingDate types.Date
-	groupTotals              int // 0 none, 1 FA Class, 2 FA Subclass, 3 FA Location, 4 Main Asset, 5 Department, 6 Project
+	groupTotals              int // 0 none, 1 FA Class, 2 FA Subclass, 3 FA Location, 4 Main Asset, 5 Dimension 1, 6 Dimension 2
 	printDetails             bool
 	faDeprBook               *gtables.FADepreciationBook
 	acquisitionDate          types.Date
@@ -62,7 +62,7 @@ func faBookValueOptions() []Option {
 		{Name: "starting_date", Type: "date", Required: true},
 		{Name: "ending_date", Type: "date", Required: true},
 		{Name: "group_totals", Type: "option", Default: "1",
-			Options: []string{"GROUP_NONE", "GROUP_FA_CLASS", "GROUP_FA_SUBCLASS", "GROUP_FA_LOCATION", "GROUP_MAIN_ASSET", "GROUP_DEPARTMENT", "GROUP_PROJECT"}},
+			Options: []string{"GROUP_NONE", "GROUP_FA_CLASS", "GROUP_FA_SUBCLASS", "GROUP_FA_LOCATION", "GROUP_MAIN_ASSET", "GROUP_DIMENSION_1", "GROUP_DIMENSION_2"}},
 		{Name: "print_per_fixed_asset", Type: "bool", Default: "false"},
 	}
 }
@@ -117,9 +117,9 @@ func (r *faBookValue) faOnPreDataItem(rec *gtables.FixedAsset, run *Run) error {
 	case 4:
 		rec.SetCurrentKey("component_of_main_asset")
 	case 5:
-		rec.SetCurrentKey("department_code")
+		rec.SetCurrentKey("dimension_1_code")
 	case 6:
-		rec.SetCurrentKey("project_code")
+		rec.SetCurrentKey("dimension_2_code")
 	}
 	setFilterText(run, rec)
 	return nil
@@ -276,9 +276,9 @@ func (r *faBookValue) makeGroupTotalText(run *Run) {
 	case 4:
 		field = "main_asset_component"
 	case 5:
-		field = "department_code"
+		field = "dimension_1_code"
 	case 6:
-		field = "project_code"
+		field = "dimension_2_code"
 	}
 	groupCodeName := ""
 	if field != "" {
@@ -288,7 +288,7 @@ func (r *faBookValue) makeGroupTotalText(run *Run) {
 }
 
 // makeGroupHeadLine (MakeGroupHeadLine): the asset's group — its class, subclass, location, main
-// asset, department or project (***** when blank)
+// asset, dimension 1 or 2 (***** when blank)
 func (r *faBookValue) makeGroupHeadLine(run *Run, fa *gtables.FixedAsset) string {
 	groupHeadLine := ""
 	switch r.groupTotals {
@@ -304,9 +304,9 @@ func (r *faBookValue) makeGroupHeadLine(run *Run, fa *gtables.FixedAsset) string
 			groupHeadLine = groupHeadLine + " *****"
 		}
 	case 5:
-		groupHeadLine = fa.Department_code.String()
+		groupHeadLine = fa.Dimension_1_code.String()
 	case 6:
-		groupHeadLine = fa.Project_code.String()
+		groupHeadLine = fa.Dimension_2_code.String()
 	}
 	if groupHeadLine == "" {
 		groupHeadLine = "*****"

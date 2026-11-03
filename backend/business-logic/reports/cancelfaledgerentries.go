@@ -88,8 +88,8 @@ func (r *cancelFALedgerEntries) faOnAfterGetRecord(fa *gtables.FixedAsset, run *
 		case !insert:
 		case gen:
 			err = r.insertGenJnlLine(run, faLedgEntry, func(genJnlLine *gtables.GenJournalLine) error {
-				genJnlLine.Department_code = faLedgEntry.Department_code
-				genJnlLine.Project_code = faLedgEntry.Project_code
+				genJnlLine.Dimension_1_code = faLedgEntry.Dimension_1_code
+				genJnlLine.Dimension_2_code = faLedgEntry.Dimension_2_code
 				err := genJnlLine.Validate("amount", genJnlLine.Amount.Neg())
 				if err != nil {
 					return err
@@ -99,8 +99,8 @@ func (r *cancelFALedgerEntries) faOnAfterGetRecord(fa *gtables.FixedAsset, run *
 			})
 		default:
 			err = r.insertFAJnlLine(run, faLedgEntry, func(faJnlLine *gtables.FAJournalLine) error {
-				faJnlLine.Department_code = faLedgEntry.Department_code
-				faJnlLine.Project_code = faLedgEntry.Project_code
+				faJnlLine.Dimension_1_code = faLedgEntry.Dimension_1_code
+				faJnlLine.Dimension_2_code = faLedgEntry.Dimension_2_code
 				err := faJnlLine.Validate("amount", faJnlLine.Amount.Neg())
 				if err != nil {
 					return err

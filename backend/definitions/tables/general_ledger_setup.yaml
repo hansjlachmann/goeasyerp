@@ -38,13 +38,13 @@ table:
       type: types.Date
       flow_filter: true
 
-    - name: department_filter
+    - name: dimension_1_filter
       no: 42
       type: types.Code
       length: 10
       flow_filter: true
 
-    - name: project_filter
+    - name: dimension_2_filter
       no: 43
       type: types.Code
       length: 10
@@ -61,12 +61,12 @@ table:
         - field: open
           type: const
           value: "true"
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: due_date
           type: filter
           value: date_filter
@@ -83,12 +83,12 @@ table:
         - field: open
           type: const
           value: "true"
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: due_date
           type: filter
           value: date_filter
@@ -240,6 +240,20 @@ table:
             width: 100
           - source: description
             width: 250
+
+    # the names of the two dimensions (Dimension 1 / Dimension 2 on the lines and entries): the
+    # captions show them instead of the generic names — per company
+    - name: dimension_1
+      no: 900
+      type: types.Text
+      db_name: dimension_1
+      length: 30
+
+    - name: dimension_2
+      no: 901
+      type: types.Text
+      db_name: dimension_2
+      length: 30
 
   keys:
     - name: Primary

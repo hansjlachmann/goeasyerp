@@ -26,15 +26,15 @@ const maxBasePercentLines = 50
 // and the dimensions; classic AccountScheduleLine's filters)
 type Filters struct {
 	DateFilter       string
-	DepartmentFilter string
-	ProjectFilter    string
+	Dimension1Filter string
+	Dimension2Filter string
 	BudgetFilter     string
 }
 
 // LineFilters: the FlowFilters of an account schedule line
 func LineFilters(accSchedLine *gtables.AccScheduleLine) Filters {
-	return Filters{DateFilter: accSchedLine.Date_filter, DepartmentFilter: accSchedLine.Department_filter,
-		ProjectFilter: accSchedLine.Project_filter, BudgetFilter: accSchedLine.Budget_filter}
+	return Filters{DateFilter: accSchedLine.Date_filter, Dimension1Filter: accSchedLine.Dimension_1_filter,
+		Dimension2Filter: accSchedLine.Dimension_2_filter, BudgetFilter: accSchedLine.Budget_filter}
 }
 
 type cellKey struct{ row, column int }
@@ -313,8 +313,8 @@ func (m *AccSchedManagement) calcGLAcc(glAcc *gtables.GLAccount, rowType gtables
 // SetGLAccRowFilters: the line's dimension and budget filters and its accounts — posting
 // accounts or total accounts in its Totaling
 func (m *AccSchedManagement) SetGLAccRowFilters(glAcc *gtables.GLAccount, accSchedLine2 *gtables.AccScheduleLine) error {
-	for field, filter := range map[string]string{"department_filter": m.filters.DepartmentFilter,
-		"project_filter": m.filters.ProjectFilter, "budget_filter": m.filters.BudgetFilter} {
+	for field, filter := range map[string]string{"dimension_1_filter": m.filters.Dimension1Filter,
+		"dimension_2_filter": m.filters.Dimension2Filter, "budget_filter": m.filters.BudgetFilter} {
 		err := glAcc.SetFlowFilter(field, filter)
 		if err != nil {
 			return err
@@ -334,7 +334,7 @@ func (m *AccSchedManagement) SetGLAccRowFilters(glAcc *gtables.GLAccount, accSch
 // SetGLAccColumnFilters: the column's period as the account's Date Filter — the schedule's
 // period moved by the Comparison Period Formula (a date formula, or a number of accounting
 // periods with P), then by the column type and the line's Calculate — and the column's
-// department and project filters. zero: the combination gives no amount (classic SETRANGE to 0D).
+// dimension 1 and dimension 2 filters. zero: the combination gives no amount (classic SETRANGE to 0D).
 func (m *AccSchedManagement) SetGLAccColumnFilters(glAcc *gtables.GLAccount, rowType gtables.AccScheduleLineCalculate, colLayoutRec2 *gtables.AccSchedColumn) (zero bool, err error) {
 	var fromDate, toDate, fiscalStartDate2 types.Date
 	formula := colLayoutRec2.Comparison_period_formula.String()
@@ -430,14 +430,14 @@ func (m *AccSchedManagement) SetGLAccColumnFilters(glAcc *gtables.GLAccount, row
 	}
 	// the column's filters (classic: in a filter group of their own; here they take the place
 	// of the line's filter of the same dimension)
-	if colLayoutRec2.Department_filter != "" {
-		err = glAcc.SetFlowFilter("department_filter", colLayoutRec2.Department_filter.String())
+	if colLayoutRec2.Dimension_1_filter != "" {
+		err = glAcc.SetFlowFilter("dimension_1_filter", colLayoutRec2.Dimension_1_filter.String())
 		if err != nil {
 			return false, err
 		}
 	}
-	if colLayoutRec2.Project_filter != "" {
-		err = glAcc.SetFlowFilter("project_filter", colLayoutRec2.Project_filter.String())
+	if colLayoutRec2.Dimension_2_filter != "" {
+		err = glAcc.SetFlowFilter("dimension_2_filter", colLayoutRec2.Dimension_2_filter.String())
 		if err != nil {
 			return false, err
 		}

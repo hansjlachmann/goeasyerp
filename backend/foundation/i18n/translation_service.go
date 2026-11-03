@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -146,6 +147,59 @@ func (s *TranslationService) flattenMap(prefix string, m map[string]interface{},
 // Translate returns translated text for key in specified language
 // Falls back to default language if not found
 func (s *TranslationService) Translate(key, language string) string {
+	text := s.translate(key, language)
+	if DimensionLabel == nil {
+		return text
+	}
+	m := dimensionKey.FindStringSubmatch(key)
+	if m == nil {
+		return text
+	}
+	n := 1
+	if m[1] == "2" {
+		n = 2
+	}
+	label := DimensionLabel(n)
+	if label == "" {
+		return text
+	}
+	// the generic name ("Dimension 1", "Dimensjon 1") in the text becomes the company's name
+	generic := s.translate(fmt.Sprintf("tables.dimension_%d.caption", n), language)
+	return replaceFold(text, generic, label)
+}
+
+// DimensionLabel returns the name the current company gives a dimension (General Ledger Setup
+// Dimension-1 / Dimension-2; "" when none): the texts of the generic dimension fields, tables,
+// pages and options show it instead of "Dimension 1" / "Dimension 2" (classic CaptionClass).
+// Set by the codeunits package (the goroutine's company context); nil: the generic names.
+var DimensionLabel func(n int) string
+
+// dimensionKey matches the keys of texts about a dimension: tables.x.fields.dimension_1_code,
+// tables.dimension_2.caption, pages.dimension_1_values.caption, options by_dimension_1, report
+// texts INCLUDES_DIMENSION_1 … (any letter case)
+var dimensionKey = regexp.MustCompile(`(?i)(?:^|[._])(?:new_|retain_|by_|close_by_)?dimension_([12])(?:_|\.|$)`)
+
+// replaceFold replaces old (any letter case) in s with new
+func replaceFold(s, old, new string) string {
+	if old == "" {
+		return s
+	}
+	lower, lowerOld := strings.ToLower(s), strings.ToLower(old)
+	var b strings.Builder
+	for {
+		i := strings.Index(lower, lowerOld)
+		if i < 0 {
+			b.WriteString(s)
+			return b.String()
+		}
+		b.WriteString(s[:i])
+		b.WriteString(new)
+		s, lower = s[i+len(old):], lower[i+len(old):]
+	}
+}
+
+// translate looks a key up: the language, else the default language, else the key itself
+func (s *TranslationService) translate(key, language string) string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 

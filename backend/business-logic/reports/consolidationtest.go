@@ -12,7 +12,7 @@ import (
 // Report 14 Consolidation - Test Database and report 15 Consolidation - Test File: what the
 // consolidation of a business unit would post to that is not in this company — the
 // consolidation accounts of its accounts with entries in the period, the consolidation codes
-// of its departments and projects — listed per business unit (one without problems is not
+// of its dimension 1 and 2 values — listed per business unit (one without problems is not
 // printed). Report 14 reads the business units' companies, report 15 a consolidation file.
 const (
 	ConsolidationTestDatabaseID = 14
@@ -55,7 +55,7 @@ func (r *consolidationTest) Definition() *Definition {
 		TableView:        []ftables.FieldFilter{{Field: "consolidate", Expression: "true"}},
 		OnPreDataItem:    Trigger(r.busUnitOnPreDataItem),
 		OnAfterGetRecord: Trigger(r.busUnitOnAfterGetRecord),
-		DataItems:        []*DataItem{r.missingLoop("Missing_Account", (*consolidation.Check).Accounts), r.missingLoop("Missing_Department", (*consolidation.Check).Departments), r.missingLoop("Missing_Project", (*consolidation.Check).Projects)},
+		DataItems:        []*DataItem{r.missingLoop("Missing_Account", (*consolidation.Check).Accounts), r.missingLoop("Missing_Dimension_1", (*consolidation.Check).Dimension1Values), r.missingLoop("Missing_Dimension_2", (*consolidation.Check).Dimension2Values)},
 	}
 	if !r.fromFile {
 		busUnit.RequestFilterFields = []string{"code"}
@@ -135,12 +135,12 @@ func (r *consolidationTest) busUnitOnAfterGetRecord(busUnit *gtables.BusinessUni
 	if err != nil {
 		return err
 	}
-	if len(r.check.Accounts()) == 0 && len(r.check.Departments()) == 0 && len(r.check.Projects()) == 0 {
+	if len(r.check.Accounts()) == 0 && len(r.check.Dimension1Values()) == 0 && len(r.check.Dimension2Values()) == 0 {
 		return Skip()
 	}
 	run.SetValue("accounts_heading", run.Text("ACCOUNTS_NOT_HERE", run.Company, busUnit.Code))
-	run.SetValue("departments_heading", run.Text("DEPARTMENTS_NOT_HERE", run.Company, busUnit.Code))
-	run.SetValue("projects_heading", run.Text("PROJECTS_NOT_HERE", run.Company, busUnit.Code))
+	run.SetValue("dimension_1_heading", run.Text("DIMENSION_1_NOT_HERE", run.Company, busUnit.Code))
+	run.SetValue("dimension_2_heading", run.Text("DIMENSION_2_NOT_HERE", run.Company, busUnit.Code))
 	run.SetValue("period_start", r.startDate)
 	run.SetValue("period_end", r.endDate)
 	if !r.fromFile && (!busUnit.Starting_date.IsZero() || !busUnit.Ending_date.IsZero()) {
@@ -162,7 +162,7 @@ func (r *consolidationTest) checkDatabase(run *Run, busUnit *gtables.BusinessUni
 	if !subsidGLAcc.ChangeCompany(subsidiary) {
 		return system.Error(run.Text("NO_COMPANY", subsidiary, busUnit.Code))
 	}
-	for _, table := range []string{gtables.GLAccountTableName, gtables.GLEntryTableName, gtables.DepartmentTableName, gtables.ProjectTableName} {
+	for _, table := range []string{gtables.GLAccountTableName, gtables.GLEntryTableName, gtables.Dimension1TableName, gtables.Dimension2TableName} {
 		if !fcodeunits.CanReadInCompany(run.DB, run.DBType, subsidiary, table) {
 			return system.Error(run.Text("NO_READ", table, subsidiary))
 		}
@@ -195,26 +195,26 @@ func (r *consolidationTest) checkDatabase(run *Run, busUnit *gtables.BusinessUni
 			if !gtables.NewGLAccount(run).Get(consolAccNo) {
 				r.check.Account(consolAccNo, subsidGLAcc.No)
 			}
-			if r.perDept && group.DepartmentCode != "" {
-				dept := gtables.NewDepartment(run)
+			if r.perDept && group.Dimension1Code != "" {
+				dept := gtables.NewDimension1(run)
 				dept.ChangeCompany(subsidiary)
-				err = dept.GetOrError(group.DepartmentCode)
+				err = dept.GetOrError(group.Dimension1Code)
 				if err != nil {
 					return err
 				}
-				if dept.Consolidation_code != "" && !gtables.NewDepartment(run).Get(dept.Consolidation_code) {
-					r.check.Department(dept.Consolidation_code, dept.Code)
+				if dept.Consolidation_code != "" && !gtables.NewDimension1(run).Get(dept.Consolidation_code) {
+					r.check.Dimension1(dept.Consolidation_code, dept.Code)
 				}
 			}
-			if r.perProj && group.ProjectCode != "" {
-				proj := gtables.NewProject(run)
+			if r.perProj && group.Dimension2Code != "" {
+				proj := gtables.NewDimension2(run)
 				proj.ChangeCompany(subsidiary)
-				err = proj.GetOrError(group.ProjectCode)
+				err = proj.GetOrError(group.Dimension2Code)
 				if err != nil {
 					return err
 				}
-				if proj.Consolidation_code != "" && !gtables.NewProject(run).Get(proj.Consolidation_code) {
-					r.check.Project(proj.Consolidation_code, proj.Code)
+				if proj.Consolidation_code != "" && !gtables.NewDimension2(run).Get(proj.Consolidation_code) {
+					r.check.Dimension2(proj.Consolidation_code, proj.Code)
 				}
 			}
 		}
@@ -222,8 +222,8 @@ func (r *consolidationTest) checkDatabase(run *Run, busUnit *gtables.BusinessUni
 	return nil
 }
 
-// checkFile (CheckConsistency): the file's entries — their consolidation accounts, departments
-// and projects
+// checkFile (CheckConsistency): the file's entries — their consolidation accounts, dimension 1 values
+// and dimension 2 values
 func (r *consolidationTest) checkFile(run *Run) error {
 	var acc *consolidation.SubsidAccount
 	for i, line := range r.lines {
@@ -242,11 +242,11 @@ func (r *consolidationTest) checkFile(run *Run) error {
 		if !entry.CreditAmount.IsZero() && !gtables.NewGLAccount(run).Get(acc.ConsolCreditAcc) {
 			r.check.Account(acc.ConsolCreditAcc, acc.No)
 		}
-		if entry.DepartmentCode != "" && !gtables.NewDepartment(run).Get(entry.DepartmentCode) {
-			r.check.Department(entry.DepartmentCode, "")
+		if entry.Dimension1Code != "" && !gtables.NewDimension1(run).Get(entry.Dimension1Code) {
+			r.check.Dimension1(entry.Dimension1Code, "")
 		}
-		if entry.ProjectCode != "" && !gtables.NewProject(run).Get(entry.ProjectCode) {
-			r.check.Project(entry.ProjectCode, "")
+		if entry.Dimension2Code != "" && !gtables.NewDimension2(run).Get(entry.Dimension2Code) {
+			r.check.Dimension2(entry.Dimension2Code, "")
 		}
 	}
 	return nil

@@ -53,7 +53,7 @@ func GetBalAcc(genJnlLine *gtables.GenJournalLine) error {
 	}
 	var g faInsertGLAcc
 	err = g.insertBufferBalAcc(rec, allocationType(genJnlLine.Fa_posting_type-1), genJnlLine.Amount.Neg(), genJnlLine.Depreciation_book_code,
-		genJnlLine.Posting_group, genJnlLine.Department_code, genJnlLine.Project_code, false, false)
+		genJnlLine.Posting_group, genJnlLine.Dimension_1_code, genJnlLine.Dimension_2_code, false, false)
 	if err != nil {
 		return err
 	}
@@ -90,8 +90,8 @@ func GetBalAcc(genJnlLine *gtables.GenJournalLine) error {
 		if err != nil {
 			return err
 		}
-		balLine.Department_code = b.DepartmentCode
-		balLine.Project_code = b.ProjectCode
+		balLine.Dimension_1_code = b.Dimension1Code
+		balLine.Dimension_2_code = b.Dimension2Code
 		balLine.Description = genJnlLine.Description
 		// the asset's additional-currency rate on its balancing lines too, so the transaction
 		// balances in the additional currency

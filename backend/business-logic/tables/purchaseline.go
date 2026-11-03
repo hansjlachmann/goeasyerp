@@ -117,7 +117,7 @@ func (purchaseLineLogic) OnValidate_Type(rec *gtables.PurchaseLine) error {
 }
 
 // OnValidate_No: the line again from the document (vendor, currency, expected receipt date,
-// department/project, location, posting and tax groups) and the account or item: description,
+// dimension 1/2, location, posting and tax groups) and the account or item: description,
 // unit of measure, sales price, indirect cost %, posting groups, the direct unit cost and the
 // quantity it had
 func (purchaseLineLogic) OnValidate_No(rec *gtables.PurchaseLine) error {
@@ -144,8 +144,8 @@ func (purchaseLineLogic) OnValidate_No(rec *gtables.PurchaseLine) error {
 	rec.Buy_from_vendor_no = purchHeader.Buy_from_vendor_no
 	rec.Currency_code = purchHeader.Currency_code
 	rec.Expected_receipt_date = purchHeader.Expected_receipt_date
-	rec.Department_code = purchHeader.Department_code
-	rec.Project_code = purchHeader.Project_code
+	rec.Dimension_1_code = purchHeader.Dimension_1_code
+	rec.Dimension_2_code = purchHeader.Dimension_2_code
 	rec.Location_code = purchHeader.Location_code
 	rec.Transaction_type = purchHeader.Transaction_type
 	rec.Transport_method = purchHeader.Transport_method

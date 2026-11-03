@@ -5,7 +5,7 @@ import (
 )
 
 // fAAllocationLogic is the business logic of table 5615 FA Allocation: an FA posting group's
-// balancing amounts of an allocation type split over G/L accounts (with department and project)
+// balancing amounts of an allocation type split over G/L accounts (with dimension 1 and dimension 2)
 // by Allocation % — what is not allocated goes to the group's own balancing account.
 type fAAllocationLogic struct{}
 

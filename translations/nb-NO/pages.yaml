@@ -122,10 +122,10 @@ pages:
     caption: "Standardtekster"
   shipment_methods:
     caption: "Leveringsmåter"
-  departments:
-    caption: "Avdelinger"
-  projects:
-    caption: "Prosjekter"
+  dimension_1_values:
+    caption: "Dimensjon 1-verdier"
+  dimension_2_values:
+    caption: "Dimensjon 2-verdier"
   salespeople_purchasers:
     caption: "Selgere/innkjøpere"
   locations:

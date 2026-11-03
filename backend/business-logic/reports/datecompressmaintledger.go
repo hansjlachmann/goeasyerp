@@ -10,8 +10,8 @@ import (
 
 // Report 5698 Date Compress Maint. Ledger: the maintenance ledger entries of closed fiscal years
 // become one entry per asset, book, posting group, document type, period and sign of the
-// quantity — and per the retained Document No., Maintenance Code, Index Entry, Department and
-// Project Code; the asset's Last Maintenance Date follows; the FA register of the run holds the
+// quantity — and per the retained Document No., Maintenance Code, Index Entry, Dimension 1 and
+// Dimension 2 Code; the asset's Last Maintenance Date follows; the FA register of the run holds the
 // maintenance entry range.
 const DateCompressMaintLedgerID = 5698
 
@@ -30,7 +30,7 @@ type dateCompressMaintLedger struct {
 
 func (r *dateCompressMaintLedger) Definition() *Definition {
 	r.tableID = gtables.MaintenanceLedgerEntryTableID
-	r.fields = []retainField{{name: "document_no"}, {name: "maintenance_code"}, {name: "index_entry"}, {name: "department_code"}, {name: "project_code"}}
+	r.fields = []retainField{{name: "document_no"}, {name: "maintenance_code"}, {name: "index_entry"}, {name: "dimension_1_code"}, {name: "dimension_2_code"}}
 	return &Definition{
 		OptionsCaption: "OPTIONS",
 		Options:        dateComprOptions(true, r.fields),
@@ -136,13 +136,13 @@ func (r *dateCompressMaintLedger) onAfterGetRecord(maintenanceLedgEntry *gtables
 		maintenanceLedgEntry2.SetRange("index_entry", maintenanceLedgEntry2.Index_entry)
 		newMaintenanceLedgEntry.Index_entry = maintenanceLedgEntry2.Index_entry
 	}
-	if r.retainNo("department_code") {
-		maintenanceLedgEntry2.SetRange("department_code", maintenanceLedgEntry2.Department_code)
-		newMaintenanceLedgEntry.Department_code = maintenanceLedgEntry2.Department_code
+	if r.retainNo("dimension_1_code") {
+		maintenanceLedgEntry2.SetRange("dimension_1_code", maintenanceLedgEntry2.Dimension_1_code)
+		newMaintenanceLedgEntry.Dimension_1_code = maintenanceLedgEntry2.Dimension_1_code
 	}
-	if r.retainNo("project_code") {
-		maintenanceLedgEntry2.SetRange("project_code", maintenanceLedgEntry2.Project_code)
-		newMaintenanceLedgEntry.Project_code = maintenanceLedgEntry2.Project_code
+	if r.retainNo("dimension_2_code") {
+		maintenanceLedgEntry2.SetRange("dimension_2_code", maintenanceLedgEntry2.Dimension_2_code)
+		newMaintenanceLedgEntry.Dimension_2_code = maintenanceLedgEntry2.Dimension_2_code
 	}
 	if !maintenanceLedgEntry2.Quantity.IsNegative() {
 		maintenanceLedgEntry2.SetFilter("quantity", ">=0")

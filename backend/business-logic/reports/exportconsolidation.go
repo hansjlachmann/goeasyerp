@@ -10,8 +10,8 @@ import (
 
 // Report 91 Export Consolidation: the company's G/L of the consolidation period as a file for
 // the consolidated company (Import Consolidation from File) — each posting account with its
-// consolidation accounts and method, and its entries summed per day, department and project as
-// asked (the department and project as their Consolidation Codes). The file format:
+// consolidation accounts and method, and its entries summed per day, dimension 1 and dimension 2 as
+// asked (the dimension 1 and dimension 2 as their Consolidation Codes). The file format:
 // consolidation/file.go.
 const ExportConsolidationID = 91
 
@@ -31,15 +31,15 @@ type consolidationOptions struct {
 	perDay, perDept, perProj bool
 }
 
-// consolidationPeriodOptions: the Consolidation Period, and the transfer per day, department
-// and project
+// consolidationPeriodOptions: the Consolidation Period, and the transfer per day, dimension 1
+// and dimension 2
 func consolidationPeriodOptions() []Option {
 	return []Option{
 		{Name: "starting_date", Type: "date"},
 		{Name: "ending_date", Type: "date"},
 		{Name: "transfer_per_day", Type: "bool", Default: "false"},
-		{Name: "transfer_per_dept", Type: "bool", Default: "false"},
-		{Name: "transfer_per_proj", Type: "bool", Default: "false"},
+		{Name: "transfer_per_dimension_1", Type: "bool", Default: "false"},
+		{Name: "transfer_per_dimension_2", Type: "bool", Default: "false"},
 	}
 }
 
@@ -48,8 +48,8 @@ func (o *consolidationOptions) read(run *Run) {
 	o.startDate = run.OptionDate("starting_date")
 	o.endDate = run.OptionDate("ending_date")
 	o.perDay = run.OptionBool("transfer_per_day")
-	o.perDept = run.OptionBool("transfer_per_dept")
-	o.perProj = run.OptionBool("transfer_per_proj")
+	o.perDept = run.OptionBool("transfer_per_dimension_1")
+	o.perProj = run.OptionBool("transfer_per_dimension_2")
 }
 
 func (r *exportConsolidation) Definition() *Definition {
@@ -114,24 +114,24 @@ func (r *exportConsolidation) onAfterGetRecord(glAcc *gtables.GLAccount, run *Ru
 			postingDate = group.PostingDate
 		}
 		r.window.Update(2, postingDate)
-		var departmentCode, projectCode types.Code
-		if r.perDept && group.DepartmentCode != "" {
-			dept := gtables.NewDepartment(run)
-			err = dept.GetOrError(group.DepartmentCode)
+		var dimension1Code, dimension2Code types.Code
+		if r.perDept && group.Dimension1Code != "" {
+			dept := gtables.NewDimension1(run)
+			err = dept.GetOrError(group.Dimension1Code)
 			if err != nil {
 				return err
 			}
-			departmentCode = dept.Consolidation_code
+			dimension1Code = dept.Consolidation_code
 		}
-		if r.perProj && group.ProjectCode != "" {
-			proj := gtables.NewProject(run)
-			err = proj.GetOrError(group.ProjectCode)
+		if r.perProj && group.Dimension2Code != "" {
+			proj := gtables.NewDimension2(run)
+			err = proj.GetOrError(group.Dimension2Code)
 			if err != nil {
 				return err
 			}
-			projectCode = proj.Consolidation_code
+			dimension2Code = proj.Consolidation_code
 		}
-		r.file.WriteEntry(glAcc.No, postingDate, debit, credit, departmentCode, projectCode)
+		r.file.WriteEntry(glAcc.No, postingDate, debit, credit, dimension1Code, dimension2Code)
 	}
 	return nil
 }

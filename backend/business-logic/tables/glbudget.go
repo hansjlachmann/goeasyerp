@@ -40,8 +40,8 @@ func GLBudgetOpen(rec *gtables.GLAccount) error {
 
 // SetGLAccBudgetedAmount enters the account's Budgeted Amount in its FlowFilters (classic: a
 // value typed into the FlowField): a G/L Budget Entry with the difference to the amount budgeted
-// now, for the budget, department and project of the filters and the first date of the Date
-// Filter. Each filter used must be one value (a blank department or project filter: none).
+// now, for the budget, dimension 1 and dimension 2 of the filters and the first date of the Date
+// Filter. Each filter used must be one value (a blank dimension 1 or 2 filter: none).
 func SetGLAccBudgetedAmount(rec *gtables.GLAccount, budgetedAmount types.Decimal) error {
 	err := CheckGLAcc(rec)
 	if err != nil {
@@ -51,13 +51,13 @@ func SetGLAccBudgetedAmount(rec *gtables.GLAccount, budgetedAmount types.Decimal
 	if !ok {
 		return apperrors.BudgetNotOneValue(gtables.GLAccountTableName, "budget_filter")
 	}
-	departmentCode, ok := oneFilterValue(rec.Department_filter)
+	dimension1Code, ok := oneFilterValue(rec.Dimension_1_filter)
 	if !ok {
-		return apperrors.BudgetNotOneValue(gtables.GLAccountTableName, "department_filter")
+		return apperrors.BudgetNotOneValue(gtables.GLAccountTableName, "dimension_1_filter")
 	}
-	projectCode, ok := oneFilterValue(rec.Project_filter)
+	dimension2Code, ok := oneFilterValue(rec.Dimension_2_filter)
 	if !ok {
-		return apperrors.BudgetNotOneValue(gtables.GLAccountTableName, "project_filter")
+		return apperrors.BudgetNotOneValue(gtables.GLAccountTableName, "dimension_2_filter")
 	}
 	date, ok := dateFilterMin(rec.Date_filter)
 	if !ok {
@@ -78,8 +78,8 @@ func SetGLAccBudgetedAmount(rec *gtables.GLAccount, budgetedAmount types.Decimal
 	glBudgetEntry.Budget_name = types.Code(budgetName)
 	glBudgetEntry.Gl_account_no = rec.No
 	glBudgetEntry.Date = date
-	glBudgetEntry.Department_code = types.Code(departmentCode)
-	glBudgetEntry.Project_code = types.Code(projectCode)
+	glBudgetEntry.Dimension_1_code = types.Code(dimension1Code)
+	glBudgetEntry.Dimension_2_code = types.Code(dimension2Code)
 	glBudgetEntry.Amount = budgetedAmount.Sub(rec.Budgeted_amount)
 	err = glBudgetEntry.InsertOrError(true)
 	if err != nil {

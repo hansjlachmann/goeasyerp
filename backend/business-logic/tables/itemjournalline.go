@@ -130,8 +130,8 @@ func (itemJournalLineLogic) OnValidate_Entry_type(rec *gtables.ItemJournalLine) 
 	}
 	if rec.Entry_type != gtables.ItemJournalLine_Entry_type.Transfer {
 		rec.New_location_code = ""
-		rec.New_department_code = ""
-		rec.New_project_code = ""
+		rec.New_dimension_1_code = ""
+		rec.New_dimension_2_code = ""
 		rec.New_serial_no = ""
 	}
 	return nil
@@ -268,13 +268,13 @@ func (itemJournalLineLogic) OnValidate_New_location_code(rec *gtables.ItemJourna
 	return rec.TestField("entry_type", gtables.ItemJournalLine_Entry_type.Transfer)
 }
 
-// OnValidate_New_department_code: only on transfers
-func (itemJournalLineLogic) OnValidate_New_department_code(rec *gtables.ItemJournalLine) error {
+// OnValidate_New_dimension_1_code: only on transfers
+func (itemJournalLineLogic) OnValidate_New_dimension_1_code(rec *gtables.ItemJournalLine) error {
 	return rec.TestField("entry_type", gtables.ItemJournalLine_Entry_type.Transfer)
 }
 
-// OnValidate_New_project_code: only on transfers
-func (itemJournalLineLogic) OnValidate_New_project_code(rec *gtables.ItemJournalLine) error {
+// OnValidate_New_dimension_2_code: only on transfers
+func (itemJournalLineLogic) OnValidate_New_dimension_2_code(rec *gtables.ItemJournalLine) error {
 	return rec.TestField("entry_type", gtables.ItemJournalLine_Entry_type.Transfer)
 }
 

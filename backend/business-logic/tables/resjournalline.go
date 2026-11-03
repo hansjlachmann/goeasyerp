@@ -31,7 +31,7 @@ func (resJournalLineLogic) OnValidate_Posting_date(rec *gtables.ResJournalLine) 
 	return rec.Validate("document_date", rec.Posting_date)
 }
 
-// OnValidate_Resource_no: the resource's name, unit of measure, group, department, project and
+// OnValidate_Resource_no: the resource's name, unit of measure, group, dimension 1, dimension 2 and
 // product posting group; its cost and price for no work type
 func (resJournalLineLogic) OnValidate_Resource_no(rec *gtables.ResJournalLine) error {
 	if rec.Resource_no == "" {
@@ -51,8 +51,8 @@ func (resJournalLineLogic) OnValidate_Resource_no(rec *gtables.ResJournalLine) e
 	rec.Direct_unit_cost = res.Direct_unit_cost
 	rec.Unit_cost = res.Unit_cost
 	rec.Unit_price = res.Unit_price
-	rec.Department_code = res.Department_code
-	rec.Project_code = res.Project_code
+	rec.Dimension_1_code = res.Dimension_1_code
+	rec.Dimension_2_code = res.Dimension_2_code
 	rec.Resource_group_no = res.Resource_group_no
 	rec.Work_type_code = ""
 	rec.Gen_prod_posting_group = res.Gen_prod_posting_group

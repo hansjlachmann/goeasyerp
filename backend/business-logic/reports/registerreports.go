@@ -47,7 +47,7 @@ func (r *trialBalancePrevYear) Definition() *Definition {
 			Name:                "GLAccount",
 			Table:               gtables.GLAccountTableName,
 			Key:                 []string{"no"},
-			RequestFilterFields: []string{"no", "account_type", "date_filter", "department_filter", "project_filter"},
+			RequestFilterFields: []string{"no", "account_type", "date_filter", "dimension_1_filter", "dimension_2_filter"},
 			OnPreDataItem: Trigger(func(rec *gtables.GLAccount, run *Run) error {
 				setFilterText(run, rec)
 				// without a period: up to the work date, compared with up to a year earlier
@@ -88,7 +88,7 @@ func (r *trialBalancePrevYear) glAccOnAfterGetRecord(rec *gtables.GLAccount, run
 	prev := gtables.NewGLAccount(run)
 	prev.No = rec.No
 	prev.Account_type, prev.Totaling = rec.Account_type, rec.Totaling
-	prev.Department_filter, prev.Project_filter = rec.Department_filter, rec.Project_filter
+	prev.Dimension_1_filter, prev.Dimension_2_filter = rec.Dimension_1_filter, rec.Dimension_2_filter
 	if r.prevYearFilter != "" {
 		err := prev.SetFlowFilter("date_filter", r.prevYearFilter)
 		if err != nil {

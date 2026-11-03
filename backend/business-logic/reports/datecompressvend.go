@@ -10,8 +10,8 @@ import (
 
 // Report 398 Date Compress Vendor Ledger: the closed vendor ledger entries of closed
 // fiscal years become one entry per vendor, posting group, currency, document type, period
-// and sign — and per the retained Document No., Buy-from Vendor No., Purchaser, Department
-// and Project Code. The new entries take G/L
+// and sign — and per the retained Document No., Buy-from Vendor No., Purchaser, Dimension 1
+// and Dimension 2 Code. The new entries take G/L
 // entry numbers (a G/L register of the run).
 const DateCompressVendorLedgerID = 398
 
@@ -29,7 +29,7 @@ type dateCompressVend struct {
 
 func (r *dateCompressVend) Definition() *Definition {
 	r.tableID = gtables.VendorLedgerEntryTableID
-	r.fields = []retainField{{name: "document_no"}, {name: "buy_from_vendor_no"}, {name: "purchaser_code"}, {name: "department_code"}, {name: "project_code"}}
+	r.fields = []retainField{{name: "document_no"}, {name: "buy_from_vendor_no"}, {name: "purchaser_code"}, {name: "dimension_1_code"}, {name: "dimension_2_code"}}
 	return &Definition{
 		OptionsCaption: "OPTIONS",
 		Options:        dateComprOptions(true, r.fields),
@@ -127,13 +127,13 @@ func (r *dateCompressVend) onAfterGetRecord(vendLedgEntry *gtables.VendorLedgerE
 		vendLedgEntry2.SetRange("purchaser_code", vendLedgEntry2.Purchaser_code)
 		newVendLedgEntry.Purchaser_code = vendLedgEntry2.Purchaser_code
 	}
-	if r.retainNo("department_code") {
-		vendLedgEntry2.SetRange("department_code", vendLedgEntry2.Department_code)
-		newVendLedgEntry.Department_code = vendLedgEntry2.Department_code
+	if r.retainNo("dimension_1_code") {
+		vendLedgEntry2.SetRange("dimension_1_code", vendLedgEntry2.Dimension_1_code)
+		newVendLedgEntry.Dimension_1_code = vendLedgEntry2.Dimension_1_code
 	}
-	if r.retainNo("project_code") {
-		vendLedgEntry2.SetRange("project_code", vendLedgEntry2.Project_code)
-		newVendLedgEntry.Project_code = vendLedgEntry2.Project_code
+	if r.retainNo("dimension_2_code") {
+		vendLedgEntry2.SetRange("dimension_2_code", vendLedgEntry2.Dimension_2_code)
+		newVendLedgEntry.Dimension_2_code = vendLedgEntry2.Dimension_2_code
 	}
 	if !vendLedgEntry2.Amount.IsNegative() {
 		vendLedgEntry2.SetFilter("amount", ">=0")

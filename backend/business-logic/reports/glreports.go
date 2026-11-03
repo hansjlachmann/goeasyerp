@@ -153,7 +153,7 @@ func (r *trialBalance) Definition() *Definition {
 			Name:                "GLAccount",
 			Table:               gtables.GLAccountTableName,
 			Key:                 []string{"no"},
-			RequestFilterFields: []string{"no", "account_type", "date_filter", "department_filter", "project_filter"},
+			RequestFilterFields: []string{"no", "account_type", "date_filter", "dimension_1_filter", "dimension_2_filter"},
 			OnPreDataItem: Trigger(func(rec *gtables.GLAccount, run *Run) error {
 				setFilterText(run, rec)
 				setPeriodText(run, rec.Date_filter)
@@ -243,7 +243,7 @@ func (r *detailTrialBalance) glAccOnAfterGetRecord(rec *gtables.GLAccount, run *
 		if err != nil {
 			return err
 		}
-		acc.Department_filter, acc.Project_filter = rec.Department_filter, rec.Project_filter
+		acc.Dimension_1_filter, acc.Dimension_2_filter = rec.Dimension_1_filter, rec.Dimension_2_filter
 		acc.CalcFields("balance_at_date")
 		r.startBalance = acc.Balance_at_date
 	}

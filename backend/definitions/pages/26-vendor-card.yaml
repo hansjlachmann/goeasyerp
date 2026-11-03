@@ -59,8 +59,8 @@ page:
           - source: invoice_disc_code
           - source: tax_area_code
           - source: tax_liable
-          - source: department_code
-          - source: project_code
+          - source: dimension_1_code
+          - source: dimension_2_code
 
       - name: Payments
         caption: Payments

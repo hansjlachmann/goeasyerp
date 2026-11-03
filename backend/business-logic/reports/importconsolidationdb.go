@@ -75,7 +75,7 @@ func (r *importConsolidationDB) onAfterGetRecord(busUnit *gtables.BusinessUnit, 
 	if !subsidGLAcc.ChangeCompany(subsidiary) {
 		return system.Error(run.Text("NO_COMPANY", subsidiary, busUnit.Code))
 	}
-	for _, table := range []string{gtables.GLAccountTableName, gtables.GLEntryTableName, gtables.DepartmentTableName, gtables.ProjectTableName} {
+	for _, table := range []string{gtables.GLAccountTableName, gtables.GLEntryTableName, gtables.Dimension1TableName, gtables.Dimension2TableName} {
 		if !fcodeunits.CanReadInCompany(run.DB, run.DBType, subsidiary, table) {
 			return system.Error(run.Text("NO_READ", table, subsidiary))
 		}
@@ -86,11 +86,11 @@ func (r *importConsolidationDB) onAfterGetRecord(busUnit *gtables.BusinessUnit, 
 	}
 	c := &consolidation.Consolidation{Src: run, BusUnit: busUnit, DocNo: r.docNo, SourceCode: r.sourceCode,
 		StartDate: r.startDate, EndDate: r.endDate, UseBusUnitDates: true, PerDay: r.perDay, PerDept: r.perDept, PerProj: r.perProj,
-		MapDepartment: func(code types.Code) (types.Code, error) {
-			return subsidiaryConsolidationCode(run, subsidiary, gtables.NewDepartment(run), gtables.NewDepartment(run), code)
+		MapDimension1: func(code types.Code) (types.Code, error) {
+			return subsidiaryConsolidationCode(run, subsidiary, gtables.NewDimension1(run), gtables.NewDimension1(run), code)
 		},
-		MapProject: func(code types.Code) (types.Code, error) {
-			return subsidiaryConsolidationCode(run, subsidiary, gtables.NewProject(run), gtables.NewProject(run), code)
+		MapDimension2: func(code types.Code) (types.Code, error) {
+			return subsidiaryConsolidationCode(run, subsidiary, gtables.NewDimension2(run), gtables.NewDimension2(run), code)
 		},
 	}
 	err = c.ClearPrevious(&r.cleared)
@@ -158,8 +158,8 @@ func postGroup(c *consolidation.Consolidation, acc consolidation.SubsidAccount, 
 }
 
 // adjustBalances: the business unit's balance on each consolidation account valued at the
-// current rate (as the subsidiary's accounts consolidating to it say) — per department and
-// project when the consolidation is
+// current rate (as the subsidiary's accounts consolidating to it say) — per dimension 1 and
+// dimension 2 when the consolidation is
 func (r *importConsolidationDB) adjustBalances(run *Run, c *consolidation.Consolidation, subsidiary string) error {
 	consolidGLAcc := gtables.NewGLAccount(run)
 	consolidGLAcc.SetCurrentKey("no")
@@ -181,7 +181,7 @@ func (r *importConsolidationDB) adjustBalances(run *Run, c *consolidation.Consol
 }
 
 // adjustAccountBalance: the business unit's debit and credit on the account up to the period's
-// end, adjusted (per department, and project, when the consolidation is)
+// end, adjusted (per dimension 1, and dimension 2, when the consolidation is)
 func adjustAccountBalance(run *Run, c *consolidation.Consolidation, consolidGLAcc *gtables.GLAccount, perDept, perProj bool) error {
 	if !perDept && !perProj {
 		err := consolidGLAcc.SetFlowFilter("business_unit_filter", c.BusUnit.Code.String())
@@ -209,22 +209,22 @@ func adjustAccountBalance(run *Run, c *consolidation.Consolidation, consolidGLAc
 	glEntry.SetRange("business_unit_code", c.BusUnit.Code)
 	glEntry.SetFilter("posting_date", ".."+c.PeriodEnd().String())
 	for _, group := range consolidation.Groups(glEntry, false, true, perProj) {
-		departmentCode := group.DepartmentCode
+		dimension1Code := group.Dimension1Code
 		if !perDept {
-			departmentCode = ""
+			dimension1Code = ""
 		}
-		projectCode := group.ProjectCode
+		dimension2Code := group.Dimension2Code
 		if !perProj {
-			projectCode = ""
+			dimension2Code = ""
 		}
 		if !group.DebitAmount.IsZero() {
-			err := c.AdjustBalance(consolidGLAcc.No, departmentCode, projectCode, group.DebitAmount)
+			err := c.AdjustBalance(consolidGLAcc.No, dimension1Code, dimension2Code, group.DebitAmount)
 			if err != nil {
 				return err
 			}
 		}
 		if !group.CreditAmount.IsZero() {
-			err := c.AdjustBalance(consolidGLAcc.No, departmentCode, projectCode, group.CreditAmount.Neg())
+			err := c.AdjustBalance(consolidGLAcc.No, dimension1Code, dimension2Code, group.CreditAmount.Neg())
 			if err != nil {
 				return err
 			}
@@ -259,13 +259,13 @@ func valuationMethod(run *Run, busUnit *gtables.BusinessUnit, subsidiary string,
 	return method, nil
 }
 
-// consolidationCoder is a department or project
+// consolidationCoder is a dimension 1 or 2
 type consolidationCoder interface {
 	ChangeCompany(company string) bool
 	GetOrError(primaryKey interface{}) error
 }
 
-// subsidiaryConsolidationCode: the code a department or project of the subsidiary consolidates
+// subsidiaryConsolidationCode: the code a dimension 1 or 2 of the subsidiary consolidates
 // to (its Consolidation Code; blank when it has none) — which must be here
 func subsidiaryConsolidationCode(run *Run, subsidiary string, subsid, consolid consolidationCoder, code types.Code) (types.Code, error) {
 	subsid.ChangeCompany(subsidiary)
@@ -275,9 +275,9 @@ func subsidiaryConsolidationCode(run *Run, subsidiary string, subsid, consolid c
 	}
 	var consolidationCode types.Code
 	switch rec := subsid.(type) {
-	case *gtables.Department:
+	case *gtables.Dimension1:
 		consolidationCode = rec.Consolidation_code
-	case *gtables.Project:
+	case *gtables.Dimension2:
 		consolidationCode = rec.Consolidation_code
 	}
 	if consolidationCode == "" {

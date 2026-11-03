@@ -37,8 +37,8 @@
 //	OnValidate_Pmt_discount_date(rec *gtables.SalesCrMemoHeader) error
 //	OnValidate_Shipment_method_code(rec *gtables.SalesCrMemoHeader) error
 //	OnValidate_Location_code(rec *gtables.SalesCrMemoHeader) error
-//	OnValidate_Department_code(rec *gtables.SalesCrMemoHeader) error
-//	OnValidate_Project_code(rec *gtables.SalesCrMemoHeader) error
+//	OnValidate_Dimension_1_code(rec *gtables.SalesCrMemoHeader) error
+//	OnValidate_Dimension_2_code(rec *gtables.SalesCrMemoHeader) error
 //	OnValidate_Customer_posting_group(rec *gtables.SalesCrMemoHeader) error
 //	OnValidate_Currency_code(rec *gtables.SalesCrMemoHeader) error
 //	OnValidate_Currency_factor(rec *gtables.SalesCrMemoHeader) error
@@ -154,8 +154,8 @@ type SalesCrMemoHeader struct {
 	Pmt_discount_date        types.Date    `db:"pmt_discount_date"`
 	Shipment_method_code     types.Code    `db:"shipment_method_code"`
 	Location_code            types.Code    `db:"location_code"`
-	Department_code          types.Code    `db:"department_code"`
-	Project_code             types.Code    `db:"project_code"`
+	Dimension_1_code         types.Code    `db:"dimension_1_code"`
+	Dimension_2_code         types.Code    `db:"dimension_2_code"`
 	Customer_posting_group   types.Code    `db:"customer_posting_group"`
 	Currency_code            types.Code    `db:"currency_code"`
 	Currency_factor          types.Decimal `db:"currency_factor"`
@@ -319,8 +319,8 @@ var SalesCrMemoHeader_FieldNo = struct {
 	Pmt_discount_date        int
 	Shipment_method_code     int
 	Location_code            int
-	Department_code          int
-	Project_code             int
+	Dimension_1_code         int
+	Dimension_2_code         int
 	Customer_posting_group   int
 	Currency_code            int
 	Currency_factor          int
@@ -395,8 +395,8 @@ var SalesCrMemoHeader_FieldNo = struct {
 	Pmt_discount_date:        26,
 	Shipment_method_code:     27,
 	Location_code:            28,
-	Department_code:          29,
-	Project_code:             30,
+	Dimension_1_code:         29,
+	Dimension_2_code:         30,
 	Customer_posting_group:   31,
 	Currency_code:            32,
 	Currency_factor:          33,
@@ -502,9 +502,9 @@ func (t *SalesCrMemoHeader) FieldNo(fieldName string) int {
 		return 27
 	case "location_code":
 		return 28
-	case "department_code":
+	case "dimension_1_code":
 		return 29
-	case "project_code":
+	case "dimension_2_code":
 		return 30
 	case "customer_posting_group":
 		return 31
@@ -660,9 +660,9 @@ func (t *SalesCrMemoHeader) FieldName(fieldNo int) string {
 	case 28:
 		return "location_code"
 	case 29:
-		return "department_code"
+		return "dimension_1_code"
 	case 30:
-		return "project_code"
+		return "dimension_2_code"
 	case 31:
 		return "customer_posting_group"
 	case 32:
@@ -937,11 +937,11 @@ type (
 	SalesCrMemoHeaderOnValidate_Location_code interface {
 		OnValidate_Location_code(rec *SalesCrMemoHeader) error
 	}
-	SalesCrMemoHeaderOnValidate_Department_code interface {
-		OnValidate_Department_code(rec *SalesCrMemoHeader) error
+	SalesCrMemoHeaderOnValidate_Dimension_1_code interface {
+		OnValidate_Dimension_1_code(rec *SalesCrMemoHeader) error
 	}
-	SalesCrMemoHeaderOnValidate_Project_code interface {
-		OnValidate_Project_code(rec *SalesCrMemoHeader) error
+	SalesCrMemoHeaderOnValidate_Dimension_2_code interface {
+		OnValidate_Dimension_2_code(rec *SalesCrMemoHeader) error
 	}
 	SalesCrMemoHeaderOnValidate_Customer_posting_group interface {
 		OnValidate_Customer_posting_group(rec *SalesCrMemoHeader) error
@@ -1155,10 +1155,10 @@ func salesCrMemoHeaderTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SalesCrMemoHeaderOnValidate_Shipment_method_code)
 	case "OnValidate_Location_code":
 		_, ok = logic.(SalesCrMemoHeaderOnValidate_Location_code)
-	case "OnValidate_Department_code":
-		_, ok = logic.(SalesCrMemoHeaderOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(SalesCrMemoHeaderOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(SalesCrMemoHeaderOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(SalesCrMemoHeaderOnValidate_Dimension_2_code)
 	case "OnValidate_Customer_posting_group":
 		_, ok = logic.(SalesCrMemoHeaderOnValidate_Customer_posting_group)
 	case "OnValidate_Currency_code":
@@ -1385,10 +1385,10 @@ func (t *SalesCrMemoHeader) CheckFields() error {
 	if err := tables.CheckMaxLength(SalesCrMemoHeaderTableName, "location_code", string(t.Location_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(SalesCrMemoHeaderTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(SalesCrMemoHeaderTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(SalesCrMemoHeaderTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(SalesCrMemoHeaderTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(SalesCrMemoHeaderTableName, "customer_posting_group", string(t.Customer_posting_group), 10); err != nil {
@@ -1553,8 +1553,8 @@ func GetSalesCrMemoHeaderTableSchema() string {
 		pmt_discount_date TEXT,
 		shipment_method_code TEXT(10),
 		location_code TEXT(10),
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		customer_posting_group TEXT(10),
 		currency_code TEXT(10),
 		currency_factor TEXT,
@@ -1634,8 +1634,8 @@ func GetSalesCrMemoHeaderPostgresTableSchema() string {
 		pmt_discount_date TIMESTAMP,
 		shipment_method_code VARCHAR(10),
 		location_code VARCHAR(10),
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		customer_posting_group VARCHAR(10),
 		currency_code VARCHAR(10),
 		currency_factor NUMERIC,
@@ -1843,8 +1843,8 @@ func (t *SalesCrMemoHeader) StoreOldValues() {
 	t.oldValues["pmt_discount_date"] = t.Pmt_discount_date
 	t.oldValues["shipment_method_code"] = t.Shipment_method_code
 	t.oldValues["location_code"] = t.Location_code
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["customer_posting_group"] = t.Customer_posting_group
 	t.oldValues["currency_code"] = t.Currency_code
 	t.oldValues["currency_factor"] = t.Currency_factor
@@ -1983,11 +1983,11 @@ func (t *SalesCrMemoHeader) XRec() *SalesCrMemoHeader {
 	if v, ok := t.oldValues["location_code"].(types.Code); ok {
 		x.Location_code = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["customer_posting_group"].(types.Code); ok {
 		x.Customer_posting_group = v
@@ -2206,8 +2206,8 @@ func (t *SalesCrMemoHeader) GetByPK(no types.Code) bool {
 	var pmt_discount_dateNull sql.NullString
 	var shipment_method_codeNull sql.NullString
 	var location_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var customer_posting_groupNull sql.NullString
 	var currency_codeNull sql.NullString
 	var currency_factorNull sql.NullString
@@ -2258,7 +2258,7 @@ func (t *SalesCrMemoHeader) GetByPK(no types.Code) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT sell_to_customer_no, no, bill_to_customer_no, bill_to_name, bill_to_name_2, bill_to_address, bill_to_address_2, bill_to_city, bill_to_contact, your_reference, ship_to_code, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, shipment_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, customer_posting_group, currency_code, currency_factor, price_group_code, prices_including_tax, allow_quantity_disc, invoice_disc_code, cust_item_disc_gr, language_code, salesperson_code, no_printed, applies_to_doc_type, applies_to_doc_no, vat_registration_no, reason_code, gen_bus_posting_group, sell_to_customer_name, sell_to_customer_name_2, sell_to_address, sell_to_address_2, sell_to_city, sell_to_contact, bill_to_post_code, bill_to_state, bill_to_country_code, sell_to_post_code, sell_to_state, sell_to_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, document_date, external_document_no, payment_method_code, shipping_agent_code, no_series, pre_assigned_no, user_id, source_code, tax_area_code, tax_liable, tax_bus_posting_group, tax_exemption_no FROM "%s" WHERE 1=1 AND no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT sell_to_customer_no, no, bill_to_customer_no, bill_to_name, bill_to_name_2, bill_to_address, bill_to_address_2, bill_to_city, bill_to_contact, your_reference, ship_to_code, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, shipment_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, customer_posting_group, currency_code, currency_factor, price_group_code, prices_including_tax, allow_quantity_disc, invoice_disc_code, cust_item_disc_gr, language_code, salesperson_code, no_printed, applies_to_doc_type, applies_to_doc_no, vat_registration_no, reason_code, gen_bus_posting_group, sell_to_customer_name, sell_to_customer_name_2, sell_to_address, sell_to_address_2, sell_to_city, sell_to_contact, bill_to_post_code, bill_to_state, bill_to_country_code, sell_to_post_code, sell_to_state, sell_to_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, document_date, external_document_no, payment_method_code, shipping_agent_code, no_series, pre_assigned_no, user_id, source_code, tax_area_code, tax_liable, tax_bus_posting_group, tax_exemption_no FROM "%s" WHERE 1=1 AND no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2292,8 +2292,8 @@ func (t *SalesCrMemoHeader) GetByPK(no types.Code) bool {
 		&pmt_discount_dateNull,
 		&shipment_method_codeNull,
 		&location_codeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&customer_posting_groupNull,
 		&currency_codeNull,
 		&currency_factorNull,
@@ -2377,8 +2377,8 @@ func (t *SalesCrMemoHeader) GetByPK(no types.Code) bool {
 	t.Pmt_discount_date, _ = types.NewDateFromString(pmt_discount_dateNull.String)
 	t.Shipment_method_code = types.NewCode(shipment_method_codeNull.String)
 	t.Location_code = types.NewCode(location_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Customer_posting_group = types.NewCode(customer_posting_groupNull.String)
 	t.Currency_code = types.NewCode(currency_codeNull.String)
 	t.Currency_factor, _ = types.NewDecimalFromString(currency_factorNull.String)
@@ -2471,8 +2471,8 @@ func (t *SalesCrMemoHeader) Insert(runTrigger bool) bool {
 		t.Pmt_discount_date,
 		t.Shipment_method_code,
 		t.Location_code,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Customer_posting_group,
 		t.Currency_code,
 		t.Currency_factor,
@@ -2520,7 +2520,7 @@ func (t *SalesCrMemoHeader) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (sell_to_customer_no, no, bill_to_customer_no, bill_to_name, bill_to_name_2, bill_to_address, bill_to_address_2, bill_to_city, bill_to_contact, your_reference, ship_to_code, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, shipment_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, customer_posting_group, currency_code, currency_factor, price_group_code, prices_including_tax, allow_quantity_disc, invoice_disc_code, cust_item_disc_gr, language_code, salesperson_code, no_printed, applies_to_doc_type, applies_to_doc_no, vat_registration_no, reason_code, gen_bus_posting_group, sell_to_customer_name, sell_to_customer_name_2, sell_to_address, sell_to_address_2, sell_to_city, sell_to_contact, bill_to_post_code, bill_to_state, bill_to_country_code, sell_to_post_code, sell_to_state, sell_to_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, document_date, external_document_no, payment_method_code, shipping_agent_code, no_series, pre_assigned_no, user_id, source_code, tax_area_code, tax_liable, tax_bus_posting_group, tax_exemption_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (sell_to_customer_no, no, bill_to_customer_no, bill_to_name, bill_to_name_2, bill_to_address, bill_to_address_2, bill_to_city, bill_to_contact, your_reference, ship_to_code, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, shipment_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, customer_posting_group, currency_code, currency_factor, price_group_code, prices_including_tax, allow_quantity_disc, invoice_disc_code, cust_item_disc_gr, language_code, salesperson_code, no_printed, applies_to_doc_type, applies_to_doc_no, vat_registration_no, reason_code, gen_bus_posting_group, sell_to_customer_name, sell_to_customer_name_2, sell_to_address, sell_to_address_2, sell_to_city, sell_to_contact, bill_to_post_code, bill_to_state, bill_to_country_code, sell_to_post_code, sell_to_state, sell_to_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, document_date, external_document_no, payment_method_code, shipping_agent_code, no_series, pre_assigned_no, user_id, source_code, tax_area_code, tax_liable, tax_bus_posting_group, tax_exemption_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2585,8 +2585,8 @@ func (t *SalesCrMemoHeader) InsertAll(records []*SalesCrMemoHeader, runTrigger b
 			r.Pmt_discount_date,
 			r.Shipment_method_code,
 			r.Location_code,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Customer_posting_group,
 			r.Currency_code,
 			r.Currency_factor,
@@ -2633,7 +2633,7 @@ func (t *SalesCrMemoHeader) InsertAll(records []*SalesCrMemoHeader, runTrigger b
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, SalesCrMemoHeaderTableName)
-	columns := []string{"sell_to_customer_no", "no", "bill_to_customer_no", "bill_to_name", "bill_to_name_2", "bill_to_address", "bill_to_address_2", "bill_to_city", "bill_to_contact", "your_reference", "ship_to_code", "ship_to_name", "ship_to_name_2", "ship_to_address", "ship_to_address_2", "ship_to_city", "ship_to_contact", "order_date", "posting_date", "shipment_date", "posting_description", "payment_terms_code", "due_date", "payment_discount_percent", "pmt_discount_date", "shipment_method_code", "location_code", "department_code", "project_code", "customer_posting_group", "currency_code", "currency_factor", "price_group_code", "prices_including_tax", "allow_quantity_disc", "invoice_disc_code", "cust_item_disc_gr", "language_code", "salesperson_code", "no_printed", "applies_to_doc_type", "applies_to_doc_no", "vat_registration_no", "reason_code", "gen_bus_posting_group", "sell_to_customer_name", "sell_to_customer_name_2", "sell_to_address", "sell_to_address_2", "sell_to_city", "sell_to_contact", "bill_to_post_code", "bill_to_state", "bill_to_country_code", "sell_to_post_code", "sell_to_state", "sell_to_country_code", "ship_to_post_code", "ship_to_state", "ship_to_country_code", "document_date", "external_document_no", "payment_method_code", "shipping_agent_code", "no_series", "pre_assigned_no", "user_id", "source_code", "tax_area_code", "tax_liable", "tax_bus_posting_group", "tax_exemption_no"}
+	columns := []string{"sell_to_customer_no", "no", "bill_to_customer_no", "bill_to_name", "bill_to_name_2", "bill_to_address", "bill_to_address_2", "bill_to_city", "bill_to_contact", "your_reference", "ship_to_code", "ship_to_name", "ship_to_name_2", "ship_to_address", "ship_to_address_2", "ship_to_city", "ship_to_contact", "order_date", "posting_date", "shipment_date", "posting_description", "payment_terms_code", "due_date", "payment_discount_percent", "pmt_discount_date", "shipment_method_code", "location_code", "dimension_1_code", "dimension_2_code", "customer_posting_group", "currency_code", "currency_factor", "price_group_code", "prices_including_tax", "allow_quantity_disc", "invoice_disc_code", "cust_item_disc_gr", "language_code", "salesperson_code", "no_printed", "applies_to_doc_type", "applies_to_doc_no", "vat_registration_no", "reason_code", "gen_bus_posting_group", "sell_to_customer_name", "sell_to_customer_name_2", "sell_to_address", "sell_to_address_2", "sell_to_city", "sell_to_contact", "bill_to_post_code", "bill_to_state", "bill_to_country_code", "sell_to_post_code", "sell_to_state", "sell_to_country_code", "ship_to_post_code", "ship_to_state", "ship_to_country_code", "document_date", "external_document_no", "payment_method_code", "shipping_agent_code", "no_series", "pre_assigned_no", "user_id", "source_code", "tax_area_code", "tax_liable", "tax_bus_posting_group", "tax_exemption_no"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2781,13 +2781,13 @@ func (t *SalesCrMemoHeader) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "location_code = ?")
 			values = append(values, t.Location_code)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("customer_posting_group") {
 			setClauses = append(setClauses, "customer_posting_group = ?")
@@ -3020,10 +3020,10 @@ func (t *SalesCrMemoHeader) Modify(runTrigger bool) bool {
 		values = append(values, t.Shipment_method_code)
 		setClauses = append(setClauses, "location_code = ?")
 		values = append(values, t.Location_code)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "customer_posting_group = ?")
 		values = append(values, t.Customer_posting_group)
 		setClauses = append(setClauses, "currency_code = ?")
@@ -3262,13 +3262,13 @@ func (t *SalesCrMemoHeader) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Location_code.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "customer_posting_group":
 		if old, ok := oldValue.(types.Code); ok {
@@ -4137,10 +4137,10 @@ func (t *SalesCrMemoHeader) columnName(fieldName string) (string, bool) {
 		return "shipment_method_code", true
 	case strings.ToLower("location_code"):
 		return "location_code", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("customer_posting_group"):
 		return "customer_posting_group", true
 	case strings.ToLower("currency_code"):
@@ -4624,7 +4624,7 @@ func (t *SalesCrMemoHeader) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, no, bill_to_customer_no, bill_to_name, bill_to_name_2, bill_to_address, bill_to_address_2, bill_to_city, bill_to_contact, your_reference, ship_to_code, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, shipment_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, customer_posting_group, currency_code, currency_factor, price_group_code, prices_including_tax, allow_quantity_disc, invoice_disc_code, cust_item_disc_gr, language_code, salesperson_code, no_printed, applies_to_doc_type, applies_to_doc_no, vat_registration_no, reason_code, gen_bus_posting_group, sell_to_customer_name, sell_to_customer_name_2, sell_to_address, sell_to_address_2, sell_to_city, sell_to_contact, bill_to_post_code, bill_to_state, bill_to_country_code, sell_to_post_code, sell_to_state, sell_to_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, document_date, external_document_no, payment_method_code, shipping_agent_code, no_series, pre_assigned_no, user_id, source_code, tax_area_code, tax_liable, tax_bus_posting_group, tax_exemption_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, no, bill_to_customer_no, bill_to_name, bill_to_name_2, bill_to_address, bill_to_address_2, bill_to_city, bill_to_contact, your_reference, ship_to_code, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, shipment_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, customer_posting_group, currency_code, currency_factor, price_group_code, prices_including_tax, allow_quantity_disc, invoice_disc_code, cust_item_disc_gr, language_code, salesperson_code, no_printed, applies_to_doc_type, applies_to_doc_no, vat_registration_no, reason_code, gen_bus_posting_group, sell_to_customer_name, sell_to_customer_name_2, sell_to_address, sell_to_address_2, sell_to_city, sell_to_contact, bill_to_post_code, bill_to_state, bill_to_country_code, sell_to_post_code, sell_to_state, sell_to_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, document_date, external_document_no, payment_method_code, shipping_agent_code, no_series, pre_assigned_no, user_id, source_code, tax_area_code, tax_liable, tax_bus_posting_group, tax_exemption_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4656,8 +4656,8 @@ func (t *SalesCrMemoHeader) FindFirst() bool {
 	var pmt_discount_dateNull sql.NullString
 	var shipment_method_codeNull sql.NullString
 	var location_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var customer_posting_groupNull sql.NullString
 	var currency_codeNull sql.NullString
 	var currency_factorNull sql.NullString
@@ -4729,8 +4729,8 @@ func (t *SalesCrMemoHeader) FindFirst() bool {
 		&pmt_discount_dateNull,
 		&shipment_method_codeNull,
 		&location_codeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&customer_posting_groupNull,
 		&currency_codeNull,
 		&currency_factorNull,
@@ -4812,8 +4812,8 @@ func (t *SalesCrMemoHeader) FindFirst() bool {
 	t.Pmt_discount_date, _ = types.NewDateFromString(pmt_discount_dateNull.String)
 	t.Shipment_method_code = types.NewCode(shipment_method_codeNull.String)
 	t.Location_code = types.NewCode(location_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Customer_posting_group = types.NewCode(customer_posting_groupNull.String)
 	t.Currency_code = types.NewCode(currency_codeNull.String)
 	t.Currency_factor, _ = types.NewDecimalFromString(currency_factorNull.String)
@@ -4876,7 +4876,7 @@ func (t *SalesCrMemoHeader) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, no, bill_to_customer_no, bill_to_name, bill_to_name_2, bill_to_address, bill_to_address_2, bill_to_city, bill_to_contact, your_reference, ship_to_code, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, shipment_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, customer_posting_group, currency_code, currency_factor, price_group_code, prices_including_tax, allow_quantity_disc, invoice_disc_code, cust_item_disc_gr, language_code, salesperson_code, no_printed, applies_to_doc_type, applies_to_doc_no, vat_registration_no, reason_code, gen_bus_posting_group, sell_to_customer_name, sell_to_customer_name_2, sell_to_address, sell_to_address_2, sell_to_city, sell_to_contact, bill_to_post_code, bill_to_state, bill_to_country_code, sell_to_post_code, sell_to_state, sell_to_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, document_date, external_document_no, payment_method_code, shipping_agent_code, no_series, pre_assigned_no, user_id, source_code, tax_area_code, tax_liable, tax_bus_posting_group, tax_exemption_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, no, bill_to_customer_no, bill_to_name, bill_to_name_2, bill_to_address, bill_to_address_2, bill_to_city, bill_to_contact, your_reference, ship_to_code, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, shipment_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, customer_posting_group, currency_code, currency_factor, price_group_code, prices_including_tax, allow_quantity_disc, invoice_disc_code, cust_item_disc_gr, language_code, salesperson_code, no_printed, applies_to_doc_type, applies_to_doc_no, vat_registration_no, reason_code, gen_bus_posting_group, sell_to_customer_name, sell_to_customer_name_2, sell_to_address, sell_to_address_2, sell_to_city, sell_to_contact, bill_to_post_code, bill_to_state, bill_to_country_code, sell_to_post_code, sell_to_state, sell_to_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, document_date, external_document_no, payment_method_code, shipping_agent_code, no_series, pre_assigned_no, user_id, source_code, tax_area_code, tax_liable, tax_bus_posting_group, tax_exemption_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4908,8 +4908,8 @@ func (t *SalesCrMemoHeader) FindLast() bool {
 	var pmt_discount_dateNull sql.NullString
 	var shipment_method_codeNull sql.NullString
 	var location_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var customer_posting_groupNull sql.NullString
 	var currency_codeNull sql.NullString
 	var currency_factorNull sql.NullString
@@ -4981,8 +4981,8 @@ func (t *SalesCrMemoHeader) FindLast() bool {
 		&pmt_discount_dateNull,
 		&shipment_method_codeNull,
 		&location_codeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&customer_posting_groupNull,
 		&currency_codeNull,
 		&currency_factorNull,
@@ -5064,8 +5064,8 @@ func (t *SalesCrMemoHeader) FindLast() bool {
 	t.Pmt_discount_date, _ = types.NewDateFromString(pmt_discount_dateNull.String)
 	t.Shipment_method_code = types.NewCode(shipment_method_codeNull.String)
 	t.Location_code = types.NewCode(location_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Customer_posting_group = types.NewCode(customer_posting_groupNull.String)
 	t.Currency_code = types.NewCode(currency_codeNull.String)
 	t.Currency_factor, _ = types.NewDecimalFromString(currency_factorNull.String)
@@ -5158,7 +5158,7 @@ func (t *SalesCrMemoHeader) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, no, bill_to_customer_no, bill_to_name, bill_to_name_2, bill_to_address, bill_to_address_2, bill_to_city, bill_to_contact, your_reference, ship_to_code, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, shipment_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, customer_posting_group, currency_code, currency_factor, price_group_code, prices_including_tax, allow_quantity_disc, invoice_disc_code, cust_item_disc_gr, language_code, salesperson_code, no_printed, applies_to_doc_type, applies_to_doc_no, vat_registration_no, reason_code, gen_bus_posting_group, sell_to_customer_name, sell_to_customer_name_2, sell_to_address, sell_to_address_2, sell_to_city, sell_to_contact, bill_to_post_code, bill_to_state, bill_to_country_code, sell_to_post_code, sell_to_state, sell_to_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, document_date, external_document_no, payment_method_code, shipping_agent_code, no_series, pre_assigned_no, user_id, source_code, tax_area_code, tax_liable, tax_bus_posting_group, tax_exemption_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, no, bill_to_customer_no, bill_to_name, bill_to_name_2, bill_to_address, bill_to_address_2, bill_to_city, bill_to_contact, your_reference, ship_to_code, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, shipment_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, customer_posting_group, currency_code, currency_factor, price_group_code, prices_including_tax, allow_quantity_disc, invoice_disc_code, cust_item_disc_gr, language_code, salesperson_code, no_printed, applies_to_doc_type, applies_to_doc_no, vat_registration_no, reason_code, gen_bus_posting_group, sell_to_customer_name, sell_to_customer_name_2, sell_to_address, sell_to_address_2, sell_to_city, sell_to_contact, bill_to_post_code, bill_to_state, bill_to_country_code, sell_to_post_code, sell_to_state, sell_to_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, document_date, external_document_no, payment_method_code, shipping_agent_code, no_series, pre_assigned_no, user_id, source_code, tax_area_code, tax_liable, tax_bus_posting_group, tax_exemption_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5254,8 +5254,8 @@ func (t *SalesCrMemoHeader) Next(steps ...int) bool {
 		var pmt_discount_dateNull sql.NullString
 		var shipment_method_codeNull sql.NullString
 		var location_codeNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var customer_posting_groupNull sql.NullString
 		var currency_codeNull sql.NullString
 		var currency_factorNull sql.NullString
@@ -5327,8 +5327,8 @@ func (t *SalesCrMemoHeader) Next(steps ...int) bool {
 			&pmt_discount_dateNull,
 			&shipment_method_codeNull,
 			&location_codeNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&customer_posting_groupNull,
 			&currency_codeNull,
 			&currency_factorNull,
@@ -5409,8 +5409,8 @@ func (t *SalesCrMemoHeader) Next(steps ...int) bool {
 		t.Pmt_discount_date, _ = types.NewDateFromString(pmt_discount_dateNull.String)
 		t.Shipment_method_code = types.NewCode(shipment_method_codeNull.String)
 		t.Location_code = types.NewCode(location_codeNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Customer_posting_group = types.NewCode(customer_posting_groupNull.String)
 		t.Currency_code = types.NewCode(currency_codeNull.String)
 		t.Currency_factor, _ = types.NewDecimalFromString(currency_factorNull.String)
@@ -5502,7 +5502,7 @@ func (t *SalesCrMemoHeader) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, no, bill_to_customer_no, bill_to_name, bill_to_name_2, bill_to_address, bill_to_address_2, bill_to_city, bill_to_contact, your_reference, ship_to_code, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, shipment_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, department_code, project_code, customer_posting_group, currency_code, currency_factor, price_group_code, prices_including_tax, allow_quantity_disc, invoice_disc_code, cust_item_disc_gr, language_code, salesperson_code, no_printed, applies_to_doc_type, applies_to_doc_no, vat_registration_no, reason_code, gen_bus_posting_group, sell_to_customer_name, sell_to_customer_name_2, sell_to_address, sell_to_address_2, sell_to_city, sell_to_contact, bill_to_post_code, bill_to_state, bill_to_country_code, sell_to_post_code, sell_to_state, sell_to_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, document_date, external_document_no, payment_method_code, shipping_agent_code, no_series, pre_assigned_no, user_id, source_code, tax_area_code, tax_liable, tax_bus_posting_group, tax_exemption_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, no, bill_to_customer_no, bill_to_name, bill_to_name_2, bill_to_address, bill_to_address_2, bill_to_city, bill_to_contact, your_reference, ship_to_code, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, shipment_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, customer_posting_group, currency_code, currency_factor, price_group_code, prices_including_tax, allow_quantity_disc, invoice_disc_code, cust_item_disc_gr, language_code, salesperson_code, no_printed, applies_to_doc_type, applies_to_doc_no, vat_registration_no, reason_code, gen_bus_posting_group, sell_to_customer_name, sell_to_customer_name_2, sell_to_address, sell_to_address_2, sell_to_city, sell_to_contact, bill_to_post_code, bill_to_state, bill_to_country_code, sell_to_post_code, sell_to_state, sell_to_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, document_date, external_document_no, payment_method_code, shipping_agent_code, no_series, pre_assigned_no, user_id, source_code, tax_area_code, tax_liable, tax_bus_posting_group, tax_exemption_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5551,8 +5551,8 @@ func (t *SalesCrMemoHeader) FindSetBuffered() bool {
 		var pmt_discount_dateNull sql.NullString
 		var shipment_method_codeNull sql.NullString
 		var location_codeNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var customer_posting_groupNull sql.NullString
 		var currency_codeNull sql.NullString
 		var currency_factorNull sql.NullString
@@ -5624,8 +5624,8 @@ func (t *SalesCrMemoHeader) FindSetBuffered() bool {
 			&pmt_discount_dateNull,
 			&shipment_method_codeNull,
 			&location_codeNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&customer_posting_groupNull,
 			&currency_codeNull,
 			&currency_factorNull,
@@ -5704,8 +5704,8 @@ func (t *SalesCrMemoHeader) FindSetBuffered() bool {
 		record.Pmt_discount_date, _ = types.NewDateFromString(pmt_discount_dateNull.String)
 		record.Shipment_method_code = types.NewCode(shipment_method_codeNull.String)
 		record.Location_code = types.NewCode(location_codeNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Customer_posting_group = types.NewCode(customer_posting_groupNull.String)
 		record.Currency_code = types.NewCode(currency_codeNull.String)
 		record.Currency_factor, _ = types.NewDecimalFromString(currency_factorNull.String)
@@ -5803,8 +5803,8 @@ func (t *SalesCrMemoHeader) copyFromBuffered(record *SalesCrMemoHeader) {
 	t.Pmt_discount_date = record.Pmt_discount_date
 	t.Shipment_method_code = record.Shipment_method_code
 	t.Location_code = record.Location_code
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Customer_posting_group = record.Customer_posting_group
 	t.Currency_code = record.Currency_code
 	t.Currency_factor = record.Currency_factor
@@ -6535,45 +6535,45 @@ func (t *SalesCrMemoHeader) ValidateField(fieldName string, value interface{}) e
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesCrMemoHeaderOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(SalesCrMemoHeaderOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesCrMemoHeaderOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(SalesCrMemoHeaderOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -7563,9 +7563,9 @@ func (t *SalesCrMemoHeader) FieldValue(no int) (any, bool) {
 	case 28:
 		return t.Location_code, true
 	case 29:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 30:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 31:
 		return t.Customer_posting_group, true
 	case 32:
@@ -7894,20 +7894,20 @@ func (t *SalesCrMemoHeader) SetFieldValue(no int, value any) bool {
 		}
 	case 29:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 30:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 31:
@@ -8783,10 +8783,10 @@ func (t *SalesCrMemoHeader) columnValue(column string) (interface{}, bool) {
 		return t.Shipment_method_code, true
 	case "location_code":
 		return t.Location_code, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "customer_posting_group":
 		return t.Customer_posting_group, true
 	case "currency_code":
@@ -8953,8 +8953,8 @@ func (t *SalesCrMemoHeader) Init() {
 	t.Pmt_discount_date = *new(types.Date)
 	t.Shipment_method_code = *new(types.Code)
 	t.Location_code = *new(types.Code)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Customer_posting_group = *new(types.Code)
 	t.Currency_code = *new(types.Code)
 	t.Currency_factor = *new(types.Decimal)
@@ -9059,8 +9059,8 @@ func (t *SalesCrMemoHeader) ToMap() map[string]interface{} {
 		"pmt_discount_date":        t.Pmt_discount_date.String(),
 		"shipment_method_code":     t.Shipment_method_code.String(),
 		"location_code":            t.Location_code.String(),
-		"department_code":          t.Department_code.String(),
-		"project_code":             t.Project_code.String(),
+		"dimension_1_code":         t.Dimension_1_code.String(),
+		"dimension_2_code":         t.Dimension_2_code.String(),
 		"customer_posting_group":   t.Customer_posting_group.String(),
 		"currency_code":            t.Currency_code.String(),
 		"currency_factor":          t.Currency_factor.String(),
@@ -9257,14 +9257,14 @@ func (t *SalesCrMemoHeader) FromMap(data map[string]interface{}) {
 			t.Location_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["customer_posting_group"]; ok && v != nil {
@@ -9803,7 +9803,7 @@ func (t *SalesCrMemoHeader) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         29,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -9813,7 +9813,7 @@ func (t *SalesCrMemoHeader) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         30,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -10388,8 +10388,8 @@ func (t *SalesCrMemoHeader) GetTableRelationFields() map[string]tables.TableRela
 			},
 			SearchTimeout: 0,
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -10398,8 +10398,8 @@ func (t *SalesCrMemoHeader) GetTableRelationFields() map[string]tables.TableRela
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

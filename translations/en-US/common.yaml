@@ -209,6 +209,7 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    dimensions: "Dimensions"
     bins: "Bins"
     overview: "Overview"
     budget: "Budget"
@@ -551,8 +552,8 @@ common:
     price_groups: "Price Groups"
     standard_text_codes: "Standard Text Codes"
     shipment_methods: "Shipment Methods"
-    departments: "Departments"
-    projects: "Projects"
+    dimension_1_values: "Dimension 1 Values"
+    dimension_2_values: "Dimension 2 Values"
     salespeople_purchasers: "Salespeople/Purchasers"
     locations: "Locations"
     smtp_setup: "SMTP Setup"

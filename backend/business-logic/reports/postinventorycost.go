@@ -53,8 +53,8 @@ type invtPostBufKey struct {
 	postingGroup        types.Code
 	genBusPostingGroup  types.Code
 	genProdPostingGroup types.Code
-	departmentCode      types.Code
-	projectCode         types.Code
+	dimension1Code      types.Code
+	dimension2Code      types.Code
 }
 
 const (
@@ -149,7 +149,7 @@ func (r *postInventoryCostToGL) itemLedgEntryOnAfterGetRecord(itemLedgEntry *gta
 	invtPostBuf1 := invtPostBufKey{postingGroupType: bufTypeItem, postingGroup: itemLedgEntry.Inventory_posting_group}
 	invtPostBuf2 := invtPostBufKey{postingGroupType: bufTypeMatrix,
 		genBusPostingGroup: itemLedgEntry.Gen_bus_posting_group, genProdPostingGroup: itemLedgEntry.Gen_prod_posting_group,
-		departmentCode: itemLedgEntry.Department_code, projectCode: itemLedgEntry.Project_code}
+		dimension1Code: itemLedgEntry.Dimension_1_code, dimension2Code: itemLedgEntry.Dimension_2_code}
 	if itemLedgEntry.Entry_type != gtables.ItemLedgerEntry_Entry_type.Sale {
 		invtPostBuf1.entryType = bufEntryPurchAdjmt
 		invtPostBuf2.entryType = bufEntryAdjustment
@@ -286,8 +286,8 @@ func (r *postInventoryCostToGL) postInvtPostingBuffer(run *Run, documentNo types
 				genJnlLine.Source_currency_amount = types.Decimal{}
 			}
 		}
-		genJnlLine.Department_code = key.departmentCode
-		genJnlLine.Project_code = key.projectCode
+		genJnlLine.Dimension_1_code = key.dimension1Code
+		genJnlLine.Dimension_2_code = key.dimension2Code
 		err = r.genJnlPostLine.Run(genJnlLine)
 		if err != nil {
 			return err
@@ -298,7 +298,7 @@ func (r *postInventoryCostToGL) postInvtPostingBuffer(run *Run, documentNo types
 }
 
 // invtPostBufLess is the buffer's key order (posting group type, entry type, posting groups,
-// department, project)
+// dimension 1, dimension 2)
 func invtPostBufLess(a, b invtPostBufKey) bool {
 	if a.postingGroupType != b.postingGroupType {
 		return a.postingGroupType < b.postingGroupType
@@ -308,7 +308,7 @@ func invtPostBufLess(a, b invtPostBufKey) bool {
 	}
 	for _, pair := range [][2]types.Code{
 		{a.postingGroup, b.postingGroup}, {a.genBusPostingGroup, b.genBusPostingGroup},
-		{a.genProdPostingGroup, b.genProdPostingGroup}, {a.departmentCode, b.departmentCode}, {a.projectCode, b.projectCode},
+		{a.genProdPostingGroup, b.genProdPostingGroup}, {a.dimension1Code, b.dimension1Code}, {a.dimension2Code, b.dimension2Code},
 	} {
 		if pair[0] != pair[1] {
 			return pair[0] < pair[1]

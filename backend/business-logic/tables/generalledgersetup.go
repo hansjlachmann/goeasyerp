@@ -1,6 +1,7 @@
 package tables
 
 import (
+	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
 	"strconv"
 	"strings"
 
@@ -29,6 +30,8 @@ func (generalLedgerSetupLogic) OnInsert(rec *gtables.GeneralLedgerSetup) error {
 
 // OnModify runs before a record is modified
 func (generalLedgerSetupLogic) OnModify(rec *gtables.GeneralLedgerSetup) error {
+	// the dimension names (Dimension-1/-2) may have changed: the captions read them again
+	fcodeunits.ForgetDimensionLabels(rec.GetCompany())
 	return nil
 }
 

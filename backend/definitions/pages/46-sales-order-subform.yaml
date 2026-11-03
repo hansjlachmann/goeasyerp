@@ -79,10 +79,10 @@ page:
         - source: work_type_code
           width: 110
           visible: false
-        - source: department_code
+        - source: dimension_1_code
           width: 110
           visible: false
-        - source: project_code
+        - source: dimension_2_code
           width: 110
           visible: false
         - source: blanket_order_no

@@ -114,7 +114,7 @@ func (requisitionLineLogic) OnValidate_Quantity(rec *gtables.RequisitionLine) er
 	return checkReservedNotAbove(gtables.RequisitionLineTableName, "reserved_qty_base", rec.Quantity_base, rec.Reserved_qty_base)
 }
 
-// OnValidate_Vendor_no: the vendor's department, project and currency (not blocked); an item's
+// OnValidate_Vendor_no: the vendor's dimension 1, dimension 2 and currency (not blocked); an item's
 // vendor terms — the vendor's item no., the expected receipt date by the lead time, the unit of
 // measure and direct unit cost (in the vendor's currency)
 func (requisitionLineLogic) OnValidate_Vendor_no(rec *gtables.RequisitionLine) error {
@@ -128,8 +128,8 @@ func (requisitionLineLogic) OnValidate_Vendor_no(rec *gtables.RequisitionLine) e
 		if err != nil {
 			return err
 		}
-		rec.Department_code = vend.Department_code
-		rec.Project_code = vend.Project_code
+		rec.Dimension_1_code = vend.Dimension_1_code
+		rec.Dimension_2_code = vend.Dimension_2_code
 		err = SetReqLineCurrency(rec, vend.Currency_code)
 		if err != nil {
 			return err

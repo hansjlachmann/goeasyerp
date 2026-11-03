@@ -276,8 +276,8 @@ func (m *MakeOrder) insertPurchOrderLine(reqLine2 *gtables.RequisitionLine, purc
 		return nil, err
 	}
 	purchOrderLine.Vendor_item_no = reqLine2.Vendor_item_no
-	purchOrderLine.Department_code = reqLine2.Department_code
-	purchOrderLine.Project_code = reqLine2.Project_code
+	purchOrderLine.Dimension_1_code = reqLine2.Dimension_1_code
+	purchOrderLine.Dimension_2_code = reqLine2.Dimension_2_code
 	purchOrderLine.Location_code = reqLine2.Location_code
 	purchOrderLine.Description = reqLine2.Description
 	purchOrderLine.Description_2 = reqLine2.Description_2

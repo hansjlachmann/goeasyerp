@@ -2,10 +2,10 @@ package errors
 
 // Item tracking (serial and lot numbers) errors
 const (
-	ErrItemTrackingNotOnInventory  ErrorCode = "ERR_ITEM_TRACKING_NOT_ON_INVENTORY"
-	ErrSerialAlreadyOnInventory    ErrorCode = "ERR_SERIAL_ALREADY_ON_INVENTORY"
-	ErrSerialShippedNotReceived    ErrorCode = "ERR_SERIAL_SHIPPED_NOT_RECEIVED"
-	ErrSerialQtyMustBeOne          ErrorCode = "ERR_SERIAL_QTY_MUST_BE_ONE"
+	ErrItemTrackingNotOnInventory ErrorCode = "ERR_ITEM_TRACKING_NOT_ON_INVENTORY"
+	ErrSerialAlreadyOnInventory   ErrorCode = "ERR_SERIAL_ALREADY_ON_INVENTORY"
+	ErrSerialShippedNotReceived   ErrorCode = "ERR_SERIAL_SHIPPED_NOT_RECEIVED"
+	ErrSerialQtyMustBeOne         ErrorCode = "ERR_SERIAL_QTY_MUST_BE_ONE"
 )
 
 // ItemTrackingNotOnInventory: an outbound entry of an item with a lot/serial number that is

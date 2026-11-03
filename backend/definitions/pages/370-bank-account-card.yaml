@@ -59,8 +59,8 @@ page:
           - source: last_statement_no
           - source: balance_last_statement
           - source: bank_acc_posting_group
-          - source: department_code
-          - source: project_code
+          - source: dimension_1_code
+          - source: dimension_2_code
 
       - name: Bank
         caption: Bank

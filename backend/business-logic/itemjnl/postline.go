@@ -713,8 +713,8 @@ func (p *ItemJnlPostLine) adjustSalesInv() error {
 	return nil
 }
 
-// insertTransferEntry writes the entry of a transfer at its new location (and department and
-// project) for the quantity taken from an entry, with that entry's cost
+// insertTransferEntry writes the entry of a transfer at its new location (and dimension 1 and
+// dimension 2) for the quantity taken from an entry, with that entry's cost
 func (p *ItemJnlPostLine) insertTransferEntry(itemLedgEntry, oldItemLedgEntry *gtables.ItemLedgerEntry, appliedQty types.Decimal) error {
 	itemJnlLine := p.itemJnlLine
 	itemLedgEntry4 := gtables.NewItemLedgerEntry(p.src)
@@ -749,8 +749,8 @@ func (p *ItemJnlPostLine) insertTransferEntry(itemLedgEntry, oldItemLedgEntry *g
 	itemLedgEntry4.Bin_code = itemJnlLine.New_bin_code
 	itemLedgEntry4.Serial_no = itemJnlLine.New_serial_no
 	itemLedgEntry4.Lot_no = itemJnlLine.New_lot_no
-	itemLedgEntry4.Department_code = itemJnlLine.New_department_code
-	itemLedgEntry4.Project_code = itemJnlLine.New_project_code
+	itemLedgEntry4.Dimension_1_code = itemJnlLine.New_dimension_1_code
+	itemLedgEntry4.Dimension_2_code = itemJnlLine.New_dimension_2_code
 
 	itemLedgEntry4.Adjusted_cost_qty = system.Round(itemLedgEntry4.Quantity.Mul(itemLedgEntry4.Unit_cost))
 	itemLedgEntry4.Add_currency_adj_cost_qty = p.roundAmount(itemLedgEntry4.Quantity.Mul(itemLedgEntry4.Additional_currency_unit_cost))
@@ -819,8 +819,8 @@ func (p *ItemJnlPostLine) initItemLedgEntry(itemLedgEntry2 *gtables.ItemLedgerEn
 	itemLedgEntry2.Salespers_purch_code = itemJnlLine.Salespers_purch_code
 	itemLedgEntry2.Source_code = itemJnlLine.Source_code
 	itemLedgEntry2.Applies_to_entry = itemJnlLine.Applies_to_entry
-	itemLedgEntry2.Department_code = itemJnlLine.Department_code
-	itemLedgEntry2.Project_code = itemJnlLine.Project_code
+	itemLedgEntry2.Dimension_1_code = itemJnlLine.Dimension_1_code
+	itemLedgEntry2.Dimension_2_code = itemJnlLine.Dimension_2_code
 	itemLedgEntry2.Source_type = gtables.ItemLedgerEntrySource_type(itemJnlLine.Source_type)
 	itemLedgEntry2.Journal_batch_name = itemJnlLine.Journal_batch_name
 	itemLedgEntry2.Reason_code = itemJnlLine.Reason_code
@@ -990,8 +990,8 @@ func (p *ItemJnlPostLine) postInventoryToGL(itemLedgEntry *gtables.ItemLedgerEnt
 		}
 	}
 	genJnlLine.Description = itemJnlLine.Description
-	genJnlLine.Department_code = itemLedgEntry.Department_code
-	genJnlLine.Project_code = itemLedgEntry.Project_code
+	genJnlLine.Dimension_1_code = itemLedgEntry.Dimension_1_code
+	genJnlLine.Dimension_2_code = itemLedgEntry.Dimension_2_code
 	err = genJnlLine.Validate("amount", itemLedgEntry.Adjusted_cost_invoiced_qty.Sub(itemLedgEntry.Cost_posted_to_gl))
 	if err != nil {
 		return err
@@ -1155,8 +1155,8 @@ func (p *ItemJnlPostLine) insertPhysInventoryEntry() error {
 	physInvtLedgEntry.Amount = itemJnlLine.Amount
 	physInvtLedgEntry.Salespers_purch_code = itemJnlLine.Salespers_purch_code
 	physInvtLedgEntry.Source_code = itemJnlLine.Source_code
-	physInvtLedgEntry.Department_code = itemJnlLine.Department_code
-	physInvtLedgEntry.Project_code = itemJnlLine.Project_code
+	physInvtLedgEntry.Dimension_1_code = itemJnlLine.Dimension_1_code
+	physInvtLedgEntry.Dimension_2_code = itemJnlLine.Dimension_2_code
 	physInvtLedgEntry.Journal_batch_name = itemJnlLine.Journal_batch_name
 	physInvtLedgEntry.Reason_code = itemJnlLine.Reason_code
 	physInvtLedgEntry.User_id = types.Code(system.UserId())

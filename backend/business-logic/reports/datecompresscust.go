@@ -10,8 +10,8 @@ import (
 
 // Report 198 Date Compress Customer Ledger: the closed customer ledger entries of closed
 // fiscal years become one entry per customer, posting group, currency, document type, period
-// and sign — and per the retained Document No., Sell-to Customer No., Salesperson, Department
-// and Project Code; their reminder/finance charge entries are deleted. The new entries take G/L
+// and sign — and per the retained Document No., Sell-to Customer No., Salesperson, Dimension 1
+// and Dimension 2 Code; their reminder/finance charge entries are deleted. The new entries take G/L
 // entry numbers (a G/L register of the run).
 const DateCompressCustomerLedgerID = 198
 
@@ -29,7 +29,7 @@ type dateCompressCust struct {
 
 func (r *dateCompressCust) Definition() *Definition {
 	r.tableID = gtables.CustomerLedgerEntryTableID
-	r.fields = []retainField{{name: "document_no"}, {name: "sell_to_customer_no"}, {name: "salesperson_code"}, {name: "department_code"}, {name: "project_code"}}
+	r.fields = []retainField{{name: "document_no"}, {name: "sell_to_customer_no"}, {name: "salesperson_code"}, {name: "dimension_1_code"}, {name: "dimension_2_code"}}
 	return &Definition{
 		OptionsCaption: "OPTIONS",
 		Options:        dateComprOptions(true, r.fields),
@@ -129,13 +129,13 @@ func (r *dateCompressCust) onAfterGetRecord(custLedgEntry *gtables.CustomerLedge
 		custLedgEntry2.SetRange("salesperson_code", custLedgEntry2.Salesperson_code)
 		newCustLedgEntry.Salesperson_code = custLedgEntry2.Salesperson_code
 	}
-	if r.retainNo("department_code") {
-		custLedgEntry2.SetRange("department_code", custLedgEntry2.Department_code)
-		newCustLedgEntry.Department_code = custLedgEntry2.Department_code
+	if r.retainNo("dimension_1_code") {
+		custLedgEntry2.SetRange("dimension_1_code", custLedgEntry2.Dimension_1_code)
+		newCustLedgEntry.Dimension_1_code = custLedgEntry2.Dimension_1_code
 	}
-	if r.retainNo("project_code") {
-		custLedgEntry2.SetRange("project_code", custLedgEntry2.Project_code)
-		newCustLedgEntry.Project_code = custLedgEntry2.Project_code
+	if r.retainNo("dimension_2_code") {
+		custLedgEntry2.SetRange("dimension_2_code", custLedgEntry2.Dimension_2_code)
+		newCustLedgEntry.Dimension_2_code = custLedgEntry2.Dimension_2_code
 	}
 	if !custLedgEntry2.Amount.IsNegative() {
 		custLedgEntry2.SetFilter("amount", ">=0")

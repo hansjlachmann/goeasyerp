@@ -37,9 +37,9 @@ page:
           width: 120
         - source: account_name
           width: 250
-        - source: department_code
+        - source: dimension_1_code
           width: 110
-        - source: project_code
+        - source: dimension_2_code
           width: 110
         - source: gen_posting_type
           width: 120

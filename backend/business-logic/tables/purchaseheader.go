@@ -307,7 +307,7 @@ func testPurchLinesNotReceived(rec *gtables.PurchaseHeader) error {
 }
 
 // OnValidate_Pay_to_vendor_no: the pay-to vendor's name and address, payment terms and method,
-// shipment method, department/project, posting group, currency, invoice discounts, language,
+// shipment method, dimension 1/2, posting group, currency, invoice discounts, language,
 // purchaser; a changed pay-to vendor (same buy-from) recreates the lines
 func (purchaseHeaderLogic) OnValidate_Pay_to_vendor_no(rec *gtables.PurchaseHeader) error {
 	xRec := rec.XRec()
@@ -346,8 +346,8 @@ func (purchaseHeaderLogic) OnValidate_Pay_to_vendor_no(rec *gtables.PurchaseHead
 		rec.Payment_method_code = vend.Payment_method_code
 	}
 	rec.Shipment_method_code = vend.Shipment_method_code
-	rec.Department_code = vend.Department_code
-	rec.Project_code = vend.Project_code
+	rec.Dimension_1_code = vend.Dimension_1_code
+	rec.Dimension_2_code = vend.Dimension_2_code
 	rec.Vendor_posting_group = vend.Vendor_posting_group
 	rec.Reserve = gtables.PurchaseHeaderReserve(vend.Reserve)
 	rec.Currency_code = vend.Currency_code
@@ -467,14 +467,14 @@ func validatePurchPaymentTerms(rec *gtables.PurchaseHeader) error {
 	return nil
 }
 
-// OnValidate_Department_code: to the lines
-func (purchaseHeaderLogic) OnValidate_Department_code(rec *gtables.PurchaseHeader) error {
-	return updatePurchLines(rec, "department_code")
+// OnValidate_Dimension_1_code: to the lines
+func (purchaseHeaderLogic) OnValidate_Dimension_1_code(rec *gtables.PurchaseHeader) error {
+	return updatePurchLines(rec, "dimension_1_code")
 }
 
-// OnValidate_Project_code: to the lines
-func (purchaseHeaderLogic) OnValidate_Project_code(rec *gtables.PurchaseHeader) error {
-	return updatePurchLines(rec, "project_code")
+// OnValidate_Dimension_2_code: to the lines
+func (purchaseHeaderLogic) OnValidate_Dimension_2_code(rec *gtables.PurchaseHeader) error {
+	return updatePurchLines(rec, "dimension_2_code")
 }
 
 // OnValidate_Currency_code: a changed currency gets its factor and recreates the lines; the
@@ -673,7 +673,7 @@ func (purchaseHeaderLogic) OnValidate_Transaction_specification(rec *gtables.Pur
 }
 
 // updatePurchLines (UpdatePurchLines): a header field to every line (expected receipt date,
-// department, project) or the lines' costs again in a new currency factor. The header is saved
+// dimension 1, dimension 2) or the lines' costs again in a new currency factor. The header is saved
 // first.
 func updatePurchLines(rec *gtables.PurchaseHeader, changedField string) error {
 	if !purchLinesExist(rec) {
@@ -695,10 +695,10 @@ func updatePurchLines(rec *gtables.PurchaseHeader, changedField string) error {
 			if purchLine.Type != gtables.PurchaseLine_Type.Blank {
 				err = purchLine.Validate("direct_unit_cost", purchLine.Direct_unit_cost)
 			}
-		case "department_code":
-			err = purchLine.Validate("department_code", rec.Department_code)
-		case "project_code":
-			err = purchLine.Validate("project_code", rec.Project_code)
+		case "dimension_1_code":
+			err = purchLine.Validate("dimension_1_code", rec.Dimension_1_code)
+		case "dimension_2_code":
+			err = purchLine.Validate("dimension_2_code", rec.Dimension_2_code)
 		case "transaction_type":
 			err = purchLine.Validate("transaction_type", rec.Transaction_type)
 		case "transport_method":

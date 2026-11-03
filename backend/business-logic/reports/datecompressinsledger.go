@@ -9,7 +9,7 @@ import (
 
 // Report 5697 Date Compress Insurance Ledger: the insurance coverage ledger entries of closed
 // fiscal years (with Only Index Entries only the index entries) become one entry per insurance, asset, document
-// type, index entry and period — and per the retained Document No., Department and Project
+// type, index entry and period — and per the retained Document No., Dimension 1 and Dimension 2
 // Code; an insurance register of the run.
 const DateCompressInsuranceLedgerID = 5697
 
@@ -29,7 +29,7 @@ type dateCompressInsLedger struct {
 
 func (r *dateCompressInsLedger) Definition() *Definition {
 	r.tableID = gtables.InsCoverageLedgerEntryTableID
-	r.fields = []retainField{{name: "document_no"}, {name: "department_code"}, {name: "project_code"}}
+	r.fields = []retainField{{name: "document_no"}, {name: "dimension_1_code"}, {name: "dimension_2_code"}}
 	return &Definition{
 		OptionsCaption: "OPTIONS",
 		Options:        append(dateComprOptions(true, r.fields), Option{Name: "only_index_entries", Type: "bool", Default: "false"}),
@@ -128,13 +128,13 @@ func (r *dateCompressInsLedger) onAfterGetRecord(insCoverageLedgEntry *gtables.I
 		insCoverageLedgEntry2.SetRange("document_no", insCoverageLedgEntry2.Document_no)
 		newInsCoverageLedgEntry.Document_no = insCoverageLedgEntry2.Document_no
 	}
-	if r.retainNo("department_code") {
-		insCoverageLedgEntry2.SetRange("department_code", insCoverageLedgEntry2.Department_code)
-		newInsCoverageLedgEntry.Department_code = insCoverageLedgEntry2.Department_code
+	if r.retainNo("dimension_1_code") {
+		insCoverageLedgEntry2.SetRange("dimension_1_code", insCoverageLedgEntry2.Dimension_1_code)
+		newInsCoverageLedgEntry.Dimension_1_code = insCoverageLedgEntry2.Dimension_1_code
 	}
-	if r.retainNo("project_code") {
-		insCoverageLedgEntry2.SetRange("project_code", insCoverageLedgEntry2.Project_code)
-		newInsCoverageLedgEntry.Project_code = insCoverageLedgEntry2.Project_code
+	if r.retainNo("dimension_2_code") {
+		insCoverageLedgEntry2.SetRange("dimension_2_code", insCoverageLedgEntry2.Dimension_2_code)
+		newInsCoverageLedgEntry.Dimension_2_code = insCoverageLedgEntry2.Dimension_2_code
 	}
 	for found := insCoverageLedgEntry2.FindFirst(); found; found = insCoverageLedgEntry2.FindFirst() {
 		newInsCoverageLedgEntry.Amount = newInsCoverageLedgEntry.Amount.Add(insCoverageLedgEntry2.Amount)

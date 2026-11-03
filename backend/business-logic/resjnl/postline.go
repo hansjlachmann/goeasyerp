@@ -135,8 +135,8 @@ func (p *ResJnlPostLine) code() error {
 	resLedgEntry.Total_cost = resJnlLine.Total_cost
 	resLedgEntry.Unit_price = resJnlLine.Unit_price
 	resLedgEntry.Total_price = resJnlLine.Total_price
-	resLedgEntry.Department_code = resJnlLine.Department_code
-	resLedgEntry.Project_code = resJnlLine.Project_code
+	resLedgEntry.Dimension_1_code = resJnlLine.Dimension_1_code
+	resLedgEntry.Dimension_2_code = resJnlLine.Dimension_2_code
 	resLedgEntry.Source_code = resJnlLine.Source_code
 	resLedgEntry.Chargeable = resJnlLine.Chargeable
 	resLedgEntry.Journal_batch_name = resJnlLine.Journal_batch_name

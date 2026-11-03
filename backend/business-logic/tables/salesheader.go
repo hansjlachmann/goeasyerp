@@ -272,7 +272,7 @@ func (salesHeaderLogic) OnValidate_Sell_to_customer_no(rec *gtables.SalesHeader)
 }
 
 // OnValidate_Bill_to_customer_no: the bill-to customer's name and address, payment terms and
-// method, department/project, posting group, currency, prices and discounts, language,
+// method, dimension 1/2, posting group, currency, prices and discounts, language,
 // salesperson; a changed bill-to customer (same sell-to) recreates the lines
 func (salesHeaderLogic) OnValidate_Bill_to_customer_no(rec *gtables.SalesHeader) error {
 	xRec := rec.XRec()
@@ -304,8 +304,8 @@ func (salesHeaderLogic) OnValidate_Bill_to_customer_no(rec *gtables.SalesHeader)
 	} else {
 		rec.Payment_method_code = cust.Payment_method_code
 	}
-	rec.Department_code = cust.Department_code
-	rec.Project_code = cust.Project_code
+	rec.Dimension_1_code = cust.Dimension_1_code
+	rec.Dimension_2_code = cust.Dimension_2_code
 	rec.Customer_posting_group = cust.Customer_posting_group
 	rec.Reserve = gtables.SalesHeaderReserve(cust.Reserve)
 	rec.Currency_code = cust.Currency_code
@@ -466,14 +466,14 @@ func validateSalesPaymentTerms(rec *gtables.SalesHeader) error {
 	return nil
 }
 
-// OnValidate_Department_code: to the lines
-func (salesHeaderLogic) OnValidate_Department_code(rec *gtables.SalesHeader) error {
-	return updateSalesLines(rec, "department_code")
+// OnValidate_Dimension_1_code: to the lines
+func (salesHeaderLogic) OnValidate_Dimension_1_code(rec *gtables.SalesHeader) error {
+	return updateSalesLines(rec, "dimension_1_code")
 }
 
-// OnValidate_Project_code: to the lines
-func (salesHeaderLogic) OnValidate_Project_code(rec *gtables.SalesHeader) error {
-	return updateSalesLines(rec, "project_code")
+// OnValidate_Dimension_2_code: to the lines
+func (salesHeaderLogic) OnValidate_Dimension_2_code(rec *gtables.SalesHeader) error {
+	return updateSalesLines(rec, "dimension_2_code")
 }
 
 // OnValidate_Currency_code: a changed currency gets its factor and recreates the lines; the
@@ -649,8 +649,8 @@ func RecreateSalesLines(rec *gtables.SalesHeader) error {
 	return nil
 }
 
-// updateSalesLines (UpdateSalesLines): a header field to every line (shipment date, department,
-// project) or the lines' prices again in a new currency factor. The header is saved first.
+// updateSalesLines (UpdateSalesLines): a header field to every line (shipment date, dimension 1,
+// dimension 2) or the lines' prices again in a new currency factor. The header is saved first.
 func updateSalesLines(rec *gtables.SalesHeader, changedField string) error {
 	if !salesLinesExist(rec) {
 		return nil
@@ -671,10 +671,10 @@ func updateSalesLines(rec *gtables.SalesHeader, changedField string) error {
 			if salesLine.Type != gtables.SalesLine_Type.Blank {
 				err = salesLine.Validate("unit_price", salesLine.Unit_price)
 			}
-		case "department_code":
-			err = salesLine.Validate("department_code", rec.Department_code)
-		case "project_code":
-			err = salesLine.Validate("project_code", rec.Project_code)
+		case "dimension_1_code":
+			err = salesLine.Validate("dimension_1_code", rec.Dimension_1_code)
+		case "dimension_2_code":
+			err = salesLine.Validate("dimension_2_code", rec.Dimension_2_code)
 		case "transaction_type":
 			err = salesLine.Validate("transaction_type", rec.Transaction_type)
 		case "transport_method":

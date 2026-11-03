@@ -132,8 +132,8 @@ func (c *cancelFAEntries) insertFAJnlLine(faLedgEntry *gtables.FALedgerEntry) er
 	faJnlLine.Document_no = c.faJnlDocumentNo
 	faJnlLine.Document_type = gtables.FAJournalLine_Document_type.Blank
 	faJnlLine.External_document_no = ""
-	faJnlLine.Department_code = faLedgEntry.Department_code
-	faJnlLine.Project_code = faLedgEntry.Project_code
+	faJnlLine.Dimension_1_code = faLedgEntry.Dimension_1_code
+	faJnlLine.Dimension_2_code = faLedgEntry.Dimension_2_code
 	faJnlLine.Fa_error_entry_no = faLedgEntry.Entry_no
 	faJnlLine.Posting_no_series = tables.GetFANoSeries(faLedgEntry, c.faJnlTemplate, c.faJnlBatch)
 	err = faJnlLine.Validate("amount", faJnlLine.Amount.Neg())
@@ -173,8 +173,8 @@ func (c *cancelFAEntries) insertGenJnlLine(faLedgEntry *gtables.FALedgerEntry, b
 	genJnlLine.Document_no = c.genJnlDocumentNo
 	genJnlLine.Document_type = gtables.GenJournalLine_Document_type.Blank
 	genJnlLine.External_document_no = ""
-	genJnlLine.Department_code = faLedgEntry.Department_code
-	genJnlLine.Project_code = faLedgEntry.Project_code
+	genJnlLine.Dimension_1_code = faLedgEntry.Dimension_1_code
+	genJnlLine.Dimension_2_code = faLedgEntry.Dimension_2_code
 	genJnlLine.Fa_error_entry_no = faLedgEntry.Entry_no
 	err = genJnlLine.Validate("amount", genJnlLine.Amount.Neg())
 	if err != nil {

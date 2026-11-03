@@ -25,8 +25,8 @@
 //	OnValidate_Salespers_purch_code(rec *gtables.PhysInventoryLedgerEntry) error
 //	OnValidate_User_id(rec *gtables.PhysInventoryLedgerEntry) error
 //	OnValidate_Source_code(rec *gtables.PhysInventoryLedgerEntry) error
-//	OnValidate_Department_code(rec *gtables.PhysInventoryLedgerEntry) error
-//	OnValidate_Project_code(rec *gtables.PhysInventoryLedgerEntry) error
+//	OnValidate_Dimension_1_code(rec *gtables.PhysInventoryLedgerEntry) error
+//	OnValidate_Dimension_2_code(rec *gtables.PhysInventoryLedgerEntry) error
 //	OnValidate_Journal_batch_name(rec *gtables.PhysInventoryLedgerEntry) error
 //	OnValidate_Reason_code(rec *gtables.PhysInventoryLedgerEntry) error
 //	OnValidate_Qty_calculated(rec *gtables.PhysInventoryLedgerEntry) error
@@ -99,8 +99,8 @@ type PhysInventoryLedgerEntry struct {
 	Salespers_purch_code      types.Code                         `db:"salespers_purch_code"`
 	User_id                   types.Code                         `db:"user_id"`
 	Source_code               types.Code                         `db:"source_code"`
-	Department_code           types.Code                         `db:"department_code"`
-	Project_code              types.Code                         `db:"project_code"`
+	Dimension_1_code          types.Code                         `db:"dimension_1_code"`
+	Dimension_2_code          types.Code                         `db:"dimension_2_code"`
 	Journal_batch_name        types.Code                         `db:"journal_batch_name"`
 	Reason_code               types.Code                         `db:"reason_code"`
 	Qty_calculated            types.Decimal                      `db:"qty_calculated"`
@@ -214,8 +214,8 @@ var PhysInventoryLedgerEntry_FieldNo = struct {
 	Salespers_purch_code      int
 	User_id                   int
 	Source_code               int
-	Department_code           int
-	Project_code              int
+	Dimension_1_code          int
+	Dimension_2_code          int
 	Journal_batch_name        int
 	Reason_code               int
 	Qty_calculated            int
@@ -245,8 +245,8 @@ var PhysInventoryLedgerEntry_FieldNo = struct {
 	Salespers_purch_code:      22,
 	User_id:                   24,
 	Source_code:               25,
-	Department_code:           33,
-	Project_code:              34,
+	Dimension_1_code:          33,
+	Dimension_2_code:          34,
 	Journal_batch_name:        45,
 	Reason_code:               46,
 	Qty_calculated:            54,
@@ -295,9 +295,9 @@ func (t *PhysInventoryLedgerEntry) FieldNo(fieldName string) int {
 		return 24
 	case "source_code":
 		return 25
-	case "department_code":
+	case "dimension_1_code":
 		return 33
-	case "project_code":
+	case "dimension_2_code":
 		return 34
 	case "journal_batch_name":
 		return 45
@@ -363,9 +363,9 @@ func (t *PhysInventoryLedgerEntry) FieldName(fieldNo int) string {
 	case 25:
 		return "source_code"
 	case 33:
-		return "department_code"
+		return "dimension_1_code"
 	case 34:
-		return "project_code"
+		return "dimension_2_code"
 	case 45:
 		return "journal_batch_name"
 	case 46:
@@ -538,11 +538,11 @@ type (
 	PhysInventoryLedgerEntryOnValidate_Source_code interface {
 		OnValidate_Source_code(rec *PhysInventoryLedgerEntry) error
 	}
-	PhysInventoryLedgerEntryOnValidate_Department_code interface {
-		OnValidate_Department_code(rec *PhysInventoryLedgerEntry) error
+	PhysInventoryLedgerEntryOnValidate_Dimension_1_code interface {
+		OnValidate_Dimension_1_code(rec *PhysInventoryLedgerEntry) error
 	}
-	PhysInventoryLedgerEntryOnValidate_Project_code interface {
-		OnValidate_Project_code(rec *PhysInventoryLedgerEntry) error
+	PhysInventoryLedgerEntryOnValidate_Dimension_2_code interface {
+		OnValidate_Dimension_2_code(rec *PhysInventoryLedgerEntry) error
 	}
 	PhysInventoryLedgerEntryOnValidate_Journal_batch_name interface {
 		OnValidate_Journal_batch_name(rec *PhysInventoryLedgerEntry) error
@@ -642,10 +642,10 @@ func physInventoryLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_User_id)
 	case "OnValidate_Source_code":
 		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Source_code)
-	case "OnValidate_Department_code":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Dimension_2_code)
 	case "OnValidate_Journal_batch_name":
 		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Journal_batch_name)
 	case "OnValidate_Reason_code":
@@ -770,10 +770,10 @@ func (t *PhysInventoryLedgerEntry) CheckFields() error {
 	if err := tables.CheckMaxLength(PhysInventoryLedgerEntryTableName, "source_code", string(t.Source_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(PhysInventoryLedgerEntryTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(PhysInventoryLedgerEntryTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(PhysInventoryLedgerEntryTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(PhysInventoryLedgerEntryTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(PhysInventoryLedgerEntryTableName, "journal_batch_name", string(t.Journal_batch_name), 10); err != nil {
@@ -845,8 +845,8 @@ func GetPhysInventoryLedgerEntryTableSchema() string {
 		salespers_purch_code TEXT(10),
 		user_id TEXT(50),
 		source_code TEXT(10),
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		journal_batch_name TEXT(10),
 		reason_code TEXT(10),
 		qty_calculated TEXT,
@@ -881,8 +881,8 @@ func GetPhysInventoryLedgerEntryPostgresTableSchema() string {
 		salespers_purch_code VARCHAR(10),
 		user_id VARCHAR(50),
 		source_code VARCHAR(10),
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		journal_batch_name VARCHAR(10),
 		reason_code VARCHAR(10),
 		qty_calculated NUMERIC,
@@ -968,7 +968,7 @@ func (t *PhysInventoryLedgerEntry) SyncKeys(db database.Executor, company string
 	}
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
-	if _, err := db.Exec(fmt.Sprintf(`CREATE INDEX IF NOT EXISTS "%s" ON "%s" (item_no, variant_code, department_code, project_code, location_code, posting_date)`,
+	if _, err := db.Exec(fmt.Sprintf(`CREATE INDEX IF NOT EXISTS "%s" ON "%s" (item_no, variant_code, dimension_1_code, dimension_2_code, location_code, posting_date)`,
 		fmt.Sprintf("%s$Phys_Inventory_Ledger_Entry$item_location", company), tableName)); err != nil {
 		return fmt.Errorf("failed to create index item_location: %w", err)
 	}
@@ -1057,8 +1057,8 @@ func (t *PhysInventoryLedgerEntry) StoreOldValues() {
 	t.oldValues["salespers_purch_code"] = t.Salespers_purch_code
 	t.oldValues["user_id"] = t.User_id
 	t.oldValues["source_code"] = t.Source_code
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["journal_batch_name"] = t.Journal_batch_name
 	t.oldValues["reason_code"] = t.Reason_code
 	t.oldValues["qty_calculated"] = t.Qty_calculated
@@ -1131,11 +1131,11 @@ func (t *PhysInventoryLedgerEntry) XRec() *PhysInventoryLedgerEntry {
 	if v, ok := t.oldValues["source_code"].(types.Code); ok {
 		x.Source_code = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["journal_batch_name"].(types.Code); ok {
 		x.Journal_batch_name = v
@@ -1262,8 +1262,8 @@ func (t *PhysInventoryLedgerEntry) GetByPK(entry_no int) bool {
 	var salespers_purch_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var journal_batch_nameNull sql.NullString
 	var reason_codeNull sql.NullString
 	var qty_calculatedNull sql.NullString
@@ -1284,7 +1284,7 @@ func (t *PhysInventoryLedgerEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, document_no, description, location_code, inventory_posting_group, quantity, unit_amount, unit_cost, amount, salespers_purch_code, user_id, source_code, department_code, project_code, journal_batch_name, reason_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, document_date, external_document_no, no_series, variant_code, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, document_no, description, location_code, inventory_posting_group, quantity, unit_amount, unit_cost, amount, salespers_purch_code, user_id, source_code, dimension_1_code, dimension_2_code, journal_batch_name, reason_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, document_date, external_document_no, no_series, variant_code, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1306,8 +1306,8 @@ func (t *PhysInventoryLedgerEntry) GetByPK(entry_no int) bool {
 		&salespers_purch_codeNull,
 		&user_idNull,
 		&source_codeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&journal_batch_nameNull,
 		&reason_codeNull,
 		&qty_calculatedNull,
@@ -1349,8 +1349,8 @@ func (t *PhysInventoryLedgerEntry) GetByPK(entry_no int) bool {
 	t.Salespers_purch_code = types.NewCode(salespers_purch_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
 	t.Reason_code = types.NewCode(reason_codeNull.String)
 	t.Qty_calculated, _ = types.NewDecimalFromString(qty_calculatedNull.String)
@@ -1401,8 +1401,8 @@ func (t *PhysInventoryLedgerEntry) Insert(runTrigger bool) bool {
 		t.Salespers_purch_code,
 		t.User_id,
 		t.Source_code,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Journal_batch_name,
 		t.Reason_code,
 		t.Qty_calculated,
@@ -1420,7 +1420,7 @@ func (t *PhysInventoryLedgerEntry) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, item_no, posting_date, entry_type, document_no, description, location_code, inventory_posting_group, quantity, unit_amount, unit_cost, amount, salespers_purch_code, user_id, source_code, department_code, project_code, journal_batch_name, reason_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, document_date, external_document_no, no_series, variant_code, unit_of_measure_code, serial_no, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, item_no, posting_date, entry_type, document_no, description, location_code, inventory_posting_group, quantity, unit_amount, unit_cost, amount, salespers_purch_code, user_id, source_code, dimension_1_code, dimension_2_code, journal_batch_name, reason_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, document_date, external_document_no, no_series, variant_code, unit_of_measure_code, serial_no, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1473,8 +1473,8 @@ func (t *PhysInventoryLedgerEntry) InsertAll(records []*PhysInventoryLedgerEntry
 			r.Salespers_purch_code,
 			r.User_id,
 			r.Source_code,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Journal_batch_name,
 			r.Reason_code,
 			r.Qty_calculated,
@@ -1491,7 +1491,7 @@ func (t *PhysInventoryLedgerEntry) InsertAll(records []*PhysInventoryLedgerEntry
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, PhysInventoryLedgerEntryTableName)
-	columns := []string{"entry_no", "item_no", "posting_date", "entry_type", "document_no", "description", "location_code", "inventory_posting_group", "quantity", "unit_amount", "unit_cost", "amount", "salespers_purch_code", "user_id", "source_code", "department_code", "project_code", "journal_batch_name", "reason_code", "qty_calculated", "qty_phys_inventory", "last_item_ledger_entry_no", "document_date", "external_document_no", "no_series", "variant_code", "unit_of_measure_code", "serial_no", "lot_no", "bin_code"}
+	columns := []string{"entry_no", "item_no", "posting_date", "entry_type", "document_no", "description", "location_code", "inventory_posting_group", "quantity", "unit_amount", "unit_cost", "amount", "salespers_purch_code", "user_id", "source_code", "dimension_1_code", "dimension_2_code", "journal_batch_name", "reason_code", "qty_calculated", "qty_phys_inventory", "last_item_ledger_entry_no", "document_date", "external_document_no", "no_series", "variant_code", "unit_of_measure_code", "serial_no", "lot_no", "bin_code"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1591,13 +1591,13 @@ func (t *PhysInventoryLedgerEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "source_code = ?")
 			values = append(values, t.Source_code)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("journal_batch_name") {
 			setClauses = append(setClauses, "journal_batch_name = ?")
@@ -1686,10 +1686,10 @@ func (t *PhysInventoryLedgerEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.User_id)
 		setClauses = append(setClauses, "source_code = ?")
 		values = append(values, t.Source_code)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "journal_batch_name = ?")
 		values = append(values, t.Journal_batch_name)
 		setClauses = append(setClauses, "reason_code = ?")
@@ -1821,13 +1821,13 @@ func (t *PhysInventoryLedgerEntry) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Source_code.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "journal_batch_name":
 		if old, ok := oldValue.(types.Code); ok {
@@ -2116,10 +2116,10 @@ func (t *PhysInventoryLedgerEntry) columnName(fieldName string) (string, bool) {
 		return "user_id", true
 	case strings.ToLower("source_code"):
 		return "source_code", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("journal_batch_name"):
 		return "journal_batch_name", true
 	case strings.ToLower("reason_code"):
@@ -2519,7 +2519,7 @@ func (t *PhysInventoryLedgerEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, document_no, description, location_code, inventory_posting_group, quantity, unit_amount, unit_cost, amount, salespers_purch_code, user_id, source_code, department_code, project_code, journal_batch_name, reason_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, document_date, external_document_no, no_series, variant_code, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, document_no, description, location_code, inventory_posting_group, quantity, unit_amount, unit_cost, amount, salespers_purch_code, user_id, source_code, dimension_1_code, dimension_2_code, journal_batch_name, reason_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, document_date, external_document_no, no_series, variant_code, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2538,8 +2538,8 @@ func (t *PhysInventoryLedgerEntry) FindFirst() bool {
 	var salespers_purch_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var journal_batch_nameNull sql.NullString
 	var reason_codeNull sql.NullString
 	var qty_calculatedNull sql.NullString
@@ -2569,8 +2569,8 @@ func (t *PhysInventoryLedgerEntry) FindFirst() bool {
 		&salespers_purch_codeNull,
 		&user_idNull,
 		&source_codeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&journal_batch_nameNull,
 		&reason_codeNull,
 		&qty_calculatedNull,
@@ -2609,8 +2609,8 @@ func (t *PhysInventoryLedgerEntry) FindFirst() bool {
 	t.Salespers_purch_code = types.NewCode(salespers_purch_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
 	t.Reason_code = types.NewCode(reason_codeNull.String)
 	t.Qty_calculated, _ = types.NewDecimalFromString(qty_calculatedNull.String)
@@ -2643,7 +2643,7 @@ func (t *PhysInventoryLedgerEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, document_no, description, location_code, inventory_posting_group, quantity, unit_amount, unit_cost, amount, salespers_purch_code, user_id, source_code, department_code, project_code, journal_batch_name, reason_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, document_date, external_document_no, no_series, variant_code, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, document_no, description, location_code, inventory_posting_group, quantity, unit_amount, unit_cost, amount, salespers_purch_code, user_id, source_code, dimension_1_code, dimension_2_code, journal_batch_name, reason_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, document_date, external_document_no, no_series, variant_code, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2662,8 +2662,8 @@ func (t *PhysInventoryLedgerEntry) FindLast() bool {
 	var salespers_purch_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var journal_batch_nameNull sql.NullString
 	var reason_codeNull sql.NullString
 	var qty_calculatedNull sql.NullString
@@ -2693,8 +2693,8 @@ func (t *PhysInventoryLedgerEntry) FindLast() bool {
 		&salespers_purch_codeNull,
 		&user_idNull,
 		&source_codeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&journal_batch_nameNull,
 		&reason_codeNull,
 		&qty_calculatedNull,
@@ -2733,8 +2733,8 @@ func (t *PhysInventoryLedgerEntry) FindLast() bool {
 	t.Salespers_purch_code = types.NewCode(salespers_purch_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
 	t.Reason_code = types.NewCode(reason_codeNull.String)
 	t.Qty_calculated, _ = types.NewDecimalFromString(qty_calculatedNull.String)
@@ -2797,7 +2797,7 @@ func (t *PhysInventoryLedgerEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, document_no, description, location_code, inventory_posting_group, quantity, unit_amount, unit_cost, amount, salespers_purch_code, user_id, source_code, department_code, project_code, journal_batch_name, reason_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, document_date, external_document_no, no_series, variant_code, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, document_no, description, location_code, inventory_posting_group, quantity, unit_amount, unit_cost, amount, salespers_purch_code, user_id, source_code, dimension_1_code, dimension_2_code, journal_batch_name, reason_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, document_date, external_document_no, no_series, variant_code, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2880,8 +2880,8 @@ func (t *PhysInventoryLedgerEntry) Next(steps ...int) bool {
 		var salespers_purch_codeNull sql.NullString
 		var user_idNull sql.NullString
 		var source_codeNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var journal_batch_nameNull sql.NullString
 		var reason_codeNull sql.NullString
 		var qty_calculatedNull sql.NullString
@@ -2911,8 +2911,8 @@ func (t *PhysInventoryLedgerEntry) Next(steps ...int) bool {
 			&salespers_purch_codeNull,
 			&user_idNull,
 			&source_codeNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&journal_batch_nameNull,
 			&reason_codeNull,
 			&qty_calculatedNull,
@@ -2950,8 +2950,8 @@ func (t *PhysInventoryLedgerEntry) Next(steps ...int) bool {
 		t.Salespers_purch_code = types.NewCode(salespers_purch_codeNull.String)
 		t.User_id = types.NewCode(user_idNull.String)
 		t.Source_code = types.NewCode(source_codeNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
 		t.Reason_code = types.NewCode(reason_codeNull.String)
 		t.Qty_calculated, _ = types.NewDecimalFromString(qty_calculatedNull.String)
@@ -3013,7 +3013,7 @@ func (t *PhysInventoryLedgerEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, document_no, description, location_code, inventory_posting_group, quantity, unit_amount, unit_cost, amount, salespers_purch_code, user_id, source_code, department_code, project_code, journal_batch_name, reason_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, document_date, external_document_no, no_series, variant_code, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, document_no, description, location_code, inventory_posting_group, quantity, unit_amount, unit_cost, amount, salespers_purch_code, user_id, source_code, dimension_1_code, dimension_2_code, journal_batch_name, reason_code, qty_calculated, qty_phys_inventory, last_item_ledger_entry_no, document_date, external_document_no, no_series, variant_code, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3049,8 +3049,8 @@ func (t *PhysInventoryLedgerEntry) FindSetBuffered() bool {
 		var salespers_purch_codeNull sql.NullString
 		var user_idNull sql.NullString
 		var source_codeNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var journal_batch_nameNull sql.NullString
 		var reason_codeNull sql.NullString
 		var qty_calculatedNull sql.NullString
@@ -3080,8 +3080,8 @@ func (t *PhysInventoryLedgerEntry) FindSetBuffered() bool {
 			&salespers_purch_codeNull,
 			&user_idNull,
 			&source_codeNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&journal_batch_nameNull,
 			&reason_codeNull,
 			&qty_calculatedNull,
@@ -3117,8 +3117,8 @@ func (t *PhysInventoryLedgerEntry) FindSetBuffered() bool {
 		record.Salespers_purch_code = types.NewCode(salespers_purch_codeNull.String)
 		record.User_id = types.NewCode(user_idNull.String)
 		record.Source_code = types.NewCode(source_codeNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
 		record.Reason_code = types.NewCode(reason_codeNull.String)
 		record.Qty_calculated, _ = types.NewDecimalFromString(qty_calculatedNull.String)
@@ -3174,8 +3174,8 @@ func (t *PhysInventoryLedgerEntry) copyFromBuffered(record *PhysInventoryLedgerE
 	t.Salespers_purch_code = record.Salespers_purch_code
 	t.User_id = record.User_id
 	t.Source_code = record.Source_code
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Journal_batch_name = record.Journal_batch_name
 	t.Reason_code = record.Reason_code
 	t.Qty_calculated = record.Qty_calculated
@@ -3703,45 +3703,45 @@ func (t *PhysInventoryLedgerEntry) ValidateField(fieldName string, value interfa
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -4075,9 +4075,9 @@ func (t *PhysInventoryLedgerEntry) FieldValue(no int) (any, bool) {
 	case 25:
 		return t.Source_code, true
 	case 33:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 34:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 45:
 		return t.Journal_batch_name, true
 	case 46:
@@ -4228,20 +4228,20 @@ func (t *PhysInventoryLedgerEntry) SetFieldValue(no int, value any) bool {
 		}
 	case 33:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 34:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 45:
@@ -4872,10 +4872,10 @@ func (t *PhysInventoryLedgerEntry) columnValue(column string) (interface{}, bool
 		return t.User_id, true
 	case "source_code":
 		return t.Source_code, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "journal_batch_name":
 		return t.Journal_batch_name, true
 	case "reason_code":
@@ -4970,8 +4970,8 @@ func (t *PhysInventoryLedgerEntry) Init() {
 	t.Salespers_purch_code = *new(types.Code)
 	t.User_id = *new(types.Code)
 	t.Source_code = *new(types.Code)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Journal_batch_name = *new(types.Code)
 	t.Reason_code = *new(types.Code)
 	t.Qty_calculated = *new(types.Decimal)
@@ -5034,8 +5034,8 @@ func (t *PhysInventoryLedgerEntry) ToMap() map[string]interface{} {
 		"salespers_purch_code":      t.Salespers_purch_code.String(),
 		"user_id":                   t.User_id.String(),
 		"source_code":               t.Source_code.String(),
-		"department_code":           t.Department_code.String(),
-		"project_code":              t.Project_code.String(),
+		"dimension_1_code":          t.Dimension_1_code.String(),
+		"dimension_2_code":          t.Dimension_2_code.String(),
 		"journal_batch_name":        t.Journal_batch_name.String(),
 		"reason_code":               t.Reason_code.String(),
 		"qty_calculated":            t.Qty_calculated.String(),
@@ -5177,14 +5177,14 @@ func (t *PhysInventoryLedgerEntry) FromMap(data map[string]interface{}) {
 			t.Source_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["journal_batch_name"]; ok && v != nil {
@@ -5451,7 +5451,7 @@ func (t *PhysInventoryLedgerEntry) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         33,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -5461,7 +5461,7 @@ func (t *PhysInventoryLedgerEntry) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         34,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -5693,8 +5693,8 @@ func (t *PhysInventoryLedgerEntry) GetTableRelationFields() map[string]tables.Ta
 			},
 			SearchTimeout: 0,
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -5703,8 +5703,8 @@ func (t *PhysInventoryLedgerEntry) GetTableRelationFields() map[string]tables.Ta
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

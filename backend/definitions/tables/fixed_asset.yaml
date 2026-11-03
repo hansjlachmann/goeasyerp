@@ -61,13 +61,13 @@ table:
           - source: name
             width: 250
 
-    - name: department_code
+    - name: dimension_1_code
       no: 7
       type: types.Code
-      db_name: department_code
+      db_name: dimension_1_code
       length: 10
       table_relation:
-        table: Department
+        table: Dimension_1
         field: code
         lookup_columns:
           - source: code
@@ -75,13 +75,13 @@ table:
           - source: name
             width: 250
 
-    - name: project_code
+    - name: dimension_2_code
       no: 8
       type: types.Code
-      db_name: project_code
+      db_name: dimension_2_code
       length: 10
       table_relation:
-        table: Project
+        table: Dimension_2
         field: code
         lookup_columns:
           - source: code
@@ -285,7 +285,7 @@ table:
       fields: [component_of_main_asset, main_asset_component]
     - name: fa_location_code
       fields: [fa_location_code]
-    - name: department_code
-      fields: [department_code]
-    - name: project_code
-      fields: [project_code]
+    - name: dimension_1_code
+      fields: [dimension_1_code]
+    - name: dimension_2_code
+      fields: [dimension_2_code]

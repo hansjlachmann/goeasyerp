@@ -15,7 +15,7 @@ import (
 // The open journals of the demo (Options.Journals, codeunit 901): every journal of the main menu
 // has lines ready to post, dated today — nothing is posted:
 //   - General Journals: office supplies paid in cash; Recurring General Journals: the monthly
-//     rent paid from the bank, allocated to the departments, and the salaries accrued at the
+//     rent paid from the bank, allocated to the dimension 1 values, and the salaries accrued at the
 //     month's end (reversed the day after); Sales Journals: a service invoice to a
 //     customer; Purchase Journals: a vendor's invoice; Cash Receipt Journals: a customer's payment
 //     of an open invoice; Payment Journals: the payment of an open vendor invoice;
@@ -147,7 +147,7 @@ func (j *demoJournals) generalJournals() error {
 		return err
 	}
 	l.Description = "Office supplies, cash"
-	l.Department_code = "ADM"
+	l.Dimension_1_code = "ADM"
 	err = j.insertGenJnlLine(l)
 	if err != nil {
 		return err
@@ -701,7 +701,7 @@ func (j *demoJournals) requisitionWorksheets() error {
 }
 
 // recurringJournal: template RECURRING — the rent, fixed each month, paid from bank B010 and
-// allocated to the departments by their floor space (5:3:2), and the salary accrual of the month,
+// allocated to the dimension 1 values by their floor space (5:3:2), and the salary accrual of the month,
 // variable, reversed the day after
 func (j *demoJournals) recurringJournal() error {
 	l, err := j.genJnlLine("RECURRING", 10000, nil)
@@ -765,7 +765,7 @@ func (j *demoJournals) recurringJournal() error {
 	})
 }
 
-// allocation: an allocation of a journal line to a G/L account (and department)
+// allocation: an allocation of a journal line to a G/L account (and dimension 1)
 func (j *demoJournals) allocation(l *gtables.GenJournalLine, lineNo int, accNo, department types.Code, fn func(a *gtables.GenJnlAllocation) error) error {
 	a := gtables.NewGenJnlAllocation(j.src)
 	a.Journal_template_name = l.Journal_template_name
@@ -777,7 +777,7 @@ func (j *demoJournals) allocation(l *gtables.GenJournalLine, lineNo int, accNo, 
 		return err
 	}
 	if department != "" {
-		a.Department_code = department
+		a.Dimension_1_code = department
 	}
 	err = a.InsertOrError(true)
 	if err == nil {

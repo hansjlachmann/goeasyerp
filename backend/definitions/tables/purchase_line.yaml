@@ -297,13 +297,13 @@ table:
       precision: 18
       scale: 5
 
-    - name: department_code
+    - name: dimension_1_code
       no: 40
       type: types.Code
-      db_name: department_code
+      db_name: dimension_1_code
       length: 10
       table_relation:
-        table: Department
+        table: Dimension_1
         field: code
         lookup_columns:
           - source: code
@@ -311,13 +311,13 @@ table:
           - source: name
             width: 250
 
-    - name: project_code
+    - name: dimension_2_code
       no: 41
       type: types.Code
-      db_name: project_code
+      db_name: dimension_2_code
       length: 10
       table_relation:
-        table: Project
+        table: Dimension_2
         field: code
         lookup_columns:
           - source: code

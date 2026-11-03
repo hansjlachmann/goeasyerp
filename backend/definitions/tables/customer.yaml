@@ -89,13 +89,13 @@ table:
           - source: name
             width: 250
 
-    - name: department_code
+    - name: dimension_1_code
       no: 16
       type: types.Code
-      db_name: department_code
+      db_name: dimension_1_code
       length: 10
       table_relation:
-        table: Department
+        table: Dimension_1
         field: code
         lookup_columns:
           - source: code
@@ -103,13 +103,13 @@ table:
           - source: name
             width: 250
 
-    - name: project_code
+    - name: dimension_2_code
       no: 17
       type: types.Code
-      db_name: project_code
+      db_name: dimension_2_code
       length: 10
       table_relation:
-        table: Project
+        table: Dimension_2
         field: code
         lookup_columns:
           - source: code
@@ -591,13 +591,13 @@ table:
       type: types.Date
       flow_filter: true
 
-    - name: department_filter
+    - name: dimension_1_filter
       no: 56
       type: types.Code
       length: 10
       flow_filter: true
 
-    - name: project_filter
+    - name: dimension_2_filter
       no: 57
       type: types.Code
       length: 10
@@ -622,12 +622,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: currency_code
           type: filter
           value: currency_filter
@@ -644,12 +644,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: currency_code
           type: filter
           value: currency_filter
@@ -666,12 +666,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -691,12 +691,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -716,12 +716,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -741,12 +741,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -766,12 +766,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -791,12 +791,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -819,12 +819,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: due_date
           type: filter
           value: date_filter
@@ -847,12 +847,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: due_date
           type: filter
           value: date_filter
@@ -876,12 +876,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -904,12 +904,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -933,12 +933,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -961,12 +961,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -990,12 +990,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -1018,12 +1018,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -1047,12 +1047,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -1075,12 +1075,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -1100,12 +1100,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -1125,12 +1125,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -1150,12 +1150,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -1175,12 +1175,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -1203,12 +1203,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -1228,12 +1228,12 @@ table:
         - field: customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -1257,12 +1257,12 @@ table:
         - field: bill_to_customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: currency_code
           type: filter
           value: currency_filter
@@ -1282,12 +1282,12 @@ table:
         - field: bill_to_customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: currency_code
           type: filter
           value: currency_filter
@@ -1307,12 +1307,12 @@ table:
         - field: bill_to_customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
 
     - name: shipped_not_invoiced_lcy
       no: 114
@@ -1329,12 +1329,12 @@ table:
         - field: bill_to_customer_no
           type: field
           value: no
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
 
     # Not a classic field: the number of ledger entries (drilldown to them)
     - name: no_of_ledger_entries

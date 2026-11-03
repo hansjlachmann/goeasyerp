@@ -6,32 +6,32 @@ import (
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 )
 
-// Missing is a consolidation account, department or project that is not in the consolidated
+// Missing is a consolidation account, dimension 1 or 2 that is not in the consolidated
 // company, with the business unit's code that consolidates to it
 type Missing struct {
 	Code types.Code // the code in the consolidated company
-	From types.Code // the business unit's account, department or project
+	From types.Code // the business unit's account, dimension 1 or 2
 }
 
 // Check collects what a business unit consolidates to that is missing here (Consolidation -
 // Test Database / Test File: AddGLAccError, AddDeptError, AddProjError) — each code once
 type Check struct {
-	accounts, departments, projects map[types.Code]types.Code
+	accounts, dimension1, dimension2 map[types.Code]types.Code
 }
 
 // NewCheck is an empty check
 func NewCheck() *Check {
-	return &Check{accounts: map[types.Code]types.Code{}, departments: map[types.Code]types.Code{}, projects: map[types.Code]types.Code{}}
+	return &Check{accounts: map[types.Code]types.Code{}, dimension1: map[types.Code]types.Code{}, dimension2: map[types.Code]types.Code{}}
 }
 
 // Account notes a consolidation account that is missing
 func (c *Check) Account(code, from types.Code) { add(c.accounts, code, from) }
 
-// Department notes a consolidation department that is missing
-func (c *Check) Department(code, from types.Code) { add(c.departments, code, from) }
+// Dimension 1 notes a consolidation dimension 1 that is missing
+func (c *Check) Dimension1(code, from types.Code) { add(c.dimension1, code, from) }
 
-// Project notes a consolidation project that is missing
-func (c *Check) Project(code, from types.Code) { add(c.projects, code, from) }
+// Dimension 2 notes a consolidation dimension 2 that is missing
+func (c *Check) Dimension2(code, from types.Code) { add(c.dimension2, code, from) }
 
 func add(m map[types.Code]types.Code, code, from types.Code) {
 	_, ok := m[code]
@@ -43,11 +43,11 @@ func add(m map[types.Code]types.Code, code, from types.Code) {
 // Accounts are the missing accounts by code
 func (c *Check) Accounts() []Missing { return sorted(c.accounts) }
 
-// Departments are the missing departments by code
-func (c *Check) Departments() []Missing { return sorted(c.departments) }
+// Dimension 1 values are the missing dimension 1 values by code
+func (c *Check) Dimension1Values() []Missing { return sorted(c.dimension1) }
 
-// Projects are the missing projects by code
-func (c *Check) Projects() []Missing { return sorted(c.projects) }
+// Dimension 2 values are the missing dimension 2 values by code
+func (c *Check) Dimension2Values() []Missing { return sorted(c.dimension2) }
 
 func sorted(m map[types.Code]types.Code) []Missing {
 	list := make([]Missing, 0, len(m))

@@ -106,7 +106,7 @@ func (salesLineLogic) OnValidate_Type(rec *gtables.SalesLine) error {
 	return nil
 }
 
-// OnValidate_No: the line again from the document (customer, currency, dates, department/project,
+// OnValidate_No: the line again from the document (customer, currency, dates, dimension 1/2,
 // location, price group, posting and tax groups) and the account, item or resource: description,
 // unit of measure, unit cost, posting groups, the price and the quantity it had
 func (salesLineLogic) OnValidate_No(rec *gtables.SalesLine) error {
@@ -133,8 +133,8 @@ func (salesLineLogic) OnValidate_No(rec *gtables.SalesLine) error {
 	rec.Sell_to_customer_no = salesHeader.Sell_to_customer_no
 	rec.Currency_code = salesHeader.Currency_code
 	rec.Shipment_date = salesHeader.Shipment_date
-	rec.Department_code = salesHeader.Department_code
-	rec.Project_code = salesHeader.Project_code
+	rec.Dimension_1_code = salesHeader.Dimension_1_code
+	rec.Dimension_2_code = salesHeader.Dimension_2_code
 	rec.Location_code = salesHeader.Location_code
 	rec.Price_group_code = salesHeader.Price_group_code
 	rec.Transaction_type = salesHeader.Transaction_type

@@ -12,7 +12,7 @@ import (
 // disposal's proceeds, gain/loss or the entries of a posting category) become one entry per
 // asset, book, posting type, part of book value/depreciable basis, posting group, document type,
 // period and sign of the quantity — and per the retained Document No., Reclassification Entry,
-// Index Entry, Department and Project Code; only entries of the same posting type in a row of
+// Index Entry, Dimension 1 and Dimension 2 Code; only entries of the same posting type in a row of
 // the asset's book are added up. The FA depreciation book's dates follow; an FA register of the
 // run.
 const DateCompressFALedgerID = 5696
@@ -32,7 +32,7 @@ type dateCompressFALedger struct {
 
 func (r *dateCompressFALedger) Definition() *Definition {
 	r.tableID = gtables.FALedgerEntryTableID
-	r.fields = []retainField{{name: "document_no"}, {name: "reclassification_entry"}, {name: "index_entry"}, {name: "department_code"}, {name: "project_code"}}
+	r.fields = []retainField{{name: "document_no"}, {name: "reclassification_entry"}, {name: "index_entry"}, {name: "dimension_1_code"}, {name: "dimension_2_code"}}
 	return &Definition{
 		OptionsCaption: "OPTIONS",
 		Options:        dateComprOptions(true, r.fields),
@@ -156,13 +156,13 @@ func (r *dateCompressFALedger) onAfterGetRecord(faLedgEntry *gtables.FALedgerEnt
 		faLedgEntry2.SetRange("index_entry", faLedgEntry2.Index_entry)
 		newFALedgEntry.Index_entry = faLedgEntry2.Index_entry
 	}
-	if r.retainNo("department_code") {
-		faLedgEntry2.SetRange("department_code", faLedgEntry2.Department_code)
-		newFALedgEntry.Department_code = faLedgEntry2.Department_code
+	if r.retainNo("dimension_1_code") {
+		faLedgEntry2.SetRange("dimension_1_code", faLedgEntry2.Dimension_1_code)
+		newFALedgEntry.Dimension_1_code = faLedgEntry2.Dimension_1_code
 	}
-	if r.retainNo("project_code") {
-		faLedgEntry2.SetRange("project_code", faLedgEntry2.Project_code)
-		newFALedgEntry.Project_code = faLedgEntry2.Project_code
+	if r.retainNo("dimension_2_code") {
+		faLedgEntry2.SetRange("dimension_2_code", faLedgEntry2.Dimension_2_code)
+		newFALedgEntry.Dimension_2_code = faLedgEntry2.Dimension_2_code
 	}
 	if !faLedgEntry2.Quantity.IsNegative() {
 		faLedgEntry2.SetFilter("quantity", ">=0")

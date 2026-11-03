@@ -68,8 +68,8 @@ type invPostingBuffer struct {
 	taxAreaCode        types.Code
 	taxLiable          bool
 	taxGroupCode       types.Code
-	departmentCode     types.Code
-	projectCode        types.Code
+	dimension1Code     types.Code
+	dimension2Code     types.Code
 	amount             types.Decimal // LCY
 	amountFCY          types.Decimal
 	taxAmount          types.Decimal // LCY
@@ -589,8 +589,8 @@ func (p *SalesPost) postItemJnlLine(salesLine *gtables.SalesLine, qtyToShip, qty
 	itemJnlLine.Serial_no = salesLine.Serial_no
 	itemJnlLine.Lot_no = salesLine.Lot_no
 	itemJnlLine.Inventory_posting_group = salesLine.Posting_group
-	itemJnlLine.Department_code = salesLine.Department_code
-	itemJnlLine.Project_code = salesLine.Project_code
+	itemJnlLine.Dimension_1_code = salesLine.Dimension_1_code
+	itemJnlLine.Dimension_2_code = salesLine.Dimension_2_code
 	itemJnlLine.Gen_bus_posting_group = salesLine.Gen_bus_posting_group
 	itemJnlLine.Gen_prod_posting_group = salesLine.Gen_prod_posting_group
 	itemJnlLine.Unit_of_measure_code = salesLine.Unit_of_measure_code
@@ -648,8 +648,8 @@ func (p *SalesPost) postResJnlLine(salesLine *gtables.SalesLine, qtyToInvoice ty
 	resJnlLine.Description = salesLine.Description
 	resJnlLine.Work_type_code = salesLine.Work_type_code
 	resJnlLine.Unit_of_measure_code = salesLine.Unit_of_measure_code
-	resJnlLine.Department_code = salesLine.Department_code
-	resJnlLine.Project_code = salesLine.Project_code
+	resJnlLine.Dimension_1_code = salesLine.Dimension_1_code
+	resJnlLine.Dimension_2_code = salesLine.Dimension_2_code
 	resJnlLine.Gen_bus_posting_group = salesLine.Gen_bus_posting_group
 	resJnlLine.Gen_prod_posting_group = salesLine.Gen_prod_posting_group
 	resJnlLine.Source_code = p.srcCode
@@ -699,7 +699,7 @@ func (p *SalesPost) fillInvPostingBuffer(salesLine, lineFCY, lineLCY *gtables.Sa
 		if err != nil {
 			return err
 		}
-		p.addToBuffer(&invPostingBuffer{glAccount: genPostingSetup.Sales_inv_disc_account, departmentCode: salesLine.Department_code, projectCode: salesLine.Project_code,
+		p.addToBuffer(&invPostingBuffer{glAccount: genPostingSetup.Sales_inv_disc_account, dimension1Code: salesLine.Dimension_1_code, dimension2Code: salesLine.Dimension_2_code,
 			amount: lineLCY.Inv_discount_amount.Neg(), amountFCY: lineFCY.Inv_discount_amount.Neg()})
 		amount = amount.Add(lineLCY.Inv_discount_amount)
 		amountFCY = amountFCY.Add(lineFCY.Inv_discount_amount)
@@ -709,7 +709,7 @@ func (p *SalesPost) fillInvPostingBuffer(salesLine, lineFCY, lineLCY *gtables.Sa
 		if err != nil {
 			return err
 		}
-		p.addToBuffer(&invPostingBuffer{glAccount: genPostingSetup.Sales_line_disc_account, departmentCode: salesLine.Department_code, projectCode: salesLine.Project_code,
+		p.addToBuffer(&invPostingBuffer{glAccount: genPostingSetup.Sales_line_disc_account, dimension1Code: salesLine.Dimension_1_code, dimension2Code: salesLine.Dimension_2_code,
 			amount: lineLCY.Line_discount_amount.Neg(), amountFCY: lineFCY.Line_discount_amount.Neg()})
 		amount = amount.Add(lineLCY.Line_discount_amount)
 		amountFCY = amountFCY.Add(lineFCY.Line_discount_amount)
@@ -719,7 +719,7 @@ func (p *SalesPost) fillInvPostingBuffer(salesLine, lineFCY, lineLCY *gtables.Sa
 		genBusPostingGrp: salesLine.Gen_bus_posting_group, genProdPostingGrp: salesLine.Gen_prod_posting_group,
 		taxBusPostingGrp: salesLine.Tax_bus_posting_group, taxProdPostingGrp: salesLine.Tax_prod_posting_group,
 		taxCalculationType: salesLine.Tax_calculation_type, taxAreaCode: salesLine.Tax_area_code, taxLiable: salesLine.Tax_liable, taxGroupCode: salesLine.Tax_group_code,
-		departmentCode: salesLine.Department_code, projectCode: salesLine.Project_code,
+		dimension1Code: salesLine.Dimension_1_code, dimension2Code: salesLine.Dimension_2_code,
 		amount: amount, amountFCY: amountFCY,
 		taxAmount: lineLCY.Amount_including_tax.Sub(lineLCY.Amount), taxAmountFCY: lineFCY.Amount_including_tax.Sub(lineFCY.Amount),
 		taxBaseAmount: lineLCY.Amount, taxBaseAmountFCY: lineFCY.Amount,
@@ -735,7 +735,7 @@ func (p *SalesPost) addToBuffer(add *invPostingBuffer) {
 			b.genBusPostingGrp == add.genBusPostingGrp && b.genProdPostingGrp == add.genProdPostingGrp &&
 			b.taxBusPostingGrp == add.taxBusPostingGrp && b.taxProdPostingGrp == add.taxProdPostingGrp &&
 			b.taxAreaCode == add.taxAreaCode && b.taxLiable == add.taxLiable && b.taxGroupCode == add.taxGroupCode &&
-			b.departmentCode == add.departmentCode && b.projectCode == add.projectCode {
+			b.dimension1Code == add.dimension1Code && b.dimension2Code == add.dimension2Code {
 			b.amount = b.amount.Add(add.amount)
 			b.amountFCY = b.amountFCY.Add(add.amountFCY)
 			b.taxAmount = b.taxAmount.Add(add.taxAmount)
@@ -857,8 +857,8 @@ func (p *SalesPost) postInvPostingBuffer() error {
 		genJnlLine.Amount_lcy = b.amount.Mul(p.sign).Neg()
 		genJnlLine.Source_currency_code = salesHeader.Currency_code
 		genJnlLine.Source_currency_amount = genJnlLine.Amount
-		genJnlLine.Department_code = b.departmentCode
-		genJnlLine.Project_code = b.projectCode
+		genJnlLine.Dimension_1_code = b.dimension1Code
+		genJnlLine.Dimension_2_code = b.dimension2Code
 		genJnlLine.Quantity = b.quantity.Mul(p.sign).Neg()
 		if b.genPostingType {
 			genJnlLine.Gen_posting_type = gtables.GenJournalLine_Gen_posting_type.Sale
@@ -928,8 +928,8 @@ func (p *SalesPost) postCustomerEntry() error {
 	genJnlLine.Inv_discount_lcy = totalLCY.Inv_discount_amount.Mul(p.sign)
 	genJnlLine.Salespers_purch_code = salesHeader.Salesperson_code
 	genJnlLine.Posting_group = salesHeader.Customer_posting_group
-	genJnlLine.Department_code = salesHeader.Department_code
-	genJnlLine.Project_code = salesHeader.Project_code
+	genJnlLine.Dimension_1_code = salesHeader.Dimension_1_code
+	genJnlLine.Dimension_2_code = salesHeader.Dimension_2_code
 	genJnlLine.Payment_terms_code = salesHeader.Payment_terms_code
 	genJnlLine.Due_date = salesHeader.Due_date
 	genJnlLine.Pmt_discount_date = salesHeader.Pmt_discount_date
@@ -1138,11 +1138,11 @@ func (p *SalesPost) finalize() error {
 }
 
 // checkShipmentLine: a shipment line invoiced now is still the line's — customer, type, number,
-// posting groups, location, department, project, serial number, unit of measure, bin, lot
+// posting groups, location, dimension 1, dimension 2, serial number, unit of measure, bin, lot
 // number and variant (classic TESTFIELD(…, SalesLine.…) before invoicing a shipment)
 func checkShipmentLine(salesShptLine *gtables.SalesShipmentLine, salesLine *gtables.SalesLine) error {
 	for _, field := range []string{"sell_to_customer_no", "type", "no", "gen_bus_posting_group", "gen_prod_posting_group",
-		"tax_bus_posting_group", "tax_prod_posting_group", "location_code", "department_code", "project_code",
+		"tax_bus_posting_group", "tax_prod_posting_group", "location_code", "dimension_1_code", "dimension_2_code",
 		"serial_no", "unit_of_measure_code", "bin_code", "lot_no", "variant_code"} {
 		value, _ := salesLine.FieldValue(salesLine.FieldNo(field))
 		err := salesShptLine.TestField(field, value)

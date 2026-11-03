@@ -103,13 +103,13 @@ table:
           - source: g_l_bank_account_no
             width: 250
 
-    - name: department_code
+    - name: dimension_1_code
       no: 23
       type: types.Code
-      db_name: department_code
+      db_name: dimension_1_code
       length: 10
       table_relation:
-        table: Department
+        table: Dimension_1
         field: code
         lookup_columns:
           - source: code
@@ -117,13 +117,13 @@ table:
           - source: name
             width: 250
 
-    - name: project_code
+    - name: dimension_2_code
       no: 24
       type: types.Code
-      db_name: project_code
+      db_name: dimension_2_code
       length: 10
       table_relation:
-        table: Project
+        table: Dimension_2
         field: code
         lookup_columns:
           - source: code
@@ -350,7 +350,7 @@ table:
         - debit_amount_lcy
         - credit_amount_lcy
     - name: bank_account_dimensions
-      fields: [bank_account_no, department_code, project_code, posting_date]
+      fields: [bank_account_no, dimension_1_code, dimension_2_code, posting_date]
       sum_index_fields:
         - amount
         - amount_lcy
