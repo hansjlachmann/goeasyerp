@@ -1,5 +1,5 @@
 // Package glcheck checks the whole general ledger: every posting date and every transaction of
-// the G/L entries adds up to 0, the entry numbers have no gaps (up to the last date compression:
+// the G/L entries adds up to 0 (also in the additional reporting currency), the entry numbers have no gaps (up to the last date compression:
 // it deletes entries), and the G/L registers cover the entries once each. The balance check of the posting (Consistent) keeps a posting from saving
 // G/L entries that do not balance; this check finds what reached the table some other way
 // (direct database changes, imports, restores, a fault in posting code).
@@ -15,8 +15,9 @@ import (
 
 // DateTotal: the G/L entries of a posting date that do not add up to 0
 type DateTotal struct {
-	PostingDate types.Date
-	Amount      types.Decimal
+	PostingDate   types.Date
+	Amount        types.Decimal
+	AddCurrAmount types.Decimal // the Additional-Currency Amount
 }
 
 // TransactionTotal: the G/L entries of a transaction that do not add up to 0 (its first
@@ -26,6 +27,7 @@ type TransactionTotal struct {
 	PostingDate   types.Date
 	DocumentNo    types.Code
 	Amount        types.Decimal
+	AddCurrAmount types.Decimal // the Additional-Currency Amount
 }
 
 // Gap: entry numbers that are missing (From..To)
@@ -96,6 +98,7 @@ func Check(src ftables.Source, progress func(percent int)) *Result {
 			dateOrder = append(dateOrder, glEntry.Posting_date.String())
 		}
 		dateTotal.Amount = dateTotal.Amount.Add(glEntry.Amount)
+		dateTotal.AddCurrAmount = dateTotal.AddCurrAmount.Add(glEntry.Additional_currency_amount)
 		transaction, ok := transactions[glEntry.Transaction_no]
 		if !ok {
 			transaction = &TransactionTotal{TransactionNo: glEntry.Transaction_no, PostingDate: glEntry.Posting_date, DocumentNo: glEntry.Document_no}
@@ -103,18 +106,19 @@ func Check(src ftables.Source, progress func(percent int)) *Result {
 			transactionOrder = append(transactionOrder, glEntry.Transaction_no)
 		}
 		transaction.Amount = transaction.Amount.Add(glEntry.Amount)
+		transaction.AddCurrAmount = transaction.AddCurrAmount.Add(glEntry.Additional_currency_amount)
 	}
 
 	for _, date := range dateOrder {
 		dateTotal := dateTotals[date]
-		if !dateTotal.Amount.IsZero() {
+		if !dateTotal.Amount.IsZero() || !dateTotal.AddCurrAmount.IsZero() {
 			result.Dates = append(result.Dates, *dateTotal)
 		}
 	}
 	sort.Slice(result.Dates, func(i, j int) bool { return result.Dates[i].PostingDate.Before(result.Dates[j].PostingDate) })
 	for _, no := range transactionOrder {
 		transaction := transactions[no]
-		if !transaction.Amount.IsZero() {
+		if !transaction.Amount.IsZero() || !transaction.AddCurrAmount.IsZero() {
 			result.Transactions = append(result.Transactions, *transaction)
 		}
 	}

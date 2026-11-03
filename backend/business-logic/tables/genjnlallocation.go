@@ -11,9 +11,8 @@ import (
 // accounts a recurring journal line's amount is allocated to — by Allocation Quantity (shares
 // of the total quantity), Allocation % or a fixed Amount. The allocated amounts carry the
 // opposite sign of the line, so the line and its allocations balance; the line's Balance (LCY)
-// includes them (Allocated Amt. (LCY)).
-//
-// Not migrated yet: the additional reporting currency (UpdateAllocationsAddCurr).
+// includes them (Allocated Amt. (LCY)). UpdateAllocationsAddCurr shares a balance line's
+// additional-currency amount among them.
 type genJnlAllocationLogic struct{}
 
 func init() { gtables.RegisterGenJnlAllocationLogic(genJnlAllocationLogic{}) }
@@ -320,6 +319,68 @@ func updateGenJnlAllocations(genJnlLine *gtables.GenJournalLine, fromAllocations
 	}
 	if updateGenJnlLine {
 		return updateJnlBalance(genJnlLine, fromAllocations)
+	}
+	return nil
+}
+
+// UpdateAllocationsAddCurr (UpdateAllocationsAddCurr): a balance recurring line's allocations
+// get their share of its additional-currency amount (rounded to the additional reporting
+// currency's precision so they add up)
+func UpdateAllocationsAddCurr(genJnlLine *gtables.GenJournalLine, addCurrAmount types.Decimal) error {
+	genJnlAlloc := gtables.NewGenJnlAllocation(genJnlLine)
+	genJnlAlloc.SetRange("journal_template_name", genJnlLine.Journal_template_name)
+	genJnlAlloc.SetRange("journal_batch_name", genJnlLine.Journal_batch_name)
+	genJnlAlloc.SetRange("journal_line_no", genJnlLine.Line_no)
+	var allocs []*gtables.GenJnlAllocation
+	for found := genJnlAlloc.FindSet(); found; found = genJnlAlloc.Next() {
+		a := gtables.NewGenJnlAllocation(genJnlLine)
+		a.Copy(genJnlAlloc)
+		allocs = append(allocs, a)
+	}
+	if len(allocs) == 0 {
+		return nil
+	}
+	genJnlAlloc.LockTable()
+	currency := gtables.NewCurrency(genJnlLine)
+	err := currency.GetOrError(gtables.GetGeneralLedgerSetup(genJnlLine).Additional_reporting_currency)
+	if err != nil {
+		return err
+	}
+	err = currency.TestField("amount_rounding_precision")
+	if err != nil {
+		return err
+	}
+	precision := currency.Amount_rounding_precision
+	hundred := types.NewDecimalFromInt(100)
+	var totalQty, totalPct, totalPctRnded, totalAmountAddCurr, totalAmountAddCurr2, totalAmountAddCurrRnded, totalAmountAddCurrRnded2 types.Decimal
+	for _, a := range allocs {
+		if a.Allocation_quantity.IsZero() && a.Allocation_percent.IsZero() {
+			continue
+		}
+		if a.Allocation_quantity.IsZero() {
+			totalAmountAddCurr2 = totalAmountAddCurr2.Sub(addCurrAmount.Mul(a.Allocation_percent).Div(hundred))
+			a.Additional_currency_amount = system.Round(totalAmountAddCurr2, precision).Sub(totalAmountAddCurrRnded2)
+			totalAmountAddCurrRnded2 = totalAmountAddCurrRnded2.Add(a.Additional_currency_amount)
+		} else {
+			if totalQty.IsZero() {
+				for _, a2 := range allocs {
+					totalQty = totalQty.Add(a2.Allocation_quantity)
+				}
+				if totalQty.IsZero() {
+					totalQty = types.NewDecimalFromInt(1)
+				}
+			}
+			totalPct = totalPct.Add(a.Allocation_quantity.Div(totalQty).Mul(hundred))
+			a.Allocation_percent = system.Round(totalPct, types.MustDecimal("0.01")).Sub(totalPctRnded)
+			totalPctRnded = totalPctRnded.Add(a.Allocation_percent)
+			totalAmountAddCurr = totalAmountAddCurr.Sub(addCurrAmount.Mul(a.Allocation_quantity).Div(totalQty))
+			a.Additional_currency_amount = system.Round(totalAmountAddCurr, precision).Sub(totalAmountAddCurrRnded)
+			totalAmountAddCurrRnded = totalAmountAddCurrRnded.Add(a.Additional_currency_amount)
+		}
+		err = a.ModifyOrError(false)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

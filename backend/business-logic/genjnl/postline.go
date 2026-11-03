@@ -21,8 +21,11 @@ import (
 // A fixed asset line posts its FA or maintenance entry (codeunit 5632, fajnl) and the G/L entries
 // of its accounts.
 //
-// Not migrated yet: the additional reporting currency,
-// computer checks and electronic payments (check printing), job ledger entries.
+// With an additional reporting currency every G/L entry also carries its amount in that currency
+// (addcurrency.go).
+//
+// Not migrated yet: computer checks and electronic payments (check printing), job ledger
+// entries.
 type GenJnlPostLine struct {
 	src             ftables.Source
 	genJnlLine      *gtables.GenJournalLine
@@ -47,20 +50,23 @@ type GenJnlPostLine struct {
 	fiscalYearStartDate types.Date
 	balanceCheck        *balanceCheck
 	faJnlPostLine       *fajnl.FAJnlPostLine
+	addCurr             addCurrency
 
 	// Customer and vendor application of the current line
-	custPosting           bool
-	vendPosting           bool
-	salesPostingType      bool
-	purchPostingType      bool
-	totalPmtDiscLCY       types.Decimal
-	totalApplnRoundingLCY types.Decimal
-	realExchRateGains     types.Decimal
-	realExchRateLosses    types.Decimal
-	unrealExchRateGains   types.Decimal
-	unrealExchRateLosses  types.Decimal
-	gainsLossesBuffer     map[types.Code]*gainsLosses
-	gainsLossesOrder      []types.Code
+	custPosting               bool
+	vendPosting               bool
+	salesPostingType          bool
+	purchPostingType          bool
+	totalPmtDiscLCY           types.Decimal
+	totalApplnRoundingLCY     types.Decimal
+	totalPmtDiscAddCurr       types.Decimal
+	totalApplnRoundingAddCurr types.Decimal
+	realExchRateGains         types.Decimal
+	realExchRateLosses        types.Decimal
+	unrealExchRateGains       types.Decimal
+	unrealExchRateLosses      types.Decimal
+	gainsLossesBuffer         map[types.Code]*gainsLosses
+	gainsLossesOrder          []types.Code
 
 	// Tax entries
 	nextTaxEntryNo     int
@@ -69,6 +75,8 @@ type GenJnlPostLine struct {
 	taxPostingSetup    *gtables.TaxPostingSetup
 	salesTaxCalculate  *salestax.SalesTaxCalculate
 	glEntryTmpTax      []*gtables.GLEntry
+	// the tax of the line's G/L entry in the additional currency (AddCurrGLEntryTaxAmt)
+	addCurrGLEntryTaxAmt types.Decimal
 }
 
 // NewGenJnlPostLine opens the posting codeunit in the posting's database (its transaction)
@@ -137,11 +145,13 @@ func (p *GenJnlPostLine) code() error {
 			genJnlLine.Source_curr_tax_amount = genJnlLine.Tax_amount
 		}
 	}
-	if !genJnlLine.Amount.Equal(system.Round(genJnlLine.Amount, p.currency.Amount_rounding_precision)) {
-		return apperrors.JnlNeedsRounding(jnlLine, "amount", genJnlLine.Amount.String())
-	}
-	if !genJnlLine.Amount_lcy.Equal(system.Round(genJnlLine.Amount_lcy)) {
-		return apperrors.JnlNeedsRounding(jnlLine, "amount_lcy", genJnlLine.Amount_lcy.String())
+	if genJnlLine.Additional_currency_posting == gtables.GenJournalLine_Additional_currency_posting.None {
+		if !genJnlLine.Amount.Equal(system.Round(genJnlLine.Amount, p.currency.Amount_rounding_precision)) {
+			return apperrors.JnlNeedsRounding(jnlLine, "amount", genJnlLine.Amount.String())
+		}
+		if !genJnlLine.Amount_lcy.Equal(system.Round(genJnlLine.Amount_lcy)) {
+			return apperrors.JnlNeedsRounding(jnlLine, "amount_lcy", genJnlLine.Amount_lcy.String())
+		}
 	}
 	if genJnlLine.Sell_to_buy_from_no == "" {
 		switch {
@@ -256,7 +266,7 @@ func ExchAccGLJnlLine(rec *gtables.GenJournalLine) {
 
 // postGLAcc posts a G/L account line: its G/L entry (and its tax)
 func (p *GenJnlPostLine) postGLAcc(genJnlLine *gtables.GenJournalLine) error {
-	glAcc, err := p.initGLEntry(genJnlLine.Account_no, genJnlLine.Amount_lcy, genJnlLine.System_created_entry)
+	glAcc, err := p.initGLEntry(genJnlLine.Account_no, genJnlLine.Amount_lcy, genJnlLine.Source_currency_amount, true, genJnlLine.System_created_entry)
 	if err != nil {
 		return err
 	}
@@ -272,11 +282,15 @@ func (p *GenJnlPostLine) postGLAcc(genJnlLine *gtables.GenJournalLine) error {
 	p.glEntry.Bal_account_type = gtables.GLEntryBal_account_type(genJnlLine.Bal_account_type)
 	p.glEntry.Bal_account_no = genJnlLine.Bal_account_no
 	p.glEntry.No_series = genJnlLine.Posting_no_series
+	if genJnlLine.Additional_currency_posting == gtables.GenJournalLine_Additional_currency_posting.AdditionalCurrencyAmountOnly {
+		p.glEntry.Additional_currency_amount = genJnlLine.Amount
+		p.glEntry.Amount = types.Decimal{}
+	}
 	err = p.initTax(genJnlLine)
 	if err != nil {
 		return err
 	}
-	err = p.insertGLEntry()
+	err = p.insertGLEntry(true)
 	if err != nil {
 		return err
 	}
@@ -393,13 +407,13 @@ func (p *GenJnlPostLine) postBankAcc(genJnlLine *gtables.GenJournalLine) error {
 	if err != nil {
 		return err
 	}
-	_, err = p.initGLEntry(bankAccPostingGr.G_l_bank_account_no, genJnlLine.Amount_lcy, true)
+	_, err = p.initGLEntry(bankAccPostingGr.G_l_bank_account_no, genJnlLine.Amount_lcy, genJnlLine.Source_currency_amount, true, true)
 	if err != nil {
 		return err
 	}
 	p.glEntry.Bal_account_type = gtables.GLEntryBal_account_type(genJnlLine.Bal_account_type)
 	p.glEntry.Bal_account_no = genJnlLine.Bal_account_no
-	return p.insertGLEntry()
+	return p.insertGLEntry(true)
 }
 
 // insertManualCheck records a manual check in the check ledger (its check no. is the document
@@ -516,6 +530,10 @@ func (p *GenJnlPostLine) initCodeUnit() error {
 			p.newTransaction()
 		}
 	}
+	err := p.getCurrencyExchRate()
+	if err != nil {
+		return err
+	}
 	p.glEntryTmp = nil
 	p.initGainsLosses()
 	if genJnlLine.Account_no != "" && genJnlLine.Bal_account_no == "" {
@@ -538,7 +556,9 @@ func (p *GenJnlPostLine) finishCodeunit() error {
 		var glEntry *gtables.GLEntry
 		for _, glEntryTmp := range p.glEntryTmp {
 			glEntry = glEntryTmp
-			glEntry.Additional_currency_amount = types.Decimal{}
+			if p.acyCode() == "" {
+				glEntry.Additional_currency_amount = types.Decimal{}
+			}
 			err = glEntry.InsertOrError(false)
 			if err != nil {
 				return err
@@ -562,8 +582,10 @@ func (p *GenJnlPostLine) finishCodeunit() error {
 }
 
 // initGLEntry starts a G/L entry of the line on a G/L account (a posting account, not blocked,
-// whose department and project posting rules the line follows)
-func (p *GenJnlPostLine) initGLEntry(glAccNo types.Code, amount types.Decimal, systemCreatedEntry bool) (*gtables.GLAccount, error) {
+// whose department and project posting rules the line follows); its additional-currency amount
+// is amountAddCurr for a line in the additional currency when useAmountAddCurr, else the amount
+// exchanged (glCalcAddCurrency)
+func (p *GenJnlPostLine) initGLEntry(glAccNo types.Code, amount, amountAddCurr types.Decimal, useAmountAddCurr, systemCreatedEntry bool) (*gtables.GLAccount, error) {
 	genJnlLine := p.genJnlLine
 	glAcc := gtables.NewGLAccount(p.src)
 	if glAccNo != "" {
@@ -618,6 +640,10 @@ func (p *GenJnlPostLine) initGLEntry(glAccNo types.Code, amount types.Decimal, s
 	p.glEntry.No_series = genJnlLine.Posting_no_series
 	p.glEntry.System_created_entry = systemCreatedEntry
 	p.glEntry.Prior_year_entry = p.glEntry.Posting_date.Before(p.fiscalYearStartDate)
+	err := p.glCalcAddCurrency(amountAddCurr, useAmountAddCurr)
+	if err != nil {
+		return nil, err
+	}
 	return glAcc, nil
 }
 
@@ -642,23 +668,37 @@ func checkPostingCode(rule int, field string, lineCode, accCode types.Code, glAc
 }
 
 // insertGLEntry adds the G/L entry to the line's entries: rounded, debit/credit (a correction
-// the other way round), counted in the balance check — the posting balances when the entries'
-// amounts weighted by their dates add up to 0 (two weightings)
-func (p *GenJnlPostLine) insertGLEntry() error {
+// the other way round) in LCY and in the additional currency, counted in the balance check — the
+// posting balances when the entries' amounts weighted by their dates add up to 0 (two
+// weightings; the additional-currency amounts too); with calcAddCurrResiduals a residual of the
+// additional-currency amounts follows (handleAddCurrResidualGLEntry)
+func (p *GenJnlPostLine) insertGLEntry(calcAddCurrResiduals bool) error {
 	glEntry := p.glEntry
 	if !glEntry.Amount.Equal(system.Round(glEntry.Amount)) {
 		return apperrors.JnlNeedsRounding(gtables.GLEntryTableName, "amount", glEntry.Amount.String())
 	}
-	p.balance().add(glEntry)
-	if glEntry.Amount.IsPositive() && !p.genJnlLine.Correction || glEntry.Amount.IsNegative() && p.genJnlLine.Correction {
+	p.balance().add(glEntry, p.acyCode() != "")
+	correction := p.genJnlLine.Correction
+	if glEntry.Amount.IsPositive() && !correction || glEntry.Amount.IsNegative() && correction {
 		glEntry.Debit_amount = glEntry.Amount
 		glEntry.Credit_amount = types.Decimal{}
 	} else {
 		glEntry.Debit_amount = types.Decimal{}
 		glEntry.Credit_amount = glEntry.Amount.Neg()
 	}
+	acyAmount := glEntry.Additional_currency_amount
+	if acyAmount.IsPositive() && !correction || acyAmount.IsNegative() && correction {
+		glEntry.Add_currency_debit_amount = acyAmount
+		glEntry.Add_currency_credit_amount = types.Decimal{}
+	} else {
+		glEntry.Add_currency_debit_amount = types.Decimal{}
+		glEntry.Add_currency_credit_amount = acyAmount.Neg()
+	}
 	p.glEntryTmp = append(p.glEntryTmp, glEntry)
 	p.nextEntryNo = p.nextEntryNo + 1
+	if calcAddCurrResiduals {
+		return p.handleAddCurrResidualGLEntry()
+	}
 	return nil
 }
 
@@ -667,7 +707,7 @@ func (p *GenJnlPostLine) insertGLEntry() error {
 // posting group gives are the G/L entries (with the line's general and tax posting groups and the
 // FA entry they belong to); the line's tax; the FA register points at the G/L register
 func (p *GenJnlPostLine) postFixedAsset(genJnlLine *gtables.GenJournalLine) error {
-	_, err := p.initGLEntry("", genJnlLine.Amount_lcy, genJnlLine.System_created_entry)
+	_, err := p.initGLEntry("", genJnlLine.Amount_lcy, genJnlLine.Source_currency_amount, true, genJnlLine.System_created_entry)
 	if err != nil {
 		return err
 	}
@@ -693,7 +733,12 @@ func (p *GenJnlPostLine) postFixedAsset(genJnlLine *gtables.GenJournalLine) erro
 		genJnlLine.Department_code = b.DepartmentCode
 		genJnlLine.Project_code = b.ProjectCode
 		genJnlLine.Correction = b.Correction
-		_, err = p.initGLEntry(b.AccountNo, b.Amount, true)
+		if b.OriginalGeneralJnlLine {
+			_, err = p.initGLEntry(b.AccountNo, b.Amount, tempGLEntry.Additional_currency_amount, true, true)
+		} else {
+			p.checkNonAddCurrCodeOccurred("")
+			_, err = p.initGLEntry(b.AccountNo, b.Amount, types.Decimal{}, false, true)
+		}
 		if err != nil {
 			return err
 		}
@@ -723,7 +768,7 @@ func (p *GenJnlPostLine) postFixedAsset(genJnlLine *gtables.GenJournalLine) erro
 			glEntry.Gen_bus_posting_group = ""
 			glEntry.Gen_prod_posting_group = ""
 		}
-		err = p.insertGLEntry()
+		err = p.insertGLEntry(true)
 		if err != nil {
 			return err
 		}

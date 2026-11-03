@@ -18,6 +18,8 @@ type gainsLosses struct {
 func (p *GenJnlPostLine) resetApplicationTotals() {
 	p.totalPmtDiscLCY = types.Decimal{}
 	p.totalApplnRoundingLCY = types.Decimal{}
+	p.totalPmtDiscAddCurr = types.Decimal{}
+	p.totalApplnRoundingAddCurr = types.Decimal{}
 	p.realExchRateGains = types.Decimal{}
 	p.realExchRateLosses = types.Decimal{}
 	p.unrealExchRateGains = types.Decimal{}
@@ -29,6 +31,67 @@ func (p *GenJnlPostLine) resetApplicationTotals() {
 func (p *GenJnlPostLine) applicationLCY() types.Decimal {
 	return p.realExchRateGains.Add(p.realExchRateLosses).Add(p.unrealExchRateGains).Add(p.unrealExchRateLosses).
 		Add(p.totalPmtDiscLCY).Add(p.totalApplnRoundingLCY)
+}
+
+// applicationAddCurr is applicationLCY in the additional currency (the exchange-rate gains and
+// losses of the other currencies exchanged)
+func (p *GenJnlPostLine) applicationAddCurr() (types.Decimal, error) {
+	gainsLosses, err := p.calcAddCurrExchRateGainLossAmt()
+	if err != nil {
+		return types.Decimal{}, err
+	}
+	return gainsLosses.Add(p.totalPmtDiscAddCurr).Add(p.totalApplnRoundingAddCurr), nil
+}
+
+// postApplicationGLEntries (PostCust/PostVend after the ledger entry) posts the line's G/L
+// entries on the receivables or payables account, the payment discount account and the
+// application rounding account of the posting group
+func (p *GenJnlPostLine) postApplicationGLEntries(genJnlLine *gtables.GenJournalLine, postingGroup interface {
+	TestField(field string, value ...any) error
+}, account, pmtDiscAccount, roundingAccount types.Code) error {
+	addCurr, err := p.applicationAddCurr()
+	if err != nil {
+		return err
+	}
+	_, err = p.initGLEntry(account, genJnlLine.Amount_lcy.Sub(p.applicationLCY()), genJnlLine.Source_currency_amount.Sub(addCurr), true, true)
+	if err != nil {
+		return err
+	}
+	p.glEntry.Bal_account_type = gtables.GLEntryBal_account_type(genJnlLine.Bal_account_type)
+	p.glEntry.Bal_account_no = genJnlLine.Bal_account_no
+	err = p.insertGLEntry(true)
+	if err != nil {
+		return err
+	}
+	acy := p.acyCode() != ""
+	// Post payment discount
+	if !p.totalPmtDiscLCY.IsZero() || !p.totalPmtDiscAddCurr.IsZero() && acy {
+		err = postingGroup.TestField("payment_disc_acc")
+		if err != nil {
+			return err
+		}
+		_, err = p.initGLEntry(pmtDiscAccount, p.totalPmtDiscLCY, p.totalPmtDiscAddCurr, true, true)
+		if err != nil {
+			return err
+		}
+		err = p.insertGLEntry(true)
+		if err != nil {
+			return err
+		}
+	}
+	// Post to Curr. Appln. Rounding Account
+	if !p.totalApplnRoundingLCY.IsZero() || !p.totalApplnRoundingAddCurr.IsZero() && acy {
+		err = postingGroup.TestField("curr_appln_rounding_account")
+		if err != nil {
+			return err
+		}
+		_, err = p.initGLEntry(roundingAccount, p.totalApplnRoundingLCY, p.totalApplnRoundingAddCurr, true, true)
+		if err != nil {
+			return err
+		}
+		return p.insertGLEntry(true)
+	}
+	return nil
 }
 
 // initGainsLosses: each line starts with an empty gains-and-losses buffer
@@ -88,6 +151,7 @@ func (p *GenJnlPostLine) postGainsLosses() error {
 			buffer.realGains = types.Decimal{}
 			buffer.realLosses = types.Decimal{}
 		}
+		isAddCurr := currency.Code == p.acyCode()
 		postings := []struct {
 			amount  types.Decimal
 			field   string
@@ -102,15 +166,16 @@ func (p *GenJnlPostLine) postGainsLosses() error {
 			if posting.amount.IsZero() {
 				continue
 			}
+			p.checkNonAddCurrCodeOccurred(currency.Code)
 			err = currency.TestField(posting.field)
 			if err != nil {
 				return err
 			}
-			_, err = p.initGLEntry(posting.account, posting.amount, true)
+			_, err = p.initGLEntry(posting.account, posting.amount, types.Decimal{}, isAddCurr, true)
 			if err != nil {
 				return err
 			}
-			err = p.insertGLEntry()
+			err = p.insertGLEntry(true)
 			if err != nil {
 				return err
 			}

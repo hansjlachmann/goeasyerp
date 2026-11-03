@@ -42,6 +42,20 @@ page:
           drilldown_filter_field: gl_account_no
           drilldown_filter_value: no
 
+        - source: additional_currency_net_change
+          width: 150
+          visible: false
+          drilldown: 20
+          drilldown_filter_field: gl_account_no
+          drilldown_filter_value: no
+
+        - source: add_currency_balance_at_date
+          width: 150
+          visible: false
+          drilldown: 20
+          drilldown_filter_field: gl_account_no
+          drilldown_filter_value: no
+
         - source: totaling
           width: 160
           table_relation: G_L_Account

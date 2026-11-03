@@ -867,6 +867,16 @@ table:
       precision: 18
       scale: 2
 
+    # Amount Only: no additional-currency amount follows the amount (Adjust Exchange Rates' LCY
+    # adjustment of an account adjusted in the additional currency); Additional-Currency Amount
+    # Only: the line's amount is an additional-currency amount alone (Amount 0 on the G/L)
+    - name: additional_currency_posting
+      no: 95
+      type: Option
+      db_name: additional_currency_posting
+      options: ["None", "Amount Only", "Additional-Currency Amount Only"]
+      editable: false
+
     - name: source_curr_tax_amount
       no: 102
       type: types.Decimal

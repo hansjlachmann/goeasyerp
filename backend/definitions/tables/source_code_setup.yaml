@@ -82,6 +82,20 @@ table:
           - source: description
             width: 250
 
+    - name: adjust_add_reporting_currency
+      no: 41
+      type: types.Code
+      db_name: adjust_add_reporting_currency
+      length: 10
+      table_relation:
+        table: Source_Code
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
     - name: general_journal
       no: 10
       type: types.Code

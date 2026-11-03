@@ -139,6 +139,7 @@ common:
     indent_chart_of_accounts: "Rykk inn kontoplan"
     table: "Tabell"
     copy_data: "Kopier data"
+    change_add_reporting_currency: "Endre tilleggsrapporteringsvaluta"
     reports: "Rapporter"
     trial_balance_4: "Saldobalanse (4)"
     trial_balance: "Saldobalanse"

@@ -40,7 +40,10 @@ type Calculator struct {
 	Selection       Selection
 	PeriodSelection PeriodSelection
 	PrintInIntegers bool // amounts rounded down to whole numbers
-	rowNo           [maxLevels]types.Code
+	// UseAmtsInAddCurr: the amounts in the additional reporting currency (the entries'
+	// additional-currency amounts)
+	UseAmtsInAddCurr bool
+	rowNo            [maxLevels]types.Code
 }
 
 // LineTotal (CalcLineTotal): the amount of a statement line — an account total's net change in
@@ -73,8 +76,8 @@ func (c *Calculator) calcLineTotal(line *gtables.TaxStatementLine, total *types.
 						return false, err
 					}
 				}
-				glAcc.CalcFields("net_change")
-				amount = amount.Add(glAcc.Net_change)
+				glAcc.CalcFields("net_change", "additional_currency_net_change")
+				amount = c.conditionalAdd(amount, glAcc.Net_change, glAcc.Additional_currency_net_change)
 			}
 		}
 		c.addTotal(line, amount, total)
@@ -148,28 +151,37 @@ func (c *Calculator) taxEntryAmount(line *gtables.TaxStatementLine) (types.Decim
 	case SelectionClosed:
 		taxEntry.SetRange("closed", true)
 	}
-	field := map[gtables.TaxStatementLineAmount_type]string{
-		gtables.TaxStatementLine_Amount_type.Amount:           "amount",
-		gtables.TaxStatementLine_Amount_type.Base:             "base",
-		gtables.TaxStatementLine_Amount_type.UnrealizedAmount: "unrealized_amount",
-		gtables.TaxStatementLine_Amount_type.UnrealizedBase:   "unrealized_base",
+	fields := map[gtables.TaxStatementLineAmount_type][]string{
+		gtables.TaxStatementLine_Amount_type.Amount:           {"amount", "additional_currency_amount"},
+		gtables.TaxStatementLine_Amount_type.Base:             {"base", "additional_currency_base"},
+		gtables.TaxStatementLine_Amount_type.UnrealizedAmount: {"unrealized_amount", "add_currency_unrealized_amt"},
+		gtables.TaxStatementLine_Amount_type.UnrealizedBase:   {"unrealized_base", "add_currency_unrealized_base"},
 	}[line.Amount_type]
-	if field == "" {
+	if fields == nil {
 		return types.Decimal{}, nil
 	}
-	err := taxEntry.CalcSums(field)
+	err := taxEntry.CalcSums(fields...)
 	if err != nil {
 		return types.Decimal{}, err
 	}
 	switch line.Amount_type {
 	case gtables.TaxStatementLine_Amount_type.Base:
-		return taxEntry.Base, nil
+		return c.conditionalAdd(types.Decimal{}, taxEntry.Base, taxEntry.Additional_currency_base), nil
 	case gtables.TaxStatementLine_Amount_type.UnrealizedAmount:
-		return taxEntry.Unrealized_amount, nil
+		return c.conditionalAdd(types.Decimal{}, taxEntry.Unrealized_amount, taxEntry.Add_currency_unrealized_amt), nil
 	case gtables.TaxStatementLine_Amount_type.UnrealizedBase:
-		return taxEntry.Unrealized_base, nil
+		return c.conditionalAdd(types.Decimal{}, taxEntry.Unrealized_base, taxEntry.Add_currency_unrealized_base), nil
 	}
-	return taxEntry.Amount, nil
+	return c.conditionalAdd(types.Decimal{}, taxEntry.Amount, taxEntry.Additional_currency_amount), nil
+}
+
+// conditionalAdd (ConditionalAdd): the LCY amount or, with UseAmtsInAddCurr, the
+// additional-currency amount added
+func (c *Calculator) conditionalAdd(amount, amountToAdd, addCurrAmountToAdd types.Decimal) types.Decimal {
+	if c.UseAmtsInAddCurr {
+		return amount.Add(addCurrAmountToAdd)
+	}
+	return amount.Add(amountToAdd)
 }
 
 // loopError: the rows of a row total that goes in a circle or nests too deep (FIELDERROR on Row

@@ -29,6 +29,9 @@ page:
           - source: consolidation
             editable: true
 
+          - source: adjust_add_reporting_currency
+            editable: true
+
           - source: exchange_rate_adjmt
             editable: true
 

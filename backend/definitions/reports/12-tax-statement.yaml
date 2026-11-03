@@ -38,10 +38,19 @@ report:
           elements:
             - {value: period_text, x: 0, y: 0, width: 183}
         - type: header
+          height: 5
+          elements:
+            - {value: amounts_in, x: 0, y: 0, width: 183}
+        - type: header
           print_if: whole_numbers
           height: 5
           elements:
             - {text: WHOLE_NUMBERS, x: 0, y: 0, width: 183}
+        - type: header
+          print_if: whole_add_curr
+          height: 5
+          elements:
+            - {value: whole_add_curr_text, x: 0, y: 0, width: 183}
         - type: header
           print_if: all_entries
           height: 5

@@ -5499,6 +5499,7 @@ func (t *GeneralLedgerSetup) GetFields() []tables.FieldInfo {
 			Editable:   true,
 			PrimaryKey: false,
 			FlowField:  false,
+			ReadOnly:   true,
 		},
 		{
 			No:            69,

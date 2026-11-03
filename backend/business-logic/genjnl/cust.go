@@ -125,48 +125,8 @@ func (p *GenJnlPostLine) postCust(genJnlLine *gtables.GenJournalLine) error {
 		return err
 	}
 
-	// Post to Receivables Account
-	_, err = p.initGLEntry(custPostingGr.Receivables_account, genJnlLine.Amount_lcy.Sub(p.applicationLCY()), true)
-	if err != nil {
-		return err
-	}
-	p.glEntry.Bal_account_type = gtables.GLEntryBal_account_type(genJnlLine.Bal_account_type)
-	p.glEntry.Bal_account_no = genJnlLine.Bal_account_no
-	err = p.insertGLEntry()
-	if err != nil {
-		return err
-	}
-	// Post payment discount
-	if !p.totalPmtDiscLCY.IsZero() {
-		err = custPostingGr.TestField("payment_disc_acc")
-		if err != nil {
-			return err
-		}
-		_, err = p.initGLEntry(custPostingGr.Payment_disc_acc, p.totalPmtDiscLCY, true)
-		if err != nil {
-			return err
-		}
-		err = p.insertGLEntry()
-		if err != nil {
-			return err
-		}
-	}
-	// Post to Curr. Appln. Rounding Account
-	if !p.totalApplnRoundingLCY.IsZero() {
-		err = custPostingGr.TestField("curr_appln_rounding_account")
-		if err != nil {
-			return err
-		}
-		_, err = p.initGLEntry(custPostingGr.Curr_appln_rounding_account, p.totalApplnRoundingLCY, true)
-		if err != nil {
-			return err
-		}
-		err = p.insertGLEntry()
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	// Post to Receivables Account, payment discount, application rounding
+	return p.postApplicationGLEntries(genJnlLine, custPostingGr, custPostingGr.Receivables_account, custPostingGr.Payment_disc_acc, custPostingGr.Curr_appln_rounding_account)
 }
 
 // applyCustLedgEntry applies a new customer ledger entry (a payment) to the customer's open
@@ -264,10 +224,22 @@ func (p *GenJnlPostLine) applyCustLedgEntry(newCustLedgEntry *gtables.CustomerLe
 			newCustLedgEntry.Amount_lcy = newCustLedgEntry.Amount_lcy.Add(pmtDiscLCY).Sub(deltaUnrealAmount)
 			oldCustLedgEntry.Pmt_disc_given_lcy = pmtDiscLCY.Sub(deltaUnrealAmount).Neg()
 			p.totalPmtDiscLCY = p.totalPmtDiscLCY.Sub(pmtDiscLCY.Sub(deltaUnrealAmount))
+			pmtDiscAddCurr, err := p.pmtDiscAddCurr(applnCurrencyCode, pmtDisc, pmtDiscLCY)
+			if err != nil {
+				return err
+			}
+			deltaUnrealAmountAddCurr, err := p.calcLCYToAddCurr(deltaUnrealAmount)
+			if err != nil {
+				return err
+			}
+			p.totalPmtDiscAddCurr = p.totalPmtDiscAddCurr.Sub(pmtDiscAddCurr.Sub(deltaUnrealAmountAddCurr))
 		}
 
 		// Management of currency rounding
-		p.custCurrencyApplnRounding(newCustLedgEntry, oldCustLedgEntry, oldCustLedgEntry2, applnCurrencyCode, applnRoundingPrecision)
+		err = p.custCurrencyApplnRounding(newCustLedgEntry, oldCustLedgEntry, oldCustLedgEntry2, applnCurrencyCode, applnRoundingPrecision)
+		if err != nil {
+			return err
+		}
 
 		// Find amount for application
 		var appliedAmount types.Decimal
@@ -409,15 +381,15 @@ func custLedgApplAmtLCY(appliedAmount types.Decimal, custLedgEntry *gtables.Cust
 
 // custCurrencyApplnRounding: a payment in another currency that leaves less than the
 // application rounding precision takes the difference (Curr. Appln. Rounding Account)
-func (p *GenJnlPostLine) custCurrencyApplnRounding(newCustLedgEntry, oldCustLedgEntry, oldCustLedgEntry2 *gtables.CustomerLedgerEntry, applnCurrencyCode types.Code, applnRoundingPrecision types.Decimal) {
+func (p *GenJnlPostLine) custCurrencyApplnRounding(newCustLedgEntry, oldCustLedgEntry, oldCustLedgEntry2 *gtables.CustomerLedgerEntry, applnCurrencyCode types.Code, applnRoundingPrecision types.Decimal) error {
 	if newCustLedgEntry.Document_type != gtables.CustomerLedgerEntry_Document_type.Payment ||
 		applnCurrencyCode == oldCustLedgEntry.Currency_code {
-		return
+		return nil
 	}
 	applnRounding := newCustLedgEntry.Remaining_amount.Add(oldCustLedgEntry2.Remaining_amount).Neg()
 	applnRoundingLCY := custLedgApplAmtLCY(applnRounding, newCustLedgEntry)
 	if applnRounding.IsZero() || applnRounding.Abs().Decimal.GreaterThan(applnRoundingPrecision.Decimal) {
-		return
+		return nil
 	}
 	postUnrealAmount := newCustLedgEntry.Remaining_amt_lcy.Add(custLedgApplAmtLCY(newCustLedgEntry.Remaining_amount.Neg(), newCustLedgEntry))
 	newCustLedgEntry.Amount = newCustLedgEntry.Amount.Add(applnRounding)
@@ -432,6 +404,12 @@ func (p *GenJnlPostLine) custCurrencyApplnRounding(newCustLedgEntry, oldCustLedg
 	oldCustLedgEntry.Rounding_amount = applnRounding
 	oldCustLedgEntry.Rounding_amount_lcy = applnRoundingLCY
 	p.totalApplnRoundingLCY = p.totalApplnRoundingLCY.Sub(applnRoundingLCY.Sub(deltaUnrealAmount))
+	deltaUnrealAmountAddCurr, err := p.calcLCYToAddCurr(deltaUnrealAmount)
+	if err != nil {
+		return err
+	}
+	p.totalApplnRoundingAddCurr = p.totalApplnRoundingAddCurr.Sub(applnRounding.Sub(deltaUnrealAmountAddCurr))
+	return nil
 }
 
 // custUpdateDebitCredit: Debit/Credit Amount (LCY) from the amounts (a correction the other way

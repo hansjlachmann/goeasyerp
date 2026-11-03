@@ -159,11 +159,14 @@ table:
       length: 5
       default: "2:5"
 
+    # changed by report 86 Adjust Add. Reporting Currency (which recalculates the posted
+    # entries in the new currency)
     - name: additional_reporting_currency
       no: 68
       type: types.Code
       db_name: additional_reporting_currency
       length: 10
+      editable: false
       table_relation:
         table: Currency
         field: code

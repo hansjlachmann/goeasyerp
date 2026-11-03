@@ -3157,6 +3157,7 @@ tables:
   gen_journal_line:
     caption: "Finanskladdelinje"
     fields:
+      additional_currency_posting: "Bogføring i ekstra valuta"
       business_unit_code: "Koncernenhedskode"
       fa_posting_date: "Anlægsbogføringsdato"
       fa_posting_type: "Anlægsbogføringstype"
@@ -3260,6 +3261,10 @@ tables:
       recurring_frequency: "Gentagelsesinterval"
       allocated_amt_lcy: "Fordelt beløb (RV)"
     options:
+      additional_currency_posting:
+        none: "Ingen"
+        amount_only: "Kun beløb"
+        additional_currency_amount_only: "Kun beløb i ekstra valuta"
       recurring_method:
         f_fixed: "F Fast"
         v_variable: "V Variabel"
@@ -3347,6 +3352,7 @@ tables:
   source_code_setup:
     caption: "Kildekodeopsætning"
     fields:
+      adjust_add_reporting_currency: "Reguler ekstra rapporteringsvaluta"
       consolidation: "Konsolidering"
       compress_g_l: "Komprimer finans"
       compress_tax_entries: "Komprimer momsposter"
@@ -3399,6 +3405,12 @@ tables:
   tax_entry:
     caption: "Momspost"
     fields:
+      add_curr_rem_unreal_base: "Rest. urealiseret grundlag i ekstra valuta"
+      add_curr_rem_unreal_amount: "Rest. urealiseret beløb i ekstra valuta"
+      add_currency_unrealized_base: "Urealiseret grundlag i ekstra valuta"
+      add_currency_unrealized_amt: "Urealiseret beløb i ekstra valuta"
+      additional_currency_base: "Grundlag i ekstra valuta"
+      additional_currency_amount: "Beløb i ekstra valuta"
       entry_no: "Løbenr."
       gen_bus_posting_group: "Virksomhedsbogføringsgruppe"
       gen_prod_posting_group: "Produktbogføringsgruppe"

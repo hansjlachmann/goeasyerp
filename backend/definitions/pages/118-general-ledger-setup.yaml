@@ -50,3 +50,11 @@ page:
       shortcut: Ctrl+E
       promoted: true
       enabled: true
+
+    # the Additional Reporting Currency is changed by report 86 (it recalculates the posted
+    # entries in the new currency)
+    - name: Change Add. Reporting Currency
+      caption: Change Add. Reporting Currency
+      image: Calculate
+      promoted: true
+      run_object: report:86

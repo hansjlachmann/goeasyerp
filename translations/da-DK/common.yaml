@@ -139,6 +139,7 @@ common:
     indent_chart_of_accounts: "Indryk kontoplan"
     table: "Tabel"
     copy_data: "Kopiér data"
+    change_add_reporting_currency: "Skift ekstra rapporteringsvaluta"
     reports: "Rapporter"
     trial_balance_4: "Råbalance (4)"
     trial_balance: "Råbalance"

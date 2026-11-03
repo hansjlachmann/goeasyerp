@@ -1093,14 +1093,19 @@ func setGenJnlLineCurrencyCode(rec *gtables.GenJournalLine, accType2 int, accNo2
 }
 
 // getGenJnlLineCurrency returns the line's currency (its rounding precisions), the local
-// currency's when it has none — GetCurrency
+// currency's when it has none — GetCurrency; a line of an additional-currency amount only rounds
+// as the additional reporting currency
 func getGenJnlLineCurrency(rec *gtables.GenJournalLine) (*gtables.Currency, error) {
 	currency := gtables.NewCurrency(rec)
-	if rec.Currency_code == "" {
+	currencyCode := rec.Currency_code
+	if rec.Additional_currency_posting == gtables.GenJournalLine_Additional_currency_posting.AdditionalCurrencyAmountOnly {
+		currencyCode = gtables.GetGeneralLedgerSetup(rec).Additional_reporting_currency
+	}
+	if currencyCode == "" {
 		InitRoundingPrecision(currency)
 		return currency, nil
 	}
-	err := currency.GetOrError(rec.Currency_code)
+	err := currency.GetOrError(currencyCode)
 	if err != nil {
 		return nil, err
 	}

@@ -979,6 +979,25 @@ reports:
       ENTER_DOCUMENT_NO: "Angi et bilagsnummer."
       WINDOW: "Oppretter finanskladdelinjer...\n\nKontonr.             #1##########\nBeløp                #2##########\nKonsernenhetskode    #3##########\nAvdelingskode        #4##########\nProsjektkode         #5##########"
       DONE: "Avslutningspostene er i finanskladden %1 %2. Bokfør dem der."
+      CONFIRM_POST_DIRECTLY: "Med en ekstra rapporteringsvaluta bokfører denne kjørselen avslutningspostene direkte i finans. Avslutningspostene overføres ikke til en finanskladd før de bokføres.\n\nVil du fortsette?"
+      POSTED: "Avslutningspostene ble bokført i finans."
+  "86":
+    caption: "Juster tilleggsrapporteringsvaluta"
+    options:
+      additional_reporting_currency: "Tilleggsrapporteringsvaluta"
+      document_no: "Bilagsnr."
+      retained_earnings_acc: "Konto for opptjent egenkapital"
+    texts:
+      OPTIONS: "Alternativer"
+      UNCHANGED: "Tilleggsrapporteringsvalutaen er allerede denne. Velg en annen."
+      CONFIRM_CHANGE: "Hvis du endrer tilleggsrapporteringsvalutaen, bokføres fremtidige finansposter i den nye rapporteringsvalutaen (og i lokal valuta), og de bokførte finanspostene beregnes på nytt i den nye valutaen.\n\nVil du endre tilleggsrapporteringsvalutaen?"
+      CONFIRM_DELETE: "Hvis du sletter tilleggsrapporteringsvalutaen, bokføres fremtidige finansposter bare i lokal valuta. Det har ingen virkning på finansposter som allerede er bokført.\n\nVil du slette tilleggsrapporteringsvalutaen?"
+      DELETED: "Tilleggsrapporteringsvalutaen ble slettet."
+      ENTER_DOCUMENT_NO: "Angi et bilagsnummer."
+      ENTER_RETAINED_EARNINGS: "Angi kontonummeret for opptjent egenkapital."
+      WINDOW: "Behandler finansposter...\n\nBokføringsdato #1##########"
+      RESIDUAL: "Rest som følge av avrunding av %1"
+      DONE: "De bokførte postene er i tilleggsrapporteringsvalutaen %1."
   "20":
     caption: "Beregn og bokfør avgiftsoppgjør"
     options:
@@ -989,6 +1008,7 @@ reports:
       settlement_account: "Oppgjørskonto"
       show_tax_entries: "Vis avgiftsposter"
       post: "Bokfør"
+      show_amounts_in_add_currency: "Vis beløp i ekstra rapporteringsvaluta"
     texts:
       OPTIONS: "Alternativer"
       TITLE: "Beregn og bokfør avgiftsoppgjør"
@@ -1026,6 +1046,7 @@ reports:
       include_tax_entries: "Ta med avgiftsposter"
       period: "Ta med avgiftsposter fra"
       round_to_whole_numbers: "Avrund til hele tall"
+      show_amounts_in_add_currency: "Vis beløp i ekstra rapporteringsvaluta"
     texts:
       TITLE: "Avgiftsoppgave"
       PAGE: "Side"
@@ -1039,6 +1060,8 @@ reports:
       TEMPLATE: "Avgiftsoppgavemal"
       STATEMENT_NAME: "Avgiftsoppgavenavn"
       WHOLE_NUMBERS: "Beløpene er i hele tall."
+      AMOUNTS_IN: "Alle beløp er i %1"
+      WHOLE_ADD_CURR: "Beløpene er i hele %1."
       ALL_ENTRIES: "Rapporten omfatter alle avgiftsposter."
       CLOSED_ENTRIES: "Rapporten omfatter bare lukkede avgiftsposter."
       ROW_NO: "Radnr."
@@ -1781,6 +1804,8 @@ reports:
       posting_description: "Bokføringsbeskrivelse"
       posting_date: "Bokføringsdato"
       document_no: "Bilagsnr."
+      adjust_cust_vend_bank: "Juster kunder, leverandører og bankkontoer"
+      adjust_gl_accounts: "Juster finanskonti for ekstra rapporteringsvaluta"
     texts:
       ADJUSTMENT_PERIOD: "Reguleringsperiode"
       POSTING_DESCRIPTION: "Valutaregulering av %1 %2"
@@ -1789,6 +1814,9 @@ reports:
       NO_CURRENCIES: "Ingen valutaer ble funnet."
       WINDOW: "Regulerer valutakurser...\nValuta #1######\nKunde #2##########\nLeverandør #3##########\nRegulering #4#############"
       DONE: "Valutakursene ble regulert med totalt %1."
+      CONFIRM_GL_ONLY: "Vil du justere finansposter for valutasvingninger uten å justere kunde-, leverandør- og bankposter? Dette kan gi feil valutajustering av gjeld, fordringer og bankkontoer.\n\nVil du fortsette?"
+      CANCELED: "Valutakursjusteringen ble avbrutt."
+      EXCH_RATE_ADJMT_ACCOUNT: "%1 for %2 %3 må være %4. Når denne %2 brukes i %5, angis valutajusteringen i feltet %6 i %7. %2 %3 brukes i feltet %8 i %5."
   "5692":
     caption: "Beregn avskrivning"
     options:

@@ -20,6 +20,8 @@ import (
 type balanceCheck struct {
 	amount      decimal.Decimal
 	amount2     decimal.Decimal
+	addCurr     decimal.Decimal // the additional-currency amounts, weighted the same way
+	addCurr2    decimal.Decimal
 	fromEntryNo int
 	toEntryNo   int
 }
@@ -43,14 +45,19 @@ func (p *GenJnlPostLine) balance() *balanceCheck {
 
 // add counts a G/L entry of the posting in the balance sums: its amount weighted by its posting
 // date in two ways (the entries balance when both sums are 0 — per posting date, not only in
-// total; a closing date counts as a date of its own)
-func (b *balanceCheck) add(glEntry *gtables.GLEntry) {
+// total; a closing date counts as a date of its own); with an additional reporting currency
+// (addCurr) its additional-currency amount as well
+func (b *balanceCheck) add(glEntry *gtables.GLEntry, addCurr bool) {
 	days := decimal.NewFromInt(int64(glEntry.Posting_date.Normal().Time.Unix() / 86400))
 	if glEntry.Posting_date.IsClosing() {
 		days = days.Add(decimal.NewFromInt(50))
 	}
 	b.amount = b.amount.Add(glEntry.Amount.Decimal.Mul(days.Mod(decimal.NewFromInt(99)).Add(decimal.NewFromInt(1))))
 	b.amount2 = b.amount2.Add(glEntry.Amount.Decimal.Mul(days.Mod(decimal.NewFromInt(98)).Add(decimal.NewFromInt(1))))
+	if addCurr {
+		b.addCurr = b.addCurr.Add(glEntry.Additional_currency_amount.Decimal.Mul(days.Mod(decimal.NewFromInt(99)).Add(decimal.NewFromInt(1))))
+		b.addCurr2 = b.addCurr2.Add(glEntry.Additional_currency_amount.Decimal.Mul(days.Mod(decimal.NewFromInt(98)).Add(decimal.NewFromInt(1))))
+	}
 	if b.fromEntryNo == 0 || glEntry.Entry_no < b.fromEntryNo {
 		b.fromEntryNo = glEntry.Entry_no
 	}
@@ -61,14 +68,16 @@ func (b *balanceCheck) add(glEntry *gtables.GLEntry) {
 
 // balanced: the entries posted so far balance on every posting date
 func (b *balanceCheck) balanced() bool {
-	return b.amount.IsZero() && b.amount2.IsZero()
+	return b.amount.IsZero() && b.amount2.IsZero() && b.addCurr.IsZero() && b.addCurr2.IsZero()
 }
 
-// docTotal: the sum of the transaction's G/L entries of a document on a posting date
+// docTotal: the sum of the transaction's G/L entries of a document on a posting date (and of
+// their additional-currency amounts)
 type docTotal struct {
 	postingDate types.Date
 	documentNo  types.Code
 	amount      types.Decimal
+	addCurr     types.Decimal
 }
 
 // explain is the error of a transaction whose G/L entries do not balance (run by the commit
@@ -129,6 +138,7 @@ func (b *balanceCheck) explain(src ftables.Source) error {
 			totals = append(totals, total)
 		}
 		total.amount = total.amount.Add(glEntry.Amount)
+		total.addCurr = total.addCurr.Add(glEntry.Additional_currency_amount)
 	}
 
 	totalsSection := apperrors.DetailsSection{
@@ -139,23 +149,31 @@ func (b *balanceCheck) explain(src ftables.Source) error {
 			{Caption: ts.Message("BALANCE_CHECK_DIFFERENCE", language), Numeric: true},
 		},
 	}
-	var first *docTotal
+	var first, firstAddCurr *docTotal
 	for i, total := range totals {
 		totalsSection.Rows = append(totalsSection.Rows, []string{
 			format.Date(total.postingDate, language),
 			total.documentNo.String(),
 			format.Decimal(total.amount, "2:2", language),
 		})
-		if !total.amount.IsZero() {
+		if !total.amount.IsZero() || !total.addCurr.IsZero() {
 			totalsSection.Marked = append(totalsSection.Marked, i)
-			if first == nil {
-				first = total
-			}
+		}
+		if !total.amount.IsZero() && first == nil {
+			first = total
+		}
+		if !total.addCurr.IsZero() && firstAddCurr == nil {
+			firstAddCurr = total
 		}
 	}
 	details := &apperrors.Details{
 		Title:    ts.Message("BALANCE_CHECK_TITLE", language),
 		Sections: []apperrors.DetailsSection{totalsSection, entries},
+	}
+	if first == nil && firstAddCurr != nil {
+		// the LCY amounts balance, the additional-currency amounts do not
+		return apperrors.GLNotBalanced(firstAddCurr.documentNo.String(), format.Date(firstAddCurr.postingDate, language),
+			format.Decimal(firstAddCurr.addCurr, "2:2", language)+" ("+caption("additional_currency_amount")+")").WithDetails(details)
 	}
 	if first == nil {
 		// every document balances on its date; the imbalance is elsewhere (not in the entries

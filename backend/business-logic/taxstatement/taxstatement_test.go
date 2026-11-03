@@ -124,4 +124,29 @@ func TestTaxStatement(t *testing.T) {
 	if !strings.Contains(all, "Tax payable") || !strings.Contains(all, format.Decimal(payable.Neg(), "2:2", "en-US")) {
 		t.Errorf("report 12 does not print Tax payable %s: %.400s", format.Decimal(payable.Neg(), "2:2", "en-US"), all)
 	}
+
+	// in euro as the additional reporting currency: the entries' euro amounts
+	_, err = reports.Execute(reports.AdjustAddReportingCurrencyID, src.GetDB(), src.GetCompany(), src.GetDBType(), reports.RunOptions{
+		Options: map[string]string{"additional_reporting_currency": "EUR", "document_no": "ACY", "retained_earnings_acc": "2120"}})
+	must(t, err)
+	e := gtables.NewTaxEntry(src)
+	e.SetRange("type", 2)
+	e.SetRange("tax_prod_posting_group", types.Code("STANDARD"))
+	must(t, e.CalcSums("additional_currency_amount"))
+	calc.UseAmtsInAddCurr = true
+	got, err = calc.LineTotal(line(t, src, 30000))
+	must(t, err)
+	if e.Additional_currency_amount.IsZero() || !got.Equal(e.Additional_currency_amount) {
+		t.Errorf("row 11 in euro: %s, want %s", got, e.Additional_currency_amount)
+	}
+	result, err = reports.Execute(reports.TaxStatementID, src.GetDB(), src.GetCompany(), src.GetDBType(), reports.RunOptions{
+		Output: reports.OutputPDF, Options: map[string]string{"include_tax_entries": "3", "show_amounts_in_add_currency": "true"}})
+	must(t, err)
+	texts = nil
+	for _, x := range result.Texts {
+		texts = append(texts, x.Text)
+	}
+	if all := strings.Join(texts, "|"); !strings.Contains(all, "All amounts are in EUR") {
+		t.Errorf("report 12 in euro: %.400s", all)
+	}
 }

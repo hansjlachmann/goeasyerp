@@ -1,6 +1,7 @@
 package reports
 
 import (
+	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/noseries"
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/system"
@@ -14,10 +15,9 @@ import (
 // asked — go to journal lines that clear them on the year's closing date (C31-12), with the
 // total on the retained earnings account. The lines are written into a general journal batch;
 // posting them closes the income statement, and reports up to the year's last day (..31-12)
-// still show the year's result.
-//
-// Not migrated yet: the additional reporting currency (with one, the classic posts the lines
-// at once).
+// still show the year's result. With an additional reporting currency the lines clear the
+// additional-currency balances too and are posted at once (after a question), not written into
+// the batch; a balance only in the additional currency gets a line of that amount only.
 const CloseIncomeStatementID = 94
 
 func init() {
@@ -31,8 +31,10 @@ type closeIncomeStatement struct {
 	sourceCode                               types.Code
 	retainedEarningsAcc                      types.Code
 	perBusUnit, perDept, perProj             bool
-	totalAmount                              types.Decimal
+	totalAmount, totalAmountAddCurr          types.Decimal
 	window                                   *system.Window
+	glSetup                                  *gtables.GeneralLedgerSetup
+	genJnlPostLine                           *genjnl.GenJnlPostLine
 }
 
 func (r *closeIncomeStatement) Definition() *Definition {
@@ -53,6 +55,10 @@ func (r *closeIncomeStatement) Definition() *Definition {
 		OnPreReport:  r.onPreReport,
 		OnPostReport: func(run *Run) error {
 			r.window.Close()
+			if r.glSetup.Additional_reporting_currency != "" {
+				run.Message(run.Text("POSTED"))
+				return nil
+			}
 			run.Message(run.Text("DONE", r.genJnlBatch.Journal_template_name, r.genJnlBatch.Name))
 			return nil
 		},
@@ -141,6 +147,13 @@ func (r *closeIncomeStatement) onPreReport(run *Run) error {
 		return err
 	}
 	r.sourceCode = gtables.GetSourceCodeSetup(run).Close_income_statement
+	r.glSetup = gtables.GetGeneralLedgerSetup(run)
+	if r.glSetup.Additional_reporting_currency != "" {
+		if system.GuiAllowed() && !system.Confirm(run.Text("CONFIRM_POST_DIRECTLY")) {
+			return Quit()
+		}
+		r.genJnlPostLine = genjnl.NewGenJnlPostLine(run)
+	}
 	r.perBusUnit = run.OptionBool("close_by_business_unit")
 	r.perDept = run.OptionBool("close_by_department")
 	r.perProj = run.OptionBool("close_by_project")
@@ -164,8 +177,8 @@ func (r *closeIncomeStatement) onPreReport(run *Run) error {
 
 // closingGroup is an account's entries closed by one line
 type closingGroup struct {
-	busUnit, dept, proj types.Code
-	amount              types.Decimal
+	busUnit, dept, proj   types.Code
+	amount, addCurrAmount types.Decimal
 }
 
 // glAccOnAfterGetRecord: the account's entries of the fiscal year (up to its closing date) per
@@ -199,16 +212,20 @@ func (r *closeIncomeStatement) glAccOnAfterGetRecord(glAcc *gtables.GLAccount, r
 			groups = append(groups, group)
 		}
 		group.amount = group.amount.Add(glEntry.Amount)
+		if r.glSetup.Additional_reporting_currency != "" {
+			group.addCurrAmount = group.addCurrAmount.Add(glEntry.Additional_currency_amount)
+		}
 	}
 	for _, group := range groups {
 		r.totalAmount = r.totalAmount.Add(group.amount)
-		if group.amount.IsZero() {
+		r.totalAmountAddCurr = r.totalAmountAddCurr.Add(group.addCurrAmount)
+		if group.amount.IsZero() && group.addCurrAmount.IsZero() {
 			continue
 		}
 		r.genJnlLine.Business_unit_code = group.busUnit
 		r.genJnlLine.Department_code = group.dept
 		r.genJnlLine.Project_code = group.proj
-		err := r.insertLine(run, glAcc.No, group.amount.Neg())
+		err := r.insertLine(run, glAcc.No, group.amount.Neg(), group.addCurrAmount.Neg())
 		if err != nil {
 			return err
 		}
@@ -218,18 +235,20 @@ func (r *closeIncomeStatement) glAccOnAfterGetRecord(glAcc *gtables.GLAccount, r
 
 // glAccOnPostDataItem: the total goes to the retained earnings account
 func (r *closeIncomeStatement) glAccOnPostDataItem(glAcc *gtables.GLAccount, run *Run) error {
-	if r.totalAmount.IsZero() {
+	if r.totalAmount.IsZero() && r.totalAmountAddCurr.IsZero() {
 		return nil
 	}
 	r.genJnlLine.Business_unit_code = ""
 	r.genJnlLine.Department_code = ""
 	r.genJnlLine.Project_code = ""
 	r.genJnlLine.Currency_code = ""
-	return r.insertLine(run, r.retainedEarningsAcc, r.totalAmount)
+	return r.insertLine(run, r.retainedEarningsAcc, r.totalAmount, r.totalAmountAddCurr)
 }
 
-// insertLine (HandleGenJnlLine) writes the next line of the batch
-func (r *closeIncomeStatement) insertLine(run *Run, accountNo types.Code, amount types.Decimal) error {
+// insertLine (HandleGenJnlLine) writes the next line of the batch; with an additional reporting
+// currency it posts the line with its additional-currency amount (only that amount when the LCY
+// amount is 0)
+func (r *closeIncomeStatement) insertLine(run *Run, accountNo types.Code, amount, addCurrAmount types.Decimal) error {
 	genJnlLine := r.genJnlLine
 	genJnlLine.Line_no += 10000
 	genJnlLine.Account_type = gtables.GenJournalLine_Account_type.GLAccount
@@ -240,10 +259,24 @@ func (r *closeIncomeStatement) insertLine(run *Run, accountNo types.Code, amount
 	if err != nil {
 		return err
 	}
+	genJnlLine.Source_currency_amount = addCurrAmount
 	r.window.Update(1, genJnlLine.Account_no)
 	r.window.Update(2, genJnlLine.Amount)
 	r.window.Update(3, genJnlLine.Business_unit_code)
 	r.window.Update(4, genJnlLine.Department_code)
 	r.window.Update(5, genJnlLine.Project_code)
+	genJnlLine.Additional_currency_posting = gtables.GenJournalLine_Additional_currency_posting.None
+	if r.glSetup.Additional_reporting_currency != "" {
+		genJnlLine.Source_currency_code = r.glSetup.Additional_reporting_currency
+		if genJnlLine.Amount.IsZero() && !genJnlLine.Source_currency_amount.IsZero() {
+			genJnlLine.Additional_currency_posting = gtables.GenJournalLine_Additional_currency_posting.AdditionalCurrencyAmountOnly
+			err = genJnlLine.Validate("amount", genJnlLine.Source_currency_amount)
+			if err != nil {
+				return err
+			}
+			genJnlLine.Source_currency_amount = types.Decimal{}
+		}
+		return r.genJnlPostLine.Run(genJnlLine)
+	}
 	return genJnlLine.InsertOrError(false)
 }

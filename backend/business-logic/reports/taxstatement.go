@@ -9,10 +9,9 @@ import (
 
 // Report 12 Tax Statement: the printed tax statements in the filters — each row to print with its
 // amount (taxstatement.Calculator: the Date Filter of the lines, the tax entries chosen by Include
-// Tax Entries and the period choice, Round to Whole Numbers), with Print With's sign. Run from
-// the Tax Statement page (317) it starts on that page's statement.
-//
-// Not migrated yet: Show Amounts in Add. Reporting Currency.
+// Tax Entries and the period choice, Round to Whole Numbers, Show Amounts in Add. Reporting
+// Currency), with Print With's sign. Run from the Tax Statement page (317) it starts on that
+// page's statement.
 const TaxStatementID = 12
 
 func init() {
@@ -30,6 +29,7 @@ func (r *taxStatementReport) Definition() *Definition {
 			{Name: "include_tax_entries", Type: "option", Default: "1", Options: []string{"OPEN", "CLOSED", "OPEN_AND_CLOSED"}},
 			{Name: "period", Type: "option", Default: "1", Options: []string{"BEFORE_AND_WITHIN_PERIOD", "WITHIN_PERIOD"}},
 			{Name: "round_to_whole_numbers", Type: "bool", Default: "false"},
+			{Name: "show_amounts_in_add_currency", Type: "bool", Default: "false"},
 		},
 		ContextTable: gtables.TaxStatementLineTableName,
 		OnInitReport: r.onInitReport,
@@ -80,10 +80,23 @@ func (r *taxStatementReport) onInitReport(run *Run) error {
 func (r *taxStatementReport) onPreReport(run *Run) error {
 	setReportHeadValues(run)
 	r.calc = &taxstatement.Calculator{Src: run,
-		Selection:       taxstatement.Selection(run.OptionInt("include_tax_entries") - 1),
-		PeriodSelection: taxstatement.PeriodSelection(run.OptionInt("period") - 1),
-		PrintInIntegers: run.OptionBool("round_to_whole_numbers")}
-	run.SetValue("whole_numbers", r.calc.PrintInIntegers)
+		Selection:        taxstatement.Selection(run.OptionInt("include_tax_entries") - 1),
+		PeriodSelection:  taxstatement.PeriodSelection(run.OptionInt("period") - 1),
+		PrintInIntegers:  run.OptionBool("round_to_whole_numbers"),
+		UseAmtsInAddCurr: run.OptionBool("show_amounts_in_add_currency")}
+	glSetup := gtables.GetGeneralLedgerSetup(run)
+	if r.calc.UseAmtsInAddCurr {
+		run.SetValue("amounts_in", run.Text("AMOUNTS_IN", glSetup.Additional_reporting_currency))
+		run.SetValue("whole_add_curr", r.calc.PrintInIntegers)
+	} else {
+		err := glSetup.TestField("lcy_code")
+		if err != nil {
+			return err
+		}
+		run.SetValue("amounts_in", run.Text("AMOUNTS_IN", glSetup.Lcy_code))
+		run.SetValue("whole_numbers", r.calc.PrintInIntegers)
+	}
+	run.SetValue("whole_add_curr_text", run.Text("WHOLE_ADD_CURR", glSetup.Additional_reporting_currency))
 	run.SetValue("all_entries", r.calc.Selection == taxstatement.SelectionOpenAndClosed)
 	run.SetValue("closed_entries", r.calc.Selection == taxstatement.SelectionClosed)
 	return nil
