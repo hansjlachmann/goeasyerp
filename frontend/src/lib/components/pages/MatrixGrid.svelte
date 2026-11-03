@@ -331,6 +331,7 @@
 
 <div class="matrix" data-own-keys>
 	<div class="grid-controls">
+		{#if !matrix.no_periods}
 		<div class="control-group" role="radiogroup" aria-label={t(PERIOD.VIEW_BY)}>
 			<span class="control-label">{t(PERIOD.VIEW_BY)}</span>
 			{#each viewByChoices as choice}
@@ -365,6 +366,7 @@
 			{/if}
 			<button type="button" class="choice" title={t(PERIOD.NEXT)} aria-label={t(PERIOD.NEXT)} onclick={() => move(1)}>›</button>
 		</div>
+		{/if}
 		{#if matrix.drilldown && ondrilldown}
 			<div class="control-group">
 				<button type="button" class="choice" disabled={selRow < 0 || selCol < 0} onclick={() => drilldown()}>{t(PERIOD.SHOW_ENTRIES)}</button>

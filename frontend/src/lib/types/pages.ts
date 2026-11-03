@@ -89,6 +89,7 @@ export interface Matrix {
 	drilldown_date_field?: string;
 	drilldown_record_filters?: Record<string, string>; // drilldown page field → card record field
 	calculated?: boolean; // columns and cells from the page's trigger, for one period
+	no_periods?: boolean; // a calculated matrix without periods (Items by Bin): no View by, no previous/next
 	row_filters?: Record<string, string>; // row field → card record field
 }
 

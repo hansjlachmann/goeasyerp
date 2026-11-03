@@ -1053,3 +1053,5 @@ pages:
     caption: "Placeringer"
   item_availability_by_bin:
     caption: "Varedisponering pr. placering"
+  items_by_bin:
+    caption: "Varer pr. placering"

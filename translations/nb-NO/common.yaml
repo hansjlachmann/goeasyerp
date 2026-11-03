@@ -273,6 +273,7 @@ common:
 
   # Menu items
   menu:
+    items_by_bin: "Varer per hylle"
     serial_number_sold_history: "Solgte serienumre"
     serial_number_status_aging: "Serienumre - status/alder"
     sales_reservation_avail: "Salgsreservasjoner - tilgjengelighet"

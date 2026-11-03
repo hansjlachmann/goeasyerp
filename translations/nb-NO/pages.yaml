@@ -1053,3 +1053,5 @@ pages:
     caption: "Hyller"
   item_availability_by_bin:
     caption: "Varetilgjengelighet per hylle"
+  items_by_bin:
+    caption: "Varer per hylle"

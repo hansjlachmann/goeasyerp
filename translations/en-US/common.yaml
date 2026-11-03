@@ -273,6 +273,7 @@ common:
 
   # Menu items
   menu:
+    items_by_bin: "Items by Bin"
     serial_number_sold_history: "Serial Number Sold History"
     serial_number_status_aging: "Serial Number Status/Aging"
     sales_reservation_avail: "Sales Reservation Avail."
