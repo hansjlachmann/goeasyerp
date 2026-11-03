@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.127](https://github.com/hansjlachmann/openerp/compare/v0.1.126...v0.1.127) (2026-11-03)
+
+
+### Bug Fixes
+
+* Post Inventory Cost to G/L texts keep their values ([#193](https://github.com/hansjlachmann/openerp/issues/193)) ([5049776](https://github.com/hansjlachmann/openerp/commit/5049776063ed1b8a8763221559160587aef76522))
+
 ## [0.1.126](https://github.com/hansjlachmann/openerp/compare/v0.1.125...v0.1.126) (2026-11-02)
 
 
