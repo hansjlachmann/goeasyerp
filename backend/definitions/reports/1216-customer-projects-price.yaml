@@ -8,7 +8,7 @@ report:
     margins: {top: 12, bottom: 12, left: 12, right: 12}
   font_size: 8
   data_items:
-    - name: Rows
+    - name: Project
       sections:
         - type: header
           print_on_every_page: true
@@ -39,14 +39,13 @@ report:
             - {text: INVOICED_PRICE, x: 209, y: 1, width: 30, bold: true, wrap: true, align: right}
             - {text: PERCENT_INVOICED, x: 240, y: 1, width: 20, bold: true, wrap: true, align: right}
             - {line: true, x: 0, y: 7.5}
-        - type: body
-          print_if: customer_head
+        - type: group_header
+          group: bill_to_customer_no
           height: 6
           elements:
             - {value: customer_text, x: 0, y: 1.5, width: 80, bold: true}
             - {value: customer_name, x: 84, y: 1.5, width: 100, bold: true}
         - type: body
-          print_if: line
           height: 4.2
           elements:
             - {value: project_no, x: 0, y: 0, width: 22}
@@ -58,23 +57,23 @@ report:
             - {value: percent, x: 188, y: 0, width: 20, align: right, decimal_places: "1:1"}
             - {value: amount_2, x: 209, y: 0, width: 30, align: right}
             - {value: percent_invoiced, x: 240, y: 0, width: 20, align: right, decimal_places: "1:1"}
-        - type: body
-          print_if: customer_total
+        - type: group_footer
+          group: bill_to_customer_no
           height: 7
           elements:
             - {value: total_text, x: 0, y: 1, width: 120, bold: true}
-            - {value: group_0, x: 126, y: 1, width: 30, align: right, bold: true}
-            - {value: group_1, x: 157, y: 1, width: 30, align: right, bold: true}
+            - {total_value: amount_0, x: 126, y: 1, width: 30, align: right, bold: true}
+            - {total_value: amount_1, x: 157, y: 1, width: 30, align: right, bold: true}
             - {value: group_percent, x: 188, y: 1, width: 20, align: right, bold: true, decimal_places: "1:1"}
-            - {value: group_2, x: 209, y: 1, width: 30, align: right, bold: true}
+            - {total_value: amount_2, x: 209, y: 1, width: 30, align: right, bold: true}
             - {value: group_percent_invoiced, x: 240, y: 1, width: 20, align: right, bold: true, decimal_places: "1:1"}
         - type: footer
           height: 8
           elements:
             - {line: true, x: 126, y: 0.5}
             - {text: REPORT_TOTAL, x: 0, y: 2, width: 100, bold: true}
-            - {value: total_0, x: 126, y: 2, width: 30, align: right, bold: true}
-            - {value: total_1, x: 157, y: 2, width: 30, align: right, bold: true}
+            - {total_value: amount_0, x: 126, y: 2, width: 30, align: right, bold: true}
+            - {total_value: amount_1, x: 157, y: 2, width: 30, align: right, bold: true}
             - {value: total_percent, x: 188, y: 2, width: 20, align: right, bold: true, decimal_places: "1:1"}
-            - {value: total_2, x: 209, y: 2, width: 30, align: right, bold: true}
+            - {total_value: amount_2, x: 209, y: 2, width: 30, align: right, bold: true}
             - {value: total_percent_invoiced, x: 240, y: 2, width: 20, align: right, bold: true, decimal_places: "1:1"}

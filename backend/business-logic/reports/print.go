@@ -1,6 +1,7 @@
 package reports
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -34,20 +35,46 @@ type printer struct {
 	frames     []*frame
 	// pageHeaders: the header sections the current page started with (not printed again)
 	pageHeaders map[*Section]bool
+	// footer: the totals of the group whose footer prints (Run.GroupTotal)
+	footer *sums
+}
+
+// sums are the totals of a data item or a group: field → its total, value → its total
+// (total_value)
+type sums struct {
+	fields map[string]types.Decimal
+	values map[string]types.Decimal
+}
+
+func newSums() *sums {
+	return &sums{fields: map[string]types.Decimal{}, values: map[string]types.Decimal{}}
+}
+
+// group is a group of a data item's GroupFields: the value of its field, its totals
+type group struct {
+	field string
+	key   string
+	open  bool // between its header and its footer (its headers repeat on a new page)
+	sums  *sums
 }
 
 // frame is a data item being printed
 type frame struct {
-	item    *LayoutDataItem
-	rec     interface{}
-	records int // records got (not skipped)
-	bodies  int // body sections printed: a page break carries it over (trans sections)
+	item     *LayoutDataItem
+	dataItem *DataItem
+	rec      interface{}
+	records  int // records got (not skipped)
+	bodies   int // body sections printed: a page break carries it over (trans sections)
 	// headersDone: the headers before the first record are printed (a later page repeats only
 	// those printed on every page)
 	headersDone bool
-	totals      map[string]types.Decimal // field → its total
-	// valueTotals: value → its total (total_value)
-	valueTotals map[string]types.Decimal
+	sums        *sums
+	// groups: the open groups of the data item's GroupFields, outermost first
+	groups []*group
+	// lastRec and lastValues: the last record printed and the values it was printed with
+	// (what its groups' footers print)
+	lastRec    interface{}
+	lastValues map[string]interface{}
 }
 
 func newPrinter(run *Run, layout *Layout) (*printer, error) {
@@ -60,12 +87,15 @@ func newPrinter(run *Run, layout *Layout) (*printer, error) {
 }
 
 // beginItem: a data item starts its loop (nil when its layout prints nothing)
-func (p *printer) beginItem(name string, rec interface{}) *frame {
-	item := p.layout.item(name)
+func (p *printer) beginItem(dataItem *DataItem, rec interface{}) *frame {
+	item := p.layout.item(dataItem.Name)
 	if item == nil {
 		return nil
 	}
-	f := &frame{item: item, rec: rec, totals: map[string]types.Decimal{}, valueTotals: map[string]types.Decimal{}}
+	f := &frame{item: item, dataItem: dataItem, rec: rec, sums: newSums()}
+	for _, field := range dataItem.GroupFields {
+		f.groups = append(f.groups, &group{field: field, sums: newSums()})
+	}
 	p.frames = append(p.frames, f)
 	return f
 }
@@ -83,12 +113,22 @@ func (p *printer) beforeRecord(f *frame) func() {
 }
 
 // record prints a record the trigger did not skip: the data item's headers before its first
-// record, then its body sections; the totals add its fields
+// record; where a group ends the footers of the groups before, where one starts its headers;
+// then its body sections; the totals (of the data item and its groups) add its fields
 func (p *printer) record(f *frame) error {
 	if f == nil {
 		return nil
 	}
 	f.records++
+	// the outermost group whose value changes (all of them at the first record)
+	changed := len(f.groups)
+	for i, g := range f.groups {
+		key := p.groupKey(f, g.field)
+		if f.records == 1 || key != g.key {
+			changed = i
+			break
+		}
+	}
 	if f.records == 1 {
 		for _, s := range f.item.sections(SectionHeader) {
 			err := p.output(f, s)
@@ -97,6 +137,30 @@ func (p *printer) record(f *frame) error {
 			}
 		}
 		f.headersDone = true
+	} else if changed < len(f.groups) {
+		// the groups that end print their footers on the page they end on (a new page asked
+		// for the record comes after them)
+		pending := p.newPage
+		p.newPage = false
+		err := p.groupFooters(f, changed)
+		if err != nil {
+			return err
+		}
+		p.newPage = pending || (changed == 0 && f.item.NewPagePerGroup)
+	}
+	for _, g := range f.groups[changed:] {
+		g.open = false
+	}
+	for _, g := range f.groups[changed:] {
+		g.key = p.groupKey(f, g.field)
+		g.sums = newSums()
+		g.open = true
+		for _, s := range f.item.groupSections(SectionGroupHeader, g.field) {
+			err := p.output(f, s)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	for _, s := range f.item.sections(SectionBody) {
 		err := p.output(f, s)
@@ -105,37 +169,110 @@ func (p *printer) record(f *frame) error {
 		}
 	}
 	f.bodies++
+	all := []*sums{f.sums}
+	for _, g := range f.groups {
+		all = append(all, g.sums)
+	}
 	for _, field := range f.item.totals {
 		value, _ := fieldValue(f.rec, field)
-		switch v := value.(type) {
-		case types.Decimal:
-			f.totals[field] = f.totals[field].Add(v)
-		case int:
-			f.totals[field] = f.totals[field].Add(types.NewDecimalFromInt(int64(v)))
+		for _, t := range all {
+			t.fields[field] = addTo(t.fields[field], value)
 		}
 	}
 	for _, name := range f.item.totalValues {
-		switch v := p.run.values[name].(type) {
-		case types.Decimal:
-			f.valueTotals[name] = f.valueTotals[name].Add(v)
-		case int:
-			f.valueTotals[name] = f.valueTotals[name].Add(types.NewDecimalFromInt(int64(v)))
+		for _, t := range all {
+			t.values[name] = addTo(t.values[name], p.run.values[name])
+		}
+	}
+	if len(f.groups) > 0 {
+		f.lastRec = copyRecord(f.rec)
+		f.lastValues = make(map[string]interface{}, len(p.run.values))
+		for name, value := range p.run.values {
+			f.lastValues[name] = value
 		}
 	}
 	return nil
 }
 
-// endItem: the data item's loop ended — its footers after its last record
+// addTo adds a decimal or whole number to a total
+func addTo(total types.Decimal, value interface{}) types.Decimal {
+	switch v := value.(type) {
+	case types.Decimal:
+		return total.Add(v)
+	case int:
+		return total.Add(types.NewDecimalFromInt(int64(v)))
+	}
+	return total
+}
+
+// groupKey: the value of a group field — of the data item's record, else the report value
+func (p *printer) groupKey(f *frame, field string) string {
+	values, ok := f.rec.(interface{ ToMap() map[string]interface{} })
+	if ok {
+		value, ok := values.ToMap()[field]
+		if ok {
+			return fmt.Sprint(value)
+		}
+	}
+	return fmt.Sprint(p.run.values[field])
+}
+
+// groupFooters prints the footers of the groups from level from inwards (the innermost first)
+// with the record they ended with: its fields and the values it was printed with
+func (p *printer) groupFooters(f *frame, from int) error {
+	rec, values := f.rec, p.run.values
+	f.rec, p.run.values = f.lastRec, f.lastValues
+	defer func() {
+		f.rec, p.run.values, p.footer = rec, values, nil
+	}()
+	for i := len(f.groups) - 1; i >= from; i-- {
+		g := f.groups[i]
+		p.footer = g.sums
+		if f.dataItem.OnGroupFooter != nil {
+			err := f.dataItem.OnGroupFooter(f.rec, g.field, p.run)
+			if errors.Is(err, errSkip) {
+				continue
+			}
+			if err != nil {
+				return err
+			}
+		}
+		for _, s := range f.item.groupSections(SectionGroupFooter, g.field) {
+			err := p.output(f, s)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// copyRecord copies a record (a pointer to a struct) as it is now
+func copyRecord(rec interface{}) interface{} {
+	v := reflect.ValueOf(rec)
+	if v.Kind() != reflect.Pointer || v.Elem().Kind() != reflect.Struct {
+		return rec
+	}
+	c := reflect.New(v.Elem().Type())
+	c.Elem().Set(v.Elem())
+	return c.Interface()
+}
+
+// endItem: the data item's loop ended — the footers of its groups and its own after its last
+// record
 func (p *printer) endItem(f *frame) error {
 	if f == nil {
 		return nil
 	}
 	var err error
 	if f.records > 0 {
-		for _, s := range f.item.sections(SectionFooter) {
-			err = p.output(f, s)
-			if err != nil {
-				break
+		err = p.groupFooters(f, 0)
+		if err == nil {
+			for _, s := range f.item.sections(SectionFooter) {
+				err = p.output(f, s)
+				if err != nil {
+					break
+				}
 			}
 		}
 	}
@@ -156,7 +293,7 @@ func (p *printer) output(f *frame, s *Section) error {
 			return err
 		}
 	}
-	if s.Type == SectionHeader && p.pageHeaders[s] {
+	if (s.Type == SectionHeader || s.Type == SectionGroupHeader) && p.pageHeaders[s] {
 		return nil // the page started with it
 	}
 	err := draw(p.y)
@@ -242,6 +379,21 @@ func (p *printer) startPage() error {
 				p.pageHeaders[s] = true
 			}
 		}
+		// the open groups' headers on every page (a group that starts the page prints its own)
+		for _, g := range f.groups {
+			if !g.open {
+				continue
+			}
+			for _, s := range f.item.groupSections(SectionGroupHeader, g.field) {
+				if s.PrintOnEveryPage {
+					err := p.place(f, s)
+					if err != nil {
+						return err
+					}
+					p.pageHeaders[s] = true
+				}
+			}
+		}
 	}
 	for _, f := range p.frames {
 		if f.bodies == 0 {
@@ -296,6 +448,7 @@ type drawFn func(y float64) error
 // page number when it is drawn)
 func (p *printer) prepare(f *frame, s *Section) (float64, drawFn) {
 	height := s.Height
+	totals := f.sumsOf(s)
 	var draws []drawFn
 	left := p.doc.Margins().Left
 	for _, e := range s.Elements {
@@ -361,7 +514,7 @@ func (p *printer) prepare(f *frame, s *Section) (float64, drawFn) {
 				return nil
 			})
 		default:
-			text := p.text(f, e)
+			text := p.text(f, totals, e)
 			lines := []string{text}
 			if e.Wrap {
 				lines = p.doc.SplitText(text, width, style)
@@ -389,8 +542,18 @@ func (p *printer) prepare(f *frame, s *Section) (float64, drawFn) {
 	}
 }
 
-// text is what a text, caption, field, value or total element prints
-func (p *printer) text(f *frame, e *Element) string {
+// sumsOf: the totals a section prints — of its group in a group section, else the data item's
+func (f *frame) sumsOf(s *Section) *sums {
+	for _, g := range f.groups {
+		if s.Group != "" && g.field == s.Group {
+			return g.sums
+		}
+	}
+	return f.sums
+}
+
+// text is what a text, caption, field, value or total element prints (totals: of the section)
+func (p *printer) text(f *frame, totals *sums, e *Element) string {
 	switch e.kind() {
 	case "text":
 		return p.run.Text(e.Text)
@@ -419,7 +582,7 @@ func (p *printer) text(f *frame, e *Element) string {
 		}
 		return formatValue(value, e.DecimalPlaces, p.language)
 	case "total":
-		total := f.totals[e.Total]
+		total := totals.fields[e.Total]
 		if e.BlankZero && total.IsZero() {
 			return ""
 		}
@@ -434,7 +597,7 @@ func (p *printer) text(f *frame, e *Element) string {
 		}
 		return formatDecimal(total, places, p.language)
 	case "total_value":
-		total := f.valueTotals[e.TotalValue]
+		total := totals.values[e.TotalValue]
 		if e.BlankZero && total.IsZero() {
 			return ""
 		}

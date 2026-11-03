@@ -24,10 +24,6 @@ import (
 //     usage by phase, task, step, type and number, the variance and its percentage;
 //   - 1220 Project Cost Transaction Detail: per project its ledger entries, total usage and
 //     sales.
-//
-// Group headers and footers (the classic GroupHeader/GroupFooter sections with
-// TotalsCausedBy) are rows printed through an Integer data item: each report fills reportRows,
-// a section per row kind prints them.
 const (
 	ActualToBudgetCostID          = 1210
 	ActualToBudgetPriceID         = 1211
@@ -60,45 +56,6 @@ func percentOf(part, base types.Decimal) types.Decimal {
 		return types.Decimal{}
 	}
 	return types.NewDecimalFromInt(100).Mul(part).Div(base)
-}
-
-// reportRow is a printed row of a grouped report: its kind ("phase_head", "line", "total" …),
-// the values its section prints
-type reportRow struct {
-	kind   string
-	values map[string]any
-}
-
-// reportRows prints rows through an Integer data item: each row sets its values and its kind
-// (the value named after the kind is true, the other kinds' false — the sections' print_if)
-type reportRows struct {
-	rows  []reportRow
-	kinds []string
-}
-
-func (rr *reportRows) add(kind string, values map[string]any) {
-	rr.rows = append(rr.rows, reportRow{kind: kind, values: values})
-}
-
-func (rr *reportRows) dataItem(name string) *DataItem {
-	return &DataItem{
-		Name:  name,
-		Table: IntegerTable,
-		OnPreDataItem: Trigger(func(rec *Integer, run *Run) error {
-			rec.SetRange("number", 1, len(rr.rows))
-			return nil
-		}),
-		OnAfterGetRecord: Trigger(func(rec *Integer, run *Run) error {
-			row := rr.rows[rec.Number-1]
-			for _, kind := range rr.kinds {
-				run.SetValue(kind, kind == row.kind)
-			}
-			for name, value := range row.values {
-				run.SetValue(name, value)
-			}
-			return nil
-		}),
-	}
 }
 
 // projectHead: the head of a report on projects (company, today, user, the projects' filters)
@@ -228,15 +185,11 @@ const (
 // customerProjects is reports 1215, 1216 and 1219: the projects on Order of customers grouped
 // by the bill-to customer, a heading per customer, its totals and the report's
 type customerProjects struct {
-	kind     customerProjectsKind
-	rows     reportRows
-	group    [4]types.Decimal
-	total    [4]types.Decimal
-	customer types.Code
+	kind  customerProjectsKind
+	total [4]types.Decimal
 }
 
 func (r *customerProjects) Definition() *Definition {
-	r.rows.kinds = []string{"customer_head", "line", "customer_total"}
 	return &Definition{
 		OnPreReport: projectHead,
 		DataItems: []*DataItem{{
@@ -246,22 +199,20 @@ func (r *customerProjects) Definition() *Definition {
 				{Field: "bill_to_customer_no", Expression: "<>''"},
 			},
 			RequestFilterFields: []string{"bill_to_customer_no", "date_filter"},
+			GroupFields:         []string{"bill_to_customer_no"},
 			OnPreDataItem:       headWithFilters[*gtables.Project](nil),
 			OnAfterGetRecord:    Trigger(r.onAfterGetRecord),
-			OnPostDataItem: Trigger(func(project *gtables.Project, run *Run) error {
-				r.closeCustomer(run)
-				for i, v := range r.total {
-					run.SetValue(totalName(i), v)
-				}
-				run.SetValue("total_percent", r.percent(r.total))
-				run.SetValue("total_percent_invoiced", percentOf(r.total[2], r.total[1]))
+			OnGroupFooter: GroupTrigger(func(project *gtables.Project, group string, run *Run) error {
+				language := fcodeunits.CurrentLanguage()
+				customer := gtables.NewCustomer(run)
+				run.SetValue("total_text", run.Text("TOTAL_FOR", customer.TableCaption(language)+" "+customer.FieldCaption("no", language)+" "+project.Bill_to_customer_no.String()))
+				run.SetValue("group_percent", percentOf(run.GroupTotal("amount_1"), run.GroupTotal("amount_0")))
+				run.SetValue("group_percent_invoiced", percentOf(run.GroupTotal("amount_2"), run.GroupTotal("amount_1")))
 				return nil
 			}),
-		}, r.rows.dataItem("Rows")},
+		}},
 	}
 }
-
-func totalName(i int) string { return "total_" + string(rune('0'+i)) }
 
 // the amounts of a project: budget, usage, invoiced, suggested billing
 func (r *customerProjects) amounts(project *gtables.Project) [4]types.Decimal {
@@ -283,187 +234,141 @@ func (r *customerProjects) percent(a [4]types.Decimal) types.Decimal {
 }
 
 func (r *customerProjects) onAfterGetRecord(project *gtables.Project, run *Run) error {
-	if project.Bill_to_customer_no != r.customer {
-		r.closeCustomer(run)
-		r.customer = project.Bill_to_customer_no
-		customer := gtables.NewCustomer(run)
-		if !customer.Get(project.Bill_to_customer_no) {
-			customer.Init()
-		}
-		r.rows.add("customer_head", map[string]any{
-			"customer_text": customer.TableCaption(fcodeunits.CurrentLanguage()) + " " + customer.FieldCaption("no", fcodeunits.CurrentLanguage()) + " " + project.Bill_to_customer_no.String(),
-			"customer_name": customer.Name.String(),
-		})
+	customer := gtables.NewCustomer(run)
+	if !customer.Get(project.Bill_to_customer_no) {
+		customer.Init()
 	}
+	language := fcodeunits.CurrentLanguage()
+	run.SetValue("customer_text", customer.TableCaption(language)+" "+customer.FieldCaption("no", language)+" "+project.Bill_to_customer_no.String())
+	run.SetValue("customer_name", customer.Name.String())
 	a := r.amounts(project)
 	for i := range a {
-		r.group[i] = r.group[i].Add(a[i])
 		r.total[i] = r.total[i].Add(a[i])
 	}
-	r.rows.add("line", map[string]any{
+	for name, value := range map[string]any{
 		"project_no": project.No.String(), "description": project.Description.String(),
 		"starting_date": project.Starting_date, "ending_date": project.Ending_date,
 		"amount_0": a[0], "amount_1": a[1], "amount_2": a[2], "amount_3": a[3],
 		"percent": r.percent(a), "percent_invoiced": percentOf(a[2], a[1]),
-	})
-	return Skip() // printed by the rows
-}
-
-// closeCustomer: the totals of the customer before (the classic group footer)
-func (r *customerProjects) closeCustomer(run *Run) {
-	if r.customer == "" {
-		return
+		// the report total's percentages so far (the footer prints after the last project)
+		"total_percent": r.percent(r.total), "total_percent_invoiced": percentOf(r.total[2], r.total[1]),
+	} {
+		run.SetValue(name, value)
 	}
-	customer := gtables.NewCustomer(run)
-	language := fcodeunits.CurrentLanguage()
-	r.rows.add("customer_total", map[string]any{
-		"total_text": run.Text("TOTAL_FOR", customer.TableCaption(language)+" "+customer.FieldCaption("no", language)+" "+r.customer.String()),
-		"group_0":    r.group[0], "group_1": r.group[1], "group_2": r.group[2], "group_3": r.group[3],
-		"group_percent": r.percent(r.group), "group_percent_invoiced": percentOf(r.group[2], r.group[1]),
-	})
-	r.group = [4]types.Decimal{}
-	r.customer = ""
+	return nil
 }
 
-// phaseTaskStep groups budget rows by phase, task and step: a heading where a (non-blank) code
-// starts, its totals where it ends (classic ChangeLevel with TotalsCausedBy)
+// phaseTaskStep: the groups of the budget reports' lines by phase, task and step (their
+// GroupFields phase_code, task_code, step_code — the codes as values, the group sections
+// print_if them: a blank code has no heading and no totals)
 type phaseTaskStep struct {
-	rows    *reportRows
-	codes   [3]types.Code // the open phase, task and step
-	open    [3]bool
-	totals  [3][]types.Decimal
-	columns int
-	src     ftables.Source
-	run     *Run
+	descriptions map[string]string
 }
 
 var levelNames = [3]string{"phase", "task", "step"}
 
-// level: the indentation of the lines (the open groups)
-func (g *phaseTaskStep) level() int {
-	n := 0
-	for _, o := range g.open {
-		if o {
-			n++
+// set sets a line's codes and the texts of their group headers and footers; the line's
+// indentation (its non-blank codes)
+func (g *phaseTaskStep) set(run *Run, codes [3]types.Code) string {
+	level := 0
+	for i, code := range codes {
+		description := g.description(run, i, code)
+		run.SetValue(levelNames[i]+"_code", code.String())
+		run.SetValue(levelNames[i]+"_text", description)
+		run.SetValue(levelNames[i]+"_total_text", run.Text("TOTAL", description))
+		if code != "" {
+			level++
 		}
 	}
-	return n
+	return strings.Repeat("    ", level)
 }
 
-func (g *phaseTaskStep) description(level int, code types.Code) string {
+func (g *phaseTaskStep) description(run *Run, level int, code types.Code) string {
+	if code == "" {
+		return ""
+	}
+	if g.descriptions == nil {
+		g.descriptions = map[string]string{}
+	}
+	key := levelNames[level] + "\x00" + code.String()
+	description, ok := g.descriptions[key]
+	if ok {
+		return description
+	}
 	switch level {
 	case 0:
-		phase := gtables.NewPhase(g.src)
+		phase := gtables.NewPhase(run)
 		if phase.Get(code) {
-			return phase.Description.String()
+			description = phase.Description.String()
 		}
 	case 1:
-		task := gtables.NewTask(g.src)
+		task := gtables.NewTask(run)
 		if task.Get(code) {
-			return task.Description.String()
+			description = task.Description.String()
 		}
 	case 2:
-		step := gtables.NewStep(g.src)
+		step := gtables.NewStep(run)
 		if step.Get(code) {
-			return step.Description.String()
+			description = step.Description.String()
 		}
 	}
-	return ""
+	g.descriptions[key] = description
+	return description
 }
 
-// close: the totals of the groups from level on (the innermost first)
-func (g *phaseTaskStep) close(from int, blankLine bool) {
-	for level := 2; level >= from; level-- {
-		if !g.open[level] {
-			continue
-		}
-		values := map[string]any{"code": g.codes[level].String(), "text": g.run.Text("TOTAL", g.description(level, g.codes[level])), "indent": strings.Repeat("  ", level)}
-		for i, v := range g.totals[level] {
-			values["total_"+string(rune('0'+i))] = v
-		}
-		g.rows.add(levelNames[level]+"_total", values)
-		if blankLine {
-			g.rows.add("blank", nil)
-		}
-		g.open[level] = false
-		g.codes[level] = ""
-	}
-}
+// phaseTaskStepGroups: the group fields of the budget reports' lines
+var phaseTaskStepGroups = []string{"phase_code", "task_code", "step_code"}
 
-// next: a line of the given codes — the groups that end are closed, the groups that start get
-// their heading; its amounts add to the open groups
-func (g *phaseTaskStep) next(codes [3]types.Code, amounts []types.Decimal, blankLines bool) {
-	for level := 0; level < 3; level++ {
-		if codes[level] != g.codes[level] || (!g.open[level] && codes[level] != "") {
-			g.close(level, blankLines)
-			for l := level; l < 3; l++ {
-				if codes[l] != "" {
-					g.open[l] = true
-					g.codes[l] = codes[l]
-					g.totals[l] = make([]types.Decimal, g.columns)
-					g.rows.add(levelNames[l]+"_head", map[string]any{"code": codes[l].String(), "text": g.description(l, codes[l]), "indent": strings.Repeat("  ", l)})
-				}
-			}
-			break
-		}
+// skipBlankGroup: no totals for a blank phase, task or step
+func skipBlankGroup(run *Run, group string) error {
+	if run.Value(group) == "" {
+		return Skip()
 	}
-	for level := 0; level < 3; level++ {
-		if g.open[level] {
-			for i := range amounts {
-				g.totals[level][i] = g.totals[level][i].Add(amounts[i])
-			}
-		}
-	}
+	return nil
 }
-
-// groupKinds: the row kinds of the phase/task/step reports
-var groupKinds = []string{"phase_head", "task_head", "step_head", "line", "step_total", "task_total", "phase_total", "blank"}
 
 // Report 1217 Project Cost Budget: a page per project, its budget lines in the project's
-// FlowFilters
+// FlowFilters by phase, task and step with the groups' totals
 type projectCostBudget struct {
-	rows reportRows
+	project *gtables.Project
+	groups  phaseTaskStep
 }
 
 func (r *projectCostBudget) Definition() *Definition {
-	r.rows.kinds = groupKinds
 	return &Definition{
-		Options:     []Option{{Name: "print_blank_lines", Type: "bool", Default: "false"}},
-		OnPreReport: projectHead,
+		Options: []Option{{Name: "print_blank_lines", Type: "bool", Default: "false"}},
+		OnPreReport: func(run *Run) error {
+			run.SetValue("print_blank_lines", run.OptionBool("print_blank_lines"))
+			return projectHead(run)
+		},
 		DataItems: []*DataItem{{
 			Name: "Project", Table: gtables.ProjectTableName, Key: []string{"no"},
 			RequestFilterFields: []string{"no", "bill_to_customer_no", "date_filter", "status"},
 			OnPreDataItem:       headWithFilters[*gtables.Project](nil),
 			OnAfterGetRecord: Trigger(func(project *gtables.Project, run *Run) error {
+				r.project = project
 				run.SetValue("title", run.Text("TITLE_FOR", project.No))
-				projectDates(project, run)
-				r.rows.rows = nil
-				g := &phaseTaskStep{rows: &r.rows, columns: 2, src: run, run: run}
-				blankLines := run.OptionBool("print_blank_lines")
-				projectBudgetLine := gtables.NewProjectBudgetLine(run)
-				linkProjectBudgetLines(projectBudgetLine, project)
-				var totalCost, totalPrice types.Decimal
-				for found := projectBudgetLine.FindSetBuffered(); found; found = projectBudgetLine.Next() {
-					projectBudgetLine.CalcFields("quantity", "total_cost", "total_price")
-					g.next([3]types.Code{projectBudgetLine.Phase_code, projectBudgetLine.Task_code, projectBudgetLine.Step_code},
-						[]types.Decimal{projectBudgetLine.Total_cost, projectBudgetLine.Total_price}, blankLines)
-					r.rows.add("line", map[string]any{
-						"description": strings.Repeat("    ", g.level()) + projectBudgetLine.Description.String(),
-						"type":        budgetLineTypeCaption(run, projectBudgetLine.Type),
-						"no":          projectBudgetLine.No.String(), "quantity": projectBudgetLine.Quantity,
-						"unit_cost": projectBudgetLine.Unit_cost, "total_cost": projectBudgetLine.Total_cost,
-						"unit_price": projectBudgetLine.Unit_price, "total_price": projectBudgetLine.Total_price,
-					})
-					totalCost = totalCost.Add(projectBudgetLine.Total_cost)
-					totalPrice = totalPrice.Add(projectBudgetLine.Total_price)
-				}
-				g.close(0, blankLines)
 				run.SetValue("project_total_text", run.Text("TOTAL_FOR_PROJECT", project.No))
-				run.SetValue("project_total_cost", totalCost)
-				run.SetValue("project_total_price", totalPrice)
+				projectDates(project, run)
 				return nil
 			}),
-			DataItems: []*DataItem{r.rows.dataItem("Rows")},
+			DataItems: []*DataItem{{
+				Name: "Project_Budget_Line", Table: gtables.ProjectBudgetLineTableName,
+				GroupFields: phaseTaskStepGroups,
+				OnPreDataItem: Trigger(func(projectBudgetLine *gtables.ProjectBudgetLine, run *Run) error {
+					linkProjectBudgetLines(projectBudgetLine, r.project)
+					return nil
+				}),
+				OnAfterGetRecord: Trigger(func(projectBudgetLine *gtables.ProjectBudgetLine, run *Run) error {
+					projectBudgetLine.CalcFields("quantity", "total_cost", "total_price")
+					indent := r.groups.set(run, [3]types.Code{projectBudgetLine.Phase_code, projectBudgetLine.Task_code, projectBudgetLine.Step_code})
+					run.SetValue("description", indent+projectBudgetLine.Description.String())
+					return nil
+				}),
+				OnGroupFooter: GroupTrigger(func(projectBudgetLine *gtables.ProjectBudgetLine, group string, run *Run) error {
+					return skipBlankGroup(run, group)
+				}),
+			}},
 		}},
 	}
 }
@@ -495,8 +400,9 @@ func linkProjectBudgetLines(projectBudgetLine *gtables.ProjectBudgetLine, projec
 // actualToBudget is reports 1210 (cost) and 1211 (price): per project the budget lines and the
 // usage entries (Related to Budget) merged by phase, task, step, type and number
 type actualToBudget struct {
-	price bool
-	rows  reportRows
+	price  bool
+	lines  []*budgetActual
+	groups phaseTaskStep
 }
 
 // budgetActual: a budget line's amounts with the usage of its key
@@ -510,7 +416,6 @@ type budgetActual struct {
 }
 
 func (r *actualToBudget) Definition() *Definition {
-	r.rows.kinds = groupKinds
 	return &Definition{
 		OnPreReport: projectHead,
 		DataItems: []*DataItem{{
@@ -518,7 +423,29 @@ func (r *actualToBudget) Definition() *Definition {
 			RequestFilterFields: []string{"no", "bill_to_customer_no", "date_filter", "status"},
 			OnPreDataItem:       headWithFilters[*gtables.Project](nil),
 			OnAfterGetRecord:    Trigger(r.onAfterGetRecord),
-			DataItems:           []*DataItem{r.rows.dataItem("Rows")},
+			DataItems: []*DataItem{{
+				Name: "Line", Table: IntegerTable, GroupFields: phaseTaskStepGroups,
+				OnPreDataItem: Trigger(func(rec *Integer, run *Run) error {
+					rec.SetRange("number", 1, len(r.lines))
+					return nil
+				}),
+				OnAfterGetRecord: Trigger(func(rec *Integer, run *Run) error {
+					l := r.lines[rec.Number-1]
+					indent := r.groups.set(run, l.codes)
+					variance := l.actual.Sub(l.budget)
+					for name, value := range map[string]any{
+						"description": indent + l.description, "type": budgetLineTypeCaption(run, l.lineType),
+						"no": l.no.String(), "actual": l.actual, "budget": l.budget, "variance": variance, "percent_variance": percentOf(variance, l.budget),
+					} {
+						run.SetValue(name, value)
+					}
+					return nil
+				}),
+				OnGroupFooter: GroupTrigger(func(rec *Integer, group string, run *Run) error {
+					run.SetValue("group_percent_variance", percentOf(run.GroupTotal("variance"), run.GroupTotal("budget")))
+					return skipBlankGroup(run, group)
+				}),
+			}},
 		}},
 	}
 }
@@ -582,31 +509,13 @@ func (r *actualToBudget) onAfterGetRecord(project *gtables.Project, run *Run) er
 	}
 	sort.Strings(keys)
 
-	r.rows.rows = nil
-	g := &phaseTaskStep{rows: &r.rows, columns: 2, src: run, run: run}
+	r.lines = r.lines[:0]
 	var totalActual, totalBudget types.Decimal
 	for _, k := range keys {
 		l := lines[k]
-		g.next(l.codes, []types.Decimal{l.actual, l.budget}, false)
-		variance := l.actual.Sub(l.budget)
-		r.rows.add("line", map[string]any{
-			"description": strings.Repeat("    ", g.level()) + l.description,
-			"type":        budgetLineTypeCaption(run, l.lineType),
-			"no":          l.no.String(), "actual": l.actual, "budget": l.budget, "variance": variance, "percent_variance": percentOf(variance, l.budget),
-		})
+		r.lines = append(r.lines, l)
 		totalActual = totalActual.Add(l.actual)
 		totalBudget = totalBudget.Add(l.budget)
-	}
-	g.close(0, false)
-	// the groups' totals: their variance
-	for i := range r.rows.rows {
-		row := &r.rows.rows[i]
-		if strings.HasSuffix(row.kind, "_total") {
-			actual, _ := row.values["total_0"].(types.Decimal)
-			budget, _ := row.values["total_1"].(types.Decimal)
-			row.values["total_2"] = actual.Sub(budget)
-			row.values["total_3"] = percentOf(actual.Sub(budget), budget)
-		}
 	}
 	run.SetValue("project_total_text", run.Text("TOTAL_FOR_PROJECT", project.No))
 	run.SetValue("project_actual", totalActual)

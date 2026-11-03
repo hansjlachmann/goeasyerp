@@ -6,6 +6,7 @@
 	import Modal from './Modal.svelte';
 	import ProgressModal from './ProgressModal.svelte';
 	import PageRenderer from './pages/PageRenderer.svelte';
+	import PageFrames from './pages/PageFrames.svelte';
 	import { startJob, type ErrorDetails } from '$lib/services/jobs';
 	import { printoutOf } from '$lib/utils/printout';
 	import { goto } from '$app/navigation';
@@ -230,20 +231,22 @@
 	{@const request = runPage}
 	<Modal open={true} size="expanded">
 		<div class="run-page">
-			<PageRenderer
-				pageid={request.pageId}
-				embedded={true}
-				initialFilters={request.filters}
-				initialSelect={request.select}
-				lookupMode={request.lookupMode}
-				openParams={request.params}
-				onclose={(action, key) => {
-					// respond first: {@const request} follows runPage, which is cleared next
-					const respond = request.respond;
-					respond(action === 'Cancel' ? null : { action, key: key ?? '' });
-					runPage = null;
-				}}
-			/>
+			<PageFrames>
+				<PageRenderer
+					pageid={request.pageId}
+					embedded={true}
+					initialFilters={request.filters}
+					initialSelect={request.select}
+					lookupMode={request.lookupMode}
+					openParams={request.params}
+					onclose={(action, key) => {
+						// respond first: {@const request} follows runPage, which is cleared next
+						const respond = request.respond;
+						respond(action === 'Cancel' ? null : { action, key: key ?? '' });
+						runPage = null;
+					}}
+				/>
+			</PageFrames>
 		</div>
 	</Modal>
 {/if}

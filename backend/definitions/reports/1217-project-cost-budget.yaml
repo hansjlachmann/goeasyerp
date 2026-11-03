@@ -51,64 +51,77 @@ report:
             - {text: UNIT_PRICE, x: 223, y: 1, width: 24, bold: true, wrap: true, align: right}
             - {text: TOTAL_PRICE, x: 248, y: 1, width: 25, bold: true, wrap: true, align: right}
             - {line: true, x: 0, y: 7.5}
-    - name: Rows
+    - name: Project_Budget_Line
       sections:
-        - type: body
-          print_if: phase_head
+        - type: group_header
+          group: phase_code
+          print_if: phase_code
           height: 4.5
           elements:
-            - {value: code, x: 0, y: 0, width: 24, bold: true}
-            - {value: text, x: 26, y: 0, width: 90, bold: true}
-        - type: body
-          print_if: task_head
+            - {value: phase_code, x: 0, y: 0, width: 24, bold: true}
+            - {value: phase_text, x: 26, y: 0, width: 90, bold: true}
+        - type: group_header
+          group: task_code
+          print_if: task_code
           height: 4.5
           elements:
-            - {value: code, x: 3, y: 0, width: 24, bold: true}
-            - {value: text, x: 29, y: 0, width: 90, bold: true}
-        - type: body
-          print_if: step_head
+            - {value: task_code, x: 3, y: 0, width: 24, bold: true}
+            - {value: task_text, x: 29, y: 0, width: 90, bold: true}
+        - type: group_header
+          group: step_code
+          print_if: step_code
           height: 4.5
           elements:
-            - {value: code, x: 6, y: 0, width: 24, bold: true}
-            - {value: text, x: 32, y: 0, width: 90, bold: true}
+            - {value: step_code, x: 6, y: 0, width: 24, bold: true}
+            - {value: step_text, x: 32, y: 0, width: 90, bold: true}
         - type: body
-          print_if: line
           height: 4.2
           elements:
             - {value: description, x: 31, y: 0, width: 70}
-            - {value: type, x: 102, y: 0, width: 22}
-            - {value: "no", x: 125, y: 0, width: 22}
-            - {value: quantity, x: 148, y: 0, width: 22, align: right, decimal_places: "2:5"}
-            - {value: unit_cost, x: 171, y: 0, width: 24, align: right}
-            - {value: total_cost, x: 196, y: 0, width: 26, align: right}
-            - {value: unit_price, x: 223, y: 0, width: 24, align: right}
-            - {value: total_price, x: 248, y: 0, width: 25, align: right}
-        - type: body
-          print_if: step_total
+            - {field: type, x: 102, y: 0, width: 22}
+            - {field: "no", x: 125, y: 0, width: 22}
+            - {field: quantity, x: 148, y: 0, width: 22, align: right, decimal_places: "2:5"}
+            - {field: unit_cost, x: 171, y: 0, width: 24, align: right, decimal_places: "2:2"}
+            - {field: total_cost, x: 196, y: 0, width: 26, align: right, decimal_places: "2:2"}
+            - {field: unit_price, x: 223, y: 0, width: 24, align: right, decimal_places: "2:2"}
+            - {field: total_price, x: 248, y: 0, width: 25, align: right, decimal_places: "2:2"}
+        - type: group_footer
+          group: step_code
           height: 5
           elements:
-            - {value: code, x: 6, y: 0.5, width: 24, bold: true}
-            - {value: text, x: 32, y: 0.5, width: 90, bold: true}
-            - {value: total_0, x: 196, y: 0.5, width: 26, align: right, bold: true}
-            - {value: total_1, x: 248, y: 0.5, width: 25, align: right, bold: true}
-        - type: body
-          print_if: task_total
+            - {value: step_code, x: 6, y: 0.5, width: 24, bold: true}
+            - {value: step_total_text, x: 32, y: 0.5, width: 90, bold: true}
+            - {total: total_cost, x: 196, y: 0.5, width: 26, align: right, decimal_places: "2:2", bold: true}
+            - {total: total_price, x: 248, y: 0.5, width: 25, align: right, decimal_places: "2:2", bold: true}
+        - type: group_footer
+          group: step_code
+          print_if: print_blank_lines
+          height: 4
+          elements:
+        - type: group_footer
+          group: task_code
           height: 5
           elements:
-            - {value: code, x: 3, y: 0.5, width: 24, bold: true}
-            - {value: text, x: 29, y: 0.5, width: 90, bold: true}
-            - {value: total_0, x: 196, y: 0.5, width: 26, align: right, bold: true}
-            - {value: total_1, x: 248, y: 0.5, width: 25, align: right, bold: true}
-        - type: body
-          print_if: phase_total
+            - {value: task_code, x: 3, y: 0.5, width: 24, bold: true}
+            - {value: task_total_text, x: 29, y: 0.5, width: 90, bold: true}
+            - {total: total_cost, x: 196, y: 0.5, width: 26, align: right, decimal_places: "2:2", bold: true}
+            - {total: total_price, x: 248, y: 0.5, width: 25, align: right, decimal_places: "2:2", bold: true}
+        - type: group_footer
+          group: task_code
+          print_if: print_blank_lines
+          height: 4
+          elements:
+        - type: group_footer
+          group: phase_code
           height: 5
           elements:
-            - {value: code, x: 0, y: 0.5, width: 24, bold: true}
-            - {value: text, x: 26, y: 0.5, width: 90, bold: true}
-            - {value: total_0, x: 196, y: 0.5, width: 26, align: right, bold: true}
-            - {value: total_1, x: 248, y: 0.5, width: 25, align: right, bold: true}
-        - type: body
-          print_if: blank
+            - {value: phase_code, x: 0, y: 0.5, width: 24, bold: true}
+            - {value: phase_total_text, x: 26, y: 0.5, width: 90, bold: true}
+            - {total: total_cost, x: 196, y: 0.5, width: 26, align: right, decimal_places: "2:2", bold: true}
+            - {total: total_price, x: 248, y: 0.5, width: 25, align: right, decimal_places: "2:2", bold: true}
+        - type: group_footer
+          group: phase_code
+          print_if: print_blank_lines
           height: 4
           elements:
         - type: footer
@@ -116,5 +129,5 @@ report:
           elements:
             - {line: true, x: 196, y: 0.5}
             - {value: project_total_text, x: 0, y: 2, width: 150, bold: true}
-            - {value: project_total_cost, x: 196, y: 2, width: 26, align: right, bold: true}
-            - {value: project_total_price, x: 248, y: 2, width: 25, align: right, bold: true}
+            - {total: total_cost, x: 196, y: 2, width: 26, align: right, bold: true}
+            - {total: total_price, x: 248, y: 2, width: 25, align: right, bold: true}

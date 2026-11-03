@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.131](https://github.com/hansjlachmann/openerp/compare/v0.1.130...v0.1.131) (2026-11-03)
+
+
+### Features
+
+* project statistics, WIP/recognition, budget copy and project reports (Projects P3) ([#209](https://github.com/hansjlachmann/openerp/issues/209)) ([7e95409](https://github.com/hansjlachmann/openerp/commit/7e954094894d93fa9389ac62ec0241bc178a7562))
+* projects module P2 — project journal, ledger and posting; Purchases menu ([#208](https://github.com/hansjlachmann/openerp/issues/208)) ([1188ca8](https://github.com/hansjlachmann/openerp/commit/1188ca817b04c85534c6ae332c119da6d9c1613d))
+
 ## [0.1.130](https://github.com/hansjlachmann/openerp/compare/v0.1.129...v0.1.130) (2026-11-03)
 
 
