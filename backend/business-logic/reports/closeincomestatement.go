@@ -11,7 +11,7 @@ import (
 )
 
 // Report 94 Close Income Statement: after the fiscal year is closed (Fiscal Year-Close), the
-// balances of its income statement accounts — per business unit, department and project as
+// balances of its income statement accounts — per business unit, dimension 1 and dimension 2 as
 // asked — go to journal lines that clear them on the year's closing date (C31-12), with the
 // total on the retained earnings account. The lines are written into a general journal batch;
 // posting them closes the income statement, and reports up to the year's last day (..31-12)
@@ -48,8 +48,8 @@ func (r *closeIncomeStatement) Definition() *Definition {
 			{Name: "retained_earnings_acc", Type: "text", Required: true, Relation: &OptionRelation{Table: gtables.GLAccountTableName, Columns: []string{"no", "name"}}},
 			{Name: "posting_description", Type: "text"},
 			{Name: "close_by_business_unit", Type: "bool", Default: "false"},
-			{Name: "close_by_department", Type: "bool", Default: "false"},
-			{Name: "close_by_project", Type: "bool", Default: "false"},
+			{Name: "close_by_dimension_1", Type: "bool", Default: "false"},
+			{Name: "close_by_dimension_2", Type: "bool", Default: "false"},
 		},
 		OnInitReport: r.onInitReport,
 		OnPreReport:  r.onPreReport,
@@ -155,8 +155,8 @@ func (r *closeIncomeStatement) onPreReport(run *Run) error {
 		r.genJnlPostLine = genjnl.NewGenJnlPostLine(run)
 	}
 	r.perBusUnit = run.OptionBool("close_by_business_unit")
-	r.perDept = run.OptionBool("close_by_department")
-	r.perProj = run.OptionBool("close_by_project")
+	r.perDept = run.OptionBool("close_by_dimension_1")
+	r.perProj = run.OptionBool("close_by_dimension_2")
 
 	// the batch's last line: the new ones follow it
 	r.genJnlLine = gtables.NewGenJournalLine(run)
@@ -171,7 +171,10 @@ func (r *closeIncomeStatement) onPreReport(run *Run) error {
 	r.genJnlLine.Posting_date = r.fiscYearClosingDate
 	r.genJnlLine.Document_no = docNo
 	r.genJnlLine.Description = types.Text(system.CopyStr(run.Option("posting_description"), 1, r.genJnlLine.MaxStrLen("description")))
-	r.window = system.OpenWindow(run.Text("WINDOW"))
+	// the window's dimension lines name the dimensions as General Ledger Setup does
+	r.window = system.OpenWindow(run.Text("WINDOW") +
+		"\n" + system.PadStr(r.genJnlLine.FieldCaption("dimension_1_code"), 21) + "#4##########" +
+		"\n" + system.PadStr(r.genJnlLine.FieldCaption("dimension_2_code"), 21) + "#5##########")
 	return nil
 }
 
@@ -182,11 +185,11 @@ type closingGroup struct {
 }
 
 // glAccOnAfterGetRecord: the account's entries of the fiscal year (up to its closing date) per
-// business unit, department and project as asked, each balance cleared by a line
+// business unit, dimension 1 and dimension 2 as asked, each balance cleared by a line
 func (r *closeIncomeStatement) glAccOnAfterGetRecord(glAcc *gtables.GLAccount, run *Run) error {
 	glEntry := gtables.NewGLEntry(run)
 	if r.perBusUnit || r.perDept || r.perProj {
-		glEntry.SetCurrentKey("gl_account_no", "business_unit_code", "department_code", "project_code", "posting_date")
+		glEntry.SetCurrentKey("gl_account_no", "business_unit_code", "dimension_1_code", "dimension_2_code", "posting_date")
 	} else {
 		glEntry.SetCurrentKey("gl_account_no", "posting_date")
 	}
@@ -200,10 +203,10 @@ func (r *closeIncomeStatement) glAccOnAfterGetRecord(glAcc *gtables.GLAccount, r
 			key.busUnit = glEntry.Business_unit_code
 		}
 		if r.perDept {
-			key.dept = glEntry.Department_code
+			key.dept = glEntry.Dimension_1_code
 		}
 		if r.perProj {
-			key.proj = glEntry.Project_code
+			key.proj = glEntry.Dimension_2_code
 		}
 		group, ok := index[key]
 		if !ok {
@@ -223,8 +226,8 @@ func (r *closeIncomeStatement) glAccOnAfterGetRecord(glAcc *gtables.GLAccount, r
 			continue
 		}
 		r.genJnlLine.Business_unit_code = group.busUnit
-		r.genJnlLine.Department_code = group.dept
-		r.genJnlLine.Project_code = group.proj
+		r.genJnlLine.Dimension_1_code = group.dept
+		r.genJnlLine.Dimension_2_code = group.proj
 		err := r.insertLine(run, glAcc.No, group.amount.Neg(), group.addCurrAmount.Neg())
 		if err != nil {
 			return err
@@ -239,8 +242,8 @@ func (r *closeIncomeStatement) glAccOnPostDataItem(glAcc *gtables.GLAccount, run
 		return nil
 	}
 	r.genJnlLine.Business_unit_code = ""
-	r.genJnlLine.Department_code = ""
-	r.genJnlLine.Project_code = ""
+	r.genJnlLine.Dimension_1_code = ""
+	r.genJnlLine.Dimension_2_code = ""
 	r.genJnlLine.Currency_code = ""
 	return r.insertLine(run, r.retainedEarningsAcc, r.totalAmount, r.totalAmountAddCurr)
 }
@@ -263,8 +266,8 @@ func (r *closeIncomeStatement) insertLine(run *Run, accountNo types.Code, amount
 	r.window.Update(1, genJnlLine.Account_no)
 	r.window.Update(2, genJnlLine.Amount)
 	r.window.Update(3, genJnlLine.Business_unit_code)
-	r.window.Update(4, genJnlLine.Department_code)
-	r.window.Update(5, genJnlLine.Project_code)
+	r.window.Update(4, genJnlLine.Dimension_1_code)
+	r.window.Update(5, genJnlLine.Dimension_2_code)
 	genJnlLine.Additional_currency_posting = gtables.GenJournalLine_Additional_currency_posting.None
 	if r.glSetup.Additional_reporting_currency != "" {
 		genJnlLine.Source_currency_code = r.glSetup.Additional_reporting_currency

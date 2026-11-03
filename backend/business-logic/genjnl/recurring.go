@@ -159,8 +159,8 @@ func (b *GenJnlPostBatch) postAllocations(allocateGenJnlLine *gtables.GenJournal
 		genJnlLine2.Account_no = a.Account_no
 		genJnlLine2.Amount = a.Amount
 		genJnlLine2.Amount_lcy = a.Amount
-		genJnlLine2.Department_code = a.Department_code
-		genJnlLine2.Project_code = a.Project_code
+		genJnlLine2.Dimension_1_code = a.Dimension_1_code
+		genJnlLine2.Dimension_2_code = a.Dimension_2_code
 		genJnlLine2.Gen_posting_type = gtables.GenJournalLineGen_posting_type(a.Gen_posting_type)
 		genJnlLine2.Gen_bus_posting_group = a.Gen_bus_posting_group
 		genJnlLine2.Gen_prod_posting_group = a.Gen_prod_posting_group

@@ -22,8 +22,8 @@
 //	OnValidate_Show_opposite_sign(rec *gtables.AccSchedColumn) error
 //	OnValidate_Show(rec *gtables.AccSchedColumn) error
 //	OnValidate_Rounding_factor(rec *gtables.AccSchedColumn) error
-//	OnValidate_Department_filter(rec *gtables.AccSchedColumn) error
-//	OnValidate_Project_filter(rec *gtables.AccSchedColumn) error
+//	OnValidate_Dimension_1_filter(rec *gtables.AccSchedColumn) error
+//	OnValidate_Dimension_2_filter(rec *gtables.AccSchedColumn) error
 
 package tables
 
@@ -147,8 +147,8 @@ type AccSchedColumn struct {
 	Show_opposite_sign        bool                            `db:"show_opposite_sign"`
 	Show                      AccSchedColumnShow              `db:"show"`
 	Rounding_factor           AccSchedColumnRounding_factor   `db:"rounding_factor"`
-	Department_filter         types.Text                      `db:"department_filter"`
-	Project_filter            types.Text                      `db:"project_filter"`
+	Dimension_1_filter        types.Text                      `db:"dimension_1_filter"`
+	Dimension_2_filter        types.Text                      `db:"dimension_2_filter"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -296,8 +296,8 @@ var AccSchedColumn_FieldNo = struct {
 	Show_opposite_sign        int
 	Show                      int
 	Rounding_factor           int
-	Department_filter         int
-	Project_filter            int
+	Dimension_1_filter        int
+	Dimension_2_filter        int
 }{
 	Column_layout_name:        1,
 	Line_no:                   2,
@@ -311,8 +311,8 @@ var AccSchedColumn_FieldNo = struct {
 	Show_opposite_sign:        10,
 	Show:                      11,
 	Rounding_factor:           12,
-	Department_filter:         900,
-	Project_filter:            901,
+	Dimension_1_filter:        900,
+	Dimension_2_filter:        901,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -342,9 +342,9 @@ func (t *AccSchedColumn) FieldNo(fieldName string) int {
 		return 11
 	case "rounding_factor":
 		return 12
-	case "department_filter":
+	case "dimension_1_filter":
 		return 900
-	case "project_filter":
+	case "dimension_2_filter":
 		return 901
 	}
 	return 0
@@ -378,9 +378,9 @@ func (t *AccSchedColumn) FieldName(fieldNo int) string {
 	case 12:
 		return "rounding_factor"
 	case 900:
-		return "department_filter"
+		return "dimension_1_filter"
 	case 901:
-		return "project_filter"
+		return "dimension_2_filter"
 	}
 	return ""
 }
@@ -518,11 +518,11 @@ type (
 	AccSchedColumnOnValidate_Rounding_factor interface {
 		OnValidate_Rounding_factor(rec *AccSchedColumn) error
 	}
-	AccSchedColumnOnValidate_Department_filter interface {
-		OnValidate_Department_filter(rec *AccSchedColumn) error
+	AccSchedColumnOnValidate_Dimension_1_filter interface {
+		OnValidate_Dimension_1_filter(rec *AccSchedColumn) error
 	}
-	AccSchedColumnOnValidate_Project_filter interface {
-		OnValidate_Project_filter(rec *AccSchedColumn) error
+	AccSchedColumnOnValidate_Dimension_2_filter interface {
+		OnValidate_Dimension_2_filter(rec *AccSchedColumn) error
 	}
 )
 
@@ -577,10 +577,10 @@ func accSchedColumnTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(AccSchedColumnOnValidate_Show)
 	case "OnValidate_Rounding_factor":
 		_, ok = logic.(AccSchedColumnOnValidate_Rounding_factor)
-	case "OnValidate_Department_filter":
-		_, ok = logic.(AccSchedColumnOnValidate_Department_filter)
-	case "OnValidate_Project_filter":
-		_, ok = logic.(AccSchedColumnOnValidate_Project_filter)
+	case "OnValidate_Dimension_1_filter":
+		_, ok = logic.(AccSchedColumnOnValidate_Dimension_1_filter)
+	case "OnValidate_Dimension_2_filter":
+		_, ok = logic.(AccSchedColumnOnValidate_Dimension_2_filter)
 	default:
 		return false, false
 	}
@@ -670,10 +670,10 @@ func (t *AccSchedColumn) CheckFields() error {
 	if err := tables.CheckMaxLength(AccSchedColumnTableName, "comparison_period_formula", string(t.Comparison_period_formula), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(AccSchedColumnTableName, "department_filter", string(t.Department_filter), 80); err != nil {
+	if err := tables.CheckMaxLength(AccSchedColumnTableName, "dimension_1_filter", string(t.Dimension_1_filter), 80); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(AccSchedColumnTableName, "project_filter", string(t.Project_filter), 80); err != nil {
+	if err := tables.CheckMaxLength(AccSchedColumnTableName, "dimension_2_filter", string(t.Dimension_2_filter), 80); err != nil {
 		return err
 	}
 	return nil
@@ -715,8 +715,8 @@ func GetAccSchedColumnTableSchema() string {
 		show_opposite_sign INTEGER,
 		show INTEGER CHECK (show >= 0 AND show <= 3),
 		rounding_factor INTEGER CHECK (rounding_factor >= 0 AND rounding_factor <= 3),
-		department_filter TEXT(80),
-		project_filter TEXT(80),
+		dimension_1_filter TEXT(80),
+		dimension_2_filter TEXT(80),
 		PRIMARY KEY (column_layout_name, line_no)
 	`
 }
@@ -736,8 +736,8 @@ func GetAccSchedColumnPostgresTableSchema() string {
 		show_opposite_sign BOOLEAN,
 		show INTEGER CHECK (show >= 0 AND show <= 3),
 		rounding_factor INTEGER CHECK (rounding_factor >= 0 AND rounding_factor <= 3),
-		department_filter VARCHAR(80),
-		project_filter VARCHAR(80),
+		dimension_1_filter VARCHAR(80),
+		dimension_2_filter VARCHAR(80),
 		PRIMARY KEY (column_layout_name, line_no)
 	`
 }
@@ -880,8 +880,8 @@ func (t *AccSchedColumn) StoreOldValues() {
 	t.oldValues["show_opposite_sign"] = t.Show_opposite_sign
 	t.oldValues["show"] = t.Show
 	t.oldValues["rounding_factor"] = t.Rounding_factor
-	t.oldValues["department_filter"] = t.Department_filter
-	t.oldValues["project_filter"] = t.Project_filter
+	t.oldValues["dimension_1_filter"] = t.Dimension_1_filter
+	t.oldValues["dimension_2_filter"] = t.Dimension_2_filter
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -932,11 +932,11 @@ func (t *AccSchedColumn) XRec() *AccSchedColumn {
 	if v, ok := t.oldValues["rounding_factor"].(AccSchedColumnRounding_factor); ok {
 		x.Rounding_factor = v
 	}
-	if v, ok := t.oldValues["department_filter"].(types.Text); ok {
-		x.Department_filter = v
+	if v, ok := t.oldValues["dimension_1_filter"].(types.Text); ok {
+		x.Dimension_1_filter = v
 	}
-	if v, ok := t.oldValues["project_filter"].(types.Text); ok {
-		x.Project_filter = v
+	if v, ok := t.oldValues["dimension_2_filter"].(types.Text); ok {
+		x.Dimension_2_filter = v
 	}
 	return x
 }
@@ -1020,8 +1020,8 @@ func (t *AccSchedColumn) GetByPK(column_layout_name types.Code, line_no int) boo
 	var show_opposite_signBool sql.NullBool
 	var showInt int
 	var rounding_factorInt int
-	var department_filterNull sql.NullString
-	var project_filterNull sql.NullString
+	var dimension_1_filterNull sql.NullString
+	var dimension_2_filterNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1030,7 +1030,7 @@ func (t *AccSchedColumn) GetByPK(column_layout_name types.Code, line_no int) boo
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, department_filter, project_filter FROM "%s" WHERE 1=1 AND column_layout_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, dimension_1_filter, dimension_2_filter FROM "%s" WHERE 1=1 AND column_layout_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1049,8 +1049,8 @@ func (t *AccSchedColumn) GetByPK(column_layout_name types.Code, line_no int) boo
 		&show_opposite_signBool,
 		&showInt,
 		&rounding_factorInt,
-		&department_filterNull,
-		&project_filterNull,
+		&dimension_1_filterNull,
+		&dimension_2_filterNull,
 	)
 
 	if err != nil {
@@ -1076,8 +1076,8 @@ func (t *AccSchedColumn) GetByPK(column_layout_name types.Code, line_no int) boo
 	t.Show_opposite_sign = show_opposite_signBool.Bool
 	t.Show = AccSchedColumnShow(showInt)
 	t.Rounding_factor = AccSchedColumnRounding_factor(rounding_factorInt)
-	t.Department_filter = types.NewText(department_filterNull.String)
-	t.Project_filter = types.NewText(project_filterNull.String)
+	t.Dimension_1_filter = types.NewText(dimension_1_filterNull.String)
+	t.Dimension_2_filter = types.NewText(dimension_2_filterNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1112,13 +1112,13 @@ func (t *AccSchedColumn) Insert(runTrigger bool) bool {
 		t.Show_opposite_sign,
 		t.Show,
 		t.Rounding_factor,
-		t.Department_filter,
-		t.Project_filter,
+		t.Dimension_1_filter,
+		t.Dimension_2_filter,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, department_filter, project_filter) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (column_layout_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, dimension_1_filter, dimension_2_filter) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (column_layout_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1168,12 +1168,12 @@ func (t *AccSchedColumn) InsertAll(records []*AccSchedColumn, runTrigger bool) e
 			r.Show_opposite_sign,
 			r.Show,
 			r.Rounding_factor,
-			r.Department_filter,
-			r.Project_filter,
+			r.Dimension_1_filter,
+			r.Dimension_2_filter,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, AccSchedColumnTableName)
-	columns := []string{"column_layout_name", "line_no", "column_no", "column_header", "column_type", "ledger_entry_type", "amount_type", "formula", "comparison_period_formula", "show_opposite_sign", "show", "rounding_factor", "department_filter", "project_filter"}
+	columns := []string{"column_layout_name", "line_no", "column_no", "column_header", "column_type", "ledger_entry_type", "amount_type", "formula", "comparison_period_formula", "show_opposite_sign", "show", "rounding_factor", "dimension_1_filter", "dimension_2_filter"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1264,13 +1264,13 @@ func (t *AccSchedColumn) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "rounding_factor = ?")
 			values = append(values, t.Rounding_factor)
 		}
-		if t.hasFieldChanged("department_filter") {
-			setClauses = append(setClauses, "department_filter = ?")
-			values = append(values, t.Department_filter)
+		if t.hasFieldChanged("dimension_1_filter") {
+			setClauses = append(setClauses, "dimension_1_filter = ?")
+			values = append(values, t.Dimension_1_filter)
 		}
-		if t.hasFieldChanged("project_filter") {
-			setClauses = append(setClauses, "project_filter = ?")
-			values = append(values, t.Project_filter)
+		if t.hasFieldChanged("dimension_2_filter") {
+			setClauses = append(setClauses, "dimension_2_filter = ?")
+			values = append(values, t.Dimension_2_filter)
 		}
 
 		// If nothing changed, skip update
@@ -1299,10 +1299,10 @@ func (t *AccSchedColumn) Modify(runTrigger bool) bool {
 		values = append(values, t.Show)
 		setClauses = append(setClauses, "rounding_factor = ?")
 		values = append(values, t.Rounding_factor)
-		setClauses = append(setClauses, "department_filter = ?")
-		values = append(values, t.Department_filter)
-		setClauses = append(setClauses, "project_filter = ?")
-		values = append(values, t.Project_filter)
+		setClauses = append(setClauses, "dimension_1_filter = ?")
+		values = append(values, t.Dimension_1_filter)
+		setClauses = append(setClauses, "dimension_2_filter = ?")
+		values = append(values, t.Dimension_2_filter)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -1402,13 +1402,13 @@ func (t *AccSchedColumn) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(AccSchedColumnRounding_factor); ok {
 			return t.Rounding_factor != old
 		}
-	case "department_filter":
+	case "dimension_1_filter":
 		if old, ok := oldValue.(types.Text); ok {
-			return !t.Department_filter.Equal(old)
+			return !t.Dimension_1_filter.Equal(old)
 		}
-	case "project_filter":
+	case "dimension_2_filter":
 		if old, ok := oldValue.(types.Text); ok {
-			return !t.Project_filter.Equal(old)
+			return !t.Dimension_2_filter.Equal(old)
 		}
 	}
 
@@ -1639,10 +1639,10 @@ func (t *AccSchedColumn) columnName(fieldName string) (string, bool) {
 		return "show", true
 	case strings.ToLower("rounding_factor"):
 		return "rounding_factor", true
-	case strings.ToLower("department_filter"):
-		return "department_filter", true
-	case strings.ToLower("project_filter"):
-		return "project_filter", true
+	case strings.ToLower("dimension_1_filter"):
+		return "dimension_1_filter", true
+	case strings.ToLower("dimension_2_filter"):
+		return "dimension_2_filter", true
 	}
 	return "", false
 }
@@ -2002,7 +2002,7 @@ func (t *AccSchedColumn) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, department_filter, project_filter FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, dimension_1_filter, dimension_2_filter FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2018,8 +2018,8 @@ func (t *AccSchedColumn) FindFirst() bool {
 	var show_opposite_signBool sql.NullBool
 	var showInt int
 	var rounding_factorInt int
-	var department_filterNull sql.NullString
-	var project_filterNull sql.NullString
+	var dimension_1_filterNull sql.NullString
+	var dimension_2_filterNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&column_layout_nameNull,
@@ -2034,8 +2034,8 @@ func (t *AccSchedColumn) FindFirst() bool {
 		&show_opposite_signBool,
 		&showInt,
 		&rounding_factorInt,
-		&department_filterNull,
-		&project_filterNull,
+		&dimension_1_filterNull,
+		&dimension_2_filterNull,
 	)
 
 	if err != nil {
@@ -2058,8 +2058,8 @@ func (t *AccSchedColumn) FindFirst() bool {
 	t.Show_opposite_sign = show_opposite_signBool.Bool
 	t.Show = AccSchedColumnShow(showInt)
 	t.Rounding_factor = AccSchedColumnRounding_factor(rounding_factorInt)
-	t.Department_filter = types.NewText(department_filterNull.String)
-	t.Project_filter = types.NewText(project_filterNull.String)
+	t.Dimension_1_filter = types.NewText(dimension_1_filterNull.String)
+	t.Dimension_2_filter = types.NewText(dimension_2_filterNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2080,7 +2080,7 @@ func (t *AccSchedColumn) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, department_filter, project_filter FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, dimension_1_filter, dimension_2_filter FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2096,8 +2096,8 @@ func (t *AccSchedColumn) FindLast() bool {
 	var show_opposite_signBool sql.NullBool
 	var showInt int
 	var rounding_factorInt int
-	var department_filterNull sql.NullString
-	var project_filterNull sql.NullString
+	var dimension_1_filterNull sql.NullString
+	var dimension_2_filterNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&column_layout_nameNull,
@@ -2112,8 +2112,8 @@ func (t *AccSchedColumn) FindLast() bool {
 		&show_opposite_signBool,
 		&showInt,
 		&rounding_factorInt,
-		&department_filterNull,
-		&project_filterNull,
+		&dimension_1_filterNull,
+		&dimension_2_filterNull,
 	)
 
 	if err != nil {
@@ -2136,8 +2136,8 @@ func (t *AccSchedColumn) FindLast() bool {
 	t.Show_opposite_sign = show_opposite_signBool.Bool
 	t.Show = AccSchedColumnShow(showInt)
 	t.Rounding_factor = AccSchedColumnRounding_factor(rounding_factorInt)
-	t.Department_filter = types.NewText(department_filterNull.String)
-	t.Project_filter = types.NewText(project_filterNull.String)
+	t.Dimension_1_filter = types.NewText(dimension_1_filterNull.String)
+	t.Dimension_2_filter = types.NewText(dimension_2_filterNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2188,7 +2188,7 @@ func (t *AccSchedColumn) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, department_filter, project_filter FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, dimension_1_filter, dimension_2_filter FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2268,8 +2268,8 @@ func (t *AccSchedColumn) Next(steps ...int) bool {
 		var show_opposite_signBool sql.NullBool
 		var showInt int
 		var rounding_factorInt int
-		var department_filterNull sql.NullString
-		var project_filterNull sql.NullString
+		var dimension_1_filterNull sql.NullString
+		var dimension_2_filterNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&column_layout_nameNull,
@@ -2284,8 +2284,8 @@ func (t *AccSchedColumn) Next(steps ...int) bool {
 			&show_opposite_signBool,
 			&showInt,
 			&rounding_factorInt,
-			&department_filterNull,
-			&project_filterNull,
+			&dimension_1_filterNull,
+			&dimension_2_filterNull,
 		)
 
 		if err != nil {
@@ -2307,8 +2307,8 @@ func (t *AccSchedColumn) Next(steps ...int) bool {
 		t.Show_opposite_sign = show_opposite_signBool.Bool
 		t.Show = AccSchedColumnShow(showInt)
 		t.Rounding_factor = AccSchedColumnRounding_factor(rounding_factorInt)
-		t.Department_filter = types.NewText(department_filterNull.String)
-		t.Project_filter = types.NewText(project_filterNull.String)
+		t.Dimension_1_filter = types.NewText(dimension_1_filterNull.String)
+		t.Dimension_2_filter = types.NewText(dimension_2_filterNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -2358,7 +2358,7 @@ func (t *AccSchedColumn) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, department_filter, project_filter FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, dimension_1_filter, dimension_2_filter FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2391,8 +2391,8 @@ func (t *AccSchedColumn) FindSetBuffered() bool {
 		var show_opposite_signBool sql.NullBool
 		var showInt int
 		var rounding_factorInt int
-		var department_filterNull sql.NullString
-		var project_filterNull sql.NullString
+		var dimension_1_filterNull sql.NullString
+		var dimension_2_filterNull sql.NullString
 
 		err := rows.Scan(
 			&column_layout_nameNull,
@@ -2407,8 +2407,8 @@ func (t *AccSchedColumn) FindSetBuffered() bool {
 			&show_opposite_signBool,
 			&showInt,
 			&rounding_factorInt,
-			&department_filterNull,
-			&project_filterNull,
+			&dimension_1_filterNull,
+			&dimension_2_filterNull,
 		)
 
 		if err != nil {
@@ -2428,8 +2428,8 @@ func (t *AccSchedColumn) FindSetBuffered() bool {
 		record.Show_opposite_sign = show_opposite_signBool.Bool
 		record.Show = AccSchedColumnShow(showInt)
 		record.Rounding_factor = AccSchedColumnRounding_factor(rounding_factorInt)
-		record.Department_filter = types.NewText(department_filterNull.String)
-		record.Project_filter = types.NewText(project_filterNull.String)
+		record.Dimension_1_filter = types.NewText(dimension_1_filterNull.String)
+		record.Dimension_2_filter = types.NewText(dimension_2_filterNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -2470,8 +2470,8 @@ func (t *AccSchedColumn) copyFromBuffered(record *AccSchedColumn) {
 	t.Show_opposite_sign = record.Show_opposite_sign
 	t.Show = record.Show
 	t.Rounding_factor = record.Rounding_factor
-	t.Department_filter = record.Department_filter
-	t.Project_filter = record.Project_filter
+	t.Dimension_1_filter = record.Dimension_1_filter
+	t.Dimension_2_filter = record.Dimension_2_filter
 	t.StoreOldValues()
 }
 
@@ -2991,45 +2991,45 @@ func (t *AccSchedColumn) ValidateField(fieldName string, value interface{}) erro
 			}
 		}
 		return nil
-	case "department_filter":
+	case "dimension_1_filter":
 		// Set field value
 		if v, ok := value.(types.Text); ok {
-			t.Department_filter = v
+			t.Dimension_1_filter = v
 		} else if v, ok := value.(string); ok {
-			t.Department_filter = types.NewText(v)
+			t.Dimension_1_filter = types.NewText(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_filter")
+			return fmt.Errorf("invalid type for field dimension_1_filter")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_filter"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_filter"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccSchedColumnOnValidate_Department_filter); ok {
-				if err := trg.OnValidate_Department_filter(t); err != nil {
+			if trg, ok := l.(AccSchedColumnOnValidate_Dimension_1_filter); ok {
+				if err := trg.OnValidate_Dimension_1_filter(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_filter":
+	case "dimension_2_filter":
 		// Set field value
 		if v, ok := value.(types.Text); ok {
-			t.Project_filter = v
+			t.Dimension_2_filter = v
 		} else if v, ok := value.(string); ok {
-			t.Project_filter = types.NewText(v)
+			t.Dimension_2_filter = types.NewText(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_filter")
+			return fmt.Errorf("invalid type for field dimension_2_filter")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_filter"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_filter"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccSchedColumnOnValidate_Project_filter); ok {
-				if err := trg.OnValidate_Project_filter(t); err != nil {
+			if trg, ok := l.(AccSchedColumnOnValidate_Dimension_2_filter); ok {
+				if err := trg.OnValidate_Dimension_2_filter(t); err != nil {
 					return err
 				}
 			}
@@ -3072,9 +3072,9 @@ func (t *AccSchedColumn) FieldValue(no int) (any, bool) {
 	case 12:
 		return t.Rounding_factor, true
 	case 900:
-		return t.Department_filter, true
+		return t.Dimension_1_filter, true
 	case 901:
-		return t.Project_filter, true
+		return t.Dimension_2_filter, true
 	}
 	return nil, false
 }
@@ -3172,20 +3172,20 @@ func (t *AccSchedColumn) SetFieldValue(no int, value any) bool {
 		}
 	case 900:
 		if v, ok := value.(types.Text); ok {
-			t.Department_filter = v
+			t.Dimension_1_filter = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_filter = types.NewText(v)
+			t.Dimension_1_filter = types.NewText(v)
 			return true
 		}
 	case 901:
 		if v, ok := value.(types.Text); ok {
-			t.Project_filter = v
+			t.Dimension_2_filter = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_filter = types.NewText(v)
+			t.Dimension_2_filter = types.NewText(v)
 			return true
 		}
 	}
@@ -3654,10 +3654,10 @@ func (t *AccSchedColumn) columnValue(column string) (interface{}, bool) {
 		return int(t.Show), true
 	case "rounding_factor":
 		return int(t.Rounding_factor), true
-	case "department_filter":
-		return t.Department_filter, true
-	case "project_filter":
-		return t.Project_filter, true
+	case "dimension_1_filter":
+		return t.Dimension_1_filter, true
+	case "dimension_2_filter":
+		return t.Dimension_2_filter, true
 	}
 	return nil, false
 }
@@ -3726,8 +3726,8 @@ func (t *AccSchedColumn) Init() {
 	t.Show_opposite_sign = *new(bool)
 	t.Show = 0
 	t.Rounding_factor = 0
-	t.Department_filter = *new(types.Text)
-	t.Project_filter = *new(types.Text)
+	t.Dimension_1_filter = *new(types.Text)
+	t.Dimension_2_filter = *new(types.Text)
 	t.applyDefaults()
 }
 
@@ -3774,8 +3774,8 @@ func (t *AccSchedColumn) ToMap() map[string]interface{} {
 		"show_opposite_sign":        t.Show_opposite_sign,
 		"show":                      int(t.Show),
 		"rounding_factor":           int(t.Rounding_factor),
-		"department_filter":         t.Department_filter.String(),
-		"project_filter":            t.Project_filter.String(),
+		"dimension_1_filter":        t.Dimension_1_filter.String(),
+		"dimension_2_filter":        t.Dimension_2_filter.String(),
 	}
 }
 
@@ -3909,14 +3909,14 @@ func (t *AccSchedColumn) FromMap(data map[string]interface{}) {
 			}
 		}
 	}
-	if v, ok := data["department_filter"]; ok && v != nil {
+	if v, ok := data["dimension_1_filter"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_filter = types.NewText(s)
+			t.Dimension_1_filter = types.NewText(s)
 		}
 	}
-	if v, ok := data["project_filter"]; ok && v != nil {
+	if v, ok := data["dimension_2_filter"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_filter = types.NewText(s)
+			t.Dimension_2_filter = types.NewText(s)
 		}
 	}
 }
@@ -4062,7 +4062,7 @@ func (t *AccSchedColumn) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         900,
-			Name:       "department_filter",
+			Name:       "dimension_1_filter",
 			Type:       tables.FieldTypeText,
 			Length:     80,
 			Required:   false,
@@ -4072,7 +4072,7 @@ func (t *AccSchedColumn) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         901,
-			Name:       "project_filter",
+			Name:       "dimension_2_filter",
 			Type:       tables.FieldTypeText,
 			Length:     80,
 			Required:   false,
@@ -4125,8 +4125,8 @@ func (t *AccSchedColumn) GetTableRelationFields() map[string]tables.TableRelatio
 			},
 			SearchTimeout: 0,
 		},
-		"department_filter": {
-			Table:        "Department",
+		"dimension_1_filter": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -4136,8 +4136,8 @@ func (t *AccSchedColumn) GetTableRelationFields() map[string]tables.TableRelatio
 			SearchTimeout: 0,
 			NoValidate:    true,
 		},
-		"project_filter": {
-			Table:        "Project",
+		"dimension_2_filter": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

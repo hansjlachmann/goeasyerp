@@ -44,7 +44,7 @@ func (r *consolidationEliminations) Definition() *Definition {
 			Name:                "G_L_Account",
 			Table:               gtables.GLAccountTableName,
 			Key:                 []string{"no"},
-			RequestFilterFields: []string{"no", "department_filter", "project_filter"},
+			RequestFilterFields: []string{"no", "dimension_1_filter", "dimension_2_filter"},
 			OnPreDataItem: Trigger(func(rec *gtables.GLAccount, run *Run) error {
 				setFilterText(run, rec)
 				return nil

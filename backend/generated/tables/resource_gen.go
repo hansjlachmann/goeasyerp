@@ -24,8 +24,8 @@
 //	OnValidate_Contract_class(rec *gtables.Resource) error
 //	OnValidate_Employment_date(rec *gtables.Resource) error
 //	OnValidate_Resource_group_no(rec *gtables.Resource) error
-//	OnValidate_Department_code(rec *gtables.Resource) error
-//	OnValidate_Project_code(rec *gtables.Resource) error
+//	OnValidate_Dimension_1_code(rec *gtables.Resource) error
+//	OnValidate_Dimension_2_code(rec *gtables.Resource) error
 //	OnValidate_Unit_of_measure_code(rec *gtables.Resource) error
 //	OnValidate_Direct_unit_cost(rec *gtables.Resource) error
 //	OnValidate_Indirect_cost_percent(rec *gtables.Resource) error
@@ -119,8 +119,8 @@ type Resource struct {
 	Contract_class           types.Text                       `db:"contract_class"`
 	Employment_date          types.Date                       `db:"employment_date"`
 	Resource_group_no        types.Code                       `db:"resource_group_no"`
-	Department_code          types.Code                       `db:"department_code"`
-	Project_code             types.Code                       `db:"project_code"`
+	Dimension_1_code         types.Code                       `db:"dimension_1_code"`
+	Dimension_2_code         types.Code                       `db:"dimension_2_code"`
 	Unit_of_measure_code     types.Code                       `db:"unit_of_measure_code"`
 	Direct_unit_cost         types.Decimal                    `db:"direct_unit_cost"`
 	Indirect_cost_percent    types.Decimal                    `db:"indirect_cost_percent"`
@@ -264,8 +264,8 @@ var Resource_FieldNo = struct {
 	Contract_class           int
 	Employment_date          int
 	Resource_group_no        int
-	Department_code          int
-	Project_code             int
+	Dimension_1_code         int
+	Dimension_2_code         int
 	Unit_of_measure_code     int
 	Direct_unit_cost         int
 	Indirect_cost_percent    int
@@ -309,8 +309,8 @@ var Resource_FieldNo = struct {
 	Contract_class:           12,
 	Employment_date:          13,
 	Resource_group_no:        14,
-	Department_code:          16,
-	Project_code:             17,
+	Dimension_1_code:         16,
+	Dimension_2_code:         17,
 	Unit_of_measure_code:     18,
 	Direct_unit_cost:         19,
 	Indirect_cost_percent:    20,
@@ -372,9 +372,9 @@ func (t *Resource) FieldNo(fieldName string) int {
 		return 13
 	case "resource_group_no":
 		return 14
-	case "department_code":
+	case "dimension_1_code":
 		return 16
-	case "project_code":
+	case "dimension_2_code":
 		return 17
 	case "unit_of_measure_code":
 		return 18
@@ -468,9 +468,9 @@ func (t *Resource) FieldName(fieldNo int) string {
 	case 14:
 		return "resource_group_no"
 	case 16:
-		return "department_code"
+		return "dimension_1_code"
 	case 17:
-		return "project_code"
+		return "dimension_2_code"
 	case 18:
 		return "unit_of_measure_code"
 	case 19:
@@ -634,8 +634,8 @@ type (
 	ResourceOnValidate_Contract_class           interface{ OnValidate_Contract_class(rec *Resource) error }
 	ResourceOnValidate_Employment_date          interface{ OnValidate_Employment_date(rec *Resource) error }
 	ResourceOnValidate_Resource_group_no        interface{ OnValidate_Resource_group_no(rec *Resource) error }
-	ResourceOnValidate_Department_code          interface{ OnValidate_Department_code(rec *Resource) error }
-	ResourceOnValidate_Project_code             interface{ OnValidate_Project_code(rec *Resource) error }
+	ResourceOnValidate_Dimension_1_code         interface{ OnValidate_Dimension_1_code(rec *Resource) error }
+	ResourceOnValidate_Dimension_2_code         interface{ OnValidate_Dimension_2_code(rec *Resource) error }
 	ResourceOnValidate_Unit_of_measure_code     interface{ OnValidate_Unit_of_measure_code(rec *Resource) error }
 	ResourceOnValidate_Direct_unit_cost         interface{ OnValidate_Direct_unit_cost(rec *Resource) error }
 	ResourceOnValidate_Indirect_cost_percent    interface{ OnValidate_Indirect_cost_percent(rec *Resource) error }
@@ -710,10 +710,10 @@ func resourceTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ResourceOnValidate_Employment_date)
 	case "OnValidate_Resource_group_no":
 		_, ok = logic.(ResourceOnValidate_Resource_group_no)
-	case "OnValidate_Department_code":
-		_, ok = logic.(ResourceOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(ResourceOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(ResourceOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(ResourceOnValidate_Dimension_2_code)
 	case "OnValidate_Unit_of_measure_code":
 		_, ok = logic.(ResourceOnValidate_Unit_of_measure_code)
 	case "OnValidate_Direct_unit_cost":
@@ -861,10 +861,10 @@ func (t *Resource) CheckFields() error {
 	if err := tables.CheckMaxLength(ResourceTableName, "resource_group_no", string(t.Resource_group_no), 20); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(ResourceTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(ResourceTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(ResourceTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(ResourceTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(ResourceTableName, "unit_of_measure_code", string(t.Unit_of_measure_code), 10); err != nil {
@@ -947,8 +947,8 @@ func GetResourceTableSchema() string {
 		contract_class TEXT(30),
 		employment_date TEXT,
 		resource_group_no TEXT(20),
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		unit_of_measure_code TEXT(10),
 		direct_unit_cost TEXT,
 		indirect_cost_percent TEXT,
@@ -994,8 +994,8 @@ func GetResourcePostgresTableSchema() string {
 		contract_class VARCHAR(30),
 		employment_date TIMESTAMP,
 		resource_group_no VARCHAR(20),
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		unit_of_measure_code VARCHAR(10),
 		direct_unit_cost NUMERIC,
 		indirect_cost_percent NUMERIC,
@@ -1175,8 +1175,8 @@ func (t *Resource) StoreOldValues() {
 	t.oldValues["contract_class"] = t.Contract_class
 	t.oldValues["employment_date"] = t.Employment_date
 	t.oldValues["resource_group_no"] = t.Resource_group_no
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["unit_of_measure_code"] = t.Unit_of_measure_code
 	t.oldValues["direct_unit_cost"] = t.Direct_unit_cost
 	t.oldValues["indirect_cost_percent"] = t.Indirect_cost_percent
@@ -1250,11 +1250,11 @@ func (t *Resource) XRec() *Resource {
 	if v, ok := t.oldValues["resource_group_no"].(types.Code); ok {
 		x.Resource_group_no = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["unit_of_measure_code"].(types.Code); ok {
 		x.Unit_of_measure_code = v
@@ -1382,8 +1382,8 @@ func (t *Resource) GetByPK(no types.Code) bool {
 	var contract_classNull sql.NullString
 	var employment_dateNull sql.NullString
 	var resource_group_noNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var unit_of_measure_codeNull sql.NullString
 	var direct_unit_costNull sql.NullString
 	var indirect_cost_percentNull sql.NullString
@@ -1408,7 +1408,7 @@ func (t *Resource) GetByPK(no types.Code) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, department_code, project_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group FROM "%s" WHERE 1=1 AND no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group FROM "%s" WHERE 1=1 AND no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1429,8 +1429,8 @@ func (t *Resource) GetByPK(no types.Code) bool {
 		&contract_classNull,
 		&employment_dateNull,
 		&resource_group_noNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&unit_of_measure_codeNull,
 		&direct_unit_costNull,
 		&indirect_cost_percentNull,
@@ -1475,8 +1475,8 @@ func (t *Resource) GetByPK(no types.Code) bool {
 	t.Contract_class = types.NewText(contract_classNull.String)
 	t.Employment_date, _ = types.NewDateFromString(employment_dateNull.String)
 	t.Resource_group_no = types.NewCode(resource_group_noNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 	t.Direct_unit_cost, _ = types.NewDecimalFromString(direct_unit_costNull.String)
 	t.Indirect_cost_percent, _ = types.NewDecimalFromString(indirect_cost_percentNull.String)
@@ -1530,8 +1530,8 @@ func (t *Resource) Insert(runTrigger bool) bool {
 		t.Contract_class,
 		t.Employment_date,
 		t.Resource_group_no,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Unit_of_measure_code,
 		t.Direct_unit_cost,
 		t.Indirect_cost_percent,
@@ -1553,7 +1553,7 @@ func (t *Resource) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, department_code, project_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1605,8 +1605,8 @@ func (t *Resource) InsertAll(records []*Resource, runTrigger bool) error {
 			r.Contract_class,
 			r.Employment_date,
 			r.Resource_group_no,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Unit_of_measure_code,
 			r.Direct_unit_cost,
 			r.Indirect_cost_percent,
@@ -1627,7 +1627,7 @@ func (t *Resource) InsertAll(records []*Resource, runTrigger bool) error {
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ResourceTableName)
-	columns := []string{"no", "type", "name", "search_name", "name_2", "address", "address_2", "city", "social_security_no", "title", "education", "contract_class", "employment_date", "resource_group_no", "department_code", "project_code", "unit_of_measure_code", "direct_unit_cost", "indirect_cost_percent", "unit_cost", "profit_percent", "price_profit_calculation", "unit_price", "vendor_no", "last_date_modified", "blocked", "gen_prod_posting_group", "picture", "post_code", "state", "no_series", "tax_group_code", "tax_prod_posting_group"}
+	columns := []string{"no", "type", "name", "search_name", "name_2", "address", "address_2", "city", "social_security_no", "title", "education", "contract_class", "employment_date", "resource_group_no", "dimension_1_code", "dimension_2_code", "unit_of_measure_code", "direct_unit_cost", "indirect_cost_percent", "unit_cost", "profit_percent", "price_profit_calculation", "unit_price", "vendor_no", "last_date_modified", "blocked", "gen_prod_posting_group", "picture", "post_code", "state", "no_series", "tax_group_code", "tax_prod_posting_group"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1723,13 +1723,13 @@ func (t *Resource) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "resource_group_no = ?")
 			values = append(values, t.Resource_group_no)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("unit_of_measure_code") {
 			setClauses = append(setClauses, "unit_of_measure_code = ?")
@@ -1832,10 +1832,10 @@ func (t *Resource) Modify(runTrigger bool) bool {
 		values = append(values, t.Employment_date)
 		setClauses = append(setClauses, "resource_group_no = ?")
 		values = append(values, t.Resource_group_no)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "unit_of_measure_code = ?")
 		values = append(values, t.Unit_of_measure_code)
 		setClauses = append(setClauses, "direct_unit_cost = ?")
@@ -1992,13 +1992,13 @@ func (t *Resource) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Resource_group_no.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "unit_of_measure_code":
 		if old, ok := oldValue.(types.Code); ok {
@@ -3875,10 +3875,10 @@ func (t *Resource) columnName(fieldName string) (string, bool) {
 		return "employment_date", true
 	case strings.ToLower("resource_group_no"):
 		return "resource_group_no", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("unit_of_measure_code"):
 		return "unit_of_measure_code", true
 	case strings.ToLower("direct_unit_cost"):
@@ -4304,7 +4304,7 @@ func (t *Resource) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, department_code, project_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4323,8 +4323,8 @@ func (t *Resource) FindFirst() bool {
 	var contract_classNull sql.NullString
 	var employment_dateNull sql.NullString
 	var resource_group_noNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var unit_of_measure_codeNull sql.NullString
 	var direct_unit_costNull sql.NullString
 	var indirect_cost_percentNull sql.NullString
@@ -4357,8 +4357,8 @@ func (t *Resource) FindFirst() bool {
 		&contract_classNull,
 		&employment_dateNull,
 		&resource_group_noNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&unit_of_measure_codeNull,
 		&direct_unit_costNull,
 		&indirect_cost_percentNull,
@@ -4401,8 +4401,8 @@ func (t *Resource) FindFirst() bool {
 	t.Contract_class = types.NewText(contract_classNull.String)
 	t.Employment_date, _ = types.NewDateFromString(employment_dateNull.String)
 	t.Resource_group_no = types.NewCode(resource_group_noNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 	t.Direct_unit_cost, _ = types.NewDecimalFromString(direct_unit_costNull.String)
 	t.Indirect_cost_percent, _ = types.NewDecimalFromString(indirect_cost_percentNull.String)
@@ -4439,7 +4439,7 @@ func (t *Resource) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, department_code, project_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4458,8 +4458,8 @@ func (t *Resource) FindLast() bool {
 	var contract_classNull sql.NullString
 	var employment_dateNull sql.NullString
 	var resource_group_noNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var unit_of_measure_codeNull sql.NullString
 	var direct_unit_costNull sql.NullString
 	var indirect_cost_percentNull sql.NullString
@@ -4492,8 +4492,8 @@ func (t *Resource) FindLast() bool {
 		&contract_classNull,
 		&employment_dateNull,
 		&resource_group_noNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&unit_of_measure_codeNull,
 		&direct_unit_costNull,
 		&indirect_cost_percentNull,
@@ -4536,8 +4536,8 @@ func (t *Resource) FindLast() bool {
 	t.Contract_class = types.NewText(contract_classNull.String)
 	t.Employment_date, _ = types.NewDateFromString(employment_dateNull.String)
 	t.Resource_group_no = types.NewCode(resource_group_noNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 	t.Direct_unit_cost, _ = types.NewDecimalFromString(direct_unit_costNull.String)
 	t.Indirect_cost_percent, _ = types.NewDecimalFromString(indirect_cost_percentNull.String)
@@ -4604,7 +4604,7 @@ func (t *Resource) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, department_code, project_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4687,8 +4687,8 @@ func (t *Resource) Next(steps ...int) bool {
 		var contract_classNull sql.NullString
 		var employment_dateNull sql.NullString
 		var resource_group_noNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var unit_of_measure_codeNull sql.NullString
 		var direct_unit_costNull sql.NullString
 		var indirect_cost_percentNull sql.NullString
@@ -4721,8 +4721,8 @@ func (t *Resource) Next(steps ...int) bool {
 			&contract_classNull,
 			&employment_dateNull,
 			&resource_group_noNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&unit_of_measure_codeNull,
 			&direct_unit_costNull,
 			&indirect_cost_percentNull,
@@ -4764,8 +4764,8 @@ func (t *Resource) Next(steps ...int) bool {
 		t.Contract_class = types.NewText(contract_classNull.String)
 		t.Employment_date, _ = types.NewDateFromString(employment_dateNull.String)
 		t.Resource_group_no = types.NewCode(resource_group_noNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 		t.Direct_unit_cost, _ = types.NewDecimalFromString(direct_unit_costNull.String)
 		t.Indirect_cost_percent, _ = types.NewDecimalFromString(indirect_cost_percentNull.String)
@@ -4831,7 +4831,7 @@ func (t *Resource) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, department_code, project_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4867,8 +4867,8 @@ func (t *Resource) FindSetBuffered() bool {
 		var contract_classNull sql.NullString
 		var employment_dateNull sql.NullString
 		var resource_group_noNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var unit_of_measure_codeNull sql.NullString
 		var direct_unit_costNull sql.NullString
 		var indirect_cost_percentNull sql.NullString
@@ -4901,8 +4901,8 @@ func (t *Resource) FindSetBuffered() bool {
 			&contract_classNull,
 			&employment_dateNull,
 			&resource_group_noNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&unit_of_measure_codeNull,
 			&direct_unit_costNull,
 			&indirect_cost_percentNull,
@@ -4942,8 +4942,8 @@ func (t *Resource) FindSetBuffered() bool {
 		record.Contract_class = types.NewText(contract_classNull.String)
 		record.Employment_date, _ = types.NewDateFromString(employment_dateNull.String)
 		record.Resource_group_no = types.NewCode(resource_group_noNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 		record.Direct_unit_cost, _ = types.NewDecimalFromString(direct_unit_costNull.String)
 		record.Indirect_cost_percent, _ = types.NewDecimalFromString(indirect_cost_percentNull.String)
@@ -5002,8 +5002,8 @@ func (t *Resource) copyFromBuffered(record *Resource) {
 	t.Contract_class = record.Contract_class
 	t.Employment_date = record.Employment_date
 	t.Resource_group_no = record.Resource_group_no
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Unit_of_measure_code = record.Unit_of_measure_code
 	t.Direct_unit_cost = record.Direct_unit_cost
 	t.Indirect_cost_percent = record.Indirect_cost_percent
@@ -5456,45 +5456,45 @@ func (t *Resource) ValidateField(fieldName string, value interface{}) error {
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResourceOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(ResourceOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResourceOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(ResourceOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -5975,9 +5975,9 @@ func (t *Resource) FieldValue(no int) (any, bool) {
 	case 14:
 		return t.Resource_group_no, true
 	case 16:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 17:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 18:
 		return t.Unit_of_measure_code, true
 	case 19:
@@ -6163,20 +6163,20 @@ func (t *Resource) SetFieldValue(no int, value any) bool {
 		}
 	case 16:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 17:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 18:
@@ -6800,10 +6800,10 @@ func (t *Resource) columnValue(column string) (interface{}, bool) {
 		return t.Employment_date, true
 	case "resource_group_no":
 		return t.Resource_group_no, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "unit_of_measure_code":
 		return t.Unit_of_measure_code, true
 	case "direct_unit_cost":
@@ -6905,8 +6905,8 @@ func (t *Resource) Init() {
 	t.Contract_class = *new(types.Text)
 	t.Employment_date = *new(types.Date)
 	t.Resource_group_no = *new(types.Code)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Unit_of_measure_code = *new(types.Code)
 	t.Direct_unit_cost = *new(types.Decimal)
 	t.Indirect_cost_percent = *new(types.Decimal)
@@ -6972,8 +6972,8 @@ func (t *Resource) ToMap() map[string]interface{} {
 		"contract_class":           t.Contract_class.String(),
 		"employment_date":          t.Employment_date.String(),
 		"resource_group_no":        t.Resource_group_no.String(),
-		"department_code":          t.Department_code.String(),
-		"project_code":             t.Project_code.String(),
+		"dimension_1_code":         t.Dimension_1_code.String(),
+		"dimension_2_code":         t.Dimension_2_code.String(),
 		"unit_of_measure_code":     t.Unit_of_measure_code.String(),
 		"direct_unit_cost":         t.Direct_unit_cost.String(),
 		"indirect_cost_percent":    t.Indirect_cost_percent.String(),
@@ -7094,14 +7094,14 @@ func (t *Resource) FromMap(data map[string]interface{}) {
 			t.Resource_group_no = types.NewCode(s)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["unit_of_measure_code"]; ok && v != nil {
@@ -7396,7 +7396,7 @@ func (t *Resource) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         16,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -7406,7 +7406,7 @@ func (t *Resource) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         17,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -7751,8 +7751,8 @@ func (t *Resource) GetTableRelationFields() map[string]tables.TableRelationInfo 
 			},
 			SearchTimeout: 0,
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -7761,8 +7761,8 @@ func (t *Resource) GetTableRelationFields() map[string]tables.TableRelationInfo 
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

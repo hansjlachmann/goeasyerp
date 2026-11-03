@@ -264,7 +264,7 @@ func (r *adjustAddReportingCurrency) glEntryOnAfterGetRecord(glEntry *gtables.GL
 	}
 	if glEntry.Posting_date.IsClosing() {
 		key := closingBufferKey{closingDate: glEntry.Posting_date, glAccountNo: glEntry.Gl_account_no,
-			busUnit: glEntry.Business_unit_code, dept: glEntry.Department_code, proj: glEntry.Project_code}
+			busUnit: glEntry.Business_unit_code, dept: glEntry.Dimension_1_code, proj: glEntry.Dimension_2_code}
 		if !r.closingSeen[key] {
 			r.closingSeen[key] = true
 			r.closings = append(r.closings, key)
@@ -344,7 +344,7 @@ func (r *adjustAddReportingCurrency) itemOnAfterGetRecord(item *gtables.Item, ru
 }
 
 // usedCodes: whether the closing entries of the key's date and account carry business units,
-// departments, projects
+// dimension 1 values, dimension 2 values
 func (r *adjustAddReportingCurrency) usedCodes(key closingBufferKey) (bool, bool, bool) {
 	var busUnit, dept, proj bool
 	for _, other := range r.closings {
@@ -380,7 +380,7 @@ func (r *adjustAddReportingCurrency) checkCombination(run *Run, combo [3]bool, u
 	}
 	glEntry := gtables.NewGLEntry(run)
 	if useBusUnit || useDept || useProj {
-		glEntry.SetCurrentKey("gl_account_no", "business_unit_code", "department_code", "project_code", "posting_date")
+		glEntry.SetCurrentKey("gl_account_no", "business_unit_code", "dimension_1_code", "dimension_2_code", "posting_date")
 	} else {
 		glEntry.SetCurrentKey("gl_account_no", "posting_date")
 	}
@@ -390,10 +390,10 @@ func (r *adjustAddReportingCurrency) checkCombination(run *Run, combo [3]bool, u
 		glEntry.SetRange("business_unit_code", key.busUnit)
 	}
 	if useDept {
-		glEntry.SetRange("department_code", key.dept)
+		glEntry.SetRange("dimension_1_code", key.dept)
 	}
 	if useProj {
-		glEntry.SetRange("project_code", key.proj)
+		glEntry.SetRange("dimension_2_code", key.proj)
 	}
 	err := glEntry.CalcSums("amount", "additional_currency_amount")
 	if err != nil {
@@ -440,8 +440,8 @@ func (r *adjustAddReportingCurrency) insertGLEntry(run *Run, transactionNo int, 
 	glEntry.Document_no = documentNo
 	glEntry.Description = types.Text(system.CopyStr(run.Text("RESIDUAL", glEntry.FieldCaption("additional_currency_amount", language)), 1, glEntry.MaxStrLen("description")))
 	glEntry.Business_unit_code = busUnit
-	glEntry.Department_code = dept
-	glEntry.Project_code = proj
+	glEntry.Dimension_1_code = dept
+	glEntry.Dimension_2_code = proj
 	glEntry.Source_code = r.sourceCode
 	glEntry.Journal_batch_name = jnlBatchName
 	glEntry.Reason_code = reasonCode

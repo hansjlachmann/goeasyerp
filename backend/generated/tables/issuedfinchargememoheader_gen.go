@@ -24,8 +24,8 @@
 //	OnValidate_Currency_code(rec *gtables.IssuedFinChargeMemoHeader) error
 //	OnValidate_Contact(rec *gtables.IssuedFinChargeMemoHeader) error
 //	OnValidate_Your_reference(rec *gtables.IssuedFinChargeMemoHeader) error
-//	OnValidate_Department_code(rec *gtables.IssuedFinChargeMemoHeader) error
-//	OnValidate_Project_code(rec *gtables.IssuedFinChargeMemoHeader) error
+//	OnValidate_Dimension_1_code(rec *gtables.IssuedFinChargeMemoHeader) error
+//	OnValidate_Dimension_2_code(rec *gtables.IssuedFinChargeMemoHeader) error
 //	OnValidate_Customer_posting_group(rec *gtables.IssuedFinChargeMemoHeader) error
 //	OnValidate_Gen_bus_posting_group(rec *gtables.IssuedFinChargeMemoHeader) error
 //	OnValidate_Vat_registration_no(rec *gtables.IssuedFinChargeMemoHeader) error
@@ -84,8 +84,8 @@ type IssuedFinChargeMemoHeader struct {
 	Currency_code          types.Code `db:"currency_code"`
 	Contact                types.Text `db:"contact"`
 	Your_reference         types.Text `db:"your_reference"`
-	Department_code        types.Code `db:"department_code"`
-	Project_code           types.Code `db:"project_code"`
+	Dimension_1_code       types.Code `db:"dimension_1_code"`
+	Dimension_2_code       types.Code `db:"dimension_2_code"`
 	Customer_posting_group types.Code `db:"customer_posting_group"`
 	Gen_bus_posting_group  types.Code `db:"gen_bus_posting_group"`
 	Vat_registration_no    types.Text `db:"vat_registration_no"`
@@ -196,8 +196,8 @@ var IssuedFinChargeMemoHeader_FieldNo = struct {
 	Currency_code          int
 	Contact                int
 	Your_reference         int
-	Department_code        int
-	Project_code           int
+	Dimension_1_code       int
+	Dimension_2_code       int
 	Customer_posting_group int
 	Gen_bus_posting_group  int
 	Vat_registration_no    int
@@ -238,8 +238,8 @@ var IssuedFinChargeMemoHeader_FieldNo = struct {
 	Currency_code:          12,
 	Contact:                13,
 	Your_reference:         14,
-	Department_code:        15,
-	Project_code:           16,
+	Dimension_1_code:       15,
+	Dimension_2_code:       16,
 	Customer_posting_group: 17,
 	Gen_bus_posting_group:  18,
 	Vat_registration_no:    19,
@@ -298,9 +298,9 @@ func (t *IssuedFinChargeMemoHeader) FieldNo(fieldName string) int {
 		return 13
 	case "your_reference":
 		return 14
-	case "department_code":
+	case "dimension_1_code":
 		return 15
-	case "project_code":
+	case "dimension_2_code":
 		return 16
 	case "customer_posting_group":
 		return 17
@@ -388,9 +388,9 @@ func (t *IssuedFinChargeMemoHeader) FieldName(fieldNo int) string {
 	case 14:
 		return "your_reference"
 	case 15:
-		return "department_code"
+		return "dimension_1_code"
 	case 16:
-		return "project_code"
+		return "dimension_2_code"
 	case 17:
 		return "customer_posting_group"
 	case 18:
@@ -584,11 +584,11 @@ type (
 	IssuedFinChargeMemoHeaderOnValidate_Your_reference interface {
 		OnValidate_Your_reference(rec *IssuedFinChargeMemoHeader) error
 	}
-	IssuedFinChargeMemoHeaderOnValidate_Department_code interface {
-		OnValidate_Department_code(rec *IssuedFinChargeMemoHeader) error
+	IssuedFinChargeMemoHeaderOnValidate_Dimension_1_code interface {
+		OnValidate_Dimension_1_code(rec *IssuedFinChargeMemoHeader) error
 	}
-	IssuedFinChargeMemoHeaderOnValidate_Project_code interface {
-		OnValidate_Project_code(rec *IssuedFinChargeMemoHeader) error
+	IssuedFinChargeMemoHeaderOnValidate_Dimension_2_code interface {
+		OnValidate_Dimension_2_code(rec *IssuedFinChargeMemoHeader) error
 	}
 	IssuedFinChargeMemoHeaderOnValidate_Customer_posting_group interface {
 		OnValidate_Customer_posting_group(rec *IssuedFinChargeMemoHeader) error
@@ -707,10 +707,10 @@ func issuedFinChargeMemoHeaderTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Contact)
 	case "OnValidate_Your_reference":
 		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Your_reference)
-	case "OnValidate_Department_code":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Dimension_2_code)
 	case "OnValidate_Customer_posting_group":
 		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Customer_posting_group)
 	case "OnValidate_Gen_bus_posting_group":
@@ -870,10 +870,10 @@ func (t *IssuedFinChargeMemoHeader) CheckFields() error {
 	if err := tables.CheckMaxLength(IssuedFinChargeMemoHeaderTableName, "your_reference", string(t.Your_reference), 30); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(IssuedFinChargeMemoHeaderTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(IssuedFinChargeMemoHeaderTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(IssuedFinChargeMemoHeaderTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(IssuedFinChargeMemoHeaderTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(IssuedFinChargeMemoHeaderTableName, "customer_posting_group", string(t.Customer_posting_group), 10); err != nil {
@@ -956,8 +956,8 @@ func GetIssuedFinChargeMemoHeaderTableSchema() string {
 		currency_code TEXT(10),
 		contact TEXT(50),
 		your_reference TEXT(30),
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		customer_posting_group TEXT(10),
 		gen_bus_posting_group TEXT(10),
 		vat_registration_no TEXT(20),
@@ -1003,8 +1003,8 @@ func GetIssuedFinChargeMemoHeaderPostgresTableSchema() string {
 		currency_code VARCHAR(10),
 		contact VARCHAR(50),
 		your_reference VARCHAR(30),
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		customer_posting_group VARCHAR(10),
 		gen_bus_posting_group VARCHAR(10),
 		vat_registration_no VARCHAR(20),
@@ -1172,8 +1172,8 @@ func (t *IssuedFinChargeMemoHeader) StoreOldValues() {
 	t.oldValues["currency_code"] = t.Currency_code
 	t.oldValues["contact"] = t.Contact
 	t.oldValues["your_reference"] = t.Your_reference
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["customer_posting_group"] = t.Customer_posting_group
 	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
 	t.oldValues["vat_registration_no"] = t.Vat_registration_no
@@ -1250,11 +1250,11 @@ func (t *IssuedFinChargeMemoHeader) XRec() *IssuedFinChargeMemoHeader {
 	if v, ok := t.oldValues["your_reference"].(types.Text); ok {
 		x.Your_reference = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["customer_posting_group"].(types.Code); ok {
 		x.Customer_posting_group = v
@@ -1391,8 +1391,8 @@ func (t *IssuedFinChargeMemoHeader) GetByPK(no types.Code) bool {
 	var currency_codeNull sql.NullString
 	var contactNull sql.NullString
 	var your_referenceNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var customer_posting_groupNull sql.NullString
 	var gen_bus_posting_groupNull sql.NullString
 	var vat_registration_noNull sql.NullString
@@ -1420,7 +1420,7 @@ func (t *IssuedFinChargeMemoHeader) GetByPK(no types.Code) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT no, customer_no, name, name_2, address, address_2, post_code, city, state, country_code, language_code, currency_code, contact, your_reference, department_code, project_code, customer_posting_group, gen_bus_posting_group, vat_registration_no, reason_code, posting_date, document_date, due_date, fin_charge_terms_code, interest_posted, additional_fee_posted, posting_description, no_printed, user_id, no_series, pre_assigned_no_series, pre_assigned_no, source_code, tax_area_code, tax_liable, tax_bus_posting_group FROM "%s" WHERE 1=1 AND no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT no, customer_no, name, name_2, address, address_2, post_code, city, state, country_code, language_code, currency_code, contact, your_reference, dimension_1_code, dimension_2_code, customer_posting_group, gen_bus_posting_group, vat_registration_no, reason_code, posting_date, document_date, due_date, fin_charge_terms_code, interest_posted, additional_fee_posted, posting_description, no_printed, user_id, no_series, pre_assigned_no_series, pre_assigned_no, source_code, tax_area_code, tax_liable, tax_bus_posting_group FROM "%s" WHERE 1=1 AND no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1441,8 +1441,8 @@ func (t *IssuedFinChargeMemoHeader) GetByPK(no types.Code) bool {
 		&currency_codeNull,
 		&contactNull,
 		&your_referenceNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&customer_posting_groupNull,
 		&gen_bus_posting_groupNull,
 		&vat_registration_noNull,
@@ -1490,8 +1490,8 @@ func (t *IssuedFinChargeMemoHeader) GetByPK(no types.Code) bool {
 	t.Currency_code = types.NewCode(currency_codeNull.String)
 	t.Contact = types.NewText(contactNull.String)
 	t.Your_reference = types.NewText(your_referenceNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Customer_posting_group = types.NewCode(customer_posting_groupNull.String)
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Vat_registration_no = types.NewText(vat_registration_noNull.String)
@@ -1548,8 +1548,8 @@ func (t *IssuedFinChargeMemoHeader) Insert(runTrigger bool) bool {
 		t.Currency_code,
 		t.Contact,
 		t.Your_reference,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Customer_posting_group,
 		t.Gen_bus_posting_group,
 		t.Vat_registration_no,
@@ -1574,7 +1574,7 @@ func (t *IssuedFinChargeMemoHeader) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, customer_no, name, name_2, address, address_2, post_code, city, state, country_code, language_code, currency_code, contact, your_reference, department_code, project_code, customer_posting_group, gen_bus_posting_group, vat_registration_no, reason_code, posting_date, document_date, due_date, fin_charge_terms_code, interest_posted, additional_fee_posted, posting_description, no_printed, user_id, no_series, pre_assigned_no_series, pre_assigned_no, source_code, tax_area_code, tax_liable, tax_bus_posting_group) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, customer_no, name, name_2, address, address_2, post_code, city, state, country_code, language_code, currency_code, contact, your_reference, dimension_1_code, dimension_2_code, customer_posting_group, gen_bus_posting_group, vat_registration_no, reason_code, posting_date, document_date, due_date, fin_charge_terms_code, interest_posted, additional_fee_posted, posting_description, no_printed, user_id, no_series, pre_assigned_no_series, pre_assigned_no, source_code, tax_area_code, tax_liable, tax_bus_posting_group) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1626,8 +1626,8 @@ func (t *IssuedFinChargeMemoHeader) InsertAll(records []*IssuedFinChargeMemoHead
 			r.Currency_code,
 			r.Contact,
 			r.Your_reference,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Customer_posting_group,
 			r.Gen_bus_posting_group,
 			r.Vat_registration_no,
@@ -1651,7 +1651,7 @@ func (t *IssuedFinChargeMemoHeader) InsertAll(records []*IssuedFinChargeMemoHead
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoHeaderTableName)
-	columns := []string{"no", "customer_no", "name", "name_2", "address", "address_2", "post_code", "city", "state", "country_code", "language_code", "currency_code", "contact", "your_reference", "department_code", "project_code", "customer_posting_group", "gen_bus_posting_group", "vat_registration_no", "reason_code", "posting_date", "document_date", "due_date", "fin_charge_terms_code", "interest_posted", "additional_fee_posted", "posting_description", "no_printed", "user_id", "no_series", "pre_assigned_no_series", "pre_assigned_no", "source_code", "tax_area_code", "tax_liable", "tax_bus_posting_group"}
+	columns := []string{"no", "customer_no", "name", "name_2", "address", "address_2", "post_code", "city", "state", "country_code", "language_code", "currency_code", "contact", "your_reference", "dimension_1_code", "dimension_2_code", "customer_posting_group", "gen_bus_posting_group", "vat_registration_no", "reason_code", "posting_date", "document_date", "due_date", "fin_charge_terms_code", "interest_posted", "additional_fee_posted", "posting_description", "no_printed", "user_id", "no_series", "pre_assigned_no_series", "pre_assigned_no", "source_code", "tax_area_code", "tax_liable", "tax_bus_posting_group"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1747,13 +1747,13 @@ func (t *IssuedFinChargeMemoHeader) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "your_reference = ?")
 			values = append(values, t.Your_reference)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("customer_posting_group") {
 			setClauses = append(setClauses, "customer_posting_group = ?")
@@ -1868,10 +1868,10 @@ func (t *IssuedFinChargeMemoHeader) Modify(runTrigger bool) bool {
 		values = append(values, t.Contact)
 		setClauses = append(setClauses, "your_reference = ?")
 		values = append(values, t.Your_reference)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "customer_posting_group = ?")
 		values = append(values, t.Customer_posting_group)
 		setClauses = append(setClauses, "gen_bus_posting_group = ?")
@@ -2034,13 +2034,13 @@ func (t *IssuedFinChargeMemoHeader) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Text); ok {
 			return !t.Your_reference.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "customer_posting_group":
 		if old, ok := oldValue.(types.Code); ok {
@@ -3093,10 +3093,10 @@ func (t *IssuedFinChargeMemoHeader) columnName(fieldName string) (string, bool) 
 		return "contact", true
 	case strings.ToLower("your_reference"):
 		return "your_reference", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("customer_posting_group"):
 		return "customer_posting_group", true
 	case strings.ToLower("gen_bus_posting_group"):
@@ -3524,7 +3524,7 @@ func (t *IssuedFinChargeMemoHeader) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, customer_no, name, name_2, address, address_2, post_code, city, state, country_code, language_code, currency_code, contact, your_reference, department_code, project_code, customer_posting_group, gen_bus_posting_group, vat_registration_no, reason_code, posting_date, document_date, due_date, fin_charge_terms_code, interest_posted, additional_fee_posted, posting_description, no_printed, user_id, no_series, pre_assigned_no_series, pre_assigned_no, source_code, tax_area_code, tax_liable, tax_bus_posting_group FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, customer_no, name, name_2, address, address_2, post_code, city, state, country_code, language_code, currency_code, contact, your_reference, dimension_1_code, dimension_2_code, customer_posting_group, gen_bus_posting_group, vat_registration_no, reason_code, posting_date, document_date, due_date, fin_charge_terms_code, interest_posted, additional_fee_posted, posting_description, no_printed, user_id, no_series, pre_assigned_no_series, pre_assigned_no, source_code, tax_area_code, tax_liable, tax_bus_posting_group FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3543,8 +3543,8 @@ func (t *IssuedFinChargeMemoHeader) FindFirst() bool {
 	var currency_codeNull sql.NullString
 	var contactNull sql.NullString
 	var your_referenceNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var customer_posting_groupNull sql.NullString
 	var gen_bus_posting_groupNull sql.NullString
 	var vat_registration_noNull sql.NullString
@@ -3580,8 +3580,8 @@ func (t *IssuedFinChargeMemoHeader) FindFirst() bool {
 		&currency_codeNull,
 		&contactNull,
 		&your_referenceNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&customer_posting_groupNull,
 		&gen_bus_posting_groupNull,
 		&vat_registration_noNull,
@@ -3627,8 +3627,8 @@ func (t *IssuedFinChargeMemoHeader) FindFirst() bool {
 	t.Currency_code = types.NewCode(currency_codeNull.String)
 	t.Contact = types.NewText(contactNull.String)
 	t.Your_reference = types.NewText(your_referenceNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Customer_posting_group = types.NewCode(customer_posting_groupNull.String)
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Vat_registration_no = types.NewText(vat_registration_noNull.String)
@@ -3668,7 +3668,7 @@ func (t *IssuedFinChargeMemoHeader) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, customer_no, name, name_2, address, address_2, post_code, city, state, country_code, language_code, currency_code, contact, your_reference, department_code, project_code, customer_posting_group, gen_bus_posting_group, vat_registration_no, reason_code, posting_date, document_date, due_date, fin_charge_terms_code, interest_posted, additional_fee_posted, posting_description, no_printed, user_id, no_series, pre_assigned_no_series, pre_assigned_no, source_code, tax_area_code, tax_liable, tax_bus_posting_group FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, customer_no, name, name_2, address, address_2, post_code, city, state, country_code, language_code, currency_code, contact, your_reference, dimension_1_code, dimension_2_code, customer_posting_group, gen_bus_posting_group, vat_registration_no, reason_code, posting_date, document_date, due_date, fin_charge_terms_code, interest_posted, additional_fee_posted, posting_description, no_printed, user_id, no_series, pre_assigned_no_series, pre_assigned_no, source_code, tax_area_code, tax_liable, tax_bus_posting_group FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3687,8 +3687,8 @@ func (t *IssuedFinChargeMemoHeader) FindLast() bool {
 	var currency_codeNull sql.NullString
 	var contactNull sql.NullString
 	var your_referenceNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var customer_posting_groupNull sql.NullString
 	var gen_bus_posting_groupNull sql.NullString
 	var vat_registration_noNull sql.NullString
@@ -3724,8 +3724,8 @@ func (t *IssuedFinChargeMemoHeader) FindLast() bool {
 		&currency_codeNull,
 		&contactNull,
 		&your_referenceNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&customer_posting_groupNull,
 		&gen_bus_posting_groupNull,
 		&vat_registration_noNull,
@@ -3771,8 +3771,8 @@ func (t *IssuedFinChargeMemoHeader) FindLast() bool {
 	t.Currency_code = types.NewCode(currency_codeNull.String)
 	t.Contact = types.NewText(contactNull.String)
 	t.Your_reference = types.NewText(your_referenceNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Customer_posting_group = types.NewCode(customer_posting_groupNull.String)
 	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 	t.Vat_registration_no = types.NewText(vat_registration_noNull.String)
@@ -3842,7 +3842,7 @@ func (t *IssuedFinChargeMemoHeader) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, customer_no, name, name_2, address, address_2, post_code, city, state, country_code, language_code, currency_code, contact, your_reference, department_code, project_code, customer_posting_group, gen_bus_posting_group, vat_registration_no, reason_code, posting_date, document_date, due_date, fin_charge_terms_code, interest_posted, additional_fee_posted, posting_description, no_printed, user_id, no_series, pre_assigned_no_series, pre_assigned_no, source_code, tax_area_code, tax_liable, tax_bus_posting_group FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, customer_no, name, name_2, address, address_2, post_code, city, state, country_code, language_code, currency_code, contact, your_reference, dimension_1_code, dimension_2_code, customer_posting_group, gen_bus_posting_group, vat_registration_no, reason_code, posting_date, document_date, due_date, fin_charge_terms_code, interest_posted, additional_fee_posted, posting_description, no_printed, user_id, no_series, pre_assigned_no_series, pre_assigned_no, source_code, tax_area_code, tax_liable, tax_bus_posting_group FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3925,8 +3925,8 @@ func (t *IssuedFinChargeMemoHeader) Next(steps ...int) bool {
 		var currency_codeNull sql.NullString
 		var contactNull sql.NullString
 		var your_referenceNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var customer_posting_groupNull sql.NullString
 		var gen_bus_posting_groupNull sql.NullString
 		var vat_registration_noNull sql.NullString
@@ -3962,8 +3962,8 @@ func (t *IssuedFinChargeMemoHeader) Next(steps ...int) bool {
 			&currency_codeNull,
 			&contactNull,
 			&your_referenceNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&customer_posting_groupNull,
 			&gen_bus_posting_groupNull,
 			&vat_registration_noNull,
@@ -4008,8 +4008,8 @@ func (t *IssuedFinChargeMemoHeader) Next(steps ...int) bool {
 		t.Currency_code = types.NewCode(currency_codeNull.String)
 		t.Contact = types.NewText(contactNull.String)
 		t.Your_reference = types.NewText(your_referenceNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Customer_posting_group = types.NewCode(customer_posting_groupNull.String)
 		t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 		t.Vat_registration_no = types.NewText(vat_registration_noNull.String)
@@ -4078,7 +4078,7 @@ func (t *IssuedFinChargeMemoHeader) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, customer_no, name, name_2, address, address_2, post_code, city, state, country_code, language_code, currency_code, contact, your_reference, department_code, project_code, customer_posting_group, gen_bus_posting_group, vat_registration_no, reason_code, posting_date, document_date, due_date, fin_charge_terms_code, interest_posted, additional_fee_posted, posting_description, no_printed, user_id, no_series, pre_assigned_no_series, pre_assigned_no, source_code, tax_area_code, tax_liable, tax_bus_posting_group FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, customer_no, name, name_2, address, address_2, post_code, city, state, country_code, language_code, currency_code, contact, your_reference, dimension_1_code, dimension_2_code, customer_posting_group, gen_bus_posting_group, vat_registration_no, reason_code, posting_date, document_date, due_date, fin_charge_terms_code, interest_posted, additional_fee_posted, posting_description, no_printed, user_id, no_series, pre_assigned_no_series, pre_assigned_no, source_code, tax_area_code, tax_liable, tax_bus_posting_group FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4114,8 +4114,8 @@ func (t *IssuedFinChargeMemoHeader) FindSetBuffered() bool {
 		var currency_codeNull sql.NullString
 		var contactNull sql.NullString
 		var your_referenceNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var customer_posting_groupNull sql.NullString
 		var gen_bus_posting_groupNull sql.NullString
 		var vat_registration_noNull sql.NullString
@@ -4151,8 +4151,8 @@ func (t *IssuedFinChargeMemoHeader) FindSetBuffered() bool {
 			&currency_codeNull,
 			&contactNull,
 			&your_referenceNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&customer_posting_groupNull,
 			&gen_bus_posting_groupNull,
 			&vat_registration_noNull,
@@ -4195,8 +4195,8 @@ func (t *IssuedFinChargeMemoHeader) FindSetBuffered() bool {
 		record.Currency_code = types.NewCode(currency_codeNull.String)
 		record.Contact = types.NewText(contactNull.String)
 		record.Your_reference = types.NewText(your_referenceNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Customer_posting_group = types.NewCode(customer_posting_groupNull.String)
 		record.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
 		record.Vat_registration_no = types.NewText(vat_registration_noNull.String)
@@ -4258,8 +4258,8 @@ func (t *IssuedFinChargeMemoHeader) copyFromBuffered(record *IssuedFinChargeMemo
 	t.Currency_code = record.Currency_code
 	t.Contact = record.Contact
 	t.Your_reference = record.Your_reference
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Customer_posting_group = record.Customer_posting_group
 	t.Gen_bus_posting_group = record.Gen_bus_posting_group
 	t.Vat_registration_no = record.Vat_registration_no
@@ -4691,45 +4691,45 @@ func (t *IssuedFinChargeMemoHeader) ValidateField(fieldName string, value interf
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -5206,9 +5206,9 @@ func (t *IssuedFinChargeMemoHeader) FieldValue(no int) (any, bool) {
 	case 14:
 		return t.Your_reference, true
 	case 15:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 16:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 17:
 		return t.Customer_posting_group, true
 	case 18:
@@ -5402,20 +5402,20 @@ func (t *IssuedFinChargeMemoHeader) SetFieldValue(no int, value any) bool {
 		}
 	case 15:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 16:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 17:
@@ -6042,10 +6042,10 @@ func (t *IssuedFinChargeMemoHeader) columnValue(column string) (interface{}, boo
 		return t.Contact, true
 	case "your_reference":
 		return t.Your_reference, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "customer_posting_group":
 		return t.Customer_posting_group, true
 	case "gen_bus_posting_group":
@@ -6153,8 +6153,8 @@ func (t *IssuedFinChargeMemoHeader) Init() {
 	t.Currency_code = *new(types.Code)
 	t.Contact = *new(types.Text)
 	t.Your_reference = *new(types.Text)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Customer_posting_group = *new(types.Code)
 	t.Gen_bus_posting_group = *new(types.Code)
 	t.Vat_registration_no = *new(types.Text)
@@ -6223,8 +6223,8 @@ func (t *IssuedFinChargeMemoHeader) ToMap() map[string]interface{} {
 		"currency_code":          t.Currency_code.String(),
 		"contact":                t.Contact.String(),
 		"your_reference":         t.Your_reference.String(),
-		"department_code":        t.Department_code.String(),
-		"project_code":           t.Project_code.String(),
+		"dimension_1_code":       t.Dimension_1_code.String(),
+		"dimension_2_code":       t.Dimension_2_code.String(),
 		"customer_posting_group": t.Customer_posting_group.String(),
 		"gen_bus_posting_group":  t.Gen_bus_posting_group.String(),
 		"vat_registration_no":    t.Vat_registration_no.String(),
@@ -6330,14 +6330,14 @@ func (t *IssuedFinChargeMemoHeader) FromMap(data map[string]interface{}) {
 			t.Your_reference = types.NewText(s)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["customer_posting_group"]; ok && v != nil {
@@ -6611,7 +6611,7 @@ func (t *IssuedFinChargeMemoHeader) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         15,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -6621,7 +6621,7 @@ func (t *IssuedFinChargeMemoHeader) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         16,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -6970,8 +6970,8 @@ func (t *IssuedFinChargeMemoHeader) GetTableRelationFields() map[string]tables.T
 			},
 			SearchTimeout: 0,
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -6980,8 +6980,8 @@ func (t *IssuedFinChargeMemoHeader) GetTableRelationFields() map[string]tables.T
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

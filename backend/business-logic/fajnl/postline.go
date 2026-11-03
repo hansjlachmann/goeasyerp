@@ -314,8 +314,8 @@ func makeFALedgEntry(src ftables.Source, faJnlLine *gtables.FAJournalLine) *gtab
 	e.Index_entry = faJnlLine.Index_entry
 	e.No_of_depreciation_days = faJnlLine.No_of_depreciation_days
 	e.Fa_posting_group = faJnlLine.Fa_posting_group
-	e.Department_code = faJnlLine.Department_code
-	e.Project_code = faJnlLine.Project_code
+	e.Dimension_1_code = faJnlLine.Dimension_1_code
+	e.Dimension_2_code = faJnlLine.Dimension_2_code
 	e.Reason_code = faJnlLine.Reason_code
 	e.Source_code = faJnlLine.Source_code
 	e.Journal_batch_name = faJnlLine.Journal_batch_name
@@ -370,8 +370,8 @@ func makeMaintenanceLedgEntry(src ftables.Source, faJnlLine *gtables.FAJournalLi
 	e.Quantity = faJnlLine.Quantity
 	e.Index_entry = faJnlLine.Index_entry
 	e.Fa_posting_group = faJnlLine.Fa_posting_group
-	e.Department_code = faJnlLine.Department_code
-	e.Project_code = faJnlLine.Project_code
+	e.Dimension_1_code = faJnlLine.Dimension_1_code
+	e.Dimension_2_code = faJnlLine.Dimension_2_code
 	e.Reason_code = faJnlLine.Reason_code
 	e.Source_code = faJnlLine.Source_code
 	e.Journal_batch_name = faJnlLine.Journal_batch_name
@@ -698,8 +698,8 @@ func makeFALedgEntryFromGenJnl(src ftables.Source, genJnlLine *gtables.GenJourna
 	e.Reclassification_entry = genJnlLine.Fa_reclassification_entry
 	e.No_of_depreciation_days = genJnlLine.No_of_depreciation_days
 	e.Fa_posting_group = genJnlLine.Posting_group
-	e.Department_code = genJnlLine.Department_code
-	e.Project_code = genJnlLine.Project_code
+	e.Dimension_1_code = genJnlLine.Dimension_1_code
+	e.Dimension_2_code = genJnlLine.Dimension_2_code
 	e.Reason_code = genJnlLine.Reason_code
 	e.Source_code = genJnlLine.Source_code
 	e.Journal_batch_name = genJnlLine.Journal_batch_name
@@ -743,8 +743,8 @@ func makeMaintenanceLedgEntryFromGenJnl(src ftables.Source, genJnlLine *gtables.
 	e.Correction = genJnlLine.Correction
 	e.Index_entry = genJnlLine.Index_entry
 	e.Fa_posting_group = genJnlLine.Posting_group
-	e.Department_code = genJnlLine.Department_code
-	e.Project_code = genJnlLine.Project_code
+	e.Dimension_1_code = genJnlLine.Dimension_1_code
+	e.Dimension_2_code = genJnlLine.Dimension_2_code
 	e.Maintenance_code = genJnlLine.Maintenance_code
 	e.Reason_code = genJnlLine.Reason_code
 	e.Source_code = genJnlLine.Source_code

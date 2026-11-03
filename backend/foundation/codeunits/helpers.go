@@ -28,6 +28,8 @@ type goroutineContext struct {
 	PageParams map[string]string
 	// Regional: the user's work date and date and number formats (My Settings)
 	Regional Regional
+	// DimensionLabels: the company's names of dimension 1 and 2 (General Ledger Setup)
+	DimensionLabels [2]string
 }
 
 // currentContexts holds the context for each goroutine
@@ -45,6 +47,7 @@ func SetCurrentContext(userID, userName, company, language string) {
 	if RegionalLoader != nil && userID != "" {
 		ctx.Regional = RegionalLoader(userID)
 	}
+	ctx.DimensionLabels = loadDimensionLabels(company)
 	currentContexts.Store(getGoroutineID(), ctx)
 }
 

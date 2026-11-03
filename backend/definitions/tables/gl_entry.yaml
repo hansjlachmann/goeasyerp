@@ -114,13 +114,13 @@ table:
       scale: 2
       decimal_places: "2:2"
 
-    - name: department_code
+    - name: dimension_1_code
       no: 23
       type: types.Code
-      db_name: department_code
+      db_name: dimension_1_code
       length: 10
       table_relation:
-        table: Department
+        table: Dimension_1
         field: code
         lookup_columns:
           - source: code
@@ -128,13 +128,13 @@ table:
           - source: name
             width: 250
 
-    - name: project_code
+    - name: dimension_2_code
       no: 24
       type: types.Code
-      db_name: project_code
+      db_name: dimension_2_code
       length: 10
       table_relation:
-        table: Project
+        table: Dimension_2
         field: code
         lookup_columns:
           - source: code
@@ -499,7 +499,7 @@ table:
         - add_currency_debit_amount
         - add_currency_credit_amount
     - name: gl_account_dimensions
-      fields: [gl_account_no, business_unit_code, department_code, project_code, posting_date]
+      fields: [gl_account_no, business_unit_code, dimension_1_code, dimension_2_code, posting_date]
       sum_index_fields:
         - amount
         - debit_amount

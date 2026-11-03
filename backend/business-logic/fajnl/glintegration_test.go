@@ -101,7 +101,7 @@ func TestGenJnlFAAcquisition(t *testing.T) {
 }
 
 // Depreciation with Insert FA Bal. Account: the posting group's depreciation expense account
-// split by an FA allocation (60 % to a project), the rest on the group's account; posted, the
+// split by an FA allocation (60 % to a dimension 2), the rest on the group's account; posted, the
 // accumulated depreciation account takes the amount
 func TestGenJnlFADepreciationWithAllocation(t *testing.T) {
 	src, rollback := inTransaction(t, demoDB(t))
@@ -116,7 +116,7 @@ func TestGenJnlFADepreciationWithAllocation(t *testing.T) {
 	alloc.Line_no = 10000
 	must(t, alloc.Validate("account_no", types.Code("5620")))
 	alloc.Allocation_percent = dec("60")
-	alloc.Project_code = "PROJ-A"
+	alloc.Dimension_2_code = "PROJ-A"
 	must(t, alloc.InsertOrError(true))
 
 	// the journal (an Assets template) with the depreciation line
@@ -143,7 +143,7 @@ func TestGenJnlFADepreciationWithAllocation(t *testing.T) {
 	var balLines []string
 	for found := lines.FindSet(); found; found = lines.Next() {
 		if lines.Account_type == gtables.GenJournalLine_Account_type.GLAccount {
-			balLines = append(balLines, lines.Account_no.String()+" "+lines.Amount.String()+" "+lines.Project_code.String())
+			balLines = append(balLines, lines.Account_no.String()+" "+lines.Amount.String()+" "+lines.Dimension_2_code.String())
 		}
 	}
 	if strings.Join(balLines, "|") != "5620 600 PROJ-A|5620 400 " {

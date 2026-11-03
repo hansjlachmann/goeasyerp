@@ -283,13 +283,13 @@ table:
       db_name: item_shpt_entry_no
       editable: false
 
-    - name: department_code
+    - name: dimension_1_code
       no: 34
       type: types.Code
-      db_name: department_code
+      db_name: dimension_1_code
       length: 10
       table_relation:
-        table: Department
+        table: Dimension_1
         field: code
         lookup_columns:
           - source: code
@@ -297,13 +297,13 @@ table:
           - source: name
             width: 250
 
-    - name: project_code
+    - name: dimension_2_code
       no: 35
       type: types.Code
-      db_name: project_code
+      db_name: dimension_2_code
       length: 10
       table_relation:
-        table: Project
+        table: Dimension_2
         field: code
         lookup_columns:
           - source: code
@@ -403,13 +403,13 @@ table:
           - source: name
             width: 250
 
-    - name: new_department_code
+    - name: new_dimension_1_code
       no: 51
       type: types.Code
-      db_name: new_department_code
+      db_name: new_dimension_1_code
       length: 10
       table_relation:
-        table: Department
+        table: Dimension_1
         field: code
         lookup_columns:
           - source: code
@@ -417,13 +417,13 @@ table:
           - source: name
             width: 250
 
-    - name: new_project_code
+    - name: new_dimension_2_code
       no: 52
       type: types.Code
-      db_name: new_project_code
+      db_name: new_dimension_2_code
       length: 10
       table_relation:
-        table: Project
+        table: Dimension_2
         field: code
         lookup_columns:
           - source: code

@@ -10,7 +10,7 @@ import (
 // Report 98 Date Compress General Ledger: the G/L entries of closed fiscal years between the
 // Starting and Ending Date become one entry per account, general posting type and groups,
 // period (day … year) and sign — and per the retained Document Type/No., Job No., Business
-// Unit, Department and Project Code — dated on the period's first day (Prior-Year Entry), in a
+// Unit, Dimension 1 and Dimension 2 Code — dated on the period's first day (Prior-Year Entry), in a
 // new transaction and G/L register; the Date Compr. Register records the run.
 const DateCompressGeneralLedgerID = 98
 
@@ -32,7 +32,7 @@ type dateCompressGL struct {
 func (r *dateCompressGL) Definition() *Definition {
 	r.tableID = gtables.GLEntryTableID
 	r.fields = []retainField{{name: "document_type"}, {name: "document_no"}, {name: "job_no"}, {name: "business_unit_code"},
-		{name: "department_code"}, {name: "project_code"}, {name: "quantity", total: true}}
+		{name: "dimension_1_code"}, {name: "dimension_2_code"}, {name: "quantity", total: true}}
 	return &Definition{
 		OptionsCaption: "OPTIONS",
 		Options:        dateComprOptions(true, r.fields),
@@ -148,13 +148,13 @@ func (r *dateCompressGL) onAfterGetRecord(glEntry *gtables.GLEntry, run *Run) er
 			glEntry2.SetRange("business_unit_code", glEntry2.Business_unit_code)
 			newGLEntry.Business_unit_code = glEntry2.Business_unit_code
 		}
-		if r.retainNo("department_code") {
-			glEntry2.SetRange("department_code", glEntry2.Department_code)
-			newGLEntry.Department_code = glEntry2.Department_code
+		if r.retainNo("dimension_1_code") {
+			glEntry2.SetRange("dimension_1_code", glEntry2.Dimension_1_code)
+			newGLEntry.Dimension_1_code = glEntry2.Dimension_1_code
 		}
-		if r.retainNo("project_code") {
-			glEntry2.SetRange("project_code", glEntry2.Project_code)
-			newGLEntry.Project_code = glEntry2.Project_code
+		if r.retainNo("dimension_2_code") {
+			glEntry2.SetRange("dimension_2_code", glEntry2.Dimension_2_code)
+			newGLEntry.Dimension_2_code = glEntry2.Dimension_2_code
 		}
 		if !glEntry2.Amount.IsZero() {
 			if glEntry2.Amount.IsPositive() {

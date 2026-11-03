@@ -7,7 +7,7 @@ import (
 )
 
 // Report 96 Copy G/L Budget: the G/L budget entries in the request filters copied as new entries
-// — into another budget, account, department or project when given (Copy to…), dated on by the
+// — into another budget, account, dimension 1 or 2 when given (Copy to…), dated on by the
 // Date Change Formula and multiplied by the Amount Change Factor; the budget copied to is created
 // when it does not exist. A processing-only report (G/L Budget Names, the budget matrix).
 const CopyGLBudgetID = 96
@@ -31,8 +31,8 @@ func (r *copyGLBudget) Definition() *Definition {
 		Options: []Option{
 			{Name: "budget_name", Type: "text", Relation: &OptionRelation{Table: gtables.GLBudgetNameTableName, Columns: []string{"name", "description"}}},
 			{Name: "gl_account_no", Type: "text", Relation: &OptionRelation{Table: gtables.GLAccountTableName, Columns: []string{"no", "name"}}},
-			{Name: "department_code", Type: "text", Relation: &OptionRelation{Table: gtables.DepartmentTableName, Columns: []string{"code", "name"}}},
-			{Name: "project_code", Type: "text", Relation: &OptionRelation{Table: gtables.ProjectTableName, Columns: []string{"code", "name"}}},
+			{Name: "dimension_1_code", Type: "text", Relation: &OptionRelation{Table: gtables.Dimension1TableName, Columns: []string{"code", "name"}}},
+			{Name: "dimension_2_code", Type: "text", Relation: &OptionRelation{Table: gtables.Dimension2TableName, Columns: []string{"code", "name"}}},
 			{Name: "date_change_formula", Type: "text"},
 			{Name: "amount_change_factor", Type: "number"},
 		},
@@ -44,7 +44,7 @@ func (r *copyGLBudget) Definition() *Definition {
 			Name:                "GLBudgetEntry",
 			Table:               gtables.GLBudgetEntryTableName,
 			Key:                 []string{"entry_no"},
-			RequestFilterFields: []string{"budget_name", "gl_account_no", "department_code", "project_code", "date"},
+			RequestFilterFields: []string{"budget_name", "gl_account_no", "dimension_1_code", "dimension_2_code", "date"},
 			OnPreDataItem:       Trigger(r.onPreDataItem),
 			OnAfterGetRecord:    Trigger(r.onAfterGetRecord),
 			OnPostDataItem: Trigger(func(rec *gtables.GLBudgetEntry, run *Run) error {
@@ -68,8 +68,8 @@ func (r *copyGLBudget) onPreReport(run *Run) error {
 	r.toGLBudgetEntry = gtables.NewGLBudgetEntry(run)
 	r.toGLBudgetEntry.Budget_name = types.Code(system.UpperCase(run.Option("budget_name")))
 	r.toGLBudgetEntry.Gl_account_no = types.Code(system.UpperCase(run.Option("gl_account_no")))
-	r.toGLBudgetEntry.Department_code = types.Code(system.UpperCase(run.Option("department_code")))
-	r.toGLBudgetEntry.Project_code = types.Code(system.UpperCase(run.Option("project_code")))
+	r.toGLBudgetEntry.Dimension_1_code = types.Code(system.UpperCase(run.Option("dimension_1_code")))
+	r.toGLBudgetEntry.Dimension_2_code = types.Code(system.UpperCase(run.Option("dimension_2_code")))
 	r.changeDateExpression = system.UpperCase(run.Option("date_change_formula"))
 	if r.changeDateExpression != "" {
 		_, err := system.CalcDate(r.changeDateExpression, system.WorkDate())
@@ -119,11 +119,11 @@ func (r *copyGLBudget) onAfterGetRecord(rec *gtables.GLBudgetEntry, run *Run) er
 	if r.toGLBudgetEntry.Gl_account_no != "" {
 		glBudgetEntry2.Gl_account_no = r.toGLBudgetEntry.Gl_account_no
 	}
-	if r.toGLBudgetEntry.Department_code != "" {
-		glBudgetEntry2.Department_code = r.toGLBudgetEntry.Department_code
+	if r.toGLBudgetEntry.Dimension_1_code != "" {
+		glBudgetEntry2.Dimension_1_code = r.toGLBudgetEntry.Dimension_1_code
 	}
-	if r.toGLBudgetEntry.Project_code != "" {
-		glBudgetEntry2.Project_code = r.toGLBudgetEntry.Project_code
+	if r.toGLBudgetEntry.Dimension_2_code != "" {
+		glBudgetEntry2.Dimension_2_code = r.toGLBudgetEntry.Dimension_2_code
 	}
 	if r.changeDateExpression != "" {
 		date, err := system.CalcDate(r.changeDateExpression, rec.Date)

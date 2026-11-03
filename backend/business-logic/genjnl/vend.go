@@ -56,8 +56,8 @@ func (p *GenJnlPostLine) postVend(genJnlLine *gtables.GenJournalLine) error {
 	vendLedgEntry.Inv_discount_lcy = genJnlLine.Inv_discount_lcy
 	vendLedgEntry.Buy_from_vendor_no = genJnlLine.Sell_to_buy_from_no
 	vendLedgEntry.Vendor_posting_group = genJnlLine.Posting_group
-	vendLedgEntry.Department_code = genJnlLine.Department_code
-	vendLedgEntry.Project_code = genJnlLine.Project_code
+	vendLedgEntry.Dimension_1_code = genJnlLine.Dimension_1_code
+	vendLedgEntry.Dimension_2_code = genJnlLine.Dimension_2_code
 	vendLedgEntry.Purchaser_code = genJnlLine.Salespers_purch_code
 	vendLedgEntry.Source_code = genJnlLine.Source_code
 	vendLedgEntry.On_hold = genJnlLine.On_hold

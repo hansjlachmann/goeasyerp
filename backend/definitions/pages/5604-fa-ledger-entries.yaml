@@ -70,11 +70,11 @@ page:
           width: 120
           visible: false
 
-        - source: department_code
+        - source: dimension_1_code
           width: 120
           visible: false
 
-        - source: project_code
+        - source: dimension_2_code
           width: 120
           visible: false
 

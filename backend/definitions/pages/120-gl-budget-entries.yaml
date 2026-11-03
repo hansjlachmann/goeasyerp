@@ -17,9 +17,9 @@ page:
           width: 120
         - source: description
           width: 240
-        - source: department_code
+        - source: dimension_1_code
           width: 120
-        - source: project_code
+        - source: dimension_2_code
           width: 120
         - source: amount
           width: 140

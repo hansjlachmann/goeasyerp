@@ -65,8 +65,8 @@ page:
           - source: prices_including_tax
           - source: tax_liable
           - source: tax_area_code
-          - source: department_code
-          - source: project_code
+          - source: dimension_1_code
+          - source: dimension_2_code
 
       - name: Payments
         caption: Payments

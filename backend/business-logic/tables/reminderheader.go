@@ -147,8 +147,8 @@ func (reminderHeaderLogic) OnValidate_Customer_no(rec *gtables.ReminderHeader) e
 	rec.Country_code = cust.Country_code
 	rec.Language_code = cust.Language_code
 	rec.Currency_code = cust.Currency_code
-	rec.Department_code = cust.Department_code
-	rec.Project_code = cust.Project_code
+	rec.Dimension_1_code = cust.Dimension_1_code
+	rec.Dimension_2_code = cust.Dimension_2_code
 	rec.Vat_registration_no = cust.Vat_registration_no
 	err = cust.TestField("customer_posting_group")
 	if err != nil {

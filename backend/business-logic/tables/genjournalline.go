@@ -152,7 +152,7 @@ func (genJournalLineLogic) OnValidate_Account_type(rec *gtables.GenJournalLine) 
 	return nil
 }
 
-// OnValidate_Account_no: the account's name, department, project, posting groups, payment
+// OnValidate_Account_no: the account's name, dimension 1, dimension 2, posting groups, payment
 // terms and currency come to the line
 func (genJournalLineLogic) OnValidate_Account_no(rec *gtables.GenJournalLine) error {
 	if rec.Account_no == "" {
@@ -196,8 +196,8 @@ func (genJournalLineLogic) OnValidate_Account_no(rec *gtables.GenJournalLine) er
 		}
 		if replaceInfo {
 			rec.Description = glAcc.Name
-			rec.Department_code = glAcc.Department_code
-			rec.Project_code = glAcc.Project_code
+			rec.Dimension_1_code = glAcc.Dimension_1_code
+			rec.Dimension_2_code = glAcc.Dimension_2_code
 		}
 		if rec.Bal_account_no == "" ||
 			rec.Bal_account_type == gtables.GenJournalLine_Bal_account_type.GLAccount ||
@@ -237,8 +237,8 @@ func (genJournalLineLogic) OnValidate_Account_no(rec *gtables.GenJournalLine) er
 			return err
 		}
 		rec.Description = types.Text(cust.Name)
-		rec.Department_code = cust.Department_code
-		rec.Project_code = cust.Project_code
+		rec.Dimension_1_code = cust.Dimension_1_code
+		rec.Dimension_2_code = cust.Dimension_2_code
 		rec.Posting_group = cust.Customer_posting_group
 		rec.Salespers_purch_code = cust.Salesperson_code
 		rec.Payment_terms_code = cust.Payment_terms_code
@@ -262,8 +262,8 @@ func (genJournalLineLogic) OnValidate_Account_no(rec *gtables.GenJournalLine) er
 			return err
 		}
 		rec.Description = types.Text(vend.Name)
-		rec.Department_code = vend.Department_code
-		rec.Project_code = vend.Project_code
+		rec.Dimension_1_code = vend.Dimension_1_code
+		rec.Dimension_2_code = vend.Dimension_2_code
 		rec.Posting_group = vend.Vendor_posting_group
 		rec.Salespers_purch_code = vend.Purchaser_code
 		rec.Payment_terms_code = vend.Payment_terms_code
@@ -297,8 +297,8 @@ func (genJournalLineLogic) OnValidate_Account_no(rec *gtables.GenJournalLine) er
 		}
 		if replaceInfo {
 			rec.Description = types.Text(bankAcc.Name)
-			rec.Department_code = bankAcc.Department_code
-			rec.Project_code = bankAcc.Project_code
+			rec.Dimension_1_code = bankAcc.Dimension_1_code
+			rec.Dimension_2_code = bankAcc.Dimension_2_code
 		}
 		if rec.Bal_account_no == "" ||
 			rec.Bal_account_type == gtables.GenJournalLine_Bal_account_type.GLAccount ||
@@ -329,8 +329,8 @@ func (genJournalLineLogic) OnValidate_Account_no(rec *gtables.GenJournalLine) er
 			return err
 		}
 		rec.Description = fa.Description
-		rec.Department_code = fa.Department_code
-		rec.Project_code = fa.Project_code
+		rec.Dimension_1_code = fa.Dimension_1_code
+		rec.Dimension_2_code = fa.Dimension_2_code
 		err = setGenJnlLineFADeprBook(rec, rec.Account_no)
 		if err != nil {
 			return err
@@ -421,8 +421,8 @@ func (genJournalLineLogic) OnValidate_Bal_account_no(rec *gtables.GenJournalLine
 		}
 		if rec.Account_no == "" {
 			rec.Description = glAcc.Name
-			rec.Department_code = glAcc.Department_code
-			rec.Project_code = glAcc.Project_code
+			rec.Dimension_1_code = glAcc.Dimension_1_code
+			rec.Dimension_2_code = glAcc.Dimension_2_code
 			rec.Currency_code = ""
 		}
 		if rec.Account_no == "" ||
@@ -461,8 +461,8 @@ func (genJournalLineLogic) OnValidate_Bal_account_no(rec *gtables.GenJournalLine
 		}
 		if rec.Account_no == "" {
 			rec.Description = types.Text(cust.Name)
-			rec.Department_code = cust.Department_code
-			rec.Project_code = cust.Project_code
+			rec.Dimension_1_code = cust.Dimension_1_code
+			rec.Dimension_2_code = cust.Dimension_2_code
 		}
 		rec.Posting_group = cust.Customer_posting_group
 		rec.Salespers_purch_code = cust.Salesperson_code
@@ -486,8 +486,8 @@ func (genJournalLineLogic) OnValidate_Bal_account_no(rec *gtables.GenJournalLine
 		}
 		if rec.Account_no == "" {
 			rec.Description = types.Text(vend.Name)
-			rec.Department_code = vend.Department_code
-			rec.Project_code = vend.Project_code
+			rec.Dimension_1_code = vend.Dimension_1_code
+			rec.Dimension_2_code = vend.Dimension_2_code
 		}
 		rec.Posting_group = vend.Vendor_posting_group
 		rec.Salespers_purch_code = vend.Purchaser_code
@@ -511,8 +511,8 @@ func (genJournalLineLogic) OnValidate_Bal_account_no(rec *gtables.GenJournalLine
 		}
 		if rec.Account_no == "" {
 			rec.Description = types.Text(bankAcc.Name)
-			rec.Department_code = bankAcc.Department_code
-			rec.Project_code = bankAcc.Project_code
+			rec.Dimension_1_code = bankAcc.Dimension_1_code
+			rec.Dimension_2_code = bankAcc.Dimension_2_code
 			rec.Currency_code = bankAcc.Currency_code
 		}
 		if rec.Account_no == "" ||
@@ -545,8 +545,8 @@ func (genJournalLineLogic) OnValidate_Bal_account_no(rec *gtables.GenJournalLine
 		}
 		if rec.Account_no == "" {
 			rec.Description = fa.Description
-			rec.Department_code = fa.Department_code
-			rec.Project_code = fa.Project_code
+			rec.Dimension_1_code = fa.Dimension_1_code
+			rec.Dimension_2_code = fa.Dimension_2_code
 		}
 		err = setGenJnlLineFADeprBook(rec, rec.Bal_account_no)
 		if err != nil {

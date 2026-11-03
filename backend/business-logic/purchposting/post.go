@@ -70,8 +70,8 @@ type invPostingBuffer struct {
 	taxLiable          bool
 	taxGroupCode       types.Code
 	useTax             bool
-	departmentCode     types.Code
-	projectCode        types.Code
+	dimension1Code     types.Code
+	dimension2Code     types.Code
 	amount             types.Decimal // LCY
 	amountFCY          types.Decimal
 	taxAmount          types.Decimal // LCY
@@ -603,8 +603,8 @@ func (p *PurchPost) postItemJnlLine(purchLine *gtables.PurchaseLine, qtyToReceiv
 	itemJnlLine.Serial_no = purchLine.Serial_no
 	itemJnlLine.Lot_no = purchLine.Lot_no
 	itemJnlLine.Inventory_posting_group = purchLine.Posting_group
-	itemJnlLine.Department_code = purchLine.Department_code
-	itemJnlLine.Project_code = purchLine.Project_code
+	itemJnlLine.Dimension_1_code = purchLine.Dimension_1_code
+	itemJnlLine.Dimension_2_code = purchLine.Dimension_2_code
 	itemJnlLine.Gen_bus_posting_group = purchLine.Gen_bus_posting_group
 	itemJnlLine.Gen_prod_posting_group = purchLine.Gen_prod_posting_group
 	itemJnlLine.Unit_of_measure_code = purchLine.Unit_of_measure_code
@@ -683,7 +683,7 @@ func (p *PurchPost) fillInvPostingBuffer(purchLine, lineFCY, lineLCY *gtables.Pu
 		if err != nil {
 			return err
 		}
-		p.addToBuffer(&invPostingBuffer{glAccount: genPostingSetup.Purch_inv_disc_account, departmentCode: purchLine.Department_code, projectCode: purchLine.Project_code,
+		p.addToBuffer(&invPostingBuffer{glAccount: genPostingSetup.Purch_inv_disc_account, dimension1Code: purchLine.Dimension_1_code, dimension2Code: purchLine.Dimension_2_code,
 			amount: lineLCY.Inv_discount_amount.Neg(), amountFCY: lineFCY.Inv_discount_amount.Neg()})
 		amount = amount.Add(lineLCY.Inv_discount_amount)
 		amountFCY = amountFCY.Add(lineFCY.Inv_discount_amount)
@@ -693,7 +693,7 @@ func (p *PurchPost) fillInvPostingBuffer(purchLine, lineFCY, lineLCY *gtables.Pu
 		if err != nil {
 			return err
 		}
-		p.addToBuffer(&invPostingBuffer{glAccount: genPostingSetup.Purch_line_disc_account, departmentCode: purchLine.Department_code, projectCode: purchLine.Project_code,
+		p.addToBuffer(&invPostingBuffer{glAccount: genPostingSetup.Purch_line_disc_account, dimension1Code: purchLine.Dimension_1_code, dimension2Code: purchLine.Dimension_2_code,
 			amount: lineLCY.Line_discount_amount.Neg(), amountFCY: lineFCY.Line_discount_amount.Neg()})
 		amount = amount.Add(lineLCY.Line_discount_amount)
 		amountFCY = amountFCY.Add(lineFCY.Line_discount_amount)
@@ -721,7 +721,7 @@ func (p *PurchPost) fillInvPostingBuffer(purchLine, lineFCY, lineLCY *gtables.Pu
 		taxBusPostingGrp: purchLine.Tax_bus_posting_group, taxProdPostingGrp: purchLine.Tax_prod_posting_group,
 		taxCalculationType: purchLine.Tax_calculation_type, taxAreaCode: purchLine.Tax_area_code, taxLiable: purchLine.Tax_liable, taxGroupCode: purchLine.Tax_group_code,
 		useTax:         purchLine.Use_tax,
-		departmentCode: purchLine.Department_code, projectCode: purchLine.Project_code,
+		dimension1Code: purchLine.Dimension_1_code, dimension2Code: purchLine.Dimension_2_code,
 		amount: amount, amountFCY: amountFCY,
 		taxAmount: taxAmount, taxAmountFCY: taxAmountFCY,
 		taxBaseAmount: lineLCY.Amount, taxBaseAmountFCY: lineFCY.Amount,
@@ -752,7 +752,7 @@ func (p *PurchPost) addToBuffer(add *invPostingBuffer) {
 			b.genBusPostingGrp == add.genBusPostingGrp && b.genProdPostingGrp == add.genProdPostingGrp &&
 			b.taxBusPostingGrp == add.taxBusPostingGrp && b.taxProdPostingGrp == add.taxProdPostingGrp &&
 			b.taxAreaCode == add.taxAreaCode && b.taxLiable == add.taxLiable && b.taxGroupCode == add.taxGroupCode && b.useTax == add.useTax &&
-			b.departmentCode == add.departmentCode && b.projectCode == add.projectCode {
+			b.dimension1Code == add.dimension1Code && b.dimension2Code == add.dimension2Code {
 			b.amount = b.amount.Add(add.amount)
 			b.amountFCY = b.amountFCY.Add(add.amountFCY)
 			b.taxAmount = b.taxAmount.Add(add.taxAmount)
@@ -875,8 +875,8 @@ func (p *PurchPost) postInvPostingBuffer() error {
 		genJnlLine.Amount_lcy = b.amount.Mul(p.sign)
 		genJnlLine.Source_currency_code = purchHeader.Currency_code
 		genJnlLine.Source_currency_amount = genJnlLine.Amount
-		genJnlLine.Department_code = b.departmentCode
-		genJnlLine.Project_code = b.projectCode
+		genJnlLine.Dimension_1_code = b.dimension1Code
+		genJnlLine.Dimension_2_code = b.dimension2Code
 		genJnlLine.Quantity = b.quantity.Mul(p.sign)
 		if b.faLineNo > 0 {
 			// a fixed asset line: an acquisition cost or maintenance of the asset (codeunit 5632)
@@ -968,8 +968,8 @@ func (p *PurchPost) postVendorEntry() error {
 	genJnlLine.Inv_discount_lcy = totalLCY.Inv_discount_amount.Mul(p.sign).Neg()
 	genJnlLine.Salespers_purch_code = purchHeader.Purchaser_code
 	genJnlLine.Posting_group = purchHeader.Vendor_posting_group
-	genJnlLine.Department_code = purchHeader.Department_code
-	genJnlLine.Project_code = purchHeader.Project_code
+	genJnlLine.Dimension_1_code = purchHeader.Dimension_1_code
+	genJnlLine.Dimension_2_code = purchHeader.Dimension_2_code
 	genJnlLine.Payment_terms_code = purchHeader.Payment_terms_code
 	genJnlLine.Due_date = purchHeader.Due_date
 	genJnlLine.Pmt_discount_date = purchHeader.Pmt_discount_date
@@ -1224,11 +1224,11 @@ func checkFALine(purchLine *gtables.PurchaseLine) error {
 }
 
 // checkReceiptLine: a receipt line invoiced now is still the line's — vendor, type, number,
-// posting groups, location, department, project, serial number, unit of measure, bin, lot
+// posting groups, location, dimension 1, dimension 2, serial number, unit of measure, bin, lot
 // number and variant (classic TESTFIELD(…, PurchLine.…) before invoicing a receipt)
 func checkReceiptLine(purchRcptLine *gtables.PurchRcptLine, purchLine *gtables.PurchaseLine) error {
 	for _, field := range []string{"buy_from_vendor_no", "type", "no", "gen_bus_posting_group", "gen_prod_posting_group",
-		"tax_bus_posting_group", "tax_prod_posting_group", "location_code", "department_code", "project_code",
+		"tax_bus_posting_group", "tax_prod_posting_group", "location_code", "dimension_1_code", "dimension_2_code",
 		"serial_no", "unit_of_measure_code", "bin_code", "lot_no", "variant_code"} {
 		value, _ := purchLine.FieldValue(purchLine.FieldNo(field))
 		err := purchRcptLine.TestField(field, value)

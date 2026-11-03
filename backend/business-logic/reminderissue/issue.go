@@ -275,8 +275,8 @@ func (c *ReminderIssue) initGenJnlLine(accountType gtables.GenJournalLineAccount
 	genJnlLine.Currency_factor = c.currencyFactor
 	genJnlLine.Source_currency_code = reminderHeader.Currency_code
 	genJnlLine.Description = reminderHeader.Posting_description
-	genJnlLine.Department_code = reminderHeader.Department_code
-	genJnlLine.Project_code = reminderHeader.Project_code
+	genJnlLine.Dimension_1_code = reminderHeader.Dimension_1_code
+	genJnlLine.Dimension_2_code = reminderHeader.Dimension_2_code
 	genJnlLine.Source_type = gtables.GenJournalLine_Source_type.Customer
 	genJnlLine.Source_no = reminderHeader.Customer_no
 	genJnlLine.Source_code = c.sourceCode

@@ -39,12 +39,12 @@ func AccountMethod(method gtables.GLAccountConsol_currency_val_method, incomeBal
 }
 
 // Group is the G/L entries of an account summed for one consolidation line: per day, per
-// business unit and department, per project — as Transfer per Day/Department/Project ask
+// business unit and dimension 1, per dimension 2 — as Transfer per Day/Dimension 1/2 ask
 type Group struct {
 	PostingDate      types.Date
 	BusinessUnitCode types.Code
-	DepartmentCode   types.Code
-	ProjectCode      types.Code
+	Dimension1Code   types.Code
+	Dimension2Code   types.Code
 	DebitAmount      types.Decimal
 	CreditAmount     types.Decimal
 	AcyDebitAmount   types.Decimal // Add.-Currency Debit Amount
@@ -53,11 +53,11 @@ type Group struct {
 
 // Groups sums an account's G/L entries in the filters of glEntry as the classic loop does
 // (SETRANGE on the fields of the current entry, CALCSUMS, FIND('+')): by posting date with
-// perDay, by business unit and department with perDept or perProj, by project with perProj or
+// perDay, by business unit and dimension 1 with perDept or perProj, by dimension 2 with perProj or
 // with perDept and perDay — in the order of the entries
 func Groups(glEntry *gtables.GLEntry, perDay, perDept, perProj bool) []*Group {
 	if perDept || perProj {
-		glEntry.SetCurrentKey("gl_account_no", "business_unit_code", "department_code", "project_code", "posting_date")
+		glEntry.SetCurrentKey("gl_account_no", "business_unit_code", "dimension_1_code", "dimension_2_code", "posting_date")
 	} else {
 		glEntry.SetCurrentKey("gl_account_no", "posting_date")
 	}
@@ -71,14 +71,14 @@ func Groups(glEntry *gtables.GLEntry, perDay, perDept, perProj bool) []*Group {
 		}
 		if perDept || perProj {
 			key.BusinessUnitCode = glEntry.Business_unit_code
-			key.DepartmentCode = glEntry.Department_code
+			key.Dimension1Code = glEntry.Dimension_1_code
 		}
 		if byProject {
-			key.ProjectCode = glEntry.Project_code
+			key.Dimension2Code = glEntry.Dimension_2_code
 		}
 		group, ok := index[key]
 		if !ok {
-			group = &Group{PostingDate: key.PostingDate, BusinessUnitCode: key.BusinessUnitCode, DepartmentCode: key.DepartmentCode, ProjectCode: key.ProjectCode}
+			group = &Group{PostingDate: key.PostingDate, BusinessUnitCode: key.BusinessUnitCode, Dimension1Code: key.Dimension1Code, Dimension2Code: key.Dimension2Code}
 			index[key] = group
 			groups = append(groups, group)
 		}
@@ -141,10 +141,10 @@ type Consolidation struct {
 	StartDate, EndDate       types.Date
 	UseBusUnitDates          bool
 	PerDay, PerDept, PerProj bool
-	// MapDepartment / MapProject: the department or project an entry's code consolidates to
+	// MapDimension1 / MapDimension2: the dimension 1 or 2 an entry's code consolidates to
 	// (the subsidiary's Consolidation Code, or the code of an import file checked here)
-	MapDepartment func(code types.Code) (types.Code, error)
-	MapProject    func(code types.Code) (types.Code, error)
+	MapDimension1 func(code types.Code) (types.Code, error)
+	MapDimension2 func(code types.Code) (types.Code, error)
 
 	lines              []*gtables.GenJournalLine
 	exchRateAdjAmount  types.Decimal
@@ -209,7 +209,7 @@ func (c *Consolidation) ClearPrevious(cleared *Cleared) error {
 	ts := i18n.GetInstance()
 	lang := fcodeunits.CurrentLanguage()
 	consolidGLEntry := gtables.NewGLEntry(c.Src)
-	consolidGLEntry.SetCurrentKey("gl_account_no", "business_unit_code", "department_code", "project_code", "posting_date")
+	consolidGLEntry.SetCurrentKey("gl_account_no", "business_unit_code", "dimension_1_code", "dimension_2_code", "posting_date")
 	consolidGLEntry.SetRange("business_unit_code", c.BusUnit.Code)
 	consolidGLEntry.SetRange("posting_date", c.PeriodStart(), c.PeriodEnd())
 	for found := consolidGLEntry.FindSetBuffered(); found; found = consolidGLEntry.Next() {
@@ -266,7 +266,7 @@ func (c *Consolidation) NeedsBalanceAdjustment() bool {
 
 // AdjustBalance (PostBalanceAdjustment): an amount of the business unit's balance on a
 // consolidated account, taken in at the last balance factor, is adjusted to the current one
-func (c *Consolidation) AdjustBalance(accountNo, departmentCode, projectCode types.Code, amountToPost types.Decimal) error {
+func (c *Consolidation) AdjustBalance(accountNo, dimension1Code, dimension2Code types.Code, amountToPost types.Decimal) error {
 	ts := i18n.GetInstance()
 	lang := fcodeunits.CurrentLanguage()
 	err := c.BusUnit.TestField("balance_currency_factor")
@@ -280,8 +280,8 @@ func (c *Consolidation) AdjustBalance(accountNo, departmentCode, projectCode typ
 	genJnlLine := c.newLine()
 	genJnlLine.Account_no = accountNo
 	genJnlLine.Posting_date = c.PeriodEnd()
-	genJnlLine.Department_code = departmentCode
-	genJnlLine.Project_code = projectCode
+	genJnlLine.Dimension_1_code = dimension1Code
+	genJnlLine.Dimension_2_code = dimension2Code
 	amount := amountToPost.Mul(c.BusUnit.Last_balance_currency_factor).Div(c.BusUnit.Balance_currency_factor).Sub(amountToPost).Round(2)
 	genJnlLine.Description = types.Text(system.CopyStr(system.StrSubstNo(ts.Message("CONSOL_ADJUSTED", lang),
 		amountToPost, c.BusUnit.Last_balance_currency_factor, c.BusUnit.Balance_currency_factor, system.WorkDate()), 1, genJnlLine.MaxStrLen("description")))
@@ -443,14 +443,14 @@ func (c *Consolidation) PostEntry(acc SubsidAccount, group *Group, amountToPost 
 	}
 	i := c.dayIndex(group.PostingDate)
 	genJnlLine.Posting_date = c.dayDate(i)
-	if c.PerDept && group.DepartmentCode != "" {
-		genJnlLine.Department_code, err = c.MapDepartment(group.DepartmentCode)
+	if c.PerDept && group.Dimension1Code != "" {
+		genJnlLine.Dimension_1_code, err = c.MapDimension1(group.Dimension1Code)
 		if err != nil {
 			return err
 		}
 	}
-	if c.PerProj && group.ProjectCode != "" {
-		genJnlLine.Project_code, err = c.MapProject(group.ProjectCode)
+	if c.PerProj && group.Dimension2Code != "" {
+		genJnlLine.Dimension_2_code, err = c.MapDimension2(group.Dimension2Code)
 		if err != nil {
 			return err
 		}

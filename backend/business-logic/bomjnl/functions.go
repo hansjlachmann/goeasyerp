@@ -252,8 +252,8 @@ func ItemJnlExplodeBOM(rec *gtables.ItemJournalLine) (fcodeunits.Result, error) 
 		toItemJnlLine.Posting_date = rec.Posting_date
 		toItemJnlLine.Entry_type = rec.Entry_type
 		toItemJnlLine.Location_code = rec.Location_code
-		toItemJnlLine.Department_code = rec.Department_code
-		toItemJnlLine.Project_code = rec.Project_code
+		toItemJnlLine.Dimension_1_code = rec.Dimension_1_code
+		toItemJnlLine.Dimension_2_code = rec.Dimension_2_code
 		nextLineNo = nextLineNo + lineSpacing
 		toItemJnlLine.Line_no = nextLineNo
 		toItemJnlLine.Drop_shipment = rec.Drop_shipment

@@ -11,6 +11,7 @@ import (
 	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
+	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
@@ -154,5 +155,14 @@ func ResetWorkDate(db *sql.DB, dbType database.DBType, userID string) {
 	if rec.GetByPK(types.NewCode(userID)) && !rec.Work_date.IsZero() {
 		rec.Work_date = types.Date{}
 		rec.Modify(false)
+	}
+}
+
+// DimensionLabelsLoader reads a company's names of its two dimensions (General Ledger Setup
+// Dimension-1 / Dimension-2) for the captions (codeunits.DimensionLabelsLoader)
+func DimensionLabelsLoader(db *sql.DB, dbType database.DBType) func(company string) [2]string {
+	return func(company string) [2]string {
+		glSetup := gtables.GetGeneralLedgerSetup(ftables.DBSource(db, company, dbType))
+		return [2]string{glSetup.Dimension_1.String(), glSetup.Dimension_2.String()}
 	}
 }

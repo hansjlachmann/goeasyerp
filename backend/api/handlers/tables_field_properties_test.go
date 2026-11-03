@@ -226,7 +226,7 @@ func TestNewRecordTriggerAndLookupOnlyRelation(t *testing.T) {
 
 // A lookup's New opens the related table's list page: its lookup_page_id, else its list page
 func TestLookupPage(t *testing.T) {
-	for table, want := range map[string]int{"G_L_Account": 18, "Department": 12, "Currency": 5, "Payment_terms": 4, "Nothing": 0} {
+	for table, want := range map[string]int{"G_L_Account": 18, "Dimension_1": 12, "Currency": 5, "Payment_terms": 4, "Nothing": 0} {
 		if got := pages.GetRegistry().LookupPage(table); got != want {
 			t.Errorf("%s: page %d, want %d", table, got, want)
 		}

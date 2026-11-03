@@ -27,8 +27,8 @@
 //	OnValidate_Total_cost(rec *gtables.ResJournalLine) error
 //	OnValidate_Unit_price(rec *gtables.ResJournalLine) error
 //	OnValidate_Total_price(rec *gtables.ResJournalLine) error
-//	OnValidate_Department_code(rec *gtables.ResJournalLine) error
-//	OnValidate_Project_code(rec *gtables.ResJournalLine) error
+//	OnValidate_Dimension_1_code(rec *gtables.ResJournalLine) error
+//	OnValidate_Dimension_2_code(rec *gtables.ResJournalLine) error
 //	OnValidate_Source_code(rec *gtables.ResJournalLine) error
 //	OnValidate_Chargeable(rec *gtables.ResJournalLine) error
 //	OnValidate_Reason_code(rec *gtables.ResJournalLine) error
@@ -118,8 +118,8 @@ type ResJournalLine struct {
 	Total_cost             types.Decimal                  `db:"total_cost"`
 	Unit_price             types.Decimal                  `db:"unit_price"`
 	Total_price            types.Decimal                  `db:"total_price"`
-	Department_code        types.Code                     `db:"department_code"`
-	Project_code           types.Code                     `db:"project_code"`
+	Dimension_1_code       types.Code                     `db:"dimension_1_code"`
+	Dimension_2_code       types.Code                     `db:"dimension_2_code"`
 	Source_code            types.Code                     `db:"source_code"`
 	Chargeable             bool                           `db:"chargeable"`
 	Reason_code            types.Code                     `db:"reason_code"`
@@ -238,8 +238,8 @@ var ResJournalLine_FieldNo = struct {
 	Total_cost             int
 	Unit_price             int
 	Total_price            int
-	Department_code        int
-	Project_code           int
+	Dimension_1_code       int
+	Dimension_2_code       int
 	Source_code            int
 	Chargeable             int
 	Reason_code            int
@@ -269,8 +269,8 @@ var ResJournalLine_FieldNo = struct {
 	Total_cost:             15,
 	Unit_price:             16,
 	Total_price:            17,
-	Department_code:        18,
-	Project_code:           19,
+	Dimension_1_code:       18,
+	Dimension_2_code:       19,
 	Source_code:            21,
 	Chargeable:             22,
 	Reason_code:            24,
@@ -321,9 +321,9 @@ func (t *ResJournalLine) FieldNo(fieldName string) int {
 		return 16
 	case "total_price":
 		return 17
-	case "department_code":
+	case "dimension_1_code":
 		return 18
-	case "project_code":
+	case "dimension_2_code":
 		return 19
 	case "source_code":
 		return 21
@@ -389,9 +389,9 @@ func (t *ResJournalLine) FieldName(fieldNo int) string {
 	case 17:
 		return "total_price"
 	case 18:
-		return "department_code"
+		return "dimension_1_code"
 	case 19:
-		return "project_code"
+		return "dimension_2_code"
 	case 21:
 		return "source_code"
 	case 22:
@@ -566,11 +566,11 @@ type (
 	ResJournalLineOnValidate_Total_price interface {
 		OnValidate_Total_price(rec *ResJournalLine) error
 	}
-	ResJournalLineOnValidate_Department_code interface {
-		OnValidate_Department_code(rec *ResJournalLine) error
+	ResJournalLineOnValidate_Dimension_1_code interface {
+		OnValidate_Dimension_1_code(rec *ResJournalLine) error
 	}
-	ResJournalLineOnValidate_Project_code interface {
-		OnValidate_Project_code(rec *ResJournalLine) error
+	ResJournalLineOnValidate_Dimension_2_code interface {
+		OnValidate_Dimension_2_code(rec *ResJournalLine) error
 	}
 	ResJournalLineOnValidate_Source_code interface {
 		OnValidate_Source_code(rec *ResJournalLine) error
@@ -668,10 +668,10 @@ func resJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ResJournalLineOnValidate_Unit_price)
 	case "OnValidate_Total_price":
 		_, ok = logic.(ResJournalLineOnValidate_Total_price)
-	case "OnValidate_Department_code":
-		_, ok = logic.(ResJournalLineOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(ResJournalLineOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(ResJournalLineOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(ResJournalLineOnValidate_Dimension_2_code)
 	case "OnValidate_Source_code":
 		_, ok = logic.(ResJournalLineOnValidate_Source_code)
 	case "OnValidate_Chargeable":
@@ -807,10 +807,10 @@ func (t *ResJournalLine) CheckFields() error {
 	if err := tables.CheckDecimalRange(ResJournalLineTableName, "unit_price", t.Unit_price, "0", ""); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(ResJournalLineTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(ResJournalLineTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(ResJournalLineTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(ResJournalLineTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(ResJournalLineTableName, "source_code", string(t.Source_code), 10); err != nil {
@@ -881,8 +881,8 @@ func GetResJournalLineTableSchema() string {
 		total_cost TEXT,
 		unit_price TEXT,
 		total_price TEXT,
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		source_code TEXT(10),
 		chargeable INTEGER DEFAULT true,
 		reason_code TEXT(10),
@@ -918,8 +918,8 @@ func GetResJournalLinePostgresTableSchema() string {
 		total_cost NUMERIC,
 		unit_price NUMERIC,
 		total_price NUMERIC,
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		source_code VARCHAR(10),
 		chargeable BOOLEAN DEFAULT true,
 		reason_code VARCHAR(10),
@@ -1078,8 +1078,8 @@ func (t *ResJournalLine) StoreOldValues() {
 	t.oldValues["total_cost"] = t.Total_cost
 	t.oldValues["unit_price"] = t.Unit_price
 	t.oldValues["total_price"] = t.Total_price
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["source_code"] = t.Source_code
 	t.oldValues["chargeable"] = t.Chargeable
 	t.oldValues["reason_code"] = t.Reason_code
@@ -1156,11 +1156,11 @@ func (t *ResJournalLine) XRec() *ResJournalLine {
 	if v, ok := t.oldValues["total_price"].(types.Decimal); ok {
 		x.Total_price = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["source_code"].(types.Code); ok {
 		x.Source_code = v
@@ -1291,8 +1291,8 @@ func (t *ResJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	var total_costNull sql.NullString
 	var unit_priceNull sql.NullString
 	var total_priceNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var source_codeNull sql.NullString
 	var chargeableBool sql.NullBool
 	var reason_codeNull sql.NullString
@@ -1313,7 +1313,7 @@ func (t *ResJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1337,8 +1337,8 @@ func (t *ResJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 		&total_costNull,
 		&unit_priceNull,
 		&total_priceNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&source_codeNull,
 		&chargeableBool,
 		&reason_codeNull,
@@ -1380,8 +1380,8 @@ func (t *ResJournalLine) GetByPK(journal_template_name types.Code, journal_batch
 	t.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
 	t.Unit_price, _ = types.NewDecimalFromString(unit_priceNull.String)
 	t.Total_price, _ = types.NewDecimalFromString(total_priceNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.Chargeable = chargeableBool.Bool
 	t.Reason_code = types.NewCode(reason_codeNull.String)
@@ -1432,8 +1432,8 @@ func (t *ResJournalLine) Insert(runTrigger bool) bool {
 		t.Total_cost,
 		t.Unit_price,
 		t.Total_price,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Source_code,
 		t.Chargeable,
 		t.Reason_code,
@@ -1449,7 +1449,7 @@ func (t *ResJournalLine) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1504,8 +1504,8 @@ func (t *ResJournalLine) InsertAll(records []*ResJournalLine, runTrigger bool) e
 			r.Total_cost,
 			r.Unit_price,
 			r.Total_price,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Source_code,
 			r.Chargeable,
 			r.Reason_code,
@@ -1520,7 +1520,7 @@ func (t *ResJournalLine) InsertAll(records []*ResJournalLine, runTrigger bool) e
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ResJournalLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "entry_type", "document_no", "posting_date", "resource_no", "resource_group_no", "description", "work_type_code", "unit_of_measure_code", "quantity", "direct_unit_cost", "unit_cost", "total_cost", "unit_price", "total_price", "department_code", "project_code", "source_code", "chargeable", "reason_code", "gen_bus_posting_group", "gen_prod_posting_group", "document_date", "external_document_no", "posting_no_series", "recurring_method", "expiration_date", "recurring_frequency"}
+	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "entry_type", "document_no", "posting_date", "resource_no", "resource_group_no", "description", "work_type_code", "unit_of_measure_code", "quantity", "direct_unit_cost", "unit_cost", "total_cost", "unit_price", "total_price", "dimension_1_code", "dimension_2_code", "source_code", "chargeable", "reason_code", "gen_bus_posting_group", "gen_prod_posting_group", "document_date", "external_document_no", "posting_no_series", "recurring_method", "expiration_date", "recurring_frequency"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1634,13 +1634,13 @@ func (t *ResJournalLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "total_price = ?")
 			values = append(values, t.Total_price)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("source_code") {
 			setClauses = append(setClauses, "source_code = ?")
@@ -1721,10 +1721,10 @@ func (t *ResJournalLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Unit_price)
 		setClauses = append(setClauses, "total_price = ?")
 		values = append(values, t.Total_price)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "source_code = ?")
 		values = append(values, t.Source_code)
 		setClauses = append(setClauses, "chargeable = ?")
@@ -1870,13 +1870,13 @@ func (t *ResJournalLine) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Decimal); ok {
 			return !t.Total_price.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "source_code":
 		if old, ok := oldValue.(types.Code); ok {
@@ -2163,10 +2163,10 @@ func (t *ResJournalLine) columnName(fieldName string) (string, bool) {
 		return "unit_price", true
 	case strings.ToLower("total_price"):
 		return "total_price", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("source_code"):
 		return "source_code", true
 	case strings.ToLower("chargeable"):
@@ -2566,7 +2566,7 @@ func (t *ResJournalLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2587,8 +2587,8 @@ func (t *ResJournalLine) FindFirst() bool {
 	var total_costNull sql.NullString
 	var unit_priceNull sql.NullString
 	var total_priceNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var source_codeNull sql.NullString
 	var chargeableBool sql.NullBool
 	var reason_codeNull sql.NullString
@@ -2619,8 +2619,8 @@ func (t *ResJournalLine) FindFirst() bool {
 		&total_costNull,
 		&unit_priceNull,
 		&total_priceNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&source_codeNull,
 		&chargeableBool,
 		&reason_codeNull,
@@ -2659,8 +2659,8 @@ func (t *ResJournalLine) FindFirst() bool {
 	t.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
 	t.Unit_price, _ = types.NewDecimalFromString(unit_priceNull.String)
 	t.Total_price, _ = types.NewDecimalFromString(total_priceNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.Chargeable = chargeableBool.Bool
 	t.Reason_code = types.NewCode(reason_codeNull.String)
@@ -2692,7 +2692,7 @@ func (t *ResJournalLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2713,8 +2713,8 @@ func (t *ResJournalLine) FindLast() bool {
 	var total_costNull sql.NullString
 	var unit_priceNull sql.NullString
 	var total_priceNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var source_codeNull sql.NullString
 	var chargeableBool sql.NullBool
 	var reason_codeNull sql.NullString
@@ -2745,8 +2745,8 @@ func (t *ResJournalLine) FindLast() bool {
 		&total_costNull,
 		&unit_priceNull,
 		&total_priceNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&source_codeNull,
 		&chargeableBool,
 		&reason_codeNull,
@@ -2785,8 +2785,8 @@ func (t *ResJournalLine) FindLast() bool {
 	t.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
 	t.Unit_price, _ = types.NewDecimalFromString(unit_priceNull.String)
 	t.Total_price, _ = types.NewDecimalFromString(total_priceNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.Chargeable = chargeableBool.Bool
 	t.Reason_code = types.NewCode(reason_codeNull.String)
@@ -2848,7 +2848,7 @@ func (t *ResJournalLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2933,8 +2933,8 @@ func (t *ResJournalLine) Next(steps ...int) bool {
 		var total_costNull sql.NullString
 		var unit_priceNull sql.NullString
 		var total_priceNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var source_codeNull sql.NullString
 		var chargeableBool sql.NullBool
 		var reason_codeNull sql.NullString
@@ -2965,8 +2965,8 @@ func (t *ResJournalLine) Next(steps ...int) bool {
 			&total_costNull,
 			&unit_priceNull,
 			&total_priceNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&source_codeNull,
 			&chargeableBool,
 			&reason_codeNull,
@@ -3004,8 +3004,8 @@ func (t *ResJournalLine) Next(steps ...int) bool {
 		t.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
 		t.Unit_price, _ = types.NewDecimalFromString(unit_priceNull.String)
 		t.Total_price, _ = types.NewDecimalFromString(total_priceNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Source_code = types.NewCode(source_codeNull.String)
 		t.Chargeable = chargeableBool.Bool
 		t.Reason_code = types.NewCode(reason_codeNull.String)
@@ -3066,7 +3066,7 @@ func (t *ResJournalLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, source_code, chargeable, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3104,8 +3104,8 @@ func (t *ResJournalLine) FindSetBuffered() bool {
 		var total_costNull sql.NullString
 		var unit_priceNull sql.NullString
 		var total_priceNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var source_codeNull sql.NullString
 		var chargeableBool sql.NullBool
 		var reason_codeNull sql.NullString
@@ -3136,8 +3136,8 @@ func (t *ResJournalLine) FindSetBuffered() bool {
 			&total_costNull,
 			&unit_priceNull,
 			&total_priceNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&source_codeNull,
 			&chargeableBool,
 			&reason_codeNull,
@@ -3173,8 +3173,8 @@ func (t *ResJournalLine) FindSetBuffered() bool {
 		record.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
 		record.Unit_price, _ = types.NewDecimalFromString(unit_priceNull.String)
 		record.Total_price, _ = types.NewDecimalFromString(total_priceNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Source_code = types.NewCode(source_codeNull.String)
 		record.Chargeable = chargeableBool.Bool
 		record.Reason_code = types.NewCode(reason_codeNull.String)
@@ -3231,8 +3231,8 @@ func (t *ResJournalLine) copyFromBuffered(record *ResJournalLine) {
 	t.Total_cost = record.Total_cost
 	t.Unit_price = record.Unit_price
 	t.Total_price = record.Total_price
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Source_code = record.Source_code
 	t.Chargeable = record.Chargeable
 	t.Reason_code = record.Reason_code
@@ -3814,45 +3814,45 @@ func (t *ResJournalLine) ValidateField(fieldName string, value interface{}) erro
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResJournalLineOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(ResJournalLineOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResJournalLineOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(ResJournalLineOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -4170,9 +4170,9 @@ func (t *ResJournalLine) FieldValue(no int) (any, bool) {
 	case 17:
 		return t.Total_price, true
 	case 18:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 19:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 21:
 		return t.Source_code, true
 	case 22:
@@ -4329,20 +4329,20 @@ func (t *ResJournalLine) SetFieldValue(no int, value any) bool {
 		}
 	case 18:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 19:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 21:
@@ -4953,10 +4953,10 @@ func (t *ResJournalLine) columnValue(column string) (interface{}, bool) {
 		return t.Unit_price, true
 	case "total_price":
 		return t.Total_price, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "source_code":
 		return t.Source_code, true
 	case "chargeable":
@@ -5055,8 +5055,8 @@ func (t *ResJournalLine) Init() {
 	t.Total_cost = *new(types.Decimal)
 	t.Unit_price = *new(types.Decimal)
 	t.Total_price = *new(types.Decimal)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Source_code = *new(types.Code)
 	t.Chargeable = *new(bool)
 	t.Reason_code = *new(types.Code)
@@ -5119,8 +5119,8 @@ func (t *ResJournalLine) ToMap() map[string]interface{} {
 		"total_cost":             t.Total_cost.String(),
 		"unit_price":             t.Unit_price.String(),
 		"total_price":            t.Total_price.String(),
-		"department_code":        t.Department_code.String(),
-		"project_code":           t.Project_code.String(),
+		"dimension_1_code":       t.Dimension_1_code.String(),
+		"dimension_2_code":       t.Dimension_2_code.String(),
 		"source_code":            t.Source_code.String(),
 		"chargeable":             t.Chargeable,
 		"reason_code":            t.Reason_code.String(),
@@ -5284,14 +5284,14 @@ func (t *ResJournalLine) FromMap(data map[string]interface{}) {
 			t.Total_price = types.NewDecimalFromInt(val)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["source_code"]; ok && v != nil {
@@ -5561,7 +5561,7 @@ func (t *ResJournalLine) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         18,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -5571,7 +5571,7 @@ func (t *ResJournalLine) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         19,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -5785,8 +5785,8 @@ func (t *ResJournalLine) GetTableRelationFields() map[string]tables.TableRelatio
 			},
 			SearchTimeout: 0,
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -5795,8 +5795,8 @@ func (t *ResJournalLine) GetTableRelationFields() map[string]tables.TableRelatio
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

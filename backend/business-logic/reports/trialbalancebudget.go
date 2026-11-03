@@ -35,7 +35,7 @@ func (r *trialBalanceBudget) Definition() *Definition {
 			Name:                "GLAccount",
 			Table:               gtables.GLAccountTableName,
 			Key:                 []string{"no"},
-			RequestFilterFields: []string{"no", "account_type", "date_filter", "budget_filter", "department_filter", "project_filter"},
+			RequestFilterFields: []string{"no", "account_type", "date_filter", "budget_filter", "dimension_1_filter", "dimension_2_filter"},
 			OnPreDataItem:       Trigger(r.glAccOnPreDataItem),
 			OnAfterGetRecord:    Trigger(r.glAccOnAfterGetRecord),
 		}},

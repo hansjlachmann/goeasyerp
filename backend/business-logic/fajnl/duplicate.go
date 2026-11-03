@@ -19,24 +19,24 @@ import (
 
 // dupLine: what a duplicated line copies (MakeGenJnlLine/MakeFAJnlLine/Adjust…)
 type dupLine struct {
-	journalTemplate, journalBatch types.Code
-	genJnl                        bool // the line comes from the general journal
-	faNo                          types.Code
-	postingType                   gtables.FAJournalLineFa_posting_type
-	faPostingDate, postingDate    types.Date
-	documentType                  int
-	documentDate                  types.Date
-	documentNo, externalDocNo     types.Code
-	description                   types.Text
-	amount, salvageValue          types.Decimal
-	quantity                      types.Decimal
-	correction                    bool
-	noOfDeprDays                  int
-	deprUntil, deprAcqCost        bool
-	faPostingGroup                types.Code
-	maintenanceCode               types.Code
-	departmentCode, projectCode   types.Code
-	reclassification, indexEntry  bool
+	journalTemplate, journalBatch  types.Code
+	genJnl                         bool // the line comes from the general journal
+	faNo                           types.Code
+	postingType                    gtables.FAJournalLineFa_posting_type
+	faPostingDate, postingDate     types.Date
+	documentType                   int
+	documentDate                   types.Date
+	documentNo, externalDocNo      types.Code
+	description                    types.Text
+	amount, salvageValue           types.Decimal
+	quantity                       types.Decimal
+	correction                     bool
+	noOfDeprDays                   int
+	deprUntil, deprAcqCost         bool
+	faPostingGroup                 types.Code
+	maintenanceCode                types.Code
+	dimension1Code, dimension2Code types.Code
+	reclassification, indexEntry   bool
 }
 
 // duplicateFAJnlLine (DuplicateFAJnlLine)
@@ -47,7 +47,7 @@ func (p *FAJnlPostLine) duplicateFAJnlLine(l *gtables.FAJournalLine) error {
 			journalBatchName: l.Journal_batch_name, sourceCode: l.Source_code, reasonCode: l.Reason_code,
 			insuranceNo: l.Insurance_no, faNo: l.Fa_no, postingDate: l.Fa_posting_date, amount: l.Amount,
 			documentType: int(l.Document_type), documentDate: l.Document_date, documentNo: l.Document_no, externalDocNo: l.External_document_no,
-			departmentCode: l.Department_code, projectCode: l.Project_code,
+			dimension1Code: l.Dimension_1_code, dimension2Code: l.Dimension_2_code,
 		})
 		if err != nil {
 			return err
@@ -62,7 +62,7 @@ func (p *FAJnlPostLine) duplicateFAJnlLine(l *gtables.FAJournalLine) error {
 		documentType: int(l.Document_type), documentDate: l.Document_date, documentNo: l.Document_no, externalDocNo: l.External_document_no,
 		description: l.Description, amount: l.Amount, salvageValue: l.Salvage_value, quantity: l.Quantity, correction: l.Correction,
 		noOfDeprDays: l.No_of_depreciation_days, deprUntil: l.Depr_until_fa_posting_date, deprAcqCost: l.Depr_acquisition_cost,
-		faPostingGroup: l.Fa_posting_group, maintenanceCode: l.Maintenance_code, departmentCode: l.Department_code, projectCode: l.Project_code,
+		faPostingGroup: l.Fa_posting_group, maintenanceCode: l.Maintenance_code, dimension1Code: l.Dimension_1_code, dimension2Code: l.Dimension_2_code,
 		reclassification: l.Fa_reclassification_entry, indexEntry: l.Index_entry,
 	})
 }
@@ -79,7 +79,7 @@ func (p *FAJnlPostLine) duplicateGenJnlLine(l *gtables.GenJournalLine, faAmount 
 			journalBatchName: l.Journal_batch_name, sourceCode: l.Source_code, reasonCode: l.Reason_code,
 			insuranceNo: l.Insurance_no, faNo: l.Account_no, postingDate: postingDate, amount: faAmount,
 			documentType: int(l.Document_type), documentDate: l.Document_date, documentNo: l.Document_no, externalDocNo: l.External_document_no,
-			departmentCode: l.Department_code, projectCode: l.Project_code,
+			dimension1Code: l.Dimension_1_code, dimension2Code: l.Dimension_2_code,
 		})
 		if err != nil {
 			return err
@@ -94,7 +94,7 @@ func (p *FAJnlPostLine) duplicateGenJnlLine(l *gtables.GenJournalLine, faAmount 
 		documentType: int(l.Document_type), documentDate: l.Document_date, documentNo: l.Document_no, externalDocNo: l.External_document_no,
 		description: l.Description, amount: faAmount, salvageValue: l.Salvage_value, quantity: l.Quantity, correction: l.Correction,
 		noOfDeprDays: l.No_of_depreciation_days, deprUntil: l.Depr_until_fa_posting_date, deprAcqCost: l.Depr_acquisition_cost,
-		faPostingGroup: l.Posting_group, maintenanceCode: l.Maintenance_code, departmentCode: l.Department_code, projectCode: l.Project_code,
+		faPostingGroup: l.Posting_group, maintenanceCode: l.Maintenance_code, dimension1Code: l.Dimension_1_code, dimension2Code: l.Dimension_2_code,
 		reclassification: l.Fa_reclassification_entry, indexEntry: l.Index_entry,
 	})
 }
@@ -210,8 +210,8 @@ func createDupLine(src ftables.Source, deprBook *gtables.DepreciationBook, excha
 		g.Depr_acquisition_cost = l.deprAcqCost
 		g.Posting_group = l.faPostingGroup
 		g.Maintenance_code = l.maintenanceCode
-		g.Department_code = l.departmentCode
-		g.Project_code = l.projectCode
+		g.Dimension_1_code = l.dimension1Code
+		g.Dimension_2_code = l.dimension2Code
 		g.Fa_reclassification_entry = l.reclassification
 		g.Index_entry = l.indexEntry
 		if err = g.Validate("depreciation_book_code", deprBook.Code); err != nil {
@@ -254,8 +254,8 @@ func createDupLine(src ftables.Source, deprBook *gtables.DepreciationBook, excha
 	f.Depr_acquisition_cost = l.deprAcqCost
 	f.Fa_posting_group = l.faPostingGroup
 	f.Maintenance_code = l.maintenanceCode
-	f.Department_code = l.departmentCode
-	f.Project_code = l.projectCode
+	f.Dimension_1_code = l.dimension1Code
+	f.Dimension_2_code = l.dimension2Code
 	f.Fa_reclassification_entry = l.reclassification
 	f.Index_entry = l.indexEntry
 	if err = f.Validate("depreciation_book_code", deprBook.Code); err != nil {
@@ -274,7 +274,7 @@ type insuranceLine struct {
 	documentType                             int
 	documentDate                             types.Date
 	documentNo, externalDocNo                types.Code
-	departmentCode, projectCode              types.Code
+	dimension1Code, dimension2Code           types.Code
 }
 
 // insertInsurance (InsertInsurance, InitInsuranceJnlLine): the acquisition's insurance coverage —
@@ -324,8 +324,8 @@ func (p *FAJnlPostLine) insertInsurance(deprBookCode types.Code, l *insuranceLin
 	}
 	insuranceJnlLine.Document_no = l.documentNo
 	insuranceJnlLine.External_document_no = l.externalDocNo
-	insuranceJnlLine.Department_code = l.departmentCode
-	insuranceJnlLine.Project_code = l.projectCode
+	insuranceJnlLine.Dimension_1_code = l.dimension1Code
+	insuranceJnlLine.Dimension_2_code = l.dimension2Code
 	if faSetup.Automatic_insurance_posting {
 		return p.insuranceJnlPostLine.Run(insuranceJnlLine)
 	}

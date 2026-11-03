@@ -122,10 +122,10 @@ pages:
     caption: "Standard Text Codes"
   shipment_methods:
     caption: "Shipment Methods"
-  departments:
-    caption: "Departments"
-  projects:
-    caption: "Projects"
+  dimension_1_values:
+    caption: "Dimension 1 Values"
+  dimension_2_values:
+    caption: "Dimension 2 Values"
   salespeople_purchasers:
     caption: "Salespeople/Purchasers"
   locations:

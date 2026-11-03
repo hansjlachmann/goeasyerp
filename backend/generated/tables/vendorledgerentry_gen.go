@@ -37,8 +37,8 @@
 //	OnValidate_Pmt_disc_possible(rec *gtables.VendorLedgerEntry) error
 //	OnValidate_Pmt_disc_rcd_lcy(rec *gtables.VendorLedgerEntry) error
 //	OnValidate_Vendor_posting_group(rec *gtables.VendorLedgerEntry) error
-//	OnValidate_Department_code(rec *gtables.VendorLedgerEntry) error
-//	OnValidate_Project_code(rec *gtables.VendorLedgerEntry) error
+//	OnValidate_Dimension_1_code(rec *gtables.VendorLedgerEntry) error
+//	OnValidate_Dimension_2_code(rec *gtables.VendorLedgerEntry) error
 //	OnValidate_Purchaser_code(rec *gtables.VendorLedgerEntry) error
 //	OnValidate_User_id(rec *gtables.VendorLedgerEntry) error
 //	OnValidate_Source_code(rec *gtables.VendorLedgerEntry) error
@@ -167,8 +167,8 @@ type VendorLedgerEntry struct {
 	Pmt_disc_possible         types.Decimal                        `db:"pmt_disc_possible"`
 	Pmt_disc_rcd_lcy          types.Decimal                        `db:"pmt_disc_rcd_lcy"`
 	Vendor_posting_group      types.Code                           `db:"vendor_posting_group"`
-	Department_code           types.Code                           `db:"department_code"`
-	Project_code              types.Code                           `db:"project_code"`
+	Dimension_1_code          types.Code                           `db:"dimension_1_code"`
+	Dimension_2_code          types.Code                           `db:"dimension_2_code"`
 	Purchaser_code            types.Code                           `db:"purchaser_code"`
 	User_id                   types.Code                           `db:"user_id"`
 	Source_code               types.Code                           `db:"source_code"`
@@ -338,8 +338,8 @@ var VendorLedgerEntry_FieldNo = struct {
 	Pmt_disc_possible         int
 	Pmt_disc_rcd_lcy          int
 	Vendor_posting_group      int
-	Department_code           int
-	Project_code              int
+	Dimension_1_code          int
+	Dimension_2_code          int
 	Purchaser_code            int
 	User_id                   int
 	Source_code               int
@@ -391,8 +391,8 @@ var VendorLedgerEntry_FieldNo = struct {
 	Pmt_disc_possible:         39,
 	Pmt_disc_rcd_lcy:          40,
 	Vendor_posting_group:      22,
-	Department_code:           23,
-	Project_code:              24,
+	Dimension_1_code:          23,
+	Dimension_2_code:          24,
 	Purchaser_code:            25,
 	User_id:                   27,
 	Source_code:               28,
@@ -475,9 +475,9 @@ func (t *VendorLedgerEntry) FieldNo(fieldName string) int {
 		return 40
 	case "vendor_posting_group":
 		return 22
-	case "department_code":
+	case "dimension_1_code":
 		return 23
-	case "project_code":
+	case "dimension_2_code":
 		return 24
 	case "purchaser_code":
 		return 25
@@ -587,9 +587,9 @@ func (t *VendorLedgerEntry) FieldName(fieldNo int) string {
 	case 22:
 		return "vendor_posting_group"
 	case 23:
-		return "department_code"
+		return "dimension_1_code"
 	case 24:
-		return "project_code"
+		return "dimension_2_code"
 	case 25:
 		return "purchaser_code"
 	case 27:
@@ -818,11 +818,11 @@ type (
 	VendorLedgerEntryOnValidate_Vendor_posting_group interface {
 		OnValidate_Vendor_posting_group(rec *VendorLedgerEntry) error
 	}
-	VendorLedgerEntryOnValidate_Department_code interface {
-		OnValidate_Department_code(rec *VendorLedgerEntry) error
+	VendorLedgerEntryOnValidate_Dimension_1_code interface {
+		OnValidate_Dimension_1_code(rec *VendorLedgerEntry) error
 	}
-	VendorLedgerEntryOnValidate_Project_code interface {
-		OnValidate_Project_code(rec *VendorLedgerEntry) error
+	VendorLedgerEntryOnValidate_Dimension_2_code interface {
+		OnValidate_Dimension_2_code(rec *VendorLedgerEntry) error
 	}
 	VendorLedgerEntryOnValidate_Purchaser_code interface {
 		OnValidate_Purchaser_code(rec *VendorLedgerEntry) error
@@ -976,10 +976,10 @@ func vendorLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(VendorLedgerEntryOnValidate_Pmt_disc_rcd_lcy)
 	case "OnValidate_Vendor_posting_group":
 		_, ok = logic.(VendorLedgerEntryOnValidate_Vendor_posting_group)
-	case "OnValidate_Department_code":
-		_, ok = logic.(VendorLedgerEntryOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(VendorLedgerEntryOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(VendorLedgerEntryOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(VendorLedgerEntryOnValidate_Dimension_2_code)
 	case "OnValidate_Purchaser_code":
 		_, ok = logic.(VendorLedgerEntryOnValidate_Purchaser_code)
 	case "OnValidate_User_id":
@@ -1121,10 +1121,10 @@ func (t *VendorLedgerEntry) CheckFields() error {
 	if err := tables.CheckMaxLength(VendorLedgerEntryTableName, "vendor_posting_group", string(t.Vendor_posting_group), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(VendorLedgerEntryTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(VendorLedgerEntryTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(VendorLedgerEntryTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(VendorLedgerEntryTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(VendorLedgerEntryTableName, "purchaser_code", string(t.Purchaser_code), 10); err != nil {
@@ -1217,8 +1217,8 @@ func GetVendorLedgerEntryTableSchema() string {
 		pmt_disc_possible TEXT,
 		pmt_disc_rcd_lcy TEXT,
 		vendor_posting_group TEXT(10),
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		purchaser_code TEXT(10),
 		user_id TEXT(20),
 		source_code TEXT(10),
@@ -1275,8 +1275,8 @@ func GetVendorLedgerEntryPostgresTableSchema() string {
 		pmt_disc_possible NUMERIC,
 		pmt_disc_rcd_lcy NUMERIC,
 		vendor_posting_group VARCHAR(10),
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		purchaser_code VARCHAR(10),
 		user_id VARCHAR(20),
 		source_code VARCHAR(10),
@@ -1479,8 +1479,8 @@ func (t *VendorLedgerEntry) StoreOldValues() {
 	t.oldValues["pmt_disc_possible"] = t.Pmt_disc_possible
 	t.oldValues["pmt_disc_rcd_lcy"] = t.Pmt_disc_rcd_lcy
 	t.oldValues["vendor_posting_group"] = t.Vendor_posting_group
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["purchaser_code"] = t.Purchaser_code
 	t.oldValues["user_id"] = t.User_id
 	t.oldValues["source_code"] = t.Source_code
@@ -1599,11 +1599,11 @@ func (t *VendorLedgerEntry) XRec() *VendorLedgerEntry {
 	if v, ok := t.oldValues["vendor_posting_group"].(types.Code); ok {
 		x.Vendor_posting_group = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["purchaser_code"].(types.Code); ok {
 		x.Purchaser_code = v
@@ -1772,8 +1772,8 @@ func (t *VendorLedgerEntry) GetByPK(entry_no int) bool {
 	var pmt_disc_possibleNull sql.NullString
 	var pmt_disc_rcd_lcyNull sql.NullString
 	var vendor_posting_groupNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var purchaser_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
@@ -1804,7 +1804,7 @@ func (t *VendorLedgerEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, vendor_no, buy_from_vendor_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, purchase_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_rcd_lcy, vendor_posting_group, department_code, project_code, purchaser_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, vendor_no, buy_from_vendor_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, purchase_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_rcd_lcy, vendor_posting_group, dimension_1_code, dimension_2_code, purchaser_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1838,8 +1838,8 @@ func (t *VendorLedgerEntry) GetByPK(entry_no int) bool {
 		&pmt_disc_possibleNull,
 		&pmt_disc_rcd_lcyNull,
 		&vendor_posting_groupNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&purchaser_codeNull,
 		&user_idNull,
 		&source_codeNull,
@@ -1903,8 +1903,8 @@ func (t *VendorLedgerEntry) GetByPK(entry_no int) bool {
 	t.Pmt_disc_possible, _ = types.NewDecimalFromString(pmt_disc_possibleNull.String)
 	t.Pmt_disc_rcd_lcy, _ = types.NewDecimalFromString(pmt_disc_rcd_lcyNull.String)
 	t.Vendor_posting_group = types.NewCode(vendor_posting_groupNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Purchaser_code = types.NewCode(purchaser_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
@@ -1977,8 +1977,8 @@ func (t *VendorLedgerEntry) Insert(runTrigger bool) bool {
 		t.Pmt_disc_possible,
 		t.Pmt_disc_rcd_lcy,
 		t.Vendor_posting_group,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Purchaser_code,
 		t.User_id,
 		t.Source_code,
@@ -2006,7 +2006,7 @@ func (t *VendorLedgerEntry) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, vendor_no, buy_from_vendor_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, purchase_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_rcd_lcy, vendor_posting_group, department_code, project_code, purchaser_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, vendor_no, buy_from_vendor_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, purchase_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_rcd_lcy, vendor_posting_group, dimension_1_code, dimension_2_code, purchaser_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2071,8 +2071,8 @@ func (t *VendorLedgerEntry) InsertAll(records []*VendorLedgerEntry, runTrigger b
 			r.Pmt_disc_possible,
 			r.Pmt_disc_rcd_lcy,
 			r.Vendor_posting_group,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Purchaser_code,
 			r.User_id,
 			r.Source_code,
@@ -2099,7 +2099,7 @@ func (t *VendorLedgerEntry) InsertAll(records []*VendorLedgerEntry, runTrigger b
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName)
-	columns := []string{"entry_no", "vendor_no", "buy_from_vendor_no", "posting_date", "document_date", "document_type", "document_no", "external_document_no", "description", "currency_code", "amount", "remaining_amount", "closed_by_amount", "original_amount_lcy", "remaining_amt_lcy", "amount_lcy", "closed_by_amount_lcy", "debit_amount", "credit_amount", "debit_amount_lcy", "credit_amount_lcy", "purchase_lcy", "inv_discount_lcy", "pmt_discount_date", "pmt_disc_possible", "pmt_disc_rcd_lcy", "vendor_posting_group", "department_code", "project_code", "purchaser_code", "user_id", "source_code", "reason_code", "journal_batch_name", "transaction_no", "applies_to_doc_type", "applies_to_doc_no", "applies_to_id", "open", "positive", "on_hold", "due_date", "closed_by_entry_no", "closed_at_date", "bal_account_type", "bal_account_no", "no_series", "closed_by_currency_code", "closed_by_currency_amount", "rounding_currency", "rounding_amount", "rounding_amount_lcy"}
+	columns := []string{"entry_no", "vendor_no", "buy_from_vendor_no", "posting_date", "document_date", "document_type", "document_no", "external_document_no", "description", "currency_code", "amount", "remaining_amount", "closed_by_amount", "original_amount_lcy", "remaining_amt_lcy", "amount_lcy", "closed_by_amount_lcy", "debit_amount", "credit_amount", "debit_amount_lcy", "credit_amount_lcy", "purchase_lcy", "inv_discount_lcy", "pmt_discount_date", "pmt_disc_possible", "pmt_disc_rcd_lcy", "vendor_posting_group", "dimension_1_code", "dimension_2_code", "purchaser_code", "user_id", "source_code", "reason_code", "journal_batch_name", "transaction_no", "applies_to_doc_type", "applies_to_doc_no", "applies_to_id", "open", "positive", "on_hold", "due_date", "closed_by_entry_no", "closed_at_date", "bal_account_type", "bal_account_no", "no_series", "closed_by_currency_code", "closed_by_currency_amount", "rounding_currency", "rounding_amount", "rounding_amount_lcy"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2247,13 +2247,13 @@ func (t *VendorLedgerEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "vendor_posting_group = ?")
 			values = append(values, t.Vendor_posting_group)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("purchaser_code") {
 			setClauses = append(setClauses, "purchaser_code = ?")
@@ -2406,10 +2406,10 @@ func (t *VendorLedgerEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.Pmt_disc_rcd_lcy)
 		setClauses = append(setClauses, "vendor_posting_group = ?")
 		values = append(values, t.Vendor_posting_group)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "purchaser_code = ?")
 		values = append(values, t.Purchaser_code)
 		setClauses = append(setClauses, "user_id = ?")
@@ -2609,13 +2609,13 @@ func (t *VendorLedgerEntry) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Vendor_posting_group.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "purchaser_code":
 		if old, ok := oldValue.(types.Code); ok {
@@ -2971,10 +2971,10 @@ func (t *VendorLedgerEntry) columnName(fieldName string) (string, bool) {
 		return "pmt_disc_rcd_lcy", true
 	case strings.ToLower("vendor_posting_group"):
 		return "vendor_posting_group", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("purchaser_code"):
 		return "purchaser_code", true
 	case strings.ToLower("user_id"):
@@ -3428,7 +3428,7 @@ func (t *VendorLedgerEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, vendor_no, buy_from_vendor_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, purchase_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_rcd_lcy, vendor_posting_group, department_code, project_code, purchaser_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, vendor_no, buy_from_vendor_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, purchase_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_rcd_lcy, vendor_posting_group, dimension_1_code, dimension_2_code, purchaser_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3459,8 +3459,8 @@ func (t *VendorLedgerEntry) FindFirst() bool {
 	var pmt_disc_possibleNull sql.NullString
 	var pmt_disc_rcd_lcyNull sql.NullString
 	var vendor_posting_groupNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var purchaser_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
@@ -3511,8 +3511,8 @@ func (t *VendorLedgerEntry) FindFirst() bool {
 		&pmt_disc_possibleNull,
 		&pmt_disc_rcd_lcyNull,
 		&vendor_posting_groupNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&purchaser_codeNull,
 		&user_idNull,
 		&source_codeNull,
@@ -3573,8 +3573,8 @@ func (t *VendorLedgerEntry) FindFirst() bool {
 	t.Pmt_disc_possible, _ = types.NewDecimalFromString(pmt_disc_possibleNull.String)
 	t.Pmt_disc_rcd_lcy, _ = types.NewDecimalFromString(pmt_disc_rcd_lcyNull.String)
 	t.Vendor_posting_group = types.NewCode(vendor_posting_groupNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Purchaser_code = types.NewCode(purchaser_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
@@ -3616,7 +3616,7 @@ func (t *VendorLedgerEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, vendor_no, buy_from_vendor_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, purchase_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_rcd_lcy, vendor_posting_group, department_code, project_code, purchaser_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, vendor_no, buy_from_vendor_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, purchase_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_rcd_lcy, vendor_posting_group, dimension_1_code, dimension_2_code, purchaser_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3647,8 +3647,8 @@ func (t *VendorLedgerEntry) FindLast() bool {
 	var pmt_disc_possibleNull sql.NullString
 	var pmt_disc_rcd_lcyNull sql.NullString
 	var vendor_posting_groupNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var purchaser_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
@@ -3699,8 +3699,8 @@ func (t *VendorLedgerEntry) FindLast() bool {
 		&pmt_disc_possibleNull,
 		&pmt_disc_rcd_lcyNull,
 		&vendor_posting_groupNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&purchaser_codeNull,
 		&user_idNull,
 		&source_codeNull,
@@ -3761,8 +3761,8 @@ func (t *VendorLedgerEntry) FindLast() bool {
 	t.Pmt_disc_possible, _ = types.NewDecimalFromString(pmt_disc_possibleNull.String)
 	t.Pmt_disc_rcd_lcy, _ = types.NewDecimalFromString(pmt_disc_rcd_lcyNull.String)
 	t.Vendor_posting_group = types.NewCode(vendor_posting_groupNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Purchaser_code = types.NewCode(purchaser_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
@@ -3834,7 +3834,7 @@ func (t *VendorLedgerEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, vendor_no, buy_from_vendor_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, purchase_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_rcd_lcy, vendor_posting_group, department_code, project_code, purchaser_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, vendor_no, buy_from_vendor_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, purchase_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_rcd_lcy, vendor_posting_group, dimension_1_code, dimension_2_code, purchaser_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3929,8 +3929,8 @@ func (t *VendorLedgerEntry) Next(steps ...int) bool {
 		var pmt_disc_possibleNull sql.NullString
 		var pmt_disc_rcd_lcyNull sql.NullString
 		var vendor_posting_groupNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var purchaser_codeNull sql.NullString
 		var user_idNull sql.NullString
 		var source_codeNull sql.NullString
@@ -3981,8 +3981,8 @@ func (t *VendorLedgerEntry) Next(steps ...int) bool {
 			&pmt_disc_possibleNull,
 			&pmt_disc_rcd_lcyNull,
 			&vendor_posting_groupNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&purchaser_codeNull,
 			&user_idNull,
 			&source_codeNull,
@@ -4042,8 +4042,8 @@ func (t *VendorLedgerEntry) Next(steps ...int) bool {
 		t.Pmt_disc_possible, _ = types.NewDecimalFromString(pmt_disc_possibleNull.String)
 		t.Pmt_disc_rcd_lcy, _ = types.NewDecimalFromString(pmt_disc_rcd_lcyNull.String)
 		t.Vendor_posting_group = types.NewCode(vendor_posting_groupNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Purchaser_code = types.NewCode(purchaser_codeNull.String)
 		t.User_id = types.NewCode(user_idNull.String)
 		t.Source_code = types.NewCode(source_codeNull.String)
@@ -4114,7 +4114,7 @@ func (t *VendorLedgerEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, vendor_no, buy_from_vendor_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, purchase_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_rcd_lcy, vendor_posting_group, department_code, project_code, purchaser_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, vendor_no, buy_from_vendor_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, purchase_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_rcd_lcy, vendor_posting_group, dimension_1_code, dimension_2_code, purchaser_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4162,8 +4162,8 @@ func (t *VendorLedgerEntry) FindSetBuffered() bool {
 		var pmt_disc_possibleNull sql.NullString
 		var pmt_disc_rcd_lcyNull sql.NullString
 		var vendor_posting_groupNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var purchaser_codeNull sql.NullString
 		var user_idNull sql.NullString
 		var source_codeNull sql.NullString
@@ -4214,8 +4214,8 @@ func (t *VendorLedgerEntry) FindSetBuffered() bool {
 			&pmt_disc_possibleNull,
 			&pmt_disc_rcd_lcyNull,
 			&vendor_posting_groupNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&purchaser_codeNull,
 			&user_idNull,
 			&source_codeNull,
@@ -4273,8 +4273,8 @@ func (t *VendorLedgerEntry) FindSetBuffered() bool {
 		record.Pmt_disc_possible, _ = types.NewDecimalFromString(pmt_disc_possibleNull.String)
 		record.Pmt_disc_rcd_lcy, _ = types.NewDecimalFromString(pmt_disc_rcd_lcyNull.String)
 		record.Vendor_posting_group = types.NewCode(vendor_posting_groupNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Purchaser_code = types.NewCode(purchaser_codeNull.String)
 		record.User_id = types.NewCode(user_idNull.String)
 		record.Source_code = types.NewCode(source_codeNull.String)
@@ -4351,8 +4351,8 @@ func (t *VendorLedgerEntry) copyFromBuffered(record *VendorLedgerEntry) {
 	t.Pmt_disc_possible = record.Pmt_disc_possible
 	t.Pmt_disc_rcd_lcy = record.Pmt_disc_rcd_lcy
 	t.Vendor_posting_group = record.Vendor_posting_group
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Purchaser_code = record.Purchaser_code
 	t.User_id = record.User_id
 	t.Source_code = record.Source_code
@@ -5220,45 +5220,45 @@ func (t *VendorLedgerEntry) ValidateField(fieldName string, value interface{}) e
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(VendorLedgerEntryOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(VendorLedgerEntryOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(VendorLedgerEntryOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(VendorLedgerEntryOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -5897,9 +5897,9 @@ func (t *VendorLedgerEntry) FieldValue(no int) (any, bool) {
 	case 22:
 		return t.Vendor_posting_group, true
 	case 23:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 24:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 25:
 		return t.Purchaser_code, true
 	case 27:
@@ -6126,20 +6126,20 @@ func (t *VendorLedgerEntry) SetFieldValue(no int, value any) bool {
 		}
 	case 23:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 24:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 25:
@@ -6960,10 +6960,10 @@ func (t *VendorLedgerEntry) columnValue(column string) (interface{}, bool) {
 		return t.Pmt_disc_rcd_lcy, true
 	case "vendor_posting_group":
 		return t.Vendor_posting_group, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "purchaser_code":
 		return t.Purchaser_code, true
 	case "user_id":
@@ -7090,8 +7090,8 @@ func (t *VendorLedgerEntry) Init() {
 	t.Pmt_disc_possible = *new(types.Decimal)
 	t.Pmt_disc_rcd_lcy = *new(types.Decimal)
 	t.Vendor_posting_group = *new(types.Code)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Purchaser_code = *new(types.Code)
 	t.User_id = *new(types.Code)
 	t.Source_code = *new(types.Code)
@@ -7176,8 +7176,8 @@ func (t *VendorLedgerEntry) ToMap() map[string]interface{} {
 		"pmt_disc_possible":         t.Pmt_disc_possible.String(),
 		"pmt_disc_rcd_lcy":          t.Pmt_disc_rcd_lcy.String(),
 		"vendor_posting_group":      t.Vendor_posting_group.String(),
-		"department_code":           t.Department_code.String(),
-		"project_code":              t.Project_code.String(),
+		"dimension_1_code":          t.Dimension_1_code.String(),
+		"dimension_2_code":          t.Dimension_2_code.String(),
 		"purchaser_code":            t.Purchaser_code.String(),
 		"user_id":                   t.User_id.String(),
 		"source_code":               t.Source_code.String(),
@@ -7466,14 +7466,14 @@ func (t *VendorLedgerEntry) FromMap(data map[string]interface{}) {
 			t.Vendor_posting_group = types.NewCode(s)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["purchaser_code"]; ok && v != nil {
@@ -7949,7 +7949,7 @@ func (t *VendorLedgerEntry) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         23,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -7959,7 +7959,7 @@ func (t *VendorLedgerEntry) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         24,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -8272,8 +8272,8 @@ func (t *VendorLedgerEntry) GetTableRelationFields() map[string]tables.TableRela
 			},
 			SearchTimeout: 0,
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -8282,8 +8282,8 @@ func (t *VendorLedgerEntry) GetTableRelationFields() map[string]tables.TableRela
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

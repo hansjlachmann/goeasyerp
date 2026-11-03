@@ -57,7 +57,7 @@ func (r *accountSchedule) Definition() *Definition {
 				Table:               gtables.AccScheduleLineTableName,
 				Key:                 []string{"schedule_name", "line_no"},
 				Link:                map[string]string{"schedule_name": "name"},
-				RequestFilterFields: []string{"date_filter", "budget_filter", "department_filter", "project_filter"},
+				RequestFilterFields: []string{"date_filter", "budget_filter", "dimension_1_filter", "dimension_2_filter"},
 				OnPreDataItem:       Trigger(r.lineOnPreDataItem),
 				OnAfterGetRecord:    Trigger(r.lineOnAfterGetRecord),
 			}},
@@ -152,8 +152,8 @@ func (r *accountSchedule) lineOnPreDataItem(rec *gtables.AccScheduleLine, run *R
 	startDate, endDate := dateFilterRange(rec.Date_filter)
 	language := fcodeunits.CurrentLanguage()
 	run.SetValue("period_text", run.Text("PERIOD_FROM_TO", formatDate(startDate, language), formatDate(endDate, language)))
-	run.SetValue("department_text", filterText(run, "INCLUDES_DEPARTMENTS", rec.Department_filter))
-	run.SetValue("project_text", filterText(run, "INCLUDES_PROJECTS", rec.Project_filter))
+	run.SetValue("dimension_1_text", filterText(run, "INCLUDES_DIMENSION_1", rec.Dimension_1_filter))
+	run.SetValue("dimension_2_text", filterText(run, "INCLUDES_DIMENSION_2", rec.Dimension_2_filter))
 	run.SetValue("budget_text", filterText(run, "INCLUDES_BUDGETS", rec.Budget_filter))
 	return nil
 }

@@ -11,7 +11,7 @@ import (
 // it (its company names the business unit) is consolidated as Import Consolidation from DB does —
 // the earlier consolidation of the file's period taken out, the opening balance sheet adjusted,
 // the file's entries posted on their consolidation accounts, exchange rate differences and
-// residuals; the departments and projects of the file must be here.
+// residuals; the dimension 1 and 2 values of the file must be here.
 const ImportConsolidationFileID = 92
 
 func init() {
@@ -79,7 +79,7 @@ func (r *importConsolidationFile) onPreReport(run *Run) error {
 	window.Update(1, busUnit.Code)
 	window.Update(4, 1)
 
-	// the file's departments and projects are this company's
+	// the file's dimension 1 and 2 values are this company's
 	thisCompanys := func(rec interface{ GetOrError(interface{}) error }) func(types.Code) (types.Code, error) {
 		return func(code types.Code) (types.Code, error) {
 			err := rec.GetOrError(code)
@@ -91,7 +91,7 @@ func (r *importConsolidationFile) onPreReport(run *Run) error {
 	}
 	c := &consolidation.Consolidation{Src: run, BusUnit: busUnit, DocNo: docNo, SourceCode: gtables.GetSourceCodeSetup(run).Consolidation,
 		StartDate: header.StartDate, EndDate: header.EndDate, PerDay: header.PerDay, PerDept: header.PerDept, PerProj: header.PerProj,
-		MapDepartment: thisCompanys(gtables.NewDepartment(run)), MapProject: thisCompanys(gtables.NewProject(run))}
+		MapDimension1: thisCompanys(gtables.NewDimension1(run)), MapDimension2: thisCompanys(gtables.NewDimension2(run))}
 	var cleared consolidation.Cleared
 	err = c.ClearPrevious(&cleared)
 	if err != nil {

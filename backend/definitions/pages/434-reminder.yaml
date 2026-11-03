@@ -49,8 +49,8 @@ page:
           - source: currency_code
           - source: customer_posting_group
           - source: gen_bus_posting_group
-          - source: department_code
-          - source: project_code
+          - source: dimension_1_code
+          - source: dimension_2_code
           - source: tax_area_code
           - source: tax_liable
           - source: tax_bus_posting_group

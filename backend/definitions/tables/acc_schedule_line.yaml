@@ -69,13 +69,13 @@ table:
       type: types.Date
       flow_filter: true
 
-    - name: department_filter
+    - name: dimension_1_filter
       no: 12
       type: types.Code
       length: 10
       flow_filter: true
       table_relation:
-        table: Department
+        table: Dimension_1
         field: code
         lookup_columns:
           - source: code
@@ -83,13 +83,13 @@ table:
           - source: name
             width: 250
 
-    - name: project_filter
+    - name: dimension_2_filter
       no: 13
       type: types.Code
       length: 10
       flow_filter: true
       table_relation:
-        table: Project
+        table: Dimension_2
         field: code
         lookup_columns:
           - source: code

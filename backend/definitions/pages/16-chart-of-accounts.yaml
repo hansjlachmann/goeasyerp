@@ -60,11 +60,11 @@ page:
           width: 160
           table_relation: G_L_Account
 
-        - source: department_code
+        - source: dimension_1_code
           width: 140
           table_relation: Department
 
-        - source: project_code
+        - source: dimension_2_code
           width: 130
           table_relation: Project
 

@@ -15,8 +15,8 @@
 //	OnValidate_Journal_line_no(rec *gtables.GenJnlAllocation) error
 //	OnValidate_Line_no(rec *gtables.GenJnlAllocation) error
 //	OnValidate_Account_no(rec *gtables.GenJnlAllocation) error
-//	OnValidate_Department_code(rec *gtables.GenJnlAllocation) error
-//	OnValidate_Project_code(rec *gtables.GenJnlAllocation) error
+//	OnValidate_Dimension_1_code(rec *gtables.GenJnlAllocation) error
+//	OnValidate_Dimension_2_code(rec *gtables.GenJnlAllocation) error
 //	OnValidate_Allocation_quantity(rec *gtables.GenJnlAllocation) error
 //	OnValidate_Allocation_percent(rec *gtables.GenJnlAllocation) error
 //	OnValidate_Amount(rec *gtables.GenJnlAllocation) error
@@ -98,8 +98,8 @@ type GenJnlAllocation struct {
 	Journal_line_no        int                                  `db:"journal_line_no,pk"`
 	Line_no                int                                  `db:"line_no,pk"`
 	Account_no             types.Code                           `db:"account_no"`
-	Department_code        types.Code                           `db:"department_code"`
-	Project_code           types.Code                           `db:"project_code"`
+	Dimension_1_code       types.Code                           `db:"dimension_1_code"`
+	Dimension_2_code       types.Code                           `db:"dimension_2_code"`
 	Allocation_quantity    types.Decimal                        `db:"allocation_quantity"`
 	Allocation_percent     types.Decimal                        `db:"allocation_percent"`
 	Amount                 types.Decimal                        `db:"amount"`
@@ -217,8 +217,8 @@ var GenJnlAllocation_FieldNo = struct {
 	Journal_line_no            int
 	Line_no                    int
 	Account_no                 int
-	Department_code            int
-	Project_code               int
+	Dimension_1_code           int
+	Dimension_2_code           int
 	Allocation_quantity        int
 	Allocation_percent         int
 	Amount                     int
@@ -242,8 +242,8 @@ var GenJnlAllocation_FieldNo = struct {
 	Journal_line_no:            3,
 	Line_no:                    4,
 	Account_no:                 5,
-	Department_code:            6,
-	Project_code:               7,
+	Dimension_1_code:           6,
+	Dimension_2_code:           7,
 	Allocation_quantity:        8,
 	Allocation_percent:         9,
 	Amount:                     10,
@@ -276,9 +276,9 @@ func (t *GenJnlAllocation) FieldNo(fieldName string) int {
 		return 4
 	case "account_no":
 		return 5
-	case "department_code":
+	case "dimension_1_code":
 		return 6
-	case "project_code":
+	case "dimension_2_code":
 		return 7
 	case "allocation_quantity":
 		return 8
@@ -332,9 +332,9 @@ func (t *GenJnlAllocation) FieldName(fieldNo int) string {
 	case 5:
 		return "account_no"
 	case 6:
-		return "department_code"
+		return "dimension_1_code"
 	case 7:
-		return "project_code"
+		return "dimension_2_code"
 	case 8:
 		return "allocation_quantity"
 	case 9:
@@ -485,11 +485,11 @@ type (
 	GenJnlAllocationOnValidate_Account_no interface {
 		OnValidate_Account_no(rec *GenJnlAllocation) error
 	}
-	GenJnlAllocationOnValidate_Department_code interface {
-		OnValidate_Department_code(rec *GenJnlAllocation) error
+	GenJnlAllocationOnValidate_Dimension_1_code interface {
+		OnValidate_Dimension_1_code(rec *GenJnlAllocation) error
 	}
-	GenJnlAllocationOnValidate_Project_code interface {
-		OnValidate_Project_code(rec *GenJnlAllocation) error
+	GenJnlAllocationOnValidate_Dimension_2_code interface {
+		OnValidate_Dimension_2_code(rec *GenJnlAllocation) error
 	}
 	GenJnlAllocationOnValidate_Allocation_quantity interface {
 		OnValidate_Allocation_quantity(rec *GenJnlAllocation) error
@@ -578,10 +578,10 @@ func genJnlAllocationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GenJnlAllocationOnValidate_Line_no)
 	case "OnValidate_Account_no":
 		_, ok = logic.(GenJnlAllocationOnValidate_Account_no)
-	case "OnValidate_Department_code":
-		_, ok = logic.(GenJnlAllocationOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(GenJnlAllocationOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(GenJnlAllocationOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(GenJnlAllocationOnValidate_Dimension_2_code)
 	case "OnValidate_Allocation_quantity":
 		_, ok = logic.(GenJnlAllocationOnValidate_Allocation_quantity)
 	case "OnValidate_Allocation_percent":
@@ -703,10 +703,10 @@ func (t *GenJnlAllocation) CheckFields() error {
 	if err := tables.CheckMaxLength(GenJnlAllocationTableName, "account_no", string(t.Account_no), 20); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(GenJnlAllocationTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(GenJnlAllocationTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(GenJnlAllocationTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(GenJnlAllocationTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(GenJnlAllocationTableName, "gen_bus_posting_group", string(t.Gen_bus_posting_group), 10); err != nil {
@@ -759,8 +759,8 @@ func GetGenJnlAllocationTableSchema() string {
 		journal_line_no INTEGER,
 		line_no INTEGER,
 		account_no TEXT(20),
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		allocation_quantity TEXT,
 		allocation_percent TEXT,
 		amount TEXT,
@@ -790,8 +790,8 @@ func GetGenJnlAllocationPostgresTableSchema() string {
 		journal_line_no INTEGER,
 		line_no INTEGER,
 		account_no VARCHAR(20),
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		allocation_quantity NUMERIC,
 		allocation_percent NUMERIC,
 		amount NUMERIC,
@@ -949,8 +949,8 @@ func (t *GenJnlAllocation) StoreOldValues() {
 	t.oldValues["journal_line_no"] = t.Journal_line_no
 	t.oldValues["line_no"] = t.Line_no
 	t.oldValues["account_no"] = t.Account_no
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["allocation_quantity"] = t.Allocation_quantity
 	t.oldValues["allocation_percent"] = t.Allocation_percent
 	t.oldValues["amount"] = t.Amount
@@ -996,11 +996,11 @@ func (t *GenJnlAllocation) XRec() *GenJnlAllocation {
 	if v, ok := t.oldValues["account_no"].(types.Code); ok {
 		x.Account_no = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["allocation_quantity"].(types.Decimal); ok {
 		x.Allocation_quantity = v
@@ -1148,8 +1148,8 @@ func (t *GenJnlAllocation) GetByPK(journal_template_name types.Code, journal_bat
 	var journal_line_noVal int
 	var line_noVal int
 	var account_noNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var allocation_quantityNull sql.NullString
 	var allocation_percentNull sql.NullString
 	var amountNull sql.NullString
@@ -1176,7 +1176,7 @@ func (t *GenJnlAllocation) GetByPK(journal_template_name types.Code, journal_bat
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, department_code, project_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND journal_line_no = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, dimension_1_code, dimension_2_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND journal_line_no = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1188,8 +1188,8 @@ func (t *GenJnlAllocation) GetByPK(journal_template_name types.Code, journal_bat
 		&journal_line_noVal,
 		&line_noVal,
 		&account_noNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&allocation_quantityNull,
 		&allocation_percentNull,
 		&amountNull,
@@ -1224,8 +1224,8 @@ func (t *GenJnlAllocation) GetByPK(journal_template_name types.Code, journal_bat
 	t.Journal_line_no = journal_line_noVal
 	t.Line_no = line_noVal
 	t.Account_no = types.NewCode(account_noNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Allocation_quantity, _ = types.NewDecimalFromString(allocation_quantityNull.String)
 	t.Allocation_percent, _ = types.NewDecimalFromString(allocation_percentNull.String)
 	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
@@ -1269,8 +1269,8 @@ func (t *GenJnlAllocation) Insert(runTrigger bool) bool {
 		t.Journal_line_no,
 		t.Line_no,
 		t.Account_no,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Allocation_quantity,
 		t.Allocation_percent,
 		t.Amount,
@@ -1291,7 +1291,7 @@ func (t *GenJnlAllocation) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, department_code, project_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, journal_line_no, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, dimension_1_code, dimension_2_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, journal_line_no, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1334,8 +1334,8 @@ func (t *GenJnlAllocation) InsertAll(records []*GenJnlAllocation, runTrigger boo
 			r.Journal_line_no,
 			r.Line_no,
 			r.Account_no,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Allocation_quantity,
 			r.Allocation_percent,
 			r.Amount,
@@ -1355,7 +1355,7 @@ func (t *GenJnlAllocation) InsertAll(records []*GenJnlAllocation, runTrigger boo
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "journal_line_no", "line_no", "account_no", "department_code", "project_code", "allocation_quantity", "allocation_percent", "amount", "gen_posting_type", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_amount", "tax_percent", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "additional_currency_amount"}
+	columns := []string{"journal_template_name", "journal_batch_name", "journal_line_no", "line_no", "account_no", "dimension_1_code", "dimension_2_code", "allocation_quantity", "allocation_percent", "amount", "gen_posting_type", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_amount", "tax_percent", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "additional_currency_amount"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1424,13 +1424,13 @@ func (t *GenJnlAllocation) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "account_no = ?")
 			values = append(values, t.Account_no)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("allocation_quantity") {
 			setClauses = append(setClauses, "allocation_quantity = ?")
@@ -1505,10 +1505,10 @@ func (t *GenJnlAllocation) Modify(runTrigger bool) bool {
 		// No old values (fresh record), update all fields
 		setClauses = append(setClauses, "account_no = ?")
 		values = append(values, t.Account_no)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "allocation_quantity = ?")
 		values = append(values, t.Allocation_quantity)
 		setClauses = append(setClauses, "allocation_percent = ?")
@@ -1622,13 +1622,13 @@ func (t *GenJnlAllocation) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Account_no.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "allocation_quantity":
 		if old, ok := oldValue.(types.Decimal); ok {
@@ -1987,10 +1987,10 @@ func (t *GenJnlAllocation) columnName(fieldName string) (string, bool) {
 		return "line_no", true
 	case strings.ToLower("account_no"):
 		return "account_no", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("allocation_quantity"):
 		return "allocation_quantity", true
 	case strings.ToLower("allocation_percent"):
@@ -2396,7 +2396,7 @@ func (t *GenJnlAllocation) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, department_code, project_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, dimension_1_code, dimension_2_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2404,8 +2404,8 @@ func (t *GenJnlAllocation) FindFirst() bool {
 	var journal_template_nameNull sql.NullString
 	var journal_batch_nameNull sql.NullString
 	var account_noNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var allocation_quantityNull sql.NullString
 	var allocation_percentNull sql.NullString
 	var amountNull sql.NullString
@@ -2429,8 +2429,8 @@ func (t *GenJnlAllocation) FindFirst() bool {
 		&t.Journal_line_no,
 		&t.Line_no,
 		&account_noNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&allocation_quantityNull,
 		&allocation_percentNull,
 		&amountNull,
@@ -2461,8 +2461,8 @@ func (t *GenJnlAllocation) FindFirst() bool {
 	t.Journal_template_name = types.NewCode(journal_template_nameNull.String)
 	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
 	t.Account_no = types.NewCode(account_noNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Allocation_quantity, _ = types.NewDecimalFromString(allocation_quantityNull.String)
 	t.Allocation_percent, _ = types.NewDecimalFromString(allocation_percentNull.String)
 	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
@@ -2499,7 +2499,7 @@ func (t *GenJnlAllocation) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, department_code, project_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, dimension_1_code, dimension_2_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2507,8 +2507,8 @@ func (t *GenJnlAllocation) FindLast() bool {
 	var journal_template_nameNull sql.NullString
 	var journal_batch_nameNull sql.NullString
 	var account_noNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var allocation_quantityNull sql.NullString
 	var allocation_percentNull sql.NullString
 	var amountNull sql.NullString
@@ -2532,8 +2532,8 @@ func (t *GenJnlAllocation) FindLast() bool {
 		&t.Journal_line_no,
 		&t.Line_no,
 		&account_noNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&allocation_quantityNull,
 		&allocation_percentNull,
 		&amountNull,
@@ -2564,8 +2564,8 @@ func (t *GenJnlAllocation) FindLast() bool {
 	t.Journal_template_name = types.NewCode(journal_template_nameNull.String)
 	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
 	t.Account_no = types.NewCode(account_noNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Allocation_quantity, _ = types.NewDecimalFromString(allocation_quantityNull.String)
 	t.Allocation_percent, _ = types.NewDecimalFromString(allocation_percentNull.String)
 	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
@@ -2632,7 +2632,7 @@ func (t *GenJnlAllocation) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, department_code, project_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, dimension_1_code, dimension_2_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2704,8 +2704,8 @@ func (t *GenJnlAllocation) Next(steps ...int) bool {
 		var journal_template_nameNull sql.NullString
 		var journal_batch_nameNull sql.NullString
 		var account_noNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var allocation_quantityNull sql.NullString
 		var allocation_percentNull sql.NullString
 		var amountNull sql.NullString
@@ -2729,8 +2729,8 @@ func (t *GenJnlAllocation) Next(steps ...int) bool {
 			&t.Journal_line_no,
 			&t.Line_no,
 			&account_noNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&allocation_quantityNull,
 			&allocation_percentNull,
 			&amountNull,
@@ -2760,8 +2760,8 @@ func (t *GenJnlAllocation) Next(steps ...int) bool {
 		t.Journal_template_name = types.NewCode(journal_template_nameNull.String)
 		t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
 		t.Account_no = types.NewCode(account_noNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Allocation_quantity, _ = types.NewDecimalFromString(allocation_quantityNull.String)
 		t.Allocation_percent, _ = types.NewDecimalFromString(allocation_percentNull.String)
 		t.Amount, _ = types.NewDecimalFromString(amountNull.String)
@@ -2827,7 +2827,7 @@ func (t *GenJnlAllocation) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, department_code, project_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, dimension_1_code, dimension_2_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2852,8 +2852,8 @@ func (t *GenJnlAllocation) FindSetBuffered() bool {
 		var journal_template_nameNull sql.NullString
 		var journal_batch_nameNull sql.NullString
 		var account_noNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var allocation_quantityNull sql.NullString
 		var allocation_percentNull sql.NullString
 		var amountNull sql.NullString
@@ -2877,8 +2877,8 @@ func (t *GenJnlAllocation) FindSetBuffered() bool {
 			&record.Journal_line_no,
 			&record.Line_no,
 			&account_noNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&allocation_quantityNull,
 			&allocation_percentNull,
 			&amountNull,
@@ -2906,8 +2906,8 @@ func (t *GenJnlAllocation) FindSetBuffered() bool {
 		record.Journal_template_name = types.NewCode(journal_template_nameNull.String)
 		record.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
 		record.Account_no = types.NewCode(account_noNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Allocation_quantity, _ = types.NewDecimalFromString(allocation_quantityNull.String)
 		record.Allocation_percent, _ = types.NewDecimalFromString(allocation_percentNull.String)
 		record.Amount, _ = types.NewDecimalFromString(amountNull.String)
@@ -2957,8 +2957,8 @@ func (t *GenJnlAllocation) copyFromBuffered(record *GenJnlAllocation) {
 	t.Journal_line_no = record.Journal_line_no
 	t.Line_no = record.Line_no
 	t.Account_no = record.Account_no
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Allocation_quantity = record.Allocation_quantity
 	t.Allocation_percent = record.Allocation_percent
 	t.Amount = record.Amount
@@ -3230,45 +3230,45 @@ func (t *GenJnlAllocation) ValidateField(fieldName string, value interface{}) er
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(GenJnlAllocationOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(GenJnlAllocationOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -3733,9 +3733,9 @@ func (t *GenJnlAllocation) FieldValue(no int) (any, bool) {
 	case 5:
 		return t.Account_no, true
 	case 6:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 7:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 8:
 		return t.Allocation_quantity, true
 	case 9:
@@ -3824,20 +3824,20 @@ func (t *GenJnlAllocation) SetFieldValue(no int, value any) bool {
 		}
 	case 6:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 7:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 8:
@@ -4454,10 +4454,10 @@ func (t *GenJnlAllocation) columnValue(column string) (interface{}, bool) {
 		return t.Line_no, true
 	case "account_no":
 		return t.Account_no, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "allocation_quantity":
 		return t.Allocation_quantity, true
 	case "allocation_percent":
@@ -4557,8 +4557,8 @@ func (t *GenJnlAllocation) setKeyValues(values []interface{}) {
 // from the definition (Init); the primary key keeps its values
 func (t *GenJnlAllocation) Init() {
 	t.Account_no = *new(types.Code)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Allocation_quantity = *new(types.Decimal)
 	t.Allocation_percent = *new(types.Decimal)
 	t.Amount = *new(types.Decimal)
@@ -4614,8 +4614,8 @@ func (t *GenJnlAllocation) ToMap() map[string]interface{} {
 		"journal_line_no":        t.Journal_line_no,
 		"line_no":                t.Line_no,
 		"account_no":             t.Account_no.String(),
-		"department_code":        t.Department_code.String(),
-		"project_code":           t.Project_code.String(),
+		"dimension_1_code":       t.Dimension_1_code.String(),
+		"dimension_2_code":       t.Dimension_2_code.String(),
 		"allocation_quantity":    t.Allocation_quantity.String(),
 		"allocation_percent":     t.Allocation_percent.String(),
 		"amount":                 t.Amount.String(),
@@ -4680,14 +4680,14 @@ func (t *GenJnlAllocation) FromMap(data map[string]interface{}) {
 			t.Account_no = types.NewCode(s)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["allocation_quantity"]; ok && v != nil {
@@ -4909,7 +4909,7 @@ func (t *GenJnlAllocation) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         6,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -4919,7 +4919,7 @@ func (t *GenJnlAllocation) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         7,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -5177,8 +5177,8 @@ func (t *GenJnlAllocation) GetTableRelationFields() map[string]tables.TableRelat
 				{Column: "account_type", Field: "", Const: "0"},
 			},
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -5187,8 +5187,8 @@ func (t *GenJnlAllocation) GetTableRelationFields() map[string]tables.TableRelat
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

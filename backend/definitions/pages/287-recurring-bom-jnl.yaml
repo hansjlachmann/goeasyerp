@@ -47,10 +47,10 @@ page:
           visible: false
         - source: description
           width: 250
-        - source: department_code
+        - source: dimension_1_code
           width: 110
           visible: false
-        - source: project_code
+        - source: dimension_2_code
           width: 110
           visible: false
         - source: location_code

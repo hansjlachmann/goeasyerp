@@ -25,8 +25,8 @@
 //	OnValidate_Total_cost(rec *gtables.ResLedgerEntry) error
 //	OnValidate_Unit_price(rec *gtables.ResLedgerEntry) error
 //	OnValidate_Total_price(rec *gtables.ResLedgerEntry) error
-//	OnValidate_Department_code(rec *gtables.ResLedgerEntry) error
-//	OnValidate_Project_code(rec *gtables.ResLedgerEntry) error
+//	OnValidate_Dimension_1_code(rec *gtables.ResLedgerEntry) error
+//	OnValidate_Dimension_2_code(rec *gtables.ResLedgerEntry) error
 //	OnValidate_User_id(rec *gtables.ResLedgerEntry) error
 //	OnValidate_Source_code(rec *gtables.ResLedgerEntry) error
 //	OnValidate_Chargeable(rec *gtables.ResLedgerEntry) error
@@ -96,8 +96,8 @@ type ResLedgerEntry struct {
 	Total_cost             types.Decimal            `db:"total_cost"`
 	Unit_price             types.Decimal            `db:"unit_price"`
 	Total_price            types.Decimal            `db:"total_price"`
-	Department_code        types.Code               `db:"department_code"`
-	Project_code           types.Code               `db:"project_code"`
+	Dimension_1_code       types.Code               `db:"dimension_1_code"`
+	Dimension_2_code       types.Code               `db:"dimension_2_code"`
 	User_id                types.Code               `db:"user_id"`
 	Source_code            types.Code               `db:"source_code"`
 	Chargeable             bool                     `db:"chargeable"`
@@ -202,8 +202,8 @@ var ResLedgerEntry_FieldNo = struct {
 	Total_cost             int
 	Unit_price             int
 	Total_price            int
-	Department_code        int
-	Project_code           int
+	Dimension_1_code       int
+	Dimension_2_code       int
 	User_id                int
 	Source_code            int
 	Chargeable             int
@@ -230,8 +230,8 @@ var ResLedgerEntry_FieldNo = struct {
 	Total_cost:             14,
 	Unit_price:             15,
 	Total_price:            16,
-	Department_code:        17,
-	Project_code:           18,
+	Dimension_1_code:       17,
+	Dimension_2_code:       18,
 	User_id:                20,
 	Source_code:            21,
 	Chargeable:             22,
@@ -277,9 +277,9 @@ func (t *ResLedgerEntry) FieldNo(fieldName string) int {
 		return 15
 	case "total_price":
 		return 16
-	case "department_code":
+	case "dimension_1_code":
 		return 17
-	case "project_code":
+	case "dimension_2_code":
 		return 18
 	case "user_id":
 		return 20
@@ -339,9 +339,9 @@ func (t *ResLedgerEntry) FieldName(fieldNo int) string {
 	case 16:
 		return "total_price"
 	case 17:
-		return "department_code"
+		return "dimension_1_code"
 	case 18:
-		return "project_code"
+		return "dimension_2_code"
 	case 20:
 		return "user_id"
 	case 21:
@@ -508,11 +508,11 @@ type (
 	ResLedgerEntryOnValidate_Total_price interface {
 		OnValidate_Total_price(rec *ResLedgerEntry) error
 	}
-	ResLedgerEntryOnValidate_Department_code interface {
-		OnValidate_Department_code(rec *ResLedgerEntry) error
+	ResLedgerEntryOnValidate_Dimension_1_code interface {
+		OnValidate_Dimension_1_code(rec *ResLedgerEntry) error
 	}
-	ResLedgerEntryOnValidate_Project_code interface {
-		OnValidate_Project_code(rec *ResLedgerEntry) error
+	ResLedgerEntryOnValidate_Dimension_2_code interface {
+		OnValidate_Dimension_2_code(rec *ResLedgerEntry) error
 	}
 	ResLedgerEntryOnValidate_User_id interface {
 		OnValidate_User_id(rec *ResLedgerEntry) error
@@ -603,10 +603,10 @@ func resLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ResLedgerEntryOnValidate_Unit_price)
 	case "OnValidate_Total_price":
 		_, ok = logic.(ResLedgerEntryOnValidate_Total_price)
-	case "OnValidate_Department_code":
-		_, ok = logic.(ResLedgerEntryOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(ResLedgerEntryOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(ResLedgerEntryOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(ResLedgerEntryOnValidate_Dimension_2_code)
 	case "OnValidate_User_id":
 		_, ok = logic.(ResLedgerEntryOnValidate_User_id)
 	case "OnValidate_Source_code":
@@ -719,10 +719,10 @@ func (t *ResLedgerEntry) CheckFields() error {
 	if err := tables.CheckMaxLength(ResLedgerEntryTableName, "unit_of_measure_code", string(t.Unit_of_measure_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(ResLedgerEntryTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(ResLedgerEntryTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(ResLedgerEntryTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(ResLedgerEntryTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(ResLedgerEntryTableName, "user_id", string(t.User_id), 50); err != nil {
@@ -791,8 +791,8 @@ func GetResLedgerEntryTableSchema() string {
 		total_cost TEXT,
 		unit_price TEXT,
 		total_price TEXT,
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		user_id TEXT(50),
 		source_code TEXT(10),
 		chargeable INTEGER DEFAULT true,
@@ -824,8 +824,8 @@ func GetResLedgerEntryPostgresTableSchema() string {
 		total_cost NUMERIC,
 		unit_price NUMERIC,
 		total_price NUMERIC,
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		user_id VARCHAR(50),
 		source_code VARCHAR(10),
 		chargeable BOOLEAN DEFAULT true,
@@ -1015,8 +1015,8 @@ func (t *ResLedgerEntry) StoreOldValues() {
 	t.oldValues["total_cost"] = t.Total_cost
 	t.oldValues["unit_price"] = t.Unit_price
 	t.oldValues["total_price"] = t.Total_price
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["user_id"] = t.User_id
 	t.oldValues["source_code"] = t.Source_code
 	t.oldValues["chargeable"] = t.Chargeable
@@ -1086,11 +1086,11 @@ func (t *ResLedgerEntry) XRec() *ResLedgerEntry {
 	if v, ok := t.oldValues["total_price"].(types.Decimal); ok {
 		x.Total_price = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["user_id"].(types.Code); ok {
 		x.User_id = v
@@ -1208,8 +1208,8 @@ func (t *ResLedgerEntry) GetByPK(entry_no int) bool {
 	var total_costNull sql.NullString
 	var unit_priceNull sql.NullString
 	var total_priceNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
 	var chargeableBool sql.NullBool
@@ -1227,7 +1227,7 @@ func (t *ResLedgerEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1249,8 +1249,8 @@ func (t *ResLedgerEntry) GetByPK(entry_no int) bool {
 		&total_costNull,
 		&unit_priceNull,
 		&total_priceNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&user_idNull,
 		&source_codeNull,
 		&chargeableBool,
@@ -1289,8 +1289,8 @@ func (t *ResLedgerEntry) GetByPK(entry_no int) bool {
 	t.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
 	t.Unit_price, _ = types.NewDecimalFromString(unit_priceNull.String)
 	t.Total_price, _ = types.NewDecimalFromString(total_priceNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.Chargeable = chargeableBool.Bool
@@ -1338,8 +1338,8 @@ func (t *ResLedgerEntry) Insert(runTrigger bool) bool {
 		t.Total_cost,
 		t.Unit_price,
 		t.Total_price,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.User_id,
 		t.Source_code,
 		t.Chargeable,
@@ -1354,7 +1354,7 @@ func (t *ResLedgerEntry) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1407,8 +1407,8 @@ func (t *ResLedgerEntry) InsertAll(records []*ResLedgerEntry, runTrigger bool) e
 			r.Total_cost,
 			r.Unit_price,
 			r.Total_price,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.User_id,
 			r.Source_code,
 			r.Chargeable,
@@ -1422,7 +1422,7 @@ func (t *ResLedgerEntry) InsertAll(records []*ResLedgerEntry, runTrigger bool) e
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ResLedgerEntryTableName)
-	columns := []string{"entry_no", "entry_type", "document_no", "posting_date", "resource_no", "resource_group_no", "description", "work_type_code", "unit_of_measure_code", "quantity", "direct_unit_cost", "unit_cost", "total_cost", "unit_price", "total_price", "department_code", "project_code", "user_id", "source_code", "chargeable", "journal_batch_name", "reason_code", "gen_bus_posting_group", "gen_prod_posting_group", "document_date", "external_document_no", "no_series"}
+	columns := []string{"entry_no", "entry_type", "document_no", "posting_date", "resource_no", "resource_group_no", "description", "work_type_code", "unit_of_measure_code", "quantity", "direct_unit_cost", "unit_cost", "total_cost", "unit_price", "total_price", "dimension_1_code", "dimension_2_code", "user_id", "source_code", "chargeable", "journal_batch_name", "reason_code", "gen_bus_posting_group", "gen_prod_posting_group", "document_date", "external_document_no", "no_series"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1522,13 +1522,13 @@ func (t *ResLedgerEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "total_price = ?")
 			values = append(values, t.Total_price)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("user_id") {
 			setClauses = append(setClauses, "user_id = ?")
@@ -1605,10 +1605,10 @@ func (t *ResLedgerEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.Unit_price)
 		setClauses = append(setClauses, "total_price = ?")
 		values = append(values, t.Total_price)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "user_id = ?")
 		values = append(values, t.User_id)
 		setClauses = append(setClauses, "source_code = ?")
@@ -1756,13 +1756,13 @@ func (t *ResLedgerEntry) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Decimal); ok {
 			return !t.Total_price.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "user_id":
 		if old, ok := oldValue.(types.Code); ok {
@@ -2079,10 +2079,10 @@ func (t *ResLedgerEntry) columnName(fieldName string) (string, bool) {
 		return "unit_price", true
 	case strings.ToLower("total_price"):
 		return "total_price", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("user_id"):
 		return "user_id", true
 	case strings.ToLower("source_code"):
@@ -2478,7 +2478,7 @@ func (t *ResLedgerEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2497,8 +2497,8 @@ func (t *ResLedgerEntry) FindFirst() bool {
 	var total_costNull sql.NullString
 	var unit_priceNull sql.NullString
 	var total_priceNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
 	var chargeableBool sql.NullBool
@@ -2526,8 +2526,8 @@ func (t *ResLedgerEntry) FindFirst() bool {
 		&total_costNull,
 		&unit_priceNull,
 		&total_priceNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&user_idNull,
 		&source_codeNull,
 		&chargeableBool,
@@ -2563,8 +2563,8 @@ func (t *ResLedgerEntry) FindFirst() bool {
 	t.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
 	t.Unit_price, _ = types.NewDecimalFromString(unit_priceNull.String)
 	t.Total_price, _ = types.NewDecimalFromString(total_priceNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.Chargeable = chargeableBool.Bool
@@ -2595,7 +2595,7 @@ func (t *ResLedgerEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2614,8 +2614,8 @@ func (t *ResLedgerEntry) FindLast() bool {
 	var total_costNull sql.NullString
 	var unit_priceNull sql.NullString
 	var total_priceNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
 	var chargeableBool sql.NullBool
@@ -2643,8 +2643,8 @@ func (t *ResLedgerEntry) FindLast() bool {
 		&total_costNull,
 		&unit_priceNull,
 		&total_priceNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&user_idNull,
 		&source_codeNull,
 		&chargeableBool,
@@ -2680,8 +2680,8 @@ func (t *ResLedgerEntry) FindLast() bool {
 	t.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
 	t.Unit_price, _ = types.NewDecimalFromString(unit_priceNull.String)
 	t.Total_price, _ = types.NewDecimalFromString(total_priceNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.Chargeable = chargeableBool.Bool
@@ -2742,7 +2742,7 @@ func (t *ResLedgerEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2825,8 +2825,8 @@ func (t *ResLedgerEntry) Next(steps ...int) bool {
 		var total_costNull sql.NullString
 		var unit_priceNull sql.NullString
 		var total_priceNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var user_idNull sql.NullString
 		var source_codeNull sql.NullString
 		var chargeableBool sql.NullBool
@@ -2854,8 +2854,8 @@ func (t *ResLedgerEntry) Next(steps ...int) bool {
 			&total_costNull,
 			&unit_priceNull,
 			&total_priceNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&user_idNull,
 			&source_codeNull,
 			&chargeableBool,
@@ -2890,8 +2890,8 @@ func (t *ResLedgerEntry) Next(steps ...int) bool {
 		t.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
 		t.Unit_price, _ = types.NewDecimalFromString(unit_priceNull.String)
 		t.Total_price, _ = types.NewDecimalFromString(total_priceNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.User_id = types.NewCode(user_idNull.String)
 		t.Source_code = types.NewCode(source_codeNull.String)
 		t.Chargeable = chargeableBool.Bool
@@ -2951,7 +2951,7 @@ func (t *ResLedgerEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, department_code, project_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2987,8 +2987,8 @@ func (t *ResLedgerEntry) FindSetBuffered() bool {
 		var total_costNull sql.NullString
 		var unit_priceNull sql.NullString
 		var total_priceNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var user_idNull sql.NullString
 		var source_codeNull sql.NullString
 		var chargeableBool sql.NullBool
@@ -3016,8 +3016,8 @@ func (t *ResLedgerEntry) FindSetBuffered() bool {
 			&total_costNull,
 			&unit_priceNull,
 			&total_priceNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&user_idNull,
 			&source_codeNull,
 			&chargeableBool,
@@ -3050,8 +3050,8 @@ func (t *ResLedgerEntry) FindSetBuffered() bool {
 		record.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
 		record.Unit_price, _ = types.NewDecimalFromString(unit_priceNull.String)
 		record.Total_price, _ = types.NewDecimalFromString(total_priceNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.User_id = types.NewCode(user_idNull.String)
 		record.Source_code = types.NewCode(source_codeNull.String)
 		record.Chargeable = chargeableBool.Bool
@@ -3105,8 +3105,8 @@ func (t *ResLedgerEntry) copyFromBuffered(record *ResLedgerEntry) {
 	t.Total_cost = record.Total_cost
 	t.Unit_price = record.Unit_price
 	t.Total_price = record.Total_price
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.User_id = record.User_id
 	t.Source_code = record.Source_code
 	t.Chargeable = record.Chargeable
@@ -3643,45 +3643,45 @@ func (t *ResLedgerEntry) ValidateField(fieldName string, value interface{}) erro
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResLedgerEntryOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(ResLedgerEntryOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResLedgerEntryOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(ResLedgerEntryOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -3941,9 +3941,9 @@ func (t *ResLedgerEntry) FieldValue(no int) (any, bool) {
 	case 16:
 		return t.Total_price, true
 	case 17:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 18:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 20:
 		return t.User_id, true
 	case 21:
@@ -4080,20 +4080,20 @@ func (t *ResLedgerEntry) SetFieldValue(no int, value any) bool {
 		}
 	case 17:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 18:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 20:
@@ -4697,10 +4697,10 @@ func (t *ResLedgerEntry) columnValue(column string) (interface{}, bool) {
 		return t.Unit_price, true
 	case "total_price":
 		return t.Total_price, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "user_id":
 		return t.User_id, true
 	case "source_code":
@@ -4789,8 +4789,8 @@ func (t *ResLedgerEntry) Init() {
 	t.Total_cost = *new(types.Decimal)
 	t.Unit_price = *new(types.Decimal)
 	t.Total_price = *new(types.Decimal)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.User_id = *new(types.Code)
 	t.Source_code = *new(types.Code)
 	t.Chargeable = *new(bool)
@@ -4850,8 +4850,8 @@ func (t *ResLedgerEntry) ToMap() map[string]interface{} {
 		"total_cost":             t.Total_cost.String(),
 		"unit_price":             t.Unit_price.String(),
 		"total_price":            t.Total_price.String(),
-		"department_code":        t.Department_code.String(),
-		"project_code":           t.Project_code.String(),
+		"dimension_1_code":       t.Dimension_1_code.String(),
+		"dimension_2_code":       t.Dimension_2_code.String(),
 		"user_id":                t.User_id.String(),
 		"source_code":            t.Source_code.String(),
 		"chargeable":             t.Chargeable,
@@ -5004,14 +5004,14 @@ func (t *ResLedgerEntry) FromMap(data map[string]interface{}) {
 			t.Total_price = types.NewDecimalFromInt(val)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["user_id"]; ok && v != nil {
@@ -5243,7 +5243,7 @@ func (t *ResLedgerEntry) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         17,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -5253,7 +5253,7 @@ func (t *ResLedgerEntry) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         18,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -5432,8 +5432,8 @@ func (t *ResLedgerEntry) GetTableRelationFields() map[string]tables.TableRelatio
 			},
 			SearchTimeout: 0,
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -5442,8 +5442,8 @@ func (t *ResLedgerEntry) GetTableRelationFields() map[string]tables.TableRelatio
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

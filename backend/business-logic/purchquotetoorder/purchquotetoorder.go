@@ -42,8 +42,8 @@ func Run(rec *gtables.PurchaseHeader) (*gtables.PurchaseHeader, error) {
 	if !rec.Expected_receipt_date.IsZero() {
 		purchOrderHeader.Expected_receipt_date = rec.Expected_receipt_date
 	}
-	purchOrderHeader.Department_code = rec.Department_code
-	purchOrderHeader.Project_code = rec.Project_code
+	purchOrderHeader.Dimension_1_code = rec.Dimension_1_code
+	purchOrderHeader.Dimension_2_code = rec.Dimension_2_code
 	purchOrderHeader.Location_code = rec.Location_code
 	err = purchOrderHeader.ModifyOrError(false)
 	if err != nil {

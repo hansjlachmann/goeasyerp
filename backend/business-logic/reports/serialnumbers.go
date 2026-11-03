@@ -12,7 +12,7 @@ import (
 // pieces (customer, serial number, date, price and cost) and the pieces on inventory (location,
 // serial number, date, days aged since, cost; the average age and the number of pieces). An
 // item prints only with entries (classic PrintOnlyIfDetail): its line is printed before its
-// first entry. The item's Date, Location, Department and Project Filters limit the entries
+// first entry. The item's Date, Location, Dimension 1 and Dimension 2 Filters limit the entries
 // (DataItemLink to the FlowFilters).
 const (
 	SerialNumberSoldHistoryID = 704
@@ -25,7 +25,7 @@ func init() {
 }
 
 var serialItemFilterFields = []string{"no", "inventory_posting_group", "vendor_no", "bill_of_materials",
-	"department_filter", "project_filter", "location_filter"}
+	"dimension_1_filter", "dimension_2_filter", "location_filter"}
 
 // linkItemFilters (DataItemLink Posting Date=FIELD(Date Filter), …): the item's entries in its
 // FlowFilters; without a serial number filter of the user, the entries with a serial number
@@ -38,11 +38,11 @@ func linkItemFilters(itemLedgEntry *gtables.ItemLedgerEntry, item *gtables.Item)
 	if item.Location_filter != "" {
 		itemLedgEntry.SetFilter("location_code", item.Location_filter)
 	}
-	if item.Department_filter != "" {
-		itemLedgEntry.SetFilter("department_code", item.Department_filter)
+	if item.Dimension_1_filter != "" {
+		itemLedgEntry.SetFilter("dimension_1_code", item.Dimension_1_filter)
 	}
-	if item.Project_filter != "" {
-		itemLedgEntry.SetFilter("project_code", item.Project_filter)
+	if item.Dimension_2_filter != "" {
+		itemLedgEntry.SetFilter("dimension_2_code", item.Dimension_2_filter)
 	}
 	itemLedgEntry.FilterGroup(0)
 	if itemLedgEntry.GetFilter("serial_no") == "" {

@@ -16,8 +16,8 @@
 //	OnValidate_Description_2(rec *gtables.FixedAsset) error
 //	OnValidate_Fa_class_code(rec *gtables.FixedAsset) error
 //	OnValidate_Fa_subclass_code(rec *gtables.FixedAsset) error
-//	OnValidate_Department_code(rec *gtables.FixedAsset) error
-//	OnValidate_Project_code(rec *gtables.FixedAsset) error
+//	OnValidate_Dimension_1_code(rec *gtables.FixedAsset) error
+//	OnValidate_Dimension_2_code(rec *gtables.FixedAsset) error
 //	OnValidate_Location_code(rec *gtables.FixedAsset) error
 //	OnValidate_Fa_location_code(rec *gtables.FixedAsset) error
 //	OnValidate_Vendor_no(rec *gtables.FixedAsset) error
@@ -86,8 +86,8 @@ type FixedAsset struct {
 	Description_2           types.Text                     `db:"description_2"`
 	Fa_class_code           types.Code                     `db:"fa_class_code"`
 	Fa_subclass_code        types.Code                     `db:"fa_subclass_code"`
-	Department_code         types.Code                     `db:"department_code"`
-	Project_code            types.Code                     `db:"project_code"`
+	Dimension_1_code        types.Code                     `db:"dimension_1_code"`
+	Dimension_2_code        types.Code                     `db:"dimension_2_code"`
 	Location_code           types.Code                     `db:"location_code"`
 	Fa_location_code        types.Code                     `db:"fa_location_code"`
 	Vendor_no               types.Code                     `db:"vendor_no"`
@@ -198,8 +198,8 @@ var FixedAsset_FieldNo = struct {
 	Description_2           int
 	Fa_class_code           int
 	Fa_subclass_code        int
-	Department_code         int
-	Project_code            int
+	Dimension_1_code        int
+	Dimension_2_code        int
 	Location_code           int
 	Fa_location_code        int
 	Vendor_no               int
@@ -227,8 +227,8 @@ var FixedAsset_FieldNo = struct {
 	Description_2:           4,
 	Fa_class_code:           5,
 	Fa_subclass_code:        6,
-	Department_code:         7,
-	Project_code:            8,
+	Dimension_1_code:        7,
+	Dimension_2_code:        8,
 	Location_code:           9,
 	Fa_location_code:        10,
 	Vendor_no:               11,
@@ -266,9 +266,9 @@ func (t *FixedAsset) FieldNo(fieldName string) int {
 		return 5
 	case "fa_subclass_code":
 		return 6
-	case "department_code":
+	case "dimension_1_code":
 		return 7
-	case "project_code":
+	case "dimension_2_code":
 		return 8
 	case "location_code":
 		return 9
@@ -330,9 +330,9 @@ func (t *FixedAsset) FieldName(fieldNo int) string {
 	case 6:
 		return "fa_subclass_code"
 	case 7:
-		return "department_code"
+		return "dimension_1_code"
 	case 8:
-		return "project_code"
+		return "dimension_2_code"
 	case 9:
 		return "location_code"
 	case 10:
@@ -472,8 +472,8 @@ type (
 	FixedAssetOnValidate_Description_2           interface{ OnValidate_Description_2(rec *FixedAsset) error }
 	FixedAssetOnValidate_Fa_class_code           interface{ OnValidate_Fa_class_code(rec *FixedAsset) error }
 	FixedAssetOnValidate_Fa_subclass_code        interface{ OnValidate_Fa_subclass_code(rec *FixedAsset) error }
-	FixedAssetOnValidate_Department_code         interface{ OnValidate_Department_code(rec *FixedAsset) error }
-	FixedAssetOnValidate_Project_code            interface{ OnValidate_Project_code(rec *FixedAsset) error }
+	FixedAssetOnValidate_Dimension_1_code        interface{ OnValidate_Dimension_1_code(rec *FixedAsset) error }
+	FixedAssetOnValidate_Dimension_2_code        interface{ OnValidate_Dimension_2_code(rec *FixedAsset) error }
 	FixedAssetOnValidate_Location_code           interface{ OnValidate_Location_code(rec *FixedAsset) error }
 	FixedAssetOnValidate_Fa_location_code        interface{ OnValidate_Fa_location_code(rec *FixedAsset) error }
 	FixedAssetOnValidate_Vendor_no               interface{ OnValidate_Vendor_no(rec *FixedAsset) error }
@@ -532,10 +532,10 @@ func fixedAssetTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FixedAssetOnValidate_Fa_class_code)
 	case "OnValidate_Fa_subclass_code":
 		_, ok = logic.(FixedAssetOnValidate_Fa_subclass_code)
-	case "OnValidate_Department_code":
-		_, ok = logic.(FixedAssetOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(FixedAssetOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(FixedAssetOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(FixedAssetOnValidate_Dimension_2_code)
 	case "OnValidate_Location_code":
 		_, ok = logic.(FixedAssetOnValidate_Location_code)
 	case "OnValidate_Fa_location_code":
@@ -665,10 +665,10 @@ func (t *FixedAsset) CheckFields() error {
 	if err := tables.CheckMaxLength(FixedAssetTableName, "fa_subclass_code", string(t.Fa_subclass_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(FixedAssetTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(FixedAssetTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(FixedAssetTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(FixedAssetTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(FixedAssetTableName, "location_code", string(t.Location_code), 10); err != nil {
@@ -728,8 +728,8 @@ func GetFixedAssetTableSchema() string {
 		description_2 TEXT(50),
 		fa_class_code TEXT(10),
 		fa_subclass_code TEXT(10),
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		location_code TEXT(10),
 		fa_location_code TEXT(10),
 		vendor_no TEXT(20),
@@ -761,8 +761,8 @@ func GetFixedAssetPostgresTableSchema() string {
 		description_2 VARCHAR(50),
 		fa_class_code VARCHAR(10),
 		fa_subclass_code VARCHAR(10),
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		location_code VARCHAR(10),
 		fa_location_code VARCHAR(10),
 		vendor_no VARCHAR(20),
@@ -878,15 +878,15 @@ func (t *FixedAsset) SyncKeys(db database.Executor, company string, dbType datab
 	}
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
-	if _, err := db.Exec(fmt.Sprintf(`CREATE INDEX IF NOT EXISTS "%s" ON "%s" (department_code)`,
-		fmt.Sprintf("%s$Fixed_Asset$department_code", company), tableName)); err != nil {
-		return fmt.Errorf("failed to create index department_code: %w", err)
+	if _, err := db.Exec(fmt.Sprintf(`CREATE INDEX IF NOT EXISTS "%s" ON "%s" (dimension_1_code)`,
+		fmt.Sprintf("%s$Fixed_Asset$dimension_1_code", company), tableName)); err != nil {
+		return fmt.Errorf("failed to create index dimension_1_code: %w", err)
 	}
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
-	if _, err := db.Exec(fmt.Sprintf(`CREATE INDEX IF NOT EXISTS "%s" ON "%s" (project_code)`,
-		fmt.Sprintf("%s$Fixed_Asset$project_code", company), tableName)); err != nil {
-		return fmt.Errorf("failed to create index project_code: %w", err)
+	if _, err := db.Exec(fmt.Sprintf(`CREATE INDEX IF NOT EXISTS "%s" ON "%s" (dimension_2_code)`,
+		fmt.Sprintf("%s$Fixed_Asset$dimension_2_code", company), tableName)); err != nil {
+		return fmt.Errorf("failed to create index dimension_2_code: %w", err)
 	}
 	var keys []sift.Key
 	for _, spec := range fixedAssetSIFTSpecs() {
@@ -958,8 +958,8 @@ func (t *FixedAsset) StoreOldValues() {
 	t.oldValues["description_2"] = t.Description_2
 	t.oldValues["fa_class_code"] = t.Fa_class_code
 	t.oldValues["fa_subclass_code"] = t.Fa_subclass_code
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["location_code"] = t.Location_code
 	t.oldValues["fa_location_code"] = t.Fa_location_code
 	t.oldValues["vendor_no"] = t.Vendor_no
@@ -1009,11 +1009,11 @@ func (t *FixedAsset) XRec() *FixedAsset {
 	if v, ok := t.oldValues["fa_subclass_code"].(types.Code); ok {
 		x.Fa_subclass_code = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["location_code"].(types.Code); ok {
 		x.Location_code = v
@@ -1133,8 +1133,8 @@ func (t *FixedAsset) GetByPK(no types.Code) bool {
 	var description_2Null sql.NullString
 	var fa_class_codeNull sql.NullString
 	var fa_subclass_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var location_codeNull sql.NullString
 	var fa_location_codeNull sql.NullString
 	var vendor_noNull sql.NullString
@@ -1159,7 +1159,7 @@ func (t *FixedAsset) GetByPK(no types.Code) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT no, description, search_description, description_2, fa_class_code, fa_subclass_code, department_code, project_code, location_code, fa_location_code, vendor_no, main_asset_component, component_of_main_asset, budgeted_asset, warranty_date, responsible_employee, serial_no, last_date_modified, blocked, picture, maintenance_vendor_no, under_maintenance, next_service_date, inactive, no_series FROM "%s" WHERE 1=1 AND no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT no, description, search_description, description_2, fa_class_code, fa_subclass_code, dimension_1_code, dimension_2_code, location_code, fa_location_code, vendor_no, main_asset_component, component_of_main_asset, budgeted_asset, warranty_date, responsible_employee, serial_no, last_date_modified, blocked, picture, maintenance_vendor_no, under_maintenance, next_service_date, inactive, no_series FROM "%s" WHERE 1=1 AND no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1172,8 +1172,8 @@ func (t *FixedAsset) GetByPK(no types.Code) bool {
 		&description_2Null,
 		&fa_class_codeNull,
 		&fa_subclass_codeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&location_codeNull,
 		&fa_location_codeNull,
 		&vendor_noNull,
@@ -1210,8 +1210,8 @@ func (t *FixedAsset) GetByPK(no types.Code) bool {
 	t.Description_2 = types.NewText(description_2Null.String)
 	t.Fa_class_code = types.NewCode(fa_class_codeNull.String)
 	t.Fa_subclass_code = types.NewCode(fa_subclass_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Location_code = types.NewCode(location_codeNull.String)
 	t.Fa_location_code = types.NewCode(fa_location_codeNull.String)
 	t.Vendor_no = types.NewCode(vendor_noNull.String)
@@ -1257,8 +1257,8 @@ func (t *FixedAsset) Insert(runTrigger bool) bool {
 		t.Description_2,
 		t.Fa_class_code,
 		t.Fa_subclass_code,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Location_code,
 		t.Fa_location_code,
 		t.Vendor_no,
@@ -1280,7 +1280,7 @@ func (t *FixedAsset) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, description, search_description, description_2, fa_class_code, fa_subclass_code, department_code, project_code, location_code, fa_location_code, vendor_no, main_asset_component, component_of_main_asset, budgeted_asset, warranty_date, responsible_employee, serial_no, last_date_modified, blocked, picture, maintenance_vendor_no, under_maintenance, next_service_date, inactive, no_series) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, description, search_description, description_2, fa_class_code, fa_subclass_code, dimension_1_code, dimension_2_code, location_code, fa_location_code, vendor_no, main_asset_component, component_of_main_asset, budgeted_asset, warranty_date, responsible_employee, serial_no, last_date_modified, blocked, picture, maintenance_vendor_no, under_maintenance, next_service_date, inactive, no_series) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1324,8 +1324,8 @@ func (t *FixedAsset) InsertAll(records []*FixedAsset, runTrigger bool) error {
 			r.Description_2,
 			r.Fa_class_code,
 			r.Fa_subclass_code,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Location_code,
 			r.Fa_location_code,
 			r.Vendor_no,
@@ -1346,7 +1346,7 @@ func (t *FixedAsset) InsertAll(records []*FixedAsset, runTrigger bool) error {
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, FixedAssetTableName)
-	columns := []string{"no", "description", "search_description", "description_2", "fa_class_code", "fa_subclass_code", "department_code", "project_code", "location_code", "fa_location_code", "vendor_no", "main_asset_component", "component_of_main_asset", "budgeted_asset", "warranty_date", "responsible_employee", "serial_no", "last_date_modified", "blocked", "picture", "maintenance_vendor_no", "under_maintenance", "next_service_date", "inactive", "no_series"}
+	columns := []string{"no", "description", "search_description", "description_2", "fa_class_code", "fa_subclass_code", "dimension_1_code", "dimension_2_code", "location_code", "fa_location_code", "vendor_no", "main_asset_component", "component_of_main_asset", "budgeted_asset", "warranty_date", "responsible_employee", "serial_no", "last_date_modified", "blocked", "picture", "maintenance_vendor_no", "under_maintenance", "next_service_date", "inactive", "no_series"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1410,13 +1410,13 @@ func (t *FixedAsset) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "fa_subclass_code = ?")
 			values = append(values, t.Fa_subclass_code)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("location_code") {
 			setClauses = append(setClauses, "location_code = ?")
@@ -1503,10 +1503,10 @@ func (t *FixedAsset) Modify(runTrigger bool) bool {
 		values = append(values, t.Fa_class_code)
 		setClauses = append(setClauses, "fa_subclass_code = ?")
 		values = append(values, t.Fa_subclass_code)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "location_code = ?")
 		values = append(values, t.Location_code)
 		setClauses = append(setClauses, "fa_location_code = ?")
@@ -1631,13 +1631,13 @@ func (t *FixedAsset) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Fa_subclass_code.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "location_code":
 		if old, ok := oldValue.(types.Code); ok {
@@ -2233,10 +2233,10 @@ func (t *FixedAsset) columnName(fieldName string) (string, bool) {
 		return "fa_class_code", true
 	case strings.ToLower("fa_subclass_code"):
 		return "fa_subclass_code", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("location_code"):
 		return "location_code", true
 	case strings.ToLower("fa_location_code"):
@@ -2642,7 +2642,7 @@ func (t *FixedAsset) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, description, search_description, description_2, fa_class_code, fa_subclass_code, department_code, project_code, location_code, fa_location_code, vendor_no, main_asset_component, component_of_main_asset, budgeted_asset, warranty_date, responsible_employee, serial_no, last_date_modified, blocked, picture, maintenance_vendor_no, under_maintenance, next_service_date, inactive, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, description, search_description, description_2, fa_class_code, fa_subclass_code, dimension_1_code, dimension_2_code, location_code, fa_location_code, vendor_no, main_asset_component, component_of_main_asset, budgeted_asset, warranty_date, responsible_employee, serial_no, last_date_modified, blocked, picture, maintenance_vendor_no, under_maintenance, next_service_date, inactive, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2653,8 +2653,8 @@ func (t *FixedAsset) FindFirst() bool {
 	var description_2Null sql.NullString
 	var fa_class_codeNull sql.NullString
 	var fa_subclass_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var location_codeNull sql.NullString
 	var fa_location_codeNull sql.NullString
 	var vendor_noNull sql.NullString
@@ -2679,8 +2679,8 @@ func (t *FixedAsset) FindFirst() bool {
 		&description_2Null,
 		&fa_class_codeNull,
 		&fa_subclass_codeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&location_codeNull,
 		&fa_location_codeNull,
 		&vendor_noNull,
@@ -2715,8 +2715,8 @@ func (t *FixedAsset) FindFirst() bool {
 	t.Description_2 = types.NewText(description_2Null.String)
 	t.Fa_class_code = types.NewCode(fa_class_codeNull.String)
 	t.Fa_subclass_code = types.NewCode(fa_subclass_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Location_code = types.NewCode(location_codeNull.String)
 	t.Fa_location_code = types.NewCode(fa_location_codeNull.String)
 	t.Vendor_no = types.NewCode(vendor_noNull.String)
@@ -2753,7 +2753,7 @@ func (t *FixedAsset) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, description, search_description, description_2, fa_class_code, fa_subclass_code, department_code, project_code, location_code, fa_location_code, vendor_no, main_asset_component, component_of_main_asset, budgeted_asset, warranty_date, responsible_employee, serial_no, last_date_modified, blocked, picture, maintenance_vendor_no, under_maintenance, next_service_date, inactive, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, description, search_description, description_2, fa_class_code, fa_subclass_code, dimension_1_code, dimension_2_code, location_code, fa_location_code, vendor_no, main_asset_component, component_of_main_asset, budgeted_asset, warranty_date, responsible_employee, serial_no, last_date_modified, blocked, picture, maintenance_vendor_no, under_maintenance, next_service_date, inactive, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2764,8 +2764,8 @@ func (t *FixedAsset) FindLast() bool {
 	var description_2Null sql.NullString
 	var fa_class_codeNull sql.NullString
 	var fa_subclass_codeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var location_codeNull sql.NullString
 	var fa_location_codeNull sql.NullString
 	var vendor_noNull sql.NullString
@@ -2790,8 +2790,8 @@ func (t *FixedAsset) FindLast() bool {
 		&description_2Null,
 		&fa_class_codeNull,
 		&fa_subclass_codeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&location_codeNull,
 		&fa_location_codeNull,
 		&vendor_noNull,
@@ -2826,8 +2826,8 @@ func (t *FixedAsset) FindLast() bool {
 	t.Description_2 = types.NewText(description_2Null.String)
 	t.Fa_class_code = types.NewCode(fa_class_codeNull.String)
 	t.Fa_subclass_code = types.NewCode(fa_subclass_codeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Location_code = types.NewCode(location_codeNull.String)
 	t.Fa_location_code = types.NewCode(fa_location_codeNull.String)
 	t.Vendor_no = types.NewCode(vendor_noNull.String)
@@ -2894,7 +2894,7 @@ func (t *FixedAsset) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, description, search_description, description_2, fa_class_code, fa_subclass_code, department_code, project_code, location_code, fa_location_code, vendor_no, main_asset_component, component_of_main_asset, budgeted_asset, warranty_date, responsible_employee, serial_no, last_date_modified, blocked, picture, maintenance_vendor_no, under_maintenance, next_service_date, inactive, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, description, search_description, description_2, fa_class_code, fa_subclass_code, dimension_1_code, dimension_2_code, location_code, fa_location_code, vendor_no, main_asset_component, component_of_main_asset, budgeted_asset, warranty_date, responsible_employee, serial_no, last_date_modified, blocked, picture, maintenance_vendor_no, under_maintenance, next_service_date, inactive, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2969,8 +2969,8 @@ func (t *FixedAsset) Next(steps ...int) bool {
 		var description_2Null sql.NullString
 		var fa_class_codeNull sql.NullString
 		var fa_subclass_codeNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var location_codeNull sql.NullString
 		var fa_location_codeNull sql.NullString
 		var vendor_noNull sql.NullString
@@ -2995,8 +2995,8 @@ func (t *FixedAsset) Next(steps ...int) bool {
 			&description_2Null,
 			&fa_class_codeNull,
 			&fa_subclass_codeNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&location_codeNull,
 			&fa_location_codeNull,
 			&vendor_noNull,
@@ -3030,8 +3030,8 @@ func (t *FixedAsset) Next(steps ...int) bool {
 		t.Description_2 = types.NewText(description_2Null.String)
 		t.Fa_class_code = types.NewCode(fa_class_codeNull.String)
 		t.Fa_subclass_code = types.NewCode(fa_subclass_codeNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Location_code = types.NewCode(location_codeNull.String)
 		t.Fa_location_code = types.NewCode(fa_location_codeNull.String)
 		t.Vendor_no = types.NewCode(vendor_noNull.String)
@@ -3097,7 +3097,7 @@ func (t *FixedAsset) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, description, search_description, description_2, fa_class_code, fa_subclass_code, department_code, project_code, location_code, fa_location_code, vendor_no, main_asset_component, component_of_main_asset, budgeted_asset, warranty_date, responsible_employee, serial_no, last_date_modified, blocked, picture, maintenance_vendor_no, under_maintenance, next_service_date, inactive, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, description, search_description, description_2, fa_class_code, fa_subclass_code, dimension_1_code, dimension_2_code, location_code, fa_location_code, vendor_no, main_asset_component, component_of_main_asset, budgeted_asset, warranty_date, responsible_employee, serial_no, last_date_modified, blocked, picture, maintenance_vendor_no, under_maintenance, next_service_date, inactive, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3125,8 +3125,8 @@ func (t *FixedAsset) FindSetBuffered() bool {
 		var description_2Null sql.NullString
 		var fa_class_codeNull sql.NullString
 		var fa_subclass_codeNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var location_codeNull sql.NullString
 		var fa_location_codeNull sql.NullString
 		var vendor_noNull sql.NullString
@@ -3151,8 +3151,8 @@ func (t *FixedAsset) FindSetBuffered() bool {
 			&description_2Null,
 			&fa_class_codeNull,
 			&fa_subclass_codeNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&location_codeNull,
 			&fa_location_codeNull,
 			&vendor_noNull,
@@ -3184,8 +3184,8 @@ func (t *FixedAsset) FindSetBuffered() bool {
 		record.Description_2 = types.NewText(description_2Null.String)
 		record.Fa_class_code = types.NewCode(fa_class_codeNull.String)
 		record.Fa_subclass_code = types.NewCode(fa_subclass_codeNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Location_code = types.NewCode(location_codeNull.String)
 		record.Fa_location_code = types.NewCode(fa_location_codeNull.String)
 		record.Vendor_no = types.NewCode(vendor_noNull.String)
@@ -3236,8 +3236,8 @@ func (t *FixedAsset) copyFromBuffered(record *FixedAsset) {
 	t.Description_2 = record.Description_2
 	t.Fa_class_code = record.Fa_class_code
 	t.Fa_subclass_code = record.Fa_subclass_code
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Location_code = record.Location_code
 	t.Fa_location_code = record.Fa_location_code
 	t.Vendor_no = record.Vendor_no
@@ -3507,45 +3507,45 @@ func (t *FixedAsset) ValidateField(fieldName string, value interface{}) error {
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(FixedAssetOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(FixedAssetOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -3971,9 +3971,9 @@ func (t *FixedAsset) FieldValue(no int) (any, bool) {
 	case 6:
 		return t.Fa_subclass_code, true
 	case 7:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 8:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 9:
 		return t.Location_code, true
 	case 10:
@@ -4083,20 +4083,20 @@ func (t *FixedAsset) SetFieldValue(no int, value any) bool {
 		}
 	case 7:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 8:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 9:
@@ -4648,10 +4648,10 @@ func (t *FixedAsset) columnValue(column string) (interface{}, bool) {
 		return t.Fa_class_code, true
 	case "fa_subclass_code":
 		return t.Fa_subclass_code, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "location_code":
 		return t.Location_code, true
 	case "fa_location_code":
@@ -4745,8 +4745,8 @@ func (t *FixedAsset) Init() {
 	t.Description_2 = *new(types.Text)
 	t.Fa_class_code = *new(types.Code)
 	t.Fa_subclass_code = *new(types.Code)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Location_code = *new(types.Code)
 	t.Fa_location_code = *new(types.Code)
 	t.Vendor_no = *new(types.Code)
@@ -4804,8 +4804,8 @@ func (t *FixedAsset) ToMap() map[string]interface{} {
 		"description_2":           t.Description_2.String(),
 		"fa_class_code":           t.Fa_class_code.String(),
 		"fa_subclass_code":        t.Fa_subclass_code.String(),
-		"department_code":         t.Department_code.String(),
-		"project_code":            t.Project_code.String(),
+		"dimension_1_code":        t.Dimension_1_code.String(),
+		"dimension_2_code":        t.Dimension_2_code.String(),
 		"location_code":           t.Location_code.String(),
 		"fa_location_code":        t.Fa_location_code.String(),
 		"vendor_no":               t.Vendor_no.String(),
@@ -4862,14 +4862,14 @@ func (t *FixedAsset) FromMap(data map[string]interface{}) {
 			t.Fa_subclass_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["location_code"]; ok && v != nil {
@@ -5049,7 +5049,7 @@ func (t *FixedAsset) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         7,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -5059,7 +5059,7 @@ func (t *FixedAsset) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         8,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -5323,8 +5323,8 @@ func (t *FixedAsset) GetTableRelationFields() map[string]tables.TableRelationInf
 			},
 			SearchTimeout: 0,
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -5333,8 +5333,8 @@ func (t *FixedAsset) GetTableRelationFields() map[string]tables.TableRelationInf
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

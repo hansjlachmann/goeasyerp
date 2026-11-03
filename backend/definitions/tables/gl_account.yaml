@@ -33,13 +33,13 @@ table:
       db_name: account_type
       options: ["Posting", "Heading", "Total", "Begin-Total", "End-Total"]
 
-    - name: department_code
+    - name: dimension_1_code
       no: 6
       type: types.Code
-      db_name: department_code
+      db_name: dimension_1_code
       length: 10
       table_relation:
-        table: Department
+        table: Dimension_1
         field: code
         lookup_columns:
           - source: code
@@ -47,13 +47,13 @@ table:
           - source: name
             width: 250
 
-    - name: project_code
+    - name: dimension_2_code
       no: 7
       type: types.Code
-      db_name: project_code
+      db_name: dimension_2_code
       length: 10
       table_relation:
-        table: Project
+        table: Dimension_2
         field: code
         lookup_columns:
           - source: code
@@ -139,13 +139,13 @@ table:
       type: types.Date
       flow_filter: true
 
-    - name: department_filter
+    - name: dimension_1_filter
       no: 29
       type: types.Code
       length: 10
       flow_filter: true
 
-    - name: project_filter
+    - name: dimension_2_filter
       no: 30
       type: types.Code
       length: 10
@@ -182,15 +182,15 @@ table:
         - field: gl_account_no
           type: field_filter   # a total account sums the accounts of its Totaling
           value: totaling
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
+          value: dimension_1_filter
         - field: business_unit_code
           type: filter
           value: business_unit_filter
-        - field: project_code
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -211,15 +211,15 @@ table:
         - field: gl_account_no
           type: field_filter   # a total account sums the accounts of its Totaling
           value: totaling
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
+          value: dimension_1_filter
         - field: business_unit_code
           type: filter
           value: business_unit_filter
-        - field: project_code
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -241,12 +241,12 @@ table:
         - field: gl_account_no
           type: field_filter   # a total account sums the accounts of its Totaling
           value: totaling
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: date
           type: filter
           value: date_filter
@@ -283,12 +283,12 @@ table:
         - field: gl_account_no
           type: field_filter   # a total account sums the accounts of its Totaling
           value: totaling
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
-        - field: project_code
+          value: dimension_1_filter
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: date
           type: filter
           value: date_filter
@@ -312,15 +312,15 @@ table:
         - field: gl_account_no
           type: field_filter   # a total account sums the accounts of its Totaling
           value: totaling
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
+          value: dimension_1_filter
         - field: business_unit_code
           type: filter
           value: business_unit_filter
-        - field: project_code
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
 
     - name: debit_amount
       no: 47
@@ -337,15 +337,15 @@ table:
         - field: gl_account_no
           type: field_filter   # a total account sums the accounts of its Totaling
           value: totaling
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
+          value: dimension_1_filter
         - field: business_unit_code
           type: filter
           value: business_unit_filter
-        - field: project_code
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -365,15 +365,15 @@ table:
         - field: gl_account_no
           type: field_filter   # a total account sums the accounts of its Totaling
           value: totaling
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
+          value: dimension_1_filter
         - field: business_unit_code
           type: filter
           value: business_unit_filter
-        - field: project_code
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -393,15 +393,15 @@ table:
         - field: gl_account_no
           type: field_filter   # a total account sums the accounts of its Totaling
           value: totaling
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
+          value: dimension_1_filter
         - field: business_unit_code
           type: filter
           value: business_unit_filter
-        - field: project_code
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -421,15 +421,15 @@ table:
         - field: gl_account_no
           type: field_filter   # a total account sums the accounts of its Totaling
           value: totaling
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
+          value: dimension_1_filter
         - field: business_unit_code
           type: filter
           value: business_unit_filter
-        - field: project_code
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -450,15 +450,15 @@ table:
         - field: gl_account_no
           type: field_filter   # a total account sums the accounts of its Totaling
           value: totaling
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
+          value: dimension_1_filter
         - field: business_unit_code
           type: filter
           value: business_unit_filter
-        - field: project_code
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
 
     - name: add_currency_debit_amount
       no: 64
@@ -475,15 +475,15 @@ table:
         - field: gl_account_no
           type: field_filter   # a total account sums the accounts of its Totaling
           value: totaling
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
+          value: dimension_1_filter
         - field: business_unit_code
           type: filter
           value: business_unit_filter
-        - field: project_code
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -503,15 +503,15 @@ table:
         - field: gl_account_no
           type: field_filter   # a total account sums the accounts of its Totaling
           value: totaling
-        - field: department_code
+        - field: dimension_1_code
           type: filter
-          value: department_filter
+          value: dimension_1_filter
         - field: business_unit_code
           type: filter
           value: business_unit_filter
-        - field: project_code
+        - field: dimension_2_code
           type: filter
-          value: project_filter
+          value: dimension_2_filter
         - field: posting_date
           type: filter
           value: date_filter
@@ -576,16 +576,16 @@ table:
       type: bool
       db_name: automatic_ext_text
 
-    - name: department_posting
+    - name: dimension_1_posting
       no: 50
       type: Option
-      db_name: department_posting
+      db_name: dimension_1_posting
       options: [" ", "Code Mandatory", "Same Code", "No Code"]
 
-    - name: project_posting
+    - name: dimension_2_posting
       no: 51
       type: Option
-      db_name: project_posting
+      db_name: dimension_2_posting
       options: [" ", "Code Mandatory", "Same Code", "No Code"]
 
     - name: tax_area_code

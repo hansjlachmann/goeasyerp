@@ -31,8 +31,8 @@ func (insuranceJournalLineLogic) OnInsert(rec *gtables.InsuranceJournalLine) err
 	return nil
 }
 
-// OnValidate_Insurance_no: an insurance that is not blocked; its description, department and
-// project
+// OnValidate_Insurance_no: an insurance that is not blocked; its description, dimension 1 and
+// dimension 2
 func (insuranceJournalLineLogic) OnValidate_Insurance_no(rec *gtables.InsuranceJournalLine) error {
 	if rec.Insurance_no == "" {
 		return nil
@@ -47,8 +47,8 @@ func (insuranceJournalLineLogic) OnValidate_Insurance_no(rec *gtables.InsuranceJ
 		return err
 	}
 	rec.Description = insurance.Description
-	rec.Department_code = insurance.Department_code
-	rec.Project_code = insurance.Project_code
+	rec.Dimension_1_code = insurance.Dimension_1_code
+	rec.Dimension_2_code = insurance.Dimension_2_code
 	return nil
 }
 

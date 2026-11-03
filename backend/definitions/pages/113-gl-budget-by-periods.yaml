@@ -32,10 +32,10 @@ page:
           view_by: 2
           editable: true
           filters:
-            - source: department_filter
-              drilldown_filter_field: department_code
-            - source: project_filter
-              drilldown_filter_field: project_code
+            - source: dimension_1_filter
+              drilldown_filter_field: dimension_1_code
+            - source: dimension_2_filter
+              drilldown_filter_field: dimension_2_code
           fields:
             - source: "no"
               width: 90

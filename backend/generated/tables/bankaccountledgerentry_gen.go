@@ -21,8 +21,8 @@
 //	OnValidate_Remaining_amount(rec *gtables.BankAccountLedgerEntry) error
 //	OnValidate_Amount_lcy(rec *gtables.BankAccountLedgerEntry) error
 //	OnValidate_Bank_acc_posting_group(rec *gtables.BankAccountLedgerEntry) error
-//	OnValidate_Department_code(rec *gtables.BankAccountLedgerEntry) error
-//	OnValidate_Project_code(rec *gtables.BankAccountLedgerEntry) error
+//	OnValidate_Dimension_1_code(rec *gtables.BankAccountLedgerEntry) error
+//	OnValidate_Dimension_2_code(rec *gtables.BankAccountLedgerEntry) error
 //	OnValidate_Our_contact_code(rec *gtables.BankAccountLedgerEntry) error
 //	OnValidate_User_id(rec *gtables.BankAccountLedgerEntry) error
 //	OnValidate_Source_code(rec *gtables.BankAccountLedgerEntry) error
@@ -133,8 +133,8 @@ type BankAccountLedgerEntry struct {
 	Remaining_amount       types.Decimal                          `db:"remaining_amount"`
 	Amount_lcy             types.Decimal                          `db:"amount_lcy"`
 	Bank_acc_posting_group types.Code                             `db:"bank_acc_posting_group"`
-	Department_code        types.Code                             `db:"department_code"`
-	Project_code           types.Code                             `db:"project_code"`
+	Dimension_1_code       types.Code                             `db:"dimension_1_code"`
+	Dimension_2_code       types.Code                             `db:"dimension_2_code"`
 	Our_contact_code       types.Code                             `db:"our_contact_code"`
 	User_id                types.Code                             `db:"user_id"`
 	Source_code            types.Code                             `db:"source_code"`
@@ -284,8 +284,8 @@ var BankAccountLedgerEntry_FieldNo = struct {
 	Remaining_amount       int
 	Amount_lcy             int
 	Bank_acc_posting_group int
-	Department_code        int
-	Project_code           int
+	Dimension_1_code       int
+	Dimension_2_code       int
 	Our_contact_code       int
 	User_id                int
 	Source_code            int
@@ -319,8 +319,8 @@ var BankAccountLedgerEntry_FieldNo = struct {
 	Remaining_amount:       14,
 	Amount_lcy:             17,
 	Bank_acc_posting_group: 22,
-	Department_code:        23,
-	Project_code:           24,
+	Dimension_1_code:       23,
+	Dimension_2_code:       24,
 	Our_contact_code:       25,
 	User_id:                27,
 	Source_code:            28,
@@ -369,9 +369,9 @@ func (t *BankAccountLedgerEntry) FieldNo(fieldName string) int {
 		return 17
 	case "bank_acc_posting_group":
 		return 22
-	case "department_code":
+	case "dimension_1_code":
 		return 23
-	case "project_code":
+	case "dimension_2_code":
 		return 24
 	case "our_contact_code":
 		return 25
@@ -445,9 +445,9 @@ func (t *BankAccountLedgerEntry) FieldName(fieldNo int) string {
 	case 22:
 		return "bank_acc_posting_group"
 	case 23:
-		return "department_code"
+		return "dimension_1_code"
 	case 24:
-		return "project_code"
+		return "dimension_2_code"
 	case 25:
 		return "our_contact_code"
 	case 27:
@@ -624,11 +624,11 @@ type (
 	BankAccountLedgerEntryOnValidate_Bank_acc_posting_group interface {
 		OnValidate_Bank_acc_posting_group(rec *BankAccountLedgerEntry) error
 	}
-	BankAccountLedgerEntryOnValidate_Department_code interface {
-		OnValidate_Department_code(rec *BankAccountLedgerEntry) error
+	BankAccountLedgerEntryOnValidate_Dimension_1_code interface {
+		OnValidate_Dimension_1_code(rec *BankAccountLedgerEntry) error
 	}
-	BankAccountLedgerEntryOnValidate_Project_code interface {
-		OnValidate_Project_code(rec *BankAccountLedgerEntry) error
+	BankAccountLedgerEntryOnValidate_Dimension_2_code interface {
+		OnValidate_Dimension_2_code(rec *BankAccountLedgerEntry) error
 	}
 	BankAccountLedgerEntryOnValidate_Our_contact_code interface {
 		OnValidate_Our_contact_code(rec *BankAccountLedgerEntry) error
@@ -744,10 +744,10 @@ func bankAccountLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(BankAccountLedgerEntryOnValidate_Amount_lcy)
 	case "OnValidate_Bank_acc_posting_group":
 		_, ok = logic.(BankAccountLedgerEntryOnValidate_Bank_acc_posting_group)
-	case "OnValidate_Department_code":
-		_, ok = logic.(BankAccountLedgerEntryOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(BankAccountLedgerEntryOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(BankAccountLedgerEntryOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(BankAccountLedgerEntryOnValidate_Dimension_2_code)
 	case "OnValidate_Our_contact_code":
 		_, ok = logic.(BankAccountLedgerEntryOnValidate_Our_contact_code)
 	case "OnValidate_User_id":
@@ -879,10 +879,10 @@ func (t *BankAccountLedgerEntry) CheckFields() error {
 	if err := tables.CheckMaxLength(BankAccountLedgerEntryTableName, "bank_acc_posting_group", string(t.Bank_acc_posting_group), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(BankAccountLedgerEntryTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(BankAccountLedgerEntryTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(BankAccountLedgerEntryTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(BankAccountLedgerEntryTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(BankAccountLedgerEntryTableName, "our_contact_code", string(t.Our_contact_code), 10); err != nil {
@@ -947,8 +947,8 @@ func GetBankAccountLedgerEntryTableSchema() string {
 		remaining_amount TEXT,
 		amount_lcy TEXT,
 		bank_acc_posting_group TEXT(10),
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		our_contact_code TEXT(10),
 		user_id TEXT(20),
 		source_code TEXT(10),
@@ -987,8 +987,8 @@ func GetBankAccountLedgerEntryPostgresTableSchema() string {
 		remaining_amount NUMERIC,
 		amount_lcy NUMERIC,
 		bank_acc_posting_group VARCHAR(10),
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		our_contact_code VARCHAR(10),
 		user_id VARCHAR(20),
 		source_code VARCHAR(10),
@@ -1082,7 +1082,7 @@ func (t *BankAccountLedgerEntry) SyncKeys(db database.Executor, company string, 
 	}
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
-	if _, err := db.Exec(fmt.Sprintf(`CREATE INDEX IF NOT EXISTS "%s" ON "%s" (bank_account_no, department_code, project_code, posting_date)`,
+	if _, err := db.Exec(fmt.Sprintf(`CREATE INDEX IF NOT EXISTS "%s" ON "%s" (bank_account_no, dimension_1_code, dimension_2_code, posting_date)`,
 		fmt.Sprintf("%s$Bank_Account_Ledger_Entry$bank_account_dimensions", company), tableName)); err != nil {
 		return fmt.Errorf("failed to create index bank_account_dimensions: %w", err)
 	}
@@ -1127,7 +1127,7 @@ func bankAccountLedgerEntrySIFTSpecs() []sift.KeySpec {
 		},
 		{
 			Name:   "bank_account_dimensions",
-			Fields: []sift.Column{{Name: "bank_account_no", Kind: sift.KindText}, {Name: "department_code", Kind: sift.KindText}, {Name: "project_code", Kind: sift.KindText}, {Name: "posting_date", Kind: sift.KindDate}},
+			Fields: []sift.Column{{Name: "bank_account_no", Kind: sift.KindText}, {Name: "dimension_1_code", Kind: sift.KindText}, {Name: "dimension_2_code", Kind: sift.KindText}, {Name: "posting_date", Kind: sift.KindDate}},
 			Sums:   []sift.Column{{Name: "amount", Kind: sift.KindDecimal}, {Name: "amount_lcy", Kind: sift.KindDecimal}, {Name: "debit_amount", Kind: sift.KindDecimal}, {Name: "credit_amount", Kind: sift.KindDecimal}, {Name: "debit_amount_lcy", Kind: sift.KindDecimal}, {Name: "credit_amount_lcy", Kind: sift.KindDecimal}},
 		},
 		{
@@ -1201,8 +1201,8 @@ func (t *BankAccountLedgerEntry) StoreOldValues() {
 	t.oldValues["remaining_amount"] = t.Remaining_amount
 	t.oldValues["amount_lcy"] = t.Amount_lcy
 	t.oldValues["bank_acc_posting_group"] = t.Bank_acc_posting_group
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["our_contact_code"] = t.Our_contact_code
 	t.oldValues["user_id"] = t.User_id
 	t.oldValues["source_code"] = t.Source_code
@@ -1271,11 +1271,11 @@ func (t *BankAccountLedgerEntry) XRec() *BankAccountLedgerEntry {
 	if v, ok := t.oldValues["bank_acc_posting_group"].(types.Code); ok {
 		x.Bank_acc_posting_group = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["our_contact_code"].(types.Code); ok {
 		x.Our_contact_code = v
@@ -1422,8 +1422,8 @@ func (t *BankAccountLedgerEntry) GetByPK(entry_no int) bool {
 	var remaining_amountNull sql.NullString
 	var amount_lcyNull sql.NullString
 	var bank_acc_posting_groupNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var our_contact_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
@@ -1452,7 +1452,7 @@ func (t *BankAccountLedgerEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, bank_account_no, posting_date, document_type, document_no, description, currency_code, amount, remaining_amount, amount_lcy, bank_acc_posting_group, department_code, project_code, our_contact_code, user_id, source_code, open, positive, closed_by_entry_no, closed_at_date, journal_batch_name, reason_code, bal_account_type, bal_account_no, transaction_no, statement_status, statement_no, statement_line_no, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, document_date, external_document_no FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, bank_account_no, posting_date, document_type, document_no, description, currency_code, amount, remaining_amount, amount_lcy, bank_acc_posting_group, dimension_1_code, dimension_2_code, our_contact_code, user_id, source_code, open, positive, closed_by_entry_no, closed_at_date, journal_batch_name, reason_code, bal_account_type, bal_account_no, transaction_no, statement_status, statement_no, statement_line_no, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, document_date, external_document_no FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1470,8 +1470,8 @@ func (t *BankAccountLedgerEntry) GetByPK(entry_no int) bool {
 		&remaining_amountNull,
 		&amount_lcyNull,
 		&bank_acc_posting_groupNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&our_contact_codeNull,
 		&user_idNull,
 		&source_codeNull,
@@ -1517,8 +1517,8 @@ func (t *BankAccountLedgerEntry) GetByPK(entry_no int) bool {
 	t.Remaining_amount, _ = types.NewDecimalFromString(remaining_amountNull.String)
 	t.Amount_lcy, _ = types.NewDecimalFromString(amount_lcyNull.String)
 	t.Bank_acc_posting_group = types.NewCode(bank_acc_posting_groupNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Our_contact_code = types.NewCode(our_contact_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
@@ -1573,8 +1573,8 @@ func (t *BankAccountLedgerEntry) Insert(runTrigger bool) bool {
 		t.Remaining_amount,
 		t.Amount_lcy,
 		t.Bank_acc_posting_group,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Our_contact_code,
 		t.User_id,
 		t.Source_code,
@@ -1600,7 +1600,7 @@ func (t *BankAccountLedgerEntry) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, bank_account_no, posting_date, document_type, document_no, description, currency_code, amount, remaining_amount, amount_lcy, bank_acc_posting_group, department_code, project_code, our_contact_code, user_id, source_code, open, positive, closed_by_entry_no, closed_at_date, journal_batch_name, reason_code, bal_account_type, bal_account_no, transaction_no, statement_status, statement_no, statement_line_no, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, document_date, external_document_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, bank_account_no, posting_date, document_type, document_no, description, currency_code, amount, remaining_amount, amount_lcy, bank_acc_posting_group, dimension_1_code, dimension_2_code, our_contact_code, user_id, source_code, open, positive, closed_by_entry_no, closed_at_date, journal_batch_name, reason_code, bal_account_type, bal_account_no, transaction_no, statement_status, statement_no, statement_line_no, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, document_date, external_document_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1649,8 +1649,8 @@ func (t *BankAccountLedgerEntry) InsertAll(records []*BankAccountLedgerEntry, ru
 			r.Remaining_amount,
 			r.Amount_lcy,
 			r.Bank_acc_posting_group,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Our_contact_code,
 			r.User_id,
 			r.Source_code,
@@ -1675,7 +1675,7 @@ func (t *BankAccountLedgerEntry) InsertAll(records []*BankAccountLedgerEntry, ru
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName)
-	columns := []string{"entry_no", "bank_account_no", "posting_date", "document_type", "document_no", "description", "currency_code", "amount", "remaining_amount", "amount_lcy", "bank_acc_posting_group", "department_code", "project_code", "our_contact_code", "user_id", "source_code", "open", "positive", "closed_by_entry_no", "closed_at_date", "journal_batch_name", "reason_code", "bal_account_type", "bal_account_no", "transaction_no", "statement_status", "statement_no", "statement_line_no", "debit_amount", "credit_amount", "debit_amount_lcy", "credit_amount_lcy", "document_date", "external_document_no"}
+	columns := []string{"entry_no", "bank_account_no", "posting_date", "document_type", "document_no", "description", "currency_code", "amount", "remaining_amount", "amount_lcy", "bank_acc_posting_group", "dimension_1_code", "dimension_2_code", "our_contact_code", "user_id", "source_code", "open", "positive", "closed_by_entry_no", "closed_at_date", "journal_batch_name", "reason_code", "bal_account_type", "bal_account_no", "transaction_no", "statement_status", "statement_no", "statement_line_no", "debit_amount", "credit_amount", "debit_amount_lcy", "credit_amount_lcy", "document_date", "external_document_no"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1759,13 +1759,13 @@ func (t *BankAccountLedgerEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "bank_acc_posting_group = ?")
 			values = append(values, t.Bank_acc_posting_group)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("our_contact_code") {
 			setClauses = append(setClauses, "our_contact_code = ?")
@@ -1878,10 +1878,10 @@ func (t *BankAccountLedgerEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.Amount_lcy)
 		setClauses = append(setClauses, "bank_acc_posting_group = ?")
 		values = append(values, t.Bank_acc_posting_group)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "our_contact_code = ?")
 		values = append(values, t.Our_contact_code)
 		setClauses = append(setClauses, "user_id = ?")
@@ -2035,13 +2035,13 @@ func (t *BankAccountLedgerEntry) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Bank_acc_posting_group.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "our_contact_code":
 		if old, ok := oldValue.(types.Code); ok {
@@ -2398,10 +2398,10 @@ func (t *BankAccountLedgerEntry) columnName(fieldName string) (string, bool) {
 		return "amount_lcy", true
 	case strings.ToLower("bank_acc_posting_group"):
 		return "bank_acc_posting_group", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("our_contact_code"):
 		return "our_contact_code", true
 	case strings.ToLower("user_id"):
@@ -2825,7 +2825,7 @@ func (t *BankAccountLedgerEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, bank_account_no, posting_date, document_type, document_no, description, currency_code, amount, remaining_amount, amount_lcy, bank_acc_posting_group, department_code, project_code, our_contact_code, user_id, source_code, open, positive, closed_by_entry_no, closed_at_date, journal_batch_name, reason_code, bal_account_type, bal_account_no, transaction_no, statement_status, statement_no, statement_line_no, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, document_date, external_document_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, bank_account_no, posting_date, document_type, document_no, description, currency_code, amount, remaining_amount, amount_lcy, bank_acc_posting_group, dimension_1_code, dimension_2_code, our_contact_code, user_id, source_code, open, positive, closed_by_entry_no, closed_at_date, journal_batch_name, reason_code, bal_account_type, bal_account_no, transaction_no, statement_status, statement_no, statement_line_no, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, document_date, external_document_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2840,8 +2840,8 @@ func (t *BankAccountLedgerEntry) FindFirst() bool {
 	var remaining_amountNull sql.NullString
 	var amount_lcyNull sql.NullString
 	var bank_acc_posting_groupNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var our_contact_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
@@ -2873,8 +2873,8 @@ func (t *BankAccountLedgerEntry) FindFirst() bool {
 		&remaining_amountNull,
 		&amount_lcyNull,
 		&bank_acc_posting_groupNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&our_contact_codeNull,
 		&user_idNull,
 		&source_codeNull,
@@ -2917,8 +2917,8 @@ func (t *BankAccountLedgerEntry) FindFirst() bool {
 	t.Remaining_amount, _ = types.NewDecimalFromString(remaining_amountNull.String)
 	t.Amount_lcy, _ = types.NewDecimalFromString(amount_lcyNull.String)
 	t.Bank_acc_posting_group = types.NewCode(bank_acc_posting_groupNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Our_contact_code = types.NewCode(our_contact_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
@@ -2957,7 +2957,7 @@ func (t *BankAccountLedgerEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, bank_account_no, posting_date, document_type, document_no, description, currency_code, amount, remaining_amount, amount_lcy, bank_acc_posting_group, department_code, project_code, our_contact_code, user_id, source_code, open, positive, closed_by_entry_no, closed_at_date, journal_batch_name, reason_code, bal_account_type, bal_account_no, transaction_no, statement_status, statement_no, statement_line_no, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, document_date, external_document_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, bank_account_no, posting_date, document_type, document_no, description, currency_code, amount, remaining_amount, amount_lcy, bank_acc_posting_group, dimension_1_code, dimension_2_code, our_contact_code, user_id, source_code, open, positive, closed_by_entry_no, closed_at_date, journal_batch_name, reason_code, bal_account_type, bal_account_no, transaction_no, statement_status, statement_no, statement_line_no, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, document_date, external_document_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2972,8 +2972,8 @@ func (t *BankAccountLedgerEntry) FindLast() bool {
 	var remaining_amountNull sql.NullString
 	var amount_lcyNull sql.NullString
 	var bank_acc_posting_groupNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var our_contact_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
@@ -3005,8 +3005,8 @@ func (t *BankAccountLedgerEntry) FindLast() bool {
 		&remaining_amountNull,
 		&amount_lcyNull,
 		&bank_acc_posting_groupNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&our_contact_codeNull,
 		&user_idNull,
 		&source_codeNull,
@@ -3049,8 +3049,8 @@ func (t *BankAccountLedgerEntry) FindLast() bool {
 	t.Remaining_amount, _ = types.NewDecimalFromString(remaining_amountNull.String)
 	t.Amount_lcy, _ = types.NewDecimalFromString(amount_lcyNull.String)
 	t.Bank_acc_posting_group = types.NewCode(bank_acc_posting_groupNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Our_contact_code = types.NewCode(our_contact_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
@@ -3119,7 +3119,7 @@ func (t *BankAccountLedgerEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, bank_account_no, posting_date, document_type, document_no, description, currency_code, amount, remaining_amount, amount_lcy, bank_acc_posting_group, department_code, project_code, our_contact_code, user_id, source_code, open, positive, closed_by_entry_no, closed_at_date, journal_batch_name, reason_code, bal_account_type, bal_account_no, transaction_no, statement_status, statement_no, statement_line_no, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, document_date, external_document_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, bank_account_no, posting_date, document_type, document_no, description, currency_code, amount, remaining_amount, amount_lcy, bank_acc_posting_group, dimension_1_code, dimension_2_code, our_contact_code, user_id, source_code, open, positive, closed_by_entry_no, closed_at_date, journal_batch_name, reason_code, bal_account_type, bal_account_no, transaction_no, statement_status, statement_no, statement_line_no, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, document_date, external_document_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3198,8 +3198,8 @@ func (t *BankAccountLedgerEntry) Next(steps ...int) bool {
 		var remaining_amountNull sql.NullString
 		var amount_lcyNull sql.NullString
 		var bank_acc_posting_groupNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var our_contact_codeNull sql.NullString
 		var user_idNull sql.NullString
 		var source_codeNull sql.NullString
@@ -3231,8 +3231,8 @@ func (t *BankAccountLedgerEntry) Next(steps ...int) bool {
 			&remaining_amountNull,
 			&amount_lcyNull,
 			&bank_acc_posting_groupNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&our_contact_codeNull,
 			&user_idNull,
 			&source_codeNull,
@@ -3274,8 +3274,8 @@ func (t *BankAccountLedgerEntry) Next(steps ...int) bool {
 		t.Remaining_amount, _ = types.NewDecimalFromString(remaining_amountNull.String)
 		t.Amount_lcy, _ = types.NewDecimalFromString(amount_lcyNull.String)
 		t.Bank_acc_posting_group = types.NewCode(bank_acc_posting_groupNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Our_contact_code = types.NewCode(our_contact_codeNull.String)
 		t.User_id = types.NewCode(user_idNull.String)
 		t.Source_code = types.NewCode(source_codeNull.String)
@@ -3343,7 +3343,7 @@ func (t *BankAccountLedgerEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, bank_account_no, posting_date, document_type, document_no, description, currency_code, amount, remaining_amount, amount_lcy, bank_acc_posting_group, department_code, project_code, our_contact_code, user_id, source_code, open, positive, closed_by_entry_no, closed_at_date, journal_batch_name, reason_code, bal_account_type, bal_account_no, transaction_no, statement_status, statement_no, statement_line_no, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, document_date, external_document_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, bank_account_no, posting_date, document_type, document_no, description, currency_code, amount, remaining_amount, amount_lcy, bank_acc_posting_group, dimension_1_code, dimension_2_code, our_contact_code, user_id, source_code, open, positive, closed_by_entry_no, closed_at_date, journal_batch_name, reason_code, bal_account_type, bal_account_no, transaction_no, statement_status, statement_no, statement_line_no, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, document_date, external_document_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3375,8 +3375,8 @@ func (t *BankAccountLedgerEntry) FindSetBuffered() bool {
 		var remaining_amountNull sql.NullString
 		var amount_lcyNull sql.NullString
 		var bank_acc_posting_groupNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var our_contact_codeNull sql.NullString
 		var user_idNull sql.NullString
 		var source_codeNull sql.NullString
@@ -3408,8 +3408,8 @@ func (t *BankAccountLedgerEntry) FindSetBuffered() bool {
 			&remaining_amountNull,
 			&amount_lcyNull,
 			&bank_acc_posting_groupNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&our_contact_codeNull,
 			&user_idNull,
 			&source_codeNull,
@@ -3449,8 +3449,8 @@ func (t *BankAccountLedgerEntry) FindSetBuffered() bool {
 		record.Remaining_amount, _ = types.NewDecimalFromString(remaining_amountNull.String)
 		record.Amount_lcy, _ = types.NewDecimalFromString(amount_lcyNull.String)
 		record.Bank_acc_posting_group = types.NewCode(bank_acc_posting_groupNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Our_contact_code = types.NewCode(our_contact_codeNull.String)
 		record.User_id = types.NewCode(user_idNull.String)
 		record.Source_code = types.NewCode(source_codeNull.String)
@@ -3508,8 +3508,8 @@ func (t *BankAccountLedgerEntry) copyFromBuffered(record *BankAccountLedgerEntry
 	t.Remaining_amount = record.Remaining_amount
 	t.Amount_lcy = record.Amount_lcy
 	t.Bank_acc_posting_group = record.Bank_acc_posting_group
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Our_contact_code = record.Our_contact_code
 	t.User_id = record.User_id
 	t.Source_code = record.Source_code
@@ -3951,45 +3951,45 @@ func (t *BankAccountLedgerEntry) ValidateField(fieldName string, value interface
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BankAccountLedgerEntryOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(BankAccountLedgerEntryOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BankAccountLedgerEntryOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(BankAccountLedgerEntryOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -4571,9 +4571,9 @@ func (t *BankAccountLedgerEntry) FieldValue(no int) (any, bool) {
 	case 22:
 		return t.Bank_acc_posting_group, true
 	case 23:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 24:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 25:
 		return t.Our_contact_code, true
 	case 27:
@@ -4708,20 +4708,20 @@ func (t *BankAccountLedgerEntry) SetFieldValue(no int, value any) bool {
 		}
 	case 23:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 24:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 25:
@@ -5404,10 +5404,10 @@ func (t *BankAccountLedgerEntry) columnValue(column string) (interface{}, bool) 
 		return t.Amount_lcy, true
 	case "bank_acc_posting_group":
 		return t.Bank_acc_posting_group, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "our_contact_code":
 		return t.Our_contact_code, true
 	case "user_id":
@@ -5514,8 +5514,8 @@ func (t *BankAccountLedgerEntry) Init() {
 	t.Remaining_amount = *new(types.Decimal)
 	t.Amount_lcy = *new(types.Decimal)
 	t.Bank_acc_posting_group = *new(types.Code)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Our_contact_code = *new(types.Code)
 	t.User_id = *new(types.Code)
 	t.Source_code = *new(types.Code)
@@ -5582,8 +5582,8 @@ func (t *BankAccountLedgerEntry) ToMap() map[string]interface{} {
 		"remaining_amount":       t.Remaining_amount.String(),
 		"amount_lcy":             t.Amount_lcy.String(),
 		"bank_acc_posting_group": t.Bank_acc_posting_group.String(),
-		"department_code":        t.Department_code.String(),
-		"project_code":           t.Project_code.String(),
+		"dimension_1_code":       t.Dimension_1_code.String(),
+		"dimension_2_code":       t.Dimension_2_code.String(),
 		"our_contact_code":       t.Our_contact_code.String(),
 		"user_id":                t.User_id.String(),
 		"source_code":            t.Source_code.String(),
@@ -5706,14 +5706,14 @@ func (t *BankAccountLedgerEntry) FromMap(data map[string]interface{}) {
 			t.Bank_acc_posting_group = types.NewCode(s)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["our_contact_code"]; ok && v != nil {
@@ -6033,7 +6033,7 @@ func (t *BankAccountLedgerEntry) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         23,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -6043,7 +6043,7 @@ func (t *BankAccountLedgerEntry) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         24,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -6328,8 +6328,8 @@ func (t *BankAccountLedgerEntry) GetTableRelationFields() map[string]tables.Tabl
 			},
 			SearchTimeout: 0,
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -6338,8 +6338,8 @@ func (t *BankAccountLedgerEntry) GetTableRelationFields() map[string]tables.Tabl
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

@@ -9,7 +9,7 @@ import (
 
 // Report 1198 Date Compress Resource Ledger: the resource ledger entries of closed fiscal years
 // become one entry per entry type, resource, resource group, period and sign of the quantity —
-// and per the retained Document No., Work Type, Unit of Measure, Department, Project
+// and per the retained Document No., Work Type, Unit of Measure, Dimension 1, Dimension 2
 // Code and Chargeable; a resource register of the run.
 const DateCompressResourceLedgerID = 1198
 
@@ -29,7 +29,7 @@ type dateCompressResLedger struct {
 func (r *dateCompressResLedger) Definition() *Definition {
 	r.tableID = gtables.ResLedgerEntryTableID
 	r.fields = []retainField{{name: "document_no"}, {name: "work_type_code"}, {name: "unit_of_measure_code"},
-		{name: "department_code"}, {name: "project_code"}, {name: "chargeable"}}
+		{name: "dimension_1_code"}, {name: "dimension_2_code"}, {name: "chargeable"}}
 	return &Definition{
 		OptionsCaption: "OPTIONS",
 		Options:        dateComprOptions(true, r.fields),
@@ -130,13 +130,13 @@ func (r *dateCompressResLedger) onAfterGetRecord(resLedgEntry *gtables.ResLedger
 		resLedgEntry2.SetRange("unit_of_measure_code", resLedgEntry2.Unit_of_measure_code)
 		newResLedgEntry.Unit_of_measure_code = resLedgEntry2.Unit_of_measure_code
 	}
-	if r.retainNo("department_code") {
-		resLedgEntry2.SetRange("department_code", resLedgEntry2.Department_code)
-		newResLedgEntry.Department_code = resLedgEntry2.Department_code
+	if r.retainNo("dimension_1_code") {
+		resLedgEntry2.SetRange("dimension_1_code", resLedgEntry2.Dimension_1_code)
+		newResLedgEntry.Dimension_1_code = resLedgEntry2.Dimension_1_code
 	}
-	if r.retainNo("project_code") {
-		resLedgEntry2.SetRange("project_code", resLedgEntry2.Project_code)
-		newResLedgEntry.Project_code = resLedgEntry2.Project_code
+	if r.retainNo("dimension_2_code") {
+		resLedgEntry2.SetRange("dimension_2_code", resLedgEntry2.Dimension_2_code)
+		newResLedgEntry.Dimension_2_code = resLedgEntry2.Dimension_2_code
 	}
 	if r.retainNo("chargeable") {
 		resLedgEntry2.SetRange("chargeable", resLedgEntry2.Chargeable)

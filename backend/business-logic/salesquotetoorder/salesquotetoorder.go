@@ -40,8 +40,8 @@ func Run(rec *gtables.SalesHeader) (*gtables.SalesHeader, error) {
 	}
 	salesOrderHeader.Document_date = rec.Document_date
 	salesOrderHeader.Shipment_date = rec.Shipment_date
-	salesOrderHeader.Department_code = rec.Department_code
-	salesOrderHeader.Project_code = rec.Project_code
+	salesOrderHeader.Dimension_1_code = rec.Dimension_1_code
+	salesOrderHeader.Dimension_2_code = rec.Dimension_2_code
 	salesOrderHeader.Location_code = rec.Location_code
 	err = salesOrderHeader.ModifyOrError(false)
 	if err != nil {

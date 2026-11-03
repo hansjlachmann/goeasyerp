@@ -1,8 +1,8 @@
 table:
   id: 12
-  name: "Project"
-  caption: Project
-  description: Projects (table 12)
+  name: "Dimension_2"
+  caption: Dimension 2
+  description: "Dimension 2 values (table 12, the classic Project): a posting dimension; General Ledger Setup Dimension-2 names it"
   fields:
     - name: code
       no: 1

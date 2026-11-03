@@ -42,10 +42,10 @@ page:
         - source: tax_bus_posting_group
           width: 170
           visible: false
-        - source: department_code
+        - source: dimension_1_code
           width: 130
           visible: false
-        - source: project_code
+        - source: dimension_2_code
           width: 130
           visible: false
         - source: payment_terms_code

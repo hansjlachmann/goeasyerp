@@ -342,8 +342,8 @@ func (p *GenJnlPostLine) postBankAcc(genJnlLine *gtables.GenJournalLine) error {
 	bankAccLedgEntry.External_document_no = genJnlLine.External_document_no
 	bankAccLedgEntry.Description = genJnlLine.Description
 	bankAccLedgEntry.Bank_acc_posting_group = bankAcc.Bank_acc_posting_group
-	bankAccLedgEntry.Department_code = genJnlLine.Department_code
-	bankAccLedgEntry.Project_code = genJnlLine.Project_code
+	bankAccLedgEntry.Dimension_1_code = genJnlLine.Dimension_1_code
+	bankAccLedgEntry.Dimension_2_code = genJnlLine.Dimension_2_code
 	bankAccLedgEntry.Our_contact_code = genJnlLine.Salespers_purch_code
 	bankAccLedgEntry.Source_code = genJnlLine.Source_code
 	bankAccLedgEntry.Journal_batch_name = genJnlLine.Journal_batch_name
@@ -582,7 +582,7 @@ func (p *GenJnlPostLine) finishCodeunit() error {
 }
 
 // initGLEntry starts a G/L entry of the line on a G/L account (a posting account, not blocked,
-// whose department and project posting rules the line follows); its additional-currency amount
+// whose dimension 1 and dimension 2 posting rules the line follows); its additional-currency amount
 // is amountAddCurr for a line in the additional currency when useAmountAddCurr, else the amount
 // exchanged (glCalcAddCurrency)
 func (p *GenJnlPostLine) initGLEntry(glAccNo types.Code, amount, amountAddCurr types.Decimal, useAmountAddCurr, systemCreatedEntry bool) (*gtables.GLAccount, error) {
@@ -601,11 +601,11 @@ func (p *GenJnlPostLine) initGLEntry(glAccNo types.Code, amount, amountAddCurr t
 		if err != nil {
 			return nil, err
 		}
-		err = checkPostingCode(int(glAcc.Department_posting), "department_code", genJnlLine.Department_code, glAcc.Department_code, glAcc.No)
+		err = checkPostingCode(int(glAcc.Dimension_1_posting), "dimension_1_code", genJnlLine.Dimension_1_code, glAcc.Dimension_1_code, glAcc.No)
 		if err != nil {
 			return nil, err
 		}
-		err = checkPostingCode(int(glAcc.Project_posting), "project_code", genJnlLine.Project_code, glAcc.Project_code, glAcc.No)
+		err = checkPostingCode(int(glAcc.Dimension_2_posting), "dimension_2_code", genJnlLine.Dimension_2_code, glAcc.Dimension_2_code, glAcc.No)
 		if err != nil {
 			return nil, err
 		}
@@ -619,8 +619,8 @@ func (p *GenJnlPostLine) initGLEntry(glAccNo types.Code, amount, amountAddCurr t
 	p.glEntry.External_document_no = genJnlLine.External_document_no
 	p.glEntry.Description = genJnlLine.Description
 	p.glEntry.Business_unit_code = genJnlLine.Business_unit_code
-	p.glEntry.Department_code = genJnlLine.Department_code
-	p.glEntry.Project_code = genJnlLine.Project_code
+	p.glEntry.Dimension_1_code = genJnlLine.Dimension_1_code
+	p.glEntry.Dimension_2_code = genJnlLine.Dimension_2_code
 	p.glEntry.Source_code = genJnlLine.Source_code
 	if genJnlLine.Account_type == gtables.GenJournalLine_Account_type.GLAccount {
 		p.glEntry.Source_type = gtables.GLEntrySource_type(genJnlLine.Source_type)
@@ -647,19 +647,19 @@ func (p *GenJnlPostLine) initGLEntry(glAccNo types.Code, amount, amountAddCurr t
 	return glAcc, nil
 }
 
-// checkPostingCode: a G/L account's Department / Project Posting rule (Code Mandatory, Same
+// checkPostingCode: a G/L account's Dimension 1 / Dimension 2 Posting rule (Code Mandatory, Same
 // Code, No Code)
 func checkPostingCode(rule int, field string, lineCode, accCode types.Code, glAccNo types.Code) error {
 	switch rule {
-	case int(gtables.GLAccount_Department_posting.CodeMandatory):
+	case int(gtables.GLAccount_Dimension_1_posting.CodeMandatory):
 		if lineCode == "" {
 			return apperrors.JnlPostingCodeMandatory(jnlLine, field, glAccNo.String())
 		}
-	case int(gtables.GLAccount_Department_posting.SameCode):
+	case int(gtables.GLAccount_Dimension_1_posting.SameCode):
 		if lineCode != accCode {
 			return apperrors.JnlPostingCodeSame(jnlLine, field, accCode.String(), glAccNo.String())
 		}
-	case int(gtables.GLAccount_Department_posting.NoCode):
+	case int(gtables.GLAccount_Dimension_1_posting.NoCode):
 		if lineCode != "" {
 			return apperrors.JnlPostingCodeBlank(jnlLine, field, glAccNo.String())
 		}
@@ -726,12 +726,12 @@ func (p *GenJnlPostLine) postFixedAsset(genJnlLine *gtables.GenJournalLine) erro
 	if err != nil {
 		return err
 	}
-	departmentCode := genJnlLine.Department_code
-	projectCode := genJnlLine.Project_code
+	dimension1Code := genJnlLine.Dimension_1_code
+	dimension2Code := genJnlLine.Dimension_2_code
 	correction := genJnlLine.Correction
 	for _, b := range p.faJnlPostLine.GLBuffer() {
-		genJnlLine.Department_code = b.DepartmentCode
-		genJnlLine.Project_code = b.ProjectCode
+		genJnlLine.Dimension_1_code = b.Dimension1Code
+		genJnlLine.Dimension_2_code = b.Dimension2Code
 		genJnlLine.Correction = b.Correction
 		if b.OriginalGeneralJnlLine {
 			_, err = p.initGLEntry(b.AccountNo, b.Amount, tempGLEntry.Additional_currency_amount, true, true)
@@ -773,8 +773,8 @@ func (p *GenJnlPostLine) postFixedAsset(genJnlLine *gtables.GenJournalLine) erro
 			return err
 		}
 	}
-	genJnlLine.Department_code = departmentCode
-	genJnlLine.Project_code = projectCode
+	genJnlLine.Dimension_1_code = dimension1Code
+	genJnlLine.Dimension_2_code = dimension2Code
 	genJnlLine.Correction = correction
 	p.glEntry = tempGLEntry
 	err = p.postTax(genJnlLine)

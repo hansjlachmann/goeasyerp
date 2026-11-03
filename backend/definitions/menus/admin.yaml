@@ -128,9 +128,9 @@ menu:
             items:
               - name: "Standard Text Codes"
                 page_id: 8
-              - name: "Departments"
+              - name: "Dimension 1 Values"
                 page_id: 12
-              - name: "Projects"
+              - name: "Dimension 2 Values"
                 page_id: 13
               - name: "Post Codes"
                 page_id: 367

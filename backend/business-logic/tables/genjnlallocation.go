@@ -44,7 +44,7 @@ func (genJnlAllocationLogic) OnDelete(rec *gtables.GenJnlAllocation) error {
 	return rec.Validate("amount", types.Decimal{})
 }
 
-// OnValidate_Account_no: a posting account with direct posting; its department, project and
+// OnValidate_Account_no: a posting account with direct posting; its dimension 1, dimension 2 and
 // posting groups follow (Account Name is a FlowField)
 func (genJnlAllocationLogic) OnValidate_Account_no(rec *gtables.GenJnlAllocation) error {
 	glAcc := gtables.NewGLAccount(rec)
@@ -64,8 +64,8 @@ func (genJnlAllocationLogic) OnValidate_Account_no(rec *gtables.GenJnlAllocation
 			return err
 		}
 	}
-	rec.Department_code = glAcc.Department_code
-	rec.Project_code = glAcc.Project_code
+	rec.Dimension_1_code = glAcc.Dimension_1_code
+	rec.Dimension_2_code = glAcc.Dimension_2_code
 	rec.Gen_posting_type = gtables.GenJnlAllocationGen_posting_type(glAcc.Gen_posting_type)
 	rec.Gen_bus_posting_group = glAcc.Gen_bus_posting_group
 	rec.Gen_prod_posting_group = glAcc.Gen_prod_posting_group
@@ -194,8 +194,8 @@ func updateGenJnlAllocTax(rec *gtables.GenJnlAllocation, genJnlLine *gtables.Gen
 	genJnlLine2.Account_no = rec.Account_no
 	genJnlLine2.Amount = rec.Amount
 	genJnlLine2.Amount_lcy = rec.Amount
-	genJnlLine2.Department_code = rec.Department_code
-	genJnlLine2.Project_code = rec.Project_code
+	genJnlLine2.Dimension_1_code = rec.Dimension_1_code
+	genJnlLine2.Dimension_2_code = rec.Dimension_2_code
 	genJnlLine2.Gen_posting_type = gtables.GenJournalLineGen_posting_type(rec.Gen_posting_type)
 	genJnlLine2.Gen_bus_posting_group = rec.Gen_bus_posting_group
 	genJnlLine2.Gen_prod_posting_group = rec.Gen_prod_posting_group

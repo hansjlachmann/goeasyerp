@@ -96,8 +96,8 @@ func (p *BOMJnlPostLine) code() error {
 		return err
 	}
 	itemJnlLine.Description = bomJnlLine.Description
-	itemJnlLine.Department_code = bomJnlLine.Department_code
-	itemJnlLine.Project_code = bomJnlLine.Project_code
+	itemJnlLine.Dimension_1_code = bomJnlLine.Dimension_1_code
+	itemJnlLine.Dimension_2_code = bomJnlLine.Dimension_2_code
 	itemJnlLine.Location_code = bomJnlLine.Location_code
 	itemJnlLine.Source_code = bomJnlLine.Source_code
 	itemJnlLine.Journal_batch_name = bomJnlLine.Journal_batch_name
@@ -361,8 +361,8 @@ func (p *BOMJnlPostLine) postItemComponent(bomComp *gtables.BOMComponent, compQt
 		return types.Decimal{}, err
 	}
 	itemJnlLine.Description = bomJnlLine.Description
-	itemJnlLine.Department_code = bomJnlLine.Department_code
-	itemJnlLine.Project_code = bomJnlLine.Project_code
+	itemJnlLine.Dimension_1_code = bomJnlLine.Dimension_1_code
+	itemJnlLine.Dimension_2_code = bomJnlLine.Dimension_2_code
 	itemJnlLine.Location_code = bomJnlLine.Location_code
 	itemJnlLine.Source_code = bomJnlLine.Source_code
 	itemJnlLine.Journal_batch_name = bomJnlLine.Journal_batch_name
@@ -403,8 +403,8 @@ func (p *BOMJnlPostLine) postResComponent(bomComp *gtables.BOMComponent, compQty
 		return types.Decimal{}, err
 	}
 	resJnlLine.Description = bomJnlLine.Description
-	resJnlLine.Department_code = bomJnlLine.Department_code
-	resJnlLine.Project_code = bomJnlLine.Project_code
+	resJnlLine.Dimension_1_code = bomJnlLine.Dimension_1_code
+	resJnlLine.Dimension_2_code = bomJnlLine.Dimension_2_code
 	resJnlLine.Source_code = bomJnlLine.Source_code
 	resJnlLine.Journal_batch_name = bomJnlLine.Journal_batch_name
 	resJnlLine.Reason_code = bomJnlLine.Reason_code

@@ -47,10 +47,10 @@ page:
           visible: false
         - source: tax_group_code
           width: 110
-        - source: department_code
+        - source: dimension_1_code
           width: 110
           visible: false
-        - source: project_code
+        - source: dimension_2_code
           width: 110
           visible: false
         - source: shipment_no

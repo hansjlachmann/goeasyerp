@@ -245,12 +245,12 @@ func TestPostingNoSeriesAndNextBatch(t *testing.T) {
 	}
 }
 
-// A G/L account's Department Posting rule applies to the line
+// A G/L account's Dimension 1 Posting rule applies to the line
 func TestPostDepartmentPosting(t *testing.T) {
 	src := demoCompany(t)
 	glAcc := gtables.NewGLAccount(src)
 	must(t, glAcc.GetOrError(types.Code("1210")))
-	glAcc.Department_posting = gtables.GLAccount_Department_posting.CodeMandatory
+	glAcc.Dimension_1_posting = gtables.GLAccount_Dimension_1_posting.CodeMandatory
 	must(t, glAcc.ModifyOrError(false))
 	addLine(t, src, "GENERAL", "DEFAULT", lineSpec{lineNo: 10000, docNo: "G00001", accNo: "1210", amount: "10", balNo: "1230"})
 	_, err := postBatch(t, src, "GENERAL", "DEFAULT")

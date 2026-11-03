@@ -24,8 +24,8 @@ page:
           view_by: 2
           filters:
             - source: budget_filter
-            - source: department_filter
-            - source: project_filter
+            - source: dimension_1_filter
+            - source: dimension_2_filter
           columns:
             - source: net_change
               drilldown: 20

@@ -16,9 +16,9 @@ import (
 // Consolidation - Test File read it) is text, one record per line, the fields separated by tabs;
 // dates as YYYY-MM-DD, amounts with a point:
 //
-//	<company> <starting date> <ending date> <per day 0/1> <per department 0/1> <per project 0/1>
+//	<company> <starting date> <ending date> <per day 0/1> <per dimension 1 0/1> <per dimension 2 0/1>
 //	A <G/L account no.> <consol. debit acc.> <consol. credit acc.> <method 1 current, 2 historical, 3 manual rate>
-//	E <G/L account no.> <posting date> <debit amount> <credit amount> <department code> <project code>
+//	E <G/L account no.> <posting date> <debit amount> <credit amount> <dimension 1 code> <dimension 2 code>
 //
 // An account's A line comes before its E lines.
 
@@ -36,7 +36,7 @@ type FileLine struct {
 }
 
 // FileEntry is an E line: the sums of an account's entries for a consolidation line (the
-// department and project already their consolidation codes)
+// dimension 1 and dimension 2 already their consolidation codes)
 type FileEntry struct {
 	AccountNo types.Code
 	Group
@@ -58,8 +58,8 @@ func (f *File) WriteAccount(acc SubsidAccount) {
 }
 
 // WriteEntry writes an E line
-func (f *File) WriteEntry(accountNo types.Code, postingDate types.Date, debit, credit types.Decimal, departmentCode, projectCode types.Code) {
-	f.writeLine("E", accountNo.String(), postingDate.String(), debit.String(), credit.String(), departmentCode.String(), projectCode.String())
+func (f *File) WriteEntry(accountNo types.Code, postingDate types.Date, debit, credit types.Decimal, dimension1Code, dimension2Code types.Code) {
+	f.writeLine("E", accountNo.String(), postingDate.String(), debit.String(), credit.String(), dimension1Code.String(), dimension2Code.String())
 }
 
 // Bytes is the file's contents
@@ -143,7 +143,7 @@ func ReadFile(data []byte) (FileHeader, []FileLine, error) {
 			// historical rate takes them as they are
 			lines = append(lines, FileLine{Entry: &FileEntry{AccountNo: types.Code(fields[1]), Group: Group{PostingDate: postingDate,
 				DebitAmount: debit, CreditAmount: credit, AcyDebitAmount: debit, AcyCreditAmount: credit,
-				DepartmentCode: types.Code(fields[5]), ProjectCode: types.Code(fields[6])}}})
+				Dimension1Code: types.Code(fields[5]), Dimension2Code: types.Code(fields[6])}}})
 		default:
 			return header, nil, unknownFormat()
 		}

@@ -14,8 +14,8 @@
 //	OnValidate_Line_no(rec *gtables.FAAllocation) error
 //	OnValidate_Description(rec *gtables.FAAllocation) error
 //	OnValidate_Account_no(rec *gtables.FAAllocation) error
-//	OnValidate_Department_code(rec *gtables.FAAllocation) error
-//	OnValidate_Project_code(rec *gtables.FAAllocation) error
+//	OnValidate_Dimension_1_code(rec *gtables.FAAllocation) error
+//	OnValidate_Dimension_2_code(rec *gtables.FAAllocation) error
 //	OnValidate_Allocation_percent(rec *gtables.FAAllocation) error
 //	OnValidate_Allocation_type(rec *gtables.FAAllocation) error
 
@@ -65,8 +65,8 @@ type FAAllocation struct {
 	Line_no            int                         `db:"line_no,pk"`
 	Description        types.Text                  `db:"description"`
 	Account_no         types.Code                  `db:"account_no"`
-	Department_code    types.Code                  `db:"department_code"`
-	Project_code       types.Code                  `db:"project_code"`
+	Dimension_1_code   types.Code                  `db:"dimension_1_code"`
+	Dimension_2_code   types.Code                  `db:"dimension_2_code"`
 	Allocation_percent types.Decimal               `db:"allocation_percent"`
 	Allocation_type    FAAllocationAllocation_type `db:"allocation_type,pk"`
 	// FlowField: Lookup(GLAccount.name)
@@ -172,8 +172,8 @@ var FAAllocation_FieldNo = struct {
 	Line_no            int
 	Description        int
 	Account_no         int
-	Department_code    int
-	Project_code       int
+	Dimension_1_code   int
+	Dimension_2_code   int
 	Allocation_percent int
 	Allocation_type    int
 	Account_name       int
@@ -182,8 +182,8 @@ var FAAllocation_FieldNo = struct {
 	Line_no:            2,
 	Description:        3,
 	Account_no:         4,
-	Department_code:    5,
-	Project_code:       6,
+	Dimension_1_code:   5,
+	Dimension_2_code:   6,
 	Allocation_percent: 7,
 	Allocation_type:    8,
 	Account_name:       9,
@@ -200,9 +200,9 @@ func (t *FAAllocation) FieldNo(fieldName string) int {
 		return 3
 	case "account_no":
 		return 4
-	case "department_code":
+	case "dimension_1_code":
 		return 5
-	case "project_code":
+	case "dimension_2_code":
 		return 6
 	case "allocation_percent":
 		return 7
@@ -226,9 +226,9 @@ func (t *FAAllocation) FieldName(fieldNo int) string {
 	case 4:
 		return "account_no"
 	case 5:
-		return "department_code"
+		return "dimension_1_code"
 	case 6:
-		return "project_code"
+		return "dimension_2_code"
 	case 7:
 		return "allocation_percent"
 	case 8:
@@ -332,8 +332,8 @@ type (
 	FAAllocationOnValidate_Line_no            interface{ OnValidate_Line_no(rec *FAAllocation) error }
 	FAAllocationOnValidate_Description        interface{ OnValidate_Description(rec *FAAllocation) error }
 	FAAllocationOnValidate_Account_no         interface{ OnValidate_Account_no(rec *FAAllocation) error }
-	FAAllocationOnValidate_Department_code    interface{ OnValidate_Department_code(rec *FAAllocation) error }
-	FAAllocationOnValidate_Project_code       interface{ OnValidate_Project_code(rec *FAAllocation) error }
+	FAAllocationOnValidate_Dimension_1_code   interface{ OnValidate_Dimension_1_code(rec *FAAllocation) error }
+	FAAllocationOnValidate_Dimension_2_code   interface{ OnValidate_Dimension_2_code(rec *FAAllocation) error }
 	FAAllocationOnValidate_Allocation_percent interface{ OnValidate_Allocation_percent(rec *FAAllocation) error }
 	FAAllocationOnValidate_Allocation_type    interface{ OnValidate_Allocation_type(rec *FAAllocation) error }
 )
@@ -373,10 +373,10 @@ func fAAllocationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FAAllocationOnValidate_Description)
 	case "OnValidate_Account_no":
 		_, ok = logic.(FAAllocationOnValidate_Account_no)
-	case "OnValidate_Department_code":
-		_, ok = logic.(FAAllocationOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(FAAllocationOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(FAAllocationOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(FAAllocationOnValidate_Dimension_2_code)
 	case "OnValidate_Allocation_percent":
 		_, ok = logic.(FAAllocationOnValidate_Allocation_percent)
 	case "OnValidate_Allocation_type":
@@ -467,10 +467,10 @@ func (t *FAAllocation) CheckFields() error {
 	if err := tables.CheckMaxLength(FAAllocationTableName, "account_no", string(t.Account_no), 20); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(FAAllocationTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(FAAllocationTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(FAAllocationTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(FAAllocationTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckDecimalRange(FAAllocationTableName, "allocation_percent", t.Allocation_percent, "0", "100"); err != nil {
@@ -507,8 +507,8 @@ func GetFAAllocationTableSchema() string {
 		line_no INTEGER,
 		description TEXT(50),
 		account_no TEXT(20),
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		allocation_percent TEXT,
 		allocation_type INTEGER CHECK (allocation_type >= 0 AND allocation_type <= 10),
 		account_name TEXT(30),
@@ -523,8 +523,8 @@ func GetFAAllocationPostgresTableSchema() string {
 		line_no INTEGER,
 		description VARCHAR(50),
 		account_no VARCHAR(20),
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		allocation_percent NUMERIC,
 		allocation_type INTEGER CHECK (allocation_type >= 0 AND allocation_type <= 10),
 		account_name VARCHAR(30),
@@ -667,8 +667,8 @@ func (t *FAAllocation) StoreOldValues() {
 	t.oldValues["line_no"] = t.Line_no
 	t.oldValues["description"] = t.Description
 	t.oldValues["account_no"] = t.Account_no
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["allocation_percent"] = t.Allocation_percent
 	t.oldValues["allocation_type"] = t.Allocation_type
 }
@@ -697,11 +697,11 @@ func (t *FAAllocation) XRec() *FAAllocation {
 	if v, ok := t.oldValues["account_no"].(types.Code); ok {
 		x.Account_no = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["allocation_percent"].(types.Decimal); ok {
 		x.Allocation_percent = v
@@ -798,8 +798,8 @@ func (t *FAAllocation) GetByPK(code types.Code, line_no int, allocation_type FAA
 	var line_noVal int
 	var descriptionNull sql.NullString
 	var account_noNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var allocation_percentNull sql.NullString
 	var allocation_typeInt int
 
@@ -811,7 +811,7 @@ func (t *FAAllocation) GetByPK(code types.Code, line_no int, allocation_type FAA
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT code, line_no, description, account_no, department_code, project_code, allocation_percent, allocation_type FROM "%s" WHERE 1=1 AND code = ? AND line_no = ? AND allocation_type = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT code, line_no, description, account_no, dimension_1_code, dimension_2_code, allocation_percent, allocation_type FROM "%s" WHERE 1=1 AND code = ? AND line_no = ? AND allocation_type = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -822,8 +822,8 @@ func (t *FAAllocation) GetByPK(code types.Code, line_no int, allocation_type FAA
 		&line_noVal,
 		&descriptionNull,
 		&account_noNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&allocation_percentNull,
 		&allocation_typeInt,
 	)
@@ -843,8 +843,8 @@ func (t *FAAllocation) GetByPK(code types.Code, line_no int, allocation_type FAA
 	t.Line_no = line_noVal
 	t.Description = types.NewText(descriptionNull.String)
 	t.Account_no = types.NewCode(account_noNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Allocation_percent, _ = types.NewDecimalFromString(allocation_percentNull.String)
 	t.Allocation_type = FAAllocationAllocation_type(allocation_typeInt)
 
@@ -873,15 +873,15 @@ func (t *FAAllocation) Insert(runTrigger bool) bool {
 		t.Line_no,
 		t.Description,
 		t.Account_no,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Allocation_percent,
 		t.Allocation_type,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (code, line_no, description, account_no, department_code, project_code, allocation_percent, allocation_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (code, line_no, allocation_type) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (code, line_no, description, account_no, dimension_1_code, dimension_2_code, allocation_percent, allocation_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (code, line_no, allocation_type) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -923,14 +923,14 @@ func (t *FAAllocation) InsertAll(records []*FAAllocation, runTrigger bool) error
 			r.Line_no,
 			r.Description,
 			r.Account_no,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Allocation_percent,
 			r.Allocation_type,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName)
-	columns := []string{"code", "line_no", "description", "account_no", "department_code", "project_code", "allocation_percent", "allocation_type"}
+	columns := []string{"code", "line_no", "description", "account_no", "dimension_1_code", "dimension_2_code", "allocation_percent", "allocation_type"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -992,13 +992,13 @@ func (t *FAAllocation) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "account_no = ?")
 			values = append(values, t.Account_no)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("allocation_percent") {
 			setClauses = append(setClauses, "allocation_percent = ?")
@@ -1019,10 +1019,10 @@ func (t *FAAllocation) Modify(runTrigger bool) bool {
 		values = append(values, t.Description)
 		setClauses = append(setClauses, "account_no = ?")
 		values = append(values, t.Account_no)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "allocation_percent = ?")
 		values = append(values, t.Allocation_percent)
 	}
@@ -1096,13 +1096,13 @@ func (t *FAAllocation) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Account_no.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "allocation_percent":
 		if old, ok := oldValue.(types.Decimal); ok {
@@ -1400,10 +1400,10 @@ func (t *FAAllocation) columnName(fieldName string) (string, bool) {
 		return "description", true
 	case strings.ToLower("account_no"):
 		return "account_no", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("allocation_percent"):
 		return "allocation_percent", true
 	case strings.ToLower("allocation_type"):
@@ -1767,7 +1767,7 @@ func (t *FAAllocation) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT code, line_no, description, account_no, department_code, project_code, allocation_percent, allocation_type FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT code, line_no, description, account_no, dimension_1_code, dimension_2_code, allocation_percent, allocation_type FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1775,8 +1775,8 @@ func (t *FAAllocation) FindFirst() bool {
 	var codeNull sql.NullString
 	var descriptionNull sql.NullString
 	var account_noNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var allocation_percentNull sql.NullString
 	var allocation_typeInt int
 
@@ -1785,8 +1785,8 @@ func (t *FAAllocation) FindFirst() bool {
 		&t.Line_no,
 		&descriptionNull,
 		&account_noNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&allocation_percentNull,
 		&allocation_typeInt,
 	)
@@ -1803,8 +1803,8 @@ func (t *FAAllocation) FindFirst() bool {
 	t.Code = types.NewCode(codeNull.String)
 	t.Description = types.NewText(descriptionNull.String)
 	t.Account_no = types.NewCode(account_noNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Allocation_percent, _ = types.NewDecimalFromString(allocation_percentNull.String)
 	t.Allocation_type = FAAllocationAllocation_type(allocation_typeInt)
 
@@ -1827,7 +1827,7 @@ func (t *FAAllocation) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT code, line_no, description, account_no, department_code, project_code, allocation_percent, allocation_type FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT code, line_no, description, account_no, dimension_1_code, dimension_2_code, allocation_percent, allocation_type FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1835,8 +1835,8 @@ func (t *FAAllocation) FindLast() bool {
 	var codeNull sql.NullString
 	var descriptionNull sql.NullString
 	var account_noNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var allocation_percentNull sql.NullString
 	var allocation_typeInt int
 
@@ -1845,8 +1845,8 @@ func (t *FAAllocation) FindLast() bool {
 		&t.Line_no,
 		&descriptionNull,
 		&account_noNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&allocation_percentNull,
 		&allocation_typeInt,
 	)
@@ -1863,8 +1863,8 @@ func (t *FAAllocation) FindLast() bool {
 	t.Code = types.NewCode(codeNull.String)
 	t.Description = types.NewText(descriptionNull.String)
 	t.Account_no = types.NewCode(account_noNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Allocation_percent, _ = types.NewDecimalFromString(allocation_percentNull.String)
 	t.Allocation_type = FAAllocationAllocation_type(allocation_typeInt)
 
@@ -1917,7 +1917,7 @@ func (t *FAAllocation) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT code, line_no, description, account_no, department_code, project_code, allocation_percent, allocation_type FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT code, line_no, description, account_no, dimension_1_code, dimension_2_code, allocation_percent, allocation_type FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1989,8 +1989,8 @@ func (t *FAAllocation) Next(steps ...int) bool {
 		var codeNull sql.NullString
 		var descriptionNull sql.NullString
 		var account_noNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var allocation_percentNull sql.NullString
 		var allocation_typeInt int
 
@@ -1999,8 +1999,8 @@ func (t *FAAllocation) Next(steps ...int) bool {
 			&t.Line_no,
 			&descriptionNull,
 			&account_noNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&allocation_percentNull,
 			&allocation_typeInt,
 		)
@@ -2016,8 +2016,8 @@ func (t *FAAllocation) Next(steps ...int) bool {
 		t.Code = types.NewCode(codeNull.String)
 		t.Description = types.NewText(descriptionNull.String)
 		t.Account_no = types.NewCode(account_noNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Allocation_percent, _ = types.NewDecimalFromString(allocation_percentNull.String)
 		t.Allocation_type = FAAllocationAllocation_type(allocation_typeInt)
 
@@ -2069,7 +2069,7 @@ func (t *FAAllocation) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT code, line_no, description, account_no, department_code, project_code, allocation_percent, allocation_type FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT code, line_no, description, account_no, dimension_1_code, dimension_2_code, allocation_percent, allocation_type FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2094,8 +2094,8 @@ func (t *FAAllocation) FindSetBuffered() bool {
 		var codeNull sql.NullString
 		var descriptionNull sql.NullString
 		var account_noNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var allocation_percentNull sql.NullString
 		var allocation_typeInt int
 
@@ -2104,8 +2104,8 @@ func (t *FAAllocation) FindSetBuffered() bool {
 			&record.Line_no,
 			&descriptionNull,
 			&account_noNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&allocation_percentNull,
 			&allocation_typeInt,
 		)
@@ -2119,8 +2119,8 @@ func (t *FAAllocation) FindSetBuffered() bool {
 		record.Code = types.NewCode(codeNull.String)
 		record.Description = types.NewText(descriptionNull.String)
 		record.Account_no = types.NewCode(account_noNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Allocation_percent, _ = types.NewDecimalFromString(allocation_percentNull.String)
 		record.Allocation_type = FAAllocationAllocation_type(allocation_typeInt)
 
@@ -2155,8 +2155,8 @@ func (t *FAAllocation) copyFromBuffered(record *FAAllocation) {
 	t.Line_no = record.Line_no
 	t.Description = record.Description
 	t.Account_no = record.Account_no
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Allocation_percent = record.Allocation_percent
 	t.Allocation_type = record.Allocation_type
 	t.Account_name = record.Account_name
@@ -2383,45 +2383,45 @@ func (t *FAAllocation) ValidateField(fieldName string, value interface{}) error 
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAAllocationOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(FAAllocationOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAAllocationOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(FAAllocationOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -2525,9 +2525,9 @@ func (t *FAAllocation) FieldValue(no int) (any, bool) {
 	case 4:
 		return t.Account_no, true
 	case 5:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 6:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 7:
 		return t.Allocation_percent, true
 	case 8:
@@ -2583,20 +2583,20 @@ func (t *FAAllocation) SetFieldValue(no int, value any) bool {
 		}
 	case 5:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 6:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 7:
@@ -3068,10 +3068,10 @@ func (t *FAAllocation) columnValue(column string) (interface{}, bool) {
 		return t.Description, true
 	case "account_no":
 		return t.Account_no, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "allocation_percent":
 		return t.Allocation_percent, true
 	case "allocation_type":
@@ -3140,8 +3140,8 @@ func (t *FAAllocation) setKeyValues(values []interface{}) {
 func (t *FAAllocation) Init() {
 	t.Description = *new(types.Text)
 	t.Account_no = *new(types.Code)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Allocation_percent = *new(types.Decimal)
 	t.applyDefaults()
 }
@@ -3181,8 +3181,8 @@ func (t *FAAllocation) ToMap() map[string]interface{} {
 		"line_no":            t.Line_no,
 		"description":        t.Description.String(),
 		"account_no":         t.Account_no.String(),
-		"department_code":    t.Department_code.String(),
-		"project_code":       t.Project_code.String(),
+		"dimension_1_code":   t.Dimension_1_code.String(),
+		"dimension_2_code":   t.Dimension_2_code.String(),
 		"allocation_percent": t.Allocation_percent.String(),
 		"allocation_type":    int(t.Allocation_type),
 		// FlowField: account_name
@@ -3220,14 +3220,14 @@ func (t *FAAllocation) FromMap(data map[string]interface{}) {
 			t.Account_no = types.NewCode(s)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["allocation_percent"]; ok && v != nil {
@@ -3322,7 +3322,7 @@ func (t *FAAllocation) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         5,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -3332,7 +3332,7 @@ func (t *FAAllocation) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         6,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -3426,8 +3426,8 @@ func (t *FAAllocation) GetTableRelationFields() map[string]tables.TableRelationI
 				{Column: "account_type", Field: "", Const: "0"},
 			},
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -3436,8 +3436,8 @@ func (t *FAAllocation) GetTableRelationFields() map[string]tables.TableRelationI
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

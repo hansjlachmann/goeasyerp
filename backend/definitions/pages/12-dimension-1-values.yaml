@@ -1,9 +1,9 @@
 page:
   id: 12
   type: List
-  name: Departments
-  source_table: Department
-  caption: Departments
+  name: Dimension 1 Values
+  source_table: Dimension_1
+  caption: Dimension 1 Values
   editable: true
   copy_paste_allowed: true   # Ctrl+C / Ctrl+V copy and paste selected records
 

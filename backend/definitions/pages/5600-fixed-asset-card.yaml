@@ -33,8 +33,8 @@ page:
           - source: fa_class_code
           - source: fa_subclass_code
           - source: fa_location_code
-          - source: department_code
-          - source: project_code
+          - source: dimension_1_code
+          - source: dimension_2_code
           - source: budgeted_asset
 
       - name: Maintenance

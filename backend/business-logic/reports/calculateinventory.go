@@ -10,7 +10,7 @@ import (
 )
 
 // Report 790 Calculate Inventory: fills a phys. inventory journal batch with a line per item
-// (and variant, and by choice department, project, location and bin) with the quantity on inventory
+// (and variant, and by choice dimension 1, dimension 2, location and bin) with the quantity on inventory
 // as Qty. (Calculated) and Qty. (Phys. Inventory) — the user enters the counted quantity, posting
 // adjusts the inventory by the difference. Run from the Phys. Inventory Journal with its line
 // as the context (classic SetItemJnlLine).
@@ -46,8 +46,8 @@ func (r *calculateInventory) Definition() *Definition {
 			{Name: "posting_date", Type: "date", Required: true},
 			{Name: "document_no", Type: "text"},
 			{Name: "items_not_on_inventory", Type: "bool", Default: "false"},
-			{Name: "by_department", Type: "bool", Default: "false"},
-			{Name: "by_project", Type: "bool", Default: "false"},
+			{Name: "by_dimension_1", Type: "bool", Default: "false"},
+			{Name: "by_dimension_2", Type: "bool", Default: "false"},
 			{Name: "by_location", Type: "bool", Default: "false"},
 			{Name: "by_bin", Type: "bool", Default: "false"},
 		},
@@ -57,7 +57,7 @@ func (r *calculateInventory) Definition() *Definition {
 			Name:                "item",
 			Table:               gtables.ItemTableName,
 			Key:                 []string{"no"},
-			RequestFilterFields: []string{"no", "department_filter", "project_filter", "location_filter", "bin_filter"},
+			RequestFilterFields: []string{"no", "dimension_1_filter", "dimension_2_filter", "location_filter", "bin_filter"},
 			OnPreDataItem:       Trigger(r.itemOnPreDataItem),
 			OnAfterGetRecord:    Trigger(r.itemOnAfterGetRecord),
 			OnPostDataItem:      Trigger(r.itemOnPostDataItem),
@@ -101,8 +101,8 @@ func (r *calculateInventory) itemOnPreDataItem(item *gtables.Item, run *Run) err
 	r.postingDate = run.OptionDate("posting_date")
 	r.nextDocNo = types.Code(system.UpperCase(run.Option("document_no")))
 	r.zeroQty = run.OptionBool("items_not_on_inventory")
-	r.byDept = run.OptionBool("by_department")
-	r.byProj = run.OptionBool("by_project")
+	r.byDept = run.OptionBool("by_dimension_1")
+	r.byProj = run.OptionBool("by_dimension_2")
 	r.byLocation = run.OptionBool("by_location")
 	r.byBin = run.OptionBool("by_bin")
 	if r.postingDate.IsZero() {
@@ -141,7 +141,7 @@ func (r *calculateInventory) itemOnPreDataItem(item *gtables.Item, run *Run) err
 	return nil
 }
 
-// itemOnAfterGetRecord adds up the item's ledger entries per variant (and department, project,
+// itemOnAfterGetRecord adds up the item's ledger entries per variant (and dimension 1, dimension 2,
 // location, bin) within the item's filters
 func (r *calculateInventory) itemOnAfterGetRecord(item *gtables.Item, run *Run) error {
 	r.window.Update(1, item.No)
@@ -149,17 +149,17 @@ func (r *calculateInventory) itemOnAfterGetRecord(item *gtables.Item, run *Run) 
 	itemLedgEntry.SetCurrentKey("item_no", "variant_code", "drop_shipment", "location_code", "posting_date")
 	itemLedgEntry.SetRange("item_no", item.No)
 	copyItemFilter(item.Variant_filter, itemLedgEntry, "variant_code")
-	copyItemFilter(item.Department_filter, itemLedgEntry, "department_code")
-	copyItemFilter(item.Project_filter, itemLedgEntry, "project_code")
+	copyItemFilter(item.Dimension_1_filter, itemLedgEntry, "dimension_1_code")
+	copyItemFilter(item.Dimension_2_filter, itemLedgEntry, "dimension_2_code")
 	copyItemFilter(item.Location_filter, itemLedgEntry, "location_code")
 	copyItemFilter(item.Bin_filter, itemLedgEntry, "bin_code")
 	for found := itemLedgEntry.FindSetBuffered(); found; found = itemLedgEntry.Next() {
 		key := quantityOnHandKey{itemNo: itemLedgEntry.Item_no, variantCode: itemLedgEntry.Variant_code}
 		if r.byDept {
-			key.deptCode = itemLedgEntry.Department_code
+			key.deptCode = itemLedgEntry.Dimension_1_code
 		}
 		if r.byProj {
-			key.projCode = itemLedgEntry.Project_code
+			key.projCode = itemLedgEntry.Dimension_2_code
 		}
 		if r.byLocation {
 			key.locationCode = itemLedgEntry.Location_code
@@ -244,8 +244,8 @@ func (r *calculateInventory) insertItemJnlLine(run *Run, key quantityOnHandKey, 
 		{"document_no", r.nextDocNo},
 		{"item_no", key.itemNo},
 		{"variant_code", key.variantCode},
-		{"department_code", key.deptCode},
-		{"project_code", key.projCode},
+		{"dimension_1_code", key.deptCode},
+		{"dimension_2_code", key.projCode},
 		{"location_code", key.locationCode},
 		{"bin_code", key.binCode},
 		{"source_code", r.sourceCodeSetup.Phys_inventory_journal},

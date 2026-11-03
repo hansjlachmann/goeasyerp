@@ -38,17 +38,17 @@ page:
       - name: Posting
         caption: Posting
         fields:
-          - source: department_code
+          - source: dimension_1_code
             table_relation: Department
-          - source: project_code
+          - source: dimension_2_code
             table_relation: Project
           - source: gen_prod_posting_group
             table_relation: Gen_Product_Posting_Group
           - source: gen_bus_posting_group
             table_relation: Gen_Business_Posting_Group
           - source: gen_posting_type
-          - source: department_posting
-          - source: project_posting
+          - source: dimension_1_posting
+          - source: dimension_2_posting
           - source: tax_bus_posting_group
             table_relation: Tax_Business_Posting_Group
           - source: tax_prod_posting_group

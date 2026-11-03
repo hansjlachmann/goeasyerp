@@ -52,10 +52,10 @@ page:
           width: 250
         - source: location_code
           width: 100
-        - source: department_code
+        - source: dimension_1_code
           width: 110
           visible: false
-        - source: project_code
+        - source: dimension_2_code
           width: 110
           visible: false
         - source: salespers_purch_code

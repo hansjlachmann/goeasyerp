@@ -146,7 +146,7 @@ type Matrix struct {
 	EntryTable    string            `yaml:"entry_table,omitempty" json:"entry_table,omitempty"`
 	DateFilter    string            `yaml:"date_filter" json:"date_filter"`
 	RecordFilters map[string]string `yaml:"record_filters,omitempty" json:"record_filters,omitempty"`
-	// Filters: FlowFilter fields of the rows the user filters the matrix by (Department Filter);
+	// Filters: FlowFilter fields of the rows the user filters the matrix by (Dimension 1 Filter);
 	// drilldown_filter_field: the field of the drilldown page they filter
 	Filters []Field `yaml:"filters,omitempty" json:"filters,omitempty"`
 	// Fields: the row's fields before the cells (indent_field / style_expr as on lists)

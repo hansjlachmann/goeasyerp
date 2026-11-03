@@ -36,7 +36,7 @@ func (r *dateCompressItemLedger) Definition() *Definition {
 	r.tableID = gtables.ItemLedgerEntryTableID
 	r.fields = []retainField{{name: "document_no"}, {name: "location_code"}, {name: "serial_no"}, {name: "source_type"}, {name: "source_no"},
 		{name: "source_posting_group"}, {name: "salespers_purch_code"}, {name: "transaction_type"}, {name: "transport_method"},
-		{name: "country_code"}, {name: "department_code"}, {name: "project_code"}, {name: "variant_code"}, {name: "bin_code"}, {name: "lot_no"}}
+		{name: "country_code"}, {name: "dimension_1_code"}, {name: "dimension_2_code"}, {name: "variant_code"}, {name: "bin_code"}, {name: "lot_no"}}
 	return &Definition{
 		OptionsCaption: "OPTIONS",
 		Options:        dateComprOptions(true, r.fields),
@@ -192,13 +192,13 @@ func (r *dateCompressItemLedger) onAfterGetRecord(itemLedgEntry *gtables.ItemLed
 		itemLedgEntry2.SetRange("country_code", itemLedgEntry2.Country_code)
 		newItemLedgEntry.Country_code = itemLedgEntry2.Country_code
 	}
-	if r.retainNo("department_code") {
-		itemLedgEntry2.SetRange("department_code", itemLedgEntry2.Department_code)
-		newItemLedgEntry.Department_code = itemLedgEntry2.Department_code
+	if r.retainNo("dimension_1_code") {
+		itemLedgEntry2.SetRange("dimension_1_code", itemLedgEntry2.Dimension_1_code)
+		newItemLedgEntry.Dimension_1_code = itemLedgEntry2.Dimension_1_code
 	}
-	if r.retainNo("project_code") {
-		itemLedgEntry2.SetRange("project_code", itemLedgEntry2.Project_code)
-		newItemLedgEntry.Project_code = itemLedgEntry2.Project_code
+	if r.retainNo("dimension_2_code") {
+		itemLedgEntry2.SetRange("dimension_2_code", itemLedgEntry2.Dimension_2_code)
+		newItemLedgEntry.Dimension_2_code = itemLedgEntry2.Dimension_2_code
 	}
 	if !itemLedgEntry2.Quantity.IsNegative() {
 		itemLedgEntry2.SetFilter("quantity", ">=0")

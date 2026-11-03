@@ -54,8 +54,8 @@ var checklist = []checklistEntry{
 	{table: 231, page: 259}, // Reason Code | Reason Codes
 	{table: 7, page: 8},     // Standard Text | Standard Text Codes
 	{table: 220, page: 240}, // Business Unit | Business Units
-	{table: 11, page: 12},   // Department | Departments
-	{table: 12, page: 13},   // Project | Projects
+	{table: 11, page: 12},   // Dimension 1 | Dimension 1 values
+	{table: 12, page: 13},   // Dimension 2 | Dimension 2 values
 	{table: 225, page: 367}, // ZIP Code | ZIP Codes
 	{table: 9, page: 10},    // Country | Countries
 	{table: 8, page: 9},     // Language | Languages

@@ -23,8 +23,8 @@
 //	OnValidate_External_document_no(rec *gtables.InsuranceJournalLine) error
 //	OnValidate_Amount(rec *gtables.InsuranceJournalLine) error
 //	OnValidate_Description(rec *gtables.InsuranceJournalLine) error
-//	OnValidate_Department_code(rec *gtables.InsuranceJournalLine) error
-//	OnValidate_Project_code(rec *gtables.InsuranceJournalLine) error
+//	OnValidate_Dimension_1_code(rec *gtables.InsuranceJournalLine) error
+//	OnValidate_Dimension_2_code(rec *gtables.InsuranceJournalLine) error
 //	OnValidate_Reason_code(rec *gtables.InsuranceJournalLine) error
 //	OnValidate_Source_code(rec *gtables.InsuranceJournalLine) error
 //	OnValidate_Index_entry(rec *gtables.InsuranceJournalLine) error
@@ -86,8 +86,8 @@ type InsuranceJournalLine struct {
 	External_document_no  types.Code                        `db:"external_document_no"`
 	Amount                types.Decimal                     `db:"amount"`
 	Description           types.Text                        `db:"description"`
-	Department_code       types.Code                        `db:"department_code"`
-	Project_code          types.Code                        `db:"project_code"`
+	Dimension_1_code      types.Code                        `db:"dimension_1_code"`
+	Dimension_2_code      types.Code                        `db:"dimension_2_code"`
 	Reason_code           types.Code                        `db:"reason_code"`
 	Source_code           types.Code                        `db:"source_code"`
 	Index_entry           bool                              `db:"index_entry"`
@@ -188,8 +188,8 @@ var InsuranceJournalLine_FieldNo = struct {
 	External_document_no  int
 	Amount                int
 	Description           int
-	Department_code       int
-	Project_code          int
+	Dimension_1_code      int
+	Dimension_2_code      int
 	Reason_code           int
 	Source_code           int
 	Index_entry           int
@@ -208,8 +208,8 @@ var InsuranceJournalLine_FieldNo = struct {
 	External_document_no:  12,
 	Amount:                13,
 	Description:           14,
-	Department_code:       15,
-	Project_code:          16,
+	Dimension_1_code:      15,
+	Dimension_2_code:      16,
 	Reason_code:           17,
 	Source_code:           18,
 	Index_entry:           20,
@@ -245,9 +245,9 @@ func (t *InsuranceJournalLine) FieldNo(fieldName string) int {
 		return 13
 	case "description":
 		return 14
-	case "department_code":
+	case "dimension_1_code":
 		return 15
-	case "project_code":
+	case "dimension_2_code":
 		return 16
 	case "reason_code":
 		return 17
@@ -291,9 +291,9 @@ func (t *InsuranceJournalLine) FieldName(fieldNo int) string {
 	case 14:
 		return "description"
 	case 15:
-		return "department_code"
+		return "dimension_1_code"
 	case 16:
-		return "project_code"
+		return "dimension_2_code"
 	case 17:
 		return "reason_code"
 	case 18:
@@ -442,11 +442,11 @@ type (
 	InsuranceJournalLineOnValidate_Description interface {
 		OnValidate_Description(rec *InsuranceJournalLine) error
 	}
-	InsuranceJournalLineOnValidate_Department_code interface {
-		OnValidate_Department_code(rec *InsuranceJournalLine) error
+	InsuranceJournalLineOnValidate_Dimension_1_code interface {
+		OnValidate_Dimension_1_code(rec *InsuranceJournalLine) error
 	}
-	InsuranceJournalLineOnValidate_Project_code interface {
-		OnValidate_Project_code(rec *InsuranceJournalLine) error
+	InsuranceJournalLineOnValidate_Dimension_2_code interface {
+		OnValidate_Dimension_2_code(rec *InsuranceJournalLine) error
 	}
 	InsuranceJournalLineOnValidate_Reason_code interface {
 		OnValidate_Reason_code(rec *InsuranceJournalLine) error
@@ -515,10 +515,10 @@ func insuranceJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(InsuranceJournalLineOnValidate_Amount)
 	case "OnValidate_Description":
 		_, ok = logic.(InsuranceJournalLineOnValidate_Description)
-	case "OnValidate_Department_code":
-		_, ok = logic.(InsuranceJournalLineOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(InsuranceJournalLineOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(InsuranceJournalLineOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(InsuranceJournalLineOnValidate_Dimension_2_code)
 	case "OnValidate_Reason_code":
 		_, ok = logic.(InsuranceJournalLineOnValidate_Reason_code)
 	case "OnValidate_Source_code":
@@ -625,10 +625,10 @@ func (t *InsuranceJournalLine) CheckFields() error {
 	if err := tables.CheckMaxLength(InsuranceJournalLineTableName, "description", string(t.Description), 50); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(InsuranceJournalLineTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(InsuranceJournalLineTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(InsuranceJournalLineTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(InsuranceJournalLineTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(InsuranceJournalLineTableName, "reason_code", string(t.Reason_code), 10); err != nil {
@@ -680,8 +680,8 @@ func GetInsuranceJournalLineTableSchema() string {
 		external_document_no TEXT(20),
 		amount TEXT,
 		description TEXT(50),
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		reason_code TEXT(10),
 		source_code TEXT(10),
 		index_entry INTEGER,
@@ -706,8 +706,8 @@ func GetInsuranceJournalLinePostgresTableSchema() string {
 		external_document_no VARCHAR(20),
 		amount NUMERIC,
 		description VARCHAR(50),
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		reason_code VARCHAR(10),
 		source_code VARCHAR(10),
 		index_entry BOOLEAN,
@@ -860,8 +860,8 @@ func (t *InsuranceJournalLine) StoreOldValues() {
 	t.oldValues["external_document_no"] = t.External_document_no
 	t.oldValues["amount"] = t.Amount
 	t.oldValues["description"] = t.Description
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["reason_code"] = t.Reason_code
 	t.oldValues["source_code"] = t.Source_code
 	t.oldValues["index_entry"] = t.Index_entry
@@ -919,11 +919,11 @@ func (t *InsuranceJournalLine) XRec() *InsuranceJournalLine {
 	if v, ok := t.oldValues["description"].(types.Text); ok {
 		x.Description = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["reason_code"].(types.Code); ok {
 		x.Reason_code = v
@@ -1029,8 +1029,8 @@ func (t *InsuranceJournalLine) GetByPK(journal_template_name types.Code, journal
 	var external_document_noNull sql.NullString
 	var amountNull sql.NullString
 	var descriptionNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var reason_codeNull sql.NullString
 	var source_codeNull sql.NullString
 	var index_entryBool sql.NullBool
@@ -1044,7 +1044,7 @@ func (t *InsuranceJournalLine) GetByPK(journal_template_name types.Code, journal
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, insurance_no, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, department_code, project_code, reason_code, source_code, index_entry, posting_no_series FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, insurance_no, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, dimension_1_code, dimension_2_code, reason_code, source_code, index_entry, posting_no_series FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1064,8 +1064,8 @@ func (t *InsuranceJournalLine) GetByPK(journal_template_name types.Code, journal
 		&external_document_noNull,
 		&amountNull,
 		&descriptionNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&reason_codeNull,
 		&source_codeNull,
 		&index_entryBool,
@@ -1096,8 +1096,8 @@ func (t *InsuranceJournalLine) GetByPK(journal_template_name types.Code, journal
 	t.External_document_no = types.NewCode(external_document_noNull.String)
 	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
 	t.Description = types.NewText(descriptionNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Reason_code = types.NewCode(reason_codeNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.Index_entry = index_entryBool.Bool
@@ -1137,8 +1137,8 @@ func (t *InsuranceJournalLine) Insert(runTrigger bool) bool {
 		t.External_document_no,
 		t.Amount,
 		t.Description,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Reason_code,
 		t.Source_code,
 		t.Index_entry,
@@ -1147,7 +1147,7 @@ func (t *InsuranceJournalLine) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, insurance_no, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, department_code, project_code, reason_code, source_code, index_entry, posting_no_series) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, insurance_no, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, dimension_1_code, dimension_2_code, reason_code, source_code, index_entry, posting_no_series) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1198,8 +1198,8 @@ func (t *InsuranceJournalLine) InsertAll(records []*InsuranceJournalLine, runTri
 			r.External_document_no,
 			r.Amount,
 			r.Description,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Reason_code,
 			r.Source_code,
 			r.Index_entry,
@@ -1207,7 +1207,7 @@ func (t *InsuranceJournalLine) InsertAll(records []*InsuranceJournalLine, runTri
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, InsuranceJournalLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "insurance_no", "fa_no", "fa_description", "posting_date", "document_type", "document_date", "document_no", "external_document_no", "amount", "description", "department_code", "project_code", "reason_code", "source_code", "index_entry", "posting_no_series"}
+	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "insurance_no", "fa_no", "fa_description", "posting_date", "document_type", "document_date", "document_no", "external_document_no", "amount", "description", "dimension_1_code", "dimension_2_code", "reason_code", "source_code", "index_entry", "posting_no_series"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1305,13 +1305,13 @@ func (t *InsuranceJournalLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "description = ?")
 			values = append(values, t.Description)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("reason_code") {
 			setClauses = append(setClauses, "reason_code = ?")
@@ -1356,10 +1356,10 @@ func (t *InsuranceJournalLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Amount)
 		setClauses = append(setClauses, "description = ?")
 		values = append(values, t.Description)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "reason_code = ?")
 		values = append(values, t.Reason_code)
 		setClauses = append(setClauses, "source_code = ?")
@@ -1475,13 +1475,13 @@ func (t *InsuranceJournalLine) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Text); ok {
 			return !t.Description.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "reason_code":
 		if old, ok := oldValue.(types.Code); ok {
@@ -1732,10 +1732,10 @@ func (t *InsuranceJournalLine) columnName(fieldName string) (string, bool) {
 		return "amount", true
 	case strings.ToLower("description"):
 		return "description", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("reason_code"):
 		return "reason_code", true
 	case strings.ToLower("source_code"):
@@ -2109,7 +2109,7 @@ func (t *InsuranceJournalLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, insurance_no, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, department_code, project_code, reason_code, source_code, index_entry, posting_no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, insurance_no, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, dimension_1_code, dimension_2_code, reason_code, source_code, index_entry, posting_no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2126,8 +2126,8 @@ func (t *InsuranceJournalLine) FindFirst() bool {
 	var external_document_noNull sql.NullString
 	var amountNull sql.NullString
 	var descriptionNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var reason_codeNull sql.NullString
 	var source_codeNull sql.NullString
 	var index_entryBool sql.NullBool
@@ -2147,8 +2147,8 @@ func (t *InsuranceJournalLine) FindFirst() bool {
 		&external_document_noNull,
 		&amountNull,
 		&descriptionNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&reason_codeNull,
 		&source_codeNull,
 		&index_entryBool,
@@ -2176,8 +2176,8 @@ func (t *InsuranceJournalLine) FindFirst() bool {
 	t.External_document_no = types.NewCode(external_document_noNull.String)
 	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
 	t.Description = types.NewText(descriptionNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Reason_code = types.NewCode(reason_codeNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.Index_entry = index_entryBool.Bool
@@ -2202,7 +2202,7 @@ func (t *InsuranceJournalLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, insurance_no, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, department_code, project_code, reason_code, source_code, index_entry, posting_no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, insurance_no, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, dimension_1_code, dimension_2_code, reason_code, source_code, index_entry, posting_no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2219,8 +2219,8 @@ func (t *InsuranceJournalLine) FindLast() bool {
 	var external_document_noNull sql.NullString
 	var amountNull sql.NullString
 	var descriptionNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var reason_codeNull sql.NullString
 	var source_codeNull sql.NullString
 	var index_entryBool sql.NullBool
@@ -2240,8 +2240,8 @@ func (t *InsuranceJournalLine) FindLast() bool {
 		&external_document_noNull,
 		&amountNull,
 		&descriptionNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&reason_codeNull,
 		&source_codeNull,
 		&index_entryBool,
@@ -2269,8 +2269,8 @@ func (t *InsuranceJournalLine) FindLast() bool {
 	t.External_document_no = types.NewCode(external_document_noNull.String)
 	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
 	t.Description = types.NewText(descriptionNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Reason_code = types.NewCode(reason_codeNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.Index_entry = index_entryBool.Bool
@@ -2325,7 +2325,7 @@ func (t *InsuranceJournalLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, insurance_no, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, department_code, project_code, reason_code, source_code, index_entry, posting_no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, insurance_no, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, dimension_1_code, dimension_2_code, reason_code, source_code, index_entry, posting_no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2406,8 +2406,8 @@ func (t *InsuranceJournalLine) Next(steps ...int) bool {
 		var external_document_noNull sql.NullString
 		var amountNull sql.NullString
 		var descriptionNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var reason_codeNull sql.NullString
 		var source_codeNull sql.NullString
 		var index_entryBool sql.NullBool
@@ -2427,8 +2427,8 @@ func (t *InsuranceJournalLine) Next(steps ...int) bool {
 			&external_document_noNull,
 			&amountNull,
 			&descriptionNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&reason_codeNull,
 			&source_codeNull,
 			&index_entryBool,
@@ -2455,8 +2455,8 @@ func (t *InsuranceJournalLine) Next(steps ...int) bool {
 		t.External_document_no = types.NewCode(external_document_noNull.String)
 		t.Amount, _ = types.NewDecimalFromString(amountNull.String)
 		t.Description = types.NewText(descriptionNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Reason_code = types.NewCode(reason_codeNull.String)
 		t.Source_code = types.NewCode(source_codeNull.String)
 		t.Index_entry = index_entryBool.Bool
@@ -2510,7 +2510,7 @@ func (t *InsuranceJournalLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, insurance_no, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, department_code, project_code, reason_code, source_code, index_entry, posting_no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, insurance_no, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, dimension_1_code, dimension_2_code, reason_code, source_code, index_entry, posting_no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2544,8 +2544,8 @@ func (t *InsuranceJournalLine) FindSetBuffered() bool {
 		var external_document_noNull sql.NullString
 		var amountNull sql.NullString
 		var descriptionNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var reason_codeNull sql.NullString
 		var source_codeNull sql.NullString
 		var index_entryBool sql.NullBool
@@ -2565,8 +2565,8 @@ func (t *InsuranceJournalLine) FindSetBuffered() bool {
 			&external_document_noNull,
 			&amountNull,
 			&descriptionNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&reason_codeNull,
 			&source_codeNull,
 			&index_entryBool,
@@ -2591,8 +2591,8 @@ func (t *InsuranceJournalLine) FindSetBuffered() bool {
 		record.External_document_no = types.NewCode(external_document_noNull.String)
 		record.Amount, _ = types.NewDecimalFromString(amountNull.String)
 		record.Description = types.NewText(descriptionNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Reason_code = types.NewCode(reason_codeNull.String)
 		record.Source_code = types.NewCode(source_codeNull.String)
 		record.Index_entry = index_entryBool.Bool
@@ -2638,8 +2638,8 @@ func (t *InsuranceJournalLine) copyFromBuffered(record *InsuranceJournalLine) {
 	t.External_document_no = record.External_document_no
 	t.Amount = record.Amount
 	t.Description = record.Description
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Reason_code = record.Reason_code
 	t.Source_code = record.Source_code
 	t.Index_entry = record.Index_entry
@@ -3090,45 +3090,45 @@ func (t *InsuranceJournalLine) ValidateField(fieldName string, value interface{}
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceJournalLineOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(InsuranceJournalLineOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceJournalLineOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(InsuranceJournalLineOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -3258,9 +3258,9 @@ func (t *InsuranceJournalLine) FieldValue(no int) (any, bool) {
 	case 14:
 		return t.Description, true
 	case 15:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 16:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 17:
 		return t.Reason_code, true
 	case 18:
@@ -3383,20 +3383,20 @@ func (t *InsuranceJournalLine) SetFieldValue(no int, value any) bool {
 		}
 	case 15:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 16:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 17:
@@ -3908,10 +3908,10 @@ func (t *InsuranceJournalLine) columnValue(column string) (interface{}, bool) {
 		return t.Amount, true
 	case "description":
 		return t.Description, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "reason_code":
 		return t.Reason_code, true
 	case "source_code":
@@ -3992,8 +3992,8 @@ func (t *InsuranceJournalLine) Init() {
 	t.External_document_no = *new(types.Code)
 	t.Amount = *new(types.Decimal)
 	t.Description = *new(types.Text)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Reason_code = *new(types.Code)
 	t.Source_code = *new(types.Code)
 	t.Index_entry = *new(bool)
@@ -4045,8 +4045,8 @@ func (t *InsuranceJournalLine) ToMap() map[string]interface{} {
 		"external_document_no":  t.External_document_no.String(),
 		"amount":                t.Amount.String(),
 		"description":           t.Description.String(),
-		"department_code":       t.Department_code.String(),
-		"project_code":          t.Project_code.String(),
+		"dimension_1_code":      t.Dimension_1_code.String(),
+		"dimension_2_code":      t.Dimension_2_code.String(),
 		"reason_code":           t.Reason_code.String(),
 		"source_code":           t.Source_code.String(),
 		"index_entry":           t.Index_entry,
@@ -4148,14 +4148,14 @@ func (t *InsuranceJournalLine) FromMap(data map[string]interface{}) {
 			t.Description = types.NewText(s)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["reason_code"]; ok && v != nil {
@@ -4332,7 +4332,7 @@ func (t *InsuranceJournalLine) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         15,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -4342,7 +4342,7 @@ func (t *InsuranceJournalLine) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         16,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -4465,8 +4465,8 @@ func (t *InsuranceJournalLine) GetTableRelationFields() map[string]tables.TableR
 			},
 			SearchTimeout: 0,
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -4475,8 +4475,8 @@ func (t *InsuranceJournalLine) GetTableRelationFields() map[string]tables.TableR
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

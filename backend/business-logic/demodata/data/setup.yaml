@@ -30,7 +30,7 @@ payment_terms:
 master_data:
   - table: General_Ledger_Setup   # the single setup record (blank key)
     records:
-      - {lcy_code: NOK, amount_rounding_precision: 0.01, unit_amount_rounding_precision: 0.00001, inv_rounding_precision_lcy: 1, appln_rounding_precision: 0.01, local_address_format: 0, bank_account_nos: BANK}
+      - {lcy_code: NOK, amount_rounding_precision: 0.01, unit_amount_rounding_precision: 0.00001, inv_rounding_precision_lcy: 1, appln_rounding_precision: 0.01, local_address_format: 0, bank_account_nos: BANK, dimension_1: Department, dimension_2: Activity}
   - table: Tax_Business_Posting_Group
     records:
       - {code: DOMESTIC, description: Domestic customers and vendors}
@@ -532,12 +532,12 @@ master_data:
       - {code: PICKUP, description: Pickup at the warehouse}
       - {code: POST, description: Sent by post}
       - {code: TRUCK, description: Delivered by truck}
-  - table: Department
+  - table: Dimension_1
     records:
       - {code: ADM, name: Administration}
       - {code: SALES, name: Sales}
       - {code: PROD, name: Production}
-  - table: Project
+  - table: Dimension_2
     records:
       - {code: WEBSHOP, name: Webshop}
       - {code: EXPANSION, name: Nordic expansion}
@@ -857,15 +857,15 @@ master_data:
   # type 0 Person, 1 Machine; price/profit calculation 0 Profit=Price-Cost
   - table: Resource
     records:
-      - {"no": R0010, type: 0, name: Anna Berg, search_name: ANNA BERG, title: Senior consultant, resource_group_no: CONSULT, unit_of_measure_code: HOUR, direct_unit_cost: "550", indirect_cost_percent: "10", unit_cost: "605", unit_price: "1250", profit_percent: "51.6", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, department_code: SALES, employment_date: "2019-03-01", city: Oslo}
-      - {"no": R0020, type: 0, name: Erik Holm, search_name: ERIK HOLM, title: Consultant, resource_group_no: CONSULT, unit_of_measure_code: HOUR, direct_unit_cost: "450", indirect_cost_percent: "10", unit_cost: "495", unit_price: "1050", profit_percent: "52.85714", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, department_code: SALES, employment_date: "2021-08-15", city: Bergen}
-      - {"no": R0030, type: 0, name: Sofie Lund, search_name: SOFIE LUND, title: Consultant, resource_group_no: CONSULT, unit_of_measure_code: HOUR, direct_unit_cost: "430", indirect_cost_percent: "10", unit_cost: "473", unit_price: "1050", profit_percent: "54.95238", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, department_code: SALES, employment_date: "2022-01-10", city: Copenhagen}
-      - {"no": R0040, type: 0, name: Lars Moe, search_name: LARS MOE, title: Service technician, resource_group_no: TECH, unit_of_measure_code: HOUR, direct_unit_cost: "380", indirect_cost_percent: "15", unit_cost: "437", unit_price: "850", profit_percent: "48.58824", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, department_code: PROD, employment_date: "2018-05-02", city: Oslo}
-      - {"no": R0050, type: 0, name: Nina Dahl, search_name: NINA DAHL, title: Installer, resource_group_no: TECH, unit_of_measure_code: HOUR, direct_unit_cost: "360", indirect_cost_percent: "15", unit_cost: "414", unit_price: "800", profit_percent: "48.25", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, department_code: PROD, employment_date: "2020-09-01", city: Aarhus}
-      - {"no": R0060, type: 0, name: Ole Strand, search_name: OLE STRAND, title: Installer, resource_group_no: TECH, unit_of_measure_code: HOUR, direct_unit_cost: "350", indirect_cost_percent: "15", unit_cost: "402.5", unit_price: "800", profit_percent: "49.6875", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, department_code: PROD, employment_date: "2023-02-01", city: Stockholm}
-      - {"no": R0070, type: 1, name: Delivery van, search_name: DELIVERY VAN, resource_group_no: MACHINES, unit_of_measure_code: HOUR, direct_unit_cost: "180", unit_cost: "180", unit_price: "450", profit_percent: "60", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, department_code: PROD}
-      - {"no": R0080, type: 1, name: Forklift, search_name: FORKLIFT, resource_group_no: MACHINES, unit_of_measure_code: HOUR, direct_unit_cost: "120", unit_cost: "120", unit_price: "350", profit_percent: "65.71429", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, department_code: PROD}
-      - {"no": R0090, type: 1, name: Projector set, search_name: PROJECTOR SET, resource_group_no: MACHINES, unit_of_measure_code: DAY, direct_unit_cost: "300", unit_cost: "300", unit_price: "900", profit_percent: "66.66667", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, department_code: SALES}
+      - {"no": R0010, type: 0, name: Anna Berg, search_name: ANNA BERG, title: Senior consultant, resource_group_no: CONSULT, unit_of_measure_code: HOUR, direct_unit_cost: "550", indirect_cost_percent: "10", unit_cost: "605", unit_price: "1250", profit_percent: "51.6", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, dimension_1_code: SALES, employment_date: "2019-03-01", city: Oslo}
+      - {"no": R0020, type: 0, name: Erik Holm, search_name: ERIK HOLM, title: Consultant, resource_group_no: CONSULT, unit_of_measure_code: HOUR, direct_unit_cost: "450", indirect_cost_percent: "10", unit_cost: "495", unit_price: "1050", profit_percent: "52.85714", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, dimension_1_code: SALES, employment_date: "2021-08-15", city: Bergen}
+      - {"no": R0030, type: 0, name: Sofie Lund, search_name: SOFIE LUND, title: Consultant, resource_group_no: CONSULT, unit_of_measure_code: HOUR, direct_unit_cost: "430", indirect_cost_percent: "10", unit_cost: "473", unit_price: "1050", profit_percent: "54.95238", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, dimension_1_code: SALES, employment_date: "2022-01-10", city: Copenhagen}
+      - {"no": R0040, type: 0, name: Lars Moe, search_name: LARS MOE, title: Service technician, resource_group_no: TECH, unit_of_measure_code: HOUR, direct_unit_cost: "380", indirect_cost_percent: "15", unit_cost: "437", unit_price: "850", profit_percent: "48.58824", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, dimension_1_code: PROD, employment_date: "2018-05-02", city: Oslo}
+      - {"no": R0050, type: 0, name: Nina Dahl, search_name: NINA DAHL, title: Installer, resource_group_no: TECH, unit_of_measure_code: HOUR, direct_unit_cost: "360", indirect_cost_percent: "15", unit_cost: "414", unit_price: "800", profit_percent: "48.25", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, dimension_1_code: PROD, employment_date: "2020-09-01", city: Aarhus}
+      - {"no": R0060, type: 0, name: Ole Strand, search_name: OLE STRAND, title: Installer, resource_group_no: TECH, unit_of_measure_code: HOUR, direct_unit_cost: "350", indirect_cost_percent: "15", unit_cost: "402.5", unit_price: "800", profit_percent: "49.6875", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, dimension_1_code: PROD, employment_date: "2023-02-01", city: Stockholm}
+      - {"no": R0070, type: 1, name: Delivery van, search_name: DELIVERY VAN, resource_group_no: MACHINES, unit_of_measure_code: HOUR, direct_unit_cost: "180", unit_cost: "180", unit_price: "450", profit_percent: "60", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, dimension_1_code: PROD}
+      - {"no": R0080, type: 1, name: Forklift, search_name: FORKLIFT, resource_group_no: MACHINES, unit_of_measure_code: HOUR, direct_unit_cost: "120", unit_cost: "120", unit_price: "350", profit_percent: "65.71429", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, dimension_1_code: PROD}
+      - {"no": R0090, type: 1, name: Projector set, search_name: PROJECTOR SET, resource_group_no: MACHINES, unit_of_measure_code: DAY, direct_unit_cost: "300", unit_cost: "300", unit_price: "900", profit_percent: "66.66667", gen_prod_posting_group: SERVICES, tax_prod_posting_group: STANDARD, tax_group_code: TAXABLE, dimension_1_code: SALES}
   # type 0 Resource, 1 Group(Resource), 2 All; cost type 0 Fixed, 1 % Extra, 2 LCY Extra
   - table: Resource_Cost
     records:

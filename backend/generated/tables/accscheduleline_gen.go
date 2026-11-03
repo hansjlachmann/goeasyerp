@@ -127,10 +127,10 @@ type AccScheduleLine struct {
 	Sign_control  AccScheduleLineSign_control  `db:"sign_control"`
 	// FlowFilter date_filter (types.Date): the filter expression FlowFields apply — not stored
 	Date_filter string
-	// FlowFilter department_filter (types.Code): the filter expression FlowFields apply — not stored
-	Department_filter string
-	// FlowFilter project_filter (types.Code): the filter expression FlowFields apply — not stored
-	Project_filter string
+	// FlowFilter dimension_1_filter (types.Code): the filter expression FlowFields apply — not stored
+	Dimension_1_filter string
+	// FlowFilter dimension_2_filter (types.Code): the filter expression FlowFields apply — not stored
+	Dimension_2_filter string
 	// FlowFilter budget_filter (types.Code): the filter expression FlowFields apply — not stored
 	Budget_filter string
 	// FlowFilter use_add_rpt_curr (bool): the filter expression FlowFields apply — not stored
@@ -259,37 +259,37 @@ var AccScheduleLine_Sign_control = struct {
 // AccScheduleLine_FieldNo holds the field numbers of Acc_Schedule_Line (FieldNo):
 // AccScheduleLine_FieldNo.Schedule_name is 1
 var AccScheduleLine_FieldNo = struct {
-	Schedule_name     int
-	Line_no           int
-	Row_no            int
-	Description       int
-	Totaling          int
-	Totaling_type     int
-	New_page          int
-	Show              int
-	Calculate         int
-	Sign_control      int
-	Date_filter       int
-	Department_filter int
-	Project_filter    int
-	Budget_filter     int
-	Use_add_rpt_curr  int
+	Schedule_name      int
+	Line_no            int
+	Row_no             int
+	Description        int
+	Totaling           int
+	Totaling_type      int
+	New_page           int
+	Show               int
+	Calculate          int
+	Sign_control       int
+	Date_filter        int
+	Dimension_1_filter int
+	Dimension_2_filter int
+	Budget_filter      int
+	Use_add_rpt_curr   int
 }{
-	Schedule_name:     1,
-	Line_no:           2,
-	Row_no:            3,
-	Description:       4,
-	Totaling:          5,
-	Totaling_type:     6,
-	New_page:          7,
-	Show:              16,
-	Calculate:         900,
-	Sign_control:      901,
-	Date_filter:       11,
-	Department_filter: 12,
-	Project_filter:    13,
-	Budget_filter:     14,
-	Use_add_rpt_curr:  902,
+	Schedule_name:      1,
+	Line_no:            2,
+	Row_no:             3,
+	Description:        4,
+	Totaling:           5,
+	Totaling_type:      6,
+	New_page:           7,
+	Show:               16,
+	Calculate:          900,
+	Sign_control:       901,
+	Date_filter:        11,
+	Dimension_1_filter: 12,
+	Dimension_2_filter: 13,
+	Budget_filter:      14,
+	Use_add_rpt_curr:   902,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -317,9 +317,9 @@ func (t *AccScheduleLine) FieldNo(fieldName string) int {
 		return 901
 	case "date_filter":
 		return 11
-	case "department_filter":
+	case "dimension_1_filter":
 		return 12
-	case "project_filter":
+	case "dimension_2_filter":
 		return 13
 	case "budget_filter":
 		return 14
@@ -355,9 +355,9 @@ func (t *AccScheduleLine) FieldName(fieldNo int) string {
 	case 11:
 		return "date_filter"
 	case 12:
-		return "department_filter"
+		return "dimension_1_filter"
 	case 13:
-		return "project_filter"
+		return "dimension_2_filter"
 	case 14:
 		return "budget_filter"
 	case 902:
@@ -3665,17 +3665,17 @@ func (t *AccScheduleLine) SetFlowFilter(field, expr string) error {
 		}
 		t.Date_filter = expr
 		return nil
-	case "department_filter":
+	case "dimension_1_filter":
 		if err := flowfilter.Validate(flowfilter.KindCode, expr); err != nil {
 			return err
 		}
-		t.Department_filter = expr
+		t.Dimension_1_filter = expr
 		return nil
-	case "project_filter":
+	case "dimension_2_filter":
 		if err := flowfilter.Validate(flowfilter.KindCode, expr); err != nil {
 			return err
 		}
-		t.Project_filter = expr
+		t.Dimension_2_filter = expr
 		return nil
 	case "budget_filter":
 		if err := flowfilter.Validate(flowfilter.KindCode, expr); err != nil {
@@ -3697,8 +3697,8 @@ func (t *AccScheduleLine) SetFlowFilter(field, expr string) error {
 func (t *AccScheduleLine) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 	return []tables.FlowFilterFieldInfo{
 		{Name: "date_filter", Kind: string(flowfilter.KindDate)},
-		{Name: "department_filter", Kind: string(flowfilter.KindCode)},
-		{Name: "project_filter", Kind: string(flowfilter.KindCode)},
+		{Name: "dimension_1_filter", Kind: string(flowfilter.KindCode)},
+		{Name: "dimension_2_filter", Kind: string(flowfilter.KindCode)},
 		{Name: "budget_filter", Kind: string(flowfilter.KindCode)},
 		{Name: "use_add_rpt_curr", Kind: string(flowfilter.KindBool)},
 	}

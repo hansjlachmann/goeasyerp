@@ -36,8 +36,8 @@
 //	OnValidate_Net_weight(rec *gtables.PurchInvLine) error
 //	OnValidate_Units_per_parcel(rec *gtables.PurchInvLine) error
 //	OnValidate_Unit_volume(rec *gtables.PurchInvLine) error
-//	OnValidate_Department_code(rec *gtables.PurchInvLine) error
-//	OnValidate_Project_code(rec *gtables.PurchInvLine) error
+//	OnValidate_Dimension_1_code(rec *gtables.PurchInvLine) error
+//	OnValidate_Dimension_2_code(rec *gtables.PurchInvLine) error
 //	OnValidate_Indirect_cost_percent(rec *gtables.PurchInvLine) error
 //	OnValidate_Receipt_no(rec *gtables.PurchInvLine) error
 //	OnValidate_Receipt_line_no(rec *gtables.PurchInvLine) error
@@ -177,8 +177,8 @@ type PurchInvLine struct {
 	Net_weight                     types.Decimal                    `db:"net_weight"`
 	Units_per_parcel               types.Decimal                    `db:"units_per_parcel"`
 	Unit_volume                    types.Decimal                    `db:"unit_volume"`
-	Department_code                types.Code                       `db:"department_code"`
-	Project_code                   types.Code                       `db:"project_code"`
+	Dimension_1_code               types.Code                       `db:"dimension_1_code"`
+	Dimension_2_code               types.Code                       `db:"dimension_2_code"`
 	Indirect_cost_percent          types.Decimal                    `db:"indirect_cost_percent"`
 	Receipt_no                     types.Code                       `db:"receipt_no"`
 	Receipt_line_no                int                              `db:"receipt_line_no"`
@@ -349,8 +349,8 @@ var PurchInvLine_FieldNo = struct {
 	Net_weight                     int
 	Units_per_parcel               int
 	Unit_volume                    int
-	Department_code                int
-	Project_code                   int
+	Dimension_1_code               int
+	Dimension_2_code               int
 	Indirect_cost_percent          int
 	Receipt_no                     int
 	Receipt_line_no                int
@@ -413,8 +413,8 @@ var PurchInvLine_FieldNo = struct {
 	Net_weight:                     35,
 	Units_per_parcel:               36,
 	Unit_volume:                    37,
-	Department_code:                40,
-	Project_code:                   41,
+	Dimension_1_code:               40,
+	Dimension_2_code:               41,
 	Indirect_cost_percent:          54,
 	Receipt_no:                     63,
 	Receipt_line_no:                64,
@@ -507,9 +507,9 @@ func (t *PurchInvLine) FieldNo(fieldName string) int {
 		return 36
 	case "unit_volume":
 		return 37
-	case "department_code":
+	case "dimension_1_code":
 		return 40
-	case "project_code":
+	case "dimension_2_code":
 		return 41
 	case "indirect_cost_percent":
 		return 54
@@ -641,9 +641,9 @@ func (t *PurchInvLine) FieldName(fieldNo int) string {
 	case 37:
 		return "unit_volume"
 	case 40:
-		return "department_code"
+		return "dimension_1_code"
 	case 41:
-		return "project_code"
+		return "dimension_2_code"
 	case 54:
 		return "indirect_cost_percent"
 	case 63:
@@ -833,8 +833,8 @@ type (
 	PurchInvLineOnValidate_Net_weight                     interface{ OnValidate_Net_weight(rec *PurchInvLine) error }
 	PurchInvLineOnValidate_Units_per_parcel               interface{ OnValidate_Units_per_parcel(rec *PurchInvLine) error }
 	PurchInvLineOnValidate_Unit_volume                    interface{ OnValidate_Unit_volume(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Department_code                interface{ OnValidate_Department_code(rec *PurchInvLine) error }
-	PurchInvLineOnValidate_Project_code                   interface{ OnValidate_Project_code(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Dimension_1_code               interface{ OnValidate_Dimension_1_code(rec *PurchInvLine) error }
+	PurchInvLineOnValidate_Dimension_2_code               interface{ OnValidate_Dimension_2_code(rec *PurchInvLine) error }
 	PurchInvLineOnValidate_Indirect_cost_percent          interface{ OnValidate_Indirect_cost_percent(rec *PurchInvLine) error }
 	PurchInvLineOnValidate_Receipt_no                     interface{ OnValidate_Receipt_no(rec *PurchInvLine) error }
 	PurchInvLineOnValidate_Receipt_line_no                interface{ OnValidate_Receipt_line_no(rec *PurchInvLine) error }
@@ -951,10 +951,10 @@ func purchInvLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PurchInvLineOnValidate_Units_per_parcel)
 	case "OnValidate_Unit_volume":
 		_, ok = logic.(PurchInvLineOnValidate_Unit_volume)
-	case "OnValidate_Department_code":
-		_, ok = logic.(PurchInvLineOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(PurchInvLineOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(PurchInvLineOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(PurchInvLineOnValidate_Dimension_2_code)
 	case "OnValidate_Indirect_cost_percent":
 		_, ok = logic.(PurchInvLineOnValidate_Indirect_cost_percent)
 	case "OnValidate_Receipt_no":
@@ -1126,10 +1126,10 @@ func (t *PurchInvLine) CheckFields() error {
 	if err := tables.CheckDecimalRange(PurchInvLineTableName, "line_discount_percent", t.Line_discount_percent, "0", "100"); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(PurchInvLineTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(PurchInvLineTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(PurchInvLineTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(PurchInvLineTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckDecimalRange(PurchInvLineTableName, "indirect_cost_percent", t.Indirect_cost_percent, "0", ""); err != nil {
@@ -1245,8 +1245,8 @@ func GetPurchInvLineTableSchema() string {
 		net_weight TEXT,
 		units_per_parcel TEXT,
 		unit_volume TEXT,
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		indirect_cost_percent TEXT,
 		receipt_no TEXT(20),
 		receipt_line_no INTEGER,
@@ -1315,8 +1315,8 @@ func GetPurchInvLinePostgresTableSchema() string {
 		net_weight NUMERIC,
 		units_per_parcel NUMERIC,
 		unit_volume NUMERIC,
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		indirect_cost_percent NUMERIC,
 		receipt_no VARCHAR(20),
 		receipt_line_no INTEGER,
@@ -1515,8 +1515,8 @@ func (t *PurchInvLine) StoreOldValues() {
 	t.oldValues["net_weight"] = t.Net_weight
 	t.oldValues["units_per_parcel"] = t.Units_per_parcel
 	t.oldValues["unit_volume"] = t.Unit_volume
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["indirect_cost_percent"] = t.Indirect_cost_percent
 	t.oldValues["receipt_no"] = t.Receipt_no
 	t.oldValues["receipt_line_no"] = t.Receipt_line_no
@@ -1644,11 +1644,11 @@ func (t *PurchInvLine) XRec() *PurchInvLine {
 	if v, ok := t.oldValues["unit_volume"].(types.Decimal); ok {
 		x.Unit_volume = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["indirect_cost_percent"].(types.Decimal); ok {
 		x.Indirect_cost_percent = v
@@ -1851,8 +1851,8 @@ func (t *PurchInvLine) GetByPK(document_no types.Code, line_no int) bool {
 	var net_weightNull sql.NullString
 	var units_per_parcelNull sql.NullString
 	var unit_volumeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var indirect_cost_percentNull sql.NullString
 	var receipt_noNull sql.NullString
 	var receipt_line_noVal int
@@ -1896,7 +1896,7 @@ func (t *PurchInvLine) GetByPK(document_no types.Code, line_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code FROM "%s" WHERE 1=1 AND document_no = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code FROM "%s" WHERE 1=1 AND document_no = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1929,8 +1929,8 @@ func (t *PurchInvLine) GetByPK(document_no types.Code, line_no int) bool {
 		&net_weightNull,
 		&units_per_parcelNull,
 		&unit_volumeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&indirect_cost_percentNull,
 		&receipt_noNull,
 		&receipt_line_noVal,
@@ -2005,8 +2005,8 @@ func (t *PurchInvLine) GetByPK(document_no types.Code, line_no int) bool {
 	t.Net_weight, _ = types.NewDecimalFromString(net_weightNull.String)
 	t.Units_per_parcel, _ = types.NewDecimalFromString(units_per_parcelNull.String)
 	t.Unit_volume, _ = types.NewDecimalFromString(unit_volumeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Indirect_cost_percent, _ = types.NewDecimalFromString(indirect_cost_percentNull.String)
 	t.Receipt_no = types.NewCode(receipt_noNull.String)
 	t.Receipt_line_no = receipt_line_noVal
@@ -2090,8 +2090,8 @@ func (t *PurchInvLine) Insert(runTrigger bool) bool {
 		t.Net_weight,
 		t.Units_per_parcel,
 		t.Unit_volume,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Indirect_cost_percent,
 		t.Receipt_no,
 		t.Receipt_line_no,
@@ -2131,7 +2131,7 @@ func (t *PurchInvLine) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_no, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_no, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2195,8 +2195,8 @@ func (t *PurchInvLine) InsertAll(records []*PurchInvLine, runTrigger bool) error
 			r.Net_weight,
 			r.Units_per_parcel,
 			r.Unit_volume,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Indirect_cost_percent,
 			r.Receipt_no,
 			r.Receipt_line_no,
@@ -2235,7 +2235,7 @@ func (t *PurchInvLine) InsertAll(records []*PurchInvLine, runTrigger bool) error
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, PurchInvLineTableName)
-	columns := []string{"buy_from_vendor_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "expected_receipt_date", "description", "description_2", "unit_of_measure", "quantity", "direct_unit_cost", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "unit_price_lcy", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "department_code", "project_code", "indirect_cost_percent", "receipt_no", "receipt_line_no", "pay_to_vendor_no", "inv_discount_amount", "vendor_item_no", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "tax_base_amount", "unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "fa_posting_date", "fa_posting_type", "depreciation_book_code", "salvage_value", "depr_until_fa_posting_date", "depr_acquisition_cost", "maintenance_code", "insurance_no", "duplicate_in_depreciation_book", "use_duplication_list", "serial_no", "lot_no", "bin_code"}
+	columns := []string{"buy_from_vendor_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "expected_receipt_date", "description", "description_2", "unit_of_measure", "quantity", "direct_unit_cost", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "unit_price_lcy", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "dimension_1_code", "dimension_2_code", "indirect_cost_percent", "receipt_no", "receipt_line_no", "pay_to_vendor_no", "inv_discount_amount", "vendor_item_no", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "tax_base_amount", "unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "fa_posting_date", "fa_posting_type", "depreciation_book_code", "salvage_value", "depr_until_fa_posting_date", "depr_acquisition_cost", "maintenance_code", "insurance_no", "duplicate_in_depreciation_book", "use_duplication_list", "serial_no", "lot_no", "bin_code"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2382,13 +2382,13 @@ func (t *PurchInvLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "unit_volume = ?")
 			values = append(values, t.Unit_volume)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("indirect_cost_percent") {
 			setClauses = append(setClauses, "indirect_cost_percent = ?")
@@ -2585,10 +2585,10 @@ func (t *PurchInvLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Units_per_parcel)
 		setClauses = append(setClauses, "unit_volume = ?")
 		values = append(values, t.Unit_volume)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "indirect_cost_percent = ?")
 		values = append(values, t.Indirect_cost_percent)
 		setClauses = append(setClauses, "receipt_no = ?")
@@ -2814,13 +2814,13 @@ func (t *PurchInvLine) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Decimal); ok {
 			return !t.Unit_volume.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "indirect_cost_percent":
 		if old, ok := oldValue.(types.Decimal); ok {
@@ -3225,10 +3225,10 @@ func (t *PurchInvLine) columnName(fieldName string) (string, bool) {
 		return "units_per_parcel", true
 	case strings.ToLower("unit_volume"):
 		return "unit_volume", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("indirect_cost_percent"):
 		return "indirect_cost_percent", true
 	case strings.ToLower("receipt_no"):
@@ -3714,7 +3714,7 @@ func (t *PurchInvLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3744,8 +3744,8 @@ func (t *PurchInvLine) FindFirst() bool {
 	var net_weightNull sql.NullString
 	var units_per_parcelNull sql.NullString
 	var unit_volumeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var indirect_cost_percentNull sql.NullString
 	var receipt_noNull sql.NullString
 	var pay_to_vendor_noNull sql.NullString
@@ -3808,8 +3808,8 @@ func (t *PurchInvLine) FindFirst() bool {
 		&net_weightNull,
 		&units_per_parcelNull,
 		&unit_volumeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&indirect_cost_percentNull,
 		&receipt_noNull,
 		&t.Receipt_line_no,
@@ -3881,8 +3881,8 @@ func (t *PurchInvLine) FindFirst() bool {
 	t.Net_weight, _ = types.NewDecimalFromString(net_weightNull.String)
 	t.Units_per_parcel, _ = types.NewDecimalFromString(units_per_parcelNull.String)
 	t.Unit_volume, _ = types.NewDecimalFromString(unit_volumeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Indirect_cost_percent, _ = types.NewDecimalFromString(indirect_cost_percentNull.String)
 	t.Receipt_no = types.NewCode(receipt_noNull.String)
 	t.Pay_to_vendor_no = types.NewCode(pay_to_vendor_noNull.String)
@@ -3937,7 +3937,7 @@ func (t *PurchInvLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3967,8 +3967,8 @@ func (t *PurchInvLine) FindLast() bool {
 	var net_weightNull sql.NullString
 	var units_per_parcelNull sql.NullString
 	var unit_volumeNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var indirect_cost_percentNull sql.NullString
 	var receipt_noNull sql.NullString
 	var pay_to_vendor_noNull sql.NullString
@@ -4031,8 +4031,8 @@ func (t *PurchInvLine) FindLast() bool {
 		&net_weightNull,
 		&units_per_parcelNull,
 		&unit_volumeNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&indirect_cost_percentNull,
 		&receipt_noNull,
 		&t.Receipt_line_no,
@@ -4104,8 +4104,8 @@ func (t *PurchInvLine) FindLast() bool {
 	t.Net_weight, _ = types.NewDecimalFromString(net_weightNull.String)
 	t.Units_per_parcel, _ = types.NewDecimalFromString(units_per_parcelNull.String)
 	t.Unit_volume, _ = types.NewDecimalFromString(unit_volumeNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Indirect_cost_percent, _ = types.NewDecimalFromString(indirect_cost_percentNull.String)
 	t.Receipt_no = types.NewCode(receipt_noNull.String)
 	t.Pay_to_vendor_no = types.NewCode(pay_to_vendor_noNull.String)
@@ -4190,7 +4190,7 @@ func (t *PurchInvLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4284,8 +4284,8 @@ func (t *PurchInvLine) Next(steps ...int) bool {
 		var net_weightNull sql.NullString
 		var units_per_parcelNull sql.NullString
 		var unit_volumeNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var indirect_cost_percentNull sql.NullString
 		var receipt_noNull sql.NullString
 		var pay_to_vendor_noNull sql.NullString
@@ -4348,8 +4348,8 @@ func (t *PurchInvLine) Next(steps ...int) bool {
 			&net_weightNull,
 			&units_per_parcelNull,
 			&unit_volumeNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&indirect_cost_percentNull,
 			&receipt_noNull,
 			&t.Receipt_line_no,
@@ -4420,8 +4420,8 @@ func (t *PurchInvLine) Next(steps ...int) bool {
 		t.Net_weight, _ = types.NewDecimalFromString(net_weightNull.String)
 		t.Units_per_parcel, _ = types.NewDecimalFromString(units_per_parcelNull.String)
 		t.Unit_volume, _ = types.NewDecimalFromString(unit_volumeNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Indirect_cost_percent, _ = types.NewDecimalFromString(indirect_cost_percentNull.String)
 		t.Receipt_no = types.NewCode(receipt_noNull.String)
 		t.Pay_to_vendor_no = types.NewCode(pay_to_vendor_noNull.String)
@@ -4505,7 +4505,7 @@ func (t *PurchInvLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, department_code, project_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT buy_from_vendor_no, document_no, line_no, type, no, location_code, posting_group, expected_receipt_date, description, description_2, unit_of_measure, quantity, direct_unit_cost, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, unit_price_lcy, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, indirect_cost_percent, receipt_no, receipt_line_no, pay_to_vendor_no, inv_discount_amount, vendor_item_no, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, fa_posting_date, fa_posting_type, depreciation_book_code, salvage_value, depr_until_fa_posting_date, depr_acquisition_cost, maintenance_code, insurance_no, duplicate_in_depreciation_book, use_duplication_list, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4552,8 +4552,8 @@ func (t *PurchInvLine) FindSetBuffered() bool {
 		var net_weightNull sql.NullString
 		var units_per_parcelNull sql.NullString
 		var unit_volumeNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var indirect_cost_percentNull sql.NullString
 		var receipt_noNull sql.NullString
 		var pay_to_vendor_noNull sql.NullString
@@ -4616,8 +4616,8 @@ func (t *PurchInvLine) FindSetBuffered() bool {
 			&net_weightNull,
 			&units_per_parcelNull,
 			&unit_volumeNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&indirect_cost_percentNull,
 			&receipt_noNull,
 			&record.Receipt_line_no,
@@ -4686,8 +4686,8 @@ func (t *PurchInvLine) FindSetBuffered() bool {
 		record.Net_weight, _ = types.NewDecimalFromString(net_weightNull.String)
 		record.Units_per_parcel, _ = types.NewDecimalFromString(units_per_parcelNull.String)
 		record.Unit_volume, _ = types.NewDecimalFromString(unit_volumeNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Indirect_cost_percent, _ = types.NewDecimalFromString(indirect_cost_percentNull.String)
 		record.Receipt_no = types.NewCode(receipt_noNull.String)
 		record.Pay_to_vendor_no = types.NewCode(pay_to_vendor_noNull.String)
@@ -4776,8 +4776,8 @@ func (t *PurchInvLine) copyFromBuffered(record *PurchInvLine) {
 	t.Net_weight = record.Net_weight
 	t.Units_per_parcel = record.Units_per_parcel
 	t.Unit_volume = record.Unit_volume
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Indirect_cost_percent = record.Indirect_cost_percent
 	t.Receipt_no = record.Receipt_no
 	t.Receipt_line_no = record.Receipt_line_no
@@ -5618,45 +5618,45 @@ func (t *PurchInvLine) ValidateField(fieldName string, value interface{}) error 
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvLineOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(PurchInvLineOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvLineOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(PurchInvLineOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -6569,9 +6569,9 @@ func (t *PurchInvLine) FieldValue(no int) (any, bool) {
 	case 37:
 		return t.Unit_volume, true
 	case 40:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 41:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 54:
 		return t.Indirect_cost_percent, true
 	case 63:
@@ -6821,20 +6821,20 @@ func (t *PurchInvLine) SetFieldValue(no int, value any) bool {
 		}
 	case 40:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 41:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 54:
@@ -7758,10 +7758,10 @@ func (t *PurchInvLine) columnValue(column string) (interface{}, bool) {
 		return t.Units_per_parcel, true
 	case "unit_volume":
 		return t.Unit_volume, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "indirect_cost_percent":
 		return t.Indirect_cost_percent, true
 	case "receipt_no":
@@ -7914,8 +7914,8 @@ func (t *PurchInvLine) Init() {
 	t.Net_weight = *new(types.Decimal)
 	t.Units_per_parcel = *new(types.Decimal)
 	t.Unit_volume = *new(types.Decimal)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Indirect_cost_percent = *new(types.Decimal)
 	t.Receipt_no = *new(types.Code)
 	t.Receipt_line_no = *new(int)
@@ -8011,8 +8011,8 @@ func (t *PurchInvLine) ToMap() map[string]interface{} {
 		"net_weight":                     t.Net_weight.String(),
 		"units_per_parcel":               t.Units_per_parcel.String(),
 		"unit_volume":                    t.Unit_volume.String(),
-		"department_code":                t.Department_code.String(),
-		"project_code":                   t.Project_code.String(),
+		"dimension_1_code":               t.Dimension_1_code.String(),
+		"dimension_2_code":               t.Dimension_2_code.String(),
 		"indirect_cost_percent":          t.Indirect_cost_percent.String(),
 		"receipt_no":                     t.Receipt_no.String(),
 		"receipt_line_no":                t.Receipt_line_no,
@@ -8301,14 +8301,14 @@ func (t *PurchInvLine) FromMap(data map[string]interface{}) {
 			t.Unit_volume = types.NewDecimalFromInt(val)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["indirect_cost_percent"]; ok && v != nil {
@@ -8871,7 +8871,7 @@ func (t *PurchInvLine) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         40,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -8881,7 +8881,7 @@ func (t *PurchInvLine) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         41,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -9345,8 +9345,8 @@ func (t *PurchInvLine) GetTableRelationFields() map[string]tables.TableRelationI
 				}},
 			},
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -9355,8 +9355,8 @@ func (t *PurchInvLine) GetTableRelationFields() map[string]tables.TableRelationI
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

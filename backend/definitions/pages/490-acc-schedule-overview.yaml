@@ -32,8 +32,8 @@ page:
           date_filter: date_filter
           view_by: 2
           filters:
-            - source: department_filter
-            - source: project_filter
+            - source: dimension_1_filter
+            - source: dimension_2_filter
             - source: budget_filter
             - source: use_add_rpt_curr
               check_box: true

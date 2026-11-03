@@ -33,8 +33,8 @@
 //	OnValidate_Applies_to_entry(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Open(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Cost_is_adjusted(rec *gtables.ItemLedgerEntry) error
-//	OnValidate_Department_code(rec *gtables.ItemLedgerEntry) error
-//	OnValidate_Project_code(rec *gtables.ItemLedgerEntry) error
+//	OnValidate_Dimension_1_code(rec *gtables.ItemLedgerEntry) error
+//	OnValidate_Dimension_2_code(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Positive(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Closed_by_entry_no(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Closed_at_date(rec *gtables.ItemLedgerEntry) error
@@ -155,8 +155,8 @@ type ItemLedgerEntry struct {
 	Applies_to_entry              int                        `db:"applies_to_entry"`
 	Open                          bool                       `db:"open"`
 	Cost_is_adjusted              bool                       `db:"cost_is_adjusted"`
-	Department_code               types.Code                 `db:"department_code"`
-	Project_code                  types.Code                 `db:"project_code"`
+	Dimension_1_code              types.Code                 `db:"dimension_1_code"`
+	Dimension_2_code              types.Code                 `db:"dimension_2_code"`
 	Positive                      bool                       `db:"positive"`
 	Closed_by_entry_no            int                        `db:"closed_by_entry_no"`
 	Closed_at_date                types.Date                 `db:"closed_at_date"`
@@ -314,8 +314,8 @@ var ItemLedgerEntry_FieldNo = struct {
 	Applies_to_entry              int
 	Open                          int
 	Cost_is_adjusted              int
-	Department_code               int
-	Project_code                  int
+	Dimension_1_code              int
+	Dimension_2_code              int
 	Positive                      int
 	Closed_by_entry_no            int
 	Closed_at_date                int
@@ -376,8 +376,8 @@ var ItemLedgerEntry_FieldNo = struct {
 	Applies_to_entry:              28,
 	Open:                          29,
 	Cost_is_adjusted:              30,
-	Department_code:               33,
-	Project_code:                  34,
+	Dimension_1_code:              33,
+	Dimension_2_code:              34,
 	Positive:                      36,
 	Closed_by_entry_no:            37,
 	Closed_at_date:                38,
@@ -465,9 +465,9 @@ func (t *ItemLedgerEntry) FieldNo(fieldName string) int {
 		return 29
 	case "cost_is_adjusted":
 		return 30
-	case "department_code":
+	case "dimension_1_code":
 		return 33
-	case "project_code":
+	case "dimension_2_code":
 		return 34
 	case "positive":
 		return 36
@@ -595,9 +595,9 @@ func (t *ItemLedgerEntry) FieldName(fieldNo int) string {
 	case 30:
 		return "cost_is_adjusted"
 	case 33:
-		return "department_code"
+		return "dimension_1_code"
 	case 34:
-		return "project_code"
+		return "dimension_2_code"
 	case 36:
 		return "positive"
 	case 37:
@@ -840,11 +840,11 @@ type (
 	ItemLedgerEntryOnValidate_Cost_is_adjusted interface {
 		OnValidate_Cost_is_adjusted(rec *ItemLedgerEntry) error
 	}
-	ItemLedgerEntryOnValidate_Department_code interface {
-		OnValidate_Department_code(rec *ItemLedgerEntry) error
+	ItemLedgerEntryOnValidate_Dimension_1_code interface {
+		OnValidate_Dimension_1_code(rec *ItemLedgerEntry) error
 	}
-	ItemLedgerEntryOnValidate_Project_code interface {
-		OnValidate_Project_code(rec *ItemLedgerEntry) error
+	ItemLedgerEntryOnValidate_Dimension_2_code interface {
+		OnValidate_Dimension_2_code(rec *ItemLedgerEntry) error
 	}
 	ItemLedgerEntryOnValidate_Positive interface {
 		OnValidate_Positive(rec *ItemLedgerEntry) error
@@ -1029,10 +1029,10 @@ func itemLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemLedgerEntryOnValidate_Open)
 	case "OnValidate_Cost_is_adjusted":
 		_, ok = logic.(ItemLedgerEntryOnValidate_Cost_is_adjusted)
-	case "OnValidate_Department_code":
-		_, ok = logic.(ItemLedgerEntryOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(ItemLedgerEntryOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(ItemLedgerEntryOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(ItemLedgerEntryOnValidate_Dimension_2_code)
 	case "OnValidate_Positive":
 		_, ok = logic.(ItemLedgerEntryOnValidate_Positive)
 	case "OnValidate_Closed_by_entry_no":
@@ -1209,10 +1209,10 @@ func (t *ItemLedgerEntry) CheckFields() error {
 	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "source_code", string(t.Source_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "journal_batch_name", string(t.Journal_batch_name), 10); err != nil {
@@ -1316,8 +1316,8 @@ func GetItemLedgerEntryTableSchema() string {
 		applies_to_entry INTEGER,
 		open INTEGER,
 		cost_is_adjusted INTEGER,
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		positive INTEGER,
 		closed_by_entry_no INTEGER,
 		closed_at_date TEXT,
@@ -1383,8 +1383,8 @@ func GetItemLedgerEntryPostgresTableSchema() string {
 		applies_to_entry INTEGER,
 		open BOOLEAN,
 		cost_is_adjusted BOOLEAN,
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		positive BOOLEAN,
 		closed_by_entry_no INTEGER,
 		closed_at_date TIMESTAMP,
@@ -1637,8 +1637,8 @@ func (t *ItemLedgerEntry) StoreOldValues() {
 	t.oldValues["applies_to_entry"] = t.Applies_to_entry
 	t.oldValues["open"] = t.Open
 	t.oldValues["cost_is_adjusted"] = t.Cost_is_adjusted
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["positive"] = t.Positive
 	t.oldValues["closed_by_entry_no"] = t.Closed_by_entry_no
 	t.oldValues["closed_at_date"] = t.Closed_at_date
@@ -1758,11 +1758,11 @@ func (t *ItemLedgerEntry) XRec() *ItemLedgerEntry {
 	if v, ok := t.oldValues["cost_is_adjusted"].(bool); ok {
 		x.Cost_is_adjusted = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["positive"].(bool); ok {
 		x.Positive = v
@@ -1966,8 +1966,8 @@ func (t *ItemLedgerEntry) GetByPK(entry_no int) bool {
 	var applies_to_entryVal int
 	var openBool sql.NullBool
 	var cost_is_adjustedBool sql.NullBool
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var positiveBool sql.NullBool
 	var closed_by_entry_noVal int
 	var closed_at_dateNull sql.NullString
@@ -2011,7 +2011,7 @@ func (t *ItemLedgerEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, dimension_1_code, dimension_2_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2041,8 +2041,8 @@ func (t *ItemLedgerEntry) GetByPK(entry_no int) bool {
 		&applies_to_entryVal,
 		&openBool,
 		&cost_is_adjustedBool,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&positiveBool,
 		&closed_by_entry_noVal,
 		&closed_at_dateNull,
@@ -2115,8 +2115,8 @@ func (t *ItemLedgerEntry) GetByPK(entry_no int) bool {
 	t.Applies_to_entry = applies_to_entryVal
 	t.Open = openBool.Bool
 	t.Cost_is_adjusted = cost_is_adjustedBool.Bool
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Positive = positiveBool.Bool
 	t.Closed_by_entry_no = closed_by_entry_noVal
 	t.Closed_at_date, _ = types.NewDateFromString(closed_at_dateNull.String)
@@ -2198,8 +2198,8 @@ func (t *ItemLedgerEntry) Insert(runTrigger bool) bool {
 		t.Applies_to_entry,
 		t.Open,
 		t.Cost_is_adjusted,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Positive,
 		t.Closed_by_entry_no,
 		t.Closed_at_date,
@@ -2240,7 +2240,7 @@ func (t *ItemLedgerEntry) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, dimension_1_code, dimension_2_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2301,8 +2301,8 @@ func (t *ItemLedgerEntry) InsertAll(records []*ItemLedgerEntry, runTrigger bool)
 			r.Applies_to_entry,
 			r.Open,
 			r.Cost_is_adjusted,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Positive,
 			r.Closed_by_entry_no,
 			r.Closed_at_date,
@@ -2342,7 +2342,7 @@ func (t *ItemLedgerEntry) InsertAll(records []*ItemLedgerEntry, runTrigger bool)
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ItemLedgerEntryTableName)
-	columns := []string{"entry_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "remaining_quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "user_id", "source_code", "applies_to_entry", "open", "cost_is_adjusted", "department_code", "project_code", "positive", "closed_by_entry_no", "closed_at_date", "closed_by_quantity", "source_type", "adjusted_cost_qty", "adjusted_cost_invoiced_qty", "cost_posted_to_gl", "journal_batch_name", "reason_code", "drop_shipment", "invt_qty_not_adjusted", "adjust_invoice_cost", "transaction_type", "transport_method", "country_code", "transferred_from_entry_no", "gen_bus_posting_group", "gen_prod_posting_group", "entry_exit_point", "document_date", "external_document_no", "area", "transaction_specification", "no_series", "reserved_quantity", "add_currency_adj_cost_qty", "add_curr_adj_cost_inv_qty", "add_curr_cost_posted_to_gl", "additional_currency_unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "serial_no", "lot_no", "bin_code"}
+	columns := []string{"entry_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "remaining_quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "user_id", "source_code", "applies_to_entry", "open", "cost_is_adjusted", "dimension_1_code", "dimension_2_code", "positive", "closed_by_entry_no", "closed_at_date", "closed_by_quantity", "source_type", "adjusted_cost_qty", "adjusted_cost_invoiced_qty", "cost_posted_to_gl", "journal_batch_name", "reason_code", "drop_shipment", "invt_qty_not_adjusted", "adjust_invoice_cost", "transaction_type", "transport_method", "country_code", "transferred_from_entry_no", "gen_bus_posting_group", "gen_prod_posting_group", "entry_exit_point", "document_date", "external_document_no", "area", "transaction_specification", "no_series", "reserved_quantity", "add_currency_adj_cost_qty", "add_curr_adj_cost_inv_qty", "add_curr_cost_posted_to_gl", "additional_currency_unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "serial_no", "lot_no", "bin_code"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2474,13 +2474,13 @@ func (t *ItemLedgerEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "cost_is_adjusted = ?")
 			values = append(values, t.Cost_is_adjusted)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("positive") {
 			setClauses = append(setClauses, "positive = ?")
@@ -2677,10 +2677,10 @@ func (t *ItemLedgerEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.Open)
 		setClauses = append(setClauses, "cost_is_adjusted = ?")
 		values = append(values, t.Cost_is_adjusted)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "positive = ?")
 		values = append(values, t.Positive)
 		setClauses = append(setClauses, "closed_by_entry_no = ?")
@@ -2915,13 +2915,13 @@ func (t *ItemLedgerEntry) hasFieldChanged(fieldName string) bool {
 			return t.Cost_is_adjusted != old
 		}
 		return true // Type mismatch, assume changed
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "positive":
 		if old, ok := oldValue.(bool); ok {
@@ -3362,10 +3362,10 @@ func (t *ItemLedgerEntry) columnName(fieldName string) (string, bool) {
 		return "open", true
 	case strings.ToLower("cost_is_adjusted"):
 		return "cost_is_adjusted", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("positive"):
 		return "positive", true
 	case strings.ToLower("closed_by_entry_no"):
@@ -3847,7 +3847,7 @@ func (t *ItemLedgerEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, dimension_1_code, dimension_2_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3873,8 +3873,8 @@ func (t *ItemLedgerEntry) FindFirst() bool {
 	var source_codeNull sql.NullString
 	var openBool sql.NullBool
 	var cost_is_adjustedBool sql.NullBool
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var positiveBool sql.NullBool
 	var closed_at_dateNull sql.NullString
 	var closed_by_quantityNull sql.NullString
@@ -3934,8 +3934,8 @@ func (t *ItemLedgerEntry) FindFirst() bool {
 		&t.Applies_to_entry,
 		&openBool,
 		&cost_is_adjustedBool,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&positiveBool,
 		&t.Closed_by_entry_no,
 		&closed_at_dateNull,
@@ -4004,8 +4004,8 @@ func (t *ItemLedgerEntry) FindFirst() bool {
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.Open = openBool.Bool
 	t.Cost_is_adjusted = cost_is_adjustedBool.Bool
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Positive = positiveBool.Bool
 	t.Closed_at_date, _ = types.NewDateFromString(closed_at_dateNull.String)
 	t.Closed_by_quantity, _ = types.NewDecimalFromString(closed_by_quantityNull.String)
@@ -4060,7 +4060,7 @@ func (t *ItemLedgerEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, dimension_1_code, dimension_2_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4086,8 +4086,8 @@ func (t *ItemLedgerEntry) FindLast() bool {
 	var source_codeNull sql.NullString
 	var openBool sql.NullBool
 	var cost_is_adjustedBool sql.NullBool
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var positiveBool sql.NullBool
 	var closed_at_dateNull sql.NullString
 	var closed_by_quantityNull sql.NullString
@@ -4147,8 +4147,8 @@ func (t *ItemLedgerEntry) FindLast() bool {
 		&t.Applies_to_entry,
 		&openBool,
 		&cost_is_adjustedBool,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&positiveBool,
 		&t.Closed_by_entry_no,
 		&closed_at_dateNull,
@@ -4217,8 +4217,8 @@ func (t *ItemLedgerEntry) FindLast() bool {
 	t.Source_code = types.NewCode(source_codeNull.String)
 	t.Open = openBool.Bool
 	t.Cost_is_adjusted = cost_is_adjustedBool.Bool
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Positive = positiveBool.Bool
 	t.Closed_at_date, _ = types.NewDateFromString(closed_at_dateNull.String)
 	t.Closed_by_quantity, _ = types.NewDecimalFromString(closed_by_quantityNull.String)
@@ -4303,7 +4303,7 @@ func (t *ItemLedgerEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, dimension_1_code, dimension_2_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4393,8 +4393,8 @@ func (t *ItemLedgerEntry) Next(steps ...int) bool {
 		var source_codeNull sql.NullString
 		var openBool sql.NullBool
 		var cost_is_adjustedBool sql.NullBool
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var positiveBool sql.NullBool
 		var closed_at_dateNull sql.NullString
 		var closed_by_quantityNull sql.NullString
@@ -4454,8 +4454,8 @@ func (t *ItemLedgerEntry) Next(steps ...int) bool {
 			&t.Applies_to_entry,
 			&openBool,
 			&cost_is_adjustedBool,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&positiveBool,
 			&t.Closed_by_entry_no,
 			&closed_at_dateNull,
@@ -4523,8 +4523,8 @@ func (t *ItemLedgerEntry) Next(steps ...int) bool {
 		t.Source_code = types.NewCode(source_codeNull.String)
 		t.Open = openBool.Bool
 		t.Cost_is_adjusted = cost_is_adjustedBool.Bool
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Positive = positiveBool.Bool
 		t.Closed_at_date, _ = types.NewDateFromString(closed_at_dateNull.String)
 		t.Closed_by_quantity, _ = types.NewDecimalFromString(closed_by_quantityNull.String)
@@ -4608,7 +4608,7 @@ func (t *ItemLedgerEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, dimension_1_code, dimension_2_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4651,8 +4651,8 @@ func (t *ItemLedgerEntry) FindSetBuffered() bool {
 		var source_codeNull sql.NullString
 		var openBool sql.NullBool
 		var cost_is_adjustedBool sql.NullBool
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var positiveBool sql.NullBool
 		var closed_at_dateNull sql.NullString
 		var closed_by_quantityNull sql.NullString
@@ -4712,8 +4712,8 @@ func (t *ItemLedgerEntry) FindSetBuffered() bool {
 			&record.Applies_to_entry,
 			&openBool,
 			&cost_is_adjustedBool,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&positiveBool,
 			&record.Closed_by_entry_no,
 			&closed_at_dateNull,
@@ -4779,8 +4779,8 @@ func (t *ItemLedgerEntry) FindSetBuffered() bool {
 		record.Source_code = types.NewCode(source_codeNull.String)
 		record.Open = openBool.Bool
 		record.Cost_is_adjusted = cost_is_adjustedBool.Bool
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Positive = positiveBool.Bool
 		record.Closed_at_date, _ = types.NewDateFromString(closed_at_dateNull.String)
 		record.Closed_by_quantity, _ = types.NewDecimalFromString(closed_by_quantityNull.String)
@@ -4866,8 +4866,8 @@ func (t *ItemLedgerEntry) copyFromBuffered(record *ItemLedgerEntry) {
 	t.Applies_to_entry = record.Applies_to_entry
 	t.Open = record.Open
 	t.Cost_is_adjusted = record.Cost_is_adjusted
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Positive = record.Positive
 	t.Closed_by_entry_no = record.Closed_by_entry_no
 	t.Closed_at_date = record.Closed_at_date
@@ -5611,45 +5611,45 @@ func (t *ItemLedgerEntry) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemLedgerEntryOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(ItemLedgerEntryOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemLedgerEntryOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(ItemLedgerEntryOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -6584,9 +6584,9 @@ func (t *ItemLedgerEntry) FieldValue(no int) (any, bool) {
 	case 30:
 		return t.Cost_is_adjusted, true
 	case 33:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 34:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 36:
 		return t.Positive, true
 	case 37:
@@ -6831,20 +6831,20 @@ func (t *ItemLedgerEntry) SetFieldValue(no int, value any) bool {
 		}
 	case 33:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 34:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 36:
@@ -7750,10 +7750,10 @@ func (t *ItemLedgerEntry) columnValue(column string) (interface{}, bool) {
 		return t.Open, true
 	case "cost_is_adjusted":
 		return t.Cost_is_adjusted, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "positive":
 		return t.Positive, true
 	case "closed_by_entry_no":
@@ -7902,8 +7902,8 @@ func (t *ItemLedgerEntry) Init() {
 	t.Applies_to_entry = *new(int)
 	t.Open = *new(bool)
 	t.Cost_is_adjusted = *new(bool)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Positive = *new(bool)
 	t.Closed_by_entry_no = *new(int)
 	t.Closed_at_date = *new(types.Date)
@@ -7997,8 +7997,8 @@ func (t *ItemLedgerEntry) ToMap() map[string]interface{} {
 		"applies_to_entry":              t.Applies_to_entry,
 		"open":                          t.Open,
 		"cost_is_adjusted":              t.Cost_is_adjusted,
-		"department_code":               t.Department_code.String(),
-		"project_code":                  t.Project_code.String(),
+		"dimension_1_code":              t.Dimension_1_code.String(),
+		"dimension_2_code":              t.Dimension_2_code.String(),
 		"positive":                      t.Positive,
 		"closed_by_entry_no":            t.Closed_by_entry_no,
 		"closed_at_date":                t.Closed_at_date.String(),
@@ -8232,14 +8232,14 @@ func (t *ItemLedgerEntry) FromMap(data map[string]interface{}) {
 			t.Cost_is_adjusted = b
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["positive"]; ok && v != nil {
@@ -8787,7 +8787,7 @@ func (t *ItemLedgerEntry) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         33,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -8797,7 +8797,7 @@ func (t *ItemLedgerEntry) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         34,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -9311,8 +9311,8 @@ func (t *ItemLedgerEntry) GetTableRelationFields() map[string]tables.TableRelati
 			},
 			SearchTimeout: 0,
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -9321,8 +9321,8 @@ func (t *ItemLedgerEntry) GetTableRelationFields() map[string]tables.TableRelati
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

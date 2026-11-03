@@ -1,8 +1,8 @@
 table:
   id: 11
-  name: "Department"
-  caption: Department
-  description: Departments (table 11)
+  name: "Dimension_1"
+  caption: Dimension 1
+  description: "Dimension 1 values (table 11, the classic Department): a posting dimension; General Ledger Setup Dimension-1 names it"
   fields:
     - name: code
       no: 1

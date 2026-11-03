@@ -10,7 +10,7 @@ import (
 
 // Report 1498 Date Compress Bank Acc. Ledger: the closed bank account ledger entries of closed
 // fiscal years become one entry per bank account, posting group, currency, document type, period
-// and sign — and per the retained Document No., Our Contact Code, Department and Project Code. The new entries take G/L
+// and sign — and per the retained Document No., Our Contact Code, Dimension 1 and Dimension 2 Code. The new entries take G/L
 // entry numbers (a G/L register of the run).
 const DateCompressBankAccLedgerID = 1498
 
@@ -28,7 +28,7 @@ type dateCompressBank struct {
 
 func (r *dateCompressBank) Definition() *Definition {
 	r.tableID = gtables.BankAccountLedgerEntryTableID
-	r.fields = []retainField{{name: "document_no"}, {name: "our_contact_code"}, {name: "department_code"}, {name: "project_code"}}
+	r.fields = []retainField{{name: "document_no"}, {name: "our_contact_code"}, {name: "dimension_1_code"}, {name: "dimension_2_code"}}
 	return &Definition{
 		OptionsCaption: "OPTIONS",
 		Options:        dateComprOptions(true, r.fields),
@@ -122,13 +122,13 @@ func (r *dateCompressBank) onAfterGetRecord(bankAccLedgEntry *gtables.BankAccoun
 		bankAccLedgEntry2.SetRange("our_contact_code", bankAccLedgEntry2.Our_contact_code)
 		newBankAccLedgEntry.Our_contact_code = bankAccLedgEntry2.Our_contact_code
 	}
-	if r.retainNo("department_code") {
-		bankAccLedgEntry2.SetRange("department_code", bankAccLedgEntry2.Department_code)
-		newBankAccLedgEntry.Department_code = bankAccLedgEntry2.Department_code
+	if r.retainNo("dimension_1_code") {
+		bankAccLedgEntry2.SetRange("dimension_1_code", bankAccLedgEntry2.Dimension_1_code)
+		newBankAccLedgEntry.Dimension_1_code = bankAccLedgEntry2.Dimension_1_code
 	}
-	if r.retainNo("project_code") {
-		bankAccLedgEntry2.SetRange("project_code", bankAccLedgEntry2.Project_code)
-		newBankAccLedgEntry.Project_code = bankAccLedgEntry2.Project_code
+	if r.retainNo("dimension_2_code") {
+		bankAccLedgEntry2.SetRange("dimension_2_code", bankAccLedgEntry2.Dimension_2_code)
+		newBankAccLedgEntry.Dimension_2_code = bankAccLedgEntry2.Dimension_2_code
 	}
 	if !bankAccLedgEntry2.Amount.IsNegative() {
 		bankAccLedgEntry2.SetFilter("amount", ">=0")

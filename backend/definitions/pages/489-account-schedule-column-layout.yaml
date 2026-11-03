@@ -45,10 +45,10 @@ page:
           width: 130
         - source: rounding_factor
           width: 120
-        - source: department_filter
+        - source: dimension_1_filter
           width: 140
           table_relation: Department
-        - source: project_filter
+        - source: dimension_2_filter
           width: 140
           table_relation: Project
 

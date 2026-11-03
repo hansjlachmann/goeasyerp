@@ -24,8 +24,8 @@
 //	OnValidate_Expected_receipt_date(rec *gtables.RequisitionLine) error
 //	OnValidate_Requester_id(rec *gtables.RequisitionLine) error
 //	OnValidate_Confirmed(rec *gtables.RequisitionLine) error
-//	OnValidate_Department_code(rec *gtables.RequisitionLine) error
-//	OnValidate_Project_code(rec *gtables.RequisitionLine) error
+//	OnValidate_Dimension_1_code(rec *gtables.RequisitionLine) error
+//	OnValidate_Dimension_2_code(rec *gtables.RequisitionLine) error
 //	OnValidate_Location_code(rec *gtables.RequisitionLine) error
 //	OnValidate_Recurring_method(rec *gtables.RequisitionLine) error
 //	OnValidate_Expiration_date(rec *gtables.RequisitionLine) error
@@ -137,8 +137,8 @@ type RequisitionLine struct {
 	Expected_receipt_date   types.Date                      `db:"expected_receipt_date"`
 	Requester_id            types.Code                      `db:"requester_id"`
 	Confirmed               bool                            `db:"confirmed"`
-	Department_code         types.Code                      `db:"department_code"`
-	Project_code            types.Code                      `db:"project_code"`
+	Dimension_1_code        types.Code                      `db:"dimension_1_code"`
+	Dimension_2_code        types.Code                      `db:"dimension_2_code"`
 	Location_code           types.Code                      `db:"location_code"`
 	Recurring_method        RequisitionLineRecurring_method `db:"recurring_method"`
 	Expiration_date         types.Date                      `db:"expiration_date"`
@@ -275,8 +275,8 @@ var RequisitionLine_FieldNo = struct {
 	Expected_receipt_date   int
 	Requester_id            int
 	Confirmed               int
-	Department_code         int
-	Project_code            int
+	Dimension_1_code        int
+	Dimension_2_code        int
 	Location_code           int
 	Recurring_method        int
 	Expiration_date         int
@@ -311,8 +311,8 @@ var RequisitionLine_FieldNo = struct {
 	Expected_receipt_date:   12,
 	Requester_id:            13,
 	Confirmed:               14,
-	Department_code:         15,
-	Project_code:            16,
+	Dimension_1_code:        15,
+	Dimension_2_code:        16,
 	Location_code:           17,
 	Recurring_method:        18,
 	Expiration_date:         19,
@@ -365,9 +365,9 @@ func (t *RequisitionLine) FieldNo(fieldName string) int {
 		return 13
 	case "confirmed":
 		return 14
-	case "department_code":
+	case "dimension_1_code":
 		return 15
-	case "project_code":
+	case "dimension_2_code":
 		return 16
 	case "location_code":
 		return 17
@@ -443,9 +443,9 @@ func (t *RequisitionLine) FieldName(fieldNo int) string {
 	case 14:
 		return "confirmed"
 	case 15:
-		return "department_code"
+		return "dimension_1_code"
 	case 16:
-		return "project_code"
+		return "dimension_2_code"
 	case 17:
 		return "location_code"
 	case 18:
@@ -627,11 +627,11 @@ type (
 	RequisitionLineOnValidate_Confirmed interface {
 		OnValidate_Confirmed(rec *RequisitionLine) error
 	}
-	RequisitionLineOnValidate_Department_code interface {
-		OnValidate_Department_code(rec *RequisitionLine) error
+	RequisitionLineOnValidate_Dimension_1_code interface {
+		OnValidate_Dimension_1_code(rec *RequisitionLine) error
 	}
-	RequisitionLineOnValidate_Project_code interface {
-		OnValidate_Project_code(rec *RequisitionLine) error
+	RequisitionLineOnValidate_Dimension_2_code interface {
+		OnValidate_Dimension_2_code(rec *RequisitionLine) error
 	}
 	RequisitionLineOnValidate_Location_code interface {
 		OnValidate_Location_code(rec *RequisitionLine) error
@@ -747,10 +747,10 @@ func requisitionLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(RequisitionLineOnValidate_Requester_id)
 	case "OnValidate_Confirmed":
 		_, ok = logic.(RequisitionLineOnValidate_Confirmed)
-	case "OnValidate_Department_code":
-		_, ok = logic.(RequisitionLineOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(RequisitionLineOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(RequisitionLineOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(RequisitionLineOnValidate_Dimension_2_code)
 	case "OnValidate_Location_code":
 		_, ok = logic.(RequisitionLineOnValidate_Location_code)
 	case "OnValidate_Recurring_method":
@@ -887,10 +887,10 @@ func (t *RequisitionLine) CheckFields() error {
 	if err := tables.CheckMaxLength(RequisitionLineTableName, "requester_id", string(t.Requester_id), 50); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(RequisitionLineTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(RequisitionLineTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(RequisitionLineTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(RequisitionLineTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(RequisitionLineTableName, "location_code", string(t.Location_code), 10); err != nil {
@@ -970,8 +970,8 @@ func GetRequisitionLineTableSchema() string {
 		expected_receipt_date TEXT,
 		requester_id TEXT(50),
 		confirmed INTEGER,
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		location_code TEXT(10),
 		recurring_method INTEGER CHECK (recurring_method >= 0 AND recurring_method <= 2),
 		expiration_date TEXT,
@@ -1012,8 +1012,8 @@ func GetRequisitionLinePostgresTableSchema() string {
 		expected_receipt_date TIMESTAMP,
 		requester_id VARCHAR(50),
 		confirmed BOOLEAN,
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		location_code VARCHAR(10),
 		recurring_method INTEGER CHECK (recurring_method >= 0 AND recurring_method <= 2),
 		expiration_date TIMESTAMP,
@@ -1183,8 +1183,8 @@ func (t *RequisitionLine) StoreOldValues() {
 	t.oldValues["expected_receipt_date"] = t.Expected_receipt_date
 	t.oldValues["requester_id"] = t.Requester_id
 	t.oldValues["confirmed"] = t.Confirmed
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["location_code"] = t.Location_code
 	t.oldValues["recurring_method"] = t.Recurring_method
 	t.oldValues["expiration_date"] = t.Expiration_date
@@ -1260,11 +1260,11 @@ func (t *RequisitionLine) XRec() *RequisitionLine {
 	if v, ok := t.oldValues["confirmed"].(bool); ok {
 		x.Confirmed = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["location_code"].(types.Code); ok {
 		x.Location_code = v
@@ -1416,8 +1416,8 @@ func (t *RequisitionLine) GetByPK(worksheet_template_name types.Code, journal_ba
 	var expected_receipt_dateNull sql.NullString
 	var requester_idNull sql.NullString
 	var confirmedBool sql.NullBool
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var location_codeNull sql.NullString
 	var recurring_methodInt int
 	var expiration_dateNull sql.NullString
@@ -1446,7 +1446,7 @@ func (t *RequisitionLine) GetByPK(worksheet_template_name types.Code, journal_ba
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code FROM "%s" WHERE 1=1 AND worksheet_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code FROM "%s" WHERE 1=1 AND worksheet_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1467,8 +1467,8 @@ func (t *RequisitionLine) GetByPK(worksheet_template_name types.Code, journal_ba
 		&expected_receipt_dateNull,
 		&requester_idNull,
 		&confirmedBool,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&location_codeNull,
 		&recurring_methodInt,
 		&expiration_dateNull,
@@ -1515,8 +1515,8 @@ func (t *RequisitionLine) GetByPK(worksheet_template_name types.Code, journal_ba
 	t.Expected_receipt_date, _ = types.NewDateFromString(expected_receipt_dateNull.String)
 	t.Requester_id = types.NewCode(requester_idNull.String)
 	t.Confirmed = confirmedBool.Bool
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Location_code = types.NewCode(location_codeNull.String)
 	t.Recurring_method = RequisitionLineRecurring_method(recurring_methodInt)
 	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
@@ -1572,8 +1572,8 @@ func (t *RequisitionLine) Insert(runTrigger bool) bool {
 		t.Expected_receipt_date,
 		t.Requester_id,
 		t.Confirmed,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Location_code,
 		t.Recurring_method,
 		t.Expiration_date,
@@ -1597,7 +1597,7 @@ func (t *RequisitionLine) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (worksheet_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (worksheet_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1649,8 +1649,8 @@ func (t *RequisitionLine) InsertAll(records []*RequisitionLine, runTrigger bool)
 			r.Expected_receipt_date,
 			r.Requester_id,
 			r.Confirmed,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Location_code,
 			r.Recurring_method,
 			r.Expiration_date,
@@ -1673,7 +1673,7 @@ func (t *RequisitionLine) InsertAll(records []*RequisitionLine, runTrigger bool)
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, RequisitionLineTableName)
-	columns := []string{"worksheet_template_name", "journal_batch_name", "line_no", "type", "no", "description", "description_2", "quantity", "vendor_no", "direct_unit_cost", "quantity_disc_percent", "expected_receipt_date", "requester_id", "confirmed", "department_code", "project_code", "location_code", "recurring_method", "expiration_date", "recurring_frequency", "order_date", "vendor_item_no", "order_address_code", "currency_code", "currency_factor", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "reserved_quantity", "reserve", "reserved_qty_base", "serial_no", "lot_no", "bin_code"}
+	columns := []string{"worksheet_template_name", "journal_batch_name", "line_no", "type", "no", "description", "description_2", "quantity", "vendor_no", "direct_unit_cost", "quantity_disc_percent", "expected_receipt_date", "requester_id", "confirmed", "dimension_1_code", "dimension_2_code", "location_code", "recurring_method", "expiration_date", "recurring_frequency", "order_date", "vendor_item_no", "order_address_code", "currency_code", "currency_factor", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "reserved_quantity", "reserve", "reserved_qty_base", "serial_no", "lot_no", "bin_code"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1775,13 +1775,13 @@ func (t *RequisitionLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "confirmed = ?")
 			values = append(values, t.Confirmed)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("location_code") {
 			setClauses = append(setClauses, "location_code = ?")
@@ -1888,10 +1888,10 @@ func (t *RequisitionLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Requester_id)
 		setClauses = append(setClauses, "confirmed = ?")
 		values = append(values, t.Confirmed)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "location_code = ?")
 		values = append(values, t.Location_code)
 		setClauses = append(setClauses, "recurring_method = ?")
@@ -2042,13 +2042,13 @@ func (t *RequisitionLine) hasFieldChanged(fieldName string) bool {
 			return t.Confirmed != old
 		}
 		return true // Type mismatch, assume changed
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "location_code":
 		if old, ok := oldValue.(types.Code); ok {
@@ -2360,10 +2360,10 @@ func (t *RequisitionLine) columnName(fieldName string) (string, bool) {
 		return "requester_id", true
 	case strings.ToLower("confirmed"):
 		return "confirmed", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("location_code"):
 		return "location_code", true
 	case strings.ToLower("recurring_method"):
@@ -2783,7 +2783,7 @@ func (t *RequisitionLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2801,8 +2801,8 @@ func (t *RequisitionLine) FindFirst() bool {
 	var expected_receipt_dateNull sql.NullString
 	var requester_idNull sql.NullString
 	var confirmedBool sql.NullBool
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var location_codeNull sql.NullString
 	var recurring_methodInt int
 	var expiration_dateNull sql.NullString
@@ -2838,8 +2838,8 @@ func (t *RequisitionLine) FindFirst() bool {
 		&expected_receipt_dateNull,
 		&requester_idNull,
 		&confirmedBool,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&location_codeNull,
 		&recurring_methodInt,
 		&expiration_dateNull,
@@ -2883,8 +2883,8 @@ func (t *RequisitionLine) FindFirst() bool {
 	t.Expected_receipt_date, _ = types.NewDateFromString(expected_receipt_dateNull.String)
 	t.Requester_id = types.NewCode(requester_idNull.String)
 	t.Confirmed = confirmedBool.Bool
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Location_code = types.NewCode(location_codeNull.String)
 	t.Recurring_method = RequisitionLineRecurring_method(recurring_methodInt)
 	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
@@ -2924,7 +2924,7 @@ func (t *RequisitionLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2942,8 +2942,8 @@ func (t *RequisitionLine) FindLast() bool {
 	var expected_receipt_dateNull sql.NullString
 	var requester_idNull sql.NullString
 	var confirmedBool sql.NullBool
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var location_codeNull sql.NullString
 	var recurring_methodInt int
 	var expiration_dateNull sql.NullString
@@ -2979,8 +2979,8 @@ func (t *RequisitionLine) FindLast() bool {
 		&expected_receipt_dateNull,
 		&requester_idNull,
 		&confirmedBool,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&location_codeNull,
 		&recurring_methodInt,
 		&expiration_dateNull,
@@ -3024,8 +3024,8 @@ func (t *RequisitionLine) FindLast() bool {
 	t.Expected_receipt_date, _ = types.NewDateFromString(expected_receipt_dateNull.String)
 	t.Requester_id = types.NewCode(requester_idNull.String)
 	t.Confirmed = confirmedBool.Bool
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Location_code = types.NewCode(location_codeNull.String)
 	t.Recurring_method = RequisitionLineRecurring_method(recurring_methodInt)
 	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
@@ -3095,7 +3095,7 @@ func (t *RequisitionLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3177,8 +3177,8 @@ func (t *RequisitionLine) Next(steps ...int) bool {
 		var expected_receipt_dateNull sql.NullString
 		var requester_idNull sql.NullString
 		var confirmedBool sql.NullBool
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var location_codeNull sql.NullString
 		var recurring_methodInt int
 		var expiration_dateNull sql.NullString
@@ -3214,8 +3214,8 @@ func (t *RequisitionLine) Next(steps ...int) bool {
 			&expected_receipt_dateNull,
 			&requester_idNull,
 			&confirmedBool,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&location_codeNull,
 			&recurring_methodInt,
 			&expiration_dateNull,
@@ -3258,8 +3258,8 @@ func (t *RequisitionLine) Next(steps ...int) bool {
 		t.Expected_receipt_date, _ = types.NewDateFromString(expected_receipt_dateNull.String)
 		t.Requester_id = types.NewCode(requester_idNull.String)
 		t.Confirmed = confirmedBool.Bool
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Location_code = types.NewCode(location_codeNull.String)
 		t.Recurring_method = RequisitionLineRecurring_method(recurring_methodInt)
 		t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
@@ -3328,7 +3328,7 @@ func (t *RequisitionLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, department_code, project_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3363,8 +3363,8 @@ func (t *RequisitionLine) FindSetBuffered() bool {
 		var expected_receipt_dateNull sql.NullString
 		var requester_idNull sql.NullString
 		var confirmedBool sql.NullBool
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var location_codeNull sql.NullString
 		var recurring_methodInt int
 		var expiration_dateNull sql.NullString
@@ -3400,8 +3400,8 @@ func (t *RequisitionLine) FindSetBuffered() bool {
 			&expected_receipt_dateNull,
 			&requester_idNull,
 			&confirmedBool,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&location_codeNull,
 			&recurring_methodInt,
 			&expiration_dateNull,
@@ -3442,8 +3442,8 @@ func (t *RequisitionLine) FindSetBuffered() bool {
 		record.Expected_receipt_date, _ = types.NewDateFromString(expected_receipt_dateNull.String)
 		record.Requester_id = types.NewCode(requester_idNull.String)
 		record.Confirmed = confirmedBool.Bool
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Location_code = types.NewCode(location_codeNull.String)
 		record.Recurring_method = RequisitionLineRecurring_method(recurring_methodInt)
 		record.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
@@ -3505,8 +3505,8 @@ func (t *RequisitionLine) copyFromBuffered(record *RequisitionLine) {
 	t.Expected_receipt_date = record.Expected_receipt_date
 	t.Requester_id = record.Requester_id
 	t.Confirmed = record.Confirmed
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Location_code = record.Location_code
 	t.Recurring_method = record.Recurring_method
 	t.Expiration_date = record.Expiration_date
@@ -4009,45 +4009,45 @@ func (t *RequisitionLine) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(RequisitionLineOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(RequisitionLineOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -4587,9 +4587,9 @@ func (t *RequisitionLine) FieldValue(no int) (any, bool) {
 	case 14:
 		return t.Confirmed, true
 	case 15:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 16:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 17:
 		return t.Location_code, true
 	case 18:
@@ -4743,20 +4743,20 @@ func (t *RequisitionLine) SetFieldValue(no int, value any) bool {
 		}
 	case 15:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 16:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 17:
@@ -5429,10 +5429,10 @@ func (t *RequisitionLine) columnValue(column string) (interface{}, bool) {
 		return t.Requester_id, true
 	case "confirmed":
 		return t.Confirmed, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "location_code":
 		return t.Location_code, true
 	case "recurring_method":
@@ -5544,8 +5544,8 @@ func (t *RequisitionLine) Init() {
 	t.Expected_receipt_date = *new(types.Date)
 	t.Requester_id = *new(types.Code)
 	t.Confirmed = *new(bool)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Location_code = *new(types.Code)
 	t.Recurring_method = 0
 	t.Expiration_date = *new(types.Date)
@@ -5613,8 +5613,8 @@ func (t *RequisitionLine) ToMap() map[string]interface{} {
 		"expected_receipt_date":   t.Expected_receipt_date.String(),
 		"requester_id":            t.Requester_id.String(),
 		"confirmed":               t.Confirmed,
-		"department_code":         t.Department_code.String(),
-		"project_code":            t.Project_code.String(),
+		"dimension_1_code":        t.Dimension_1_code.String(),
+		"dimension_2_code":        t.Dimension_2_code.String(),
 		"location_code":           t.Location_code.String(),
 		"recurring_method":        int(t.Recurring_method),
 		"expiration_date":         t.Expiration_date.String(),
@@ -5750,14 +5750,14 @@ func (t *RequisitionLine) FromMap(data map[string]interface{}) {
 			t.Confirmed = b
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["location_code"]; ok && v != nil {
@@ -6080,7 +6080,7 @@ func (t *RequisitionLine) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         15,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -6090,7 +6090,7 @@ func (t *RequisitionLine) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         16,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -6389,8 +6389,8 @@ func (t *RequisitionLine) GetTableRelationFields() map[string]tables.TableRelati
 			},
 			SearchTimeout: 0,
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -6399,8 +6399,8 @@ func (t *RequisitionLine) GetTableRelationFields() map[string]tables.TableRelati
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

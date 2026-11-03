@@ -63,8 +63,8 @@ func (fAJournalLineLogic) OnValidate_Fa_posting_type(rec *gtables.FAJournalLine)
 	return nil
 }
 
-// OnValidate_Fa_no: an asset that is not blocked or inactive; its description, department and
-// project; the FA Setup's default depreciation book when the asset has it, and the asset's
+// OnValidate_Fa_no: an asset that is not blocked or inactive; its description, dimension 1 and
+// dimension 2; the FA Setup's default depreciation book when the asset has it, and the asset's
 // posting group in the book
 func (fAJournalLineLogic) OnValidate_Fa_no(rec *gtables.FAJournalLine) error {
 	if rec.Fa_no == "" {
@@ -84,8 +84,8 @@ func (fAJournalLineLogic) OnValidate_Fa_no(rec *gtables.FAJournalLine) error {
 		return err
 	}
 	rec.Description = fa.Description
-	rec.Department_code = fa.Department_code
-	rec.Project_code = fa.Project_code
+	rec.Dimension_1_code = fa.Dimension_1_code
+	rec.Dimension_2_code = fa.Dimension_2_code
 	faDeprBook := gtables.NewFADepreciationBook(rec)
 	if rec.Depreciation_book_code == "" {
 		faSetup := gtables.GetFASetup(rec)

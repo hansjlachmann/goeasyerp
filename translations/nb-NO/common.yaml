@@ -209,6 +209,7 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    dimensions: "Dimensjoner"
     bins: "Hyller"
     overview: "Oversikt"
     budget: "Budsjett"
@@ -550,8 +551,8 @@ common:
     price_groups: "Prisgrupper"
     standard_text_codes: "Standardtekster"
     shipment_methods: "Leveringsmåter"
-    departments: "Avdelinger"
-    projects: "Prosjekter"
+    dimension_1_values: "Dimensjon 1-verdier"
+    dimension_2_values: "Dimensjon 2-verdier"
     salespeople_purchasers: "Selgere/innkjøpere"
     locations: "Lokasjoner"
     smtp_setup: "SMTP-oppsett"

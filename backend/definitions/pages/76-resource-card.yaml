@@ -37,8 +37,8 @@ page:
           - source: tax_prod_posting_group
           - source: tax_group_code
           - source: vendor_no
-          - source: department_code
-          - source: project_code
+          - source: dimension_1_code
+          - source: dimension_2_code
       - name: Personal Data
         caption: Personal Data
         fields:

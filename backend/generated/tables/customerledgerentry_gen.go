@@ -38,8 +38,8 @@
 //	OnValidate_Pmt_disc_possible(rec *gtables.CustomerLedgerEntry) error
 //	OnValidate_Pmt_disc_given_lcy(rec *gtables.CustomerLedgerEntry) error
 //	OnValidate_Customer_posting_group(rec *gtables.CustomerLedgerEntry) error
-//	OnValidate_Department_code(rec *gtables.CustomerLedgerEntry) error
-//	OnValidate_Project_code(rec *gtables.CustomerLedgerEntry) error
+//	OnValidate_Dimension_1_code(rec *gtables.CustomerLedgerEntry) error
+//	OnValidate_Dimension_2_code(rec *gtables.CustomerLedgerEntry) error
 //	OnValidate_Salesperson_code(rec *gtables.CustomerLedgerEntry) error
 //	OnValidate_User_id(rec *gtables.CustomerLedgerEntry) error
 //	OnValidate_Source_code(rec *gtables.CustomerLedgerEntry) error
@@ -171,8 +171,8 @@ type CustomerLedgerEntry struct {
 	Pmt_disc_possible           types.Decimal                          `db:"pmt_disc_possible"`
 	Pmt_disc_given_lcy          types.Decimal                          `db:"pmt_disc_given_lcy"`
 	Customer_posting_group      types.Code                             `db:"customer_posting_group"`
-	Department_code             types.Code                             `db:"department_code"`
-	Project_code                types.Code                             `db:"project_code"`
+	Dimension_1_code            types.Code                             `db:"dimension_1_code"`
+	Dimension_2_code            types.Code                             `db:"dimension_2_code"`
 	Salesperson_code            types.Code                             `db:"salesperson_code"`
 	User_id                     types.Code                             `db:"user_id"`
 	Source_code                 types.Code                             `db:"source_code"`
@@ -345,8 +345,8 @@ var CustomerLedgerEntry_FieldNo = struct {
 	Pmt_disc_possible           int
 	Pmt_disc_given_lcy          int
 	Customer_posting_group      int
-	Department_code             int
-	Project_code                int
+	Dimension_1_code            int
+	Dimension_2_code            int
 	Salesperson_code            int
 	User_id                     int
 	Source_code                 int
@@ -401,8 +401,8 @@ var CustomerLedgerEntry_FieldNo = struct {
 	Pmt_disc_possible:           39,
 	Pmt_disc_given_lcy:          40,
 	Customer_posting_group:      22,
-	Department_code:             23,
-	Project_code:                24,
+	Dimension_1_code:            23,
+	Dimension_2_code:            24,
 	Salesperson_code:            25,
 	User_id:                     27,
 	Source_code:                 28,
@@ -489,9 +489,9 @@ func (t *CustomerLedgerEntry) FieldNo(fieldName string) int {
 		return 40
 	case "customer_posting_group":
 		return 22
-	case "department_code":
+	case "dimension_1_code":
 		return 23
-	case "project_code":
+	case "dimension_2_code":
 		return 24
 	case "salesperson_code":
 		return 25
@@ -607,9 +607,9 @@ func (t *CustomerLedgerEntry) FieldName(fieldNo int) string {
 	case 22:
 		return "customer_posting_group"
 	case 23:
-		return "department_code"
+		return "dimension_1_code"
 	case 24:
-		return "project_code"
+		return "dimension_2_code"
 	case 25:
 		return "salesperson_code"
 	case 27:
@@ -845,11 +845,11 @@ type (
 	CustomerLedgerEntryOnValidate_Customer_posting_group interface {
 		OnValidate_Customer_posting_group(rec *CustomerLedgerEntry) error
 	}
-	CustomerLedgerEntryOnValidate_Department_code interface {
-		OnValidate_Department_code(rec *CustomerLedgerEntry) error
+	CustomerLedgerEntryOnValidate_Dimension_1_code interface {
+		OnValidate_Dimension_1_code(rec *CustomerLedgerEntry) error
 	}
-	CustomerLedgerEntryOnValidate_Project_code interface {
-		OnValidate_Project_code(rec *CustomerLedgerEntry) error
+	CustomerLedgerEntryOnValidate_Dimension_2_code interface {
+		OnValidate_Dimension_2_code(rec *CustomerLedgerEntry) error
 	}
 	CustomerLedgerEntryOnValidate_Salesperson_code interface {
 		OnValidate_Salesperson_code(rec *CustomerLedgerEntry) error
@@ -1011,10 +1011,10 @@ func customerLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CustomerLedgerEntryOnValidate_Pmt_disc_given_lcy)
 	case "OnValidate_Customer_posting_group":
 		_, ok = logic.(CustomerLedgerEntryOnValidate_Customer_posting_group)
-	case "OnValidate_Department_code":
-		_, ok = logic.(CustomerLedgerEntryOnValidate_Department_code)
-	case "OnValidate_Project_code":
-		_, ok = logic.(CustomerLedgerEntryOnValidate_Project_code)
+	case "OnValidate_Dimension_1_code":
+		_, ok = logic.(CustomerLedgerEntryOnValidate_Dimension_1_code)
+	case "OnValidate_Dimension_2_code":
+		_, ok = logic.(CustomerLedgerEntryOnValidate_Dimension_2_code)
 	case "OnValidate_Salesperson_code":
 		_, ok = logic.(CustomerLedgerEntryOnValidate_Salesperson_code)
 	case "OnValidate_User_id":
@@ -1160,10 +1160,10 @@ func (t *CustomerLedgerEntry) CheckFields() error {
 	if err := tables.CheckMaxLength(CustomerLedgerEntryTableName, "customer_posting_group", string(t.Customer_posting_group), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(CustomerLedgerEntryTableName, "department_code", string(t.Department_code), 10); err != nil {
+	if err := tables.CheckMaxLength(CustomerLedgerEntryTableName, "dimension_1_code", string(t.Dimension_1_code), 10); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(CustomerLedgerEntryTableName, "project_code", string(t.Project_code), 10); err != nil {
+	if err := tables.CheckMaxLength(CustomerLedgerEntryTableName, "dimension_2_code", string(t.Dimension_2_code), 10); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(CustomerLedgerEntryTableName, "salesperson_code", string(t.Salesperson_code), 10); err != nil {
@@ -1257,8 +1257,8 @@ func GetCustomerLedgerEntryTableSchema() string {
 		pmt_disc_possible TEXT,
 		pmt_disc_given_lcy TEXT,
 		customer_posting_group TEXT(10),
-		department_code TEXT(10),
-		project_code TEXT(10),
+		dimension_1_code TEXT(10),
+		dimension_2_code TEXT(10),
 		salesperson_code TEXT(10),
 		user_id TEXT(20),
 		source_code TEXT(10),
@@ -1318,8 +1318,8 @@ func GetCustomerLedgerEntryPostgresTableSchema() string {
 		pmt_disc_possible NUMERIC,
 		pmt_disc_given_lcy NUMERIC,
 		customer_posting_group VARCHAR(10),
-		department_code VARCHAR(10),
-		project_code VARCHAR(10),
+		dimension_1_code VARCHAR(10),
+		dimension_2_code VARCHAR(10),
 		salesperson_code VARCHAR(10),
 		user_id VARCHAR(20),
 		source_code VARCHAR(10),
@@ -1525,8 +1525,8 @@ func (t *CustomerLedgerEntry) StoreOldValues() {
 	t.oldValues["pmt_disc_possible"] = t.Pmt_disc_possible
 	t.oldValues["pmt_disc_given_lcy"] = t.Pmt_disc_given_lcy
 	t.oldValues["customer_posting_group"] = t.Customer_posting_group
-	t.oldValues["department_code"] = t.Department_code
-	t.oldValues["project_code"] = t.Project_code
+	t.oldValues["dimension_1_code"] = t.Dimension_1_code
+	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["salesperson_code"] = t.Salesperson_code
 	t.oldValues["user_id"] = t.User_id
 	t.oldValues["source_code"] = t.Source_code
@@ -1650,11 +1650,11 @@ func (t *CustomerLedgerEntry) XRec() *CustomerLedgerEntry {
 	if v, ok := t.oldValues["customer_posting_group"].(types.Code); ok {
 		x.Customer_posting_group = v
 	}
-	if v, ok := t.oldValues["department_code"].(types.Code); ok {
-		x.Department_code = v
+	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
+		x.Dimension_1_code = v
 	}
-	if v, ok := t.oldValues["project_code"].(types.Code); ok {
-		x.Project_code = v
+	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
+		x.Dimension_2_code = v
 	}
 	if v, ok := t.oldValues["salesperson_code"].(types.Code); ok {
 		x.Salesperson_code = v
@@ -1830,8 +1830,8 @@ func (t *CustomerLedgerEntry) GetByPK(entry_no int) bool {
 	var pmt_disc_possibleNull sql.NullString
 	var pmt_disc_given_lcyNull sql.NullString
 	var customer_posting_groupNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var salesperson_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
@@ -1864,7 +1864,7 @@ func (t *CustomerLedgerEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, dimension_1_code, dimension_2_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1899,8 +1899,8 @@ func (t *CustomerLedgerEntry) GetByPK(entry_no int) bool {
 		&pmt_disc_possibleNull,
 		&pmt_disc_given_lcyNull,
 		&customer_posting_groupNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&salesperson_codeNull,
 		&user_idNull,
 		&source_codeNull,
@@ -1967,8 +1967,8 @@ func (t *CustomerLedgerEntry) GetByPK(entry_no int) bool {
 	t.Pmt_disc_possible, _ = types.NewDecimalFromString(pmt_disc_possibleNull.String)
 	t.Pmt_disc_given_lcy, _ = types.NewDecimalFromString(pmt_disc_given_lcyNull.String)
 	t.Customer_posting_group = types.NewCode(customer_posting_groupNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Salesperson_code = types.NewCode(salesperson_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
@@ -2044,8 +2044,8 @@ func (t *CustomerLedgerEntry) Insert(runTrigger bool) bool {
 		t.Pmt_disc_possible,
 		t.Pmt_disc_given_lcy,
 		t.Customer_posting_group,
-		t.Department_code,
-		t.Project_code,
+		t.Dimension_1_code,
+		t.Dimension_2_code,
 		t.Salesperson_code,
 		t.User_id,
 		t.Source_code,
@@ -2075,7 +2075,7 @@ func (t *CustomerLedgerEntry) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, dimension_1_code, dimension_2_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2141,8 +2141,8 @@ func (t *CustomerLedgerEntry) InsertAll(records []*CustomerLedgerEntry, runTrigg
 			r.Pmt_disc_possible,
 			r.Pmt_disc_given_lcy,
 			r.Customer_posting_group,
-			r.Department_code,
-			r.Project_code,
+			r.Dimension_1_code,
+			r.Dimension_2_code,
 			r.Salesperson_code,
 			r.User_id,
 			r.Source_code,
@@ -2171,7 +2171,7 @@ func (t *CustomerLedgerEntry) InsertAll(records []*CustomerLedgerEntry, runTrigg
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName)
-	columns := []string{"entry_no", "customer_no", "sell_to_customer_no", "posting_date", "document_date", "document_type", "document_no", "external_document_no", "description", "currency_code", "amount", "remaining_amount", "closed_by_amount", "original_amount_lcy", "remaining_amt_lcy", "amount_lcy", "closed_by_amount_lcy", "debit_amount", "credit_amount", "debit_amount_lcy", "credit_amount_lcy", "sales_lcy", "profit_lcy", "inv_discount_lcy", "pmt_discount_date", "pmt_disc_possible", "pmt_disc_given_lcy", "customer_posting_group", "department_code", "project_code", "salesperson_code", "user_id", "source_code", "reason_code", "journal_batch_name", "transaction_no", "applies_to_doc_type", "applies_to_doc_no", "applies_to_id", "open", "positive", "on_hold", "due_date", "closed_by_entry_no", "closed_at_date", "bal_account_type", "bal_account_no", "no_series", "closed_by_currency_code", "closed_by_currency_amount", "rounding_currency", "rounding_amount", "rounding_amount_lcy", "calculate_interest", "closing_interest_calculated"}
+	columns := []string{"entry_no", "customer_no", "sell_to_customer_no", "posting_date", "document_date", "document_type", "document_no", "external_document_no", "description", "currency_code", "amount", "remaining_amount", "closed_by_amount", "original_amount_lcy", "remaining_amt_lcy", "amount_lcy", "closed_by_amount_lcy", "debit_amount", "credit_amount", "debit_amount_lcy", "credit_amount_lcy", "sales_lcy", "profit_lcy", "inv_discount_lcy", "pmt_discount_date", "pmt_disc_possible", "pmt_disc_given_lcy", "customer_posting_group", "dimension_1_code", "dimension_2_code", "salesperson_code", "user_id", "source_code", "reason_code", "journal_batch_name", "transaction_no", "applies_to_doc_type", "applies_to_doc_no", "applies_to_id", "open", "positive", "on_hold", "due_date", "closed_by_entry_no", "closed_at_date", "bal_account_type", "bal_account_no", "no_series", "closed_by_currency_code", "closed_by_currency_amount", "rounding_currency", "rounding_amount", "rounding_amount_lcy", "calculate_interest", "closing_interest_calculated"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2323,13 +2323,13 @@ func (t *CustomerLedgerEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "customer_posting_group = ?")
 			values = append(values, t.Customer_posting_group)
 		}
-		if t.hasFieldChanged("department_code") {
-			setClauses = append(setClauses, "department_code = ?")
-			values = append(values, t.Department_code)
+		if t.hasFieldChanged("dimension_1_code") {
+			setClauses = append(setClauses, "dimension_1_code = ?")
+			values = append(values, t.Dimension_1_code)
 		}
-		if t.hasFieldChanged("project_code") {
-			setClauses = append(setClauses, "project_code = ?")
-			values = append(values, t.Project_code)
+		if t.hasFieldChanged("dimension_2_code") {
+			setClauses = append(setClauses, "dimension_2_code = ?")
+			values = append(values, t.Dimension_2_code)
 		}
 		if t.hasFieldChanged("salesperson_code") {
 			setClauses = append(setClauses, "salesperson_code = ?")
@@ -2492,10 +2492,10 @@ func (t *CustomerLedgerEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.Pmt_disc_given_lcy)
 		setClauses = append(setClauses, "customer_posting_group = ?")
 		values = append(values, t.Customer_posting_group)
-		setClauses = append(setClauses, "department_code = ?")
-		values = append(values, t.Department_code)
-		setClauses = append(setClauses, "project_code = ?")
-		values = append(values, t.Project_code)
+		setClauses = append(setClauses, "dimension_1_code = ?")
+		values = append(values, t.Dimension_1_code)
+		setClauses = append(setClauses, "dimension_2_code = ?")
+		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "salesperson_code = ?")
 		values = append(values, t.Salesperson_code)
 		setClauses = append(setClauses, "user_id = ?")
@@ -2725,13 +2725,13 @@ func (t *CustomerLedgerEntry) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Customer_posting_group.Equal(old)
 		}
-	case "department_code":
+	case "dimension_1_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Department_code.Equal(old)
+			return !t.Dimension_1_code.Equal(old)
 		}
-	case "project_code":
+	case "dimension_2_code":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_code.Equal(old)
+			return !t.Dimension_2_code.Equal(old)
 		}
 	case "salesperson_code":
 		if old, ok := oldValue.(types.Code); ok {
@@ -3139,10 +3139,10 @@ func (t *CustomerLedgerEntry) columnName(fieldName string) (string, bool) {
 		return "pmt_disc_given_lcy", true
 	case strings.ToLower("customer_posting_group"):
 		return "customer_posting_group", true
-	case strings.ToLower("department_code"):
-		return "department_code", true
-	case strings.ToLower("project_code"):
-		return "project_code", true
+	case strings.ToLower("dimension_1_code"):
+		return "dimension_1_code", true
+	case strings.ToLower("dimension_2_code"):
+		return "dimension_2_code", true
 	case strings.ToLower("salesperson_code"):
 		return "salesperson_code", true
 	case strings.ToLower("user_id"):
@@ -3606,7 +3606,7 @@ func (t *CustomerLedgerEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, dimension_1_code, dimension_2_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3638,8 +3638,8 @@ func (t *CustomerLedgerEntry) FindFirst() bool {
 	var pmt_disc_possibleNull sql.NullString
 	var pmt_disc_given_lcyNull sql.NullString
 	var customer_posting_groupNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var salesperson_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
@@ -3693,8 +3693,8 @@ func (t *CustomerLedgerEntry) FindFirst() bool {
 		&pmt_disc_possibleNull,
 		&pmt_disc_given_lcyNull,
 		&customer_posting_groupNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&salesperson_codeNull,
 		&user_idNull,
 		&source_codeNull,
@@ -3758,8 +3758,8 @@ func (t *CustomerLedgerEntry) FindFirst() bool {
 	t.Pmt_disc_possible, _ = types.NewDecimalFromString(pmt_disc_possibleNull.String)
 	t.Pmt_disc_given_lcy, _ = types.NewDecimalFromString(pmt_disc_given_lcyNull.String)
 	t.Customer_posting_group = types.NewCode(customer_posting_groupNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Salesperson_code = types.NewCode(salesperson_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
@@ -3803,7 +3803,7 @@ func (t *CustomerLedgerEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, dimension_1_code, dimension_2_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3835,8 +3835,8 @@ func (t *CustomerLedgerEntry) FindLast() bool {
 	var pmt_disc_possibleNull sql.NullString
 	var pmt_disc_given_lcyNull sql.NullString
 	var customer_posting_groupNull sql.NullString
-	var department_codeNull sql.NullString
-	var project_codeNull sql.NullString
+	var dimension_1_codeNull sql.NullString
+	var dimension_2_codeNull sql.NullString
 	var salesperson_codeNull sql.NullString
 	var user_idNull sql.NullString
 	var source_codeNull sql.NullString
@@ -3890,8 +3890,8 @@ func (t *CustomerLedgerEntry) FindLast() bool {
 		&pmt_disc_possibleNull,
 		&pmt_disc_given_lcyNull,
 		&customer_posting_groupNull,
-		&department_codeNull,
-		&project_codeNull,
+		&dimension_1_codeNull,
+		&dimension_2_codeNull,
 		&salesperson_codeNull,
 		&user_idNull,
 		&source_codeNull,
@@ -3955,8 +3955,8 @@ func (t *CustomerLedgerEntry) FindLast() bool {
 	t.Pmt_disc_possible, _ = types.NewDecimalFromString(pmt_disc_possibleNull.String)
 	t.Pmt_disc_given_lcy, _ = types.NewDecimalFromString(pmt_disc_given_lcyNull.String)
 	t.Customer_posting_group = types.NewCode(customer_posting_groupNull.String)
-	t.Department_code = types.NewCode(department_codeNull.String)
-	t.Project_code = types.NewCode(project_codeNull.String)
+	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Salesperson_code = types.NewCode(salesperson_codeNull.String)
 	t.User_id = types.NewCode(user_idNull.String)
 	t.Source_code = types.NewCode(source_codeNull.String)
@@ -4030,7 +4030,7 @@ func (t *CustomerLedgerEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, dimension_1_code, dimension_2_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4126,8 +4126,8 @@ func (t *CustomerLedgerEntry) Next(steps ...int) bool {
 		var pmt_disc_possibleNull sql.NullString
 		var pmt_disc_given_lcyNull sql.NullString
 		var customer_posting_groupNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var salesperson_codeNull sql.NullString
 		var user_idNull sql.NullString
 		var source_codeNull sql.NullString
@@ -4181,8 +4181,8 @@ func (t *CustomerLedgerEntry) Next(steps ...int) bool {
 			&pmt_disc_possibleNull,
 			&pmt_disc_given_lcyNull,
 			&customer_posting_groupNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&salesperson_codeNull,
 			&user_idNull,
 			&source_codeNull,
@@ -4245,8 +4245,8 @@ func (t *CustomerLedgerEntry) Next(steps ...int) bool {
 		t.Pmt_disc_possible, _ = types.NewDecimalFromString(pmt_disc_possibleNull.String)
 		t.Pmt_disc_given_lcy, _ = types.NewDecimalFromString(pmt_disc_given_lcyNull.String)
 		t.Customer_posting_group = types.NewCode(customer_posting_groupNull.String)
-		t.Department_code = types.NewCode(department_codeNull.String)
-		t.Project_code = types.NewCode(project_codeNull.String)
+		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Salesperson_code = types.NewCode(salesperson_codeNull.String)
 		t.User_id = types.NewCode(user_idNull.String)
 		t.Source_code = types.NewCode(source_codeNull.String)
@@ -4319,7 +4319,7 @@ func (t *CustomerLedgerEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, department_code, project_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, customer_no, sell_to_customer_no, posting_date, document_date, document_type, document_no, external_document_no, description, currency_code, amount, remaining_amount, closed_by_amount, original_amount_lcy, remaining_amt_lcy, amount_lcy, closed_by_amount_lcy, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, sales_lcy, profit_lcy, inv_discount_lcy, pmt_discount_date, pmt_disc_possible, pmt_disc_given_lcy, customer_posting_group, dimension_1_code, dimension_2_code, salesperson_code, user_id, source_code, reason_code, journal_batch_name, transaction_no, applies_to_doc_type, applies_to_doc_no, applies_to_id, open, positive, on_hold, due_date, closed_by_entry_no, closed_at_date, bal_account_type, bal_account_no, no_series, closed_by_currency_code, closed_by_currency_amount, rounding_currency, rounding_amount, rounding_amount_lcy, calculate_interest, closing_interest_calculated FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4368,8 +4368,8 @@ func (t *CustomerLedgerEntry) FindSetBuffered() bool {
 		var pmt_disc_possibleNull sql.NullString
 		var pmt_disc_given_lcyNull sql.NullString
 		var customer_posting_groupNull sql.NullString
-		var department_codeNull sql.NullString
-		var project_codeNull sql.NullString
+		var dimension_1_codeNull sql.NullString
+		var dimension_2_codeNull sql.NullString
 		var salesperson_codeNull sql.NullString
 		var user_idNull sql.NullString
 		var source_codeNull sql.NullString
@@ -4423,8 +4423,8 @@ func (t *CustomerLedgerEntry) FindSetBuffered() bool {
 			&pmt_disc_possibleNull,
 			&pmt_disc_given_lcyNull,
 			&customer_posting_groupNull,
-			&department_codeNull,
-			&project_codeNull,
+			&dimension_1_codeNull,
+			&dimension_2_codeNull,
 			&salesperson_codeNull,
 			&user_idNull,
 			&source_codeNull,
@@ -4485,8 +4485,8 @@ func (t *CustomerLedgerEntry) FindSetBuffered() bool {
 		record.Pmt_disc_possible, _ = types.NewDecimalFromString(pmt_disc_possibleNull.String)
 		record.Pmt_disc_given_lcy, _ = types.NewDecimalFromString(pmt_disc_given_lcyNull.String)
 		record.Customer_posting_group = types.NewCode(customer_posting_groupNull.String)
-		record.Department_code = types.NewCode(department_codeNull.String)
-		record.Project_code = types.NewCode(project_codeNull.String)
+		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
+		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Salesperson_code = types.NewCode(salesperson_codeNull.String)
 		record.User_id = types.NewCode(user_idNull.String)
 		record.Source_code = types.NewCode(source_codeNull.String)
@@ -4566,8 +4566,8 @@ func (t *CustomerLedgerEntry) copyFromBuffered(record *CustomerLedgerEntry) {
 	t.Pmt_disc_possible = record.Pmt_disc_possible
 	t.Pmt_disc_given_lcy = record.Pmt_disc_given_lcy
 	t.Customer_posting_group = record.Customer_posting_group
-	t.Department_code = record.Department_code
-	t.Project_code = record.Project_code
+	t.Dimension_1_code = record.Dimension_1_code
+	t.Dimension_2_code = record.Dimension_2_code
 	t.Salesperson_code = record.Salesperson_code
 	t.User_id = record.User_id
 	t.Source_code = record.Source_code
@@ -5461,45 +5461,45 @@ func (t *CustomerLedgerEntry) ValidateField(fieldName string, value interface{})
 			}
 		}
 		return nil
-	case "department_code":
+	case "dimension_1_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 		} else if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field department_code")
+			return fmt.Errorf("invalid type for field dimension_1_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "department_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CustomerLedgerEntryOnValidate_Department_code); ok {
-				if err := trg.OnValidate_Department_code(t); err != nil {
+			if trg, ok := l.(CustomerLedgerEntryOnValidate_Dimension_1_code); ok {
+				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "project_code":
+	case "dimension_2_code":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 		} else if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field project_code")
+			return fmt.Errorf("invalid type for field dimension_2_code")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_code"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CustomerLedgerEntryOnValidate_Project_code); ok {
-				if err := trg.OnValidate_Project_code(t); err != nil {
+			if trg, ok := l.(CustomerLedgerEntryOnValidate_Dimension_2_code); ok {
+				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
 					return err
 				}
 			}
@@ -6178,9 +6178,9 @@ func (t *CustomerLedgerEntry) FieldValue(no int) (any, bool) {
 	case 22:
 		return t.Customer_posting_group, true
 	case 23:
-		return t.Department_code, true
+		return t.Dimension_1_code, true
 	case 24:
-		return t.Project_code, true
+		return t.Dimension_2_code, true
 	case 25:
 		return t.Salesperson_code, true
 	case 27:
@@ -6416,20 +6416,20 @@ func (t *CustomerLedgerEntry) SetFieldValue(no int, value any) bool {
 		}
 	case 23:
 		if v, ok := value.(types.Code); ok {
-			t.Department_code = v
+			t.Dimension_1_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Department_code = types.NewCode(v)
+			t.Dimension_1_code = types.NewCode(v)
 			return true
 		}
 	case 24:
 		if v, ok := value.(types.Code); ok {
-			t.Project_code = v
+			t.Dimension_2_code = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Project_code = types.NewCode(v)
+			t.Dimension_2_code = types.NewCode(v)
 			return true
 		}
 	case 25:
@@ -7270,10 +7270,10 @@ func (t *CustomerLedgerEntry) columnValue(column string) (interface{}, bool) {
 		return t.Pmt_disc_given_lcy, true
 	case "customer_posting_group":
 		return t.Customer_posting_group, true
-	case "department_code":
-		return t.Department_code, true
-	case "project_code":
-		return t.Project_code, true
+	case "dimension_1_code":
+		return t.Dimension_1_code, true
+	case "dimension_2_code":
+		return t.Dimension_2_code, true
 	case "salesperson_code":
 		return t.Salesperson_code, true
 	case "user_id":
@@ -7405,8 +7405,8 @@ func (t *CustomerLedgerEntry) Init() {
 	t.Pmt_disc_possible = *new(types.Decimal)
 	t.Pmt_disc_given_lcy = *new(types.Decimal)
 	t.Customer_posting_group = *new(types.Code)
-	t.Department_code = *new(types.Code)
-	t.Project_code = *new(types.Code)
+	t.Dimension_1_code = *new(types.Code)
+	t.Dimension_2_code = *new(types.Code)
 	t.Salesperson_code = *new(types.Code)
 	t.User_id = *new(types.Code)
 	t.Source_code = *new(types.Code)
@@ -7494,8 +7494,8 @@ func (t *CustomerLedgerEntry) ToMap() map[string]interface{} {
 		"pmt_disc_possible":           t.Pmt_disc_possible.String(),
 		"pmt_disc_given_lcy":          t.Pmt_disc_given_lcy.String(),
 		"customer_posting_group":      t.Customer_posting_group.String(),
-		"department_code":             t.Department_code.String(),
-		"project_code":                t.Project_code.String(),
+		"dimension_1_code":            t.Dimension_1_code.String(),
+		"dimension_2_code":            t.Dimension_2_code.String(),
 		"salesperson_code":            t.Salesperson_code.String(),
 		"user_id":                     t.User_id.String(),
 		"source_code":                 t.Source_code.String(),
@@ -7798,14 +7798,14 @@ func (t *CustomerLedgerEntry) FromMap(data map[string]interface{}) {
 			t.Customer_posting_group = types.NewCode(s)
 		}
 	}
-	if v, ok := data["department_code"]; ok && v != nil {
+	if v, ok := data["dimension_1_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Department_code = types.NewCode(s)
+			t.Dimension_1_code = types.NewCode(s)
 		}
 	}
-	if v, ok := data["project_code"]; ok && v != nil {
+	if v, ok := data["dimension_2_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Project_code = types.NewCode(s)
+			t.Dimension_2_code = types.NewCode(s)
 		}
 	}
 	if v, ok := data["salesperson_code"]; ok && v != nil {
@@ -8301,7 +8301,7 @@ func (t *CustomerLedgerEntry) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         23,
-			Name:       "department_code",
+			Name:       "dimension_1_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -8311,7 +8311,7 @@ func (t *CustomerLedgerEntry) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         24,
-			Name:       "project_code",
+			Name:       "dimension_2_code",
 			Type:       tables.FieldTypeCode,
 			Length:     10,
 			Required:   false,
@@ -8634,8 +8634,8 @@ func (t *CustomerLedgerEntry) GetTableRelationFields() map[string]tables.TableRe
 			},
 			SearchTimeout: 0,
 		},
-		"department_code": {
-			Table:        "Department",
+		"dimension_1_code": {
+			Table:        "Dimension_1",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
@@ -8644,8 +8644,8 @@ func (t *CustomerLedgerEntry) GetTableRelationFields() map[string]tables.TableRe
 			},
 			SearchTimeout: 0,
 		},
-		"project_code": {
-			Table:        "Project",
+		"dimension_2_code": {
+			Table:        "Dimension_2",
 			Field:        "code",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

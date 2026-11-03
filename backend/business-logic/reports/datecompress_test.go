@@ -69,7 +69,7 @@ func TestDateCompressGeneralLedger(t *testing.T) {
 	}
 
 	runCompression(t, src, reports.DateCompressGeneralLedgerID, map[string]string{"starting_date": start.String(), "ending_date": end.String(),
-		"period_length": "2", "description": "Compressed", "retain_department_code": "true"})
+		"period_length": "2", "description": "Compressed", "retain_dimension_1_code": "true"})
 
 	dateComprReg := lastComprRegister(t, src)
 	countAfter := glEntry.Count()

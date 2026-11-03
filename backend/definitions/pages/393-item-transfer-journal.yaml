@@ -47,16 +47,16 @@ page:
           width: 100
         - source: new_location_code
           width: 130
-        - source: department_code
+        - source: dimension_1_code
           width: 110
           visible: false
-        - source: new_department_code
+        - source: new_dimension_1_code
           width: 140
           visible: false
-        - source: project_code
+        - source: dimension_2_code
           width: 110
           visible: false
-        - source: new_project_code
+        - source: new_dimension_2_code
           width: 130
           visible: false
         - source: quantity
