@@ -22,8 +22,11 @@ func (locationLogic) OnModify(rec *gtables.Location) error {
 	return nil
 }
 
-// OnDelete runs before a record is deleted
+// OnDelete: the location's bins go with it
 func (locationLogic) OnDelete(rec *gtables.Location) error {
+	bin := gtables.NewBin(rec)
+	bin.SetRange("location_code", rec.Code)
+	bin.DeleteAll()
 	return nil
 }
 

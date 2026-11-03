@@ -13,7 +13,7 @@ func SalesLineSource(salesLine *gtables.SalesLine) Source {
 
 // salesLineCreateReservFor (SalesLineCreateReservFor): the sales line reserves a quantity from
 // a supply of its item, variant and location dated no later than its shipment date
-func (m *ReservationManagement) salesLineCreateReservFor(salesLine *gtables.SalesLine, validToDate types.Date, description types.Text, expectedReceiptDate types.Date, quantity types.Decimal, from Source, fromVariantCode, fromLocationCode, fromSerialNo, fromLotNo types.Code) error {
+func (m *ReservationManagement) salesLineCreateReservFor(salesLine *gtables.SalesLine, validToDate types.Date, description types.Text, expectedReceiptDate types.Date, quantity types.Decimal, from Source, fromVariantCode, fromLocationCode, fromBinCode, fromSerialNo, fromLotNo types.Code) error {
 	err := salesLine.TestField("type", gtables.SalesLine_Type.Item)
 	if err == nil {
 		err = salesLine.TestField("no")
@@ -33,6 +33,9 @@ func (m *ReservationManagement) salesLineCreateReservFor(salesLine *gtables.Sale
 	err = salesLine.TestField("location_code", fromLocationCode)
 	if err == nil {
 		err = salesLine.TestField("variant_code", fromVariantCode)
+	}
+	if err == nil {
+		err = salesLine.TestField("bin_code", fromBinCode)
 	}
 	if err == nil {
 		err = salesLine.TestField("serial_no", fromSerialNo)
@@ -59,7 +62,7 @@ func (m *ReservationManagement) salesLineCreateReservFor(salesLine *gtables.Sale
 	}
 	return m.createReservEntry(SalesLineSource(salesLine), from, reservEntryValues{
 		itemNo: salesLine.No, variantCode: salesLine.Variant_code, locationCode: salesLine.Location_code,
-		serialNo: salesLine.Serial_no, lotNo: salesLine.Lot_no,
+		binCode: salesLine.Bin_code, serialNo: salesLine.Serial_no, lotNo: salesLine.Lot_no,
 		validToDate: validToDate, description: description,
 		expectedReceiptDate: expectedReceiptDate, shipmentDate: salesLine.Shipment_date, quantity: quantity})
 }
@@ -102,7 +105,7 @@ func (m *ReservationManagement) SalesLineSetReservFor(currentSalesLine *gtables.
 	}
 	m.forSalesLine = gtables.NewSalesLine(m.src)
 	m.forSalesLine.Copy(currentSalesLine)
-	m.setReservFor(TypeSales, currentSalesLine.No, currentSalesLine.Variant_code, currentSalesLine.Location_code, currentSalesLine.Serial_no, currentSalesLine.Lot_no,
+	m.setReservFor(TypeSales, currentSalesLine.No, currentSalesLine.Variant_code, currentSalesLine.Location_code, currentSalesLine.Bin_code, currentSalesLine.Serial_no, currentSalesLine.Lot_no,
 		currentSalesLine.Shipment_date, SalesLineSource(currentSalesLine))
 	return nil
 }
@@ -133,7 +136,7 @@ func (m *ReservationManagement) SalesLineVerifyChange(newSalesLine *gtables.Sale
 		reservedQtyBase: newSalesLine.Reserved_qty_base, qtyBase: newSalesLine.Quantity_base,
 		validSignNegative: newSalesLine.Document_type == gtables.SalesLine_Document_type.CreditMemo,
 		itemNo:            newSalesLine.No, locationCode: newSalesLine.Location_code, variantCode: newSalesLine.Variant_code,
-		serialNo: newSalesLine.Serial_no, lotNo: newSalesLine.Lot_no, serialField: "serial_no", lotField: "lot_no",
+		binCode: newSalesLine.Bin_code, serialNo: newSalesLine.Serial_no, lotNo: newSalesLine.Lot_no, binField: "bin_code", serialField: "serial_no", lotField: "lot_no",
 		itemField: "no", locationField: "location_code",
 		date: newSalesLine.Shipment_date, dateField: "shipment_date"})
 }

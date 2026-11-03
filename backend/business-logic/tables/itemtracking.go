@@ -8,7 +8,8 @@ import (
 
 // Item tracking on the lines: the lookup of Serial No. and Lot No. (classic OnLookup →
 // SelectItemEntry) shows the open item ledger entries of the line's item — those of the sign
-// the line takes — and the picked entry gives the line its location, serial and lot number.
+// the line takes — and the picked entry gives the line its location, serial and lot number (purchase and item
+// journal lines: its bin too).
 // The pages run them as the fields' on_lookup.
 const itemLedgerEntriesPageID = 38
 
@@ -73,6 +74,7 @@ func PurchLineSelectItemEntry(rec *gtables.PurchaseLine) (bool, error) {
 	if system.RunModal(itemLedgerEntriesPageID, itemLedgEntry, true) == system.ActionLookupOK {
 		rec.Location_code = itemLedgEntry.Location_code
 		rec.Serial_no = itemLedgEntry.Serial_no
+		rec.Bin_code = itemLedgEntry.Bin_code
 		rec.Lot_no = itemLedgEntry.Lot_no
 		return true, nil
 	}
@@ -103,10 +105,12 @@ func ItemJnlLineSelectItemEntry(rec *gtables.ItemJournalLine, newFields bool) (b
 		if newFields {
 			rec.New_location_code = itemLedgEntry.Location_code
 			rec.New_serial_no = itemLedgEntry.Serial_no
+			rec.New_bin_code = itemLedgEntry.Bin_code
 			rec.New_lot_no = itemLedgEntry.Lot_no
 		} else {
 			rec.Location_code = itemLedgEntry.Location_code
 			rec.Serial_no = itemLedgEntry.Serial_no
+			rec.Bin_code = itemLedgEntry.Bin_code
 			rec.Lot_no = itemLedgEntry.Lot_no
 		}
 		return true, nil

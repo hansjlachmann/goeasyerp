@@ -45,6 +45,8 @@ type itemLine struct {
 	lotNo       string
 	newSerialNo string
 	newLotNo    string
+	binCode     string
+	newBinCode  string
 }
 
 // postItemLines enters lines in the ITEM journal's DEFAULT batch and posts the batch in one
@@ -82,6 +84,7 @@ func postItemLines(t *testing.T, src ftables.Source, lines ...itemLine) (PostBat
 			must(t, line.Validate("new_location_code", types.Code(l.newLocation)))
 		}
 		line.Serial_no, line.Lot_no = types.Code(l.serialNo), types.Code(l.lotNo)
+		line.Bin_code, line.New_bin_code = types.Code(l.binCode), types.Code(l.newBinCode)
 		line.New_serial_no, line.New_lot_no = types.Code(l.newSerialNo), types.Code(l.newLotNo)
 		must(t, line.InsertOrError(true))
 	}

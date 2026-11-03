@@ -282,6 +282,7 @@ func (m *MakeOrder) insertPurchOrderLine(reqLine2 *gtables.RequisitionLine, purc
 	purchOrderLine.Description = reqLine2.Description
 	purchOrderLine.Description_2 = reqLine2.Description_2
 	purchOrderLine.Variant_code = reqLine2.Variant_code
+	purchOrderLine.Bin_code = reqLine2.Bin_code
 	purchOrderLine.Serial_no = reqLine2.Serial_no
 	purchOrderLine.Lot_no = reqLine2.Lot_no
 	purchOrderLine.Reserve = gtables.PurchaseLineReserve(reqLine2.Reserve)

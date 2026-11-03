@@ -48,7 +48,7 @@ func SourceFromParams(param func(string) string) Source {
 type ForLine struct {
 	Source                            Source
 	ItemNo, VariantCode, LocationCode types.Code
-	SerialNo, LotNo                   types.Code
+	BinCode, SerialNo, LotNo          types.Code
 	ShipmentDate, ValidToDate         types.Date
 	UnitOfMeasureCode                 types.Code
 	QtyToReserve                      types.Decimal
@@ -75,7 +75,7 @@ func (m *ReservationManagement) SetReservForSource(s Source) (ForLine, error) {
 		}
 		if err == nil {
 			f.ItemNo, f.VariantCode, f.LocationCode = salesLine.No, salesLine.Variant_code, salesLine.Location_code
-			f.SerialNo, f.LotNo = salesLine.Serial_no, salesLine.Lot_no
+			f.BinCode, f.SerialNo, f.LotNo = salesLine.Bin_code, salesLine.Serial_no, salesLine.Lot_no
 			f.ShipmentDate, f.UnitOfMeasureCode = salesLine.Shipment_date, salesLine.Unit_of_measure_code
 			f.QtyToReserve, err = SalesLineReservQuantity(salesLine, true)
 		}
@@ -93,7 +93,7 @@ func (m *ReservationManagement) SetReservForSource(s Source) (ForLine, error) {
 		}
 		if err == nil {
 			f.ItemNo, f.VariantCode, f.LocationCode = purchLine.No, purchLine.Variant_code, purchLine.Location_code
-			f.SerialNo, f.LotNo = purchLine.Serial_no, purchLine.Lot_no
+			f.BinCode, f.SerialNo, f.LotNo = purchLine.Bin_code, purchLine.Serial_no, purchLine.Lot_no
 			f.ShipmentDate, f.UnitOfMeasureCode = purchLine.Expected_receipt_date, purchLine.Unit_of_measure_code
 			f.QtyToReserve, err = PurchLineReservQuantity(purchLine, true)
 		}
@@ -108,7 +108,7 @@ func (m *ReservationManagement) SetReservForSource(s Source) (ForLine, error) {
 		}
 		if err == nil {
 			f.ItemNo, f.VariantCode, f.LocationCode = reqLine.No, reqLine.Variant_code, reqLine.Location_code
-			f.SerialNo, f.LotNo = reqLine.Serial_no, reqLine.Lot_no
+			f.BinCode, f.SerialNo, f.LotNo = reqLine.Bin_code, reqLine.Serial_no, reqLine.Lot_no
 			f.ShipmentDate, f.UnitOfMeasureCode = reqLine.Expected_receipt_date, reqLine.Unit_of_measure_code
 			f.QtyToReserve, err = ReqLineReservQuantity(reqLine, true)
 		}
@@ -123,7 +123,7 @@ func (m *ReservationManagement) SetReservForSource(s Source) (ForLine, error) {
 		}
 		if err == nil {
 			f.ItemNo, f.VariantCode, f.LocationCode = itemJnlLine.Item_no, itemJnlLine.Variant_code, itemJnlLine.Location_code
-			f.SerialNo, f.LotNo = itemJnlLine.Serial_no, itemJnlLine.Lot_no
+			f.BinCode, f.SerialNo, f.LotNo = itemJnlLine.Bin_code, itemJnlLine.Serial_no, itemJnlLine.Lot_no
 			f.ShipmentDate, f.UnitOfMeasureCode = itemJnlLine.Posting_date, itemJnlLine.Unit_of_measure_code
 			f.QtyToReserve, err = ItemJnlLineReservQuantity(itemJnlLine, true)
 		}
@@ -138,7 +138,7 @@ func (m *ReservationManagement) SetReservForSource(s Source) (ForLine, error) {
 		}
 		if err == nil {
 			f.ItemNo, f.VariantCode, f.LocationCode = bomJnlLine.Item_no, bomJnlLine.Variant_code, bomJnlLine.Location_code
-			f.LotNo = bomJnlLine.Lot_no
+			f.BinCode, f.LotNo = bomJnlLine.Bin_code, bomJnlLine.Lot_no
 			f.ShipmentDate, f.UnitOfMeasureCode = bomJnlLine.Posting_date, bomJnlLine.Unit_of_measure_code
 			f.QtyToReserve, err = BOMJnlLineReservQuantity(bomJnlLine, true)
 		}

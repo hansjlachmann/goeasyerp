@@ -70,6 +70,7 @@
 //	OnValidate_Unit_of_measure_code(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Serial_no(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Lot_no(rec *gtables.ItemLedgerEntry) error
+//	OnValidate_Bin_code(rec *gtables.ItemLedgerEntry) error
 
 package tables
 
@@ -191,6 +192,7 @@ type ItemLedgerEntry struct {
 	Unit_of_measure_code          types.Code                 `db:"unit_of_measure_code"`
 	Serial_no                     types.Code                 `db:"serial_no"`
 	Lot_no                        types.Code                 `db:"lot_no"`
+	Bin_code                      types.Code                 `db:"bin_code"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -349,6 +351,7 @@ var ItemLedgerEntry_FieldNo = struct {
 	Unit_of_measure_code          int
 	Serial_no                     int
 	Lot_no                        int
+	Bin_code                      int
 }{
 	Entry_no:                      1,
 	Item_no:                       2,
@@ -410,6 +413,7 @@ var ItemLedgerEntry_FieldNo = struct {
 	Unit_of_measure_code:          5407,
 	Serial_no:                     40,
 	Lot_no:                        5400,
+	Bin_code:                      5403,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -535,6 +539,8 @@ func (t *ItemLedgerEntry) FieldNo(fieldName string) int {
 		return 40
 	case "lot_no":
 		return 5400
+	case "bin_code":
+		return 5403
 	}
 	return 0
 }
@@ -662,6 +668,8 @@ func (t *ItemLedgerEntry) FieldName(fieldNo int) string {
 		return "serial_no"
 	case 5400:
 		return "lot_no"
+	case 5403:
+		return "bin_code"
 	}
 	return ""
 }
@@ -943,6 +951,9 @@ type (
 	ItemLedgerEntryOnValidate_Lot_no interface {
 		OnValidate_Lot_no(rec *ItemLedgerEntry) error
 	}
+	ItemLedgerEntryOnValidate_Bin_code interface {
+		OnValidate_Bin_code(rec *ItemLedgerEntry) error
+	}
 )
 
 // itemLedgerEntryLogic is the registered business logic of Item_Ledger_Entry, in
@@ -1092,6 +1103,8 @@ func itemLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemLedgerEntryOnValidate_Serial_no)
 	case "OnValidate_Lot_no":
 		_, ok = logic.(ItemLedgerEntryOnValidate_Lot_no)
+	case "OnValidate_Bin_code":
+		_, ok = logic.(ItemLedgerEntryOnValidate_Bin_code)
 	default:
 		return false, false
 	}
@@ -1250,6 +1263,9 @@ func (t *ItemLedgerEntry) CheckFields() error {
 	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "lot_no", string(t.Lot_no), 20); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(ItemLedgerEntryTableName, "bin_code", string(t.Bin_code), 10); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -1336,7 +1352,8 @@ func GetItemLedgerEntryTableSchema() string {
 		qty_per_unit_of_measure TEXT,
 		unit_of_measure_code TEXT(10),
 		serial_no TEXT(20),
-		lot_no TEXT(20)
+		lot_no TEXT(20),
+		bin_code TEXT(10)
 	`
 }
 
@@ -1402,7 +1419,8 @@ func GetItemLedgerEntryPostgresTableSchema() string {
 		qty_per_unit_of_measure NUMERIC,
 		unit_of_measure_code VARCHAR(10),
 		serial_no VARCHAR(20),
-		lot_no VARCHAR(20)
+		lot_no VARCHAR(20),
+		bin_code VARCHAR(10)
 	`
 }
 
@@ -1656,6 +1674,7 @@ func (t *ItemLedgerEntry) StoreOldValues() {
 	t.oldValues["unit_of_measure_code"] = t.Unit_of_measure_code
 	t.oldValues["serial_no"] = t.Serial_no
 	t.oldValues["lot_no"] = t.Lot_no
+	t.oldValues["bin_code"] = t.Bin_code
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1850,6 +1869,9 @@ func (t *ItemLedgerEntry) XRec() *ItemLedgerEntry {
 	if v, ok := t.oldValues["lot_no"].(types.Code); ok {
 		x.Lot_no = v
 	}
+	if v, ok := t.oldValues["bin_code"].(types.Code); ok {
+		x.Bin_code = v
+	}
 	return x
 }
 
@@ -1981,6 +2003,7 @@ func (t *ItemLedgerEntry) GetByPK(entry_no int) bool {
 	var unit_of_measure_codeNull sql.NullString
 	var serial_noNull sql.NullString
 	var lot_noNull sql.NullString
+	var bin_codeNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1988,7 +2011,7 @@ func (t *ItemLedgerEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2055,6 +2078,7 @@ func (t *ItemLedgerEntry) GetByPK(entry_no int) bool {
 		&unit_of_measure_codeNull,
 		&serial_noNull,
 		&lot_noNull,
+		&bin_codeNull,
 	)
 
 	if err != nil {
@@ -2128,6 +2152,7 @@ func (t *ItemLedgerEntry) GetByPK(entry_no int) bool {
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 	t.Serial_no = types.NewCode(serial_noNull.String)
 	t.Lot_no = types.NewCode(lot_noNull.String)
+	t.Bin_code = types.NewCode(bin_codeNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2210,11 +2235,12 @@ func (t *ItemLedgerEntry) Insert(runTrigger bool) bool {
 		t.Unit_of_measure_code,
 		t.Serial_no,
 		t.Lot_no,
+		t.Bin_code,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2312,10 +2338,11 @@ func (t *ItemLedgerEntry) InsertAll(records []*ItemLedgerEntry, runTrigger bool)
 			r.Unit_of_measure_code,
 			r.Serial_no,
 			r.Lot_no,
+			r.Bin_code,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ItemLedgerEntryTableName)
-	columns := []string{"entry_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "remaining_quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "user_id", "source_code", "applies_to_entry", "open", "cost_is_adjusted", "department_code", "project_code", "positive", "closed_by_entry_no", "closed_at_date", "closed_by_quantity", "source_type", "adjusted_cost_qty", "adjusted_cost_invoiced_qty", "cost_posted_to_gl", "journal_batch_name", "reason_code", "drop_shipment", "invt_qty_not_adjusted", "adjust_invoice_cost", "transaction_type", "transport_method", "country_code", "transferred_from_entry_no", "gen_bus_posting_group", "gen_prod_posting_group", "entry_exit_point", "document_date", "external_document_no", "area", "transaction_specification", "no_series", "reserved_quantity", "add_currency_adj_cost_qty", "add_curr_adj_cost_inv_qty", "add_curr_cost_posted_to_gl", "additional_currency_unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "serial_no", "lot_no"}
+	columns := []string{"entry_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "remaining_quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "user_id", "source_code", "applies_to_entry", "open", "cost_is_adjusted", "department_code", "project_code", "positive", "closed_by_entry_no", "closed_at_date", "closed_by_quantity", "source_type", "adjusted_cost_qty", "adjusted_cost_invoiced_qty", "cost_posted_to_gl", "journal_batch_name", "reason_code", "drop_shipment", "invt_qty_not_adjusted", "adjust_invoice_cost", "transaction_type", "transport_method", "country_code", "transferred_from_entry_no", "gen_bus_posting_group", "gen_prod_posting_group", "entry_exit_point", "document_date", "external_document_no", "area", "transaction_specification", "no_series", "reserved_quantity", "add_currency_adj_cost_qty", "add_curr_adj_cost_inv_qty", "add_curr_cost_posted_to_gl", "additional_currency_unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "serial_no", "lot_no", "bin_code"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2595,6 +2622,10 @@ func (t *ItemLedgerEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "lot_no = ?")
 			values = append(values, t.Lot_no)
 		}
+		if t.hasFieldChanged("bin_code") {
+			setClauses = append(setClauses, "bin_code = ?")
+			values = append(values, t.Bin_code)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -2720,6 +2751,8 @@ func (t *ItemLedgerEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.Serial_no)
 		setClauses = append(setClauses, "lot_no = ?")
 		values = append(values, t.Lot_no)
+		setClauses = append(setClauses, "bin_code = ?")
+		values = append(values, t.Bin_code)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -3034,6 +3067,10 @@ func (t *ItemLedgerEntry) hasFieldChanged(fieldName string) bool {
 	case "lot_no":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Lot_no.Equal(old)
+		}
+	case "bin_code":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Bin_code.Equal(old)
 		}
 	}
 
@@ -3399,6 +3436,8 @@ func (t *ItemLedgerEntry) columnName(fieldName string) (string, bool) {
 		return "serial_no", true
 	case strings.ToLower("lot_no"):
 		return "lot_no", true
+	case strings.ToLower("bin_code"):
+		return "bin_code", true
 	}
 	return "", false
 }
@@ -3808,7 +3847,7 @@ func (t *ItemLedgerEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3869,6 +3908,7 @@ func (t *ItemLedgerEntry) FindFirst() bool {
 	var unit_of_measure_codeNull sql.NullString
 	var serial_noNull sql.NullString
 	var lot_noNull sql.NullString
+	var bin_codeNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&t.Entry_no,
@@ -3931,6 +3971,7 @@ func (t *ItemLedgerEntry) FindFirst() bool {
 		&unit_of_measure_codeNull,
 		&serial_noNull,
 		&lot_noNull,
+		&bin_codeNull,
 	)
 
 	if err != nil {
@@ -3998,6 +4039,7 @@ func (t *ItemLedgerEntry) FindFirst() bool {
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 	t.Serial_no = types.NewCode(serial_noNull.String)
 	t.Lot_no = types.NewCode(lot_noNull.String)
+	t.Bin_code = types.NewCode(bin_codeNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -4018,7 +4060,7 @@ func (t *ItemLedgerEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4079,6 +4121,7 @@ func (t *ItemLedgerEntry) FindLast() bool {
 	var unit_of_measure_codeNull sql.NullString
 	var serial_noNull sql.NullString
 	var lot_noNull sql.NullString
+	var bin_codeNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&t.Entry_no,
@@ -4141,6 +4184,7 @@ func (t *ItemLedgerEntry) FindLast() bool {
 		&unit_of_measure_codeNull,
 		&serial_noNull,
 		&lot_noNull,
+		&bin_codeNull,
 	)
 
 	if err != nil {
@@ -4208,6 +4252,7 @@ func (t *ItemLedgerEntry) FindLast() bool {
 	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 	t.Serial_no = types.NewCode(serial_noNull.String)
 	t.Lot_no = types.NewCode(lot_noNull.String)
+	t.Bin_code = types.NewCode(bin_codeNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -4258,7 +4303,7 @@ func (t *ItemLedgerEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4383,6 +4428,7 @@ func (t *ItemLedgerEntry) Next(steps ...int) bool {
 		var unit_of_measure_codeNull sql.NullString
 		var serial_noNull sql.NullString
 		var lot_noNull sql.NullString
+		var bin_codeNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&t.Entry_no,
@@ -4445,6 +4491,7 @@ func (t *ItemLedgerEntry) Next(steps ...int) bool {
 			&unit_of_measure_codeNull,
 			&serial_noNull,
 			&lot_noNull,
+			&bin_codeNull,
 		)
 
 		if err != nil {
@@ -4511,6 +4558,7 @@ func (t *ItemLedgerEntry) Next(steps ...int) bool {
 		t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 		t.Serial_no = types.NewCode(serial_noNull.String)
 		t.Lot_no = types.NewCode(lot_noNull.String)
+		t.Bin_code = types.NewCode(bin_codeNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -4560,7 +4608,7 @@ func (t *ItemLedgerEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, department_code, project_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4638,6 +4686,7 @@ func (t *ItemLedgerEntry) FindSetBuffered() bool {
 		var unit_of_measure_codeNull sql.NullString
 		var serial_noNull sql.NullString
 		var lot_noNull sql.NullString
+		var bin_codeNull sql.NullString
 
 		err := rows.Scan(
 			&record.Entry_no,
@@ -4700,6 +4749,7 @@ func (t *ItemLedgerEntry) FindSetBuffered() bool {
 			&unit_of_measure_codeNull,
 			&serial_noNull,
 			&lot_noNull,
+			&bin_codeNull,
 		)
 
 		if err != nil {
@@ -4764,6 +4814,7 @@ func (t *ItemLedgerEntry) FindSetBuffered() bool {
 		record.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
 		record.Serial_no = types.NewCode(serial_noNull.String)
 		record.Lot_no = types.NewCode(lot_noNull.String)
+		record.Bin_code = types.NewCode(bin_codeNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -4852,6 +4903,7 @@ func (t *ItemLedgerEntry) copyFromBuffered(record *ItemLedgerEntry) {
 	t.Unit_of_measure_code = record.Unit_of_measure_code
 	t.Serial_no = record.Serial_no
 	t.Lot_no = record.Lot_no
+	t.Bin_code = record.Bin_code
 	t.StoreOldValues()
 }
 
@@ -6451,6 +6503,28 @@ func (t *ItemLedgerEntry) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
+	case "bin_code":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Bin_code = v
+		} else if v, ok := value.(string); ok {
+			t.Bin_code = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field bin_code")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bin_code"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ItemLedgerEntryOnValidate_Bin_code); ok {
+				if err := trg.OnValidate_Bin_code(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -6583,6 +6657,8 @@ func (t *ItemLedgerEntry) FieldValue(no int) (any, bool) {
 		return t.Serial_no, true
 	case 5400:
 		return t.Lot_no, true
+	case 5403:
+		return t.Bin_code, true
 	}
 	return nil, false
 }
@@ -7008,6 +7084,15 @@ func (t *ItemLedgerEntry) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.Lot_no = types.NewCode(v)
+			return true
+		}
+	case 5403:
+		if v, ok := value.(types.Code); ok {
+			t.Bin_code = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Bin_code = types.NewCode(v)
 			return true
 		}
 	}
@@ -7739,6 +7824,8 @@ func (t *ItemLedgerEntry) columnValue(column string) (interface{}, bool) {
 		return t.Serial_no, true
 	case "lot_no":
 		return t.Lot_no, true
+	case "bin_code":
+		return t.Bin_code, true
 	}
 	return nil, false
 }
@@ -7852,6 +7939,7 @@ func (t *ItemLedgerEntry) Init() {
 	t.Unit_of_measure_code = *new(types.Code)
 	t.Serial_no = *new(types.Code)
 	t.Lot_no = *new(types.Code)
+	t.Bin_code = *new(types.Code)
 	t.applyDefaults()
 }
 
@@ -7946,6 +8034,7 @@ func (t *ItemLedgerEntry) ToMap() map[string]interface{} {
 		"unit_of_measure_code":          t.Unit_of_measure_code.String(),
 		"serial_no":                     t.Serial_no.String(),
 		"lot_no":                        t.Lot_no.String(),
+		"bin_code":                      t.Bin_code.String(),
 	}
 }
 
@@ -8431,6 +8520,11 @@ func (t *ItemLedgerEntry) FromMap(data map[string]interface{}) {
 	if v, ok := data["lot_no"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Lot_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["bin_code"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Bin_code = types.NewCode(s)
 		}
 	}
 }
@@ -9076,6 +9170,16 @@ func (t *ItemLedgerEntry) GetFields() []tables.FieldInfo {
 			PrimaryKey: false,
 			FlowField:  false,
 		},
+		{
+			No:         5403,
+			Name:       "bin_code",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
 	}
 }
 
@@ -9338,6 +9442,19 @@ func (t *ItemLedgerEntry) GetTableRelationFields() map[string]tables.TableRelati
 			SearchTimeout: 0,
 			Filters: []tables.RelationFilterInfo{
 				{Column: "item_no", Field: "item_no", Const: ""},
+			},
+		},
+		"bin_code": {
+			Table:        "Bin",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+			Filters: []tables.RelationFilterInfo{
+				{Column: "location_code", Field: "location_code", Const: ""},
 			},
 		},
 	}

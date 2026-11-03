@@ -102,7 +102,7 @@ func (m *ReservationManagement) getReservSetup() *gtables.ReservationSetup {
 // reservEntryValues are the values of a new reservation entry (CreateReservEntry's parameters)
 type reservEntryValues struct {
 	itemNo, variantCode, locationCode types.Code
-	serialNo, lotNo                   types.Code
+	binCode, serialNo, lotNo          types.Code
 	validToDate                       types.Date
 	description                       types.Text
 	expectedReceiptDate, shipmentDate types.Date
@@ -148,6 +148,7 @@ func (m *ReservationManagement) createReservEntry(forSrc, fromSrc Source, v rese
 	reservEntry.Item_no = v.itemNo
 	reservEntry.Variant_code = v.variantCode
 	reservEntry.Location_code = v.locationCode
+	reservEntry.Bin_code = v.binCode
 	reservEntry.Serial_no = v.serialNo
 	reservEntry.Lot_no = v.lotNo
 	reservEntry.Quantity = v.quantity
@@ -165,7 +166,7 @@ func (m *ReservationManagement) createReservEntry(forSrc, fromSrc Source, v rese
 // entryValues: an entry's values for a copy of it
 func entryValues(e *gtables.ReservationEntry) reservEntryValues {
 	return reservEntryValues{itemNo: e.Item_no, variantCode: e.Variant_code, locationCode: e.Location_code,
-		serialNo: e.Serial_no, lotNo: e.Lot_no,
+		binCode: e.Bin_code, serialNo: e.Serial_no, lotNo: e.Lot_no,
 		validToDate: e.Valid_to_date, description: e.Description,
 		expectedReceiptDate: e.Expected_receipt_date, shipmentDate: e.Shipment_date,
 		quantity: e.Quantity, transferredFromEntryNo: e.Entry_no}

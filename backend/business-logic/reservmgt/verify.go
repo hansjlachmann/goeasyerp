@@ -16,9 +16,9 @@ type verifyLine struct {
 	reservedQtyBase, qtyBase          types.Decimal
 	validSignNegative                 bool
 	itemNo, locationCode, variantCode types.Code
-	serialNo, lotNo                   types.Code
+	binCode, serialNo, lotNo          types.Code
 	itemField, locationField          string
-	serialField, lotField             string // "" when the line has no such field (blank: none)
+	binField, serialField, lotField   string // "" when the line has no such field (blank: none)
 	date                              types.Date
 	dateField                         string
 }
@@ -67,6 +67,9 @@ func (m *ReservationManagement) verifyChange(l verifyLine) error {
 	}
 	if l.variantCode != tempReservEntry.Variant_code {
 		return apperrors.ReservFieldMustNotChange(l.table, "variant_code")
+	}
+	if l.binCode != tempReservEntry.Bin_code {
+		return apperrors.ReservFieldMustNotChange(l.table, l.binField)
 	}
 	if l.serialNo != tempReservEntry.Serial_no {
 		return apperrors.ReservFieldMustNotChange(l.table, l.serialField)

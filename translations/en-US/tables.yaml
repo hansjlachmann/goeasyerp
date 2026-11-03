@@ -3775,6 +3775,7 @@ tables:
       reserved_qty_on_purch_orders: "Reserved Qty. on Purch. Orders"
       reserved_qty_on_sales_orders: "Reserved Qty. on Sales Orders"
       serial_nos: "Serial Nos."
+      bin_filter: "Bin Filter"
     options:
       price_profit_calculation:
         profit_price_cost: "Profit=Price-Cost"
@@ -3922,6 +3923,8 @@ tables:
       lot_no: "Lot No."
       new_serial_no: "New Serial No."
       new_lot_no: "New Lot No."
+      bin_code: "Bin Code"
+      new_bin_code: "New Bin Code"
     options:
       recurring_method:
         fixed: "Fixed"
@@ -4003,6 +4006,7 @@ tables:
       unit_of_measure_code: "Unit of Measure Code"
       serial_no: "Serial No."
       lot_no: "Lot No."
+      bin_code: "Bin Code"
     options:
       entry_type:
         purchase: "Purchase"
@@ -4093,6 +4097,7 @@ tables:
       unit_of_measure_code: "Unit of Measure Code"
       serial_no: "Serial No."
       lot_no: "Lot No."
+      bin_code: "Bin Code"
     options:
       entry_type:
         purchase: "Purchase"
@@ -4447,6 +4452,7 @@ tables:
       reserve: "Reserve"
       reserved_qty_base: "Reserved Qty. (Base)"
       lot_no: "Lot No."
+      bin_code: "Bin Code"
     options:
       recurring_method:
         fixed: "Fixed"
@@ -4674,6 +4680,7 @@ tables:
       planned: "Planned"
       serial_no: "Serial No."
       lot_no: "Lot No."
+      bin_code: "Bin Code"
     options:
       document_type:
         quote: "Quote"
@@ -4830,6 +4837,7 @@ tables:
       qty_invoiced_base: "Qty. Invoiced (Base)"
       serial_no: "Serial No."
       lot_no: "Lot No."
+      bin_code: "Bin Code"
     options:
       type:
         g_l_account: "G/L Account"
@@ -4983,6 +4991,7 @@ tables:
       quantity_base: "Quantity (Base)"
       serial_no: "Serial No."
       lot_no: "Lot No."
+      bin_code: "Bin Code"
     options:
       type:
         g_l_account: "G/L Account"
@@ -5133,6 +5142,7 @@ tables:
       quantity_base: "Quantity (Base)"
       serial_no: "Serial No."
       lot_no: "Lot No."
+      bin_code: "Bin Code"
     options:
       type:
         g_l_account: "G/L Account"
@@ -5348,6 +5358,7 @@ tables:
       reserved_qty_base: "Reserved Qty. (Base)"
       serial_no: "Serial No."
       lot_no: "Lot No."
+      bin_code: "Bin Code"
     options:
       fa_posting_type:
         acquisition_cost: "Acquisition Cost"
@@ -5687,6 +5698,7 @@ tables:
       item_rcpt_entry_no: "Item Rcpt. Entry No."
       serial_no: "Serial No."
       lot_no: "Lot No."
+      bin_code: "Bin Code"
     options:
       type:
         fixed_asset: "Fixed Asset"
@@ -5762,6 +5774,7 @@ tables:
       quantity_base: "Quantity (Base)"
       serial_no: "Serial No."
       lot_no: "Lot No."
+      bin_code: "Bin Code"
     options:
       fa_posting_type:
         acquisition_cost: "Acquisition Cost"
@@ -5838,6 +5851,7 @@ tables:
       quantity_base: "Quantity (Base)"
       serial_no: "Serial No."
       lot_no: "Lot No."
+      bin_code: "Bin Code"
     options:
       fa_posting_type:
         acquisition_cost: "Acquisition Cost"
@@ -6040,6 +6054,7 @@ tables:
       reserved_qty_base: "Reserved Qty. (Base)"
       serial_no: "Serial No."
       lot_no: "Lot No."
+      bin_code: "Bin Code"
     options:
       type:
         account_g_l: "Account (G/L)"
@@ -6341,6 +6356,7 @@ tables:
       variant_code: "Variant Code"
       serial_no: "Serial No."
       lot_no: "Lot No."
+      bin_code: "Bin Code"
     options:
       reservation_status:
         open: "Open"
@@ -6377,3 +6393,9 @@ tables:
       total_available_quantity: "Total Available Quantity"
       current_reserved_quantity: "Current Reserved Quantity"
       available_page_id: "Available Page ID"
+  bin:
+    caption: "Bin"
+    fields:
+      location_code: "Location Code"
+      code: "Code"
+      description: "Description"

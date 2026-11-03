@@ -1,0 +1,42 @@
+table:
+  id: 5400
+  name: "Bin"
+  caption: Bin
+  description: "Bins of a location (table 5400): the places in a warehouse an item is kept, given on the lines and the item entries (Bin Code)"
+  data_caption_fields: [location_code, code]
+  lookup_page_id: 5400
+  fields:
+    - name: location_code
+      no: 1
+      type: types.Code
+      db_name: location_code
+      length: 10
+      primary_key: true
+      required: true
+      table_relation:
+        table: Location
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: code
+      no: 2
+      type: types.Code
+      db_name: code
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: description
+      no: 3
+      type: types.Text
+      db_name: description
+      length: 50
+
+  keys:
+    - name: Primary
+      fields: [location_code, code]
+      clustered: true

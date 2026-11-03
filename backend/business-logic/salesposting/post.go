@@ -468,12 +468,16 @@ func (p *SalesPost) postItemLines(salesLine *gtables.SalesLine, qtyToShip, qtyTo
 			if !left.IsPositive() {
 				break
 			}
+			err := checkShipmentLine(shptLine, salesLine)
+			if err != nil {
+				return 0, err
+			}
 			qty := left
 			if qty.GreaterThan(shptLine.Qty_shipped_not_invoiced) {
 				qty = shptLine.Qty_shipped_not_invoiced
 			}
 			qtyBase := system.Round(qty.Mul(salesLine.Qty_per_unit_of_measure), types.MustDecimal("0.00001"))
-			_, err := p.postItemJnlLine(salesLine, types.Decimal{}, types.Decimal{}, qty, qtyBase, p.amountPart(lineLCY, qty, qtyToInvoice), shptLine.Item_shpt_entry_no)
+			_, err = p.postItemJnlLine(salesLine, types.Decimal{}, types.Decimal{}, qty, qtyBase, p.amountPart(lineLCY, qty, qtyToInvoice), shptLine.Item_shpt_entry_no)
 			if err != nil {
 				return 0, err
 			}
@@ -508,6 +512,9 @@ func (p *SalesPost) postItemLines(salesLine *gtables.SalesLine, qtyToShip, qtyTo
 func (p *SalesPost) invoiceShipmentLine(salesLine *gtables.SalesLine, qtyToInvoice, qtyToInvoiceBase types.Decimal, lineLCY *gtables.SalesLine) error {
 	salesShptLine := gtables.NewSalesShipmentLine(salesLine)
 	err := salesShptLine.GetOrError(map[string]interface{}{"document_no": salesLine.Shipment_no, "line_no": salesLine.Shipment_line_no})
+	if err == nil {
+		err = checkShipmentLine(salesShptLine, salesLine)
+	}
 	if err != nil {
 		return err
 	}
@@ -578,6 +585,7 @@ func (p *SalesPost) postItemJnlLine(salesLine *gtables.SalesLine, qtyToShip, qty
 	itemJnlLine.Area = salesLine.Area
 	itemJnlLine.Transaction_specification = salesLine.Transaction_specification
 	itemJnlLine.Variant_code = salesLine.Variant_code
+	itemJnlLine.Bin_code = salesLine.Bin_code
 	itemJnlLine.Serial_no = salesLine.Serial_no
 	itemJnlLine.Lot_no = salesLine.Lot_no
 	itemJnlLine.Inventory_posting_group = salesLine.Posting_group
@@ -1127,4 +1135,20 @@ func (p *SalesPost) finalize() error {
 	salesHeader.Ship = false
 	salesHeader.Invoice = false
 	return salesHeader.ModifyOrError(false)
+}
+
+// checkShipmentLine: a shipment line invoiced now is still the line's — customer, type, number,
+// posting groups, location, department, project, serial number, unit of measure, bin, lot
+// number and variant (classic TESTFIELD(…, SalesLine.…) before invoicing a shipment)
+func checkShipmentLine(salesShptLine *gtables.SalesShipmentLine, salesLine *gtables.SalesLine) error {
+	for _, field := range []string{"sell_to_customer_no", "type", "no", "gen_bus_posting_group", "gen_prod_posting_group",
+		"tax_bus_posting_group", "tax_prod_posting_group", "location_code", "department_code", "project_code",
+		"serial_no", "unit_of_measure_code", "bin_code", "lot_no", "variant_code"} {
+		value, _ := salesLine.FieldValue(salesLine.FieldNo(field))
+		err := salesShptLine.TestField(field, value)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

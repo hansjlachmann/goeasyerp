@@ -23,6 +23,7 @@ reports:
       by_department: "Per avdeling"
       by_project: "Per prosjekt"
       by_location: "Per lokasjon"
+      by_bin: "Per hylle"
     texts:
       OPTIONS: "Alternativer"
       NO_JOURNAL: "Kjør Beregn lager fra en opptellingskladd."
@@ -85,6 +86,7 @@ reports:
       retain_location_code: "Behold Lokasjonskode"
       retain_serial_no: "Behold Serienr."
       retain_lot_no: "Behold Lotnr."
+      retain_bin_code: "Behold Hyllekode"
       retain_source_type: "Behold Kildetype"
       retain_source_no: "Behold Kildenr."
       retain_source_posting_group: "Behold Kildebokføringsgruppe"

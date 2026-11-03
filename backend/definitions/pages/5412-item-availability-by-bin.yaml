@@ -1,0 +1,42 @@
+page:
+  id: 5412
+  type: Card
+  name: Item Availability by Bin
+  source_table: Item
+  caption: Item Availability by Bin
+  editable: false
+  # classic form 5412 with its lines (form 5413): the item's inventory per bin of the Location Filter in a period
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+            editable: false
+          - source: description
+            editable: false
+      - name: Bins
+        caption: Bins
+        period_grid:
+          date_filter: date_filter
+          drilldown_date_field: posting_date
+          view_by: 0
+          rows:
+            table: Bin
+            field: code
+            caption_field: description
+            filter: bin_filter
+            filters:
+              location_code: location_filter
+            drilldown_filter_field: bin_code
+          filters:
+            - source: location_filter
+              drilldown_filter_field: location_code
+            - source: variant_filter
+              drilldown_filter_field: variant_code
+          columns:
+            - source: net_change
+              drilldown: 38
+              drilldown_filter_field: item_no
+              drilldown_filter_value: "no"

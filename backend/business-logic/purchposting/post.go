@@ -480,12 +480,16 @@ func (p *PurchPost) postItemLines(purchLine *gtables.PurchaseLine, qtyToReceive,
 			if !left.IsPositive() {
 				break
 			}
+			err := checkReceiptLine(rcptLine, purchLine)
+			if err != nil {
+				return 0, err
+			}
 			qty := left
 			if qty.GreaterThan(rcptLine.Qty_rcd_not_invoiced) {
 				qty = rcptLine.Qty_rcd_not_invoiced
 			}
 			qtyBase := system.Round(qty.Mul(purchLine.Qty_per_unit_of_measure), types.MustDecimal("0.00001"))
-			_, err := p.postItemJnlLine(purchLine, types.Decimal{}, types.Decimal{}, qty, qtyBase, p.amountPart(lineLCY, qty, qtyToInvoice), rcptLine.Item_rcpt_entry_no)
+			_, err = p.postItemJnlLine(purchLine, types.Decimal{}, types.Decimal{}, qty, qtyBase, p.amountPart(lineLCY, qty, qtyToInvoice), rcptLine.Item_rcpt_entry_no)
 			if err != nil {
 				return 0, err
 			}
@@ -520,6 +524,9 @@ func (p *PurchPost) postItemLines(purchLine *gtables.PurchaseLine, qtyToReceive,
 func (p *PurchPost) invoiceReceiptLine(purchLine *gtables.PurchaseLine, qtyToInvoice, qtyToInvoiceBase types.Decimal, lineLCY *gtables.PurchaseLine) error {
 	purchRcptLine := gtables.NewPurchRcptLine(purchLine)
 	err := purchRcptLine.GetOrError(map[string]interface{}{"document_no": purchLine.Receipt_no, "line_no": purchLine.Receipt_line_no})
+	if err == nil {
+		err = checkReceiptLine(purchRcptLine, purchLine)
+	}
 	if err != nil {
 		return err
 	}
@@ -592,6 +599,7 @@ func (p *PurchPost) postItemJnlLine(purchLine *gtables.PurchaseLine, qtyToReceiv
 	itemJnlLine.Area = purchLine.Area
 	itemJnlLine.Transaction_specification = purchLine.Transaction_specification
 	itemJnlLine.Variant_code = purchLine.Variant_code
+	itemJnlLine.Bin_code = purchLine.Bin_code
 	itemJnlLine.Serial_no = purchLine.Serial_no
 	itemJnlLine.Lot_no = purchLine.Lot_no
 	itemJnlLine.Inventory_posting_group = purchLine.Posting_group
@@ -1211,6 +1219,22 @@ func checkFALine(purchLine *gtables.PurchaseLine) error {
 	if purchLine.Insurance_no != "" {
 		faSetup := gtables.GetFASetup(purchLine)
 		return faSetup.TestField("insurance_depr_book", purchLine.Depreciation_book_code)
+	}
+	return nil
+}
+
+// checkReceiptLine: a receipt line invoiced now is still the line's — vendor, type, number,
+// posting groups, location, department, project, serial number, unit of measure, bin, lot
+// number and variant (classic TESTFIELD(…, PurchLine.…) before invoicing a receipt)
+func checkReceiptLine(purchRcptLine *gtables.PurchRcptLine, purchLine *gtables.PurchaseLine) error {
+	for _, field := range []string{"buy_from_vendor_no", "type", "no", "gen_bus_posting_group", "gen_prod_posting_group",
+		"tax_bus_posting_group", "tax_prod_posting_group", "location_code", "department_code", "project_code",
+		"serial_no", "unit_of_measure_code", "bin_code", "lot_no", "variant_code"} {
+		value, _ := purchLine.FieldValue(purchLine.FieldNo(field))
+		err := purchRcptLine.TestField(field, value)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

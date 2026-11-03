@@ -75,6 +75,9 @@ page:
         - source: lot_no
           width: 110
           visible: false
+        - source: bin_code
+          width: 100
+          visible: false
 
   actions:
     - name: New

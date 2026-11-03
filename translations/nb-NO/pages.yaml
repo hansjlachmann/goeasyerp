@@ -1049,3 +1049,7 @@ pages:
     fields:
       available_quantity: "Tilgjengelig antall"
       current_reserved_quantity: "Reservert antall for linjen"
+  bins:
+    caption: "Hyller"
+  item_availability_by_bin:
+    caption: "Varetilgjengelighet per hylle"
