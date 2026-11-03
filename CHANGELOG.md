@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.130](https://github.com/hansjlachmann/openerp/compare/v0.1.129...v0.1.130) (2026-11-03)
+
+
+### Features
+
+* generic dimensions — Department/Project become Dimension 1/2, named in General Ledger Setup ([#205](https://github.com/hansjlachmann/openerp/issues/205)) ([f154d9d](https://github.com/hansjlachmann/openerp/commit/f154d9d3ce50b7e488a16c8dca094d10877f702b))
+
 ## [0.1.129](https://github.com/hansjlachmann/openerp/compare/v0.1.128...v0.1.129) (2026-11-03)
 
 
