@@ -44,7 +44,7 @@ type CommentLineTable_name int
 
 // String returns the text representation of CommentLineTable_name
 func (o CommentLineTable_name) String() string {
-	options := []string{"G/L Account", "Customer", "Vendor", "Item", "Resource", "Job", " ", "Resource Group", "Bank Account", "Campaign", "Fixed Asset", "Insurance"}
+	options := []string{"G/L Account", "Customer", "Vendor", "Item", "Resource", "Project", " ", "Resource Group", "Bank Account", "Campaign", "Fixed Asset", "Insurance"}
 	if o >= 0 && int(o) < len(options) {
 		return options[o]
 	}
@@ -136,7 +136,7 @@ var CommentLine_Table_name = struct {
 	Vendor        CommentLineTable_name
 	Item          CommentLineTable_name
 	Resource      CommentLineTable_name
-	Job           CommentLineTable_name
+	Project       CommentLineTable_name
 	Blank         CommentLineTable_name
 	ResourceGroup CommentLineTable_name
 	BankAccount   CommentLineTable_name
@@ -149,7 +149,7 @@ var CommentLine_Table_name = struct {
 	Vendor:        2,
 	Item:          3,
 	Resource:      4,
-	Job:           5,
+	Project:       5,
 	Blank:         6,
 	ResourceGroup: 7,
 	BankAccount:   8,
@@ -2124,7 +2124,7 @@ func (t *CommentLine) ValidateField(fieldName string, value interface{}) error {
 				// Empty string defaults to first option (behavior)
 				t.Table_name = 0
 			} else {
-				options := []string{"G/L Account", "Customer", "Vendor", "Item", "Resource", "Job", " ", "Resource Group", "Bank Account", "Campaign", "Fixed Asset", "Insurance"}
+				options := []string{"G/L Account", "Customer", "Vendor", "Item", "Resource", "Project", " ", "Resource Group", "Bank Account", "Campaign", "Fixed Asset", "Insurance"}
 				found := false
 				for i, opt := range options {
 					if opt == v {
@@ -2912,7 +2912,7 @@ func (t *CommentLine) FromMap(data map[string]interface{}) {
 			t.Table_name = CommentLineTable_name(val)
 		case string:
 			// Lookup string value in options
-			options := []string{"G/L Account", "Customer", "Vendor", "Item", "Resource", "Job", " ", "Resource Group", "Bank Account", "Campaign", "Fixed Asset", "Insurance"}
+			options := []string{"G/L Account", "Customer", "Vendor", "Item", "Resource", "Project", " ", "Resource Group", "Bank Account", "Campaign", "Fixed Asset", "Insurance"}
 			for i, opt := range options {
 				if opt == val {
 					t.Table_name = CommentLineTable_name(i)
@@ -3059,7 +3059,7 @@ func (t *CommentLine) GetFlowFields() []string {
 // GetOptionFields returns Option field names mapped to their option values
 func (t *CommentLine) GetOptionFields() map[string][]string {
 	return map[string][]string{
-		"table_name": {"G/L Account", "Customer", "Vendor", "Item", "Resource", "Job", " ", "Resource Group", "Bank Account", "Campaign", "Fixed Asset", "Insurance"},
+		"table_name": {"G/L Account", "Customer", "Vendor", "Item", "Resource", "Project", " ", "Resource Group", "Bank Account", "Campaign", "Fixed Asset", "Insurance"},
 	}
 }
 
@@ -3081,6 +3081,11 @@ func (t *CommentLine) GetTableRelationFields() map[string]tables.TableRelationIn
 				{Field: "table_name", Value: 2, Relation: tables.TableRelationInfo{
 					Table: "Vendor", Field: "no", DisplayField: "",
 					LookupColumns: []tables.LookupColumnInfo{{Source: "no", Width: 100}, {Source: "name", Width: 250}},
+					SearchTimeout: 0,
+				}},
+				{Field: "table_name", Value: 5, Relation: tables.TableRelationInfo{
+					Table: "Project", Field: "no", DisplayField: "",
+					LookupColumns: []tables.LookupColumnInfo{{Source: "no", Width: 100}, {Source: "description", Width: 250}},
 					SearchTimeout: 0,
 				}},
 				{Field: "table_name", Value: 8, Relation: tables.TableRelationInfo{

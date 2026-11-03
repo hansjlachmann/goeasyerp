@@ -1055,3 +1055,27 @@ pages:
     caption: "Item Availability by Bin"
   items_by_bin:
     caption: "Items by Bin"
+
+  # Projects
+  projects:
+    caption: "Projects"
+  project_card:
+    caption: "Project Card"
+  project_posting_groups:
+    caption: "Project Posting Groups"
+  project_budget:
+    caption: "Project Budget"
+  project_quantity_allocated:
+    caption: "Project Quantity Allocated"
+  project_budget_lines:
+    caption: "Project Budget (Phase/Task/Step)"
+  project_budget_entries:
+    caption: "Project Budget Entries"
+  projects_setup:
+    caption: "Projects Setup"
+  phases:
+    caption: "Phases"
+  tasks:
+    caption: "Tasks"
+  steps:
+    caption: "Steps"

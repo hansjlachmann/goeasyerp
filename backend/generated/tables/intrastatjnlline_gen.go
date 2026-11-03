@@ -83,7 +83,7 @@ type IntrastatJnlLineSource_type int
 
 // String returns the text representation of IntrastatJnlLineSource_type
 func (o IntrastatJnlLineSource_type) String() string {
-	options := []string{" ", "Item entry", "Job entry"}
+	options := []string{" ", "Item entry", "Project entry"}
 	if o >= 0 && int(o) < len(options) {
 		return options[o]
 	}
@@ -201,13 +201,13 @@ var IntrastatJnlLine_Type = struct {
 
 // IntrastatJnlLine_Source_type provides named constants for the source_type option field (FieldName.OptionValue syntax)
 var IntrastatJnlLine_Source_type = struct {
-	Blank     IntrastatJnlLineSource_type
-	ItemEntry IntrastatJnlLineSource_type
-	JobEntry  IntrastatJnlLineSource_type
+	Blank        IntrastatJnlLineSource_type
+	ItemEntry    IntrastatJnlLineSource_type
+	ProjectEntry IntrastatJnlLineSource_type
 }{
-	Blank:     0,
-	ItemEntry: 1,
-	JobEntry:  2,
+	Blank:        0,
+	ItemEntry:    1,
+	ProjectEntry: 2,
 }
 
 // ========================================
@@ -3541,7 +3541,7 @@ func (t *IntrastatJnlLine) ValidateField(fieldName string, value interface{}) er
 				// Empty string defaults to first option (behavior)
 				t.Source_type = 0
 			} else {
-				options := []string{" ", "Item entry", "Job entry"}
+				options := []string{" ", "Item entry", "Project entry"}
 				found := false
 				for i, opt := range options {
 					if opt == v {
@@ -5050,7 +5050,7 @@ func (t *IntrastatJnlLine) FromMap(data map[string]interface{}) {
 			t.Source_type = IntrastatJnlLineSource_type(val)
 		case string:
 			// Lookup string value in options
-			options := []string{" ", "Item entry", "Job entry"}
+			options := []string{" ", "Item entry", "Project entry"}
 			for i, opt := range options {
 				if opt == val {
 					t.Source_type = IntrastatJnlLineSource_type(i)
@@ -5539,7 +5539,7 @@ func (t *IntrastatJnlLine) GetFlowFields() []string {
 func (t *IntrastatJnlLine) GetOptionFields() map[string][]string {
 	return map[string][]string{
 		"type":        {"Receipt", "Shipment"},
-		"source_type": {" ", "Item entry", "Job entry"},
+		"source_type": {" ", "Item entry", "Project entry"},
 	}
 }
 

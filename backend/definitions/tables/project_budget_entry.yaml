@@ -1,0 +1,219 @@
+table:
+  id: 211
+  name: "Project_Budget_Entry"
+  caption: Project Budget Entry
+  description: "Project budget entries (table 211): a budget line's quantity, cost and price on a date"
+  lookup_page_id: 220
+  fields:
+    - name: entry_no
+      no: 1
+      type: int
+      db_name: entry_no
+      primary_key: true
+
+    - name: project_status
+      no: 2
+      type: Option
+      db_name: project_status
+      options: ["Planning", "Quote", "Order", "Completed"]
+
+    - name: project_no
+      no: 3
+      type: types.Code
+      db_name: project_no
+      length: 20
+      table_relation:
+        table: Project
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
+
+    - name: type
+      no: 4
+      type: Option
+      db_name: type
+      options: ["Resource", "Item", "Account (G/L)", "Group (Resource)"]
+
+    - name: no
+      no: 5
+      type: types.Code
+      db_name: no
+      length: 20
+      table_relation:
+        conditions:
+          - when: {field: type, equal: 0}
+            table: Resource
+            field: no
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: name
+                width: 250
+          - when: {field: type, equal: 1}
+            table: Item
+            field: no
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: description
+                width: 250
+          - when: {field: type, equal: 2}
+            table: G_L_Account
+            field: no
+            filters:
+              account_type: {const: 0}   # Posting accounts only
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: name
+                width: 250
+          - when: {field: type, equal: 3}
+            table: Resource_Group
+            field: no
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: name
+                width: 250
+
+    - name: phase_code
+      no: 6
+      type: types.Code
+      db_name: phase_code
+      length: 10
+      table_relation:
+        table: Phase
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: task_code
+      no: 7
+      type: types.Code
+      db_name: task_code
+      length: 10
+      table_relation:
+        table: Task
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: step_code
+      no: 8
+      type: types.Code
+      db_name: step_code
+      length: 10
+      table_relation:
+        table: Step
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: date
+      no: 9
+      type: types.Date
+      db_name: date
+
+    - name: resource_group_no
+      no: 10
+      type: types.Code
+      db_name: resource_group_no
+      length: 20
+      table_relation:
+        table: Resource_Group
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: quantity
+      no: 11
+      type: types.Decimal
+      db_name: quantity
+      decimal_places: "0:5"
+
+    - name: total_cost
+      no: 12
+      type: types.Decimal
+      db_name: total_cost
+      decimal_places: "2:2"
+
+    - name: total_price
+      no: 13
+      type: types.Decimal
+      db_name: total_price
+      decimal_places: "2:2"
+
+    - name: user_id
+      no: 14
+      type: types.Code
+      db_name: user_id
+      length: 20
+      editable: false
+      table_relation:
+        table: User
+        field: user_id
+        validate: false   # the user who entered it; not checked
+        lookup_columns:
+          - source: user_id
+            width: 120
+
+    - name: variant_code
+      no: 5402
+      type: types.Code
+      db_name: variant_code
+      length: 10
+      table_relation:
+        conditions:
+          - when: {field: type, equal: 1}
+            table: Item_Variant
+            field: code
+            filters:
+              item_no: {field: "no"}
+            lookup_columns:
+              - source: code
+                width: 100
+              - source: description
+                width: 250
+
+  keys:
+    - name: Primary
+      fields: [entry_no]
+      clustered: true
+    # SIFT keys: the projects', budget lines' and resources' budgeted FlowFields read the totals
+    - name: status_type_no_date
+      fields: [project_status, type, no, date]
+      sum_index_fields:
+        - quantity
+    - name: project_type_no_date
+      fields: [project_no, type, no, date]
+      sum_index_fields:
+        - quantity
+    - name: status_group_date
+      fields: [project_status, resource_group_no, date]
+      sum_index_fields:
+        - quantity
+    - name: project_group_date
+      fields: [project_no, resource_group_no, date]
+      sum_index_fields:
+        - quantity
+    - name: budget_line_date
+      fields: [project_no, phase_code, task_code, step_code, type, no, variant_code, date]
+      sum_index_fields:
+        - quantity
+        - total_cost
+        - total_price

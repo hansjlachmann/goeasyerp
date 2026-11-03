@@ -4,7 +4,6 @@ table:
   description: "Resource Groups (table 152)"
   data_caption_fields: [no, name]
   lookup_page_id: 72
-  # Left out until their tables exist: 24/25 Qty. on Order/Quoted (Job) (Job Budget Entry).
   fields:
     - name: no
       no: 1
@@ -212,6 +211,45 @@ table:
         - field: unit_of_measure_code
           type: filter
           value: unit_of_measure_filter
+
+
+    - name: qty_on_order_project
+      no: 24
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: ProjectBudgetEntry
+      source_field: quantity
+      flow_filters:
+        - field: project_status
+          type: const
+          value: 2   # Order
+        - field: resource_group_no
+          type: field
+          value: no
+        - field: date
+          type: filter
+          value: date_filter
+
+    - name: qty_quoted_project
+      no: 25
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "0:5"
+      calc_formula: Sum
+      source_table: ProjectBudgetEntry
+      source_field: quantity
+      flow_filters:
+        - field: project_status
+          type: const
+          value: 1   # Quote
+        - field: resource_group_no
+          type: field
+          value: no
+        - field: date
+          type: filter
+          value: date_filter
 
   keys:
     - name: Primary

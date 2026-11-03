@@ -948,7 +948,7 @@ func (t *NoSeriesRelationship) CalcFieldsForRecords(records []map[string]interfa
 // calcForRecords_description calculates the description FlowField for a set of records
 // CalcFormula: Lookup(NoSeries.description)
 func (t *NoSeriesRelationship) calcForRecords_description(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &NoSeriesRelationship{db: t.db, company: t.company, dbType: t.dbType}
 		r.FromMap(rec)
@@ -960,7 +960,7 @@ func (t *NoSeriesRelationship) calcForRecords_description(records []map[string]i
 // calcForRecords_series_description calculates the series_description FlowField for a set of records
 // CalcFormula: Lookup(NoSeries.description)
 func (t *NoSeriesRelationship) calcForRecords_series_description(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &NoSeriesRelationship{db: t.db, company: t.company, dbType: t.dbType}
 		r.FromMap(rec)

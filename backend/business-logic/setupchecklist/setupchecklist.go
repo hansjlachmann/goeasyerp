@@ -102,9 +102,9 @@ var checklist = []checklistEntry{
 	{table: 156, page: 76},  // Resource | Resource Card
 	{table: 152, page: 72},  // Resource Group | Resource Groups
 	{table: 200, page: 208}, // Work Type | Work Types
-	{area: 167, name: "Jobs"},
-	{table: 315, page: 463}, // Jobs Setup | Jobs Setup
-	{table: 208, page: 211}, // Job Posting Group | Job Posting Groups
+	{area: 167, name: "Projects"},
+	{table: 315, page: 463}, // Projects Setup | Projects Setup
+	{table: 208, page: 211}, // Project Posting Group | Project Posting Groups
 	{table: 161, page: 82},  // Phase | Phases
 	{table: 162, page: 83},  // Task | Tasks
 	{table: 163, page: 84},  // Step | Steps

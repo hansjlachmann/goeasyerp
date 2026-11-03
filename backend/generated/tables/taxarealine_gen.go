@@ -961,7 +961,7 @@ func (t *TaxAreaLine) CalcFieldsForRecords(records []map[string]interface{}, fie
 // calcForRecords_jurisdiction_description calculates the jurisdiction_description FlowField for a set of records
 // CalcFormula: Lookup(TaxJurisdiction.description)
 func (t *TaxAreaLine) calcForRecords_jurisdiction_description(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &TaxAreaLine{db: t.db, company: t.company, dbType: t.dbType}
 		r.FromMap(rec)

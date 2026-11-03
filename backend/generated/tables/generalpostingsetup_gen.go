@@ -22,8 +22,8 @@
 //	OnValidate_Purch_payment_disc_account(rec *gtables.GeneralPostingSetup) error
 //	OnValidate_Cogs_account(rec *gtables.GeneralPostingSetup) error
 //	OnValidate_Inventory_adjmt_account(rec *gtables.GeneralPostingSetup) error
-//	OnValidate_Job_sales_adjmt_account(rec *gtables.GeneralPostingSetup) error
-//	OnValidate_Job_cost_adjmt_account(rec *gtables.GeneralPostingSetup) error
+//	OnValidate_Project_sales_adjmt_account(rec *gtables.GeneralPostingSetup) error
+//	OnValidate_Project_cost_adjmt_account(rec *gtables.GeneralPostingSetup) error
 //	OnValidate_Sales_credit_memo_account(rec *gtables.GeneralPostingSetup) error
 //	OnValidate_Purch_credit_memo_account(rec *gtables.GeneralPostingSetup) error
 
@@ -47,22 +47,22 @@ import (
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterGeneralPostingSetupLogic.
 type GeneralPostingSetup struct {
-	Gen_bus_posting_group      types.Code `db:"gen_bus_posting_group,pk"`
-	Gen_prod_posting_group     types.Code `db:"gen_prod_posting_group,pk"`
-	Sales_account              types.Code `db:"sales_account"`
-	Sales_line_disc_account    types.Code `db:"sales_line_disc_account"`
-	Sales_inv_disc_account     types.Code `db:"sales_inv_disc_account"`
-	Sales_payment_disc_account types.Code `db:"sales_payment_disc_account"`
-	Purch_account              types.Code `db:"purch_account"`
-	Purch_line_disc_account    types.Code `db:"purch_line_disc_account"`
-	Purch_inv_disc_account     types.Code `db:"purch_inv_disc_account"`
-	Purch_payment_disc_account types.Code `db:"purch_payment_disc_account"`
-	Cogs_account               types.Code `db:"cogs_account"`
-	Inventory_adjmt_account    types.Code `db:"inventory_adjmt_account"`
-	Job_sales_adjmt_account    types.Code `db:"job_sales_adjmt_account"`
-	Job_cost_adjmt_account     types.Code `db:"job_cost_adjmt_account"`
-	Sales_credit_memo_account  types.Code `db:"sales_credit_memo_account"`
-	Purch_credit_memo_account  types.Code `db:"purch_credit_memo_account"`
+	Gen_bus_posting_group       types.Code `db:"gen_bus_posting_group,pk"`
+	Gen_prod_posting_group      types.Code `db:"gen_prod_posting_group,pk"`
+	Sales_account               types.Code `db:"sales_account"`
+	Sales_line_disc_account     types.Code `db:"sales_line_disc_account"`
+	Sales_inv_disc_account      types.Code `db:"sales_inv_disc_account"`
+	Sales_payment_disc_account  types.Code `db:"sales_payment_disc_account"`
+	Purch_account               types.Code `db:"purch_account"`
+	Purch_line_disc_account     types.Code `db:"purch_line_disc_account"`
+	Purch_inv_disc_account      types.Code `db:"purch_inv_disc_account"`
+	Purch_payment_disc_account  types.Code `db:"purch_payment_disc_account"`
+	Cogs_account                types.Code `db:"cogs_account"`
+	Inventory_adjmt_account     types.Code `db:"inventory_adjmt_account"`
+	Project_sales_adjmt_account types.Code `db:"project_sales_adjmt_account"`
+	Project_cost_adjmt_account  types.Code `db:"project_cost_adjmt_account"`
+	Sales_credit_memo_account   types.Code `db:"sales_credit_memo_account"`
+	Purch_credit_memo_account   types.Code `db:"purch_credit_memo_account"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -129,39 +129,39 @@ const GeneralPostingSetupTableName = "General_Posting_Setup"
 // GeneralPostingSetup_FieldNo holds the field numbers of General_Posting_Setup (FieldNo):
 // GeneralPostingSetup_FieldNo.Gen_bus_posting_group is 1
 var GeneralPostingSetup_FieldNo = struct {
-	Gen_bus_posting_group      int
-	Gen_prod_posting_group     int
-	Sales_account              int
-	Sales_line_disc_account    int
-	Sales_inv_disc_account     int
-	Sales_payment_disc_account int
-	Purch_account              int
-	Purch_line_disc_account    int
-	Purch_inv_disc_account     int
-	Purch_payment_disc_account int
-	Cogs_account               int
-	Inventory_adjmt_account    int
-	Job_sales_adjmt_account    int
-	Job_cost_adjmt_account     int
-	Sales_credit_memo_account  int
-	Purch_credit_memo_account  int
+	Gen_bus_posting_group       int
+	Gen_prod_posting_group      int
+	Sales_account               int
+	Sales_line_disc_account     int
+	Sales_inv_disc_account      int
+	Sales_payment_disc_account  int
+	Purch_account               int
+	Purch_line_disc_account     int
+	Purch_inv_disc_account      int
+	Purch_payment_disc_account  int
+	Cogs_account                int
+	Inventory_adjmt_account     int
+	Project_sales_adjmt_account int
+	Project_cost_adjmt_account  int
+	Sales_credit_memo_account   int
+	Purch_credit_memo_account   int
 }{
-	Gen_bus_posting_group:      1,
-	Gen_prod_posting_group:     2,
-	Sales_account:              10,
-	Sales_line_disc_account:    11,
-	Sales_inv_disc_account:     12,
-	Sales_payment_disc_account: 13,
-	Purch_account:              14,
-	Purch_line_disc_account:    15,
-	Purch_inv_disc_account:     16,
-	Purch_payment_disc_account: 17,
-	Cogs_account:               18,
-	Inventory_adjmt_account:    19,
-	Job_sales_adjmt_account:    24,
-	Job_cost_adjmt_account:     25,
-	Sales_credit_memo_account:  27,
-	Purch_credit_memo_account:  28,
+	Gen_bus_posting_group:       1,
+	Gen_prod_posting_group:      2,
+	Sales_account:               10,
+	Sales_line_disc_account:     11,
+	Sales_inv_disc_account:      12,
+	Sales_payment_disc_account:  13,
+	Purch_account:               14,
+	Purch_line_disc_account:     15,
+	Purch_inv_disc_account:      16,
+	Purch_payment_disc_account:  17,
+	Cogs_account:                18,
+	Inventory_adjmt_account:     19,
+	Project_sales_adjmt_account: 24,
+	Project_cost_adjmt_account:  25,
+	Sales_credit_memo_account:   27,
+	Purch_credit_memo_account:   28,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -191,9 +191,9 @@ func (t *GeneralPostingSetup) FieldNo(fieldName string) int {
 		return 18
 	case "inventory_adjmt_account":
 		return 19
-	case "job_sales_adjmt_account":
+	case "project_sales_adjmt_account":
 		return 24
-	case "job_cost_adjmt_account":
+	case "project_cost_adjmt_account":
 		return 25
 	case "sales_credit_memo_account":
 		return 27
@@ -231,9 +231,9 @@ func (t *GeneralPostingSetup) FieldName(fieldNo int) string {
 	case 19:
 		return "inventory_adjmt_account"
 	case 24:
-		return "job_sales_adjmt_account"
+		return "project_sales_adjmt_account"
 	case 25:
-		return "job_cost_adjmt_account"
+		return "project_cost_adjmt_account"
 	case 27:
 		return "sales_credit_memo_account"
 	case 28:
@@ -375,11 +375,11 @@ type (
 	GeneralPostingSetupOnValidate_Inventory_adjmt_account interface {
 		OnValidate_Inventory_adjmt_account(rec *GeneralPostingSetup) error
 	}
-	GeneralPostingSetupOnValidate_Job_sales_adjmt_account interface {
-		OnValidate_Job_sales_adjmt_account(rec *GeneralPostingSetup) error
+	GeneralPostingSetupOnValidate_Project_sales_adjmt_account interface {
+		OnValidate_Project_sales_adjmt_account(rec *GeneralPostingSetup) error
 	}
-	GeneralPostingSetupOnValidate_Job_cost_adjmt_account interface {
-		OnValidate_Job_cost_adjmt_account(rec *GeneralPostingSetup) error
+	GeneralPostingSetupOnValidate_Project_cost_adjmt_account interface {
+		OnValidate_Project_cost_adjmt_account(rec *GeneralPostingSetup) error
 	}
 	GeneralPostingSetupOnValidate_Sales_credit_memo_account interface {
 		OnValidate_Sales_credit_memo_account(rec *GeneralPostingSetup) error
@@ -440,10 +440,10 @@ func generalPostingSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GeneralPostingSetupOnValidate_Cogs_account)
 	case "OnValidate_Inventory_adjmt_account":
 		_, ok = logic.(GeneralPostingSetupOnValidate_Inventory_adjmt_account)
-	case "OnValidate_Job_sales_adjmt_account":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Job_sales_adjmt_account)
-	case "OnValidate_Job_cost_adjmt_account":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Job_cost_adjmt_account)
+	case "OnValidate_Project_sales_adjmt_account":
+		_, ok = logic.(GeneralPostingSetupOnValidate_Project_sales_adjmt_account)
+	case "OnValidate_Project_cost_adjmt_account":
+		_, ok = logic.(GeneralPostingSetupOnValidate_Project_cost_adjmt_account)
 	case "OnValidate_Sales_credit_memo_account":
 		_, ok = logic.(GeneralPostingSetupOnValidate_Sales_credit_memo_account)
 	case "OnValidate_Purch_credit_memo_account":
@@ -561,10 +561,10 @@ func (t *GeneralPostingSetup) CheckFields() error {
 	if err := tables.CheckMaxLength(GeneralPostingSetupTableName, "inventory_adjmt_account", string(t.Inventory_adjmt_account), 20); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(GeneralPostingSetupTableName, "job_sales_adjmt_account", string(t.Job_sales_adjmt_account), 20); err != nil {
+	if err := tables.CheckMaxLength(GeneralPostingSetupTableName, "project_sales_adjmt_account", string(t.Project_sales_adjmt_account), 20); err != nil {
 		return err
 	}
-	if err := tables.CheckMaxLength(GeneralPostingSetupTableName, "job_cost_adjmt_account", string(t.Job_cost_adjmt_account), 20); err != nil {
+	if err := tables.CheckMaxLength(GeneralPostingSetupTableName, "project_cost_adjmt_account", string(t.Project_cost_adjmt_account), 20); err != nil {
 		return err
 	}
 	if err := tables.CheckMaxLength(GeneralPostingSetupTableName, "sales_credit_memo_account", string(t.Sales_credit_memo_account), 20); err != nil {
@@ -612,8 +612,8 @@ func GetGeneralPostingSetupTableSchema() string {
 		purch_payment_disc_account TEXT(20),
 		cogs_account TEXT(20),
 		inventory_adjmt_account TEXT(20),
-		job_sales_adjmt_account TEXT(20),
-		job_cost_adjmt_account TEXT(20),
+		project_sales_adjmt_account TEXT(20),
+		project_cost_adjmt_account TEXT(20),
 		sales_credit_memo_account TEXT(20),
 		purch_credit_memo_account TEXT(20),
 		PRIMARY KEY (gen_bus_posting_group, gen_prod_posting_group)
@@ -635,8 +635,8 @@ func GetGeneralPostingSetupPostgresTableSchema() string {
 		purch_payment_disc_account VARCHAR(20),
 		cogs_account VARCHAR(20),
 		inventory_adjmt_account VARCHAR(20),
-		job_sales_adjmt_account VARCHAR(20),
-		job_cost_adjmt_account VARCHAR(20),
+		project_sales_adjmt_account VARCHAR(20),
+		project_cost_adjmt_account VARCHAR(20),
 		sales_credit_memo_account VARCHAR(20),
 		purch_credit_memo_account VARCHAR(20),
 		PRIMARY KEY (gen_bus_posting_group, gen_prod_posting_group)
@@ -780,8 +780,8 @@ func (t *GeneralPostingSetup) StoreOldValues() {
 	t.oldValues["purch_payment_disc_account"] = t.Purch_payment_disc_account
 	t.oldValues["cogs_account"] = t.Cogs_account
 	t.oldValues["inventory_adjmt_account"] = t.Inventory_adjmt_account
-	t.oldValues["job_sales_adjmt_account"] = t.Job_sales_adjmt_account
-	t.oldValues["job_cost_adjmt_account"] = t.Job_cost_adjmt_account
+	t.oldValues["project_sales_adjmt_account"] = t.Project_sales_adjmt_account
+	t.oldValues["project_cost_adjmt_account"] = t.Project_cost_adjmt_account
 	t.oldValues["sales_credit_memo_account"] = t.Sales_credit_memo_account
 	t.oldValues["purch_credit_memo_account"] = t.Purch_credit_memo_account
 }
@@ -834,11 +834,11 @@ func (t *GeneralPostingSetup) XRec() *GeneralPostingSetup {
 	if v, ok := t.oldValues["inventory_adjmt_account"].(types.Code); ok {
 		x.Inventory_adjmt_account = v
 	}
-	if v, ok := t.oldValues["job_sales_adjmt_account"].(types.Code); ok {
-		x.Job_sales_adjmt_account = v
+	if v, ok := t.oldValues["project_sales_adjmt_account"].(types.Code); ok {
+		x.Project_sales_adjmt_account = v
 	}
-	if v, ok := t.oldValues["job_cost_adjmt_account"].(types.Code); ok {
-		x.Job_cost_adjmt_account = v
+	if v, ok := t.oldValues["project_cost_adjmt_account"].(types.Code); ok {
+		x.Project_cost_adjmt_account = v
 	}
 	if v, ok := t.oldValues["sales_credit_memo_account"].(types.Code); ok {
 		x.Sales_credit_memo_account = v
@@ -923,8 +923,8 @@ func (t *GeneralPostingSetup) GetByPK(gen_bus_posting_group types.Code, gen_prod
 	var purch_payment_disc_accountNull sql.NullString
 	var cogs_accountNull sql.NullString
 	var inventory_adjmt_accountNull sql.NullString
-	var job_sales_adjmt_accountNull sql.NullString
-	var job_cost_adjmt_accountNull sql.NullString
+	var project_sales_adjmt_accountNull sql.NullString
+	var project_cost_adjmt_accountNull sql.NullString
 	var sales_credit_memo_accountNull sql.NullString
 	var purch_credit_memo_accountNull sql.NullString
 
@@ -935,7 +935,7 @@ func (t *GeneralPostingSetup) GetByPK(gen_bus_posting_group types.Code, gen_prod
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, job_sales_adjmt_account, job_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account FROM "%s" WHERE 1=1 AND gen_bus_posting_group = ? AND gen_prod_posting_group = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, project_sales_adjmt_account, project_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account FROM "%s" WHERE 1=1 AND gen_bus_posting_group = ? AND gen_prod_posting_group = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -954,8 +954,8 @@ func (t *GeneralPostingSetup) GetByPK(gen_bus_posting_group types.Code, gen_prod
 		&purch_payment_disc_accountNull,
 		&cogs_accountNull,
 		&inventory_adjmt_accountNull,
-		&job_sales_adjmt_accountNull,
-		&job_cost_adjmt_accountNull,
+		&project_sales_adjmt_accountNull,
+		&project_cost_adjmt_accountNull,
 		&sales_credit_memo_accountNull,
 		&purch_credit_memo_accountNull,
 	)
@@ -983,8 +983,8 @@ func (t *GeneralPostingSetup) GetByPK(gen_bus_posting_group types.Code, gen_prod
 	t.Purch_payment_disc_account = types.NewCode(purch_payment_disc_accountNull.String)
 	t.Cogs_account = types.NewCode(cogs_accountNull.String)
 	t.Inventory_adjmt_account = types.NewCode(inventory_adjmt_accountNull.String)
-	t.Job_sales_adjmt_account = types.NewCode(job_sales_adjmt_accountNull.String)
-	t.Job_cost_adjmt_account = types.NewCode(job_cost_adjmt_accountNull.String)
+	t.Project_sales_adjmt_account = types.NewCode(project_sales_adjmt_accountNull.String)
+	t.Project_cost_adjmt_account = types.NewCode(project_cost_adjmt_accountNull.String)
 	t.Sales_credit_memo_account = types.NewCode(sales_credit_memo_accountNull.String)
 	t.Purch_credit_memo_account = types.NewCode(purch_credit_memo_accountNull.String)
 
@@ -1021,15 +1021,15 @@ func (t *GeneralPostingSetup) Insert(runTrigger bool) bool {
 		t.Purch_payment_disc_account,
 		t.Cogs_account,
 		t.Inventory_adjmt_account,
-		t.Job_sales_adjmt_account,
-		t.Job_cost_adjmt_account,
+		t.Project_sales_adjmt_account,
+		t.Project_cost_adjmt_account,
 		t.Sales_credit_memo_account,
 		t.Purch_credit_memo_account,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, job_sales_adjmt_account, job_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (gen_bus_posting_group, gen_prod_posting_group) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, project_sales_adjmt_account, project_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (gen_bus_posting_group, gen_prod_posting_group) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1079,14 +1079,14 @@ func (t *GeneralPostingSetup) InsertAll(records []*GeneralPostingSetup, runTrigg
 			r.Purch_payment_disc_account,
 			r.Cogs_account,
 			r.Inventory_adjmt_account,
-			r.Job_sales_adjmt_account,
-			r.Job_cost_adjmt_account,
+			r.Project_sales_adjmt_account,
+			r.Project_cost_adjmt_account,
 			r.Sales_credit_memo_account,
 			r.Purch_credit_memo_account,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, GeneralPostingSetupTableName)
-	columns := []string{"gen_bus_posting_group", "gen_prod_posting_group", "sales_account", "sales_line_disc_account", "sales_inv_disc_account", "sales_payment_disc_account", "purch_account", "purch_line_disc_account", "purch_inv_disc_account", "purch_payment_disc_account", "cogs_account", "inventory_adjmt_account", "job_sales_adjmt_account", "job_cost_adjmt_account", "sales_credit_memo_account", "purch_credit_memo_account"}
+	columns := []string{"gen_bus_posting_group", "gen_prod_posting_group", "sales_account", "sales_line_disc_account", "sales_inv_disc_account", "sales_payment_disc_account", "purch_account", "purch_line_disc_account", "purch_inv_disc_account", "purch_payment_disc_account", "cogs_account", "inventory_adjmt_account", "project_sales_adjmt_account", "project_cost_adjmt_account", "sales_credit_memo_account", "purch_credit_memo_account"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1177,13 +1177,13 @@ func (t *GeneralPostingSetup) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "inventory_adjmt_account = ?")
 			values = append(values, t.Inventory_adjmt_account)
 		}
-		if t.hasFieldChanged("job_sales_adjmt_account") {
-			setClauses = append(setClauses, "job_sales_adjmt_account = ?")
-			values = append(values, t.Job_sales_adjmt_account)
+		if t.hasFieldChanged("project_sales_adjmt_account") {
+			setClauses = append(setClauses, "project_sales_adjmt_account = ?")
+			values = append(values, t.Project_sales_adjmt_account)
 		}
-		if t.hasFieldChanged("job_cost_adjmt_account") {
-			setClauses = append(setClauses, "job_cost_adjmt_account = ?")
-			values = append(values, t.Job_cost_adjmt_account)
+		if t.hasFieldChanged("project_cost_adjmt_account") {
+			setClauses = append(setClauses, "project_cost_adjmt_account = ?")
+			values = append(values, t.Project_cost_adjmt_account)
 		}
 		if t.hasFieldChanged("sales_credit_memo_account") {
 			setClauses = append(setClauses, "sales_credit_memo_account = ?")
@@ -1220,10 +1220,10 @@ func (t *GeneralPostingSetup) Modify(runTrigger bool) bool {
 		values = append(values, t.Cogs_account)
 		setClauses = append(setClauses, "inventory_adjmt_account = ?")
 		values = append(values, t.Inventory_adjmt_account)
-		setClauses = append(setClauses, "job_sales_adjmt_account = ?")
-		values = append(values, t.Job_sales_adjmt_account)
-		setClauses = append(setClauses, "job_cost_adjmt_account = ?")
-		values = append(values, t.Job_cost_adjmt_account)
+		setClauses = append(setClauses, "project_sales_adjmt_account = ?")
+		values = append(values, t.Project_sales_adjmt_account)
+		setClauses = append(setClauses, "project_cost_adjmt_account = ?")
+		values = append(values, t.Project_cost_adjmt_account)
 		setClauses = append(setClauses, "sales_credit_memo_account = ?")
 		values = append(values, t.Sales_credit_memo_account)
 		setClauses = append(setClauses, "purch_credit_memo_account = ?")
@@ -1325,13 +1325,13 @@ func (t *GeneralPostingSetup) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Inventory_adjmt_account.Equal(old)
 		}
-	case "job_sales_adjmt_account":
+	case "project_sales_adjmt_account":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Job_sales_adjmt_account.Equal(old)
+			return !t.Project_sales_adjmt_account.Equal(old)
 		}
-	case "job_cost_adjmt_account":
+	case "project_cost_adjmt_account":
 		if old, ok := oldValue.(types.Code); ok {
-			return !t.Job_cost_adjmt_account.Equal(old)
+			return !t.Project_cost_adjmt_account.Equal(old)
 		}
 	case "sales_credit_memo_account":
 		if old, ok := oldValue.(types.Code); ok {
@@ -1570,10 +1570,10 @@ func (t *GeneralPostingSetup) columnName(fieldName string) (string, bool) {
 		return "cogs_account", true
 	case strings.ToLower("inventory_adjmt_account"):
 		return "inventory_adjmt_account", true
-	case strings.ToLower("job_sales_adjmt_account"):
-		return "job_sales_adjmt_account", true
-	case strings.ToLower("job_cost_adjmt_account"):
-		return "job_cost_adjmt_account", true
+	case strings.ToLower("project_sales_adjmt_account"):
+		return "project_sales_adjmt_account", true
+	case strings.ToLower("project_cost_adjmt_account"):
+		return "project_cost_adjmt_account", true
 	case strings.ToLower("sales_credit_memo_account"):
 		return "sales_credit_memo_account", true
 	case strings.ToLower("purch_credit_memo_account"):
@@ -1935,7 +1935,7 @@ func (t *GeneralPostingSetup) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, job_sales_adjmt_account, job_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, project_sales_adjmt_account, project_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1952,8 +1952,8 @@ func (t *GeneralPostingSetup) FindFirst() bool {
 	var purch_payment_disc_accountNull sql.NullString
 	var cogs_accountNull sql.NullString
 	var inventory_adjmt_accountNull sql.NullString
-	var job_sales_adjmt_accountNull sql.NullString
-	var job_cost_adjmt_accountNull sql.NullString
+	var project_sales_adjmt_accountNull sql.NullString
+	var project_cost_adjmt_accountNull sql.NullString
 	var sales_credit_memo_accountNull sql.NullString
 	var purch_credit_memo_accountNull sql.NullString
 
@@ -1970,8 +1970,8 @@ func (t *GeneralPostingSetup) FindFirst() bool {
 		&purch_payment_disc_accountNull,
 		&cogs_accountNull,
 		&inventory_adjmt_accountNull,
-		&job_sales_adjmt_accountNull,
-		&job_cost_adjmt_accountNull,
+		&project_sales_adjmt_accountNull,
+		&project_cost_adjmt_accountNull,
 		&sales_credit_memo_accountNull,
 		&purch_credit_memo_accountNull,
 	)
@@ -1997,8 +1997,8 @@ func (t *GeneralPostingSetup) FindFirst() bool {
 	t.Purch_payment_disc_account = types.NewCode(purch_payment_disc_accountNull.String)
 	t.Cogs_account = types.NewCode(cogs_accountNull.String)
 	t.Inventory_adjmt_account = types.NewCode(inventory_adjmt_accountNull.String)
-	t.Job_sales_adjmt_account = types.NewCode(job_sales_adjmt_accountNull.String)
-	t.Job_cost_adjmt_account = types.NewCode(job_cost_adjmt_accountNull.String)
+	t.Project_sales_adjmt_account = types.NewCode(project_sales_adjmt_accountNull.String)
+	t.Project_cost_adjmt_account = types.NewCode(project_cost_adjmt_accountNull.String)
 	t.Sales_credit_memo_account = types.NewCode(sales_credit_memo_accountNull.String)
 	t.Purch_credit_memo_account = types.NewCode(purch_credit_memo_accountNull.String)
 
@@ -2021,7 +2021,7 @@ func (t *GeneralPostingSetup) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, job_sales_adjmt_account, job_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, project_sales_adjmt_account, project_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2038,8 +2038,8 @@ func (t *GeneralPostingSetup) FindLast() bool {
 	var purch_payment_disc_accountNull sql.NullString
 	var cogs_accountNull sql.NullString
 	var inventory_adjmt_accountNull sql.NullString
-	var job_sales_adjmt_accountNull sql.NullString
-	var job_cost_adjmt_accountNull sql.NullString
+	var project_sales_adjmt_accountNull sql.NullString
+	var project_cost_adjmt_accountNull sql.NullString
 	var sales_credit_memo_accountNull sql.NullString
 	var purch_credit_memo_accountNull sql.NullString
 
@@ -2056,8 +2056,8 @@ func (t *GeneralPostingSetup) FindLast() bool {
 		&purch_payment_disc_accountNull,
 		&cogs_accountNull,
 		&inventory_adjmt_accountNull,
-		&job_sales_adjmt_accountNull,
-		&job_cost_adjmt_accountNull,
+		&project_sales_adjmt_accountNull,
+		&project_cost_adjmt_accountNull,
 		&sales_credit_memo_accountNull,
 		&purch_credit_memo_accountNull,
 	)
@@ -2083,8 +2083,8 @@ func (t *GeneralPostingSetup) FindLast() bool {
 	t.Purch_payment_disc_account = types.NewCode(purch_payment_disc_accountNull.String)
 	t.Cogs_account = types.NewCode(cogs_accountNull.String)
 	t.Inventory_adjmt_account = types.NewCode(inventory_adjmt_accountNull.String)
-	t.Job_sales_adjmt_account = types.NewCode(job_sales_adjmt_accountNull.String)
-	t.Job_cost_adjmt_account = types.NewCode(job_cost_adjmt_accountNull.String)
+	t.Project_sales_adjmt_account = types.NewCode(project_sales_adjmt_accountNull.String)
+	t.Project_cost_adjmt_account = types.NewCode(project_cost_adjmt_accountNull.String)
 	t.Sales_credit_memo_account = types.NewCode(sales_credit_memo_accountNull.String)
 	t.Purch_credit_memo_account = types.NewCode(purch_credit_memo_accountNull.String)
 
@@ -2137,7 +2137,7 @@ func (t *GeneralPostingSetup) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, job_sales_adjmt_account, job_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, project_sales_adjmt_account, project_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2218,8 +2218,8 @@ func (t *GeneralPostingSetup) Next(steps ...int) bool {
 		var purch_payment_disc_accountNull sql.NullString
 		var cogs_accountNull sql.NullString
 		var inventory_adjmt_accountNull sql.NullString
-		var job_sales_adjmt_accountNull sql.NullString
-		var job_cost_adjmt_accountNull sql.NullString
+		var project_sales_adjmt_accountNull sql.NullString
+		var project_cost_adjmt_accountNull sql.NullString
 		var sales_credit_memo_accountNull sql.NullString
 		var purch_credit_memo_accountNull sql.NullString
 
@@ -2236,8 +2236,8 @@ func (t *GeneralPostingSetup) Next(steps ...int) bool {
 			&purch_payment_disc_accountNull,
 			&cogs_accountNull,
 			&inventory_adjmt_accountNull,
-			&job_sales_adjmt_accountNull,
-			&job_cost_adjmt_accountNull,
+			&project_sales_adjmt_accountNull,
+			&project_cost_adjmt_accountNull,
 			&sales_credit_memo_accountNull,
 			&purch_credit_memo_accountNull,
 		)
@@ -2262,8 +2262,8 @@ func (t *GeneralPostingSetup) Next(steps ...int) bool {
 		t.Purch_payment_disc_account = types.NewCode(purch_payment_disc_accountNull.String)
 		t.Cogs_account = types.NewCode(cogs_accountNull.String)
 		t.Inventory_adjmt_account = types.NewCode(inventory_adjmt_accountNull.String)
-		t.Job_sales_adjmt_account = types.NewCode(job_sales_adjmt_accountNull.String)
-		t.Job_cost_adjmt_account = types.NewCode(job_cost_adjmt_accountNull.String)
+		t.Project_sales_adjmt_account = types.NewCode(project_sales_adjmt_accountNull.String)
+		t.Project_cost_adjmt_account = types.NewCode(project_cost_adjmt_accountNull.String)
 		t.Sales_credit_memo_account = types.NewCode(sales_credit_memo_accountNull.String)
 		t.Purch_credit_memo_account = types.NewCode(purch_credit_memo_accountNull.String)
 
@@ -2315,7 +2315,7 @@ func (t *GeneralPostingSetup) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, job_sales_adjmt_account, job_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, project_sales_adjmt_account, project_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2349,8 +2349,8 @@ func (t *GeneralPostingSetup) FindSetBuffered() bool {
 		var purch_payment_disc_accountNull sql.NullString
 		var cogs_accountNull sql.NullString
 		var inventory_adjmt_accountNull sql.NullString
-		var job_sales_adjmt_accountNull sql.NullString
-		var job_cost_adjmt_accountNull sql.NullString
+		var project_sales_adjmt_accountNull sql.NullString
+		var project_cost_adjmt_accountNull sql.NullString
 		var sales_credit_memo_accountNull sql.NullString
 		var purch_credit_memo_accountNull sql.NullString
 
@@ -2367,8 +2367,8 @@ func (t *GeneralPostingSetup) FindSetBuffered() bool {
 			&purch_payment_disc_accountNull,
 			&cogs_accountNull,
 			&inventory_adjmt_accountNull,
-			&job_sales_adjmt_accountNull,
-			&job_cost_adjmt_accountNull,
+			&project_sales_adjmt_accountNull,
+			&project_cost_adjmt_accountNull,
 			&sales_credit_memo_accountNull,
 			&purch_credit_memo_accountNull,
 		)
@@ -2391,8 +2391,8 @@ func (t *GeneralPostingSetup) FindSetBuffered() bool {
 		record.Purch_payment_disc_account = types.NewCode(purch_payment_disc_accountNull.String)
 		record.Cogs_account = types.NewCode(cogs_accountNull.String)
 		record.Inventory_adjmt_account = types.NewCode(inventory_adjmt_accountNull.String)
-		record.Job_sales_adjmt_account = types.NewCode(job_sales_adjmt_accountNull.String)
-		record.Job_cost_adjmt_account = types.NewCode(job_cost_adjmt_accountNull.String)
+		record.Project_sales_adjmt_account = types.NewCode(project_sales_adjmt_accountNull.String)
+		record.Project_cost_adjmt_account = types.NewCode(project_cost_adjmt_accountNull.String)
 		record.Sales_credit_memo_account = types.NewCode(sales_credit_memo_accountNull.String)
 		record.Purch_credit_memo_account = types.NewCode(purch_credit_memo_accountNull.String)
 
@@ -2435,8 +2435,8 @@ func (t *GeneralPostingSetup) copyFromBuffered(record *GeneralPostingSetup) {
 	t.Purch_payment_disc_account = record.Purch_payment_disc_account
 	t.Cogs_account = record.Cogs_account
 	t.Inventory_adjmt_account = record.Inventory_adjmt_account
-	t.Job_sales_adjmt_account = record.Job_sales_adjmt_account
-	t.Job_cost_adjmt_account = record.Job_cost_adjmt_account
+	t.Project_sales_adjmt_account = record.Project_sales_adjmt_account
+	t.Project_cost_adjmt_account = record.Project_cost_adjmt_account
 	t.Sales_credit_memo_account = record.Sales_credit_memo_account
 	t.Purch_credit_memo_account = record.Purch_credit_memo_account
 	t.StoreOldValues()
@@ -2837,45 +2837,45 @@ func (t *GeneralPostingSetup) ValidateField(fieldName string, value interface{})
 			}
 		}
 		return nil
-	case "job_sales_adjmt_account":
+	case "project_sales_adjmt_account":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Job_sales_adjmt_account = v
+			t.Project_sales_adjmt_account = v
 		} else if v, ok := value.(string); ok {
-			t.Job_sales_adjmt_account = types.NewCode(v)
+			t.Project_sales_adjmt_account = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field job_sales_adjmt_account")
+			return fmt.Errorf("invalid type for field project_sales_adjmt_account")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "job_sales_adjmt_account"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_sales_adjmt_account"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Job_sales_adjmt_account); ok {
-				if err := trg.OnValidate_Job_sales_adjmt_account(t); err != nil {
+			if trg, ok := l.(GeneralPostingSetupOnValidate_Project_sales_adjmt_account); ok {
+				if err := trg.OnValidate_Project_sales_adjmt_account(t); err != nil {
 					return err
 				}
 			}
 		}
 		return nil
-	case "job_cost_adjmt_account":
+	case "project_cost_adjmt_account":
 		// Set field value
 		if v, ok := value.(types.Code); ok {
-			t.Job_cost_adjmt_account = v
+			t.Project_cost_adjmt_account = v
 		} else if v, ok := value.(string); ok {
-			t.Job_cost_adjmt_account = types.NewCode(v)
+			t.Project_cost_adjmt_account = types.NewCode(v)
 		} else {
-			return fmt.Errorf("invalid type for field job_cost_adjmt_account")
+			return fmt.Errorf("invalid type for field project_cost_adjmt_account")
 		}
 		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "job_cost_adjmt_account"); err != nil {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_cost_adjmt_account"); err != nil {
 			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Job_cost_adjmt_account); ok {
-				if err := trg.OnValidate_Job_cost_adjmt_account(t); err != nil {
+			if trg, ok := l.(GeneralPostingSetupOnValidate_Project_cost_adjmt_account); ok {
+				if err := trg.OnValidate_Project_cost_adjmt_account(t); err != nil {
 					return err
 				}
 			}
@@ -2962,9 +2962,9 @@ func (t *GeneralPostingSetup) FieldValue(no int) (any, bool) {
 	case 19:
 		return t.Inventory_adjmt_account, true
 	case 24:
-		return t.Job_sales_adjmt_account, true
+		return t.Project_sales_adjmt_account, true
 	case 25:
-		return t.Job_cost_adjmt_account, true
+		return t.Project_cost_adjmt_account, true
 	case 27:
 		return t.Sales_credit_memo_account, true
 	case 28:
@@ -3094,20 +3094,20 @@ func (t *GeneralPostingSetup) SetFieldValue(no int, value any) bool {
 		}
 	case 24:
 		if v, ok := value.(types.Code); ok {
-			t.Job_sales_adjmt_account = v
+			t.Project_sales_adjmt_account = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Job_sales_adjmt_account = types.NewCode(v)
+			t.Project_sales_adjmt_account = types.NewCode(v)
 			return true
 		}
 	case 25:
 		if v, ok := value.(types.Code); ok {
-			t.Job_cost_adjmt_account = v
+			t.Project_cost_adjmt_account = v
 			return true
 		}
 		if v, ok := value.(string); ok {
-			t.Job_cost_adjmt_account = types.NewCode(v)
+			t.Project_cost_adjmt_account = types.NewCode(v)
 			return true
 		}
 	case 27:
@@ -3573,10 +3573,10 @@ func (t *GeneralPostingSetup) columnValue(column string) (interface{}, bool) {
 		return t.Cogs_account, true
 	case "inventory_adjmt_account":
 		return t.Inventory_adjmt_account, true
-	case "job_sales_adjmt_account":
-		return t.Job_sales_adjmt_account, true
-	case "job_cost_adjmt_account":
-		return t.Job_cost_adjmt_account, true
+	case "project_sales_adjmt_account":
+		return t.Project_sales_adjmt_account, true
+	case "project_cost_adjmt_account":
+		return t.Project_cost_adjmt_account, true
 	case "sales_credit_memo_account":
 		return t.Sales_credit_memo_account, true
 	case "purch_credit_memo_account":
@@ -3649,8 +3649,8 @@ func (t *GeneralPostingSetup) Init() {
 	t.Purch_payment_disc_account = *new(types.Code)
 	t.Cogs_account = *new(types.Code)
 	t.Inventory_adjmt_account = *new(types.Code)
-	t.Job_sales_adjmt_account = *new(types.Code)
-	t.Job_cost_adjmt_account = *new(types.Code)
+	t.Project_sales_adjmt_account = *new(types.Code)
+	t.Project_cost_adjmt_account = *new(types.Code)
 	t.Sales_credit_memo_account = *new(types.Code)
 	t.Purch_credit_memo_account = *new(types.Code)
 	t.applyDefaults()
@@ -3687,22 +3687,22 @@ func (t *GeneralPostingSetup) ClearFilters() {
 // ToMap converts the current record to a map for JSON serialization
 func (t *GeneralPostingSetup) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"gen_bus_posting_group":      t.Gen_bus_posting_group.String(),
-		"gen_prod_posting_group":     t.Gen_prod_posting_group.String(),
-		"sales_account":              t.Sales_account.String(),
-		"sales_line_disc_account":    t.Sales_line_disc_account.String(),
-		"sales_inv_disc_account":     t.Sales_inv_disc_account.String(),
-		"sales_payment_disc_account": t.Sales_payment_disc_account.String(),
-		"purch_account":              t.Purch_account.String(),
-		"purch_line_disc_account":    t.Purch_line_disc_account.String(),
-		"purch_inv_disc_account":     t.Purch_inv_disc_account.String(),
-		"purch_payment_disc_account": t.Purch_payment_disc_account.String(),
-		"cogs_account":               t.Cogs_account.String(),
-		"inventory_adjmt_account":    t.Inventory_adjmt_account.String(),
-		"job_sales_adjmt_account":    t.Job_sales_adjmt_account.String(),
-		"job_cost_adjmt_account":     t.Job_cost_adjmt_account.String(),
-		"sales_credit_memo_account":  t.Sales_credit_memo_account.String(),
-		"purch_credit_memo_account":  t.Purch_credit_memo_account.String(),
+		"gen_bus_posting_group":       t.Gen_bus_posting_group.String(),
+		"gen_prod_posting_group":      t.Gen_prod_posting_group.String(),
+		"sales_account":               t.Sales_account.String(),
+		"sales_line_disc_account":     t.Sales_line_disc_account.String(),
+		"sales_inv_disc_account":      t.Sales_inv_disc_account.String(),
+		"sales_payment_disc_account":  t.Sales_payment_disc_account.String(),
+		"purch_account":               t.Purch_account.String(),
+		"purch_line_disc_account":     t.Purch_line_disc_account.String(),
+		"purch_inv_disc_account":      t.Purch_inv_disc_account.String(),
+		"purch_payment_disc_account":  t.Purch_payment_disc_account.String(),
+		"cogs_account":                t.Cogs_account.String(),
+		"inventory_adjmt_account":     t.Inventory_adjmt_account.String(),
+		"project_sales_adjmt_account": t.Project_sales_adjmt_account.String(),
+		"project_cost_adjmt_account":  t.Project_cost_adjmt_account.String(),
+		"sales_credit_memo_account":   t.Sales_credit_memo_account.String(),
+		"purch_credit_memo_account":   t.Purch_credit_memo_account.String(),
 	}
 }
 
@@ -3768,14 +3768,14 @@ func (t *GeneralPostingSetup) FromMap(data map[string]interface{}) {
 			t.Inventory_adjmt_account = types.NewCode(s)
 		}
 	}
-	if v, ok := data["job_sales_adjmt_account"]; ok && v != nil {
+	if v, ok := data["project_sales_adjmt_account"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Job_sales_adjmt_account = types.NewCode(s)
+			t.Project_sales_adjmt_account = types.NewCode(s)
 		}
 	}
-	if v, ok := data["job_cost_adjmt_account"]; ok && v != nil {
+	if v, ok := data["project_cost_adjmt_account"]; ok && v != nil {
 		if s, ok := v.(string); ok {
-			t.Job_cost_adjmt_account = types.NewCode(s)
+			t.Project_cost_adjmt_account = types.NewCode(s)
 		}
 	}
 	if v, ok := data["sales_credit_memo_account"]; ok && v != nil {
@@ -3931,7 +3931,7 @@ func (t *GeneralPostingSetup) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         24,
-			Name:       "job_sales_adjmt_account",
+			Name:       "project_sales_adjmt_account",
 			Type:       tables.FieldTypeCode,
 			Length:     20,
 			Required:   false,
@@ -3941,7 +3941,7 @@ func (t *GeneralPostingSetup) GetFields() []tables.FieldInfo {
 		},
 		{
 			No:         25,
-			Name:       "job_cost_adjmt_account",
+			Name:       "project_cost_adjmt_account",
 			Type:       tables.FieldTypeCode,
 			Length:     20,
 			Required:   false,
@@ -4148,7 +4148,7 @@ func (t *GeneralPostingSetup) GetTableRelationFields() map[string]tables.TableRe
 				{Column: "account_type", Field: "", Const: "0"},
 			},
 		},
-		"job_sales_adjmt_account": {
+		"project_sales_adjmt_account": {
 			Table:        "G_L_Account",
 			Field:        "no",
 			DisplayField: "",
@@ -4161,7 +4161,7 @@ func (t *GeneralPostingSetup) GetTableRelationFields() map[string]tables.TableRe
 				{Column: "account_type", Field: "", Const: "0"},
 			},
 		},
-		"job_cost_adjmt_account": {
+		"project_cost_adjmt_account": {
 			Table:        "G_L_Account",
 			Field:        "no",
 			DisplayField: "",

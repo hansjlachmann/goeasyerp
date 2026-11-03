@@ -1040,7 +1040,7 @@ func (t *ReportSelections) CalcFieldsForRecords(records []map[string]interface{}
 // calcForRecords_report_name calculates the report_name FlowField for a set of records
 // CalcFormula: Lookup(Object.name)
 func (t *ReportSelections) calcForRecords_report_name(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &ReportSelections{db: t.db, company: t.company, dbType: t.dbType}
 		r.FromMap(rec)

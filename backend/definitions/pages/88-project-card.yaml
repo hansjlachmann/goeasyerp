@@ -1,0 +1,122 @@
+page:
+  id: 88
+  type: Card
+  name: Project Card
+  source_table: Project
+  caption: Project Card
+  list_page_id: 89
+  enable_navigation: true
+  editable: true
+  focus_field: "no"
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+            assist_edit: "table:Project.AssistEdit"   # pick another number series (…, Shift+F2)
+          - source: description
+          - source: description_2
+          - source: bill_to_customer_no
+          - source: name
+          - source: address
+          - source: address_2
+          - source: post_code
+          - source: city
+          - source: state
+          - source: contact
+          - source: search_description
+          - source: person_responsible
+          - source: status
+          - source: blocked
+          - source: last_date_modified
+          - source: comment
+      - name: Posting
+        caption: Posting
+        fields:
+          - source: project_posting_group
+          - source: recognition_method
+          - source: application_method
+          - source: project_usage_posting
+          - source: completion_percent
+          - source: project_posting_date
+          - source: recognition_date
+          - source: dimension_1_code
+          - source: dimension_2_code
+      - name: Duration
+        caption: Duration
+        fields:
+          - source: creation_date
+          - source: starting_date
+          - source: ending_date
+          - source: completion_date
+      - name: Budget
+        caption: Budget
+        fields:
+          - source: budgeted_cost
+          - source: budgeted_price
+          - source: budgeted_res_qty
+      - name: Picture
+        caption: Picture
+        fields:
+          - source: picture
+
+  actions:
+    - name: Back to List
+      caption: Back to List
+      image: Back
+      shortcut: Esc
+      promoted: true
+      run_page: 89
+
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    - name: Budget
+      caption: Budget
+      image: Calculate
+      promoted: true
+      run_page: 212
+      run_page_params:
+        project: "no"
+
+    - name: Quantity Allocated
+      caption: Quantity Allocated
+      image: Calendar
+      promoted: true
+      run_page: 215
+      run_page_filter_field: "no"
+      run_page_filter_value: "no"
+
+    - name: Budget Entries
+      caption: Budget Entries
+      image: Entries
+      promoted: true
+      run_page: 220
+      run_page_filter_field: project_no
+      run_page_filter_value: "no"
+
+    - name: Comments
+      caption: Comments
+      image: Document
+      promoted: true
+      run_page: 124
+      run_page_filters:
+        - {field: table_name, const: "5"}   # Project
+        - {field: "no", value: "no"}

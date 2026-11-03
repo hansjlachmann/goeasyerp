@@ -119,7 +119,7 @@ table:
       no: 11
       type: Option
       db_name: source_type
-      options: [" ", "Item entry", "Job entry"]
+      options: [" ", "Item entry", "Project entry"]
 
     - name: source_entry_no
       no: 12

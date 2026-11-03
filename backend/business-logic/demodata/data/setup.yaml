@@ -122,6 +122,8 @@ master_data:
       - {no: "1335", name: "Food and Beverages", account_type: 0, income_balance: 1}
       - {no: "1330", name: "Finished Goods", account_type: 0, income_balance: 1}
       - {no: "1339", name: "Total Inventory", account_type: 4, income_balance: 1, direct_posting: false}
+      - {no: "1340", name: "WIP, Project Costs", account_type: 0, income_balance: 1}
+      - {no: "1345", name: "WIP, Project Sales", account_type: 0, income_balance: 1}
       - {no: "1400", name: "Receivables", account_type: 3, income_balance: 1, direct_posting: false}
       - {no: "1410", name: "Accounts Receivable, Domestic", account_type: 0, income_balance: 1, reconciliation_account: true}
       - {no: "1420", name: "Accounts Receivable, Foreign", account_type: 0, income_balance: 1, reconciliation_account: true}
@@ -167,6 +169,7 @@ master_data:
       - {no: "4130", name: "Freight In", account_type: 0, income_balance: 0, gen_posting_type: 1, gen_bus_posting_group: DOMESTIC, gen_prod_posting_group: SERVICES, tax_bus_posting_group: DOMESTIC, tax_prod_posting_group: STANDARD, tax_area_code: DOMESTIC, tax_liable: true, tax_group_code: TAXABLE}
       - {no: "4135", name: "Cost of Goods Sold, Items", account_type: 0, income_balance: 0}
       - {no: "4140", name: "Inventory Adjustment", account_type: 0, income_balance: 0}
+      - {no: "4150", name: "Project Costs", account_type: 0, income_balance: 0}
       - {no: "4199", name: "Total Cost of Goods Sold", account_type: 4, income_balance: 0, direct_posting: false}
       - {no: "4900", name: "GROSS PROFIT", account_type: 2, income_balance: 0, direct_posting: false, totaling: "3100..4199"}
       - {no: "5000", name: "Operating Expenses", account_type: 3, income_balance: 0, direct_posting: false}
@@ -678,6 +681,7 @@ master_data:
       - {code: "IJNL-PHYS", description: Phys. inventory journal, default_nos: true, manual_nos: true}
       - {code: "RES", description: Resources, default_nos: true, manual_nos: true}
       - {code: "BJNL", description: BOM journal, default_nos: true, manual_nos: true}
+      - {code: "PROJ", description: Projects, default_nos: true, manual_nos: true}
   - table: No_Series_Line   # starting at the beginning (blank Starting Date)
     records:
       - {series_code: "CUST", line_no: 10000, starting_no: "C00001", ending_no: "C99999", warning_no: "C99000", increment_by_no: 1, open: true}
@@ -717,6 +721,7 @@ master_data:
       - {series_code: "IJNL-PHYS", line_no: 10000, starting_no: "T02001", increment_by_no: 1, open: true}
       - {series_code: "BJNL", line_no: 10000, starting_no: "B00001", increment_by_no: 1, open: true}
       - {series_code: "RES", line_no: 10000, starting_no: "R0010", ending_no: "R9990", increment_by_no: 10, open: true}
+      - {series_code: "PROJ", line_no: 10000, starting_no: "P00001", ending_no: "P99999", warning_no: "P99000", increment_by_no: 1, open: true}
   - table: No_Series_Relationship   # a customer may be numbered from CUST or CUST-EXP
     records:
       - {code: CUST, series_code: CUST-EXP}
@@ -807,6 +812,27 @@ master_data:
   - table: Resources_Setup   # the single setup record (blank key)
     records:
       - {resource_nos: RES}
+  - table: Projects_Setup   # the single setup record (blank key)
+    records:
+      - {project_nos: PROJ}
+  - table: Project_Posting_Group
+    records:
+      - {code: PROJECT, wip_cost_account: "1340", wip_sales_account: "1345", cost_account: "4150", sales_account: "3130", g_l_exp_sales_acc: "3130"}
+  - table: Phase
+    records:
+      - {code: PLAN, search_code: PLAN, description: Planning}
+      - {code: EXEC, search_code: EXEC, description: Execution}
+      - {code: CLOSE, search_code: CLOSE, description: Closing}
+  - table: Task
+    records:
+      - {code: MEETING, search_code: MEETING, description: Meetings}
+      - {code: INSTALL, search_code: INSTALL, description: Installation}
+      - {code: TRAINING, search_code: TRAINING, description: Training}
+  - table: Step
+    records:
+      - {code: PREPARE, search_code: PREPARE, description: Preparation}
+      - {code: DELIVER, search_code: DELIVER, description: Delivery}
+      - {code: REVIEW, search_code: REVIEW, description: Review}
   - table: Res_Journal_Template
     records:
       - {name: RESOURCES, description: Resource Journals, page_id: 207, source_code: RESJNL}

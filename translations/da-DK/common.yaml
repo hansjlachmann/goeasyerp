@@ -8,6 +8,9 @@ common:
 
   # Common actions
   actions:
+    budget: "Budget"
+    quantity_allocated: "Fordelt antal"
+    budget_entries: "Budgetposter"
     bins: "Placeringer"
     bin: "Placering"
     get_entries: "Hent poster"
@@ -209,6 +212,8 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    quantity: "Antal"
+    duration: "Varighed"
     dimensions: "Dimensioner"
     bins: "Placeringer"
     overview: "Oversigt"
@@ -274,6 +279,10 @@ common:
 
   # Menu items
   menu:
+    sales: "Salg"
+    purchase: "Køb"
+    items_inventory: "Varer og lager"
+    assets_depreciations: "Anlægsaktiver og afskrivninger"
     items_by_bin: "Varer pr. placering"
     serial_number_sold_history: "Solgte serienumre"
     serial_number_status_aging: "Serienumre - status/alder"
@@ -335,8 +344,8 @@ common:
     business_units: "Koncernvirksomheder"
     calc_and_post_tax_settlement: "Beregn og bogfør momsafregning"
     calculate_depreciation: "Beregn afskrivning"
-    calculate_job_recognition: "Beregn sagsindtægtsføring"
-    calculate_job_wip_value: "Beregn sagens VIA-værdi"
+    calculate_project_recognition: "Beregn projektindtægtsføring"
+    calculate_project_wip_value: "Beregn projektets VIA-værdi"
     cash_receipt_journals: "Indbetalingskladder"
     change_reservation_status: "Ændr reservationsstatus"
     close_income_statement: "Luk resultatopgørelse"
@@ -360,7 +369,7 @@ common:
     delete_empty_g_l_registers: "Slet tomme finansregistre"
     delete_empty_insurance_registers: "Slet tomme forsikringsregistre"
     delete_empty_item_registers: "Slet tomme vareregistre"
-    delete_empty_job_registers: "Slet tomme sagsregistre"
+    delete_empty_project_registers: "Slet tomme projektregistre"
     delete_empty_res_registers: "Slet tomme ressourceregistre"
     delete_invoiced_blanket_purchase_orders: "Slet fakturerede rammekøbsordrer"
     delete_invoiced_blanket_sales_orders: "Slet fakturerede rammesalgsordrer"
@@ -419,11 +428,11 @@ common:
     item_reports: "Varerapporter"
     item_transfer_journals: "Vareoverførselskladder"
     items: "Varer"
-    job_budget_entries: "Sagsbudgetposter"
-    job_journals: "Sagskladder"
-    job_ledger: "Sagspost"
-    job_posting_groups: "Sagsbogføringsgrupper"
-    jobs_setup: "Sagsopsætning"
+    project_budget_entries: "Projektbudgetposter"
+    project_journals: "Projektkladder"
+    project_ledger: "Projektpost"
+    project_posting_groups: "Projektbogføringsgrupper"
+    projects_setup: "Projektopsætning"
     journal_templates: "Kladdeskabeloner"
     jurisdictions: "Skattemyndigheder"
     maintenance_ledger: "Vedligeholdelsespost"
@@ -433,7 +442,7 @@ common:
     phases: "Faser"
     phys_inventory_journals: "Lageropgørelseskladder"
     post_inventory_cost_to_g_l: "Bogfør lagerkostpris i finans"
-    post_job_recognition_to_g_l: "Bogfør sagsindtægtsføring i finans"
+    post_project_recognition_to_g_l: "Bogfør projektindtægtsføring i finans"
     post_wip_value_to_g_l: "Bogfør VIA-værdi i finans"
     posted_credit_memos: "Bogførte kreditnotaer"
     posted_invoices: "Bogførte fakturaer"
@@ -530,7 +539,7 @@ common:
     sales_receivables_setup: "Salgsopsætning"
     general: "Generelt"
     settings: "Indstillinger"
-    jobs: "Opgaver"
+    projects: "Projekter"
     customers: "Debitorer"
     customer_ledger_entries: "Debitorposter"
     users: "Brugere"

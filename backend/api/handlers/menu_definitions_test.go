@@ -122,13 +122,18 @@ func TestGetMenuMarksAvailableEntries(t *testing.T) {
 		find(fiscal["items"].([]interface{}), "Avslutt resultatregnskap")["enabled"] != true {
 		t.Errorf("Activities › Fiscal Year: %v", fiscal)
 	}
-	inventory := find(modules, "Lager")
+	inventory := find(modules, "Varer og lager")
 	inventorySetup := find(inventory["items"].([]interface{}), "Oppsett")
 	if reservation := find(inventorySetup["items"].([]interface{}), "Reservasjonsoppsett"); reservation["enabled"] != true {
 		t.Errorf("Inventory › Setup › Reservation Setup not enabled: %v", reservation)
 	}
-	jobs := find(modules, "Jobber")
-	if jobsSetup := find(jobs["items"].([]interface{}), "Oppsett"); jobsSetup["enabled"] != false {
-		t.Errorf("a sub-menu without anything built is enabled: %v", jobsSetup)
+	projects := find(modules, "Prosjekter")
+	if projectsSetup := find(projects["items"].([]interface{}), "Oppsett"); projectsSetup["enabled"] != true {
+		t.Errorf("Projects › Setup not enabled: %v", projectsSetup)
+	}
+	fixedAssets := find(modules, "Anleggsmidler og avskrivninger")
+	faActivities := find(fixedAssets["items"].([]interface{}), "Aktiviteter")
+	if indexing := find(faActivities["items"].([]interface{}), "Indeksering"); indexing["enabled"] != false {
+		t.Errorf("a sub-menu without anything built is enabled: %v", indexing)
 	}
 }

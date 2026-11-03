@@ -1,0 +1,33 @@
+table:
+  id: 161
+  name: "Phase"
+  caption: Phase
+  description: "Project phases (table 161): the phase codes of budget lines and entries"
+  lookup_page_id: 82
+  fields:
+    - name: code
+      no: 1
+      type: types.Code
+      db_name: code
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: search_code
+      no: 2
+      type: types.Code
+      db_name: search_code
+      length: 10
+
+    - name: description
+      no: 3
+      type: types.Text
+      db_name: description
+      length: 30
+
+  keys:
+    - name: Primary
+      fields: [code]
+      clustered: true
+    - name: search_code
+      fields: [search_code]

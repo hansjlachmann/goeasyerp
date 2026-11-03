@@ -223,8 +223,10 @@ func (h *PageTriggersHandler) Matrix(c *fiber.Ctx) error {
 	var keys []string
 	for found := rec.FindSet(); found && len(records) < matrixMaxRows; found = rec.Next() {
 		records = append(records, rec.ToMap())
-		keys = append(keys, rec.GetPrimaryKeyValue())
+		keys = append(keys, ftables.KeyString(rec)) // all key fields: rows of a composite key differ
 	}
+	// option fields are shown by their caption in the user's language
+	options := optionCaptions(m.matrix.Table, rec, m.language)
 	rows := make([]matrixRow, len(records))
 	for i, data := range records {
 		fields := map[string]interface{}{}
@@ -234,6 +236,10 @@ func (h *PageTriggersHandler) Matrix(c *fiber.Ctx) error {
 		}
 		for _, f := range m.matrix.Fields {
 			fields[f.Source] = public[f.Source]
+			captions, isOption := options[f.Source]
+			if isOption {
+				fields[f.Source] = captions[fmt.Sprint(public[f.Source])]
+			}
 			if f.IndentField != "" {
 				fields[f.IndentField] = public[f.IndentField]
 			}

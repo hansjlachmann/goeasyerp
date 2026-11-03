@@ -8,6 +8,9 @@ common:
 
   # Common actions
   actions:
+    budget: "Budget"
+    quantity_allocated: "Quantity Allocated"
+    budget_entries: "Budget Entries"
     bins: "Bins"
     bin: "Bin"
     get_entries: "Get Entries"
@@ -209,6 +212,8 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    quantity: "Quantity"
+    duration: "Duration"
     dimensions: "Dimensions"
     bins: "Bins"
     overview: "Overview"
@@ -274,6 +279,10 @@ common:
 
   # Menu items
   menu:
+    sales: "Sales"
+    purchase: "Purchase"
+    items_inventory: "Items & Inventory"
+    assets_depreciations: "Assets & Depreciations"
     items_by_bin: "Items by Bin"
     serial_number_sold_history: "Serial Number Sold History"
     serial_number_status_aging: "Serial Number Status/Aging"
@@ -335,8 +344,8 @@ common:
     business_units: "Business Units"
     calc_and_post_tax_settlement: "Calc. and Post Tax Settlement"
     calculate_depreciation: "Calculate Depreciation"
-    calculate_job_recognition: "Calculate Job Recognition"
-    calculate_job_wip_value: "Calculate Job WIP Value"
+    calculate_project_recognition: "Calculate Project Recognition"
+    calculate_project_wip_value: "Calculate Project WIP Value"
     cash_receipt_journals: "Cash Receipt Journals"
     change_reservation_status: "Change Reservation Status"
     close_income_statement: "Close Income Statement"
@@ -360,7 +369,7 @@ common:
     delete_empty_g_l_registers: "Delete Empty G/L Registers"
     delete_empty_insurance_registers: "Delete Empty Insurance Registers"
     delete_empty_item_registers: "Delete Empty Item Registers"
-    delete_empty_job_registers: "Delete Empty Job Registers"
+    delete_empty_project_registers: "Delete Empty Project Registers"
     delete_empty_res_registers: "Delete Empty Res. Registers"
     delete_invoiced_blanket_purchase_orders: "Delete Invoiced Blanket Purchase Orders"
     delete_invoiced_blanket_sales_orders: "Delete Invoiced Blanket Sales Orders"
@@ -419,11 +428,11 @@ common:
     item_reports: "Item Reports"
     item_transfer_journals: "Item Transfer Journals"
     items: "Items"
-    job_budget_entries: "Job Budget Entries"
-    job_journals: "Job Journals"
-    job_ledger: "Job Ledger"
-    job_posting_groups: "Job Posting Groups"
-    jobs_setup: "Jobs Setup"
+    project_budget_entries: "Project Budget Entries"
+    project_journals: "Project Journals"
+    project_ledger: "Project Ledger"
+    project_posting_groups: "Project Posting Groups"
+    projects_setup: "Projects Setup"
     journal_templates: "Journal Templates"
     jurisdictions: "Jurisdictions"
     maintenance_ledger: "Maintenance Ledger"
@@ -433,7 +442,7 @@ common:
     phases: "Phases"
     phys_inventory_journals: "Phys. Inventory Journals"
     post_inventory_cost_to_g_l: "Post Inventory Cost to G/L"
-    post_job_recognition_to_g_l: "Post Job Recognition to G/L"
+    post_project_recognition_to_g_l: "Post Project Recognition to G/L"
     post_wip_value_to_g_l: "Post WIP Value to G/L"
     posted_credit_memos: "Posted Credit Memos"
     posted_invoices: "Posted Invoices"
@@ -530,7 +539,7 @@ common:
     sales_receivables_setup: "Sales & Receivables Setup"
     general: "General"
     settings: "Settings"
-    jobs: "Jobs"
+    projects: "Projects"
     customers: "Customers"
     customer_ledger_entries: "Customer Ledger Entries"
     users: "Users"

@@ -1,0 +1,99 @@
+table:
+  id: 208
+  name: "Project_Posting_Group"
+  caption: Project Posting Group
+  description: "Project posting groups, the G/L accounts of a project's postings (table 208)"
+  lookup_page_id: 211
+  fields:
+    - name: code
+      no: 1
+      type: types.Code
+      db_name: code
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: wip_cost_account
+      no: 2
+      type: types.Code
+      db_name: wip_cost_account
+      length: 20
+      table_relation:
+        table: G_L_Account
+        field: no
+        filters:
+          account_type: {const: 0}   # Posting accounts only
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: wip_sales_account
+      no: 3
+      type: types.Code
+      db_name: wip_sales_account
+      length: 20
+      table_relation:
+        table: G_L_Account
+        field: no
+        filters:
+          account_type: {const: 0}   # Posting accounts only
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: cost_account
+      no: 4
+      type: types.Code
+      db_name: cost_account
+      length: 20
+      table_relation:
+        table: G_L_Account
+        field: no
+        filters:
+          account_type: {const: 0}   # Posting accounts only
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: sales_account
+      no: 5
+      type: types.Code
+      db_name: sales_account
+      length: 20
+      table_relation:
+        table: G_L_Account
+        field: no
+        filters:
+          account_type: {const: 0}   # Posting accounts only
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: g_l_exp_sales_acc
+      no: 6
+      type: types.Code
+      db_name: g_l_exp_sales_acc
+      length: 20
+      table_relation:
+        table: G_L_Account
+        field: no
+        filters:
+          account_type: {const: 0}   # Posting accounts only
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+  keys:
+    - name: Primary
+      fields: [code]
+      clustered: true

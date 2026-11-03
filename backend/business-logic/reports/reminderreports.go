@@ -15,7 +15,7 @@ import (
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
 
-// The reminder and finance charge memo reports (main menu Sales & Receivables → Activities, the
+// The reminder and finance charge memo reports (main menu Sales → Activities, the
 // Reminders / Finance Charge Memos lists and cards):
 //   - 188 Create Reminders / 191 Create Finance Charge Memos: for the customers in the filters
 //     (with reminder / finance charge terms) the documents of their entries (Document Type … in

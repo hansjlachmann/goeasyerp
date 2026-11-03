@@ -9,7 +9,7 @@ table:
       type: Option
       db_name: table_name
       primary_key: true
-      options: ["G/L Account", "Customer", "Vendor", "Item", "Resource", "Job", " ", "Resource Group", "Bank Account", "Campaign", "Fixed Asset", "Insurance"]
+      options: ["G/L Account", "Customer", "Vendor", "Item", "Resource", "Project", " ", "Resource Group", "Bank Account", "Campaign", "Fixed Asset", "Insurance"]
 
     - name: no
       no: 2
@@ -43,6 +43,14 @@ table:
               - source: no
                 width: 100
               - source: name
+                width: 250
+          - when: {field: table_name, equal: 5}
+            table: Project
+            field: no
+            lookup_columns:
+              - source: no
+                width: 100
+              - source: description
                 width: 250
           - when: {field: table_name, equal: 8}
             table: Bank_Account

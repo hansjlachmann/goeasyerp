@@ -5007,7 +5007,7 @@ func (t *GenJournalLine) CalcFieldsForRecords(records []map[string]interface{}, 
 // calcForRecords_allocated_amt_lcy calculates the allocated_amt_lcy FlowField for a set of records
 // CalcFormula: Sum(GenJnlAllocation.amount)
 func (t *GenJournalLine) calcForRecords_allocated_amt_lcy(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record
+	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
 		r := &GenJournalLine{db: t.db, company: t.company, dbType: t.dbType}
 		r.FromMap(rec)

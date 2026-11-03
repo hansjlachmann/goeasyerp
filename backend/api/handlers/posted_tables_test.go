@@ -21,11 +21,12 @@ import (
 // are entries by name but entered by users are listed
 func TestEntryTablesArePosted(t *testing.T) {
 	notPosted := map[string]bool{
-		"Job_Queue_Entry":    true, // the job queue's jobs
-		"Document_Entry":     true, // Navigate's temporary lines
-		"Res_Capacity_Entry": true, // a resource's capacity, set by the user
-		"G_L_Budget_Entry":   true, // the budgets' amounts, entered in the budget matrix
-		"User_Time_Register": true, // the minutes worked, added at log out — the user can correct them
+		"Job_Queue_Entry":      true, // the job queue's jobs
+		"Document_Entry":       true, // Navigate's temporary lines
+		"Res_Capacity_Entry":   true, // a resource's capacity, set by the user
+		"G_L_Budget_Entry":     true, // the budgets' amounts, entered in the budget matrix
+		"Project_Budget_Entry": true, // the project budgets' quantities, entered in the budget matrix
+		"User_Time_Register":   true, // the minutes worked, added at log out — the user can correct them
 	}
 	metadata := pages.GetTableMetadata()
 	for _, name := range gtables.ListTableNames() {

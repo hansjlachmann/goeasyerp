@@ -1,0 +1,31 @@
+table:
+  id: 315
+  name: "Projects_Setup"
+  caption: Projects Setup
+  description: "Projects Setup (table 315, one record)"
+  setup_table: true
+  fields:
+    - name: primary_key
+      no: 1
+      type: types.Code
+      db_name: primary_key
+      length: 10
+      primary_key: true
+
+    - name: project_nos
+      no: 2
+      type: types.Code
+      db_name: project_nos
+      length: 10
+      table_relation:
+        table: No_Series
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+  keys:
+    - name: Primary
+      fields: [primary_key]

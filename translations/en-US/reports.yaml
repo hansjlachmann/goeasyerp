@@ -65,7 +65,7 @@ reports:
       only_index_entries: "Only Index Entries"
       retain_document_type: "Retain Document Type"
       retain_document_no: "Retain Document No."
-      retain_job_no: "Retain Job No."
+      retain_project_no: "Retain Project No."
       retain_business_unit_code: "Retain Business Unit Code"
       retain_dimension_1_code: "Retain Dimension 1 Code"
       retain_dimension_2_code: "Retain Dimension 2 Code"

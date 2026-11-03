@@ -160,24 +160,26 @@ type Counts struct {
 	MaintenanceLedgerEntries int
 	JournalLines             int // the open journals' lines (Options.Journals)
 	// The demo reminders and finance charge memos (Options.Journals), open and issued
-	Reminders          int
-	IssuedReminders    int
-	FinChrgMemos       int
-	IssuedFinChrgMemos int
-	ExchRateAdjmtRegs  int // the registers of the demo's exchange rate adjustment
-	Customers          int
-	LedgerEntries      int
-	GLEntries          int // demo G/L entries (monthly sales and costs against the bank)
-	GLBudgetEntries    int // the demo budget's monthly amounts (budgets.go)
-	SalesBlanketOrders int // blanket sales orders (sales.go)
-	PurchBlanketOrders int // blanket purchase orders (purchases.go)
-	IntrastatJnlLines  int // the Intrastat journal's lines of this month (intrastat.go)
-	AccScheduleLines   int // the demo account schedules' lines (accschedules.go)
-	AccSchedColumns    int // their column layouts' columns
-	ItemLedgerEntries  int // the demo items' opening stock, purchases and sales (posted)
-	BOMLedgerEntries   int // the demo assemblies of the bills of materials (posted)
-	ResCapacityEntries int // the demo resources' capacity per working day
-	ResLedgerEntries   int // the demo resources' weekly usage and monthly sales (posted)
+	Reminders            int
+	IssuedReminders      int
+	FinChrgMemos         int
+	IssuedFinChrgMemos   int
+	ExchRateAdjmtRegs    int // the registers of the demo's exchange rate adjustment
+	Customers            int
+	LedgerEntries        int
+	GLEntries            int // demo G/L entries (monthly sales and costs against the bank)
+	GLBudgetEntries      int // the demo budget's monthly amounts (budgets.go)
+	Projects             int // the demo projects (projects.go)
+	ProjectBudgetEntries int // their budget lines' monthly quantities
+	SalesBlanketOrders   int // blanket sales orders (sales.go)
+	PurchBlanketOrders   int // blanket purchase orders (purchases.go)
+	IntrastatJnlLines    int // the Intrastat journal's lines of this month (intrastat.go)
+	AccScheduleLines     int // the demo account schedules' lines (accschedules.go)
+	AccSchedColumns      int // their column layouts' columns
+	ItemLedgerEntries    int // the demo items' opening stock, purchases and sales (posted)
+	BOMLedgerEntries     int // the demo assemblies of the bills of materials (posted)
+	ResCapacityEntries   int // the demo resources' capacity per working day
+	ResLedgerEntries     int // the demo resources' weekly usage and monthly sales (posted)
 	// The demo sales documents: open quotes, orders and invoices, and the posted ones
 	SalesQuotes          int
 	SalesOrders          int
@@ -497,6 +499,11 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 		return Counts{}, err
 	}
 	err = insertDemoAccSchedules(ftables.DBSource(exec, company, dbType), &counts)
+	if err != nil {
+		rollback()
+		return Counts{}, err
+	}
+	err = insertDemoProjects(ftables.DBSource(exec, company, dbType), today, &counts)
 	if err != nil {
 		rollback()
 		return Counts{}, err

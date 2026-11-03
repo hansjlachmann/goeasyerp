@@ -1,0 +1,44 @@
+page:
+  id: 220
+  type: List
+  name: Project Budget Entries
+  source_table: Project_Budget_Entry
+  caption: Project Budget Entries
+
+  layout:
+    repeater:
+      fields:
+        - source: project_no
+          width: 110
+        - source: phase_code
+          width: 100
+        - source: task_code
+          width: 100
+        - source: step_code
+          width: 100
+        - source: type
+          width: 130
+        - source: "no"
+          width: 110
+        - source: variant_code
+          width: 100
+          visible: false
+        - source: resource_group_no
+          width: 130
+          visible: false
+        - source: date
+          width: 110
+        - source: quantity
+          width: 100
+        - source: total_cost
+          width: 120
+        - source: total_price
+          width: 120
+        - source: project_status
+          width: 110
+          visible: false
+        - source: user_id
+          width: 110
+          visible: false
+        - source: entry_no
+          width: 90

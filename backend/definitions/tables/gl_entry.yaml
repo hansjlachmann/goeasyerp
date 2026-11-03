@@ -181,11 +181,19 @@ table:
       type: bool
       db_name: prior_year_entry
 
-    - name: job_no
+    - name: project_no
       no: 41
       type: types.Code
-      db_name: job_no
+      db_name: project_no
       length: 20
+      table_relation:
+        table: Project
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
 
     - name: quantity
       no: 42

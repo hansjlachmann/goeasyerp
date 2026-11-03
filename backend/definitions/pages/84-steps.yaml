@@ -1,0 +1,37 @@
+page:
+  id: 84
+  type: List
+  name: Steps
+  source_table: Step
+  caption: Steps
+  editable: true
+  copy_paste_allowed: true
+
+  layout:
+    repeater:
+      fields:
+        - source: code
+          width: 100
+        - source: description
+          width: 250
+        - source: search_code
+          width: 120
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

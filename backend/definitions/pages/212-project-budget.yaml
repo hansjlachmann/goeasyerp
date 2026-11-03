@@ -1,0 +1,101 @@
+page:
+  id: 212
+  type: List
+  name: Project Budget
+  source_table: Project_Budget_Line
+  caption: Project Budget
+  editable: true
+  delayed_insert: true   # the line's key is typed field by field
+  # classic form 212: the budget lines of the project in the header (OnOpenPage: the page
+  # parameter, else the first project); the quantities come from the budget entries —
+  # Quantity Allocated (215) enters them by period
+
+  header_fields:
+    - param: project
+      source: project_no
+      lookup_page: 89
+      lookup_field: "no"
+
+  layout:
+    repeater:
+      fields:
+        - source: phase_code
+          width: 100
+        - source: task_code
+          width: 100
+        - source: step_code
+          width: 100
+        - source: type
+          width: 130
+        - source: "no"
+          width: 110
+        - source: variant_code
+          width: 100
+          visible: false
+        - source: description
+          width: 220
+        - source: starting_date
+          width: 110
+        - source: dimension_1_code
+          width: 110
+          visible: false
+        - source: dimension_2_code
+          width: 110
+          visible: false
+        - source: price_group_code
+          width: 110
+          visible: false
+        - source: quantity
+          width: 100
+        - source: direct_unit_cost
+          width: 120
+          visible: false
+        - source: unit_cost
+          width: 110
+        - source: total_cost
+          width: 120
+        - source: unit_price
+          width: 110
+        - source: total_price
+          width: 120
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    - name: Budget Entries
+      caption: Budget Entries
+      image: Entries
+      promoted: true
+      run_page: 220
+      run_page_filters:
+        - {field: project_no, value: project_no}
+        - {field: phase_code, value: phase_code}
+        - {field: task_code, value: task_code}
+        - {field: step_code, value: step_code}
+        - {field: type, value: type}
+        - {field: "no", value: "no"}
+        - {field: variant_code, value: variant_code}
+
+    - name: Quantity Allocated
+      caption: Quantity Allocated
+      image: Calendar
+      promoted: true
+      run_page: 215
+      run_page_filter_field: "no"
+      run_page_filter_value: project_no
