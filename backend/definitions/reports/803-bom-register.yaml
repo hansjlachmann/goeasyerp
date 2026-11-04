@@ -1,0 +1,70 @@
+# Report 803 BOM Register: the printed layout (see business-logic/reports/layout.go)
+report:
+  id: 803
+  name: BOM Register
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: BOM_Register
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 9
+          elements:
+            - {text: DATE, x: 0, y: 1, width: 18, bold: true, wrap: true}
+            - {text: ENTRY_TYPE, x: 19, y: 1, width: 22, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 42, y: 1, width: 22, bold: true, wrap: true}
+            - {text: REFERENCE_TYPE, x: 65, y: 1, width: 18, bold: true, wrap: true}
+            - {text: "NO", x: 84, y: 1, width: 20, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 105, y: 1, width: 70, bold: true, wrap: true}
+            - {text: QUANTITY, x: 176, y: 1, width: 22, bold: true, wrap: true, align: right}
+            - {text: UNIT_OF_MEASURE, x: 199, y: 1, width: 14, bold: true, wrap: true}
+            - {text: UNIT_COST, x: 214, y: 1, width: 27, bold: true, wrap: true, align: right}
+            - {text: TOTAL_COST, x: 242, y: 1, width: 31, bold: true, wrap: true, align: right}
+            - {line: true, x: 0, y: 7.5}
+        - type: body
+          height: 6
+          elements:
+            - {value: register_text, x: 0, y: 1, width: 60, bold: true}
+            - {value: source_code_text, x: 61, y: 1, width: 60}
+            - {value: source_code_description, x: 122, y: 1, width: 100}
+    - name: BOM_Ledger_Entry
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {value: bom_date, x: 0, y: 0, width: 18}
+            - {value: bom_entry_type, x: 19, y: 0, width: 22}
+            - {value: bom_doc_no, x: 42, y: 0, width: 22}
+            - {field: reference_type, x: 65, y: 0, width: 18}
+            - {value: bom_no, x: 84, y: 0, width: 20}
+            - {value: bom_description, x: 105, y: 0, width: 70}
+            - {value: bom_qty, x: 176, y: 0, width: 22, align: right, decimal_places: "0:5"}
+            - {value: bom_unit_of_measure, x: 199, y: 0, width: 14}
+            - {value: bom_unit_cost, x: 214, y: 0, width: 27, align: right}
+            - {value: bom_total_cost, x: 242, y: 0, width: 31, align: right}
+        - type: footer
+          height: 8
+          elements:
+            - {line: true, x: 242, y: 1}
+            - {value: entries_text, x: 0, y: 2.5, width: 120}
+            - {value: no_of_entries, x: 121, y: 2.5, width: 20, align: right, decimal_places: "0:0"}
+            - {total_value: bom_total_cost, x: 242, y: 2.5, width: 31, align: right, bold: true}

@@ -8,9 +8,7 @@ import (
 
 // bomJournalTemplateLogic is the business logic of table 88 BOM Journal Template: a BOM
 // journal with its page, source code and numbering.
-//
-// Not migrated yet: the test and posting reports (report prints), recurring BOM journals (page
-// 287).
+// The type (Recurring) sets the page, the source code and the test and posting reports.
 type bomJournalTemplateLogic struct{}
 
 func init() { gtables.RegisterBOMJournalTemplateLogic(bomJournalTemplateLogic{}) }
@@ -54,6 +52,8 @@ func (bomJournalTemplateLogic) OnValidate_Source_code(rec *gtables.BOMJournalTem
 // code; recurring journals have no No. Series
 func (bomJournalTemplateLogic) OnValidate_Recurring(rec *gtables.BOMJournalTemplate) error {
 	rec.Page_id = bomJournalPageID
+	rec.Test_report_id = BOMJnlTestReportID
+	rec.Posting_report_id = BOMRegisterReportID
 	if rec.Recurring {
 		rec.Page_id = RecurringBOMJnlPageID
 	}
@@ -88,3 +88,9 @@ func (bomJournalTemplateLogic) OnValidate_Posting_no_series(rec *gtables.BOMJour
 
 // RecurringBOMJnlPageID is page 287 Recurring BOM Jnl., the page of a recurring template
 const RecurringBOMJnlPageID = 287
+
+// The journal's reports: 802 BOM Journal - Test, 803 BOM Register
+const (
+	BOMJnlTestReportID  = 802
+	BOMRegisterReportID = 803
+)

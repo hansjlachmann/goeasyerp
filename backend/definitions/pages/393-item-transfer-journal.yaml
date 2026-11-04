@@ -141,6 +141,21 @@ page:
       promoted: true
       run_object: codeunit:241
 
+    # Post, then the template's posting report on the register (codeunit 242 Item Jnl.-Post+Print)
+    - name: Post and Print
+      caption: Post and Print
+      image: Print
+      shortcut: Shift+F11
+      promoted: true
+      run_object: codeunit:242
+
+    # what posting the batch would refuse, per line (report 702 Inventory Posting - Test)
+    - name: Test Report
+      caption: Test Report
+      image: Print
+      promoted: true
+      run_object: report:702
+
     # what Post would write for the batch, nothing saved (Posting Preview 115)
     - name: Preview Posting
       caption: Preview Posting

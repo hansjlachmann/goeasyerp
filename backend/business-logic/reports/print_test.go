@@ -197,7 +197,7 @@ func TestPrintPagesHeadersAndCarriedTotals(t *testing.T) {
 	}
 	// The footer after the last line: 1+2+4+…+40 = 820 − 3
 	// … and the amounts: 817 × 125
-	if !contains(pages[2], "reports.99950.texts.TOTAL") || !contains(pages[2], "817.00") || !contains(pages[2], "102,125.00") {
+	if !contains(pages[2], "Total") /* TOTAL: the shared report text */ || !contains(pages[2], "817.00") || !contains(pages[2], "102,125.00") {
 		t.Errorf("footer: %q", pages[2])
 	}
 }

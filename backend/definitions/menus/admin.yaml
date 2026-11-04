@@ -464,6 +464,8 @@ menu:
             run_object: "report:1001"
           - name: "Item Register"
             run_object: "report:703"
+          - name: "BOM Register"
+            run_object: "report:803"
           - name: "Item Jnl. Reservation Avail."
             run_object: "report:723"
           - name: "Serial Number Sold History"
@@ -566,6 +568,8 @@ menu:
         items:
           - name: "Resource - List"
             run_object: "report:1101"
+          - name: "Resource Register"
+            run_object: "report:1103"
       - name: "Registers"
         page_id: 274
       - name: "Navigate"

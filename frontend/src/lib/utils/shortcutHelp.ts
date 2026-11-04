@@ -63,6 +63,7 @@ export const shortcutHelpSections: ShortcutHelpSection[] = [
 		title: 'HELP_SEC_LIST',
 		items: [
 			{ keys: ['↑', '↓'], description: 'HELP_LIST_ROWS' },
+			{ keys: ['←', '→', 'Tab', 'Shift+Tab'], description: 'HELP_LIST_CELL_CURSOR' },
 			{ keys: ['Shift+↑', 'Shift+↓', 'Shift+PgUp', 'Shift+PgDn', 'Shift+Home', 'Shift+End'], description: 'HELP_LIST_SELECT_RANGE' },
 			{ keys: ['Ctrl+A'], description: 'HELP_LIST_SELECT_ALL' },
 			{ keys: ['Ctrl+Click', 'Shift+Click'], description: 'HELP_LIST_SELECT_CLICK' },
@@ -80,6 +81,7 @@ export const shortcutHelpSections: ShortcutHelpSection[] = [
 			{ keys: ['Ctrl+F7'], description: 'HELP_LIST_FILTER_PANE' },
 			{ keys: ['Ctrl+Alt+Q'], description: 'HELP_LIST_NAVIGATE' },
 			{ keys: ['Ctrl+Alt+F9'], description: 'HELP_PREVIEW_POSTING' },
+			{ keys: ['Shift+F11'], description: 'HELP_POST_PRINT' },
 			{ keys: ['Esc'], description: 'HELP_LIST_ESCAPE' }
 		]
 	},

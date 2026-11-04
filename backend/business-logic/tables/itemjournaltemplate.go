@@ -8,9 +8,7 @@ import (
 
 // itemJournalTemplateLogic is the business logic of table 82 Item Journal Template: a template
 // is a journal type (Item, Transfer, Phys. Inventory) with its page, source code and numbering.
-//
-// Not migrated yet: the test and posting reports (report prints), recurring item journals
-// (their page).
+// The type (Recurring) sets the page, the source code and the test and posting reports.
 type itemJournalTemplateLogic struct{}
 
 func init() { gtables.RegisterItemJournalTemplateLogic(itemJournalTemplateLogic{}) }
@@ -63,8 +61,16 @@ func (itemJournalTemplateLogic) OnValidate_Type(rec *gtables.ItemJournalTemplate
 	if rec.Recurring {
 		rec.Page_id = RecurringItemJnlPageID
 	}
+	rec.Test_report_id = ItemJnlTestReportID
+	rec.Posting_report_id = ItemRegisterReportID
 	return nil
 }
+
+// The item journals' reports: 702 Inventory Posting - Test, 703 Item Register
+const (
+	ItemJnlTestReportID  = 702
+	ItemRegisterReportID = 703
+)
 
 // RecurringItemJnlPageID is page 286 Recurring Item Jnl., the page of every recurring item template
 const RecurringItemJnlPageID = 286

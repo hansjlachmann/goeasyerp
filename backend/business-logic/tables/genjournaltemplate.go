@@ -9,9 +9,7 @@ import (
 
 // genJournalTemplateLogic is the business logic of table 80 Gen. Journal Template: a template
 // is a journal type (General, Sales, …) with its page, source code and numbering.
-//
-// Not migrated yet: the test and posting reports (report prints), recurring journals (their
-// page), fixed asset G/L and payroll accrual journals (their pages).
+// The type (Recurring) sets the page, the source code and the test and posting reports.
 type genJournalTemplateLogic struct{}
 
 func init() { gtables.RegisterGenJournalTemplateLogic(genJournalTemplateLogic{}) }
@@ -92,8 +90,18 @@ func (genJournalTemplateLogic) OnValidate_Type(rec *gtables.GenJournalTemplate) 
 	if rec.Recurring {
 		rec.Page_id = RecurringGenJnlPageID
 	}
+	// every type prints the General Journal - Test and the G/L Register (the payment journal's own
+	// test report of the classic code is not migrated)
+	rec.Test_report_id = GenJnlTestReportID
+	rec.Posting_report_id = GLRegisterReportID
 	return nil
 }
+
+// The general journals' reports: 2 General Journal - Test, 3 G/L Register
+const (
+	GenJnlTestReportID = 2
+	GLRegisterReportID = 3
+)
 
 // OnValidate_Source_code: the template's journal lines take the new source code
 func (genJournalTemplateLogic) OnValidate_Source_code(rec *gtables.GenJournalTemplate) error {

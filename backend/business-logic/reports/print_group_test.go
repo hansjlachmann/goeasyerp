@@ -151,7 +151,7 @@ func TestPrintGroupHeadersAndFooters(t *testing.T) {
 		"West", "Moss", "5", "7", "Moss", "7",
 		"6", "1", // a blank city: no header, its footer skipped by the trigger
 		"West", "8", "16", "6", "80",
-		"reports.99951.texts.TOTAL", "43",
+		"Total", "43", // TOTAL: the shared report text
 	}, "|")
 	if strings.Join(got, "|") != want {
 		t.Errorf("printed\n %s\nwant\n %s", strings.Join(got, "|"), want)
