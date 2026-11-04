@@ -211,6 +211,7 @@ common:
     show_optional_lines: "Vis valgfrie linjer"
     hide_optional_lines: "Skjul valgfrie linjer"
     available_to_reserve: "Disponibel til reservation"
+    show_printout: "Vis udskrift"
     show_error: "Vis fejl"
     applied_entries: "Udlignede poster"
     reconcile: "Afstem"

@@ -2,9 +2,11 @@ package reports
 
 import (
 	"encoding/base64"
+	"strings"
 
 	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
+	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
 )
 
 // CodeunitFactory runs a report like a codeunit, so pages (run_object: report:<id>) start it
@@ -54,6 +56,12 @@ func (c *reportCodeunit) Run(record interface{}) (fcodeunits.Result, error) {
 	if err != nil {
 		return fcodeunits.Result{}, err
 	}
+	return CodeunitResult(result), nil
+}
+
+// CodeunitResult is a report's result as a codeunit's (run from a page): a printout's PDF, a
+// file to download, its message, the page it opens and the printouts it made
+func CodeunitResult(result Result) fcodeunits.Result {
 	if result.PDF != nil {
 		// A printout: the frontend shows, prints or downloads it (the output chosen)
 		return fcodeunits.Result{
@@ -64,7 +72,7 @@ func (c *reportCodeunit) Run(record interface{}) (fcodeunits.Result, error) {
 				"filename": result.FileName,
 				"output":   result.Output,
 			},
-		}, nil
+		}
 	}
 	if result.File != nil {
 		// a file to send: the browser downloads it (after the report's message)
@@ -77,12 +85,35 @@ func (c *reportCodeunit) Run(record interface{}) (fcodeunits.Result, error) {
 		}
 		res.Data["file"] = base64.StdEncoding.EncodeToString(result.File)
 		res.Data["filename"] = result.FileName
-		return res, nil
+		return res
 	}
 	res := fcodeunits.Result{Success: true}
 	if result.Message != "" {
 		res = fcodeunits.Message(result.Message)
 	}
 	res.OpenPage = result.OpenPage
-	return WithPrintouts(res, result.Printouts), nil
+	return WithPrintouts(res, result.Printouts)
+}
+
+// ParseJobParameter reads a job's Parameter for a report it runs: name=value pairs separated
+// by ";" or line breaks — an option of the request page (option=value) or a data item's filter
+// (<DataItem>.<field>=<filter expression>)
+func ParseJobParameter(parameter string) (map[string]string, map[string][]ftables.FieldFilter) {
+	options := map[string]string{}
+	filters := map[string][]ftables.FieldFilter{}
+	for _, part := range strings.FieldsFunc(parameter, func(r rune) bool { return r == ';' || r == '\n' || r == '\r' }) {
+		name, value, ok := strings.Cut(part, "=")
+		name = strings.TrimSpace(name)
+		if !ok || name == "" {
+			continue
+		}
+		value = strings.TrimSpace(value)
+		item, field, isFilter := strings.Cut(name, ".")
+		if isFilter {
+			filters[item] = append(filters[item], ftables.FieldFilter{Field: field, Expression: value})
+			continue
+		}
+		options[name] = value
+	}
+	return options, filters
 }

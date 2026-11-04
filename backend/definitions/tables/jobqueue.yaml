@@ -28,6 +28,14 @@ table:
       db_name: status
       options: ["On Hold", "Ready", "Error"]
 
+    # What the job runs: a codeunit, or a report (printed: its PDF goes to the log and the
+    # notification) — Object ID to Run is its number, Parameter a report's options and filters
+    - name: object_type_to_run
+      no: 16
+      type: Option
+      db_name: object_type_to_run
+      options: ["Codeunit", "Report"]
+
     - name: object_id_to_run
       no: 5
       type: int
@@ -102,7 +110,7 @@ table:
           value: no
 
     # The user the job runs as: who set it up (stamped when a user saves it); a scheduled run
-    # checks this user's permission to run the codeunit
+    # checks this user's permission to run the codeunit or report
     - name: user_id
       no: 15
       type: types.Code

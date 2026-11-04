@@ -210,6 +210,7 @@ errors:
   ERR_NO_PERMISSION_CODEUNIT: "Du har ikke tillatelse til å kjøre kodeenhet %1 %2."
   ERR_NO_PERMISSION_REPORT: "Du har ikke tillatelse til å kjøre rapport %1 %2."
   ERR_JOB_NO_PERMISSION: "Bruker %1 har ikke tillatelse til å kjøre kodeenhet %2."
+  ERR_JOB_NO_REPORT_PERMISSION: "Bruker %1 har ikke tillatelse til å kjøre rapport %2."
 
   # Menu/Pages
   ERR_MENU_NOT_FOUND: "Meny ikke funnet"

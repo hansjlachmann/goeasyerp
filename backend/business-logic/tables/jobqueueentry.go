@@ -1,6 +1,8 @@
 package tables
 
 import (
+	"encoding/base64"
+
 	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/openerp/backend/foundation/functions"
 	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
@@ -20,6 +22,21 @@ func init() {
 	functions.Register("table", gtables.JobQueueEntryTableName, "ShowLineNo", functions.For(jobQueueEntryLogic{}.ShowLineNo))
 	functions.Register("table", gtables.JobQueueEntryTableName, "Test", functions.For(jobQueueEntryLogic{}.Test))
 	functions.Register("table", gtables.JobQueueEntryTableName, "ShowLine", functions.ForArgs(jobQueueEntryLogic{}.ShowLine, "int"))
+	// Show Printout on the log: a scheduled report's PDF (preview, print or download)
+	functions.Register("table", gtables.JobQueueEntryTableName, "ShowPrintout", functions.For(JobQueueEntryShowPrintout), functions.WithDialog())
+}
+
+// JobQueueEntryShowPrintout shows the printout a scheduled report run left in its log entry
+func JobQueueEntryShowPrintout(rec *gtables.JobQueueEntry) (fcodeunits.Result, error) {
+	entry := gtables.NewJobQueueEntry(rec)
+	if !entry.Get(rec.Entry_no) || len(entry.Printout) == 0 {
+		return fcodeunits.Result{}, system.Error(i18n.GetInstance().Message("JOBQUEUE_NO_PRINTOUT", fcodeunits.CurrentLanguage()), rec.Entry_no)
+	}
+	return fcodeunits.Result{Success: true, Data: map[string]interface{}{
+		"pdf":      base64.StdEncoding.EncodeToString(entry.Printout),
+		"filename": entry.Printout_file_name.String(),
+		"output":   "preview",
+	}}, nil
 }
 
 // ShowLine shows one field of the current line — the argument is an option

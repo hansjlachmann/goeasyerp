@@ -211,6 +211,7 @@ common:
     show_optional_lines: "Show Optional Lines"
     hide_optional_lines: "Hide Optional Lines"
     available_to_reserve: "Available to Reserve"
+    show_printout: "Show Printout"
     show_error: "Show Error"
     applied_entries: "Applied Entries"
     reconcile: "Reconcile"

@@ -9,12 +9,14 @@ package mail
 
 import (
 	"crypto/tls"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"mime"
 	"net"
 	netmail "net/mail"
 	"net/smtp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -28,6 +30,20 @@ type Sender interface {
 	Send(to []string, subject, body string) error
 	// Enabled reports whether the sender will actually attempt delivery.
 	Enabled() bool
+}
+
+// Attachment is a file sent with a message (a scheduled report's PDF)
+type Attachment struct {
+	Name        string // the file name the recipient sees
+	ContentType string // e.g. application/pdf
+	Data        []byte
+}
+
+// AttachmentSender is a Sender that can send files with a message (SMTPMailer); a caller with
+// files to send checks for it and sends the plain message otherwise
+type AttachmentSender interface {
+	Sender
+	SendWithAttachments(to []string, subject, body string, attachments []Attachment) error
 }
 
 // Config holds SMTP settings.
@@ -88,6 +104,12 @@ func (e *RecipientsError) Error() string {
 // a valid address) does not stop the others: Send returns a *RecipientsError naming
 // it. When disabled it is a no-op and returns nil.
 func (m *SMTPMailer) Send(to []string, subject, body string) error {
+	return m.SendWithAttachments(to, subject, body, nil)
+}
+
+// SendWithAttachments sends a message as Send does, with the files attached (a multipart
+// message; none: plain text)
+func (m *SMTPMailer) SendWithAttachments(to []string, subject, body string, attachments []Attachment) error {
 	if !m.Enabled() {
 		return nil
 	}
@@ -135,7 +157,7 @@ func (m *SMTPMailer) Send(to []string, subject, body string) error {
 	if err != nil {
 		return fmt.Errorf("mail: send failed: %w", err)
 	}
-	if _, err := w.Write(buildMessage(m.cfg.From, strings.Join(header, ", "), subject, body)); err != nil {
+	if _, err := w.Write(buildMessage(m.cfg.From, strings.Join(header, ", "), subject, body, attachments...)); err != nil {
 		return fmt.Errorf("mail: send failed: %w", err)
 	}
 	if err := w.Close(); err != nil {
@@ -181,20 +203,52 @@ func (m *SMTPMailer) dial() (*smtp.Client, error) {
 	return c, nil
 }
 
-// buildMessage assembles a minimal RFC 5322 plain-text message. Header values are
+// buildMessage assembles a minimal RFC 5322 plain-text message — with attachments a
+// multipart/mixed one: the text, then each file base64-encoded. Header values are
 // stripped of CR/LF to prevent header injection from job-supplied subjects; the
-// subject is RFC 2047 encoded (æ, ø, å).
-func buildMessage(from, to, subject, body string) []byte {
+// subject and file names are RFC 2047 encoded (æ, ø, å).
+func buildMessage(from, to, subject, body string, attachments ...Attachment) []byte {
 	var b strings.Builder
 	b.WriteString("From: " + sanitizeHeader(from) + "\r\n")
 	b.WriteString("To: " + sanitizeHeader(to) + "\r\n")
 	b.WriteString("Subject: " + mime.QEncoding.Encode("utf-8", sanitizeHeader(subject)) + "\r\n")
 	b.WriteString("Date: " + time.Now().Format(time.RFC1123Z) + "\r\n")
 	b.WriteString("MIME-Version: 1.0\r\n")
+	text := strings.ReplaceAll(body, "\n", "\r\n")
+	if len(attachments) == 0 {
+		b.WriteString("Content-Type: text/plain; charset=UTF-8\r\n")
+		b.WriteString("Content-Transfer-Encoding: 8bit\r\n")
+		b.WriteString("\r\n")
+		b.WriteString(text)
+		return []byte(b.String())
+	}
+	boundary := "openerp-" + strconv.FormatInt(time.Now().UnixNano(), 36)
+	b.WriteString("Content-Type: multipart/mixed; boundary=\"" + boundary + "\"\r\n")
+	b.WriteString("\r\n")
+	b.WriteString("--" + boundary + "\r\n")
 	b.WriteString("Content-Type: text/plain; charset=UTF-8\r\n")
 	b.WriteString("Content-Transfer-Encoding: 8bit\r\n")
 	b.WriteString("\r\n")
-	b.WriteString(strings.ReplaceAll(body, "\n", "\r\n"))
+	b.WriteString(text + "\r\n")
+	for _, a := range attachments {
+		contentType := a.ContentType
+		if contentType == "" {
+			contentType = "application/octet-stream"
+		}
+		name := mime.QEncoding.Encode("utf-8", sanitizeHeader(a.Name))
+		b.WriteString("--" + boundary + "\r\n")
+		b.WriteString("Content-Type: " + sanitizeHeader(contentType) + "; name=\"" + name + "\"\r\n")
+		b.WriteString("Content-Transfer-Encoding: base64\r\n")
+		b.WriteString("Content-Disposition: attachment; filename=\"" + name + "\"\r\n")
+		b.WriteString("\r\n")
+		encoded := base64.StdEncoding.EncodeToString(a.Data)
+		for len(encoded) > 76 {
+			b.WriteString(encoded[:76] + "\r\n")
+			encoded = encoded[76:]
+		}
+		b.WriteString(encoded + "\r\n")
+	}
+	b.WriteString("--" + boundary + "--\r\n")
 	return []byte(b.String())
 }
 

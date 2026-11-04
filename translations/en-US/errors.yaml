@@ -210,6 +210,7 @@ errors:
   ERR_NO_PERMISSION_CODEUNIT: "You do not have permission to run codeunit %1 %2."
   ERR_NO_PERMISSION_REPORT: "You do not have permission to run report %1 %2."
   ERR_JOB_NO_PERMISSION: "User %1 does not have permission to run codeunit %2."
+  ERR_JOB_NO_REPORT_PERMISSION: "User %1 does not have permission to run report %2."
 
   # Menu/Pages
   ERR_MENU_NOT_FOUND: "Menu not found"

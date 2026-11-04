@@ -34,7 +34,17 @@ page:
         - source: end_date_time
           width: 150
 
+        - source: printout_file_name
+          width: 220
+
   actions:
+    # a scheduled report's printout (the PDF the run left in its log entry)
+    - name: Show Printout
+      caption: Show Printout
+      image: Print
+      promoted: true
+      run_object: table:Job_Queue_Entry.ShowPrintout
+
     # A menu button with menu items; an item can call a function with the current line
     - name: Line
       caption: Line
