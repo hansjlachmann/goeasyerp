@@ -839,24 +839,24 @@ master_data:
       - {code: REVIEW, search_code: REVIEW, description: Review}
   - table: Project_Journal_Template
     records:
-      - {name: PROJECT, description: Project Journals, page_id: 201, source_code: PROJJNL}
-      - {name: RECURRING, description: Recurring Project Journal, recurring: true, page_id: 289, source_code: PROJJNL}
+      - {name: PROJECT, description: Project Journals, page_id: 201, source_code: PROJJNL, test_report_id: 1202, posting_report_id: 1203}
+      - {name: RECURRING, description: Recurring Project Journal, recurring: true, page_id: 289, source_code: PROJJNL, test_report_id: 1202, posting_report_id: 1203}
   - table: Project_Journal_Batch
     records:
       - {journal_template_name: PROJECT, name: DEFAULT, description: Default Journal}
       - {journal_template_name: RECURRING, name: DEFAULT, description: Default Journal}
   - table: Res_Journal_Template
     records:
-      - {name: RESOURCES, description: Resource Journals, page_id: 207, source_code: RESJNL}
-      - {name: RECURRING, description: Recurring Resource Journal, recurring: true, source_code: RESJNL}
+      - {name: RESOURCES, description: Resource Journals, page_id: 207, source_code: RESJNL, test_report_id: 1102, posting_report_id: 1103}
+      - {name: RECURRING, description: Recurring Resource Journal, recurring: true, source_code: RESJNL, test_report_id: 1102, posting_report_id: 1103}
   - table: Res_Journal_Batch
     records:
       - {journal_template_name: RESOURCES, name: DEFAULT, description: Default Journal}
       - {journal_template_name: RECURRING, name: DEFAULT, description: Default Journal}
   - table: BOM_Journal_Template
     records:
-      - {name: BOM, description: BOM Journal, page_id: 109, source_code: BOMJNL}
-      - {name: RECURRING, description: Recurring BOM Journal, recurring: true, source_code: BOMJNL}
+      - {name: BOM, description: BOM Journal, page_id: 109, source_code: BOMJNL, test_report_id: 802, posting_report_id: 803}
+      - {name: RECURRING, description: Recurring BOM Journal, recurring: true, source_code: BOMJNL, test_report_id: 802, posting_report_id: 803}
   - table: BOM_Journal_Batch
     records:
       - {journal_template_name: BOM, name: DEFAULT, description: Default Journal, no_series: BJNL}

@@ -1,0 +1,105 @@
+# Report 702 Inventory Posting - Test: the printed layout (see business-logic/reports/layout.go)
+report:
+  id: 702
+  name: Inventory Posting - Test
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Item_Journal_Batch
+      new_page_per_record: true
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 22
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+            - {text: JOURNAL_TEMPLATE, x: 0, y: 12, width: 40}
+            - {field: journal_template_name, x: 41, y: 12, width: 30}
+            - {text: JOURNAL_BATCH, x: 0, y: 16, width: 40}
+            - {field: name, x: 41, y: 16, width: 30}
+        - type: header
+          print_on_every_page: true
+          height: 10.5
+          elements:
+            - {text: POSTING_DATE, x: 0, y: 1, width: 18, bold: true, wrap: true}
+            - {text: ENTRY_TYPE, x: 19, y: 1, width: 22, bold: true, wrap: true}
+            - {text: ITEM_NO, x: 42, y: 1, width: 20, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 63, y: 1, width: 70, bold: true, wrap: true}
+            - {text: QUANTITY, x: 134, y: 1, width: 22, bold: true, wrap: true, align: right}
+            - {text: INVOICED_QUANTITY, x: 157, y: 1, width: 22, bold: true, wrap: true, align: right}
+            - {text: UNIT_AMOUNT, x: 180, y: 1, width: 25, bold: true, wrap: true, align: right}
+            - {text: AMOUNT, x: 206, y: 1, width: 27, bold: true, wrap: true, align: right}
+            - {line: true, x: 0, y: 9}
+    - name: Item_Journal_Line
+      sections:
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: body
+          height: 4.2
+          elements:
+            - {field: posting_date, x: 0, y: 0, width: 18}
+            - {field: entry_type, x: 19, y: 0, width: 22}
+            - {field: item_no, x: 42, y: 0, width: 20}
+            - {field: description, x: 63, y: 0, width: 70}
+            - {field: quantity, x: 134, y: 0, width: 22, align: right, decimal_places: "0:5"}
+            - {field: invoiced_quantity, x: 157, y: 0, width: 22, align: right, decimal_places: "0:5"}
+            - {field: unit_amount, x: 180, y: 0, width: 25, align: right, decimal_places: "2:2"}
+            - {field: amount, x: 206, y: 0, width: 27, align: right, decimal_places: "2:2"}
+        # the batch's amounts per entry type (the types it has) and their total
+        - type: footer
+          height: 3
+          elements:
+            - {line: true, x: 157, y: 1.5}
+        - type: footer
+          print_if: no_of_entries_purchase
+          height: 4.2
+          elements:
+            - {value: entry_type_purchase, x: 157, y: 0, width: 45}
+            - {value: total_amount_purchase, x: 206, y: 0, width: 27, align: right}
+        - type: footer
+          print_if: no_of_entries_sale
+          height: 4.2
+          elements:
+            - {value: entry_type_sale, x: 157, y: 0, width: 45}
+            - {value: total_amount_sale, x: 206, y: 0, width: 27, align: right}
+        - type: footer
+          print_if: no_of_entries_positive_adjmt
+          height: 4.2
+          elements:
+            - {value: entry_type_positive_adjmt, x: 157, y: 0, width: 45}
+            - {value: total_amount_positive_adjmt, x: 206, y: 0, width: 27, align: right}
+        - type: footer
+          print_if: no_of_entries_negative_adjmt
+          height: 4.2
+          elements:
+            - {value: entry_type_negative_adjmt, x: 157, y: 0, width: 45}
+            - {value: total_amount_negative_adjmt, x: 206, y: 0, width: 27, align: right}
+        - type: footer
+          print_if: no_of_entries_transfer
+          height: 4.2
+          elements:
+            - {value: entry_type_transfer, x: 157, y: 0, width: 45}
+            - {value: total_amount_transfer, x: 206, y: 0, width: 27, align: right}
+        - type: footer
+          height: 5
+          elements:
+            - {text: TOTAL, x: 157, y: 0.5, width: 45, bold: true}
+            - {value: total_amount, x: 206, y: 0.5, width: 27, align: right, bold: true}
+    - name: Error_Loop
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {text: WARNING, x: 19, y: 0, width: 20, bold: true}
+            - {value: error_text, x: 40, y: 0, width: 233, wrap: true}

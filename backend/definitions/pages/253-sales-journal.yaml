@@ -269,6 +269,21 @@ page:
       promoted: true
       run_object: codeunit:231
 
+    # Post, then the template's posting report on the register (codeunit 232 Gen. Jnl.-Post+Print)
+    - name: Post and Print
+      caption: Post and Print
+      image: Print
+      shortcut: Shift+F11
+      promoted: true
+      run_object: codeunit:232
+
+    # what posting the batch would refuse, per line (report 2 General Journal - Test)
+    - name: Test Report
+      caption: Test Report
+      image: Print
+      promoted: true
+      run_object: report:2
+
     # what Post would write for the batch, nothing saved (Posting Preview 115)
     - name: Preview Posting
       caption: Preview Posting

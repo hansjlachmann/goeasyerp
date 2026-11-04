@@ -1,0 +1,151 @@
+# Report 2 General Journal - Test: the printed layout (see business-logic/reports/layout.go)
+report:
+  id: 2
+  name: General Journal - Test
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Gen_Journal_Batch
+      new_page_per_record: true
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 22
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+            - {text: JOURNAL_TEMPLATE, x: 0, y: 12, width: 40}
+            - {field: journal_template_name, x: 41, y: 12, width: 30}
+            - {text: JOURNAL_BATCH, x: 0, y: 16, width: 40}
+            - {field: name, x: 41, y: 16, width: 30}
+        # the columns of a journal
+        - type: header
+          print_on_every_page: true
+          print_unless: recurring
+          height: 10.5
+          elements:
+            - {text: POSTING_DATE, x: 0, y: 1, width: 18, bold: true, wrap: true}
+            - {text: DOCUMENT_TYPE, x: 19, y: 1, width: 16, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 36, y: 1, width: 22, bold: true, wrap: true}
+            - {text: ACCOUNT_TYPE, x: 59, y: 1, width: 18, bold: true, wrap: true}
+            - {text: ACCOUNT_NO, x: 78, y: 1, width: 20, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 99, y: 1, width: 50, bold: true, wrap: true}
+            - {text: AMOUNT, x: 150, y: 1, width: 25, bold: true, wrap: true, align: right}
+            - {text: BAL_ACCOUNT_TYPE, x: 176, y: 1, width: 23, bold: true, wrap: true}
+            - {text: BAL_ACCOUNT_NO, x: 200, y: 1, width: 20, bold: true, wrap: true}
+            - {text: APPLIES_TO_DOC_NO, x: 221, y: 1, width: 22, bold: true, wrap: true}
+            - {text: BALANCE_LCY, x: 244, y: 1, width: 29, bold: true, wrap: true, align: right}
+            - {line: true, x: 0, y: 9}
+        # the columns of a recurring journal
+        - type: header
+          print_on_every_page: true
+          print_if: recurring
+          height: 10.5
+          elements:
+            - {text: RECURRING_METHOD, x: 0, y: 1, width: 20, bold: true, wrap: true}
+            - {text: EXPIRATION_DATE, x: 21, y: 1, width: 16, bold: true, wrap: true}
+            - {text: RECURRING_FREQUENCY, x: 38, y: 1, width: 18, bold: true, wrap: true}
+            - {text: POSTING_DATE, x: 57, y: 1, width: 15, bold: true, wrap: true}
+            - {text: DOCUMENT_TYPE, x: 73, y: 1, width: 17, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 91, y: 1, width: 18, bold: true, wrap: true}
+            - {text: ACCOUNT_TYPE, x: 110, y: 1, width: 18, bold: true, wrap: true}
+            - {text: ACCOUNT_NO, x: 129, y: 1, width: 18, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 148, y: 1, width: 58, bold: true, wrap: true}
+            - {text: AMOUNT, x: 207, y: 1, width: 32, bold: true, wrap: true, align: right}
+            - {text: ALLOCATED_AMT_LCY, x: 240, y: 1, width: 33, bold: true, wrap: true, align: right}
+            - {line: true, x: 0, y: 9}
+    - name: Gen_Journal_Line
+      sections:
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: body
+          print_unless: recurring
+          height: 4.2
+          elements:
+            - {field: posting_date, x: 0, y: 0, width: 18}
+            - {field: document_type, x: 19, y: 0, width: 16}
+            - {field: document_no, x: 36, y: 0, width: 22}
+            - {field: account_type, x: 59, y: 0, width: 18}
+            - {field: account_no, x: 78, y: 0, width: 20}
+            - {field: description, x: 99, y: 0, width: 50}
+            - {field: amount, x: 150, y: 0, width: 25, align: right, decimal_places: "2:2"}
+            - {field: bal_account_type, x: 176, y: 0, width: 23}
+            - {field: bal_account_no, x: 200, y: 0, width: 20}
+            - {field: applies_to_doc_no, x: 221, y: 0, width: 22}
+            - {field: balance_lcy, x: 244, y: 0, width: 29, align: right, decimal_places: "2:2"}
+        - type: body
+          print_if: recurring
+          height: 4.2
+          elements:
+            - {field: recurring_method, x: 0, y: 0, width: 20}
+            - {field: expiration_date, x: 21, y: 0, width: 16}
+            - {field: recurring_frequency, x: 38, y: 0, width: 18}
+            - {field: posting_date, x: 57, y: 0, width: 15}
+            - {field: document_type, x: 73, y: 0, width: 17}
+            - {field: document_no, x: 91, y: 0, width: 18}
+            - {field: account_type, x: 110, y: 0, width: 18}
+            - {field: account_no, x: 129, y: 0, width: 18}
+            - {field: description, x: 148, y: 0, width: 58}
+            - {field: amount, x: 207, y: 0, width: 32, align: right, decimal_places: "2:2"}
+            - {field: allocated_amt_lcy, x: 240, y: 0, width: 33, align: right, decimal_places: "2:2"}
+        - type: footer
+          height: 8
+          elements:
+            - {line: true, x: 150, y: 1}
+            - {text: TOTAL_LCY, x: 99, y: 2.5, width: 50, bold: true}
+            - {total: amount_lcy, x: 150, y: 2.5, width: 25, align: right, bold: true, decimal_places: "2:2"}
+            - {total: balance_lcy, x: 244, y: 2.5, width: 29, align: right, bold: true, decimal_places: "2:2"}
+    - name: Gen_Jnl_Allocation
+      sections:
+        - type: header
+          height: 8.5
+          elements:
+            - {text: ACCOUNT_NO, x: 49, y: 1, width: 22, bold: true, wrap: true}
+            - {text: ACCOUNT_NAME, x: 72, y: 1, width: 60, bold: true, wrap: true}
+            - {text: ALLOCATION_QUANTITY, x: 133, y: 1, width: 25, bold: true, wrap: true, align: right}
+            - {text: ALLOCATION_PERCENT, x: 159, y: 1, width: 20, bold: true, wrap: true, align: right}
+            - {text: AMOUNT, x: 240, y: 1, width: 33, bold: true, wrap: true, align: right}
+        - type: body
+          height: 4.2
+          elements:
+            - {field: account_no, x: 49, y: 0, width: 22}
+            - {value: alloc_account_name, x: 72, y: 0, width: 60}
+            - {field: allocation_quantity, x: 133, y: 0, width: 25, align: right, decimal_places: "0:5"}
+            - {field: allocation_percent, x: 159, y: 0, width: 20, align: right}
+            - {field: amount, x: 240, y: 0, width: 33, align: right, decimal_places: "2:2"}
+    - name: Error_Loop
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {text: WARNING, x: 19, y: 0, width: 20, bold: true}
+            - {value: error_text, x: 40, y: 0, width: 233, wrap: true}
+    - name: Reconcile_Loop
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 16
+          elements:
+            - {text: RECONCILIATION, x: 0, y: 3, width: 80, bold: true, size: 9}
+            - {text: "NO", x: 0, y: 10, width: 20, bold: true}
+            - {text: NAME, x: 21, y: 10, width: 60, bold: true}
+            - {text: NET_CHANGE_IN_JNL, x: 82, y: 10, width: 30, bold: true, align: right}
+            - {text: BALANCE_AFTER_POSTING, x: 113, y: 10, width: 35, bold: true, align: right}
+            - {line: true, x: 0, y: 14.5}
+        - type: body
+          height: 4.2
+          elements:
+            - {value: gl_acc_no, x: 0, y: 0, width: 20}
+            - {value: gl_acc_name, x: 21, y: 0, width: 60}
+            - {value: net_change_in_jnl, x: 82, y: 0, width: 30, align: right}
+            - {value: balance_after_posting, x: 113, y: 0, width: 35, align: right}

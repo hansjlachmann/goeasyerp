@@ -8,9 +8,7 @@ import (
 
 // resJournalTemplateLogic is the business logic of table 206 Res. Journal Template: a resource
 // journal with its page, source code and numbering.
-//
-// Not migrated yet: the test and posting reports (report prints), recurring resource journals
-// (page 290).
+// The type (Recurring) sets the page, the source code and the test and posting reports.
 type resJournalTemplateLogic struct{}
 
 func init() { gtables.RegisterResJournalTemplateLogic(resJournalTemplateLogic{}) }
@@ -54,6 +52,8 @@ func (resJournalTemplateLogic) OnValidate_Source_code(rec *gtables.ResJournalTem
 // code; recurring journals have no No. Series
 func (resJournalTemplateLogic) OnValidate_Recurring(rec *gtables.ResJournalTemplate) error {
 	rec.Page_id = resJournalPageID
+	rec.Test_report_id = ResJnlTestReportID
+	rec.Posting_report_id = ResRegisterReportID
 	if rec.Recurring {
 		rec.Page_id = RecurringResJnlPageID
 	}
@@ -88,3 +88,9 @@ func (resJournalTemplateLogic) OnValidate_Posting_no_series(rec *gtables.ResJour
 
 // RecurringResJnlPageID is page 290 Recurring Resource Jnl., the page of a recurring template
 const RecurringResJnlPageID = 290
+
+// The journal's reports: 1102 Resource Journal - Test, 1103 Resource Register
+const (
+	ResJnlTestReportID  = 1102
+	ResRegisterReportID = 1103
+)

@@ -8,9 +8,7 @@ import (
 
 // projectJournalTemplateLogic is the business logic of table 209 Project Journal Template: a project
 // journal with its page, source code and numbering.
-//
-// Not migrated yet: the test and posting reports (report prints), recurring project journals
-// (page 289).
+// The type (Recurring) sets the page, the source code and the test and posting reports.
 type projectJournalTemplateLogic struct{}
 
 func init() { gtables.RegisterProjectJournalTemplateLogic(projectJournalTemplateLogic{}) }
@@ -54,6 +52,8 @@ func (projectJournalTemplateLogic) OnValidate_Source_code(rec *gtables.ProjectJo
 // code; recurring journals have no No. Series
 func (projectJournalTemplateLogic) OnValidate_Recurring(rec *gtables.ProjectJournalTemplate) error {
 	rec.Page_id = projectJournalPageID
+	rec.Test_report_id = ProjectJnlTestReportID
+	rec.Posting_report_id = ProjectRegisterReportID
 	if rec.Recurring {
 		rec.Page_id = RecurringProjectJnlPageID
 	}
@@ -88,3 +88,9 @@ func (projectJournalTemplateLogic) OnValidate_Posting_no_series(rec *gtables.Pro
 
 // RecurringProjectJnlPageID is page 289 Recurring Project Jnl., the page of a recurring template
 const RecurringProjectJnlPageID = 289
+
+// The journal's reports: 1202 Project Journal - Test, 1203 Project Register
+const (
+	ProjectJnlTestReportID  = 1202
+	ProjectRegisterReportID = 1203
+)

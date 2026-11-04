@@ -318,6 +318,8 @@ common:
     bank_account_register: "Bank Account Register"
     customer_statement: "Customer Statement"
     item_register: "Item Register"
+    bom_register: "BOM Register"
+    resource_register: "Resource Register"
     trial_balance: "Trial Balance"
     detail_trial_balance: "Detail Trial Balance"
     g_l_register: "G/L Register"
