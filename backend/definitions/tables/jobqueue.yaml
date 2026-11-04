@@ -51,8 +51,9 @@ table:
             lookup_columns:
               - source: id
                 width: 80
-              - source: name
+              - source: caption
                 width: 250
+                search: name
           - when: {field: object_type_to_run, equal: 1}
             table: Object
             field: id
@@ -61,8 +62,9 @@ table:
             lookup_columns:
               - source: id
                 width: 80
-              - source: name
+              - source: caption
                 width: 250
+                search: name
 
     - name: parameter
       no: 6

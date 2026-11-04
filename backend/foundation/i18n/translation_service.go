@@ -168,6 +168,40 @@ func (s *TranslationService) Translate(key, language string) string {
 	return replaceFold(text, generic, label)
 }
 
+// UserLanguage returns the language of the current user (the goroutine's context). Set by the
+// codeunits package; nil: the default language.
+var UserLanguage func() string
+
+// SessionLanguage is the current user's language as one of the supported languages ("en-US",
+// "nb-NO" — the letter case of the translations folder), else the default language
+func SessionLanguage() string {
+	s := GetInstance()
+	language := ""
+	if UserLanguage != nil {
+		language = UserLanguage()
+	}
+	return s.CanonicalLanguage(language)
+}
+
+// SessionLanguageID is SessionLanguage in upper case, as a Code field holds a language
+// ("NB-NO"): the value of FlowField filters of type "language" (Object Translation's Language ID)
+func SessionLanguageID() string {
+	return strings.ToUpper(SessionLanguage())
+}
+
+// CanonicalLanguage returns the supported language matching language in any letter case, else
+// the default language
+func (s *TranslationService) CanonicalLanguage(language string) string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for lang := range s.translations {
+		if strings.EqualFold(lang, language) {
+			return lang
+		}
+	}
+	return s.defaultLang
+}
+
 // DimensionLabel returns the name the current company gives a dimension (General Ledger Setup
 // Dimension-1 / Dimension-2; "" when none): the texts of the generic dimension fields, tables,
 // pages and options show it instead of "Dimension 1" / "Dimension 2" (classic CaptionClass).

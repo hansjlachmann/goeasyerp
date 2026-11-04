@@ -4404,7 +4404,7 @@ func (t *JobQueue) GetTableRelationFields() map[string]tables.TableRelationInfo 
 			Conditions: []tables.ConditionalRelationInfo{
 				{Field: "object_type_to_run", Value: 0, Relation: tables.TableRelationInfo{
 					Table: "Object", Field: "id", DisplayField: "",
-					LookupColumns: []tables.LookupColumnInfo{{Source: "id", Width: 80}, {Source: "name", Width: 250}},
+					LookupColumns: []tables.LookupColumnInfo{{Source: "id", Width: 80}, {Source: "caption", Width: 250, Search: "name"}},
 					SearchTimeout: 0,
 					Filters: []tables.RelationFilterInfo{
 						{Column: "runnable", Field: "", Const: "true"},
@@ -4413,7 +4413,7 @@ func (t *JobQueue) GetTableRelationFields() map[string]tables.TableRelationInfo 
 				}},
 				{Field: "object_type_to_run", Value: 1, Relation: tables.TableRelationInfo{
 					Table: "Object", Field: "id", DisplayField: "",
-					LookupColumns: []tables.LookupColumnInfo{{Source: "id", Width: 80}, {Source: "name", Width: 250}},
+					LookupColumns: []tables.LookupColumnInfo{{Source: "id", Width: 80}, {Source: "caption", Width: 250, Search: "name"}},
 					SearchTimeout: 0,
 					Filters: []tables.RelationFilterInfo{
 						{Column: "type", Field: "", Const: "3"},

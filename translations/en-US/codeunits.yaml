@@ -1,0 +1,296 @@
+# Codeunit captions (the Object table's Object Caption, Object Translation 377): codeunits.<number>.caption
+codeunits:
+  "3":
+    caption: "G/L Account-Indent"
+  "6":
+    caption: "Fiscal Year-Close"
+  "7":
+    caption: "GLBudget-Open"
+  "8":
+    caption: "AccSchedManagement"
+  "11":
+    caption: "Gen. Jnl.-Check Line"
+  "12":
+    caption: "Gen. Jnl.-Post Line"
+  "13":
+    caption: "Gen. Jnl.-Post Batch"
+  "14":
+    caption: "Gen. Jnl.-Show Entries"
+  "15":
+    caption: "Gen. Jnl.-Show Card"
+  "21":
+    caption: "Item Jnl.-Check Line"
+  "22":
+    caption: "Item Jnl.-Post Line"
+  "23":
+    caption: "Item Jnl.-Post Batch"
+  "31":
+    caption: "BOM Jnl.-Check Line"
+  "32":
+    caption: "BOM Jnl.-Post Line"
+  "33":
+    caption: "BOM Jnl.-Post Batch"
+  "51":
+    caption: "BOM-Explode BOM"
+  "52":
+    caption: "Item-Find Price"
+  "54":
+    caption: "BOM-Calculate Cost"
+  "60":
+    caption: "Sales-Calc. Discount"
+  "61":
+    caption: "Sales-Disc. (Yes/No)"
+  "64":
+    caption: "Sales-Get Shipment"
+  "70":
+    caption: "Purch.-Calc.Discount"
+  "71":
+    caption: "Purch.-Disc. (Yes/No)"
+  "74":
+    caption: "Purch.-Get Receipt"
+  "80":
+    caption: "Sales-Post"
+  "81":
+    caption: "Sales-Post (Yes/No)"
+  "82":
+    caption: "Sales-Post + Print"
+  "83":
+    caption: "Sales-Quote to Order (Yes/No)"
+  "84":
+    caption: "Blnkt Sales Ord. to Ord. (Y/N)"
+  "86":
+    caption: "Sales-Quote to Order"
+  "87":
+    caption: "Blanket Sales Order to Order"
+  "90":
+    caption: "Purch.-Post"
+  "91":
+    caption: "Purch.-Post (Yes/No)"
+  "92":
+    caption: "Purch.-Post + Print"
+  "93":
+    caption: "Purch.-Quote to Order (Yes/No)"
+  "94":
+    caption: "Blnkt Purch Ord. to Ord. (Y/N)"
+  "96":
+    caption: "Purch.-Quote to Order"
+  "97":
+    caption: "Blanket Purch. Order to Order"
+  "101":
+    caption: "Cust. Entry-SetAppl.ID"
+  "111":
+    caption: "Vend. Entry-SetAppl.ID"
+  "201":
+    caption: "Project Jnl.-Check Line"
+  "202":
+    caption: "Project Jnl.-Post Line"
+  "203":
+    caption: "Project Jnl.-Post Batch"
+  "211":
+    caption: "Res. Jnl.-Check Line"
+  "212":
+    caption: "Res. Jnl.-Post Line"
+  "213":
+    caption: "Res. Jnl.-Post Batch"
+  "216":
+    caption: "Project Entry-Set Appl. ID"
+  "220":
+    caption: "Resource-Find Cost"
+  "221":
+    caption: "Resource-Find Price"
+  "225":
+    caption: "Gen. Jnl.-Apply"
+  "230":
+    caption: "GenJnlManagement"
+  "231":
+    caption: "Gen. Jnl.-Post"
+  "232":
+    caption: "Gen. Jnl.-Post+Print"
+  "240":
+    caption: "ItemJnlManagement"
+  "241":
+    caption: "Item Jnl.-Post"
+  "242":
+    caption: "Item Jnl.-Post+Print"
+  "246":
+    caption: "Item Jnl.-Explode BOM"
+  "250":
+    caption: "BOMJnlManagement"
+  "251":
+    caption: "BOM Jnl.-Post"
+  "252":
+    caption: "BOM Jnl.-Post+Print"
+  "255":
+    caption: "BOM Reg.-Show Item Ledger"
+  "256":
+    caption: "BOM Reg.-Show Res. Ledger"
+  "270":
+    caption: "ResJnlManagement"
+  "271":
+    caption: "Res. Jnl.-Post"
+  "272":
+    caption: "Res. Jnl.-Post+Print"
+  "280":
+    caption: "ProjectJnlManagement"
+  "281":
+    caption: "Project Jnl.-Post"
+  "282":
+    caption: "Project Jnl.-Post+Print"
+  "313":
+    caption: "Sales-Printed"
+  "314":
+    caption: "Sales Shpt.-Printed"
+  "315":
+    caption: "Sales Inv.-Printed"
+  "316":
+    caption: "Sales Cr. Memo-Printed"
+  "317":
+    caption: "Purch.Header-Printed"
+  "318":
+    caption: "Purch.Rcpt.-Printed"
+  "319":
+    caption: "Purch. Inv.-Printed"
+  "320":
+    caption: "PurchCrMemo-Printed"
+  "330":
+    caption: "ReqJnlManagement"
+  "333":
+    caption: "Req. Wksh.-Make Order"
+  "340":
+    caption: "TaxStmtManagement"
+  "350":
+    caption: "IntraJnlManagement"
+  "356":
+    caption: "DateComprMgt"
+  "358":
+    caption: "DateFilter-Calc"
+  "361":
+    caption: "MoveEntries"
+  "365":
+    caption: "Format Address"
+  "366":
+    caption: "Exchange Acc. G/L Journal Line"
+  "370":
+    caption: "Bank Acc. Reconciliation Post"
+  "371":
+    caption: "Bank Acc. Recon. Post (Yes/No)"
+  "374":
+    caption: "Bank Acc. Recon. Apply Entries"
+  "375":
+    caption: "Bank Acc. Entry Set Recon.-No."
+  "376":
+    caption: "Check Entry Set Recon.-No."
+  "392":
+    caption: "Reminder-Make"
+  "393":
+    caption: "Reminder-Issue"
+  "394":
+    caption: "FinChrgMemo-Make"
+  "395":
+    caption: "FinChrgMemo-Issue"
+  "396":
+    caption: "NoSeriesManagement"
+  "398":
+    caption: "Sales Tax Calculate"
+  "399":
+    caption: "Copy Tax Setup From Company"
+  "400":
+    caption: "Reservation Management"
+  "405":
+    caption: "Item Entry-Edit"
+  "406":
+    caption: "Setup Checklist Management"
+  "455":
+    caption: "Job Queue Send Test E-mail"
+  "901":
+    caption: "Create Demo Data"
+  "902":
+    caption: "Verify SIFT"
+  "903":
+    caption: "External Report Runner"
+  "904":
+    caption: "G/L Balance Check"
+  "906":
+    caption: "Posting Preview"
+  "907":
+    caption: "Job Queue Notifications"
+  "990":
+    caption: "Hello World"
+  "991":
+    caption: "Progress Demo"
+  "5400":
+    caption: "Available Management"
+  "5402":
+    caption: "Unit of Measure Management"
+  "5600":
+    caption: "FA Insert Ledger Entry"
+  "5601":
+    caption: "FA Insert G/L Account"
+  "5602":
+    caption: "FA Get G/L Account No."
+  "5604":
+    caption: "Make FA Ledger Entry"
+  "5605":
+    caption: "Calculate Disposal"
+  "5606":
+    caption: "FA Check Consistency"
+  "5607":
+    caption: "FA Automatic Entry"
+  "5610":
+    caption: "Calculate Depreciation"
+  "5611":
+    caption: "Calculate Normal Depreciation"
+  "5612":
+    caption: "Calculate Custom 1 Depr."
+  "5613":
+    caption: "Calculate Acq. Cost Depr."
+  "5617":
+    caption: "FA Date Calculation"
+  "5618":
+    caption: "Table Depr. Calculation"
+  "5623":
+    caption: "FA MoveEntries"
+  "5624":
+    caption: "Cancel FA Ledger Entries"
+  "5626":
+    caption: "FA General Report"
+  "5631":
+    caption: "FA Jnl.-Check Line"
+  "5632":
+    caption: "FA Jnl.-Post Line"
+  "5633":
+    caption: "FA Jnl.-Post Batch"
+  "5636":
+    caption: "FA. Jnl.-Post"
+  "5638":
+    caption: "FAJnlManagement"
+  "5639":
+    caption: "FA Get Journal"
+  "5640":
+    caption: "Duplicate Depr. Book"
+  "5641":
+    caption: "FA Reclass. Check Line"
+  "5642":
+    caption: "FA Reclass. Transfer Line"
+  "5643":
+    caption: "FA Reclass. Transfer Batch"
+  "5644":
+    caption: "FA Reclass. Jnl.-Transfer"
+  "5645":
+    caption: "FA Reclass. Jnl.-B.Transfer"
+  "5646":
+    caption: "FAReclassJnlManagement"
+  "5647":
+    caption: "Make Maintenance Ledger Entry"
+  "5651":
+    caption: "Insurance Jnl.-Check Line"
+  "5652":
+    caption: "Insurance Jnl.-Post Line"
+  "5653":
+    caption: "Insurance Jnl.-Post Batch"
+  "5654":
+    caption: "Insurance Jnl.-Post"
+  "5656":
+    caption: "InsuranceJnlManagement"
+  "5657":
+    caption: "Make Ins. Coverage Ledg. Entry"

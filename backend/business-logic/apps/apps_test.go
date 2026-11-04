@@ -2,13 +2,16 @@ package apps
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
 
 	fapps "github.com/hansjlachmann/goeasyerp/backend/foundation/apps"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
@@ -76,6 +79,15 @@ func TestSyncObjects(t *testing.T) {
 	if err := (&gtables.Object{}).CreateTableWithDBType(db, "", database.DBTypeSQLite); err != nil {
 		t.Fatal(err)
 	}
+	if err := (&gtables.ObjectTranslation{}).CreateTableWithDBType(db, "", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	// a translation of an object that is no longer there
+	gone := gtables.NewObjectTranslation(ftables.DBSource(db, "", database.DBTypeSQLite))
+	gone.Object_type, gone.Object_id, gone.Language_id, gone.Object_name = gtables.ObjectTranslation_Object_type.Report, 99999, types.NewCode("en-US"), "Gone"
+	if err := gone.InsertOrError(false); err != nil {
+		t.Fatal(err)
+	}
 	// an object that is no longer there, and one whose caption changed
 	for _, o := range []struct {
 		objectType gtables.ObjectType
@@ -117,5 +129,64 @@ func TestSyncObjects(t *testing.T) {
 	}
 	if got := get(gtables.Object_Type.Page, 306); got == "" {
 		t.Error("page 306 missing")
+	}
+
+	// Object Translation: every object in every language, the gone one deleted
+	translations := gtables.NewObjectTranslation(ftables.DBSource(db, "", database.DBTypeSQLite))
+	languages := i18n.GetInstance().GetSupportedLanguages()
+	if n := translations.Count(); n != len(Objects())*len(languages) {
+		t.Errorf("%d object translations, want %d objects × %d languages", n, len(Objects()), len(languages))
+	}
+	translations.SetRange("object_id", 99999)
+	if !translations.IsEmpty() {
+		t.Error("the translation of report 99999 is still there")
+	}
+
+	// Object Caption: the caption in the user's language (any letter case of the language)
+	caption := func(language string, objectType gtables.ObjectType, id int) string {
+		fcodeunits.SetCurrentContext("", "", "", language)
+		defer fcodeunits.ClearCurrentContext()
+		obj := gtables.NewObject(ftables.DBSource(db, "", database.DBTypeSQLite))
+		if !obj.Get(map[string]interface{}{"type": objectType, "id": id}) {
+			return ""
+		}
+		obj.CalcFields("caption")
+		return obj.Caption.String()
+	}
+	for _, c := range []struct {
+		language   string
+		objectType gtables.ObjectType
+		id         int
+		want       string
+	}{
+		{"en-US", gtables.Object_Type.Codeunit, 80, "Sales-Post"},
+		{"nb-NO", gtables.Object_Type.Codeunit, 80, "Salg – bokfør"},
+		{"NB-NO", gtables.Object_Type.Codeunit, 80, "Salg – bokfør"},
+		{"da-DK", gtables.Object_Type.Codeunit, 80, "Salg – bogfør"},
+		{"en-US", gtables.Object_Type.Table, 18, "Customer"},
+		{"nb-NO", gtables.Object_Type.Table, 18, "Kunde"},
+		{"da-DK", gtables.Object_Type.Table, 18, "Debitor"},
+		{"nb-NO", gtables.Object_Type.Page, 22, i18n.GetInstance().PageCaption("Customer List", "nb-NO")},
+	} {
+		if got := caption(c.language, c.objectType, c.id); got != c.want {
+			t.Errorf("%s %d in %s: caption %q, want %q", c.objectType, c.id, c.language, got, c.want)
+		}
+	}
+}
+
+// Every codeunit has a caption in every language (translations/<lang>/codeunits.yaml,
+// codeunits.<number>.caption): Object Caption shows it — a new codeunit needs one
+func TestCodeunitCaptionsTranslated(t *testing.T) {
+	ts := i18n.GetInstance()
+	for key := range Objects() {
+		if key.objectType != gtables.Object_Type.Codeunit {
+			continue
+		}
+		for _, language := range ts.GetSupportedLanguages() {
+			k := fmt.Sprintf("codeunits.%d.caption", key.id)
+			if text := ts.Translate(k, language); text == k {
+				t.Errorf("codeunit %d has no caption in %s (%s in translations/%s/codeunits.yaml)", key.id, language, k, language)
+			}
+		}
 	}
 }

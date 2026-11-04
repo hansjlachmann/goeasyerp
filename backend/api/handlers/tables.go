@@ -270,44 +270,73 @@ func (h *TablesHandler) buildLookup(tableName, fieldName string, relInfo ftables
 	}
 
 	// Fetch all records from related table
+	type relatedRecord struct {
+		keyValue  string
+		recordMap map[string]interface{}
+	}
+	var related []relatedRecord
 	if relTable.FindSet() {
 		for {
-			keyValue := relTable.GetPrimaryKeyValue()
-			recordMap := relTable.ToMap()
-
-			// For advanced mode: add full row data
-			if len(relInfo.LookupColumns) > 0 {
-				row := make(map[string]interface{})
-				row["_key"] = keyValue // Always include the key
-				for _, col := range relInfo.LookupColumns {
-					if val, ok := recordMap[col.Source]; ok {
-						row[col.Source] = val
-					}
-				}
-				for _, f := range relInfo.Filters {
-					row[f.Column] = recordMap[f.Column] // the page shows the rows matching the record
-				}
-				if len(relInfo.Filters) > 0 {
-					row["_key"] = fmt.Sprint(recordMap[relInfo.Field]) // the related field, not the composite key
-				}
-				lookup.Rows = append(lookup.Rows, row)
-			}
-
-			// For simple mode: add key->display mapping
-			displayValue := keyValue
-			if relInfo.DisplayField != "" {
-				if dv, ok := recordMap[relInfo.DisplayField]; ok && dv != nil {
-					displayValue = fmt.Sprintf("%v", dv)
-				}
-			}
-			lookup.Simple[keyValue] = displayValue
-
+			related = append(related, relatedRecord{relTable.GetPrimaryKeyValue(), relTable.ToMap()})
 			if !relTable.Next() {
 				break
 			}
 		}
 	}
+	records := make([]map[string]interface{}, len(related))
+	for i, r := range related {
+		records[i] = r.recordMap
+	}
+	lookupFlowFields(relTable, relInfo, records)
+	for _, r := range related {
+		keyValue, recordMap := r.keyValue, r.recordMap
+
+		// For advanced mode: add full row data
+		if len(relInfo.LookupColumns) > 0 {
+			row := make(map[string]interface{})
+			row["_key"] = keyValue // Always include the key
+			for _, col := range relInfo.LookupColumns {
+				if val, ok := recordMap[col.Source]; ok {
+					row[col.Source] = val
+				}
+			}
+			for _, f := range relInfo.Filters {
+				row[f.Column] = recordMap[f.Column] // the page shows the rows matching the record
+			}
+			if len(relInfo.Filters) > 0 {
+				row["_key"] = fmt.Sprint(recordMap[relInfo.Field]) // the related field, not the composite key
+			}
+			lookup.Rows = append(lookup.Rows, row)
+		}
+
+		// For simple mode: add key->display mapping
+		displayValue := keyValue
+		if relInfo.DisplayField != "" {
+			if dv, ok := recordMap[relInfo.DisplayField]; ok && dv != nil {
+				displayValue = fmt.Sprintf("%v", dv)
+			}
+		}
+		lookup.Simple[keyValue] = displayValue
+	}
 	return lookup
+}
+
+// lookupFlowFields calculates the FlowFields among a relation's lookup columns (an object's
+// caption in the user's language) on the related records and returns their names — shown in
+// the dropdown, not searched
+func lookupFlowFields(relTable ftables.Table, relInfo ftables.TableRelationInfo, records []map[string]interface{}) []string {
+	var shown []string
+	for _, col := range relInfo.LookupColumns {
+		shown = append(shown, col.Source)
+	}
+	if len(shown) == 0 || len(records) == 0 {
+		return nil
+	}
+	flowColumns := flowFieldsToCalc(relTable.GetFlowFields(), shown)
+	if len(flowColumns) > 0 {
+		relTable.CalcFieldsForRecords(records, flowColumns...)
+	}
+	return flowColumns
 }
 
 // LookupRows returns rows for an on-demand dropdown (lookups with lazy_url): rows of the
@@ -348,9 +377,13 @@ func (h *TablesHandler) LookupRows(c *fiber.Ctx) error {
 
 	// Columns shown in the dropdown (stored columns only), the key first
 	columns := []string{relInfo.Field}
+	var searchColumns []string
 	for _, col := range relInfo.LookupColumns {
 		if col.Source != relInfo.Field && ftables.IsQueryableColumn(relTable, col.Source) {
 			columns = append(columns, col.Source)
+		}
+		if col.Search != "" && ftables.IsQueryableColumn(relTable, col.Search) {
+			searchColumns = append(searchColumns, col.Search)
 		}
 	}
 
@@ -363,25 +396,34 @@ func (h *TablesHandler) LookupRows(c *fiber.Ctx) error {
 	if key := c.Query("key", ""); key != "" {
 		relTable.SetFilter(relInfo.Field, strings.ToUpper(key))
 	} else if search := strings.TrimSpace(c.Query("search", "")); search != "" {
-		relTable.SetSearch(columns, search)
+		relTable.SetSearch(append(slices.Clone(columns), searchColumns...), search)
 	}
 	relTable.SetCurrentKey(relInfo.Field)
 	total := relTable.Count()
 	relTable.SetPage(lookupPageSize, max(c.QueryInt("offset", 0), 0))
 
-	rows := make([]map[string]interface{}, 0)
+	var records []map[string]interface{}
 	if relTable.FindSet() {
 		for {
-			record := relTable.ToMap()
-			row := map[string]interface{}{"_key": fmt.Sprint(record[relInfo.Field])}
-			for _, col := range columns {
-				row[col] = record[col]
-			}
-			rows = append(rows, row)
+			records = append(records, relTable.ToMap())
 			if !relTable.Next() {
 				break
 			}
 		}
+	}
+	// FlowFields among the lookup columns (an object's caption in the user's language): shown,
+	// not searched
+	flowColumns := lookupFlowFields(relTable, relInfo, records)
+	rows := make([]map[string]interface{}, 0, len(records))
+	for _, record := range records {
+		row := map[string]interface{}{"_key": fmt.Sprint(record[relInfo.Field])}
+		for _, col := range columns {
+			row[col] = record[col]
+		}
+		for _, col := range flowColumns {
+			row[col] = record[col]
+		}
+		rows = append(rows, row)
 	}
 	return c.JSON(apitypes.NewSuccessResponse(map[string]interface{}{"rows": rows, "total": total}))
 }

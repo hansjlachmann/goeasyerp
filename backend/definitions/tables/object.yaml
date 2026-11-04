@@ -39,6 +39,28 @@ table:
       db_name: runnable
       caption: Runnable
 
+    # the object's caption in the user's language (classic Object Caption): changes with the
+    # language the user works in
+    - name: caption
+      no: 7
+      type: types.Text
+      db_name: caption
+      caption: Object Caption
+      length: 80
+      flow_field: true
+      calc_formula: Lookup
+      source_table: Object_Translation
+      source_field: object_name
+      flow_filters:
+        - field: object_type
+          type: field
+          value: type
+        - field: object_id
+          type: field
+          value: id
+        - field: language_id
+          type: language
+
   keys:
     - name: Primary
       fields: [type, id]

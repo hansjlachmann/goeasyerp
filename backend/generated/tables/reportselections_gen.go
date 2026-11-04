@@ -59,7 +59,7 @@ type ReportSelections struct {
 	Usage     ReportSelectionsUsage `db:"usage,pk"`
 	Sequence  types.Code            `db:"sequence,pk"`
 	Report_id int                   `db:"report_id"`
-	// FlowField: Lookup(Object.name)
+	// FlowField: Lookup(Object_Translation.object_name)
 	Report_name types.Text
 
 	// Internal context (set by Init)
@@ -1013,7 +1013,7 @@ func (t *ReportSelections) CalcFields(fieldNames ...string) {
 }
 
 // calcFlowField_report_name calculates the report_name FlowField
-// CalcFormula: Lookup(Object.name)
+// CalcFormula: Lookup(Object_Translation.object_name)
 func (t *ReportSelections) calcFlowField_report_name() {
 	t.Report_name = t.calcLookup_report_name()
 }
@@ -1038,7 +1038,7 @@ func (t *ReportSelections) CalcFieldsForRecords(records []map[string]interface{}
 }
 
 // calcForRecords_report_name calculates the report_name FlowField for a set of records
-// CalcFormula: Lookup(Object.name)
+// CalcFormula: Lookup(Object_Translation.object_name)
 func (t *ReportSelections) calcForRecords_report_name(records []map[string]interface{}) {
 	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
@@ -1051,21 +1051,23 @@ func (t *ReportSelections) calcForRecords_report_name(records []map[string]inter
 
 // Helper methods for FlowField calculations
 
-// calcLookup_report_name reads Object.name of the first record matching the
+// calcLookup_report_name reads Object_Translation.object_name of the first record matching the
 // flow filters (CalcFormula Lookup); blank when there is none
 func (t *ReportSelections) calcLookup_report_name() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, ObjectTableName)
+	tableName := ObjectTranslationTableName
 	var whereClauses []string
 	var args []interface{}
-	whereClauses = append(whereClauses, "type = ?")
+	whereClauses = append(whereClauses, "object_type = ?")
 	args = append(args, 3)
-	whereClauses = append(whereClauses, "id = ?")
+	whereClauses = append(whereClauses, "object_id = ?")
 	args = append(args, t.Report_id)
+	whereClauses = append(whereClauses, "language_id = ?")
+	args = append(args, i18n.SessionLanguageID())
 	whereClause := "1=1"
 	if len(whereClauses) > 0 {
 		whereClause = strings.Join(whereClauses, " AND ")
 	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT name FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
+	query := t.convertPlaceholders(fmt.Sprintf(`SELECT object_name FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
 	var value sql.NullString
 	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
 		fmt.Printf("Error: Failed to look up report_name: %v\n", err)
@@ -2887,7 +2889,7 @@ func (t *ReportSelections) GetTableRelationFields() map[string]tables.TableRelat
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
 				{Source: "id", Width: 80},
-				{Source: "name", Width: 250},
+				{Source: "caption", Width: 250, Search: "name"},
 			},
 			SearchTimeout: 0,
 			Filters: []tables.RelationFilterInfo{

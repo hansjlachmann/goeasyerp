@@ -39,8 +39,9 @@ table:
         lookup_columns:
           - source: id
             width: 80
-          - source: name
+          - source: caption
             width: 250
+            search: name
 
     - name: posting_report_id
       no: 7
@@ -99,8 +100,9 @@ table:
         lookup_columns:
           - source: id
             width: 80
-          - source: name
+          - source: caption
             width: 250
+            search: name
 
     - name: no_series
       no: 18

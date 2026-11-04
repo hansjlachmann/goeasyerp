@@ -3317,7 +3317,7 @@ func (t *Permission) GetTableRelationFields() map[string]tables.TableRelationInf
 			Conditions: []tables.ConditionalRelationInfo{
 				{Field: "object_type", Value: 1, Relation: tables.TableRelationInfo{
 					Table: "Object", Field: "id", DisplayField: "",
-					LookupColumns: []tables.LookupColumnInfo{{Source: "id", Width: 80}, {Source: "name", Width: 250}},
+					LookupColumns: []tables.LookupColumnInfo{{Source: "id", Width: 80}, {Source: "caption", Width: 250, Search: "name"}},
 					SearchTimeout: 0,
 					Filters: []tables.RelationFilterInfo{
 						{Column: "type", Field: "", Const: "3"},
@@ -3325,7 +3325,7 @@ func (t *Permission) GetTableRelationFields() map[string]tables.TableRelationInf
 				}},
 				{Field: "object_type", Value: 2, Relation: tables.TableRelationInfo{
 					Table: "Object", Field: "id", DisplayField: "",
-					LookupColumns: []tables.LookupColumnInfo{{Source: "id", Width: 80}, {Source: "name", Width: 250}},
+					LookupColumns: []tables.LookupColumnInfo{{Source: "id", Width: 80}, {Source: "caption", Width: 250, Search: "name"}},
 					SearchTimeout: 0,
 					Filters: []tables.RelationFilterInfo{
 						{Column: "type", Field: "", Const: "5"},

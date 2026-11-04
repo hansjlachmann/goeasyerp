@@ -76,8 +76,9 @@ table:
             lookup_columns:
               - source: id
                 width: 80
-              - source: name
+              - source: caption
                 width: 250
+                search: name
           - when: {field: object_type, equal: 2}
             table: Object
             field: id
@@ -86,8 +87,9 @@ table:
             lookup_columns:
               - source: id
                 width: 80
-              - source: name
+              - source: caption
                 width: 250
+                search: name
       caption: Object ID
 
     - name: can_execute

@@ -18,6 +18,9 @@ page:
         - source: id
           width: 90
         - source: name
-          width: 320
+          width: 260
+        # the caption in the user's language (Object Translation)
+        - source: caption
+          width: 300
         - source: runnable
           width: 90

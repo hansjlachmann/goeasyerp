@@ -24,6 +24,7 @@ type cachedDimensionLabels struct {
 
 func init() {
 	i18n.DimensionLabel = CurrentDimensionLabel
+	i18n.UserLanguage = CurrentLanguage
 }
 
 // loadDimensionLabels: the company's dimension names (cached), when a context starts — not
