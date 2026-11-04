@@ -45,6 +45,7 @@ type Run struct {
 	// opens afterwards (OpenPage)
 	printouts []Result
 	openPage  *fcodeunits.PageLink
+	refresh   bool
 }
 
 // SetValue sets a value the layout prints (value, lines, image elements; print_if) — the
@@ -119,6 +120,10 @@ func (r *Run) AddPrintouts(printouts ...Result) { r.printouts = append(r.printou
 // OpenPage: the page the browser opens after the report (a worksheet the report moved the user
 // to)
 func (r *Run) OpenPage(link *fcodeunits.PageLink) { r.openPage = link }
+
+// Refresh: the page the report ran from reloads its data afterwards (the lines a report added to
+// the document it ran on)
+func (r *Run) Refresh() { r.refresh = true }
 
 // Context is what the caller gave the report to work on (RunOptions.Context) — e.g. the item
 // journal line whose batch Calculate Inventory fills (classic SetItemJnlLine before RUNMODAL)
@@ -231,6 +236,8 @@ type Result struct {
 	// to open afterwards (Run.OpenPage)
 	Printouts []Result
 	OpenPage  *fcodeunits.PageLink
+	// Refresh: the page the report ran from reloads its data (Run.Refresh)
+	Refresh bool
 }
 
 // Execute runs a report (Report.Run): request page, OnPreReport, the data items, OnPostReport
@@ -336,7 +343,7 @@ func Execute(id int, db database.Executor, company string, dbType database.DBTyp
 	if err != nil {
 		return Result{}, err
 	}
-	result := Result{Message: run.message, Printouts: run.printouts, OpenPage: run.openPage}
+	result := Result{Message: run.message, Printouts: run.printouts, OpenPage: run.openPage, Refresh: run.refresh}
 	if run.file != nil {
 		result.File = run.file
 		result.FileName = run.fileOut

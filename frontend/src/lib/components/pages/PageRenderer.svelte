@@ -960,6 +960,7 @@
 	{#if page.page.type === 'Card'}
 		<CardPage
 			{page}
+			existing={isExistingRecord}
 			initialEditMode={initialEdit || undefined}
 			bind:record
 			{captions}

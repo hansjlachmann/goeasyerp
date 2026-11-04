@@ -1,0 +1,37 @@
+page:
+  id: 228
+  type: Card
+  name: Res. Gr. Allocated per Project
+  source_table: Resource_Group
+  caption: Res. Gr. Allocated per Project
+  enable_navigation: true
+  editable: false
+  # classic form 228: the projects against periods with the budgeted quantity of the
+  # resource group (the projects' resource_gr_filter is the card's No.)
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+            editable: false
+          - source: name
+            editable: false
+
+      - name: Projects
+        caption: Projects
+        matrix:
+          table: Project
+          value: budgeted_res_gr_qty
+          date_filter: date_filter
+          record_filters:
+            resource_gr_filter: "no"
+          view_by: 2
+          fields:
+            - source: "no"
+              width: 100
+            - source: description
+              width: 250
+            - source: status
+              width: 100

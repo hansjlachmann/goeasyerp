@@ -615,6 +615,9 @@ Bogfører linjer #3###### @4@@@@@@@@@@@@@"
   RESERV_AUTO_NOT_POSSIBLE: "Automatisk reservation er ikke mulig.\nVil du reservere varerne manuelt?"
   ITEM_TRACKING_LOT: ", Lotnr. %1"
   ITEM_TRACKING_SERIAL: ", Serienr. %1"
+  PROJECT_CHANGE_BUDGET_DATES: "Ret budgetdatoer"
+  PROJECT_CHANGE_DATE_FORMULA: "Datoformel"
+  GET_PROJECT_USAGE_NO_DOCUMENT: "Hent projektforbrug køres fra en salgsfaktura."
 
   # Project ledger entries: Reconcile (form 365), Project Journal Reconcile (page 376)
   PROJECT_JNL_RECONCILE_TOTAL: "I alt %1"

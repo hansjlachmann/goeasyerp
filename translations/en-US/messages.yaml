@@ -615,6 +615,9 @@ Posting lines #3###### @4@@@@@@@@@@@@@"
   RESERV_AUTO_NOT_POSSIBLE: "Automatic reservation is not possible.\nDo you want to reserve items manually?"
   ITEM_TRACKING_LOT: ", Lot No. %1"
   ITEM_TRACKING_SERIAL: ", Serial No. %1"
+  PROJECT_CHANGE_BUDGET_DATES: "Change Budget Dates"
+  PROJECT_CHANGE_DATE_FORMULA: "Date Formula"
+  GET_PROJECT_USAGE_NO_DOCUMENT: "Get Project Usage runs from a sales invoice."
 
   # Project ledger entries: Reconcile (form 365), Project Journal Reconcile (page 376)
   PROJECT_JNL_RECONCILE_TOTAL: "Total %1"

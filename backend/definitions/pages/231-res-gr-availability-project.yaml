@@ -1,0 +1,50 @@
+page:
+  id: 231
+  type: Card
+  name: Res. Gr. Availability (Project)
+  source_table: Project_Budget_Line
+  caption: Res. Gr. Availability (Project)
+  editable: false
+  # classic form 231 with its lines (form 364): the budget line's quantity per period against
+  # the capacity of its resource or resource group, the quantities on projects on Order and
+  # Quote and the capacity after them (calculated: OnAfterGetRecord in
+  # business-logic/pages/projectavailability.go); opened on a budget line (pages 212, 216)
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: project_no
+            editable: false
+          - source: type
+            editable: false
+          - source: "no"
+            editable: false
+          - source: description
+            editable: false
+      - name: Periods
+        caption: Periods
+        period_grid:
+          date_filter: date_filter
+          view_by: 0
+          columns:
+            - source: quantity
+              drilldown: 220
+              drilldown_filter_field: project_no
+              drilldown_filter_value: project_no
+              drilldown_date_field: date
+            - source: capacity
+              calculated: true
+              type: types.Decimal
+              decimal_places: "0:5"
+            - source: res_gr_qty_on_order
+            - source: capacity_after_orders
+              calculated: true
+              type: types.Decimal
+              decimal_places: "0:5"
+            - source: res_gr_qty_quoted
+            - source: capacity_after_quotes
+              calculated: true
+              type: types.Decimal
+              decimal_places: "0:5"

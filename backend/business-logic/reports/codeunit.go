@@ -92,6 +92,7 @@ func CodeunitResult(result Result) fcodeunits.Result {
 		res = fcodeunits.Message(result.Message)
 	}
 	res.OpenPage = result.OpenPage
+	res.Refresh = result.Refresh
 	return WithPrintouts(res, result.Printouts)
 }
 
