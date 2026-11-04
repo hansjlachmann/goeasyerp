@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.135](https://github.com/hansjlachmann/openerp/compare/v0.1.134...v0.1.135) (2026-11-04)
+
+
+### Features
+
+* object identity — every business-logic object in the Object table ([#222](https://github.com/hansjlachmann/openerp/issues/222)) ([562f840](https://github.com/hansjlachmann/openerp/commit/562f840f4d6f5dc225eca86d132fb635bf2a1801))
+
 ## [0.1.134](https://github.com/hansjlachmann/openerp/compare/v0.1.133...v0.1.134) (2026-11-04)
 
 
