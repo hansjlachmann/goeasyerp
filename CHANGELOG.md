@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.137](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.136...v0.1.137) (2026-11-04)
+
+
+### Features
+
+* single-file installation for trying GoEasyERP on one computer ([#229](https://github.com/hansjlachmann/goeasyerp/issues/229)) ([66019d2](https://github.com/hansjlachmann/goeasyerp/commit/66019d277ee33d579c254605aeb59ff765194fd1))
+
 ## [0.1.136](https://github.com/hansjlachmann/openerp/compare/v0.1.135...v0.1.136) (2026-11-04)
 
 
