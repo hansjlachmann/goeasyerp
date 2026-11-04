@@ -35,13 +35,14 @@ report:
             - {text: AMOUNT, x: 100, y: 4, width: 30, align: right, bold: true}
             - {text: RECLASSIFICATION, x: 135, y: 4, width: 30, align: right, bold: true, print_if: reclassify}
             - {line: true, x: 0, y: 9}
-        # The total of the group before (the classic group footer)
-        - type: body
-          print_if: print_group_footer
+        # The group's total (group footer: OnGroupFooter sets the group's amounts)
+        - type: group_footer
+          group: group_head_line
           height: 7
           elements:
             - {value: group_total_text, x: 0, y: 1.5, width: 120, bold: true}
-        - type: body
+        - type: group_footer
+          group: group_head_line
           print_if: grp_show_1
           height: 17.5
           elements:
@@ -60,7 +61,8 @@ report:
             - {line: true, x: 100, y: 12.4, width: 30}
             - {value: grp_end_1, x: 100, y: 12.6, width: 30, align: right, bold: true}
             - {value: grp_rend_1, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
-        - type: body
+        - type: group_footer
+          group: group_head_line
           print_if: grp_show_2
           height: 17.5
           elements:
@@ -79,7 +81,8 @@ report:
             - {line: true, x: 100, y: 12.4, width: 30}
             - {value: grp_end_2, x: 100, y: 12.6, width: 30, align: right, bold: true}
             - {value: grp_rend_2, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
-        - type: body
+        - type: group_footer
+          group: group_head_line
           print_if: grp_show_3
           height: 17.5
           elements:
@@ -98,7 +101,8 @@ report:
             - {line: true, x: 100, y: 12.4, width: 30}
             - {value: grp_end_3, x: 100, y: 12.6, width: 30, align: right, bold: true}
             - {value: grp_rend_3, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
-        - type: body
+        - type: group_footer
+          group: group_head_line
           print_if: grp_show_4
           height: 17.5
           elements:
@@ -117,7 +121,8 @@ report:
             - {line: true, x: 100, y: 12.4, width: 30}
             - {value: grp_end_4, x: 100, y: 12.6, width: 30, align: right, bold: true}
             - {value: grp_rend_4, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
-        - type: body
+        - type: group_footer
+          group: group_head_line
           print_if: grp_show_5
           height: 17.5
           elements:
@@ -136,7 +141,8 @@ report:
             - {line: true, x: 100, y: 12.4, width: 30}
             - {value: grp_end_5, x: 100, y: 12.6, width: 30, align: right, bold: true}
             - {value: grp_rend_5, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
-        - type: body
+        - type: group_footer
+          group: group_head_line
           print_if: grp_show_6
           height: 17.5
           elements:
@@ -155,8 +161,8 @@ report:
             - {line: true, x: 100, y: 12.4, width: 30}
             - {value: grp_end_6, x: 100, y: 12.6, width: 30, align: right, bold: true}
             - {value: grp_rend_6, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
-        - type: body
-          print_if: print_group_footer
+        - type: group_footer
+          group: group_head_line
           height: 11
           elements:
             - {text: BOOK_VALUE, x: 4, y: 0.5, width: 56, bold: true}
@@ -295,135 +301,6 @@ report:
             - {text: BOOK_VALUE, x: 4, y: 4.7, width: 56, bold: true}
             - {value: end_text, x: 62, y: 4.7, width: 25}
             - {value: bv_end, x: 100, y: 4.7, width: 30, align: right, bold: true}
-        - type: footer
-          print_if: group_totals
-          height: 7
-          elements:
-            - {value: last_group_total_text, x: 0, y: 1.5, width: 120, bold: true}
-        - type: footer
-          print_if: lgrp_show_1
-          height: 17.5
-          elements:
-            - {text: ACQUISITION_COST, x: 4, y: 0, width: 56, bold: true}
-            - {value: start_text, x: 62, y: 0, width: 25}
-            - {value: lgrp_start_1, x: 100, y: 0, width: 30, align: right, bold: true}
-            - {value: lgrp_rstart_1, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
-            - {value: lgrp_net_1, x: 100, y: 4.2, width: 30, align: right, bold: true}
-            - {value: lgrp_rnet_1, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
-            - {value: lgrp_disp_1, x: 100, y: 8.4, width: 30, align: right, bold: true}
-            - {value: lgrp_rdisp_1, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: ACQUISITION_COST, x: 4, y: 12.6, width: 56, bold: true}
-            - {value: end_text, x: 62, y: 12.6, width: 25}
-            - {line: true, x: 100, y: 12.4, width: 30}
-            - {value: lgrp_end_1, x: 100, y: 12.6, width: 30, align: right, bold: true}
-            - {value: lgrp_rend_1, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
-        - type: footer
-          print_if: lgrp_show_2
-          height: 17.5
-          elements:
-            - {text: DEPRECIATION, x: 4, y: 0, width: 56, bold: true}
-            - {value: start_text, x: 62, y: 0, width: 25}
-            - {value: lgrp_start_2, x: 100, y: 0, width: 30, align: right, bold: true}
-            - {value: lgrp_rstart_2, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
-            - {value: lgrp_net_2, x: 100, y: 4.2, width: 30, align: right, bold: true}
-            - {value: lgrp_rnet_2, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
-            - {value: lgrp_disp_2, x: 100, y: 8.4, width: 30, align: right, bold: true}
-            - {value: lgrp_rdisp_2, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: DEPRECIATION, x: 4, y: 12.6, width: 56, bold: true}
-            - {value: end_text, x: 62, y: 12.6, width: 25}
-            - {line: true, x: 100, y: 12.4, width: 30}
-            - {value: lgrp_end_2, x: 100, y: 12.6, width: 30, align: right, bold: true}
-            - {value: lgrp_rend_2, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
-        - type: footer
-          print_if: lgrp_show_3
-          height: 17.5
-          elements:
-            - {text: WRITE_DOWN, x: 4, y: 0, width: 56, bold: true}
-            - {value: start_text, x: 62, y: 0, width: 25}
-            - {value: lgrp_start_3, x: 100, y: 0, width: 30, align: right, bold: true}
-            - {value: lgrp_rstart_3, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
-            - {value: lgrp_net_3, x: 100, y: 4.2, width: 30, align: right, bold: true}
-            - {value: lgrp_rnet_3, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
-            - {value: lgrp_disp_3, x: 100, y: 8.4, width: 30, align: right, bold: true}
-            - {value: lgrp_rdisp_3, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: WRITE_DOWN, x: 4, y: 12.6, width: 56, bold: true}
-            - {value: end_text, x: 62, y: 12.6, width: 25}
-            - {line: true, x: 100, y: 12.4, width: 30}
-            - {value: lgrp_end_3, x: 100, y: 12.6, width: 30, align: right, bold: true}
-            - {value: lgrp_rend_3, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
-        - type: footer
-          print_if: lgrp_show_4
-          height: 17.5
-          elements:
-            - {text: APPRECIATION, x: 4, y: 0, width: 56, bold: true}
-            - {value: start_text, x: 62, y: 0, width: 25}
-            - {value: lgrp_start_4, x: 100, y: 0, width: 30, align: right, bold: true}
-            - {value: lgrp_rstart_4, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
-            - {value: lgrp_net_4, x: 100, y: 4.2, width: 30, align: right, bold: true}
-            - {value: lgrp_rnet_4, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
-            - {value: lgrp_disp_4, x: 100, y: 8.4, width: 30, align: right, bold: true}
-            - {value: lgrp_rdisp_4, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: APPRECIATION, x: 4, y: 12.6, width: 56, bold: true}
-            - {value: end_text, x: 62, y: 12.6, width: 25}
-            - {line: true, x: 100, y: 12.4, width: 30}
-            - {value: lgrp_end_4, x: 100, y: 12.6, width: 30, align: right, bold: true}
-            - {value: lgrp_rend_4, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
-        - type: footer
-          print_if: lgrp_show_5
-          height: 17.5
-          elements:
-            - {text: CUSTOM_1, x: 4, y: 0, width: 56, bold: true}
-            - {value: start_text, x: 62, y: 0, width: 25}
-            - {value: lgrp_start_5, x: 100, y: 0, width: 30, align: right, bold: true}
-            - {value: lgrp_rstart_5, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
-            - {value: lgrp_net_5, x: 100, y: 4.2, width: 30, align: right, bold: true}
-            - {value: lgrp_rnet_5, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
-            - {value: lgrp_disp_5, x: 100, y: 8.4, width: 30, align: right, bold: true}
-            - {value: lgrp_rdisp_5, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: CUSTOM_1, x: 4, y: 12.6, width: 56, bold: true}
-            - {value: end_text, x: 62, y: 12.6, width: 25}
-            - {line: true, x: 100, y: 12.4, width: 30}
-            - {value: lgrp_end_5, x: 100, y: 12.6, width: 30, align: right, bold: true}
-            - {value: lgrp_rend_5, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
-        - type: footer
-          print_if: lgrp_show_6
-          height: 17.5
-          elements:
-            - {text: CUSTOM_2, x: 4, y: 0, width: 56, bold: true}
-            - {value: start_text, x: 62, y: 0, width: 25}
-            - {value: lgrp_start_6, x: 100, y: 0, width: 30, align: right, bold: true}
-            - {value: lgrp_rstart_6, x: 135, y: 0, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: ADDITION_IN_PERIOD, x: 8, y: 4.2, width: 52}
-            - {value: lgrp_net_6, x: 100, y: 4.2, width: 30, align: right, bold: true}
-            - {value: lgrp_rnet_6, x: 135, y: 4.2, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: DISPOSAL_IN_PERIOD, x: 8, y: 8.4, width: 52}
-            - {value: lgrp_disp_6, x: 100, y: 8.4, width: 30, align: right, bold: true}
-            - {value: lgrp_rdisp_6, x: 135, y: 8.4, width: 30, align: right, print_if: reclassify, bold: true}
-            - {text: CUSTOM_2, x: 4, y: 12.6, width: 56, bold: true}
-            - {value: end_text, x: 62, y: 12.6, width: 25}
-            - {line: true, x: 100, y: 12.4, width: 30}
-            - {value: lgrp_end_6, x: 100, y: 12.6, width: 30, align: right, bold: true}
-            - {value: lgrp_rend_6, x: 135, y: 12.6, width: 30, align: right, print_if: reclassify, bold: true}
-        - type: footer
-          print_if: group_totals
-          height: 11
-          elements:
-            - {text: BOOK_VALUE, x: 4, y: 0.5, width: 56, bold: true}
-            - {value: start_text, x: 62, y: 0.5, width: 25}
-            - {value: lgrp_bv_start, x: 100, y: 0.5, width: 30, align: right, bold: true}
-            - {text: BOOK_VALUE, x: 4, y: 4.7, width: 56, bold: true}
-            - {value: end_text, x: 62, y: 4.7, width: 25}
-            - {value: lgrp_bv_end, x: 100, y: 4.7, width: 30, align: right, bold: true}
         - type: footer
           height: 7
           elements:

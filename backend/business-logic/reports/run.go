@@ -80,8 +80,8 @@ func (r *Run) NewPage() {
 }
 
 // GroupTotal is the total of a field or value over the records of the group whose footer
-// prints (in OnGroupFooter) — of a total or total_value element of the data item's layout; 0
-// outside a group footer
+// prints (in OnGroupFooter) — of a total or total_value element of the data item's layout, or a
+// value of its TotalValues; 0 outside a group footer
 func (r *Run) GroupTotal(name string) types.Decimal {
 	if r.printer == nil || r.printer.footer == nil {
 		return types.Decimal{}
