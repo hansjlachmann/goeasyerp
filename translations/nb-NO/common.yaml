@@ -216,6 +216,7 @@ common:
     res_gr_availability: "Ressursgruppetilgjengelighet"
     change_budget_dates: "Endre budsjettdatoer"
     get_project_usage: "Hent prosjektforbruk"
+    show_printout: "Vis utskrift"
     show_error: "Vis feil"
     applied_entries: "Utlignede poster"
     reconcile: "Avstem"

@@ -394,6 +394,7 @@ messages:
   JOBQUEUEENTRY_TEST: "TEST-knap: du står på linje %1."
   JOBQUEUE_STATUS_IS: "Opgavekø %1 har status %2."
   JOBQUEUE_TEST_ENTRY: "Testpost (tilføjet fra kortet)"
+  JOBQUEUE_NO_PRINTOUT: "Logpost %1 har ingen udskrift."
   JOBQUEUE_TEST_ENTRY_ADDED: "Logpost %1 blev tilføjet."
   JOBQUEUEENTRY_SHOW_FIELD: "%1 på den aktuelle linje: %2"
   JOBQUEUE_TEST_MAIL_PARTIAL: "Test-e-mail sendt til %1. Ikke sendt til: %2"

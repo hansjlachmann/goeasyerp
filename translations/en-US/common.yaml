@@ -216,6 +216,7 @@ common:
     res_gr_availability: "Res. Gr. Availability"
     change_budget_dates: "Change Budget Dates"
     get_project_usage: "Get Project Usage"
+    show_printout: "Show Printout"
     show_error: "Show Error"
     applied_entries: "Applied Entries"
     reconcile: "Reconcile"

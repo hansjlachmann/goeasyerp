@@ -53,6 +53,18 @@ table:
       type: types.DateTime
       db_name: end_date_time
 
+    # A scheduled report's printout (the PDF) and its file name: Show Printout on the log
+    - name: printout
+      no: 9
+      type: "[]byte"
+      db_name: printout
+
+    - name: printout_file_name
+      no: 10
+      type: types.Text
+      db_name: printout_file_name
+      length: 250
+
   keys:
     - name: job_queue
       fields:

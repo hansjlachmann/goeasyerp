@@ -38,18 +38,36 @@ func (jobQueueLogic) OnModify(rec *gtables.JobQueue) error {
 	return setJobQueueUser(rec)
 }
 
-// setJobQueueUser: a user who saves a job must be allowed to run its codeunit (Execute
-// permission), and the job runs as that user. The scheduler's own changes (status, next start)
+// setJobQueueUser: a user who saves a job must be allowed to run its codeunit or report
+// (Execute permission), and the job runs as that user. The scheduler's own changes (status, next start)
 // have no user and leave the job's user as it is.
 func setJobQueueUser(rec *gtables.JobQueue) error {
 	userID := system.UserId()
 	if userID == "" || userID == "SCHEDULER" {
 		return nil
 	}
-	if rec.Object_id_to_run != 0 && !fcodeunits.CanExecute(session.ObjectCodeunit, rec.Object_id_to_run) {
-		return apperrors.JobNoPermission(userID, rec.Object_id_to_run)
+	if rec.Object_id_to_run != 0 {
+		err := JobQueueCanRun(rec, userID, fcodeunits.CanExecute)
+		if err != nil {
+			return err
+		}
 	}
 	rec.User_id = types.NewCode(userID)
+	return nil
+}
+
+// JobQueueCanRun: the user may run the job's codeunit or report (Execute permission, checked by
+// canExecute — the current user's, or a scheduled job user's session)
+func JobQueueCanRun(rec *gtables.JobQueue, userID string, canExecute func(objectType string, id int) bool) error {
+	if rec.Object_type_to_run == gtables.JobQueue_Object_type_to_run.Report {
+		if !canExecute(session.ObjectReport, rec.Object_id_to_run) {
+			return apperrors.JobNoReportPermission(userID, rec.Object_id_to_run)
+		}
+		return nil
+	}
+	if !canExecute(session.ObjectCodeunit, rec.Object_id_to_run) {
+		return apperrors.JobNoPermission(userID, rec.Object_id_to_run)
+	}
 	return nil
 }
 

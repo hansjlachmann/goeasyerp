@@ -14,6 +14,7 @@
 //	OnValidate_Description(rec *gtables.JobQueue) error
 //	OnValidate_Description_2(rec *gtables.JobQueue) error
 //	OnValidate_Status(rec *gtables.JobQueue) error
+//	OnValidate_Object_type_to_run(rec *gtables.JobQueue) error
 //	OnValidate_Object_id_to_run(rec *gtables.JobQueue) error
 //	OnValidate_Parameter(rec *gtables.JobQueue) error
 //	OnValidate_Next_start(rec *gtables.JobQueue) error
@@ -65,6 +66,23 @@ func (o JobQueueStatus) IsValid() bool {
 	return o >= 0 && o < 3
 }
 
+// JobQueueObject_type_to_run represents the object_type_to_run option field
+type JobQueueObject_type_to_run int
+
+// String returns the text representation of JobQueueObject_type_to_run
+func (o JobQueueObject_type_to_run) String() string {
+	options := []string{"Codeunit", "Report"}
+	if o >= 0 && int(o) < len(options) {
+		return options[o]
+	}
+	return ""
+}
+
+// IsValid checks if the JobQueueObject_type_to_run value is within valid range
+func (o JobQueueObject_type_to_run) IsValid() bool {
+	return o >= 0 && o < 2
+}
+
 // JobQueueRecurrence represents the recurrence option field
 type JobQueueRecurrence int
 
@@ -103,19 +121,20 @@ func (o JobQueueNotify_on) IsValid() bool {
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterJobQueueLogic.
 type JobQueue struct {
-	No                    types.Code         `db:"no,pk"`
-	Description           types.Text         `db:"description"`
-	Description_2         types.Text         `db:"description_2"`
-	Status                JobQueueStatus     `db:"status"`
-	Object_id_to_run      int                `db:"object_id_to_run"`
-	Parameter             types.Text         `db:"parameter"`
-	Next_start            types.DateTime     `db:"next_start"`
-	Minutes_between_run   int                `db:"minutes_between_run"`
-	Recurring_job         bool               `db:"recurring_job"`
-	Recurrence            JobQueueRecurrence `db:"recurrence"`
-	Notification_email    types.Text         `db:"notification_email"`
-	Notify_on             JobQueueNotify_on  `db:"notify_on"`
-	Notification_language types.Code         `db:"notification_language"`
+	No                    types.Code                 `db:"no,pk"`
+	Description           types.Text                 `db:"description"`
+	Description_2         types.Text                 `db:"description_2"`
+	Status                JobQueueStatus             `db:"status"`
+	Object_type_to_run    JobQueueObject_type_to_run `db:"object_type_to_run"`
+	Object_id_to_run      int                        `db:"object_id_to_run"`
+	Parameter             types.Text                 `db:"parameter"`
+	Next_start            types.DateTime             `db:"next_start"`
+	Minutes_between_run   int                        `db:"minutes_between_run"`
+	Recurring_job         bool                       `db:"recurring_job"`
+	Recurrence            JobQueueRecurrence         `db:"recurrence"`
+	Notification_email    types.Text                 `db:"notification_email"`
+	Notify_on             JobQueueNotify_on          `db:"notify_on"`
+	Notification_language types.Code                 `db:"notification_language"`
 	// FlowField: Count(Job_Queue_Entry.entry_no)
 	Number_of_entries int
 	User_id           types.Code `db:"user_id"`
@@ -193,6 +212,15 @@ var JobQueue_Status = struct {
 	Error:  2,
 }
 
+// JobQueue_Object_type_to_run provides named constants for the object_type_to_run option field (FieldName.OptionValue syntax)
+var JobQueue_Object_type_to_run = struct {
+	Codeunit JobQueueObject_type_to_run
+	Report   JobQueueObject_type_to_run
+}{
+	Codeunit: 0,
+	Report:   1,
+}
+
 // JobQueue_Recurrence provides named constants for the recurrence option field (FieldName.OptionValue syntax)
 var JobQueue_Recurrence = struct {
 	Once    JobQueueRecurrence
@@ -232,6 +260,7 @@ var JobQueue_FieldNo = struct {
 	Description           int
 	Description_2         int
 	Status                int
+	Object_type_to_run    int
 	Object_id_to_run      int
 	Parameter             int
 	Next_start            int
@@ -248,6 +277,7 @@ var JobQueue_FieldNo = struct {
 	Description:           2,
 	Description_2:         3,
 	Status:                4,
+	Object_type_to_run:    16,
 	Object_id_to_run:      5,
 	Parameter:             6,
 	Next_start:            7,
@@ -272,6 +302,8 @@ func (t *JobQueue) FieldNo(fieldName string) int {
 		return 3
 	case "status":
 		return 4
+	case "object_type_to_run":
+		return 16
 	case "object_id_to_run":
 		return 5
 	case "parameter":
@@ -309,6 +341,8 @@ func (t *JobQueue) FieldName(fieldNo int) string {
 		return "description_2"
 	case 4:
 		return "status"
+	case 16:
+		return "object_type_to_run"
 	case 5:
 		return "object_id_to_run"
 	case 6:
@@ -428,6 +462,7 @@ type (
 	JobQueueOnValidate_Description           interface{ OnValidate_Description(rec *JobQueue) error }
 	JobQueueOnValidate_Description_2         interface{ OnValidate_Description_2(rec *JobQueue) error }
 	JobQueueOnValidate_Status                interface{ OnValidate_Status(rec *JobQueue) error }
+	JobQueueOnValidate_Object_type_to_run    interface{ OnValidate_Object_type_to_run(rec *JobQueue) error }
 	JobQueueOnValidate_Object_id_to_run      interface{ OnValidate_Object_id_to_run(rec *JobQueue) error }
 	JobQueueOnValidate_Parameter             interface{ OnValidate_Parameter(rec *JobQueue) error }
 	JobQueueOnValidate_Next_start            interface{ OnValidate_Next_start(rec *JobQueue) error }
@@ -475,6 +510,8 @@ func jobQueueTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(JobQueueOnValidate_Description_2)
 	case "OnValidate_Status":
 		_, ok = logic.(JobQueueOnValidate_Status)
+	case "OnValidate_Object_type_to_run":
+		_, ok = logic.(JobQueueOnValidate_Object_type_to_run)
 	case "OnValidate_Object_id_to_run":
 		_, ok = logic.(JobQueueOnValidate_Object_id_to_run)
 	case "OnValidate_Parameter":
@@ -624,6 +661,7 @@ func GetJobQueueTableSchema() string {
 		description TEXT(100),
 		description_2 TEXT(100),
 		status INTEGER CHECK (status >= 0 AND status <= 2),
+		object_type_to_run INTEGER CHECK (object_type_to_run >= 0 AND object_type_to_run <= 1),
 		object_id_to_run INTEGER,
 		parameter TEXT(2000),
 		next_start TEXT,
@@ -645,6 +683,7 @@ func GetJobQueuePostgresTableSchema() string {
 		description VARCHAR(100),
 		description_2 VARCHAR(100),
 		status INTEGER CHECK (status >= 0 AND status <= 2),
+		object_type_to_run INTEGER CHECK (object_type_to_run >= 0 AND object_type_to_run <= 1),
 		object_id_to_run INTEGER,
 		parameter VARCHAR(2000),
 		next_start TIMESTAMP,
@@ -783,6 +822,7 @@ func (t *JobQueue) StoreOldValues() {
 	t.oldValues["description"] = t.Description
 	t.oldValues["description_2"] = t.Description_2
 	t.oldValues["status"] = t.Status
+	t.oldValues["object_type_to_run"] = t.Object_type_to_run
 	t.oldValues["object_id_to_run"] = t.Object_id_to_run
 	t.oldValues["parameter"] = t.Parameter
 	t.oldValues["next_start"] = t.Next_start
@@ -818,6 +858,9 @@ func (t *JobQueue) XRec() *JobQueue {
 	}
 	if v, ok := t.oldValues["status"].(JobQueueStatus); ok {
 		x.Status = v
+	}
+	if v, ok := t.oldValues["object_type_to_run"].(JobQueueObject_type_to_run); ok {
+		x.Object_type_to_run = v
 	}
 	if v, ok := t.oldValues["object_id_to_run"].(int); ok {
 		x.Object_id_to_run = v
@@ -914,6 +957,7 @@ func (t *JobQueue) GetByPK(no types.Code) bool {
 	var descriptionNull sql.NullString
 	var description_2Null sql.NullString
 	var statusInt int
+	var object_type_to_runInt int
 	var object_id_to_runVal int
 	var parameterNull sql.NullString
 	var next_startNull sql.NullString
@@ -931,7 +975,7 @@ func (t *JobQueue) GetByPK(no types.Code) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT no, description, description_2, status, object_id_to_run, parameter, next_start, minutes_between_run, recurring_job, recurrence, notification_email, notify_on, notification_language, user_id FROM "%s" WHERE 1=1 AND no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT no, description, description_2, status, object_type_to_run, object_id_to_run, parameter, next_start, minutes_between_run, recurring_job, recurrence, notification_email, notify_on, notification_language, user_id FROM "%s" WHERE 1=1 AND no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -942,6 +986,7 @@ func (t *JobQueue) GetByPK(no types.Code) bool {
 		&descriptionNull,
 		&description_2Null,
 		&statusInt,
+		&object_type_to_runInt,
 		&object_id_to_runVal,
 		&parameterNull,
 		&next_startNull,
@@ -969,6 +1014,7 @@ func (t *JobQueue) GetByPK(no types.Code) bool {
 	t.Description = types.NewText(descriptionNull.String)
 	t.Description_2 = types.NewText(description_2Null.String)
 	t.Status = JobQueueStatus(statusInt)
+	t.Object_type_to_run = JobQueueObject_type_to_run(object_type_to_runInt)
 	t.Object_id_to_run = object_id_to_runVal
 	t.Parameter = types.NewText(parameterNull.String)
 	t.Next_start, _ = types.NewDateTimeFromString(next_startNull.String)
@@ -1005,6 +1051,7 @@ func (t *JobQueue) Insert(runTrigger bool) bool {
 		t.Description,
 		t.Description_2,
 		t.Status,
+		t.Object_type_to_run,
 		t.Object_id_to_run,
 		t.Parameter,
 		t.Next_start,
@@ -1019,7 +1066,7 @@ func (t *JobQueue) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, description, description_2, status, object_id_to_run, parameter, next_start, minutes_between_run, recurring_job, recurrence, notification_email, notify_on, notification_language, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, description, description_2, status, object_type_to_run, object_id_to_run, parameter, next_start, minutes_between_run, recurring_job, recurrence, notification_email, notify_on, notification_language, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1061,6 +1108,7 @@ func (t *JobQueue) InsertAll(records []*JobQueue, runTrigger bool) error {
 			r.Description,
 			r.Description_2,
 			r.Status,
+			r.Object_type_to_run,
 			r.Object_id_to_run,
 			r.Parameter,
 			r.Next_start,
@@ -1074,7 +1122,7 @@ func (t *JobQueue) InsertAll(records []*JobQueue, runTrigger bool) error {
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, JobQueueTableName)
-	columns := []string{"no", "description", "description_2", "status", "object_id_to_run", "parameter", "next_start", "minutes_between_run", "recurring_job", "recurrence", "notification_email", "notify_on", "notification_language", "user_id"}
+	columns := []string{"no", "description", "description_2", "status", "object_type_to_run", "object_id_to_run", "parameter", "next_start", "minutes_between_run", "recurring_job", "recurrence", "notification_email", "notify_on", "notification_language", "user_id"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1130,6 +1178,10 @@ func (t *JobQueue) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "status = ?")
 			values = append(values, t.Status)
 		}
+		if t.hasFieldChanged("object_type_to_run") {
+			setClauses = append(setClauses, "object_type_to_run = ?")
+			values = append(values, t.Object_type_to_run)
+		}
 		if t.hasFieldChanged("object_id_to_run") {
 			setClauses = append(setClauses, "object_id_to_run = ?")
 			values = append(values, t.Object_id_to_run)
@@ -1183,6 +1235,8 @@ func (t *JobQueue) Modify(runTrigger bool) bool {
 		values = append(values, t.Description_2)
 		setClauses = append(setClauses, "status = ?")
 		values = append(values, t.Status)
+		setClauses = append(setClauses, "object_type_to_run = ?")
+		values = append(values, t.Object_type_to_run)
 		setClauses = append(setClauses, "object_id_to_run = ?")
 		values = append(values, t.Object_id_to_run)
 		setClauses = append(setClauses, "parameter = ?")
@@ -1284,6 +1338,10 @@ func (t *JobQueue) hasFieldChanged(fieldName string) bool {
 	case "status":
 		if old, ok := oldValue.(JobQueueStatus); ok {
 			return t.Status != old
+		}
+	case "object_type_to_run":
+		if old, ok := oldValue.(JobQueueObject_type_to_run); ok {
+			return t.Object_type_to_run != old
 		}
 	case "object_id_to_run":
 		if old, ok := oldValue.(int); ok {
@@ -1777,6 +1835,8 @@ func (t *JobQueue) columnName(fieldName string) (string, bool) {
 		return "description_2", true
 	case strings.ToLower("status"):
 		return "status", true
+	case strings.ToLower("object_type_to_run"):
+		return "object_type_to_run", true
 	case strings.ToLower("object_id_to_run"):
 		return "object_id_to_run", true
 	case strings.ToLower("parameter"):
@@ -2174,7 +2234,7 @@ func (t *JobQueue) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, description, description_2, status, object_id_to_run, parameter, next_start, minutes_between_run, recurring_job, recurrence, notification_email, notify_on, notification_language, user_id FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, description, description_2, status, object_type_to_run, object_id_to_run, parameter, next_start, minutes_between_run, recurring_job, recurrence, notification_email, notify_on, notification_language, user_id FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2183,6 +2243,7 @@ func (t *JobQueue) FindFirst() bool {
 	var descriptionNull sql.NullString
 	var description_2Null sql.NullString
 	var statusInt int
+	var object_type_to_runInt int
 	var parameterNull sql.NullString
 	var next_startNull sql.NullString
 	var recurring_jobBool sql.NullBool
@@ -2197,6 +2258,7 @@ func (t *JobQueue) FindFirst() bool {
 		&descriptionNull,
 		&description_2Null,
 		&statusInt,
+		&object_type_to_runInt,
 		&t.Object_id_to_run,
 		&parameterNull,
 		&next_startNull,
@@ -2222,6 +2284,7 @@ func (t *JobQueue) FindFirst() bool {
 	t.Description = types.NewText(descriptionNull.String)
 	t.Description_2 = types.NewText(description_2Null.String)
 	t.Status = JobQueueStatus(statusInt)
+	t.Object_type_to_run = JobQueueObject_type_to_run(object_type_to_runInt)
 	t.Parameter = types.NewText(parameterNull.String)
 	t.Next_start, _ = types.NewDateTimeFromString(next_startNull.String)
 	t.Recurring_job = recurring_jobBool.Bool
@@ -2250,7 +2313,7 @@ func (t *JobQueue) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, description, description_2, status, object_id_to_run, parameter, next_start, minutes_between_run, recurring_job, recurrence, notification_email, notify_on, notification_language, user_id FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, description, description_2, status, object_type_to_run, object_id_to_run, parameter, next_start, minutes_between_run, recurring_job, recurrence, notification_email, notify_on, notification_language, user_id FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2259,6 +2322,7 @@ func (t *JobQueue) FindLast() bool {
 	var descriptionNull sql.NullString
 	var description_2Null sql.NullString
 	var statusInt int
+	var object_type_to_runInt int
 	var parameterNull sql.NullString
 	var next_startNull sql.NullString
 	var recurring_jobBool sql.NullBool
@@ -2273,6 +2337,7 @@ func (t *JobQueue) FindLast() bool {
 		&descriptionNull,
 		&description_2Null,
 		&statusInt,
+		&object_type_to_runInt,
 		&t.Object_id_to_run,
 		&parameterNull,
 		&next_startNull,
@@ -2298,6 +2363,7 @@ func (t *JobQueue) FindLast() bool {
 	t.Description = types.NewText(descriptionNull.String)
 	t.Description_2 = types.NewText(description_2Null.String)
 	t.Status = JobQueueStatus(statusInt)
+	t.Object_type_to_run = JobQueueObject_type_to_run(object_type_to_runInt)
 	t.Parameter = types.NewText(parameterNull.String)
 	t.Next_start, _ = types.NewDateTimeFromString(next_startNull.String)
 	t.Recurring_job = recurring_jobBool.Bool
@@ -2356,7 +2422,7 @@ func (t *JobQueue) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, description, description_2, status, object_id_to_run, parameter, next_start, minutes_between_run, recurring_job, recurrence, notification_email, notify_on, notification_language, user_id FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, description, description_2, status, object_type_to_run, object_id_to_run, parameter, next_start, minutes_between_run, recurring_job, recurrence, notification_email, notify_on, notification_language, user_id FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2429,6 +2495,7 @@ func (t *JobQueue) Next(steps ...int) bool {
 		var descriptionNull sql.NullString
 		var description_2Null sql.NullString
 		var statusInt int
+		var object_type_to_runInt int
 		var parameterNull sql.NullString
 		var next_startNull sql.NullString
 		var recurring_jobBool sql.NullBool
@@ -2443,6 +2510,7 @@ func (t *JobQueue) Next(steps ...int) bool {
 			&descriptionNull,
 			&description_2Null,
 			&statusInt,
+			&object_type_to_runInt,
 			&t.Object_id_to_run,
 			&parameterNull,
 			&next_startNull,
@@ -2467,6 +2535,7 @@ func (t *JobQueue) Next(steps ...int) bool {
 		t.Description = types.NewText(descriptionNull.String)
 		t.Description_2 = types.NewText(description_2Null.String)
 		t.Status = JobQueueStatus(statusInt)
+		t.Object_type_to_run = JobQueueObject_type_to_run(object_type_to_runInt)
 		t.Parameter = types.NewText(parameterNull.String)
 		t.Next_start, _ = types.NewDateTimeFromString(next_startNull.String)
 		t.Recurring_job = recurring_jobBool.Bool
@@ -2524,7 +2593,7 @@ func (t *JobQueue) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, description, description_2, status, object_id_to_run, parameter, next_start, minutes_between_run, recurring_job, recurrence, notification_email, notify_on, notification_language, user_id FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, description, description_2, status, object_type_to_run, object_id_to_run, parameter, next_start, minutes_between_run, recurring_job, recurrence, notification_email, notify_on, notification_language, user_id FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2550,6 +2619,7 @@ func (t *JobQueue) FindSetBuffered() bool {
 		var descriptionNull sql.NullString
 		var description_2Null sql.NullString
 		var statusInt int
+		var object_type_to_runInt int
 		var parameterNull sql.NullString
 		var next_startNull sql.NullString
 		var recurring_jobBool sql.NullBool
@@ -2564,6 +2634,7 @@ func (t *JobQueue) FindSetBuffered() bool {
 			&descriptionNull,
 			&description_2Null,
 			&statusInt,
+			&object_type_to_runInt,
 			&record.Object_id_to_run,
 			&parameterNull,
 			&next_startNull,
@@ -2586,6 +2657,7 @@ func (t *JobQueue) FindSetBuffered() bool {
 		record.Description = types.NewText(descriptionNull.String)
 		record.Description_2 = types.NewText(description_2Null.String)
 		record.Status = JobQueueStatus(statusInt)
+		record.Object_type_to_run = JobQueueObject_type_to_run(object_type_to_runInt)
 		record.Parameter = types.NewText(parameterNull.String)
 		record.Next_start, _ = types.NewDateTimeFromString(next_startNull.String)
 		record.Recurring_job = recurring_jobBool.Bool
@@ -2626,6 +2698,7 @@ func (t *JobQueue) copyFromBuffered(record *JobQueue) {
 	t.Description = record.Description
 	t.Description_2 = record.Description_2
 	t.Status = record.Status
+	t.Object_type_to_run = record.Object_type_to_run
 	t.Object_id_to_run = record.Object_id_to_run
 	t.Parameter = record.Parameter
 	t.Next_start = record.Next_start
@@ -2869,6 +2942,55 @@ func (t *JobQueue) ValidateField(fieldName string, value interface{}) error {
 		for _, l := range t.registeredLogic() {
 			if trg, ok := l.(JobQueueOnValidate_Status); ok {
 				if err := trg.OnValidate_Status(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "object_type_to_run":
+		// Set field value
+		// Accept enum type directly
+		if v, ok := value.(JobQueueObject_type_to_run); ok {
+			t.Object_type_to_run = v
+			// Accept int (convert to enum)
+		} else if v, ok := value.(int); ok {
+			if v < 0 || v >= 2 {
+				return fmt.Errorf("invalid option value %d for field object_type_to_run (valid range: 0-%d)", v, 2-1)
+			}
+			t.Object_type_to_run = JobQueueObject_type_to_run(v)
+			// Accept float64 (JSON numbers decode as float64)
+		} else if v, ok := value.(float64); ok {
+			intVal := int(v)
+			if intVal < 0 || intVal >= 2 {
+				return fmt.Errorf("invalid option value %d for field object_type_to_run (valid range: 0-%d)", intVal, 2-1)
+			}
+			t.Object_type_to_run = JobQueueObject_type_to_run(intVal)
+			// Accept string (lookup in options and convert)
+		} else if v, ok := value.(string); ok {
+			if v == "" {
+				// Empty string defaults to first option (behavior)
+				t.Object_type_to_run = 0
+			} else {
+				options := []string{"Codeunit", "Report"}
+				found := false
+				for i, opt := range options {
+					if opt == v {
+						t.Object_type_to_run = JobQueueObject_type_to_run(i)
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("invalid option '%s' for field object_type_to_run (valid options: %v)", v, options)
+				}
+			}
+		} else {
+			return fmt.Errorf("invalid type for field object_type_to_run (expected JobQueueObject_type_to_run, int, or string)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(JobQueueOnValidate_Object_type_to_run); ok {
+				if err := trg.OnValidate_Object_type_to_run(t); err != nil {
 					return err
 				}
 			}
@@ -3169,6 +3291,8 @@ func (t *JobQueue) FieldValue(no int) (any, bool) {
 		return t.Description_2, true
 	case 4:
 		return t.Status, true
+	case 16:
+		return t.Object_type_to_run, true
 	case 5:
 		return t.Object_id_to_run, true
 	case 6:
@@ -3236,6 +3360,11 @@ func (t *JobQueue) SetFieldValue(no int, value any) bool {
 	case 4:
 		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
 			t.Status = JobQueueStatus(i)
+			return true
+		}
+	case 16:
+		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
+			t.Object_type_to_run = JobQueueObject_type_to_run(i)
 			return true
 		}
 	case 5:
@@ -3764,6 +3893,8 @@ func (t *JobQueue) columnValue(column string) (interface{}, bool) {
 		return t.Description_2, true
 	case "status":
 		return int(t.Status), true
+	case "object_type_to_run":
+		return int(t.Object_type_to_run), true
 	case "object_id_to_run":
 		return t.Object_id_to_run, true
 	case "parameter":
@@ -3841,6 +3972,7 @@ func (t *JobQueue) Init() {
 	t.Description = *new(types.Text)
 	t.Description_2 = *new(types.Text)
 	t.Status = 0
+	t.Object_type_to_run = 0
 	t.Object_id_to_run = *new(int)
 	t.Parameter = *new(types.Text)
 	t.Next_start = *new(types.DateTime)
@@ -3889,6 +4021,7 @@ func (t *JobQueue) ToMap() map[string]interface{} {
 		"description":           t.Description.String(),
 		"description_2":         t.Description_2.String(),
 		"status":                int(t.Status),
+		"object_type_to_run":    int(t.Object_type_to_run),
 		"object_id_to_run":      t.Object_id_to_run,
 		"parameter":             t.Parameter.String(),
 		"next_start":            t.Next_start.String(),
@@ -3933,6 +4066,23 @@ func (t *JobQueue) FromMap(data map[string]interface{}) {
 			for i, opt := range options {
 				if opt == val {
 					t.Status = JobQueueStatus(i)
+					break
+				}
+			}
+		}
+	}
+	if v, ok := data["object_type_to_run"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Object_type_to_run = JobQueueObject_type_to_run(int(val))
+		case int:
+			t.Object_type_to_run = JobQueueObject_type_to_run(val)
+		case string:
+			// Lookup string value in options
+			options := []string{"Codeunit", "Report"}
+			for i, opt := range options {
+				if opt == val {
+					t.Object_type_to_run = JobQueueObject_type_to_run(i)
 					break
 				}
 			}
@@ -4090,6 +4240,16 @@ func (t *JobQueue) GetFields() []tables.FieldInfo {
 			FlowField:  false,
 		},
 		{
+			No:         16,
+			Name:       "object_type_to_run",
+			Type:       tables.FieldTypeOption,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
 			No:         5,
 			Name:       "object_id_to_run",
 			Type:       tables.FieldTypeInteger,
@@ -4226,9 +4386,10 @@ func (t *JobQueue) GetFlowFields() []string {
 // GetOptionFields returns Option field names mapped to their option values
 func (t *JobQueue) GetOptionFields() map[string][]string {
 	return map[string][]string{
-		"status":     {"On Hold", "Ready", "Error"},
-		"recurrence": {"Once", "Minutes", "Hourly", "Daily", "Weekly", "Monthly"},
-		"notify_on":  {"Never", "Always", "On Error"},
+		"status":             {"On Hold", "Ready", "Error"},
+		"object_type_to_run": {"Codeunit", "Report"},
+		"recurrence":         {"Once", "Minutes", "Hourly", "Daily", "Weekly", "Monthly"},
+		"notify_on":          {"Never", "Always", "On Error"},
 	}
 }
 

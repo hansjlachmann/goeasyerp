@@ -128,9 +128,10 @@ const (
 	// Permissions
 	ErrPermissionDenied ErrorCode = "ERR_PERMISSION_DENIED"
 	// No Execute permission on a codeunit or report (id, name); a scheduled job's user (user, id)
-	ErrNoPermissionCodeunit ErrorCode = "ERR_NO_PERMISSION_CODEUNIT"
-	ErrNoPermissionReport   ErrorCode = "ERR_NO_PERMISSION_REPORT"
-	ErrJobNoPermission      ErrorCode = "ERR_JOB_NO_PERMISSION"
+	ErrNoPermissionCodeunit  ErrorCode = "ERR_NO_PERMISSION_CODEUNIT"
+	ErrNoPermissionReport    ErrorCode = "ERR_NO_PERMISSION_REPORT"
+	ErrJobNoPermission       ErrorCode = "ERR_JOB_NO_PERMISSION"
+	ErrJobNoReportPermission ErrorCode = "ERR_JOB_NO_REPORT_PERMISSION"
 
 	// Menu/Pages
 	ErrMenuNotFound ErrorCode = "ERR_MENU_NOT_FOUND"
@@ -809,6 +810,11 @@ func NoPermissionReport(id int, name string) *AppError {
 // JobNoPermission: a Job Queue entry's user may not run its codeunit
 func JobNoPermission(userID string, id int) *AppError {
 	return &AppError{Code: ErrJobNoPermission, Params: []string{userID, fmt.Sprint(id)}}
+}
+
+// JobNoReportPermission: the job's user may not run its report (Execute permission)
+func JobNoReportPermission(userID string, id int) *AppError {
+	return &AppError{Code: ErrJobNoReportPermission, Params: []string{userID, fmt.Sprint(id)}}
 }
 
 func PermissionDenied(operation, tableName string) *AppError {

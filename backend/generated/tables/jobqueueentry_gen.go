@@ -18,11 +18,14 @@
 //	OnValidate_Error_message(rec *gtables.JobQueueEntry) error
 //	OnValidate_Start_date_time(rec *gtables.JobQueueEntry) error
 //	OnValidate_End_date_time(rec *gtables.JobQueueEntry) error
+//	OnValidate_Printout(rec *gtables.JobQueueEntry) error
+//	OnValidate_Printout_file_name(rec *gtables.JobQueueEntry) error
 
 package tables
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"fmt"
 	"slices"
 	"strconv"
@@ -62,14 +65,16 @@ func (o JobQueueEntryStatus) IsValid() bool {
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterJobQueueEntryLogic.
 type JobQueueEntry struct {
-	Entry_no        int                 `db:"entry_no,pk"`
-	Job_queue_no    types.Code          `db:"job_queue_no"`
-	Status          JobQueueEntryStatus `db:"status"`
-	User_id         types.Code          `db:"user_id"`
-	Description     types.Text          `db:"description"`
-	Error_message   types.Text          `db:"error_message"`
-	Start_date_time types.DateTime      `db:"start_date_time"`
-	End_date_time   types.DateTime      `db:"end_date_time"`
+	Entry_no           int                 `db:"entry_no,pk"`
+	Job_queue_no       types.Code          `db:"job_queue_no"`
+	Status             JobQueueEntryStatus `db:"status"`
+	User_id            types.Code          `db:"user_id"`
+	Description        types.Text          `db:"description"`
+	Error_message      types.Text          `db:"error_message"`
+	Start_date_time    types.DateTime      `db:"start_date_time"`
+	End_date_time      types.DateTime      `db:"end_date_time"`
+	Printout           []byte              `db:"printout"`
+	Printout_file_name types.Text          `db:"printout_file_name"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -151,23 +156,27 @@ var JobQueueEntry_Status = struct {
 // JobQueueEntry_FieldNo holds the field numbers of Job_Queue_Entry (FieldNo):
 // JobQueueEntry_FieldNo.Entry_no is 1
 var JobQueueEntry_FieldNo = struct {
-	Entry_no        int
-	Job_queue_no    int
-	Status          int
-	User_id         int
-	Description     int
-	Error_message   int
-	Start_date_time int
-	End_date_time   int
+	Entry_no           int
+	Job_queue_no       int
+	Status             int
+	User_id            int
+	Description        int
+	Error_message      int
+	Start_date_time    int
+	End_date_time      int
+	Printout           int
+	Printout_file_name int
 }{
-	Entry_no:        1,
-	Job_queue_no:    2,
-	Status:          3,
-	User_id:         4,
-	Description:     5,
-	Error_message:   6,
-	Start_date_time: 7,
-	End_date_time:   8,
+	Entry_no:           1,
+	Job_queue_no:       2,
+	Status:             3,
+	User_id:            4,
+	Description:        5,
+	Error_message:      6,
+	Start_date_time:    7,
+	End_date_time:      8,
+	Printout:           9,
+	Printout_file_name: 10,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -189,6 +198,10 @@ func (t *JobQueueEntry) FieldNo(fieldName string) int {
 		return 7
 	case "end_date_time":
 		return 8
+	case "printout":
+		return 9
+	case "printout_file_name":
+		return 10
 	}
 	return 0
 }
@@ -212,6 +225,10 @@ func (t *JobQueueEntry) FieldName(fieldNo int) string {
 		return "start_date_time"
 	case 8:
 		return "end_date_time"
+	case 9:
+		return "printout"
+	case 10:
+		return "printout_file_name"
 	}
 	return ""
 }
@@ -337,6 +354,12 @@ type (
 	JobQueueEntryOnValidate_End_date_time interface {
 		OnValidate_End_date_time(rec *JobQueueEntry) error
 	}
+	JobQueueEntryOnValidate_Printout interface {
+		OnValidate_Printout(rec *JobQueueEntry) error
+	}
+	JobQueueEntryOnValidate_Printout_file_name interface {
+		OnValidate_Printout_file_name(rec *JobQueueEntry) error
+	}
 )
 
 // jobQueueEntryLogic is the registered business logic of Job_Queue_Entry, in
@@ -382,6 +405,10 @@ func jobQueueEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(JobQueueEntryOnValidate_Start_date_time)
 	case "OnValidate_End_date_time":
 		_, ok = logic.(JobQueueEntryOnValidate_End_date_time)
+	case "OnValidate_Printout":
+		_, ok = logic.(JobQueueEntryOnValidate_Printout)
+	case "OnValidate_Printout_file_name":
+		_, ok = logic.(JobQueueEntryOnValidate_Printout_file_name)
 	default:
 		return false, false
 	}
@@ -468,6 +495,9 @@ func (t *JobQueueEntry) CheckFields() error {
 	if err := tables.CheckMaxLength(JobQueueEntryTableName, "error_message", string(t.Error_message), 250); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(JobQueueEntryTableName, "printout_file_name", string(t.Printout_file_name), 250); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -502,7 +532,9 @@ func GetJobQueueEntryTableSchema() string {
 		description TEXT(100),
 		error_message TEXT(250),
 		start_date_time TEXT,
-		end_date_time TEXT
+		end_date_time TEXT,
+		printout BLOB,
+		printout_file_name TEXT(250)
 	`
 }
 
@@ -516,7 +548,9 @@ func GetJobQueueEntryPostgresTableSchema() string {
 		description VARCHAR(100),
 		error_message VARCHAR(250),
 		start_date_time TIMESTAMP,
-		end_date_time TIMESTAMP
+		end_date_time TIMESTAMP,
+		printout BYTEA,
+		printout_file_name VARCHAR(250)
 	`
 }
 
@@ -659,6 +693,8 @@ func (t *JobQueueEntry) StoreOldValues() {
 	t.oldValues["error_message"] = t.Error_message
 	t.oldValues["start_date_time"] = t.Start_date_time
 	t.oldValues["end_date_time"] = t.End_date_time
+	t.oldValues["printout"] = t.Printout
+	t.oldValues["printout_file_name"] = t.Printout_file_name
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -696,6 +732,12 @@ func (t *JobQueueEntry) XRec() *JobQueueEntry {
 	}
 	if v, ok := t.oldValues["end_date_time"].(types.DateTime); ok {
 		x.End_date_time = v
+	}
+	if v, ok := t.oldValues["printout"].([]byte); ok {
+		x.Printout = v
+	}
+	if v, ok := t.oldValues["printout_file_name"].(types.Text); ok {
+		x.Printout_file_name = v
 	}
 	return x
 }
@@ -776,6 +818,8 @@ func (t *JobQueueEntry) GetByPK(entry_no int) bool {
 	var error_messageNull sql.NullString
 	var start_date_timeNull sql.NullString
 	var end_date_timeNull sql.NullString
+	var printoutVal []byte
+	var printout_file_nameNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -783,7 +827,7 @@ func (t *JobQueueEntry) GetByPK(entry_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, job_queue_no, status, user_id, description, error_message, start_date_time, end_date_time FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT entry_no, job_queue_no, status, user_id, description, error_message, start_date_time, end_date_time, printout, printout_file_name FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -798,6 +842,8 @@ func (t *JobQueueEntry) GetByPK(entry_no int) bool {
 		&error_messageNull,
 		&start_date_timeNull,
 		&end_date_timeNull,
+		&printoutVal,
+		&printout_file_nameNull,
 	)
 
 	if err != nil {
@@ -819,6 +865,8 @@ func (t *JobQueueEntry) GetByPK(entry_no int) bool {
 	t.Error_message = types.NewText(error_messageNull.String)
 	t.Start_date_time, _ = types.NewDateTimeFromString(start_date_timeNull.String)
 	t.End_date_time, _ = types.NewDateTimeFromString(end_date_timeNull.String)
+	t.Printout = printoutVal
+	t.Printout_file_name = types.NewText(printout_file_nameNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -849,11 +897,13 @@ func (t *JobQueueEntry) Insert(runTrigger bool) bool {
 		t.Error_message,
 		t.Start_date_time,
 		t.End_date_time,
+		t.Printout,
+		t.Printout_file_name,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, job_queue_no, status, user_id, description, error_message, start_date_time, end_date_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, job_queue_no, status, user_id, description, error_message, start_date_time, end_date_time, printout, printout_file_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -899,10 +949,12 @@ func (t *JobQueueEntry) InsertAll(records []*JobQueueEntry, runTrigger bool) err
 			r.Error_message,
 			r.Start_date_time,
 			r.End_date_time,
+			r.Printout,
+			r.Printout_file_name,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, JobQueueEntryTableName)
-	columns := []string{"entry_no", "job_queue_no", "status", "user_id", "description", "error_message", "start_date_time", "end_date_time"}
+	columns := []string{"entry_no", "job_queue_no", "status", "user_id", "description", "error_message", "start_date_time", "end_date_time", "printout", "printout_file_name"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -974,6 +1026,14 @@ func (t *JobQueueEntry) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "end_date_time = ?")
 			values = append(values, t.End_date_time)
 		}
+		if t.hasFieldChanged("printout") {
+			setClauses = append(setClauses, "printout = ?")
+			values = append(values, t.Printout)
+		}
+		if t.hasFieldChanged("printout_file_name") {
+			setClauses = append(setClauses, "printout_file_name = ?")
+			values = append(values, t.Printout_file_name)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -995,6 +1055,10 @@ func (t *JobQueueEntry) Modify(runTrigger bool) bool {
 		values = append(values, t.Start_date_time)
 		setClauses = append(setClauses, "end_date_time = ?")
 		values = append(values, t.End_date_time)
+		setClauses = append(setClauses, "printout = ?")
+		values = append(values, t.Printout)
+		setClauses = append(setClauses, "printout_file_name = ?")
+		values = append(values, t.Printout_file_name)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -1071,6 +1135,13 @@ func (t *JobQueueEntry) hasFieldChanged(fieldName string) bool {
 	case "end_date_time":
 		if old, ok := oldValue.(types.DateTime); ok {
 			return !t.End_date_time.Equal(old)
+		}
+	case "printout":
+		// Skip comparison for BLOB fields (too large, use always modified)
+		return true
+	case "printout_file_name":
+		if old, ok := oldValue.(types.Text); ok {
+			return !t.Printout_file_name.Equal(old)
 		}
 	}
 
@@ -1292,6 +1363,10 @@ func (t *JobQueueEntry) columnName(fieldName string) (string, bool) {
 		return "start_date_time", true
 	case strings.ToLower("end_date_time"):
 		return "end_date_time", true
+	case strings.ToLower("printout"):
+		return "printout", true
+	case strings.ToLower("printout_file_name"):
+		return "printout_file_name", true
 	}
 	return "", false
 }
@@ -1649,7 +1724,7 @@ func (t *JobQueueEntry) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, job_queue_no, status, user_id, description, error_message, start_date_time, end_date_time FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, job_queue_no, status, user_id, description, error_message, start_date_time, end_date_time, printout, printout_file_name FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1661,6 +1736,7 @@ func (t *JobQueueEntry) FindFirst() bool {
 	var error_messageNull sql.NullString
 	var start_date_timeNull sql.NullString
 	var end_date_timeNull sql.NullString
+	var printout_file_nameNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&t.Entry_no,
@@ -1671,6 +1747,8 @@ func (t *JobQueueEntry) FindFirst() bool {
 		&error_messageNull,
 		&start_date_timeNull,
 		&end_date_timeNull,
+		&t.Printout,
+		&printout_file_nameNull,
 	)
 
 	if err != nil {
@@ -1689,6 +1767,7 @@ func (t *JobQueueEntry) FindFirst() bool {
 	t.Error_message = types.NewText(error_messageNull.String)
 	t.Start_date_time, _ = types.NewDateTimeFromString(start_date_timeNull.String)
 	t.End_date_time, _ = types.NewDateTimeFromString(end_date_timeNull.String)
+	t.Printout_file_name = types.NewText(printout_file_nameNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1709,7 +1788,7 @@ func (t *JobQueueEntry) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, job_queue_no, status, user_id, description, error_message, start_date_time, end_date_time FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT entry_no, job_queue_no, status, user_id, description, error_message, start_date_time, end_date_time, printout, printout_file_name FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1721,6 +1800,7 @@ func (t *JobQueueEntry) FindLast() bool {
 	var error_messageNull sql.NullString
 	var start_date_timeNull sql.NullString
 	var end_date_timeNull sql.NullString
+	var printout_file_nameNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&t.Entry_no,
@@ -1731,6 +1811,8 @@ func (t *JobQueueEntry) FindLast() bool {
 		&error_messageNull,
 		&start_date_timeNull,
 		&end_date_timeNull,
+		&t.Printout,
+		&printout_file_nameNull,
 	)
 
 	if err != nil {
@@ -1749,6 +1831,7 @@ func (t *JobQueueEntry) FindLast() bool {
 	t.Error_message = types.NewText(error_messageNull.String)
 	t.Start_date_time, _ = types.NewDateTimeFromString(start_date_timeNull.String)
 	t.End_date_time, _ = types.NewDateTimeFromString(end_date_timeNull.String)
+	t.Printout_file_name = types.NewText(printout_file_nameNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1799,7 +1882,7 @@ func (t *JobQueueEntry) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, job_queue_no, status, user_id, description, error_message, start_date_time, end_date_time FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, job_queue_no, status, user_id, description, error_message, start_date_time, end_date_time, printout, printout_file_name FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1875,6 +1958,7 @@ func (t *JobQueueEntry) Next(steps ...int) bool {
 		var error_messageNull sql.NullString
 		var start_date_timeNull sql.NullString
 		var end_date_timeNull sql.NullString
+		var printout_file_nameNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&t.Entry_no,
@@ -1885,6 +1969,8 @@ func (t *JobQueueEntry) Next(steps ...int) bool {
 			&error_messageNull,
 			&start_date_timeNull,
 			&end_date_timeNull,
+			&t.Printout,
+			&printout_file_nameNull,
 		)
 
 		if err != nil {
@@ -1902,6 +1988,7 @@ func (t *JobQueueEntry) Next(steps ...int) bool {
 		t.Error_message = types.NewText(error_messageNull.String)
 		t.Start_date_time, _ = types.NewDateTimeFromString(start_date_timeNull.String)
 		t.End_date_time, _ = types.NewDateTimeFromString(end_date_timeNull.String)
+		t.Printout_file_name = types.NewText(printout_file_nameNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -1951,7 +2038,7 @@ func (t *JobQueueEntry) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, job_queue_no, status, user_id, description, error_message, start_date_time, end_date_time FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT entry_no, job_queue_no, status, user_id, description, error_message, start_date_time, end_date_time, printout, printout_file_name FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1980,6 +2067,7 @@ func (t *JobQueueEntry) FindSetBuffered() bool {
 		var error_messageNull sql.NullString
 		var start_date_timeNull sql.NullString
 		var end_date_timeNull sql.NullString
+		var printout_file_nameNull sql.NullString
 
 		err := rows.Scan(
 			&record.Entry_no,
@@ -1990,6 +2078,8 @@ func (t *JobQueueEntry) FindSetBuffered() bool {
 			&error_messageNull,
 			&start_date_timeNull,
 			&end_date_timeNull,
+			&record.Printout,
+			&printout_file_nameNull,
 		)
 
 		if err != nil {
@@ -2005,6 +2095,7 @@ func (t *JobQueueEntry) FindSetBuffered() bool {
 		record.Error_message = types.NewText(error_messageNull.String)
 		record.Start_date_time, _ = types.NewDateTimeFromString(start_date_timeNull.String)
 		record.End_date_time, _ = types.NewDateTimeFromString(end_date_timeNull.String)
+		record.Printout_file_name = types.NewText(printout_file_nameNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -2041,6 +2132,8 @@ func (t *JobQueueEntry) copyFromBuffered(record *JobQueueEntry) {
 	t.Error_message = record.Error_message
 	t.Start_date_time = record.Start_date_time
 	t.End_date_time = record.End_date_time
+	t.Printout = record.Printout
+	t.Printout_file_name = record.Printout_file_name
 	t.StoreOldValues()
 }
 
@@ -2375,6 +2468,54 @@ func (t *JobQueueEntry) ValidateField(fieldName string, value interface{}) error
 			}
 		}
 		return nil
+	case "printout":
+		// Set field value
+		// Accept nil, []byte, or base64-encoded string
+		if value == nil {
+			t.Printout = nil
+		} else if v, ok := value.([]byte); ok {
+			t.Printout = v
+		} else if s, ok := value.(string); ok {
+			if s == "" {
+				t.Printout = nil
+			} else {
+				// Try base64 decode
+				decoded, err := base64.StdEncoding.DecodeString(s)
+				if err != nil {
+					return fmt.Errorf("invalid base64 value for field printout: %w", err)
+				}
+				t.Printout = decoded
+			}
+		} else {
+			return fmt.Errorf("invalid type for field printout (expected []byte, string, or nil)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(JobQueueEntryOnValidate_Printout); ok {
+				if err := trg.OnValidate_Printout(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "printout_file_name":
+		// Set field value
+		if v, ok := value.(types.Text); ok {
+			t.Printout_file_name = v
+		} else if v, ok := value.(string); ok {
+			t.Printout_file_name = types.NewText(v)
+		} else {
+			return fmt.Errorf("invalid type for field printout_file_name")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(JobQueueEntryOnValidate_Printout_file_name); ok {
+				if err := trg.OnValidate_Printout_file_name(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -2403,6 +2544,10 @@ func (t *JobQueueEntry) FieldValue(no int) (any, bool) {
 		return t.Start_date_time, true
 	case 8:
 		return t.End_date_time, true
+	case 9:
+		return t.Printout, true
+	case 10:
+		return t.Printout_file_name, true
 	}
 	return nil, false
 }
@@ -2472,6 +2617,20 @@ func (t *JobQueueEntry) SetFieldValue(no int, value any) bool {
 	case 8:
 		if v, ok := value.(types.DateTime); ok {
 			t.End_date_time = v
+			return true
+		}
+	case 9:
+		if v, ok := value.([]byte); ok {
+			t.Printout = v
+			return true
+		}
+	case 10:
+		if v, ok := value.(types.Text); ok {
+			t.Printout_file_name = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Printout_file_name = types.NewText(v)
 			return true
 		}
 	}
@@ -2931,6 +3090,10 @@ func (t *JobQueueEntry) columnValue(column string) (interface{}, bool) {
 		return t.Start_date_time, true
 	case "end_date_time":
 		return t.End_date_time, true
+	case "printout":
+		return t.Printout, true
+	case "printout_file_name":
+		return t.Printout_file_name, true
 	}
 	return nil, false
 }
@@ -2992,6 +3155,8 @@ func (t *JobQueueEntry) Init() {
 	t.Error_message = *new(types.Text)
 	t.Start_date_time = *new(types.DateTime)
 	t.End_date_time = *new(types.DateTime)
+	t.Printout = *new([]byte)
+	t.Printout_file_name = *new(types.Text)
 	t.applyDefaults()
 }
 
@@ -3026,14 +3191,16 @@ func (t *JobQueueEntry) ClearFilters() {
 // ToMap converts the current record to a map for JSON serialization
 func (t *JobQueueEntry) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"entry_no":        t.Entry_no,
-		"job_queue_no":    t.Job_queue_no.String(),
-		"status":          int(t.Status),
-		"user_id":         t.User_id.String(),
-		"description":     t.Description.String(),
-		"error_message":   t.Error_message.String(),
-		"start_date_time": t.Start_date_time.String(),
-		"end_date_time":   t.End_date_time.String(),
+		"entry_no":           t.Entry_no,
+		"job_queue_no":       t.Job_queue_no.String(),
+		"status":             int(t.Status),
+		"user_id":            t.User_id.String(),
+		"description":        t.Description.String(),
+		"error_message":      t.Error_message.String(),
+		"start_date_time":    t.Start_date_time.String(),
+		"end_date_time":      t.End_date_time.String(),
+		"printout":           t.Printout,
+		"printout_file_name": t.Printout_file_name.String(),
 	}
 }
 
@@ -3097,6 +3264,13 @@ func (t *JobQueueEntry) FromMap(data map[string]interface{}) {
 	if v, ok := data["end_date_time"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.End_date_time, _ = types.NewDateTimeFromString(s)
+		}
+	}
+	if v, ok := data["printout"]; ok && v != nil {
+	}
+	if v, ok := data["printout_file_name"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Printout_file_name = types.NewText(s)
 		}
 	}
 }
@@ -3195,6 +3369,26 @@ func (t *JobQueueEntry) GetFields() []tables.FieldInfo {
 			Name:       "end_date_time",
 			Type:       tables.FieldTypeDateTime,
 			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         9,
+			Name:       "printout",
+			Type:       tables.FieldTypeBlob,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         10,
+			Name:       "printout_file_name",
+			Type:       tables.FieldTypeText,
+			Length:     250,
 			Required:   false,
 			Editable:   true,
 			PrimaryKey: false,

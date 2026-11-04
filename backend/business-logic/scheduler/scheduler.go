@@ -8,10 +8,8 @@
 package scheduler
 
 import (
-	// The table triggers (business logic) run for the records written here
 	"errors"
 	"fmt"
-	_ "github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	"log"
 	"os"
 	"strconv"
@@ -20,16 +18,17 @@ import (
 
 	"github.com/hansjlachmann/openerp/backend/business-logic/codeunits"
 	"github.com/hansjlachmann/openerp/backend/business-logic/jobqueue"
+	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
+	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
 	"github.com/hansjlachmann/openerp/backend/foundation/mail"
 	"github.com/hansjlachmann/openerp/backend/foundation/session"
+	"github.com/hansjlachmann/openerp/backend/foundation/system"
+	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
-
-	// The table triggers (business logic) run for the records written here
-	_ "github.com/hansjlachmann/openerp/backend/business-logic/tables"
 )
 
 // Scheduler polls Job_Queue tables and runs due jobs.
@@ -208,14 +207,16 @@ func (s *Scheduler) runJob(company string, job *gtables.JobQueue) {
 		fcodeunits.SetCurrentContext(userID, userID, company, "en-US")
 		fcodeunits.SetCurrentWorkDate(types.Date{}) // a scheduled job runs on today
 		fcodeunits.SetCurrentAccess(access)
-		if !access.CanExecute(session.ObjectCodeunit, job.Object_id_to_run) {
-			runErr = errors.New(apperrors.JobNoPermission(userID, job.Object_id_to_run).Message("en-US"))
+		var appErr *apperrors.AppError
+		if errors.As(tables.JobQueueCanRun(job, userID, access.CanExecute), &appErr) {
+			runErr = errors.New(appErr.Message("en-US"))
 		}
 	}
 	defer fcodeunits.ClearCurrentContext()
 
+	var printout *jobqueue.Printout
 	if runErr == nil {
-		runErr = s.execute(company, job)
+		printout, runErr = s.execute(company, job)
 	}
 	end := time.Now()
 	// Rescheduling is the scheduler's own work: saving the job must not check the job user's
@@ -230,20 +231,23 @@ func (s *Scheduler) runJob(company string, job *gtables.JobQueue) {
 	if !after.Get(job.No.String()) {
 		after = *job
 	}
-	s.notify(company, &after, jobqueue.Run{Start: start, End: end, Err: runErr})
+	s.notify(company, &after, jobqueue.Run{Start: start, End: end, Err: runErr, Printout: printout})
 }
 
-// execute looks up and runs the codeunit referenced by object_id_to_run.
-func (s *Scheduler) execute(company string, job *gtables.JobQueue) error {
+// execute runs the job's object: its codeunit, or its report (executeReport)
+func (s *Scheduler) execute(company string, job *gtables.JobQueue) (*jobqueue.Printout, error) {
+	if job.Object_type_to_run == gtables.JobQueue_Object_type_to_run.Report {
+		return s.executeReport(company, job)
+	}
 	factory, ok := codeunits.Get(job.Object_id_to_run)
 	if !ok {
-		return fmt.Errorf("codeunit %d not found", job.Object_id_to_run)
+		return nil, fmt.Errorf("codeunit %d not found", job.Object_id_to_run)
 	}
 	cu := factory(s.db, company, s.dbType)
 
 	result, err := cu.Run(job)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if !result.Success {
 		msg := result.Message
@@ -253,9 +257,54 @@ func (s *Scheduler) execute(company string, job *gtables.JobQueue) error {
 		if msg == "" {
 			msg = "job reported failure"
 		}
-		return errors.New(msg)
+		return nil, errors.New(msg)
 	}
-	return nil
+	return nil, nil
+}
+
+// executeReport runs the job's report without a request page — its options and filters from the
+// job's Parameter (reports.ParseJobParameter) — and logs the run as a Job Queue Entry: a printed
+// report's PDF goes into the entry (Show Printout) and to the notification
+func (s *Scheduler) executeReport(company string, job *gtables.JobQueue) (*jobqueue.Printout, error) {
+	if _, ok := reports.Get(job.Object_id_to_run); !ok {
+		return nil, fmt.Errorf("report %d not found", job.Object_id_to_run)
+	}
+	options, filters := reports.ParseJobParameter(job.Parameter.String())
+	start := types.Now()
+	result, err := reports.Execute(job.Object_id_to_run, s.db, company, s.dbType, reports.RunOptions{Options: options, Filters: filters, Output: reports.OutputPDF})
+	if err != nil {
+		return nil, err
+	}
+	var printout *jobqueue.Printout
+	if result.PDF != nil {
+		printout = &jobqueue.Printout{FileName: result.FileName, PDF: result.PDF}
+	}
+	entry := gtables.NewJobQueueEntry(ftables.DBSource(s.db, company, s.dbType))
+	entryNo := 1
+	if entry.FindLast() {
+		entryNo = entry.Entry_no + 1
+	}
+	entry.Init()
+	entry.Entry_no = entryNo
+	entry.Job_queue_no = job.No
+	entry.Status = gtables.JobQueueEntry_Status.Success
+	entry.User_id = types.Code(system.CopyStr(fcodeunits.CurrentUserID(), 1, 20))
+	description := result.Message
+	if description == "" {
+		description = reports.Caption(job.Object_id_to_run, "en-US")
+	}
+	entry.Description = types.Text(system.CopyStr(description, 1, 100))
+	entry.Start_date_time = start
+	entry.End_date_time = types.Now()
+	if printout != nil {
+		entry.Printout = printout.PDF
+		entry.Printout_file_name = types.Text(system.CopyStr(printout.FileName, 1, 250))
+	}
+	err = entry.InsertOrError(true)
+	if err != nil {
+		log.Printf("Job Queue scheduler: log entry of %s/%s: %v", company, job.No.String(), err)
+	}
+	return printout, nil
 }
 
 // finish re-reads the job and updates its status / next_start based on the run
@@ -315,7 +364,15 @@ func (s *Scheduler) notify(company string, job *gtables.JobQueue, run jobqueue.R
 	}
 	lang := jobqueue.Language(s.db, s.dbType, company, job)
 	msg := jobqueue.RunMessage(job, jobqueue.CompanyName(s.db, s.dbType, company), run, lang)
-	err := s.currentMailer().Send(jobqueue.Recipients(job), msg.Subject, msg.Body)
+	mailer := s.currentMailer()
+	var err error
+	attachments, ok := mailer.(mail.AttachmentSender)
+	if ok && run.Printout != nil {
+		err = attachments.SendWithAttachments(jobqueue.Recipients(job), msg.Subject, msg.Body,
+			[]mail.Attachment{{Name: run.Printout.FileName, ContentType: "application/pdf", Data: run.Printout.PDF}})
+	} else {
+		err = mailer.Send(jobqueue.Recipients(job), msg.Subject, msg.Body)
+	}
 	if err != nil {
 		log.Printf("Job Queue scheduler: notification e-mail of %s/%s: %v", company, job.No.String(), err)
 	}

@@ -2,6 +2,7 @@ package mail
 
 import (
 	"bufio"
+	"encoding/base64"
 	"errors"
 	"net"
 	"strings"
@@ -221,5 +222,27 @@ func TestSendAllRecipientsRejected(t *testing.T) {
 	defer s.mu.Unlock()
 	if s.data != "" {
 		t.Error("message sent although every recipient was rejected")
+	}
+}
+
+// With attachments the message is multipart/mixed: the text, then each file base64-encoded
+// with its (encoded) name
+func TestBuildMessageWithAttachment(t *testing.T) {
+	data := []byte("%PDF-1.4 a printout")
+	msg := string(buildMessage("from@x.com", "to@x.com", "Report", "See the attachment", Attachment{Name: "Kundeliste.pdf", ContentType: "application/pdf", Data: data}))
+	for _, want := range []string{"Content-Type: multipart/mixed; boundary=", "Content-Type: text/plain; charset=UTF-8", "See the attachment",
+		"Content-Type: application/pdf; name=\"Kundeliste.pdf\"", "Content-Disposition: attachment; filename=\"Kundeliste.pdf\"", base64.StdEncoding.EncodeToString(data)} {
+		if !strings.Contains(msg, want) {
+			t.Errorf("message without %q:\n%s", want, msg)
+		}
+	}
+	boundary := msg[strings.Index(msg, "boundary=\"")+10:]
+	boundary = boundary[:strings.Index(boundary, "\"")]
+	if !strings.HasSuffix(msg, "--"+boundary+"--\r\n") {
+		t.Errorf("multipart not closed:\n%s", msg)
+	}
+	plain := string(buildMessage("from@x.com", "to@x.com", "Report", "text"))
+	if strings.Contains(plain, "multipart") {
+		t.Error("a message without attachments is multipart")
 	}
 }
