@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.133](https://github.com/hansjlachmann/openerp/compare/v0.1.132...v0.1.133) (2026-11-04)
+
+
+### Features
+
+* applied project entries, reconciliation and the project journal test report ([#214](https://github.com/hansjlachmann/openerp/issues/214)) ([ac085f3](https://github.com/hansjlachmann/openerp/commit/ac085f3eefa5add724c4660412e9f82e7643164a))
+* FA book value reports on the report engine's group sections ([#216](https://github.com/hansjlachmann/openerp/issues/216)) ([617fefa](https://github.com/hansjlachmann/openerp/commit/617fefad05df660aac9dc94b8d123b87ada5a7c3))
+* log of refused postings for administrators ([#215](https://github.com/hansjlachmann/openerp/issues/215)) ([acfde67](https://github.com/hansjlachmann/openerp/commit/acfde67064b7fb5b8c5a4acd0b1ce150de9f411a))
+* project resource availability, budget date changes and project usage on invoices ([#218](https://github.com/hansjlachmann/openerp/issues/218)) ([078be86](https://github.com/hansjlachmann/openerp/commit/078be864ffc47bf268a52c24e6668c749545f431))
+* the job queue runs reports ([#217](https://github.com/hansjlachmann/openerp/issues/217)) ([5d89ddc](https://github.com/hansjlachmann/openerp/commit/5d89ddc8e85238a2f8c575b60a55e20f3e7b02c8))
+
 ## [0.1.132](https://github.com/hansjlachmann/openerp/compare/v0.1.131...v0.1.132) (2026-11-03)
 
 
