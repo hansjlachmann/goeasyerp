@@ -5,8 +5,9 @@ page:
   source_table: Resource_Group
   caption: Res. Group Availability
   editable: false
-  # classic form 226 with its lines: capacity and use per period. The job columns (Qty. on
-  # Order (Job), Job Quotes Allocation and the availabilities after them) come with jobs
+  # classic form 226 with its lines: capacity and use per period, the projects' budgets on
+  # Order and Quote and the capacity after them (calculated: OnAfterGetRecord in
+  # business-logic/pages/projectavailability.go)
 
   layout:
     sections:
@@ -41,3 +42,13 @@ page:
               drilldown_filter_field: resource_group_no
               drilldown_filter_value: "no"
               drilldown_date_field: posting_date
+            - source: qty_on_order_project
+            - source: capacity_after_orders
+              calculated: true
+              type: types.Decimal
+              decimal_places: "0:5"
+            - source: qty_quoted_project
+            - source: capacity_after_quotes
+              calculated: true
+              type: types.Decimal
+              decimal_places: "0:5"

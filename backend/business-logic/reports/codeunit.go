@@ -84,5 +84,6 @@ func (c *reportCodeunit) Run(record interface{}) (fcodeunits.Result, error) {
 		res = fcodeunits.Message(result.Message)
 	}
 	res.OpenPage = result.OpenPage
+	res.Refresh = result.Refresh
 	return WithPrintouts(res, result.Printouts), nil
 }

@@ -135,3 +135,12 @@ page:
       run_page: 225
       run_page_filter_field: "no"
       run_page_filter_value: "no"
+
+    # the projects' budgets of the resource per period (page 221)
+    - name: Resource Allocated per Project
+      caption: Resource Allocated per Project
+      image: Calendar
+      promoted: true
+      run_page: 221
+      run_page_filter_field: "no"
+      run_page_filter_value: "no"

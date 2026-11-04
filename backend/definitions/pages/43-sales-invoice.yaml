@@ -187,3 +187,10 @@ page:
       image: Calculate
       promoted: true
       run_object: codeunit:61
+
+    # the open usage of the invoice's project billed to its customer as invoice lines (report 294)
+    - name: Get Project Usage
+      caption: Get Project Usage
+      image: Lines
+      promoted: true
+      run_object: report:294

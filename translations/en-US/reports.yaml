@@ -14,6 +14,8 @@ reports:
       CANNOT_CHANGE_START: "Once you create the new fiscal year you cannot change its starting date.\n\n"
       CONFIRM_CREATE: "Do you want to create the fiscal year?"
       ONLY_BEFORE_OR_AFTER: "It is only possible to create new fiscal years before or after the existing ones."
+  "294":
+    caption: "Get Project Usage"
   "790":
     caption: "Calculate Inventory"
     options:

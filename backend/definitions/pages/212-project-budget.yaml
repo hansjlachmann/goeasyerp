@@ -105,3 +105,23 @@ page:
       image: Copy
       promoted: true
       run_object: report:1296
+
+    # the line's resource or resource group: its budget against its capacity per period (pages 227, 231)
+    - name: Resource Availability
+      caption: Resource Availability
+      image: Calendar
+      promoted: true
+      run_object: table:Project_Budget_Line.ResourceAvailability
+
+    - name: Res. Gr. Availability
+      caption: Res. Gr. Availability
+      image: Calendar
+      promoted: true
+      run_object: table:Project_Budget_Line.ResGrAvailability
+
+    # the line's budget entries and Starting Date moved by a date formula (form 366)
+    - name: Change Budget Dates
+      caption: Change Budget Dates
+      image: Calendar
+      promoted: true
+      run_object: table:Project_Budget_Line.ChangeDates

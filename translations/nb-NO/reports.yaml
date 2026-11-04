@@ -14,6 +14,8 @@ reports:
       CANNOT_CHANGE_START: "Når du har opprettet det nye regnskapsåret, kan du ikke endre startdatoen.\n\n"
       CONFIRM_CREATE: "Vil du opprette regnskapsåret?"
       ONLY_BEFORE_OR_AFTER: "Du kan bare opprette nye regnskapsår før eller etter de eksisterende."
+  "294":
+    caption: "Hent prosjektforbruk"
   "790":
     caption: "Beregn lager"
     options:

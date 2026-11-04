@@ -835,8 +835,14 @@ pages:
     caption: "Vareomsetning"
   resource_availability:
     caption: "Ressurstilgjengelighet"
+    fields:
+      capacity_after_orders: "Kapasitet etter ordrer"
+      capacity_after_quotes: "Kapasitet etter tilbud"
   res_group_availability:
     caption: "Ressursgruppetilgjengelighet"
+    fields:
+      capacity_after_orders: "Kapasitet etter ordrer"
+      capacity_after_quotes: "Kapasitet etter tilbud"
   fixed_asset_journal:
     caption: "Anleggskladd"
     fields:
@@ -1101,6 +1107,22 @@ pages:
       account_name: "Kontonavn"
   project_ledger_entries:
     caption: "Prosjektposter"
+  resource_allocated_per_project:
+    caption: "Ressurs fordelt per prosjekt"
+  res_gr_allocated_per_project:
+    caption: "Ressursgruppe fordelt per prosjekt"
+  resource_availability_project:
+    caption: "Ressurstilgjengelighet (prosjekt)"
+    fields:
+      capacity: "Kapasitet"
+      capacity_after_orders: "Kapasitet etter ordrer"
+      capacity_after_quotes: "Kapasitet etter tilbud"
+  res_gr_availability_project:
+    caption: "Ressursgruppetilgjengelighet (prosjekt)"
+    fields:
+      capacity: "Kapasitet"
+      capacity_after_orders: "Kapasitet etter ordrer"
+      capacity_after_quotes: "Kapasitet etter tilbud"
   project_statistics:
     caption: "Prosjektstatistikk"
     fields:

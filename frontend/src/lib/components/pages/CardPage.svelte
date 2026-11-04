@@ -37,6 +37,9 @@
 	interface Props {
 		page: PageDefinition;
 		record?: Record<string, any>;
+		// The record was read from the database (the page knows it); undefined: decided from the
+		// key — a composite key with a blank part counts as new
+		existing?: boolean;
 		captions?: Record<string, string>;
 		fieldTypes?: Record<string, string>; // Field type metadata (e.g., "bool", "code", "text")
 		options?: Record<string, Record<string, string>>; // Option field values (enum lookups)
@@ -88,7 +91,8 @@
 		onNavigatePrevious,
 		onNavigateNext,
 		onNavigateLast,
-		onrefresh
+		onrefresh,
+		existing = undefined
 	}: Props = $props();
 
 	// Where the pages it opens go: the browser, or the page frame it is in
@@ -154,6 +158,9 @@
 		// Book Code) is new while one of its fields is blank — a new record from a filtered list
 		// already has the filter's field (Ship-to Address: Customer No.)
 		if (page?.page?.setup_table) return false;
+		// a record read from the database exists, blank key parts and all (a budget line without
+		// phase or variant)
+		if (existing !== undefined) return !existing;
 		const keyFields = getPrimaryKeyFields(page);
 		if (keyFields.length > 1) return keyFields.some((f) => record?.[f] === undefined || record?.[f] === null || record?.[f] === '');
 		return isNewRecord(record, keyFields[0]);

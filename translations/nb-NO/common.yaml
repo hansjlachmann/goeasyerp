@@ -211,6 +211,11 @@ common:
     show_optional_lines: "Vis valgfrie linjer"
     hide_optional_lines: "Skjul valgfrie linjer"
     available_to_reserve: "Tilgjengelig for reservasjon"
+    resource_allocated_per_project: "Ressurs fordelt per prosjekt"
+    res_gr_allocated_per_project: "Ressursgruppe fordelt per prosjekt"
+    res_gr_availability: "Ressursgruppetilgjengelighet"
+    change_budget_dates: "Endre budsjettdatoer"
+    get_project_usage: "Hent prosjektforbruk"
 
   # Card page sections (page YAML section name in snake case)
   sections:

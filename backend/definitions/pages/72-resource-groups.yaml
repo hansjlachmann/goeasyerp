@@ -74,3 +74,12 @@ page:
       run_page: 226
       run_page_filter_field: "no"
       run_page_filter_value: "no"
+
+    # the projects' budgets of the resource group per period (page 228)
+    - name: Res. Gr. Allocated per Project
+      caption: Res. Gr. Allocated per Project
+      image: Calendar
+      promoted: true
+      run_page: 228
+      run_page_filter_field: "no"
+      run_page_filter_value: "no"

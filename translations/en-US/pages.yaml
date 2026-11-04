@@ -835,8 +835,14 @@ pages:
     caption: "Item Turnover"
   resource_availability:
     caption: "Resource Availability"
+    fields:
+      capacity_after_orders: "Capacity after Orders"
+      capacity_after_quotes: "Capacity after Quotes"
   res_group_availability:
     caption: "Res. Group Availability"
+    fields:
+      capacity_after_orders: "Capacity after Orders"
+      capacity_after_quotes: "Capacity after Quotes"
   fixed_asset_journal:
     caption: "Fixed Asset Journal"
     fields:
@@ -1101,6 +1107,22 @@ pages:
       account_name: "Account Name"
   project_ledger_entries:
     caption: "Project Ledger Entries"
+  resource_allocated_per_project:
+    caption: "Resource Allocated per Project"
+  res_gr_allocated_per_project:
+    caption: "Res. Gr. Allocated per Project"
+  resource_availability_project:
+    caption: "Resource Availability (Project)"
+    fields:
+      capacity: "Capacity"
+      capacity_after_orders: "Capacity after Orders"
+      capacity_after_quotes: "Capacity after Quotes"
+  res_gr_availability_project:
+    caption: "Res. Gr. Availability (Project)"
+    fields:
+      capacity: "Capacity"
+      capacity_after_orders: "Capacity after Orders"
+      capacity_after_quotes: "Capacity after Quotes"
   project_statistics:
     caption: "Project Statistics"
     fields:
