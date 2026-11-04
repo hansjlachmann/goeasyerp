@@ -1,0 +1,36 @@
+page:
+  id: 904
+  type: List
+  name: Refused Postings
+  source_table: Refused_Posting
+  caption: Refused Postings
+  editable: false   # written when the balance check refuses a posting (refusedposting.Log)
+
+  layout:
+    repeater:
+      fields:
+        - source: entry_no
+          width: 90
+        - source: refused_at
+          width: 160
+        - source: user_id
+          width: 120
+        - source: document_no
+          width: 120
+        - source: posting_date
+          width: 110
+        - source: difference
+          width: 120
+        - source: message
+          width: 450
+        - source: error_code
+          width: 160
+          visible: false
+
+  actions:
+    # the refusal again as the error it was, with Show Entries (the G/L entries and totals)
+    - name: Show Error
+      caption: Show Error
+      image: Info
+      promoted: true
+      run_object: table:Refused_Posting.ShowError

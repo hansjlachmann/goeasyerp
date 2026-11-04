@@ -1,0 +1,71 @@
+table:
+  id: 904
+  name: "Refused_Posting"
+  caption: Refused Posting
+  posted: true               # written when the balance check refuses a commit; the table API does not insert, delete or rename
+  description: "Refused Posting (table 904): a log of the postings the balance check refused — the G/L entries would not have balanced — for an administrator: when, who, the error and its details"
+  lookup_page_id: 904
+  fields:
+    - name: entry_no
+      no: 1
+      type: int
+      db_name: entry_no
+      primary_key: true
+
+    - name: refused_at
+      no: 2
+      type: types.DateTime
+      db_name: refused_at
+
+    - name: user_id
+      no: 3
+      type: types.Code
+      db_name: user_id
+      length: 50
+      table_relation:
+        table: User
+        field: user_id
+        validate: false   # the user who posted; not checked
+
+    - name: error_code
+      no: 4
+      type: types.Code
+      db_name: error_code
+      length: 50
+
+    # the error as the user saw it (in the user's language)
+    - name: message
+      no: 5
+      type: types.Text
+      db_name: message
+      length: 250
+
+    # the first document that did not balance, its posting date and the difference
+    - name: document_no
+      no: 6
+      type: types.Code
+      db_name: document_no
+      length: 20
+
+    - name: posting_date
+      no: 7
+      type: types.Text
+      db_name: posting_date
+      length: 30
+
+    - name: difference
+      no: 8
+      type: types.Text
+      db_name: difference
+      length: 30
+
+    # the error's details (Show Entries: the totals per date and document and the G/L entries), JSON
+    - name: details
+      no: 9
+      type: "[]byte"
+      db_name: details
+
+  keys:
+    - name: Primary
+      fields: [entry_no]
+      clustered: true

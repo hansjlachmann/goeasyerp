@@ -152,3 +152,40 @@ func TestCommitExplainsInconsistency(t *testing.T) {
 		t.Errorf("without an explanation the table is named: %v", err)
 	}
 }
+
+// A refused commit is reported to the OnRefusedCommit hooks with its error (after the
+// rollback); a commit that goes through is not
+func TestOnRefusedCommit(t *testing.T) {
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	var reported []error
+	refusedMu.Lock()
+	before := refusedHooks
+	refusedMu.Unlock()
+	t.Cleanup(func() {
+		refusedMu.Lock()
+		refusedHooks = before
+		refusedMu.Unlock()
+	})
+	OnRefusedCommit(func(err error) { reported = append(reported, err) })
+
+	tx, err := BeginTransaction(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := Commit(tx); err != nil || len(reported) != 0 {
+		t.Fatalf("a consistent commit: %v, reported %v", err, reported)
+	}
+	tx, err = BeginTransaction(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetConsistent(tx, "G_L_Entry", false)
+	err = Commit(tx)
+	if err == nil || len(reported) != 1 || reported[0] != err {
+		t.Errorf("refused commit %v, reported %v", err, reported)
+	}
+}
