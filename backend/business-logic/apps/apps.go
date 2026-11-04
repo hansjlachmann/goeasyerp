@@ -13,13 +13,14 @@ import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
 	fapps "github.com/hansjlachmann/openerp/backend/foundation/apps"
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
+	fobjects "github.com/hansjlachmann/openerp/backend/foundation/objects"
 	"github.com/hansjlachmann/openerp/backend/foundation/pages"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
 
-// CheckObjectNumbers returns an error listing every table, page and codeunit whose number is
-// not in the series of one of the installed apps (reports when they exist)
+// CheckObjectNumbers returns an error listing every table, page, report and codeunit (registered
+// or declared) whose number is not in the series of one of the installed apps
 func CheckObjectNumbers(installed []*fapps.App) error {
 	err := fapps.CheckOverlap(installed)
 	if err != nil {
@@ -52,6 +53,12 @@ func CheckObjectNumbers(installed []*fapps.App) error {
 	for id, name := range reports.List() {
 		if !allowed(fapps.Report, id) {
 			outside = append(outside, fmt.Sprintf("report %d %s", id, name))
+		}
+	}
+	// the objects the business-logic packages declare (library codeunits)
+	for _, d := range fobjects.Declared() {
+		if d.Type == fobjects.TypeCodeunit && !allowed(fapps.Codeunit, d.ID) {
+			outside = append(outside, fmt.Sprintf("codeunit %d %s (%s)", d.ID, d.Name, d.Package))
 		}
 	}
 	if len(outside) > 0 {

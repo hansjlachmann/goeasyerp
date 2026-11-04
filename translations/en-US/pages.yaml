@@ -72,6 +72,8 @@ pages:
   # Job Queue pages
   job_queue_list:
     caption: "Job Queue"
+    fields:
+      object_caption_to_run: "Object Caption to Run"
   job_queue_card:
     caption: "Job Queue Card"
   job_queue_entries_list:

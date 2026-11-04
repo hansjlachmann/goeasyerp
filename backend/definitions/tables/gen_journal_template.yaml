@@ -31,6 +31,17 @@ table:
       no: 6
       type: int
       db_name: page_id
+      table_relation:
+        table: Object
+        field: id
+        filters:
+          type: {const: 2}
+        validate: false   # set by setup; the Object rows are written at startup (a lookup only)
+        lookup_columns:
+          - source: id
+            width: 80
+          - source: name
+            width: 250
 
     - name: posting_report_id
       no: 7

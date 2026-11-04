@@ -40,6 +40,29 @@ table:
       no: 5
       type: int
       db_name: object_id_to_run
+      table_relation:
+        conditions:
+          - when: {field: object_type_to_run, equal: 0}
+            table: Object
+            field: id
+            filters:
+              type: {const: 5}
+              runnable: {const: true}
+            lookup_columns:
+              - source: id
+                width: 80
+              - source: name
+                width: 250
+          - when: {field: object_type_to_run, equal: 1}
+            table: Object
+            field: id
+            filters:
+              type: {const: 3}
+            lookup_columns:
+              - source: id
+                width: 80
+              - source: name
+                width: 250
 
     - name: parameter
       no: 6

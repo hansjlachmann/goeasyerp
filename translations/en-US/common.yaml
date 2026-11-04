@@ -598,6 +598,7 @@ common:
     user_roles: "User Roles"
     user_members: "User Members"
     permissions: "Permissions"
+    objects: "Objects"
     themes: "Themes"
     installed_apps: "Installed Apps"
 

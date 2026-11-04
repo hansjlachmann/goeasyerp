@@ -1,0 +1,11 @@
+package blanketorder
+
+import "github.com/hansjlachmann/openerp/backend/foundation/objects"
+
+// The objects this package implements, with their numbers and classic names (ABSOLUTE RULE:
+// every business-logic package declares its objects — they appear in the Object table and on
+// page 908 Objects)
+func init() {
+	objects.Codeunit(87, "Blanket Sales Order to Order")
+	objects.Codeunit(97, "Blanket Purch. Order to Order")
+}

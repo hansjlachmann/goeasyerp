@@ -1,0 +1,13 @@
+package purchprinted
+
+import "github.com/hansjlachmann/openerp/backend/foundation/objects"
+
+// The objects this package implements, with their numbers and classic names (ABSOLUTE RULE:
+// every business-logic package declares its objects — they appear in the Object table and on
+// page 908 Objects)
+func init() {
+	objects.Codeunit(317, "Purch.Header-Printed")
+	objects.Codeunit(318, "Purch.Rcpt.-Printed")
+	objects.Codeunit(319, "Purch. Inv.-Printed")
+	objects.Codeunit(320, "PurchCrMemo-Printed")
+}

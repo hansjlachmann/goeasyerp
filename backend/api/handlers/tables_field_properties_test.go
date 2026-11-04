@@ -233,6 +233,16 @@ func TestLookupPage(t *testing.T) {
 	}
 }
 
+// A lookup offers New only where its page can enter a record: not for the Object table (a
+// system table, page 908 read-only) nor for posted tables
+func TestNewRecordPage(t *testing.T) {
+	for table, want := range map[string]int{"G_L_Account": 18, "Currency": 5, "Object": 0, "Customer_ledger_entry": 0} {
+		if got := pages.GetRegistry().NewRecordPage(table); got != want {
+			t.Errorf("%s: New opens page %d, want %d", table, got, want)
+		}
+	}
+}
+
 // A conditional relation (Bal. Account No. by Bal. Account Type): the API checks the table of
 // the record's type, sends one lookup per type, and the G/L Account totals of a list include
 // total accounts (their Totaling) and the list's date filter

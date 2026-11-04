@@ -6,6 +6,7 @@ import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/codeunits"
 	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
+	fobjects "github.com/hansjlachmann/openerp/backend/foundation/objects"
 	"github.com/hansjlachmann/openerp/backend/foundation/pages"
 	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
@@ -18,29 +19,45 @@ type objectKey struct {
 	id         int
 }
 
+// objectRow is what the Object table holds of an object: its name and whether it runs
+type objectRow struct {
+	name     string
+	runnable bool
+}
+
 // Objects returns the objects of this installation with their (English) captions: the
-// tables, pages, reports and codeunits
-func Objects() map[objectKey]string {
-	objects := map[objectKey]string{}
+// tables, pages, reports and codeunits — the registered codeunits (runnable) and those the
+// business-logic packages declare (objects.Codeunit: library codeunits, with their classic
+// names)
+func Objects() map[objectKey]objectRow {
+	objects := map[objectKey]objectRow{}
 	for id, rec := range gtables.NewRecords() {
 		caption := rec.GetTableName()
 		if c, ok := rec.(interface{ GetCaption(string) string }); ok {
 			caption = c.GetCaption("en-US")
 		}
-		objects[objectKey{gtables.Object_Type.Table, id}] = caption
+		objects[objectKey{gtables.Object_Type.Table, id}] = objectRow{name: caption}
 	}
 	for id, page := range pages.GetRegistry().GetAllPages() {
 		caption := page.Page.Caption
 		if caption == "" {
 			caption = page.Page.Name
 		}
-		objects[objectKey{gtables.Object_Type.Page, id}] = caption
+		objects[objectKey{gtables.Object_Type.Page, id}] = objectRow{name: caption}
 	}
 	for id := range reports.List() {
-		objects[objectKey{gtables.Object_Type.Report, id}] = reports.Caption(id, "en-US")
+		objects[objectKey{gtables.Object_Type.Report, id}] = objectRow{name: reports.Caption(id, "en-US"), runnable: true}
+	}
+	for _, d := range fobjects.Declared() {
+		if d.Type == fobjects.TypeCodeunit {
+			objects[objectKey{gtables.Object_Type.Codeunit, d.ID}] = objectRow{name: d.Name}
+		}
 	}
 	for id, name := range codeunits.List() {
-		objects[objectKey{gtables.Object_Type.Codeunit, id}] = name
+		if declared := fobjects.DeclaredName(fobjects.TypeCodeunit, id); declared != "" {
+			name = declared
+		}
+		objects[objectKey{gtables.Object_Type.Codeunit, id}] = objectRow{name: name, runnable: true}
 	}
 	return objects
 }
@@ -56,7 +73,8 @@ func SyncObjects(db database.Executor, dbType database.DBType) error {
 	stored := map[objectKey]bool{}
 	for found := rec.FindSetBuffered(); found; found = rec.Next() {
 		key := objectKey{rec.Type, rec.Id}
-		name, ok := objects[key]
+		row, ok := objects[key]
+		name := row.name
 		switch {
 		case !ok:
 			old := gtables.NewObject(src)
@@ -65,17 +83,18 @@ func SyncObjects(db database.Executor, dbType database.DBType) error {
 				return fmt.Errorf("object %d %d: %w", key.objectType, key.id, err)
 			}
 			continue
-		case rec.Name.String() != truncate(name, 80):
+		case rec.Name.String() != truncate(name, 80) || rec.Runnable != row.runnable:
 			changed := gtables.NewObject(src)
 			changed.Copy(rec)
 			changed.Name = types.NewText(truncate(name, 80))
+			changed.Runnable = row.runnable
 			if err := changed.ModifyOrError(false); err != nil {
 				return fmt.Errorf("object %d %d: %w", key.objectType, key.id, err)
 			}
 		}
 		stored[key] = true
 	}
-	for key, name := range objects {
+	for key, row := range objects {
 		if stored[key] {
 			continue
 		}
@@ -83,7 +102,8 @@ func SyncObjects(db database.Executor, dbType database.DBType) error {
 		obj.Init()
 		obj.Type = key.objectType
 		obj.Id = key.id
-		obj.Name = types.NewText(truncate(name, 80))
+		obj.Name = types.NewText(truncate(row.name, 80))
+		obj.Runnable = row.runnable
 		if err := obj.InsertOrError(false); err != nil {
 			return fmt.Errorf("object %d %d: %w", key.objectType, key.id, err)
 		}

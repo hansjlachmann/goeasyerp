@@ -6010,6 +6010,7 @@ tables:
       type: "Type"
       id: "ID"
       name: "Name"
+      runnable: "Runnable"
     options:
       type:
         tabledata: "Table Data"

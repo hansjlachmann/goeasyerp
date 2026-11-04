@@ -2569,6 +2569,10 @@ func (t *SetupChecklistLine) ValidateField(fieldName string, value interface{}) 
 		default:
 			return fmt.Errorf("invalid type for field table_id")
 		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "table_id"); err != nil {
+			return err
+		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
 			if trg, ok := l.(SetupChecklistLineOnValidate_Table_id); ok {
@@ -2632,6 +2636,10 @@ func (t *SetupChecklistLine) ValidateField(fieldName string, value interface{}) 
 			}
 		default:
 			return fmt.Errorf("invalid type for field page_id")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "page_id"); err != nil {
+			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
@@ -3822,6 +3830,34 @@ func (t *SetupChecklistLine) GetOptionFields() map[string][]string {
 // GetTableRelationFields returns fields that have table relations (foreign keys)
 func (t *SetupChecklistLine) GetTableRelationFields() map[string]tables.TableRelationInfo {
 	return map[string]tables.TableRelationInfo{
+		"table_id": {
+			Table:        "Object",
+			Field:        "id",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "id", Width: 80},
+				{Source: "name", Width: 250},
+			},
+			SearchTimeout: 0,
+			NoValidate:    true,
+			Filters: []tables.RelationFilterInfo{
+				{Column: "type", Field: "", Const: "1"},
+			},
+		},
+		"page_id": {
+			Table:        "Object",
+			Field:        "id",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "id", Width: 80},
+				{Source: "name", Width: 250},
+			},
+			SearchTimeout: 0,
+			NoValidate:    true,
+			Filters: []tables.RelationFilterInfo{
+				{Column: "type", Field: "", Const: "2"},
+			},
+		},
 		"responsible_id": {
 			Table:        "User",
 			Field:        "user_id",

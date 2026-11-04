@@ -2393,6 +2393,10 @@ func (t *Permission) ValidateField(fieldName string, value interface{}) error {
 		default:
 			return fmt.Errorf("invalid type for field object_id")
 		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "object_id"); err != nil {
+			return err
+		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
 			if trg, ok := l.(PermissionOnValidate_Object_id); ok {
@@ -3308,6 +3312,26 @@ func (t *Permission) GetTableRelationFields() map[string]tables.TableRelationInf
 				{Source: "description", Width: 200},
 			},
 			SearchTimeout: 0,
+		},
+		"object_id": {
+			Conditions: []tables.ConditionalRelationInfo{
+				{Field: "object_type", Value: 1, Relation: tables.TableRelationInfo{
+					Table: "Object", Field: "id", DisplayField: "",
+					LookupColumns: []tables.LookupColumnInfo{{Source: "id", Width: 80}, {Source: "name", Width: 250}},
+					SearchTimeout: 0,
+					Filters: []tables.RelationFilterInfo{
+						{Column: "type", Field: "", Const: "3"},
+					},
+				}},
+				{Field: "object_type", Value: 2, Relation: tables.TableRelationInfo{
+					Table: "Object", Field: "id", DisplayField: "",
+					LookupColumns: []tables.LookupColumnInfo{{Source: "id", Width: 80}, {Source: "name", Width: 250}},
+					SearchTimeout: 0,
+					Filters: []tables.RelationFilterInfo{
+						{Column: "type", Field: "", Const: "5"},
+					},
+				}},
+			},
 		},
 	}
 }

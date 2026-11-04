@@ -814,6 +814,8 @@ menu:
         page_id: 903
       - name: "Permissions"
         page_id: 905
+      - name: "Objects"
+        page_id: 908
       - separator: true
       - name: "Job Queue"
         page_id: 672

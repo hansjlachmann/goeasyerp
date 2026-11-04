@@ -1,0 +1,23 @@
+page:
+  id: 908
+  type: List
+  name: Objects
+  source_table: Object
+  caption: Objects
+  editable: false
+  # the objects of this installation (written at startup, read-only: tables, pages, reports and
+  # the codeunits — registered and declared by the business-logic packages): the lookup of the
+  # fields holding an object number (Report Selections, Job Queue, Permissions); classic form 358,
+  # numbered in the system pages' series 900–999
+
+  layout:
+    repeater:
+      fields:
+        - source: type
+          width: 110
+        - source: id
+          width: 90
+        - source: name
+          width: 320
+        - source: runnable
+          width: 90

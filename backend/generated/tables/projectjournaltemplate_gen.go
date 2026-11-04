@@ -2407,6 +2407,10 @@ func (t *ProjectJournalTemplate) ValidateField(fieldName string, value interface
 		default:
 			return fmt.Errorf("invalid type for field page_id")
 		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "page_id"); err != nil {
+			return err
+		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
 			if trg, ok := l.(ProjectJournalTemplateOnValidate_Page_id); ok {
@@ -3529,6 +3533,20 @@ func (t *ProjectJournalTemplate) GetOptionFields() map[string][]string {
 // GetTableRelationFields returns fields that have table relations (foreign keys)
 func (t *ProjectJournalTemplate) GetTableRelationFields() map[string]tables.TableRelationInfo {
 	return map[string]tables.TableRelationInfo{
+		"page_id": {
+			Table:        "Object",
+			Field:        "id",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "id", Width: 80},
+				{Source: "name", Width: 250},
+			},
+			SearchTimeout: 0,
+			NoValidate:    true,
+			Filters: []tables.RelationFilterInfo{
+				{Column: "type", Field: "", Const: "2"},
+			},
+		},
 		"source_code": {
 			Table:        "Source_Code",
 			Field:        "code",

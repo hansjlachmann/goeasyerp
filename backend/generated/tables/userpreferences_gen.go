@@ -2154,6 +2154,10 @@ func (t *UserPreferences) ValidateField(fieldName string, value interface{}) err
 		default:
 			return fmt.Errorf("invalid type for field page_id")
 		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "page_id"); err != nil {
+			return err
+		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
 			if trg, ok := l.(UserPreferencesOnValidate_Page_id); ok {
@@ -3092,5 +3096,20 @@ func (t *UserPreferences) GetOptionFields() map[string][]string {
 
 // GetTableRelationFields returns fields that have table relations (foreign keys)
 func (t *UserPreferences) GetTableRelationFields() map[string]tables.TableRelationInfo {
-	return map[string]tables.TableRelationInfo{}
+	return map[string]tables.TableRelationInfo{
+		"page_id": {
+			Table:        "Object",
+			Field:        "id",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "id", Width: 80},
+				{Source: "name", Width: 250},
+			},
+			SearchTimeout: 0,
+			NoValidate:    true,
+			Filters: []tables.RelationFilterInfo{
+				{Column: "type", Field: "", Const: "2"},
+			},
+		},
+	}
 }

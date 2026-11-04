@@ -19,6 +19,17 @@ table:
       no: 2
       type: int
       db_name: table_id
+      table_relation:
+        table: Object
+        field: id
+        filters:
+          type: {const: 1}
+        validate: false
+        lookup_columns:
+          - source: id
+            width: 80
+          - source: name
+            width: 250
       editable: false
 
     - name: table_name
@@ -39,6 +50,17 @@ table:
       no: 14
       type: int
       db_name: page_id
+      table_relation:
+        table: Object
+        field: id
+        filters:
+          type: {const: 2}
+        validate: false
+        lookup_columns:
+          - source: id
+            width: 80
+          - source: name
+            width: 250
       editable: false
 
     - name: page_name

@@ -72,6 +72,8 @@ pages:
   # Job Queue pages
   job_queue_list:
     caption: "Opgavekø"
+    fields:
+      object_caption_to_run: "Objekttekst, der skal køres"
   job_queue_card:
     caption: "Opgavekøkort"
   job_queue_entries_list:
