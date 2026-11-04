@@ -6809,3 +6809,15 @@ tables:
       source_code: "Kildekode"
       user_id: "Brugernavn"
       journal_batch_name: "Kladdenavn"
+  refused_posting:
+    caption: "Afvist bogføring"
+    fields:
+      entry_no: "Løbenr."
+      refused_at: "Afvist"
+      user_id: "Bruger-id"
+      error_code: "Fejlkode"
+      message: "Meddelelse"
+      document_no: "Bilagsnr."
+      posting_date: "Bogføringsdato"
+      difference: "Difference"
+      details: "Detaljer"

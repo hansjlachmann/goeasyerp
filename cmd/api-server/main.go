@@ -13,6 +13,7 @@ import (
 	"github.com/hansjlachmann/openerp/backend/api"
 	blapps "github.com/hansjlachmann/openerp/backend/business-logic/apps"
 	blmigrations "github.com/hansjlachmann/openerp/backend/business-logic/migrations"
+	"github.com/hansjlachmann/openerp/backend/business-logic/refusedposting"
 	"github.com/hansjlachmann/openerp/backend/business-logic/scheduler"
 	// The business logic of the tables (triggers), registered by its init functions
 	_ "github.com/hansjlachmann/openerp/backend/business-logic/pages"
@@ -200,6 +201,8 @@ func main() {
 		server = api.NewServerFull(db.GetConnection(), database.DBTypeSQLite, registry)
 	}
 	server.Setup()
+	// Postings the balance check refuses are logged for an administrator (table 904)
+	refusedposting.Register(db.GetConnection(), db.GetDBType())
 
 	// Start server in a goroutine
 	go func() {

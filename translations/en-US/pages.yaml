@@ -1148,3 +1148,5 @@ pages:
       total_usage_cost: "Total – Total Cost"
       total_inv_profit: "Total – Profit"
       total_inv_profit_pct: "Total – Profit %"
+  refused_postings:
+    caption: "Refused Postings"

@@ -79,15 +79,42 @@ func SetConsistent(exec database.Executor, table string, ok bool) {
 }
 
 // Commit commits a transaction unless a table was left inconsistent in it (Consistent(false)):
-// then it rolls the transaction back and returns an error naming the tables
+// then it rolls the transaction back, reports the refusal (OnRefusedCommit) and returns an
+// error naming the tables
 func Commit(tx *sql.Tx) error {
 	tables, explain := clearConsistency(tx)
 	if len(tables) > 0 {
 		err := inconsistencyError(tables, explain)
 		_ = tx.Rollback()
+		refused(err)
 		return err
 	}
 	return tx.Commit()
+}
+
+var (
+	refusedMu    sync.Mutex
+	refusedHooks []func(err error)
+)
+
+// OnRefusedCommit registers what happens when Commit refuses a transaction (after its
+// rollback): the server logs the refused posting for an administrator (table 904 Refused
+// Posting, in a transaction of its own). The hook runs in the goroutine of the refused
+// commit — the request's user and company are its context.
+func OnRefusedCommit(hook func(err error)) {
+	refusedMu.Lock()
+	defer refusedMu.Unlock()
+	refusedHooks = append(refusedHooks, hook)
+}
+
+// refused runs the OnRefusedCommit hooks
+func refused(err error) {
+	refusedMu.Lock()
+	hooks := append([]func(error){}, refusedHooks...)
+	refusedMu.Unlock()
+	for _, hook := range hooks {
+		hook(err)
+	}
 }
 
 // Inconsistency is the error Commit would return for the transaction now (nil: it would

@@ -40,6 +40,7 @@ var demoDataNotNeeded = map[string]bool{
 	"User_Time_Register":   true, // written when users log out
 	"Setup_Checklist_Line": true, // made when the Setup Checklist opens
 	"Business_Unit":        true, // consolidation needs a second company
+	"Refused_Posting":      true, // written only when the balance check refuses a posting
 }
 
 type menuEntry struct {

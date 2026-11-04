@@ -211,6 +211,7 @@ common:
     show_optional_lines: "Show Optional Lines"
     hide_optional_lines: "Hide Optional Lines"
     available_to_reserve: "Available to Reserve"
+    show_error: "Show Error"
 
   # Card page sections (page YAML section name in snake case)
   sections:
@@ -409,6 +410,7 @@ common:
     finance_charge_memos: "Finance Charge Memos"
     fiscal_year: "Fiscal Year"
     g_l_balance_check: "G/L Balance Check"
+    refused_postings: "Refused Postings"
     g_l_budget_entries: "G/L Budget Entries"
     general_journals: "General Journals"
     general_ledger: "General Ledger"
