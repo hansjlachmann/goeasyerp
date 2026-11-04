@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.136](https://github.com/hansjlachmann/openerp/compare/v0.1.135...v0.1.136) (2026-11-04)
+
+
+### Features
+
+* journal test reports and Post and Print ([#225](https://github.com/hansjlachmann/openerp/issues/225)) ([486f0cf](https://github.com/hansjlachmann/openerp/commit/486f0cf246c0f31994549c09cf1529c84edb3d29))
+
 ## [0.1.135](https://github.com/hansjlachmann/openerp/compare/v0.1.134...v0.1.135) (2026-11-04)
 
 
