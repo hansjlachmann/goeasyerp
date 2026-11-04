@@ -1123,6 +1123,10 @@ pages:
       capacity: "Capacity"
       capacity_after_orders: "Capacity after Orders"
       capacity_after_quotes: "Capacity after Quotes"
+  applied_project_entries:
+    caption: "Applied Project Entries"
+  project_journal_reconcile:
+    caption: "Project Journal Reconcile"
   project_statistics:
     caption: "Project Statistics"
     fields:

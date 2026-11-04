@@ -26,6 +26,7 @@ func (r *groupTest) Definition() *Definition {
 	return &Definition{
 		DataItems: []*DataItem{{
 			Name: "Row", Table: IntegerTable, GroupFields: []string{"region", "city"},
+			TotalValues: []string{"weight"}, // totalled for OnGroupFooter, not printed
 			OnPreDataItem: Trigger(func(rec *Integer, run *Run) error {
 				rec.SetRange("number", 1, len(r.rows))
 				return nil
@@ -38,12 +39,14 @@ func (r *groupTest) Definition() *Definition {
 				run.SetValue("region", row.region)
 				run.SetValue("city", row.city)
 				run.SetValue("amount", types.NewDecimalFromInt(row.amount))
+				run.SetValue("weight", types.NewDecimalFromInt(row.amount*10))
 				return nil
 			}),
 			OnGroupFooter: GroupTrigger(func(rec *Integer, group string, run *Run) error {
 				// the group's share of its first row's amount: the totals of the group only
 				run.SetValue("count", rec.Number)
 				run.SetValue("doubled", run.GroupTotal("amount").Mul(types.NewDecimalFromInt(2)))
+				run.SetValue("weight_total", run.GroupTotal("weight"))
 				if group == "city" && run.Value("city") == "" {
 					return Skip()
 				}
@@ -97,6 +100,7 @@ const groupTestLayout = `report:
             - {total_value: amount, x: 100, y: 0, width: 40, align: right, decimal_places: "0:0"}
             - {value: doubled, x: 150, y: 0, width: 40, align: right, decimal_places: "0:0"}
             - {value: count, x: 50, y: 0, width: 20}
+            - {value: weight_total, x: 70, y: 0, width: 20, decimal_places: "0:0"}
         - type: footer
           height: 10
           elements:
@@ -143,10 +147,10 @@ func TestPrintGroupHeadersAndFooters(t *testing.T) {
 		"reports.99951.texts.TITLE",
 		"East", "Oslo", "1", "10", "2", "20", "Oslo", "30",
 		"Moss", "3", "5", "Moss", "5",
-		"East", "35", "70", "3", // the region's last printed record is row 3
+		"East", "35", "70", "3", "350", // the region's last printed record is row 3; its weight (TotalValues)
 		"West", "Moss", "5", "7", "Moss", "7",
 		"6", "1", // a blank city: no header, its footer skipped by the trigger
-		"West", "8", "16", "6",
+		"West", "8", "16", "6", "80",
 		"reports.99951.texts.TOTAL", "43",
 	}, "|")
 	if strings.Join(got, "|") != want {

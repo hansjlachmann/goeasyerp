@@ -306,7 +306,7 @@ table:
             width: 100
           - source: description
             width: 250
-
+      editable: true   # Project Entry-Edit (codeunit 218): the user may change it on the entries pages
     - name: task_code
       no: 45
       type: types.Code
@@ -320,7 +320,7 @@ table:
             width: 100
           - source: description
             width: 250
-
+      editable: true   # Project Entry-Edit (codeunit 218): the user may change it on the entries pages
     - name: step_code
       no: 46
       type: types.Code
@@ -334,7 +334,7 @@ table:
             width: 100
           - source: description
             width: 250
-
+      editable: true   # Project Entry-Edit (codeunit 218): the user may change it on the entries pages
     - name: amt_to_post_to_g_l
       no: 60
       type: types.Decimal

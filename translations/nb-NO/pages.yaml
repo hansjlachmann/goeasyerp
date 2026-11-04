@@ -1123,6 +1123,10 @@ pages:
       capacity: "Kapasitet"
       capacity_after_orders: "Kapasitet etter ordrer"
       capacity_after_quotes: "Kapasitet etter tilbud"
+  applied_project_entries:
+    caption: "Utlignede prosjektposter"
+  project_journal_reconcile:
+    caption: "Avstem prosjektkladd"
   project_statistics:
     caption: "Prosjektstatistikk"
     fields:

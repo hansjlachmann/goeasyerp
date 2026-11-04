@@ -1,0 +1,58 @@
+table:
+  id: 278
+  name: "Project_Journal_Quantity"
+  caption: Project Journal Quantity
+  description: "Project Journal Quantity (table 278): the lines of page 376 Project Journal Reconcile — a resource's quantities in a project journal per unit of measure and work type, with totals (a temporary table)"
+  fields:
+    - name: is_total
+      no: 1
+      type: bool
+      db_name: is_total
+      primary_key: true
+
+    - name: unit_of_measure_code
+      no: 2
+      type: types.Code
+      db_name: unit_of_measure_code
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Unit_of_Measure
+        field: code
+
+    - name: line_type
+      no: 3
+      type: Option
+      db_name: line_type
+      options: [" ", "Total"]
+      primary_key: true
+
+    - name: work_type_code
+      no: 4
+      type: types.Code
+      db_name: work_type_code
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Work_Type
+        field: code
+
+    - name: quantity
+      no: 5
+      type: types.Decimal
+      db_name: quantity
+      decimal_places: "0:5"
+      precision: 18
+      scale: 5
+
+    # the unit of measure as the page shows it: "Total <code>" on a total line (classic OnFormat)
+    - name: unit_of_measure_text
+      no: 900
+      type: types.Text
+      db_name: unit_of_measure_text
+      length: 30
+
+  keys:
+    - name: Primary
+      fields: [is_total, unit_of_measure_code, line_type, work_type_code]
+      clustered: true

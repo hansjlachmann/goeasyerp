@@ -2432,6 +2432,14 @@ func (t *{{ .StructName }}) Get(primaryKey interface{}) bool {
 			case string:
 				{{ lowerFirst $f.Name }}Val, _ = types.NewDateFromString(val)
 			}
+{{- else if eq $f.Type "bool" }}
+			switch val := v.(type) {
+			case bool:
+				{{ lowerFirst $f.Name }}Val = val
+			case string:
+				// the key part as text: the API's "true,PCS,…"
+				{{ lowerFirst $f.Name }}Val, _ = strconv.ParseBool(strings.TrimSpace(val))
+			}
 {{- end }}
 		}
 {{- end }}{{- end }}

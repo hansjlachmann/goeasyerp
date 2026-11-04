@@ -216,6 +216,9 @@ common:
     res_gr_availability: "Ressursgruppetilgjengelighet"
     change_budget_dates: "Endre budsjettdatoer"
     get_project_usage: "Hent prosjektforbruk"
+    applied_entries: "Utlignede poster"
+    reconcile: "Avstem"
+    test_report: "Kontrollrapport"
 
   # Card page sections (page YAML section name in snake case)
   sections:

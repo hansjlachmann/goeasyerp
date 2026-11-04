@@ -617,3 +617,9 @@ Bokfører linjer #3###### @4@@@@@@@@@@@@@"
   PROJECT_CHANGE_BUDGET_DATES: "Endre budsjettdatoer"
   PROJECT_CHANGE_DATE_FORMULA: "Datoformel"
   GET_PROJECT_USAGE_NO_DOCUMENT: "Hent prosjektforbruk kjøres fra en salgsfaktura."
+
+  # Project ledger entries: Reconcile (form 365), Project Journal Reconcile (page 376)
+  PROJECT_JNL_RECONCILE_TOTAL: "Totalt %1"
+  PROJECT_RECONCILE_DOCUMENT: "Bilag %1"
+  PROJECT_RECONCILE_FROM_LINE_ONLY: "Denne funksjonen kan bare brukes når vinduet er åpnet fra en prosjektkladd eller fra en salgslinje."
+  PROJECT_RECONCILIATION: "Avstemming – %1\n\nBeløp: %2\nUtlignet beløp: %3\nSaldo: %4"
