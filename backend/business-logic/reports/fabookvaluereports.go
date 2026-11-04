@@ -49,6 +49,9 @@ func (r *fixedAssetBookValue) Definition() *Definition {
 			RequestFilterFields: []string{"no", "fa_class_code", "fa_subclass_code", "budgeted_asset"},
 			OnPreDataItem:       Trigger(r.faOnPreDataItem),
 			OnAfterGetRecord:    Trigger(r.faOnAfterGetRecord),
+			GroupFields:         []string{"group_head_line"},
+			TotalValues:         faBookValueTotalValues(),
+			OnGroupFooter:       GroupTrigger(r.faGroupFooter),
 		}},
 	}
 }

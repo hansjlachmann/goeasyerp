@@ -120,6 +120,10 @@ type DataItem struct {
 	// the table has no field of is a report value OnAfterGetRecord sets (the groups of rows a
 	// report computes, in an Integer data item).
 	GroupFields []string
+	// TotalValues: report values the data item and its groups total besides those its layout's
+	// total_value elements print — what OnGroupFooter reads with Run.GroupTotal to compute a
+	// group's lines (the FA book value reports' amounts per posting type)
+	TotalValues []string
 	// OnGroupFooter runs before a group's footer sections print (classic OnPreSection of a
 	// GroupFooter with CurrReport.TOTALSCAUSEDBY): group is the group field that ends, rec and
 	// the values are the group's last record's, Run.GroupTotal gives the group's totals; Skip
