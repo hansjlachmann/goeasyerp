@@ -212,6 +212,9 @@ common:
     hide_optional_lines: "Hide Optional Lines"
     available_to_reserve: "Available to Reserve"
     show_error: "Show Error"
+    applied_entries: "Applied Entries"
+    reconcile: "Reconcile"
+    test_report: "Test Report"
 
   # Card page sections (page YAML section name in snake case)
   sections:

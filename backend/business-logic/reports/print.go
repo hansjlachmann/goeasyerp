@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"slices"
 	"strings"
 
 	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
@@ -180,6 +181,14 @@ func (p *printer) record(f *frame) error {
 		}
 	}
 	for _, name := range f.item.totalValues {
+		for _, t := range all {
+			t.values[name] = addTo(t.values[name], p.run.values[name])
+		}
+	}
+	for _, name := range f.dataItem.TotalValues {
+		if slices.Contains(f.item.totalValues, name) {
+			continue
+		}
 		for _, t := range all {
 			t.values[name] = addTo(t.values[name], p.run.values[name])
 		}

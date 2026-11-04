@@ -199,3 +199,22 @@ page:
       shortcut: Ctrl+Alt+F9
       promoted: true
       run_object: "table:Project_Journal_Line.PreviewPosting"
+
+    # the current resource line's quantities in the batch per unit of measure and work type (page 376)
+    - name: Reconcile
+      caption: Reconcile
+      image: Calculate
+      shortcut: Ctrl+F9
+      promoted: true
+      run_page: 376
+      run_page_params:
+        journal_template_name: journal_template_name
+        journal_batch_name: journal_batch_name
+        line_no: line_no
+
+    # what posting the batch would refuse, per line (report 1202 Project Journal - Test)
+    - name: Test Report
+      caption: Test Report
+      image: Print
+      promoted: true
+      run_object: report:1202

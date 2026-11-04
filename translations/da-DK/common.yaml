@@ -212,6 +212,9 @@ common:
     hide_optional_lines: "Skjul valgfrie linjer"
     available_to_reserve: "Disponibel til reservation"
     show_error: "Vis fejl"
+    applied_entries: "Udlignede poster"
+    reconcile: "Afstem"
+    test_report: "Kontrolrapport"
 
   # Card page sections (page YAML section name in snake case)
   sections:

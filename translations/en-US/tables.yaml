@@ -6799,6 +6799,18 @@ tables:
       entry_type:
         usage: "Usage"
         sale: "Sale"
+  project_journal_quantity:
+    caption: "Project Journal Quantity"
+    fields:
+      is_total: "Is Total"
+      unit_of_measure_code: "Unit of Measure Code"
+      line_type: "Line Type"
+      work_type_code: "Work Type Code"
+      quantity: "Quantity"
+      unit_of_measure_text: "Unit of Measure"
+    options:
+      line_type:
+        total: "Total"
   project_register:
     caption: "Project Register"
     fields:

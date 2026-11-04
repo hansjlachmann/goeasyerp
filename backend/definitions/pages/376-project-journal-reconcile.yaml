@@ -1,0 +1,20 @@
+page:
+  id: 376
+  type: List
+  name: Project Journal Reconcile
+  source_table: Project_Journal_Quantity
+  caption: Project Journal Reconcile
+  editable: false
+  source_table_temporary: true   # the quantities of the line's resource in its batch, found again on every load (OnFindRecords)
+
+  layout:
+    repeater:
+      fields:
+        - source: unit_of_measure_text
+          width: 160
+          style_expr: {field: line_type, not_equal: 0, style: Strong}   # the totals bold
+        - source: work_type_code
+          width: 130
+        - source: quantity
+          width: 130
+          style_expr: {field: line_type, not_equal: 0, style: Strong}

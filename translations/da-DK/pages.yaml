@@ -1101,6 +1101,10 @@ pages:
       account_name: "Kontonavn"
   project_ledger_entries:
     caption: "Projektposter"
+  applied_project_entries:
+    caption: "Udlignede projektposter"
+  project_journal_reconcile:
+    caption: "Afstem projektkladde"
   project_statistics:
     caption: "Projektstatistik"
     fields:

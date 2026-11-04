@@ -4,7 +4,7 @@ page:
   name: Project Ledger Entries
   source_table: Project_Ledger_Entry
   caption: Project Ledger Entries
-  editable: true   # posted: only Applies-to ID can be changed (Set Applies-to ID)
+  editable: true   # posted: only Applies-to ID (Set Applies-to ID) and the phase, task and step (Project Entry-Edit) can be changed
 
   layout:
     repeater:
@@ -97,6 +97,21 @@ page:
       shortcut: Shift+F11
       promoted: true
       run_object: table:Project_Ledger_Entry.SetApplId
+
+    # the entries applied to this one (page 229, the calling line's parameters kept)
+    - name: Applied Entries
+      caption: Applied Entries
+      image: Entries
+      promoted: true
+      run_object: table:Project_Ledger_Entry.AppliedEntries
+
+    # opened from a line's Applies-to ID: the line's amount against the entries marked with its ID (form 365)
+    - name: Reconcile
+      caption: Reconcile
+      image: Calculate
+      shortcut: Ctrl+F9
+      promoted: true
+      run_object: table:Project_Ledger_Entry.Reconcile
 
     - name: Navigate
       caption: Navigate

@@ -614,3 +614,9 @@ Posting lines #3###### @4@@@@@@@@@@@@@"
   RESERV_AUTO_NOT_POSSIBLE: "Automatic reservation is not possible.\nDo you want to reserve items manually?"
   ITEM_TRACKING_LOT: ", Lot No. %1"
   ITEM_TRACKING_SERIAL: ", Serial No. %1"
+
+  # Project ledger entries: Reconcile (form 365), Project Journal Reconcile (page 376)
+  PROJECT_JNL_RECONCILE_TOTAL: "Total %1"
+  PROJECT_RECONCILE_DOCUMENT: "Document %1"
+  PROJECT_RECONCILE_FROM_LINE_ONLY: "This function can be used only when the window is opened from a project journal or from a sales line."
+  PROJECT_RECONCILIATION: "Reconciliation – %1\n\nAmount: %2\nApplied Amount: %3\nBalance: %4"
