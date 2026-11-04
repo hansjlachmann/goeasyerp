@@ -1152,3 +1152,5 @@ pages:
       total_usage_cost: "I alt – Kostpris i alt"
       total_inv_profit: "I alt – Avance"
       total_inv_profit_pct: "I alt – Avancepct."
+  refused_postings:
+    caption: "Afviste bogføringer"

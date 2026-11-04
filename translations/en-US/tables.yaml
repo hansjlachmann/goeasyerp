@@ -6827,3 +6827,15 @@ tables:
       source_code: "Source Code"
       user_id: "User Name"
       journal_batch_name: "Journal Batch Name"
+  refused_posting:
+    caption: "Refused Posting"
+    fields:
+      entry_no: "Entry No."
+      refused_at: "Refused At"
+      user_id: "User ID"
+      error_code: "Error Code"
+      message: "Message"
+      document_no: "Document No."
+      posting_date: "Posting Date"
+      difference: "Difference"
+      details: "Details"
