@@ -22,6 +22,55 @@ Stop with `docker compose stop`, start again with `docker compose start`. Never 
 `docker compose down -v`: it deletes the database. For a server installation (HTTPS, backups) see
 [docs/operations.md](docs/operations.md).
 
+### Windows 10/11 with Docker Desktop
+
+Requirements: Windows 10 22H2 or Windows 11 (64-bit), virtualization enabled in the BIOS/UEFI
+(Task Manager → Performance → CPU → "Virtualization: Enabled"), about 4 GB free memory and 10 GB
+disk.
+
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) with "Use WSL 2"
+   checked, restart when asked and start Docker Desktop until it shows "Engine running".
+2. In PowerShell:
+
+   ```powershell
+   mkdir C:\GoEasyERP; cd C:\GoEasyERP
+   Invoke-WebRequest https://raw.githubusercontent.com/hansjlachmann/goeasyerp/main/docker-compose.local.yml -OutFile docker-compose.yml
+   notepad docker-compose.yml      # replace JWT_SECRET with any long random text, save
+   docker compose up -d
+   ```
+
+3. After 2-3 minutes open http://localhost:8000 and create the first user.
+
+`docker info --format "{{.OSType}}"` must print `linux`; if it prints `windows`, right-click the
+Docker icon in the taskbar and choose "Switch to Linux containers". GoEasyERP starts whenever
+Docker Desktop runs (Settings → General → "Start Docker Desktop when you sign in"). To upgrade,
+download the file again (keep your `JWT_SECRET`), then `docker compose pull` and
+`docker compose up -d` in `C:\GoEasyERP`.
+
+Docker Desktop is free for personal use, education and small businesses (fewer than 250 employees
+and less than USD 10 million annual revenue); larger companies need a paid Docker subscription — or
+use Docker Engine in WSL2 (below), which is free.
+
+**Windows Server**: Docker Desktop is not supported there, and the Docker Engine on Windows Server
+runs Windows containers only (`docker info --format "{{.OSType}}"` prints `windows`), which cannot
+run GoEasyERP. Use Docker Engine in WSL2 (Windows Server 2022/2025) or a Linux VM in Hyper-V (any
+version; better for a server several people use):
+
+```bash
+# in Ubuntu (wsl --install -d Ubuntu, then restart) or in the Linux VM
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker $USER   # log out and in again
+mkdir ~/goeasyerp && cd ~/goeasyerp
+curl -o docker-compose.yml https://raw.githubusercontent.com/hansjlachmann/goeasyerp/main/docker-compose.local.yml
+nano docker-compose.yml         # replace JWT_SECRET
+docker compose up -d
+```
+
+The file publishes port 8000 on this computer only. For other computers change the line
+`"127.0.0.1:8000:80"` to `"8000:80"`, set `ORIGIN` to `http://<computer name>:8000` and open port
+8000 in the firewall (with Docker Engine in WSL2 Windows also needs a port forwarding to WSL —
+`netsh interface portproxy` —, which a Linux VM does not).
+
 ## Project Structure
 
 ```
