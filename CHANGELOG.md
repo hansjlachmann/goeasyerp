@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.138](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.137...v0.1.138) (2026-11-04)
+
+
+### Features
+
+* run the demo data (codeunit 901) again in the same company ([#231](https://github.com/hansjlachmann/goeasyerp/issues/231)) ([c29058e](https://github.com/hansjlachmann/goeasyerp/commit/c29058e37323ce29613b3bc65beeac7cd93ffd0b))
+
+
+### Bug Fixes
+
+* the LARGE and HEAVY demo could not post its sales documents: the ([c29058e](https://github.com/hansjlachmann/goeasyerp/commit/c29058e37323ce29613b3bc65beeac7cd93ffd0b))
+
+
+### Documentation
+
+* Windows installation with Docker Desktop in the README ([#232](https://github.com/hansjlachmann/goeasyerp/issues/232)) ([d70b9a2](https://github.com/hansjlachmann/goeasyerp/commit/d70b9a2c0186f6191d9a3ee6b55ba20b17156bcb))
+
 ## [0.1.137](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.136...v0.1.137) (2026-11-04)
 
 
