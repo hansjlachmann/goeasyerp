@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.134](https://github.com/hansjlachmann/openerp/compare/v0.1.133...v0.1.134) (2026-11-04)
+
+
+### Bug Fixes
+
+* check the CalcSums error in the Get Project Usage test (errcheck) ([#220](https://github.com/hansjlachmann/openerp/issues/220)) ([130cbf9](https://github.com/hansjlachmann/openerp/commit/130cbf926578d8796dd9dbfdaeee69221493146f))
+
 ## [0.1.133](https://github.com/hansjlachmann/openerp/compare/v0.1.132...v0.1.133) (2026-11-04)
 
 
