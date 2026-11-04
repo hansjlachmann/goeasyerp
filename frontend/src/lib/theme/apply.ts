@@ -149,7 +149,7 @@ export interface ThemeCache {
 	scale?: number;
 }
 
-/** The fonts of the Appearance dialog; "default" is --font-sans of app.css (Segoe UI) */
+/** The fonts of the Appearance dialog; "default" is --font-sans of app.css (Inter, the brand font) */
 export const FONTS = ['default', 'system', 'inter', 'ibm_plex_sans', 'serif', 'monospace'] as const;
 
 /** Font size choices in percent (0 = default, 100 %) */

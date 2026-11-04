@@ -1,6 +1,6 @@
-# OpenERP Web Frontend
+# GoEasyERP Web Frontend
 
-Modern, fast, keyboard-driven web frontend for OpenERP, built with SvelteKit.
+Modern, fast, keyboard-driven web frontend for GoEasyERP, built with SvelteKit.
 
 ## Features
 

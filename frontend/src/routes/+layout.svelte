@@ -6,6 +6,8 @@
 	import '@fontsource/ibm-plex-sans/500.css';
 	import '@fontsource/ibm-plex-sans/600.css';
 	import '@fontsource/ibm-plex-sans/700.css';
+	import '@fontsource/ibm-plex-mono/400.css';
+	import '@fontsource/ibm-plex-mono/500.css';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { session } from '$stores/session';
@@ -15,6 +17,7 @@
 	import { loadTranslations } from '$lib/services/i18n.svelte';
 	import MenuBar from '$lib/components/menu/MenuBar.svelte';
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
+	import { breadcrumb } from '$lib/stores/breadcrumb';
 	import ToastContainer from '$lib/components/ToastContainer.svelte';
 	import PrintPreview from '$lib/components/PrintPreview.svelte';
 	import { regionalVersion } from '$lib/stores/regional';
@@ -28,6 +31,12 @@
 
 	// Help pages open in a detached window (window.open): no menu bar or breadcrumb
 	const detached = $derived(page.url.pathname.startsWith('/help/'));
+
+	// The browser tab's title: the page shown (the breadcrumb's last item) and the product name
+	const pageTitle = $derived.by(() => {
+		const items = $breadcrumb.items;
+		return items.length > 1 ? `${items[items.length - 1].label} – GoEasyERP` : 'GoEasyERP';
+	});
 
 	// Subscribe to theme to ensure it stays in sync
 	let currentTheme = $state<'light' | 'dark'>('light');
@@ -49,6 +58,12 @@
 		}
 	});
 </script>
+
+<svelte:head>
+	{#if !detached}
+		<title>{pageTitle}</title>
+	{/if}
+</svelte:head>
 
 {#if $wallpaperUrl && !detached}
 	<!-- Wallpaper of the active theme (Appearance); app.css: .wallpaper-layer, has-wallpaper -->

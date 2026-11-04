@@ -1,6 +1,6 @@
-# OpenERP Extensions
+# GoEasyERP Extensions
 
-This document describes how to extend OpenERP with custom tables, pages, and codeunits.
+This document describes how to extend GoEasyERP with custom tables, pages, and codeunits.
 
 ## Object and field numbers: application.yaml
 
@@ -28,7 +28,7 @@ application:
     fields:  [{from: 50000, to: 50999}]   # also the fields it adds to base tables
   dependencies:
     - id: 760e20ec-7a66-4e3f-b6e5-83c94db5a4bd   # the base application
-      name: EasyopenERP Base Application
+      name: GoEasyERP Base Application
       min_version: 0.1.97
 ```
 
@@ -158,7 +158,7 @@ docker build --build-arg EXTENSIONS_PATH=./extensions .
 ## Directory Structure (Extension Repository)
 
 ```
-my-openerp-extension/
+my-goeasyerp-extension/
 ├── extensions/
 │   ├── application.yaml                 # The extension app: id, number series, dependencies
 │   ├── tables/
@@ -208,7 +208,7 @@ changing the base code. What already works in the base:
   in registration order (base first). The first error stops the operation.
 
 ```go
-// my-openerp-extension/extensions/logic/customer.go
+// my-goeasyerp-extension/extensions/logic/customer.go
 package logic
 
 import gtables "github.com/hansjlachmann/openerp/backend/generated/tables"

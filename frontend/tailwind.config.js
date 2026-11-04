@@ -36,7 +36,8 @@ export default {
 				appbar: { DEFAULT: color('appbar'), fg: color('appbar-fg') } // app bar
 			},
 			fontFamily: {
-				sans: ['var(--font-sans)']
+				sans: ['var(--font-sans)'],
+				mono: ['var(--font-mono)']
 			}
 		}
 	},

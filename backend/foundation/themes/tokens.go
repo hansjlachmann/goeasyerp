@@ -40,15 +40,53 @@ type Vars struct {
 // TokensVersion is the version of the token format.
 const TokensVersion = 1
 
-// classicGray and classicTeal are the classic ERP ramps — the defaults in app.css. Generated
-// ramps follow their lightness profile, so a theme spreads its grays the same way.
+// classicGray and classicTeal are the classic ERP ramps (the Classic themes). Generated ramps
+// follow their lightness profile, so a theme spreads its grays the same way.
 var (
 	classicGray = [11]string{"#f7f7f7", "#f2f2f3", "#e5e7e9", "#d3d6da", "#a4b0c4", "#737d8a", "#505c6d", "#303032", "#1e1e1e", "#121212", "#0a0a0a"}
 	classicTeal = [11]string{"#e6f3f4", "#cce8ea", "#99d1d4", "#66b9bf", "#37a1a5", "#00838f", "#008489", "#006e72", "#00585c", "#003a3e", "#002a2d"}
 )
 
-// classicLightTokens and classicDarkTokens are exactly the defaults in frontend/src/app.css (Classic
-// Light/Dark): applying them changes nothing.
+// brandGray and brandAmber are the GoEasyERP ramps — the defaults in app.css: grays from
+// off-white #f5f7f8 (50) through grey #8a96a3 (400) to slate #1f2933 (900); amber #f2a900 at
+// 500, with 600 dark enough for links and text on white and off-white (4.5:1).
+var (
+	brandGray  = [11]string{"#f5f7f8", "#edf0f2", "#dfe4e8", "#c9d0d6", "#8a96a3", "#6b7785", "#4f5b67", "#3c464f", "#2b353e", "#1f2933", "#17202a"}
+	brandAmber = [11]string{"#fff8e6", "#fdeec4", "#fbdd8a", "#f8cb4f", "#f5ba1f", "#f2a900", "#946600", "#7a5400", "#5f4100", "#453000", "#2e2000"}
+)
+
+// goEasyERPLightTokens and goEasyERPDarkTokens are exactly the defaults in
+// frontend/src/app.css (GoEasyERP Light/Dark, the brand colours): applying them changes nothing.
+// Light: off-white page, white panels, slate text and app bar; dark: slate page, a deeper slate
+// app bar, off-white text.
+func goEasyERPLightTokens() Tokens {
+	return Tokens{
+		Version: TokensVersion, Mode: "light", Gray: brandGray, Accent: brandAmber,
+		Vars: Vars{
+			PageBg: "#f5f7f8", Surface: "#ffffff", Fg: "#1f2933", Heading: "#1f2933",
+			Appbar: "#1f2933", AppbarFg: "#f5f7f8",
+			RowSelected: "#fdeec4", RowSelectedHover: "#fdeec4",
+			TextSelBg: "#946600", TextSelFg: "#ffffff",
+			ScrollTrack: "#edf0f2", ScrollThumb: "#8a96a3", ScrollThumbHover: "#6b7785",
+		},
+	}
+}
+
+func goEasyERPDarkTokens() Tokens {
+	return Tokens{
+		Version: TokensVersion, Mode: "dark", Gray: brandGray, Accent: brandAmber,
+		Vars: Vars{
+			PageBg: "#1f2933", Surface: "#ffffff", Fg: "#f5f7f8", Heading: "#1f2933",
+			Appbar: "#17202a", AppbarFg: "#f5f7f8",
+			RowSelected: "#44505c", RowSelectedHover: "#4b5866",
+			TextSelBg: "#4f5b67", TextSelFg: "#f5f7f8",
+			ScrollTrack: "#2b353e", ScrollThumb: "#8a96a3", ScrollThumbHover: "#c9d0d6",
+		},
+	}
+}
+
+// classicLightTokens and classicDarkTokens are the classic ERP palette (teal accent, #282828
+// app bar) — the built-in Classic Light/Dark themes.
 func classicLightTokens() Tokens {
 	return Tokens{
 		Version: TokensVersion, Mode: "light", Gray: classicGray, Accent: classicTeal,

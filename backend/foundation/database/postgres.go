@@ -98,7 +98,7 @@ func OpenPostgresDatabase(config *PostgresConfig) (*Database, error) {
 	`).Scan(&tableName)
 	if err == sql.ErrNoRows {
 		conn.Close()
-		return nil, fmt.Errorf("not a valid OpenERP database: Company table not found")
+		return nil, fmt.Errorf("not a valid GoEasyERP database: Company table not found")
 	}
 	if err != nil {
 		conn.Close()

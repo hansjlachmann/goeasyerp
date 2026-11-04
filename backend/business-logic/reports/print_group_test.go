@@ -104,7 +104,7 @@ const groupTestLayout = `report:
         - type: footer
           height: 10
           elements:
-            - {text: TOTAL, x: 0, y: 0, width: 40}
+            - {text: TOTAL, x: 0, y: 0, width: 60}
             - {total_value: amount, x: 100, y: 0, width: 40, align: right, decimal_places: "0:0"}
 `
 

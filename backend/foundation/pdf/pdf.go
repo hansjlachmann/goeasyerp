@@ -1,6 +1,7 @@
 // Package pdf writes PDF documents: pages, texts, lines, boxes and pictures at positions in
 // millimetres from the top left corner of the page. It wraps the pure-Go go-pdf/fpdf with the
-// Go fonts (UTF-8, so every language prints), and is what printed reports draw on.
+// brand fonts (UTF-8, so every language prints) — Inter for text, IBM Plex Mono for amounts
+// (fonts/, SIL Open Font License) — and is what printed reports draw on.
 package pdf
 
 import (
@@ -12,13 +13,27 @@ import (
 	"strings"
 	"time"
 
+	_ "embed"
+
 	"github.com/go-pdf/fpdf"
-	"golang.org/x/image/font/gofont/gobold"
-	"golang.org/x/image/font/gofont/goregular"
 )
 
-// fontFamily is the family name the Go fonts are registered under
-const fontFamily = "go"
+// The families the fonts are registered under: Inter for text, IBM Plex Mono for amounts
+const (
+	fontFamily = "inter"
+	monoFamily = "plexmono"
+)
+
+var (
+	//go:embed fonts/Inter-Regular.ttf
+	interRegular []byte
+	//go:embed fonts/Inter-Bold.ttf
+	interBold []byte
+	//go:embed fonts/IBMPlexMono-Regular.ttf
+	plexMonoRegular []byte
+	//go:embed fonts/IBMPlexMono-Bold.ttf
+	plexMonoBold []byte
+)
 
 // PointToMM: a font size in points as millimetres
 const PointToMM = 25.4 / 72
@@ -33,6 +48,7 @@ type Style struct {
 	Size  float64 // points (0: 9)
 	Bold  bool
 	Align string // "left" (default), "right", "center"
+	Mono  bool   // an amount: IBM Plex Mono
 }
 
 // size is the style's font size (9 points by default)
@@ -80,10 +96,12 @@ func New(size string, landscape bool, margins Margins) (*Document, error) {
 	f := fpdf.New(orientation, "mm", sizeStr, "")
 	f.SetAutoPageBreak(false, 0)
 	f.SetMargins(0, 0, 0)
-	f.SetCreator("OpenERP", true)
+	f.SetCreator("GoEasyERP", true)
 	f.SetCreationDate(time.Now())
-	f.AddUTF8FontFromBytes(fontFamily, "", goregular.TTF)
-	f.AddUTF8FontFromBytes(fontFamily, "B", gobold.TTF)
+	f.AddUTF8FontFromBytes(fontFamily, "", interRegular)
+	f.AddUTF8FontFromBytes(fontFamily, "B", interBold)
+	f.AddUTF8FontFromBytes(monoFamily, "", plexMonoRegular)
+	f.AddUTF8FontFromBytes(monoFamily, "B", plexMonoBold)
 	f.SetFont(fontFamily, "", 9)
 	f.SetDrawColor(0, 0, 0)
 	f.SetTextColor(0, 0, 0)
@@ -117,7 +135,11 @@ func (d *Document) setStyle(style Style) {
 	if style.Bold {
 		fontStyle = "B"
 	}
-	d.f.SetFont(fontFamily, fontStyle, style.size())
+	family := fontFamily
+	if style.Mono {
+		family = monoFamily
+	}
+	d.f.SetFont(family, fontStyle, style.size())
 }
 
 // StringWidth is the width of a text in the style, in millimetres

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Wordmark from '$lib/components/brand/Wordmark.svelte';
 	import { goto } from '$app/navigation';
 	import { api } from '$lib/services/api';
 	import { t, MSG, ERR, LOGIN, PLC, loadTranslations } from '$lib/services/i18n.svelte';
@@ -220,7 +221,10 @@
 <div class="login-container">
 	<div class="login-card">
 		<div class="login-header">
-			<h1>OpenERP</h1>
+			<h1>
+				<Wordmark height="2.5rem" alt="" />
+				<span class="sr-only">GoEasyERP</span>
+			</h1>
 			<p>{setupMode ? t(LOGIN.INITIAL_SETUP) : t(LOGIN.SIGN_IN)}</p>
 		</div>
 
@@ -422,13 +426,9 @@
 	}
 
 	.login-header h1 {
-		margin: 0 0 0.5rem 0;
-		color: #212121;
-		font-size: 2rem;
-	}
-
-	:global(.dark) .login-header h1 {
-		color: rgb(var(--gray-100));
+		display: flex;
+		justify-content: center;
+		margin: 0 0 1rem 0;
 	}
 
 	.login-header p {
@@ -464,7 +464,7 @@
 	.form-group label {
 		display: block;
 		margin-bottom: 0.5rem;
-		color: #212121;
+		color: rgb(var(--fg));
 		font-weight: 500;
 		font-size: 0.875rem;
 	}
@@ -482,7 +482,7 @@
 		transition: border-color 0.15s ease-in-out;
 		box-sizing: border-box;
 		background-color: white;
-		color: #212121;
+		color: rgb(var(--fg));
 	}
 
 	:global(.dark) .form-group input {
@@ -528,7 +528,7 @@
 		transition: border-color 0.15s ease-in-out;
 		box-sizing: border-box;
 		background-color: white;
-		color: #212121;
+		color: rgb(var(--fg));
 		cursor: pointer;
 	}
 
@@ -597,7 +597,7 @@
 		width: 100%;
 		padding: 0.75rem;
 		background: rgb(var(--gray-200));
-		color: #212121;
+		color: rgb(var(--fg));
 		border: none;
 		border-radius: 4px;
 		font-size: 0.875rem;

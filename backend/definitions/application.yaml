@@ -3,7 +3,7 @@
 # The id never changes. Checked by tablegen, extmerge and at startup (backend/foundation/apps).
 application:
   id: 760e20ec-7a66-4e3f-b6e5-83c94db5a4bd
-  name: EasyopenERP Base Application
+  name: GoEasyERP Base Application
   publisher: Hans J. Lachmann
   contact: https://github.com/hansjlachmann/openerp
   version: 0.1.135 # x-release-please-version

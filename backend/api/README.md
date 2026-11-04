@@ -1,6 +1,6 @@
-# OpenERP REST API Server
+# GoEasyERP REST API Server
 
-Fast, type-safe REST API server built with Fiber for the OpenERP backend.
+Fast, type-safe REST API server built with Fiber for the GoEasyERP backend.
 
 ## Features
 
@@ -8,7 +8,7 @@ Fast, type-safe REST API server built with Fiber for the OpenERP backend.
 ✅ **RESTful API** - Standard REST endpoints for all tables
 ✅ **CORS Support** - Configured for Svelte frontend development
 ✅ **Type-Safe** - Strongly typed request/response structures
-✅ **Session Management** - Integration with OpenERP session system
+✅ **Session Management** - Integration with GoEasyERP session system
 ✅ **i18n Support** - Returns translated captions with data
 ✅ **Error Handling** - Graceful error responses
 ✅ **Logging** - Request logging with color-coded status

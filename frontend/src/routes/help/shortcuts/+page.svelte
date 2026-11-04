@@ -21,7 +21,7 @@
 
 	// Window title follows the translations as they load
 	$effect(() => {
-		document.title = `${t(HELP.TITLE)} – OpenERP`;
+		document.title = `${t(HELP.TITLE)} – GoEasyERP`;
 	});
 
 	onMount(() => window.focus());
@@ -126,7 +126,7 @@
 		font-family: inherit;
 		font-size: 0.8125rem;
 		text-align: center;
-		color: #212121;
+		color: rgb(var(--fg));
 		background: rgb(var(--gray-50));
 		border: 1px solid #c8c8c8;
 		border-bottom-width: 2px;

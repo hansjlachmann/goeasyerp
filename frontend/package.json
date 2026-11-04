@@ -1,5 +1,5 @@
 {
-  "name": "openerp-web",
+  "name": "goeasyerp-web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/ibm-plex-sans": "^5.3.0",
     "clsx": "^2.1.0",
     "tailwind-merge": "^2.2.0"

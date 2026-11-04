@@ -114,6 +114,7 @@
 	}
 	.numeric {
 		text-align: right;
+		font-family: var(--font-mono); /* amounts: IBM Plex Mono */
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
 	}

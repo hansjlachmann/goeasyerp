@@ -381,6 +381,7 @@
 
 	.grid-table .num {
 		text-align: right;
+		font-family: var(--font-mono); /* amounts: IBM Plex Mono */
 	}
 
 	.drilldown {

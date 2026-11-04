@@ -248,7 +248,7 @@
 					id={field.source}
 					type={inputType()}
 					autocomplete={field.masked ? 'new-password' : 'off'}
-					class={cn('input', fieldStyle, error ? 'input-error' : '', onassistedit ? 'with-assist' : '')}
+					class={cn('input', fieldStyle, isDecimalField && 'amount', error ? 'input-error' : '', onassistedit ? 'with-assist' : '')}
 					value={isDateTimeField ? toDateTimeInput(value) : isDecimalField ? toDecimalInput(value, locale) : (value ?? '')}
 					{tabindex}
 					oninput={handleChange}
@@ -333,7 +333,7 @@
 				</select>
 			</div>
 		{:else}
-			<div class={cn('field-value', fieldStyle)}>
+			<div class={cn('field-value', fieldStyle, isDecimalField && 'amount')}>
 				{#if ondrilldown}
 					<button type="button" class="drilldown-link" {tabindex} onclick={() => ondrilldown()}>
 						{formatDecimal(value, field.decimal_places)}

@@ -1,6 +1,6 @@
 # Operations (production with Docker)
 
-How to run OpenERP in production with `docker-compose.prod.yml` (pre-built images from
+How to run GoEasyERP in production with `docker-compose.prod.yml` (pre-built images from
 `ghcr.io`), upgrade it, back it up and restore it.
 
 ## Files on the server

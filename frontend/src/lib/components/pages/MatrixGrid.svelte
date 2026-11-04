@@ -627,6 +627,7 @@
 	.grid-table .num {
 		text-align: right;
 		min-width: 7rem;
+		font-family: var(--font-mono); /* amounts: IBM Plex Mono */
 	}
 
 	.cell {

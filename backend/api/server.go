@@ -47,8 +47,8 @@ func NewServerWithDBType(db *sql.DB, dbType database.DBType) *Server {
 // NewServerFull creates a new API server with company initializer support
 func NewServerFull(db *sql.DB, dbType database.DBType, companyInit handlers.CompanyInitializer) *Server {
 	app := fiber.New(fiber.Config{
-		AppName:      "OpenERP API v1.0",
-		ServerHeader: "OpenERP",
+		AppName:      "GoEasyERP API v1.0",
+		ServerHeader: "GoEasyERP",
 		ErrorHandler: customErrorHandler,
 		// Trust the reverse proxy's X-Forwarded-For so c.IP() (used by the rate
 		// limiter) is the real client address rather than the proxy's. Safe only
@@ -186,7 +186,7 @@ func (s *Server) Setup() {
 	s.app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"status":  "ok",
-			"service": "openerp-api",
+			"service": "goeasyerp-api",
 		})
 	})
 

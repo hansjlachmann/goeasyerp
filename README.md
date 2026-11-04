@@ -1,4 +1,11 @@
-# OpenERP
+<p align="center"><img src="goeasyerp-brand/goeasyerp-wordmark-slate.svg" alt="GoEasyERP" height="64"></p>
+
+# GoEasyERP
+
+Open-source ERP for small businesses: finance, sales, purchasing, inventory, projects and fixed
+assets in one system. Go backend, SvelteKit frontend, PostgreSQL or SQLite.
+
+The repository, Go module, container images and database keep the technical name `openerp`.
 
 ## Project Structure
 
