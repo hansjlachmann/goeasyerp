@@ -307,19 +307,31 @@ func TestCreateIsRepeatable(t *testing.T) {
 	}
 }
 
-func TestCreateRefusesCompanyWithCustomers(t *testing.T) {
+// A second run in the same company deletes the demo and creates it again (the job queue
+// stays): the same records, not twice as many
+func TestCreateAgainReplacesTheDemo(t *testing.T) {
 	db := newTestDB(t)
-	if _, err := Create(db, testCompany, database.DBTypeSQLite, Options{Today: today}); err != nil {
+	first, err := Create(db, testCompany, database.DBTypeSQLite, Options{Today: today})
+	if err != nil {
 		t.Fatalf("first Create: %v", err)
 	}
 	entries := count(t, db, "Customer Ledger Entry")
+	if _, err := db.Exec(`INSERT INTO "` + testCompany + `$` + gtables.JobQueueTableName + `" (no, description) VALUES ('KEEP', 'kept')`); err != nil {
+		t.Fatal(err)
+	}
 
-	_, err := Create(db, testCompany, database.DBTypeSQLite, Options{Today: today})
-	if !errors.Is(err, ErrCompanyNotEmpty) {
-		t.Fatalf("second Create error = %v, want ErrCompanyNotEmpty", err)
+	second, err := Create(db, testCompany, database.DBTypeSQLite, Options{Today: today})
+	if err != nil {
+		t.Fatalf("second Create: %v", err)
+	}
+	if second != first {
+		t.Errorf("second run created other data:\n%+v\nfirst:\n%+v", second, first)
 	}
 	if got := count(t, db, "Customer Ledger Entry"); got != entries {
-		t.Errorf("second run changed the ledger: %d -> %d entries", entries, got)
+		t.Errorf("second run: %d customer ledger entries, want %d", got, entries)
+	}
+	if got := count(t, db, gtables.JobQueueTableName); got != 1 {
+		t.Errorf("second run: %d job queue records, want the 1 kept", got)
 	}
 }
 

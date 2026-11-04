@@ -388,6 +388,27 @@ func insertGLEntries(exec database.Executor, company string, dbType database.DBT
 	if last.FindLast() {
 		firstNo = last.Entry_no + 1
 	}
+	src := ftables.DBSource(exec, company, dbType)
+	glReg := gtables.NewGLRegister(src)
+	nextRegNo := 1
+	if glReg.FindLast() {
+		nextRegNo = glReg.No + 1
+	}
+	// Customer, vendor and bank entries take G/L entry numbers when they are posted. The
+	// generated ones are numbered on their own; where they reach past the G/L entries (LARGE,
+	// HEAVY: more customer entries than G/L entries) the first posting's number would be
+	// taken: the G/L entries start after them instead. The numbers skipped are history without
+	// G/L detail — a G/L register over them, marked as compressed like a date compression's,
+	// which the G/L Balance Check leaves out.
+	lastNo := lastGLNumberedEntryNo(src)
+	if lastNo >= firstNo+len(entries) {
+		err = insertCompressedHistory(src, nextRegNo, firstNo, lastNo, entries[0].Posting_date)
+		if err != nil {
+			return err
+		}
+		firstNo = lastNo + 1
+		nextRegNo++
+	}
 	for i, e := range entries {
 		e.Entry_no = firstNo + i
 	}
@@ -406,12 +427,7 @@ func insertGLEntries(exec database.Executor, company string, dbType database.DBT
 		counts.GLEntries += len(batch)
 	}
 	// a G/L register over them, as a posting writes one (the G/L check finds entries without)
-	glReg := gtables.NewGLRegister(ftables.DBSource(exec, company, dbType))
-	nextRegNo := 1
-	if glReg.FindLast() {
-		nextRegNo = glReg.No + 1
-	}
-	glReg = gtables.NewGLRegister(ftables.DBSource(exec, company, dbType))
+	glReg = gtables.NewGLRegister(src)
 	glReg.No = nextRegNo
 	glReg.From_entry_no = firstNo
 	glReg.To_entry_no = firstNo + len(entries) - 1
@@ -443,4 +459,51 @@ func withoutFixedAssetAccounts(lines []glLine, balancing string) []glLine {
 		}
 	}
 	return kept
+}
+
+// lastGLNumberedEntryNo is the highest entry number of the ledgers whose entries take G/L
+// entry numbers when posted and that the demo fills itself: customer, vendor and bank account
+// ledger entries
+func lastGLNumberedEntryNo(src ftables.Source) int {
+	last := 0
+	custLedgEntry := gtables.NewCustomerLedgerEntry(src)
+	if custLedgEntry.FindLast() && custLedgEntry.Entry_no > last {
+		last = custLedgEntry.Entry_no
+	}
+	vendLedgEntry := gtables.NewVendorLedgerEntry(src)
+	if vendLedgEntry.FindLast() && vendLedgEntry.Entry_no > last {
+		last = vendLedgEntry.Entry_no
+	}
+	bankAccLedgEntry := gtables.NewBankAccountLedgerEntry(src)
+	if bankAccLedgEntry.FindLast() && bankAccLedgEntry.Entry_no > last {
+		last = bankAccLedgEntry.Entry_no
+	}
+	return last
+}
+
+// insertCompressedHistory: a G/L register over the entry numbers fromNo..toNo, which have no
+// G/L entries, and a Date Compr. Register row on it (Customer Ledger Entry), as a date
+// compression of G/L-numbered entries leaves them
+func insertCompressedHistory(src ftables.Source, regNo, fromNo, toNo int, date types.Date) error {
+	glReg := gtables.NewGLRegister(src)
+	glReg.No = regNo
+	glReg.From_entry_no = fromNo
+	glReg.To_entry_no = toNo
+	glReg.Creation_date = date
+	err := glReg.InsertOrError(false)
+	if err != nil {
+		return err
+	}
+	dateComprReg := gtables.NewDateComprRegister(src)
+	nextNo := 1
+	if dateComprReg.FindLast() {
+		nextNo = dateComprReg.No + 1
+	}
+	dateComprReg = gtables.NewDateComprRegister(src)
+	dateComprReg.No = nextNo
+	dateComprReg.Creation_date = date
+	dateComprReg.Table_id = gtables.CustomerLedgerEntryTableID
+	dateComprReg.Register_no = regNo
+	dateComprReg.Ending_date = date
+	return dateComprReg.InsertOrError(false)
 }

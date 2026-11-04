@@ -364,7 +364,7 @@ messages:
 
   # Demo data (codeunit 901)
   DEMO_DATA_DONE: "Demodata oprettet: %1 debitorer med %2 debitorposter, %3 kreditorer med %4 kreditorposter."
-  DEMO_DATA_NOT_EMPTY: "Virksomheden \"%1\" har allerede debitorer. Demodata oprettes kun i en virksomhed uden debitorer."
+  DEMO_DATA_REPLACE_CONFIRM: "Virksomheden \"%1\" har allerede data. Oprettelse af demodata sletter det hele (undtagen jobkøen og brugeropsætningen) og opretter demoen igen. Vil du fortsætte?"
   DEMO_DATA_BAD_SIZE: "Ukendt størrelse på demodata \"%1\". Sæt opgavens parameter til SMALL, LARGE eller HEAVY."
   DEMO_DATA_INSERT_FAILED: "Kunne ikke oprette %1 %2: %3. Der blev ikke oprettet demodata."
   DEMO_DATA_SETUP: "Opretter lande og betalingsbetingelser..."

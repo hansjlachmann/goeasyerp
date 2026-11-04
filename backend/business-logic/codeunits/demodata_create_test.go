@@ -115,12 +115,31 @@ func TestDemoDataFillsTheMainMenu(t *testing.T) {
 	if err := tables.CreateCompanyTables(db, "demo", database.DBTypeSQLite); err != nil {
 		t.Fatal(err)
 	}
-	counts, err := demodata.Create(db, "demo", database.DBTypeSQLite, demodata.Options{Today: time.Date(2026, 10, 6, 0, 0, 0, 0, time.Local),
+	opts := demodata.Options{Today: time.Date(2026, 10, 6, 0, 0, 0, 0, time.Local),
 		ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost,
 		GenJnlPostLine: openGenJnlPostLine, ProjectJnlPostLine: openProjectJnlPostLine, Journals: true,
-		ReminderIssue: openReminderIssue, FinChrgMemoIssue: openFinChrgMemoIssue, AdjustExchRates: adjustExchRates})
+		ReminderIssue: openReminderIssue, FinChrgMemoIssue: openFinChrgMemoIssue, AdjustExchRates: adjustExchRates}
+	first, err := demodata.Create(db, "demo", database.DBTypeSQLite, opts)
 	if err != nil {
 		t.Fatal(err)
+	}
+	// Run again in the same company: the demo replaces itself (the job queue stays), and
+	// everything below checks the second run's data
+	job := gtables.NewJobQueue(ftables.DBSource(db, "demo", database.DBTypeSQLite))
+	job.No = "DEMO"
+	job.Object_id_to_run = DemoDataCreateID
+	if err := job.InsertOrError(false); err != nil {
+		t.Fatal(err)
+	}
+	counts, err := demodata.Create(db, "demo", database.DBTypeSQLite, opts)
+	if err != nil {
+		t.Fatalf("second run: %v", err)
+	}
+	if counts != first {
+		t.Errorf("second run created other data:\n%+v\nfirst:\n%+v", counts, first)
+	}
+	if !gtables.NewJobQueue(ftables.DBSource(db, "demo", database.DBTypeSQLite)).Get("DEMO") {
+		t.Error("the second run deleted the job queue")
 	}
 	if counts.JournalLines < 15 {
 		t.Errorf("%d journal lines", counts.JournalLines)
