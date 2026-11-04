@@ -4,9 +4,9 @@ import (
 	"database/sql"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/hansjlachmann/openerp/backend/api/middleware"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/session"
+	"github.com/hansjlachmann/goeasyerp/backend/api/middleware"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 )
 
 // getSession retrieves the per-request session from c.Locals.

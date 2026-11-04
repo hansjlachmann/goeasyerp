@@ -1,7 +1,7 @@
 package tables
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // issuedFinChargeMemoHeaderLogic is the business logic of table 304 Issued_Fin_Charge_Memo_Header.

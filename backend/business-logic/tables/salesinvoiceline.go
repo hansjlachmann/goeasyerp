@@ -1,7 +1,7 @@
 package tables
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // salesInvoiceLineLogic is the business logic of table 113 Sales Invoice Line: a line of a posted sales invoice (written by

@@ -1,9 +1,9 @@
 package reports
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/formataddress"
-	"github.com/hansjlachmann/openerp/backend/business-logic/purchprinted"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/formataddress"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/purchprinted"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // The printouts of the posted purchase documents — report 406 Purchase - Invoice, 407 Purchase -

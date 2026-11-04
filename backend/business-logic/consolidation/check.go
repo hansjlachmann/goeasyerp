@@ -3,7 +3,7 @@ package consolidation
 import (
 	"sort"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 // Missing is a consolidation account, dimension 1 or 2 that is not in the consolidated

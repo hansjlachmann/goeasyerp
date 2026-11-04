@@ -30,7 +30,7 @@ scripts/prod.sh pull && scripts/prod.sh up -d
 ## First installation
 
 ```bash
-git clone https://github.com/hansjlachmann/openerp.git ~/openerp && cd ~/openerp
+git clone https://github.com/hansjlachmann/goeasyerp.git ~/openerp && cd ~/openerp
 cp prod.env.example prod.env && chmod 600 prod.env
 # edit prod.env: APP_VERSION, JWT_SECRET (openssl rand -hex 32), POSTGRES_PASSWORD (a strong one)
 ./generate-cert.sh            # or put your own certificate into certs/

@@ -1,6 +1,6 @@
 package codeunits
 
-import "github.com/hansjlachmann/openerp/backend/foundation/objects"
+import "github.com/hansjlachmann/goeasyerp/backend/foundation/objects"
 
 // The classic names of the registered codeunits (the Object table shows them, the registry's
 // names are the API's); custom codeunits use the 900–999 series (ABSOLUTE RULE: every

@@ -3,19 +3,19 @@
 package purchposting
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/itemjnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/noseries"
-	"github.com/hansjlachmann/openerp/backend/business-logic/projectjnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/purchpost"
-	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
-	"github.com/hansjlachmann/openerp/backend/business-logic/salestax"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/genjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/itemjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/noseries"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/projectjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/purchpost"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reservmgt"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salestax"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // PurchPost is codeunit 90 Purch.-Post: posts an order (receive and/or invoice), an invoice or

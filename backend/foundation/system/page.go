@@ -3,8 +3,8 @@ package system
 import (
 	"strings"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	"github.com/hansjlachmann/openerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 )
 
 // Action is how the user closed a page opened with RunModal

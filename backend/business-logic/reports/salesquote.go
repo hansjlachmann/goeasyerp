@@ -1,6 +1,6 @@
 package reports
 
-import gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+import gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 
 // Report 204 "Sales - Quote": prints sales quotes (salesDocument). Layout:
 // backend/definitions/reports/204-sales-quote.yaml.

@@ -1,7 +1,7 @@
 package tables
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // purchCrMemoLineLogic is the business logic of table 125 Purch. Cr. Memo Line: a line of a posted purchase credit memo

@@ -1,4 +1,4 @@
-module github.com/hansjlachmann/openerp
+module github.com/hansjlachmann/goeasyerp
 
 go 1.24.0
 

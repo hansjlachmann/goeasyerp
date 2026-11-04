@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
 )
 
 // Serial Number Status/Aging (705) prints the demo office chairs on inventory by serial number

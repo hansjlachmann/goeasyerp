@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	fmigrations "github.com/hansjlachmann/openerp/backend/foundation/migrations"
-	"github.com/hansjlachmann/openerp/backend/foundation/sift"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	fmigrations "github.com/hansjlachmann/goeasyerp/backend/foundation/migrations"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 )
 
 func init() {

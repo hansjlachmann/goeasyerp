@@ -1,13 +1,13 @@
 package genjnl
 
 import (
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/fajnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/fajnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
 )
 
 // GenJnlCheckLine is codeunit 11 Gen. Jnl.-Check Line: the checks a journal line must pass

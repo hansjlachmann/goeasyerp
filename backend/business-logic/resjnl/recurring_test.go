@@ -3,10 +3,10 @@ package resjnl_test
 import (
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/resjnl"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/resjnl"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // A recurring resource journal (the demo's RECURRING template, page 290): a variable usage line

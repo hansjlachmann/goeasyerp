@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 )
 
 // ProgressEvent represents a progress update or dialog event

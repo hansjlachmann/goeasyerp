@@ -1,7 +1,7 @@
 package tables
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // purchCrMemoHdrLogic is the business logic of table 124 Purch. Cr. Memo Hdr.: a posted purchase credit memo (written by

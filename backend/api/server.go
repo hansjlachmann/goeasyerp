@@ -3,15 +3,15 @@ package api
 import (
 	"database/sql"
 	"fmt"
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"log"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/hansjlachmann/openerp/backend/api/handlers"
-	"github.com/hansjlachmann/openerp/backend/api/middleware"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/api/handlers"
+	"github.com/hansjlachmann/goeasyerp/backend/api/middleware"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 )
 
 // Version is set at build time via -ldflags

@@ -75,7 +75,7 @@ Create `backend/business-logic/migrations/NNN_description.go`:
 package migrations
 
 import (
-    fmigrations "github.com/hansjlachmann/openerp/backend/foundation/migrations"
+    fmigrations "github.com/hansjlachmann/goeasyerp/backend/foundation/migrations"
 )
 
 func init() {

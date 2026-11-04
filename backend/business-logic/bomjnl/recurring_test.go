@@ -3,11 +3,11 @@ package bomjnl_test
 import (
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/bomjnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/bomjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // A recurring BOM journal (the demo's RECURRING template, page 287): a variable assembly posts

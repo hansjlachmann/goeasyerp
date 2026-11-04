@@ -1,4 +1,4 @@
-module github.com/hansjlachmann/openerp/tools/tablegen
+module github.com/hansjlachmann/goeasyerp/tools/tablegen
 
 go 1.21
 

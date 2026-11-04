@@ -1,7 +1,7 @@
 package tables
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // salesCrMemoHeaderLogic is the business logic of table 114 Sales Cr.Memo Header: a posted sales credit memo (written by sales

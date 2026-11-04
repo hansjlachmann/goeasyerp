@@ -3,8 +3,8 @@ package objects
 import (
 	"fmt"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 // ObjectRegistry maintains a registry of all classic ERP objects

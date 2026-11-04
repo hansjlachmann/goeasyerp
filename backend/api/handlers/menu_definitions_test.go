@@ -9,9 +9,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"gopkg.in/yaml.v3"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
-	"github.com/hansjlachmann/openerp/backend/foundation/pages"
-	"github.com/hansjlachmann/openerp/backend/foundation/session"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 )
 
 // Every menu file: each entry is a separator, or has a name and opens a page, runs a report or

@@ -1,11 +1,11 @@
 package codeunits
 
 import (
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 	"time"
 )
 
@@ -60,7 +60,7 @@ func (c *ProgressDemo) Run(record interface{}) (fcodeunits.Result, error) {
 	case 0:
 		return fcodeunits.Message("Progress demo cancelled."), nil
 	case 4:
-		err := system.Hyperlink("https://github.com/hansjlachmann/openerp")
+		err := system.Hyperlink("https://github.com/hansjlachmann/goeasyerp")
 		if err != nil {
 			return fcodeunits.Result{}, err
 		}

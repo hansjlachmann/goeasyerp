@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 )
 
 // Consistent: a table can be marked inconsistent within a transaction (record Consistent

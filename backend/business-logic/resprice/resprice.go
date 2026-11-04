@@ -3,8 +3,8 @@
 package resprice
 
 import (
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // FindResCost (codeunit 220, Run with a Resource Cost record whose Code is the resource): the

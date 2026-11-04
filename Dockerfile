@@ -36,7 +36,7 @@ RUN if [ -n "$EXTENSIONS_PATH" ] && [ -d "$EXTENSIONS_PATH" ]; then \
     fi
 
 # Build the application with version embedded
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/hansjlachmann/openerp/backend/api.Version=${VERSION}" -o api-server ./cmd/api-server
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/hansjlachmann/goeasyerp/backend/api.Version=${VERSION}" -o api-server ./cmd/api-server
 
 # Runtime stage
 FROM alpine:3.21

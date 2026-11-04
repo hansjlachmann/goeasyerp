@@ -4,10 +4,10 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	apitypes "github.com/hansjlachmann/openerp/backend/api/types"
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/session"
+	apitypes "github.com/hansjlachmann/goeasyerp/backend/api/types"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 )
 
 // getSessionFromLocals retrieves the session from c.Locals, falling back to global session

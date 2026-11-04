@@ -2,14 +2,14 @@ package demodata
 
 import (
 	"fmt"
-	"github.com/hansjlachmann/openerp/backend/business-logic/blanketorder"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/blanketorder"
 	"math/rand"
 	"sort"
 	"time"
 
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // PurchPoster posts a purchase document (codeunit 90 Purch.-Post)

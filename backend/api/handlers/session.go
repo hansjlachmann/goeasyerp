@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gofiber/fiber/v2"
-	apitypes "github.com/hansjlachmann/openerp/backend/api/types"
+	apitypes "github.com/hansjlachmann/goeasyerp/backend/api/types"
 )
 
 // SessionHandler handles session-related API requests

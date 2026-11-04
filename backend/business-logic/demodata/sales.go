@@ -2,14 +2,14 @@ package demodata
 
 import (
 	"fmt"
-	"github.com/hansjlachmann/openerp/backend/business-logic/blanketorder"
-	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/blanketorder"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reservmgt"
 	"math/rand"
 	"time"
 
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // SalesPoster posts a sales document (codeunit 80 Sales-Post)

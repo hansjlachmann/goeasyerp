@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 )
 
 // DimensionLabelsLoader reads the names a company gives its two dimensions (General Ledger

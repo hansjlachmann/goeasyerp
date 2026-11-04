@@ -3,19 +3,19 @@
 package salesposting
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/itemjnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/noseries"
-	"github.com/hansjlachmann/openerp/backend/business-logic/projectjnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
-	"github.com/hansjlachmann/openerp/backend/business-logic/resjnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/salespost"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/genjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/itemjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/noseries"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/projectjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reservmgt"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/resjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salespost"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // SalesPost is codeunit 80 Sales-Post: posts an order (ship and/or invoice), an invoice or a

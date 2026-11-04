@@ -9,14 +9,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/codeunits"
-	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
-	fapps "github.com/hansjlachmann/openerp/backend/foundation/apps"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	fobjects "github.com/hansjlachmann/openerp/backend/foundation/objects"
-	"github.com/hansjlachmann/openerp/backend/foundation/pages"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
+	fapps "github.com/hansjlachmann/goeasyerp/backend/foundation/apps"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	fobjects "github.com/hansjlachmann/goeasyerp/backend/foundation/objects"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // CheckObjectNumbers returns an error listing every table, page, report and codeunit (registered

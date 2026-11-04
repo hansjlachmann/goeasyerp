@@ -1,6 +1,6 @@
 package noseries
 
-import "github.com/hansjlachmann/openerp/backend/foundation/objects"
+import "github.com/hansjlachmann/goeasyerp/backend/foundation/objects"
 
 // The objects this package implements, with their numbers and classic names (ABSOLUTE RULE:
 // every business-logic package declares its objects — they appear in the Object table and on

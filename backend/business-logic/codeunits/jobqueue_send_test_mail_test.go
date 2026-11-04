@@ -2,15 +2,15 @@ package codeunits
 
 import (
 	"database/sql"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 	"strings"
 	"testing"
 
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/mail"
-	"github.com/hansjlachmann/openerp/backend/foundation/secrets"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/mail"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/secrets"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	_ "github.com/mattn/go-sqlite3"
 )
 

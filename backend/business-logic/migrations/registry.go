@@ -1,7 +1,7 @@
 package migrations
 
 import (
-	fmigrations "github.com/hansjlachmann/openerp/backend/foundation/migrations"
+	fmigrations "github.com/hansjlachmann/goeasyerp/backend/foundation/migrations"
 )
 
 var registered []fmigrations.Migration

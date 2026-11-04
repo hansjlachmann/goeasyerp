@@ -5,17 +5,17 @@ package jobqueue
 import (
 	// The table triggers (business logic) run for the records written here
 	"fmt"
-	_ "github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
-	"github.com/hansjlachmann/openerp/backend/foundation/mail"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	_ "github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/mail"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 	"strconv"
 	"strings"
 	"time"
 
 	// The table triggers (business logic) run for the records written here
-	_ "github.com/hansjlachmann/openerp/backend/business-logic/tables"
+	_ "github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
 )
 
 // Run is the outcome of one run of a job, for its notification

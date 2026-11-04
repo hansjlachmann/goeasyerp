@@ -1,10 +1,10 @@
 package reports
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/formataddress"
-	"github.com/hansjlachmann/openerp/backend/business-logic/purchpost"
-	"github.com/hansjlachmann/openerp/backend/business-logic/purchprinted"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/formataddress"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/purchpost"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/purchprinted"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // purchDocument is the printout of a purchase document of one type — report 404 Purchase - Quote,

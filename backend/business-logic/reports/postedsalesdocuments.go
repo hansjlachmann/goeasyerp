@@ -1,10 +1,10 @@
 package reports
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/formataddress"
-	"github.com/hansjlachmann/openerp/backend/business-logic/salesprinted"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/formataddress"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salesprinted"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // The printouts of the posted sales documents — report 206 Sales - Invoice, 207 Sales - Credit

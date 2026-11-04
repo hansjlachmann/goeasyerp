@@ -1,10 +1,10 @@
 package reminder
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // FinChrgMemoMake is codeunit 394 FinChrgMemo-Make (one run: Set or SuggestLines, then Run)

@@ -3,8 +3,8 @@ package system
 import (
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 // The work date is the user's (My Settings), else today; a scheduled job's is today

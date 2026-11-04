@@ -7,11 +7,11 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
-	fapps "github.com/hansjlachmann/openerp/backend/foundation/apps"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	fapps "github.com/hansjlachmann/goeasyerp/backend/foundation/apps"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Every table, page and codeunit of this repository is in the base application's series

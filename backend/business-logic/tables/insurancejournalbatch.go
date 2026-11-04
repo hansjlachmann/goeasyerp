@@ -1,8 +1,8 @@
 package tables
 
 import (
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // insuranceJournalBatchLogic is the business logic of table 5634 Insurance Journal Batch: the

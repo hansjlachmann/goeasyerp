@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 // Format returns a value as text in the Go-native, language-independent format: dates

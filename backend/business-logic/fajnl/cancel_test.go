@@ -3,11 +3,11 @@ package fajnl_test
 import (
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/fajnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/fajnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // taxJournalSetup: the TAX book's batch functions fill the FA journal ASSETS/DEFAULT; FA0040

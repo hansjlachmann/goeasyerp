@@ -3,8 +3,8 @@ package reservmgt_test
 import (
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/functions"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/functions"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // A Reserve = Always sales order line reserves when its quantity is entered (the page's

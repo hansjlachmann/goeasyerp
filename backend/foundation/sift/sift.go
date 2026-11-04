@@ -19,7 +19,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 )
 
 // maxIdentifier is PostgreSQL's identifier limit (NAMEDATALEN - 1) in bytes. Longer names

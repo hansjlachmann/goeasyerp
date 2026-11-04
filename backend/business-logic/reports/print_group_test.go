@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 // groupTestID is the test's grouped report: sales rows (an Integer loop over computed rows)

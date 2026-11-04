@@ -3,7 +3,7 @@ package tables
 import (
 	"testing"
 
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Field numbers (field IDs) from the table definitions reach the generated code

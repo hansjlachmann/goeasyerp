@@ -3,8 +3,8 @@ package fajnl_test
 import (
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // A recurring FA journal (the demo's RECURRING template, page 5634): a fixed and a variable line

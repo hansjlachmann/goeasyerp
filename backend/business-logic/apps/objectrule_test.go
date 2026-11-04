@@ -12,9 +12,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/codeunits"
-	fobjects "github.com/hansjlachmann/openerp/backend/foundation/objects"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/codeunits"
+	fobjects "github.com/hansjlachmann/goeasyerp/backend/foundation/objects"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // objectRuleExempt: the platform packages of business-logic, which implement no object (the

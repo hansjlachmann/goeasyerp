@@ -1,7 +1,7 @@
 package tables
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // salesInvoiceHeaderLogic is the business logic of table 112 Sales Invoice Header: a posted sales invoice (written by sales

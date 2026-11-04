@@ -22,8 +22,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 )
 
 // Func is a registered function: it gets the page's current record (a generated record) and

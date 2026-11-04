@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"unicode/utf8"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/dateformula"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/dateformula"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 // Field checks for the tables' Validate triggers. The errors name the field, so the user

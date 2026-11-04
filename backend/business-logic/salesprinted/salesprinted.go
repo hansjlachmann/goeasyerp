@@ -3,7 +3,7 @@
 package salesprinted
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Run (OnRun): the document read again, No. Printed raised by one and saved (no triggers)

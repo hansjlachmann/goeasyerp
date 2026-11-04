@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 )
 
 // ErrorCode represents a unique error identifier for translation lookup

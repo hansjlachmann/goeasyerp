@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 )
 
 // ensureLockTable creates the single-row distributed lock table if it does not

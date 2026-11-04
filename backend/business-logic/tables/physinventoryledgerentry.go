@@ -1,7 +1,7 @@
 package tables
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // physInventoryLedgerEntryLogic is the business logic of table 281 Phys_Inventory_Ledger_Entry.

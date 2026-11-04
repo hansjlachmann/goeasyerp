@@ -9,7 +9,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/apps"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/apps"
 )
 
 // PageDef represents a page definition from YAML

@@ -3,14 +3,14 @@ package genjnl
 import (
 	"fmt"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/fajnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/salestax"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/fajnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salestax"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // GenJnlPostLine is codeunit 12 Gen. Jnl.-Post Line: it posts journal lines one by one to the

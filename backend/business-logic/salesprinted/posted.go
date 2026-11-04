@@ -1,7 +1,7 @@
 package salesprinted
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // RunShipment is codeunit 314 Sales Shpt.-Printed: a posted shipment printed (not a preview)

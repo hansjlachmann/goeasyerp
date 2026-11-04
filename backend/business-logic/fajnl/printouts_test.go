@@ -2,17 +2,17 @@ package fajnl_test
 
 import (
 	"bytes"
-	"github.com/hansjlachmann/openerp/backend/foundation/format"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/format"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // printFA prints a fixed asset report (PDF) and returns its texts, | between them

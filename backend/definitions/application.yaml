@@ -5,7 +5,7 @@ application:
   id: 760e20ec-7a66-4e3f-b6e5-83c94db5a4bd
   name: GoEasyERP Base Application
   publisher: Hans J. Lachmann
-  contact: https://github.com/hansjlachmann/openerp
+  contact: https://github.com/hansjlachmann/goeasyerp
   version: 0.1.136 # x-release-please-version
   number_series:
     # Tables, pages, codeunits and reports; a number is unique per object type

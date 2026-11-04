@@ -4,9 +4,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	_ "github.com/hansjlachmann/openerp/backend/business-logic/pages"
-	"github.com/hansjlachmann/openerp/backend/foundation/pages"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	_ "github.com/hansjlachmann/goeasyerp/backend/business-logic/pages"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // checkMatrix: a matrix section's rows table has its value FlowField, row fields and filters;

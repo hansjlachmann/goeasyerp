@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	"github.com/hansjlachmann/openerp/backend/foundation/dateformula"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/dateformula"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 // Today returns today's date

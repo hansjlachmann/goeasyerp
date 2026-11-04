@@ -1,7 +1,7 @@
 package tables
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // purchInvHeaderLogic is the business logic of table 122 Purch. Inv. Header: a posted purchase invoice (written by

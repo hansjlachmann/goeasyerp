@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 )
 
 // BeginTransaction starts a write transaction for business logic that must change several
