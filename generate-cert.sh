@@ -16,7 +16,7 @@ openssl req -x509 -nodes -days 3650 \
   -newkey rsa:2048 \
   -keyout "$CERT_DIR/selfsigned.key" \
   -out "$CERT_DIR/selfsigned.crt" \
-  -subj "/C=NO/ST=Internal/L=Internal/O=OpenERP/CN=$IP" \
+  -subj "/C=NO/ST=Internal/L=Internal/O=GoEasyERP/CN=$IP" \
   -addext "subjectAltName=IP:$IP,IP:127.0.0.1"
 
 echo "Certificate generated:"

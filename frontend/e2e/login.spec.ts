@@ -9,7 +9,7 @@ test.describe('Login Page', () => {
 
 	test('should display login page', async ({ page }) => {
 		// Check page title/header
-		await expect(page.locator('h1')).toContainText('OpenERP');
+		await expect(page.locator('h1')).toContainText('GoEasyERP');
 	});
 
 	test('should have login card', async ({ page }) => {

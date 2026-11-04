@@ -832,6 +832,12 @@
 		return String(value);
 	}
 
+	// A footer value printed as an amount (IBM Plex Mono): a decimal, as formatFooterValue shows it
+	function footerIsAmount(value: any, field: Field): boolean {
+		if (value === undefined || value === null || isDateType(fieldTypes[field.source])) return false;
+		return typeof value === 'number' || (typeof value === 'string' && !!field.decimal_places);
+	}
+
 	// A saved row comes back with the page's calculated fields (the footer follows the edit)
 	function rowPageId(): number | undefined {
 		return page.page.has_record_triggers ? page.page.id : undefined;
@@ -3503,7 +3509,7 @@
 							<td class="row-number-cell">{windowOffset + index + 1}</td>
 						{/if}
 						{#each visibleColumns() as field, colIndex}
-							<td class={cn('p-0 border-r border-b border-gray-300 dark:border-gray-600', isNavigation && !multiSelected && selectedIndex === index && cursorColumn() === colIndex && 'cell-cursor')}>
+							<td class={cn('p-0 border-r border-b border-gray-300 dark:border-gray-600', isDecimalType(fieldTypes[field.source]) && 'amount', isNavigation && !multiSelected && selectedIndex === index && cursorColumn() === colIndex && 'cell-cursor')}>
 								{#if isCellEditing && currentCellRow === index && currentCellCol === colIndex}
 									<!-- Cell-Editing Mode - Active input for this specific cell -->
 									{#if typeof record[field.source] === 'boolean' || fieldTypes[field.source] === 'bool'}
@@ -3879,7 +3885,7 @@
 					{#if typeof footerRow?.[field.source] === 'boolean'}
 						<input type="checkbox" class="footer-value" checked={footerRow[field.source]} disabled />
 					{:else}
-						<span class="footer-value">{footerRow ? formatFooterValue(footerRow[field.source], field) : ''}</span>
+						<span class={cn('footer-value', footerIsAmount(footerRow?.[field.source], field) && 'amount')}>{footerRow ? formatFooterValue(footerRow[field.source], field) : ''}</span>
 					{/if}
 				</div>
 			{/each}

@@ -195,9 +195,9 @@ func TestNormalizeFixturesAndHostilePalettes(t *testing.T) {
 
 func ptr(c RGB) *RGB { return &c }
 
-// The themes must be exactly the defaults in app.css: choosing Light/Dark changes
-// nothing.
-func TestClassicTokensMatchAppCSS(t *testing.T) {
+// The default themes (GoEasyERP) must be exactly the defaults in app.css: choosing them
+// changes nothing; the brand's amber is accent-500, slate the text and app bar.
+func TestDefaultTokensMatchAppCSS(t *testing.T) {
 	css, err := os.ReadFile("../../../frontend/src/app.css")
 	if err != nil {
 		t.Skip("app.css not found:", err)
@@ -216,7 +216,7 @@ func TestClassicTokensMatchAppCSS(t *testing.T) {
 		c := MustColor(h)
 		return strings.Join([]string{itoa(c.R), itoa(c.G), itoa(c.B)}, " ")
 	}
-	light := classicLightTokens()
+	light := goEasyERPLightTokens()
 	for i, step := range Steps {
 		if got, want := asTriplet(light.Gray[i]), triplet("gray-"+itoa(step)); got != want {
 			t.Errorf("gray-%d: tokens %s, app.css %s", step, got, want)
@@ -236,7 +236,20 @@ func TestClassicTokensMatchAppCSS(t *testing.T) {
 			t.Errorf("--%s: tokens %s, app.css %s", name, got, want)
 		}
 	}
-	if !strings.Contains(string(css), "--row-selected: 60 64 71;") || classicDarkTokens().Vars.RowSelected != "#3c4047" {
+	// the brand colours, and links (accent-600) and secondary text (gray-600) readable on white
+	// and on the off-white page
+	if light.Accent[5] != "#f2a900" || light.Vars.Fg != "#1f2933" || light.Vars.Appbar != "#1f2933" || light.Vars.PageBg != "#f5f7f8" || light.Gray[4] != "#8a96a3" {
+		t.Errorf("not the brand colours: accent-500 %s, fg %s, appbar %s, page %s, gray-400 %s",
+			light.Accent[5], light.Vars.Fg, light.Vars.Appbar, light.Vars.PageBg, light.Gray[4])
+	}
+	for _, bg := range []string{"#ffffff", light.Vars.PageBg} {
+		for name, c := range map[string]string{"accent-600": light.Accent[6], "gray-600": light.Gray[6]} {
+			if Contrast(MustColor(c), MustColor(bg)) < 4.5 {
+				t.Errorf("%s %s on %s: contrast below 4.5", name, c, bg)
+			}
+		}
+	}
+	if !strings.Contains(string(css), "--row-selected: 68 80 92;") || goEasyERPDarkTokens().Vars.RowSelected != "#44505c" {
 		t.Error("dark selected row differs from app.css")
 	}
 }

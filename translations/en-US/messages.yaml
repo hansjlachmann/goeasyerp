@@ -101,7 +101,7 @@ messages:
   ERR_GENERIC: "An error occurred"
 
   # Home Page
-  HOME_TITLE: "Welcome to EasyopenERP"
+  HOME_TITLE: "Welcome to GoEasyERP"
   HOME_DESCRIPTION: "A modern, fast, and keyboard-driven ERP system all open source"
   HOME_SHORTCUTS_TITLE: "Work faster with the keyboard"
   HOME_SHORTCUTS_TEXT: "We encourage you to learn the keyboard shortcuts: they optimize your workflow and make you more effective in your daily work."

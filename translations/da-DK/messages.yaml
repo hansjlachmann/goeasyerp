@@ -101,7 +101,7 @@ messages:
   ERR_GENERIC: "Der opstod en fejl"
 
   # Home Page
-  HOME_TITLE: "Velkommen til EasyopenERP"
+  HOME_TITLE: "Velkommen til GoEasyERP"
   HOME_DESCRIPTION: "Et moderne, hurtigt og tastaturdrevet ERP-system med åben kildekode"
   HOME_SHORTCUTS_TITLE: "Arbejd hurtigere med tastaturet"
   HOME_SHORTCUTS_TEXT: "Vi opfordrer dig til at lære genvejstasterne: de optimerer dit arbejdsflow og gør dig mere effektiv i det daglige arbejde."

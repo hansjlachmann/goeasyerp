@@ -2,15 +2,19 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
+		<title>GoEasyERP</title>
+		<link rel="icon" type="image/svg+xml" href="%sveltekit.assets%/favicon.svg" />
+		<link rel="icon" type="image/png" sizes="32x32" href="%sveltekit.assets%/favicon.png" />
+		<link rel="apple-touch-icon" sizes="180x180" href="%sveltekit.assets%/apple-touch-icon.png" />
+		<meta name="theme-color" content="#1F2933" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<!-- The saved theme from the first paint: the app renders in the browser only (ssr =
 		     false), so without this every page load flashed the default colors until the app had
-		     started. Default page backgrounds: (white / gray-900); a chosen theme's colors come
+		     started. Default page backgrounds: off-white / slate (gray-900); a chosen theme's colors come
 		     from the cache that src/lib/stores/theme.ts writes. -->
 		<style>
-			html { background-color: rgb(var(--page-bg, 255 255 255)); }
-			html.dark { background-color: rgb(var(--page-bg, 18 18 18)); color-scheme: dark; }
+			html { background-color: rgb(var(--page-bg, 245 247 248)); }
+			html.dark { background-color: rgb(var(--page-bg, 31 41 51)); color-scheme: dark; }
 		</style>
 		<script>
 			// Same keys and default as $lib/stores/theme.ts (dark unless "light" is saved).

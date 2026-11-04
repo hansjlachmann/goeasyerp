@@ -17,7 +17,7 @@ func TestDocument(t *testing.T) {
 		t.Fatalf("A4 is %v × %v", d.Width(), d.Height())
 	}
 	d.AddPage()
-	d.Text(12, 10, 80, "Nordkapp Kontor AS – Bærum, Ølstuen", Style{Bold: true, Size: 12})
+	d.Text(12, 10, 100, "Nordkapp Kontor AS – Bærum, Ølstuen", Style{Bold: true, Size: 12})
 	d.Text(12, 20, 40, "1 234,50", Style{Align: "right"})
 	d.Line(12, 30, 198, 30, 0)
 	d.Box(12, 35, 50, 20, 0)

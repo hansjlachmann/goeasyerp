@@ -3,49 +3,53 @@
 @tailwind utilities;
 
 /* Color tokens: RGB triplets, used as rgb(var(--x)) or rgb(var(--x) / alpha) and by the
-   Tailwind colors (tailwind.config.js). The defaults are the classic ERP palette; a theme
-   (src/lib/theme) overrides them on <html>. Keep component colors on these variables. */
+   Tailwind colors (tailwind.config.js). The defaults are the GoEasyERP brand colours (themes
+   GoEasyERP Light/Dark, backend/foundation/themes/tokens.go — kept equal by
+   TestDefaultTokensMatchAppCSS); a theme (src/lib/theme) overrides them on <html>. Keep
+   component colors on these variables. */
 :root {
-	/* neutrals, the same ramp in light and dark mode */
-	--gray-50: 247 247 247;
-	--gray-100: 242 242 243;
-	--gray-200: 229 231 233;
-	--gray-300: 211 214 218;
-	--gray-400: 164 176 196;
-	--gray-500: 115 125 138;
-	--gray-600: 80 92 109;
-	--gray-700: 48 48 50;
-	--gray-800: 30 30 30;
-	--gray-900: 18 18 18;
-	--gray-950: 10 10 10;
+	/* neutrals, the same ramp in light and dark mode: off-white #f5f7f8 (50), grey #8a96a3
+	   (400), slate #1f2933 (900) */
+	--gray-50: 245 247 248;
+	--gray-100: 237 240 242;
+	--gray-200: 223 228 232;
+	--gray-300: 201 208 214;
+	--gray-400: 138 150 163;
+	--gray-500: 107 119 133;
+	--gray-600: 79 91 103;
+	--gray-700: 60 70 79;
+	--gray-800: 43 53 62;
+	--gray-900: 31 41 51;
+	--gray-950: 23 32 42;
 
-	/* teal accent */
-	--accent-50: 230 243 244;
-	--accent-100: 204 232 234;
-	--accent-200: 153 209 212;
-	--accent-300: 102 185 191;
-	--accent-400: 55 161 165;
-	--accent-500: 0 131 143;
-	--accent-600: 0 132 137;
-	--accent-700: 0 110 114;
-	--accent-800: 0 88 92;
-	--accent-900: 0 58 62;
-	--accent-950: 0 42 45;
+	/* amber accent: #f2a900 (500) for main actions and highlights, 600 for links and text */
+	--accent-50: 255 248 230;
+	--accent-100: 253 238 196;
+	--accent-200: 251 221 138;
+	--accent-300: 248 203 79;
+	--accent-400: 245 186 31;
+	--accent-500: 242 169 0;
+	--accent-600: 148 102 0;
+	--accent-700: 122 84 0;
+	--accent-800: 95 65 0;
+	--accent-900: 69 48 0;
+	--accent-950: 46 32 0;
 
-	--page-bg: 255 255 255;
+	--page-bg: 245 247 248; /* off-white */
 	--surface: 255 255 255; /* panels, cards, dropdowns */
-	--fg: 33 33 33; /* body text #212121 */
-	--heading: 40 40 40; /* page and section titles #282828 */
-	--appbar: 40 40 40; /* app bar, same in light and dark mode */
-	--appbar-fg: 255 255 255;
+	--fg: 31 41 51; /* body text: slate */
+	--heading: 31 41 51; /* page and section titles: slate */
+	--appbar: 31 41 51; /* app bar: slate */
+	--appbar-fg: 245 247 248;
 	--row-selected: var(--accent-100);
 	--row-selected-hover: var(--accent-100);
-	--text-sel-bg: 0 120 212; /* selected text #0078d4 */
+	--text-sel-bg: 148 102 0; /* selected text: accent-600 */
 	--text-sel-fg: 255 255 255;
-	--scroll-track: 252 252 252;
-	--scroll-thumb: 139 139 139;
-	--scroll-thumb-hover: 110 110 110;
-	--font-sans: 'Segoe UI', system-ui, sans-serif;
+	--scroll-track: 237 240 242;
+	--scroll-thumb: 138 150 163;
+	--scroll-thumb-hover: 107 119 133;
+	--font-sans: 'Inter Variable', system-ui, sans-serif;
+	--font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
 
 	/* Older names, kept for existing components */
 	--color-bg-primary: rgb(var(--surface));
@@ -61,17 +65,18 @@
 }
 
 .dark {
-	--page-bg: var(--gray-900);
+	--page-bg: var(--gray-900); /* slate */
 	--fg: var(--gray-50);
-	/* Selected rows: a neutral gray, lighter than the hover row (gray-700), so many selected
+	--appbar: var(--gray-950); /* a deeper slate than the page */
+	/* Selected rows: a neutral slate, lighter than the hover row (gray-700), so many selected
 	   rows do not dominate the list */
-	--row-selected: 60 64 71;
-	--row-selected-hover: 69 74 82;
+	--row-selected: 68 80 92;
+	--row-selected-hover: 75 88 102;
 	--text-sel-bg: var(--gray-600);
 	--text-sel-fg: var(--gray-50);
-	--scroll-track: 44 44 44;
-	--scroll-thumb: 159 159 159;
-	--scroll-thumb-hover: 189 189 189;
+	--scroll-track: 43 53 62;
+	--scroll-thumb: 138 150 163;
+	--scroll-thumb-hover: 201 208 214;
 
 	--color-bg-primary: rgb(var(--gray-800));
 	--color-bg-secondary: rgb(var(--gray-900));
@@ -87,7 +92,7 @@
 
 /* -inspired global styles */
 @layer base {
-	/* Light: white page with near-black text; dark mode gray-900 page with off-white text */
+	/* Light: off-white page with slate text; dark mode slate page with off-white text */
 	body {
 		@apply font-sans;
 		background-color: rgb(var(--page-bg));
@@ -114,10 +119,11 @@
 		@apply disabled:opacity-50 disabled:cursor-not-allowed;
 	}
 
+	/* the main action: amber with slate text (brand) */
 	.btn-primary {
-		@apply bg-primary-600 text-white hover:bg-primary-700;
+		@apply bg-primary-500 hover:bg-primary-400;
+		color: rgb(var(--gray-900));
 		@apply focus-visible:ring-primary-500;
-		@apply dark:bg-primary-500 dark:hover:bg-primary-600;
 	}
 
 	.btn-secondary {
@@ -216,8 +222,9 @@
 
 /* Font, font size and list density (Appearance): classes and --font-scale on <html>, set by
    src/lib/stores/theme.ts and, before the first paint, by the inline script in app.html.
-   Inter and IBM Plex Sans are self-hosted (@fontsource, imported in +layout.svelte): no
-   request to a font service; a font file is only downloaded when it is used. */
+   Inter, IBM Plex Sans and IBM Plex Mono are self-hosted (@fontsource, imported in
+   +layout.svelte): no request to a font service; a font file is only downloaded when it is
+   used. Amounts use --font-mono (class amount). */
 html {
 	font-size: calc(var(--font-scale, 1) * 100%);
 }
@@ -232,6 +239,13 @@ html.font-inter {
 
 html.font-ibm-plex-sans {
 	--font-sans: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Amounts (decimals as the user's number format shows them): IBM Plex Mono with tabular
+   figures, so columns line up (brand: Plex Mono for amounts and code) */
+.amount {
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
 }
 
 html.font-serif {

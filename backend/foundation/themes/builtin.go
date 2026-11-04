@@ -21,16 +21,19 @@ type Theme struct {
 	Tokens     Tokens `json:"tokens"`
 }
 
-// The default themes: the classic ERP palette, the defaults in app.css.
+// The default themes: the GoEasyERP brand colours, the defaults in app.css; the classic ERP
+// palette (teal) stays as Classic Light/Dark.
 const (
-	DefaultLight = "CLASSIC-LIGHT"
-	DefaultDark  = "CLASSIC-DARK"
+	DefaultLight = "GOEASYERP-LIGHT"
+	DefaultDark  = "GOEASYERP-DARK"
+	ClassicLight = "CLASSIC-LIGHT"
+	ClassicDark  = "CLASSIC-DARK"
 )
 
 //go:embed builtin/*.toml
 var builtinFS embed.FS
 
-// Built-in themes besides Light/Dark: Omarchy-style colors.toml files in builtin/,
+// Built-in themes besides GoEasyERP and Classic: Omarchy-style colors.toml files in builtin/,
 // normalized like a theme installed from GitHub.
 var builtinFiles = []struct{ code, name, file string }{
 	{"TOKYO-NIGHT", "Tokyo Night", "tokyo-night.toml"},
@@ -45,12 +48,15 @@ var (
 	builtinThemes []Theme
 )
 
-// Builtins returns the built-in themes: Light, Dark, then the others.
+// Builtins returns the built-in themes: GoEasyERP Light/Dark, Classic Light/Dark, then the
+// others.
 func Builtins() []Theme {
 	builtinOnce.Do(func() {
 		builtinThemes = []Theme{
-			{Code: DefaultLight, Name: "Classic Light", Mode: "light", Source: "builtin", Tokens: classicLightTokens()},
-			{Code: DefaultDark, Name: "Classic Dark", Mode: "dark", Source: "builtin", Tokens: classicDarkTokens()},
+			{Code: DefaultLight, Name: "GoEasyERP Light", Mode: "light", Source: "builtin", Tokens: goEasyERPLightTokens()},
+			{Code: DefaultDark, Name: "GoEasyERP Dark", Mode: "dark", Source: "builtin", Tokens: goEasyERPDarkTokens()},
+			{Code: ClassicLight, Name: "Classic Light", Mode: "light", Source: "builtin", Tokens: classicLightTokens()},
+			{Code: ClassicDark, Name: "Classic Dark", Mode: "dark", Source: "builtin", Tokens: classicDarkTokens()},
 		}
 		for _, b := range builtinFiles {
 			data, err := builtinFS.ReadFile("builtin/" + b.file)

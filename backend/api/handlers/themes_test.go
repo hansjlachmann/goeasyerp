@@ -75,14 +75,14 @@ func appearanceSettingsOf(t *testing.T, out map[string]interface{}) map[string]i
 func TestAppearanceDefaultsSaveAndChecks(t *testing.T) {
 	app := newThemesTestApp(t, "ANNA")
 
-	// A user without a record gets Light/Dark, dark mode, no wallpaper
+	// A user without a record gets GoEasyERP Light/Dark, dark mode, no wallpaper
 	_, out := getJSON(t, app, "/api/appearance")
 	s := appearanceSettingsOf(t, out)
-	if s["light_theme"] != "CLASSIC-LIGHT" || s["dark_theme"] != "CLASSIC-DARK" || s["mode"] != "dark" || s["wallpaper"] != "" || out["data"].(map[string]interface{})["saved"] != false {
+	if s["light_theme"] != "GOEASYERP-LIGHT" || s["dark_theme"] != "GOEASYERP-DARK" || s["mode"] != "dark" || s["wallpaper"] != "" || out["data"].(map[string]interface{})["saved"] != false {
 		t.Fatalf("defaults = %v", s)
 	}
 	dark := out["data"].(map[string]interface{})["dark"].(map[string]interface{})
-	if dark["code"] != "CLASSIC-DARK" || dark["tokens"] == nil {
+	if dark["code"] != "GOEASYERP-DARK" || dark["tokens"] == nil {
 		t.Errorf("dark slot = %v", dark)
 	}
 
@@ -97,7 +97,7 @@ func TestAppearanceDefaultsSaveAndChecks(t *testing.T) {
 	// Only the fields sent change
 	_, out = getJSON(t, app, "/api/appearance")
 	s = appearanceSettingsOf(t, out)
-	if s["dark_theme"] != "TOKYO-NIGHT" || s["mode"] != "light" || s["density"] != "compact" || s["light_theme"] != "CLASSIC-LIGHT" {
+	if s["dark_theme"] != "TOKYO-NIGHT" || s["mode"] != "light" || s["density"] != "compact" || s["light_theme"] != "GOEASYERP-LIGHT" {
 		t.Errorf("after save = %v", s)
 	}
 
@@ -129,7 +129,7 @@ func TestAppearanceDefaultsSaveAndChecks(t *testing.T) {
 	// Another user still has the defaults
 	other := newThemesTestApp(t, "BJORN")
 	_, out = getJSON(t, other, "/api/appearance")
-	if s := appearanceSettingsOf(t, out); s["dark_theme"] != "CLASSIC-DARK" {
+	if s := appearanceSettingsOf(t, out); s["dark_theme"] != "GOEASYERP-DARK" {
 		t.Errorf("other user = %v", s)
 	}
 }
@@ -146,7 +146,7 @@ func TestListThemes(t *testing.T) {
 	for _, item := range list {
 		codes[item.(map[string]interface{})["code"].(string)] = true
 	}
-	for _, c := range []string{"CLASSIC-LIGHT", "CLASSIC-DARK", "TOKYO-NIGHT", "NORD", "CATPPUCCIN-LATTE"} {
+	for _, c := range []string{"GOEASYERP-LIGHT", "GOEASYERP-DARK", "CLASSIC-LIGHT", "CLASSIC-DARK", "TOKYO-NIGHT", "NORD", "CATPPUCCIN-LATTE"} {
 		if !codes[c] {
 			t.Errorf("theme %s missing from %v", c, codes)
 		}

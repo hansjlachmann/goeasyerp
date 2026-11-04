@@ -469,7 +469,7 @@ func (p *printer) prepare(f *frame, s *Section) (float64, drawFn) {
 		if size == 0 {
 			size = p.layout.FontSize
 		}
-		style := pdf.Style{Size: size, Bold: e.Bold, Align: e.Align}
+		style := pdf.Style{Size: size, Bold: e.Bold, Align: e.Align, Mono: p.isAmount(f, e)}
 		lineHeight := style.LineHeight()
 		x := left + e.X
 		width := e.Width
@@ -549,6 +549,24 @@ func (p *printer) prepare(f *frame, s *Section) (float64, drawFn) {
 		}
 		return nil
 	}
+}
+
+// isAmount: an element printing a decimal — a field or value holding one, a total — prints in
+// the amounts' font (IBM Plex Mono)
+func (p *printer) isAmount(f *frame, e *Element) bool {
+	switch e.kind() {
+	case "total", "total_value":
+		return true
+	case "field":
+		rec, field := p.reference(f, e.Field)
+		value, _ := fieldValue(rec, field)
+		_, ok := value.(types.Decimal)
+		return ok
+	case "value":
+		_, ok := p.run.values[e.Value].(types.Decimal)
+		return ok
+	}
+	return false
 }
 
 // sumsOf: the totals a section prints — of its group in a group section, else the data item's

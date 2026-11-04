@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Start the local OpenERP development environment (backend + frontend).
+# Start the local GoEasyERP development environment (backend + frontend).
 #
 #   ./scripts/dev.sh
 #
@@ -104,7 +104,7 @@ FRONTEND_PID=$!
 
 echo
 echo "════════════════════════════════════════════════════════"
-echo "  OpenERP dev environment is starting up."
+echo "  GoEasyERP dev environment is starting up."
 echo "  App:      http://localhost:5173"
 echo "  API:      http://localhost:8080"
 echo "  Login:    $ADMIN_USER / $ADMIN_PASS   (company: $COMPANY)"

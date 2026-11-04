@@ -5,8 +5,8 @@ test.describe('Navigation', () => {
 		await page.goto('/login');
 		await page.waitForLoadState('networkidle');
 
-		// Should show OpenERP header
-		await expect(page.locator('h1')).toContainText('OpenERP');
+		// Should show the GoEasyERP header
+		await expect(page.locator('h1')).toContainText('GoEasyERP');
 	});
 
 	test('should have responsive layout', async ({ page }) => {
