@@ -1,0 +1,97 @@
+# GoEasyERP on one computer (trial installation) — only Docker Desktop is needed.
+#
+#   1. Save this file as docker-compose.yml in a folder of its own, e.g. C:\GoEasyERP
+#   2. Replace JWT_SECRET below with any long random text
+#   3. In that folder:  docker compose up -d
+#   4. Wait 2-3 minutes, open http://localhost:8000 and create the first user
+#
+# Stop: docker compose stop     Start again: docker compose start
+# Upgrade: take the new version of this file (keep your JWT_SECRET) or change the version in its
+#   three places below, then: docker compose pull && docker compose up -d
+# Never run "docker compose down -v": it deletes the database.
+# A server installation (HTTPS, backups, settings file) is described in docs/operations.md.
+
+name: goeasyerp # the database volume is goeasyerp_postgres_data, whatever the folder
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: openerp
+      POSTGRES_PASSWORD: openerp
+      POSTGRES_DB: openerp
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openerp"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: ghcr.io/hansjlachmann/goeasyerp/backend:0.1.136 # x-release-please-version
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: openerp
+      DB_PASSWORD: openerp
+      DB_NAME: openerp
+      COMPANY_NAME: cronus
+      PORT: 8080
+      APP_VERSION: "0.1.136" # x-release-please-version
+      JWT_SECRET: replace-this-with-a-long-random-text
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: ghcr.io/hansjlachmann/goeasyerp/frontend:0.1.136 # x-release-please-version
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      ORIGIN: http://localhost:8000
+    depends_on:
+      - backend
+
+  web:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:80" # this computer only
+    configs:
+      - source: nginx
+        target: /etc/nginx/nginx.conf
+    depends_on:
+      - backend
+      - frontend
+
+configs:
+  nginx:
+    content: |
+      events {}
+      http {
+        server {
+          listen 80;
+          client_max_body_size 20m;
+          location /api {
+            proxy_pass http://backend:8080;
+            proxy_http_version 1.1;
+            proxy_set_header Host $$host;
+            proxy_buffering off;
+            proxy_read_timeout 3600s;
+          }
+          location /health {
+            proxy_pass http://backend:8080;
+          }
+          location / {
+            proxy_pass http://frontend:3000;
+            proxy_http_version 1.1;
+            proxy_set_header Host $$host;
+          }
+        }
+      }
+
+volumes:
+  postgres_data:

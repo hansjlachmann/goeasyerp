@@ -8,7 +8,7 @@ GoEasyERP is a full-stack ERP system inspired by classic ERP systems. Go backend
 
 ## Brand (GoEasyERP)
 
-- **Name**: GoEasyERP, written as one word, in every text users or readers see (UI, page titles, printouts, e-mails, docs). The technical name `openerp` stays where renaming would break installations: the GitHub repository and Go module path, container images, the database user and name, `OPENERP_*` environment variables (and the secrets salt in `foundation/secrets`), the session cookie and browser storage keys.
+- **Name**: GoEasyERP, written as one word, in every text users or readers see (UI, page titles, printouts, e-mails, docs). The GitHub repository, Go module path and container images are `goeasyerp` (`github.com/hansjlachmann/goeasyerp`, `ghcr.io/hansjlachmann/goeasyerp/…`). The technical name `openerp` stays where renaming would break installations: the database user and name, `OPENERP_*` environment variables (and the secrets salt in `foundation/secrets`), the session cookie and browser storage keys.
 - **Logo files**: `goeasyerp-brand/` (source: wordmarks slate/off-white, square icon, brand sheet); the app serves copies from `frontend/static/` (`favicon.svg`/`favicon.png`, `apple-touch-icon.png`, `goeasyerp-wordmark-slate.svg`, `goeasyerp-wordmark-offwhite.svg`). Show the wordmark with `components/brand/Wordmark.svelte` (`variant`: slate on light backgrounds, off-white on slate — the app bar, auto); never redraw it. "Go" is always amber.
 - **Colours**: slate `#1F2933` (primary: wordmark, app bar, headings, dark backgrounds), amber `#F2A900` (accent: main actions, highlights), off-white `#F5F7F8` (backgrounds, panels, text on slate), grey `#8A96A3` (secondary text, borders). **Typefaces**: Inter for headings, text and the interface; IBM Plex Mono for amounts and code.
 
@@ -63,6 +63,7 @@ Commit the regenerated `backend/generated/tables`; CI fails when it is not up to
 docker-compose up                    # Full stack (backend + frontend + postgres + nginx)
 scripts/prod.sh pull && scripts/prod.sh up -d  # Production (settings/secrets in untracked prod.env)
 scripts/backup.sh                    # Production database backup (pg_dump, prunes old automatic dumps)
+docker compose -f docker-compose.local.yml up -d  # One-computer trial (http://localhost:8000; nginx config inline, no certificates; release-please bumps its image versions)
 ```
 
 Production operations (upgrade, backup/restore, reboot, ports, passwords): `docs/operations.md`. Server settings and secrets live in the untracked `prod.env` (template `prod.env.example`), never in the tracked `.env` (CI rewrites it with `APP_VERSION`). All prod services have `restart: unless-stopped`; only nginx (80/443) is published to the network — db on `127.0.0.1`, backend/frontend on `PUBLISH_HOST` (default `127.0.0.1`). Never put server addresses or other site details into the repository.
