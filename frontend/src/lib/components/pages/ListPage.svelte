@@ -44,6 +44,8 @@
 	import ColumnHeaderMenu, { type ColumnMenuItem } from './ColumnHeaderMenu.svelte';
 	import { keyValuesFromFilters, loadClipboard, recordsToPaste, saveClipboard, singleValueFilters } from '$lib/utils/recordClipboard';
 	import { filterValueFor, hideColumn, moveColumn, withFilter, withoutFilter } from '$lib/utils/columnHeader';
+	import { moveCursor, ROW_SELECTOR, type CursorMove } from '$lib/utils/listCursor';
+	import { copyText, rowsToTsv } from '$lib/utils/clipboard';
 	import {
 		emptySelection,
 		isMultiSelection,
@@ -449,15 +451,21 @@
 			// Skip other shortcuts if we're in an input field (but not cell-editing inputs in the table)
 			if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement) return;
 
-			// Ctrl+C / Ctrl+V: copy and paste records (lists that allow it) in navigation mode —
-			// here, not in the list's own shortcuts, so they also work when the list has no focus
-			// (an empty list to paste into). Selected text is left to the browser.
-			if (page.page.copy_paste_allowed && isNavigation && (shortcutKey === 'Ctrl+C' || shortcutKey === 'Ctrl+V')) {
-				if (shortcutKey === 'Ctrl+C' && String(window.getSelection() ?? '').trim() !== '') return;
+			// Ctrl+C in navigation mode: the cursor cell's value, or the rows (the row selector,
+			// several rows selected) — here, not in the list's own shortcuts, so they also work
+			// when the list has no focus. Selected text is left to the browser.
+			if (isNavigation && shortcutKey === 'Ctrl+C') {
+				if (String(window.getSelection() ?? '').trim() !== '') return;
 				event.preventDefault();
 				event.stopPropagation();
-				if (shortcutKey === 'Ctrl+C') handleCopyRecords();
-				else handlePasteRecords();
+				void handleCopy();
+				return;
+			}
+			// Ctrl+V: paste copied records (lists that allow it; also into an empty list)
+			if (page.page.copy_paste_allowed && isNavigation && shortcutKey === 'Ctrl+V') {
+				event.preventDefault();
+				event.stopPropagation();
+				handlePasteRecords();
 				return;
 			}
 
@@ -1096,6 +1104,8 @@
 		// Clean up empty new rows
 		cleanupEmptyNewRows();
 
+		// The cell cursor stays in the column edited last
+		if (currentCellCol >= 0) cursorCol = currentCellCol;
 		cellState = 'navigation';
 		currentCellRow = -1;
 		currentCellCol = -1;
@@ -2100,10 +2110,54 @@
 		}, 10);
 	}
 
-	// Column where Edit / Ctrl+E / F2 start editing: the one clicked last
-	let editStartCol = 0;
+	// The cell cursor outside edit mode: a column of the cursor row (clicked, or moved to with
+	// the arrows, Tab and Enter), or ROW_SELECTOR, the box before the first column — then the
+	// whole row is selected. Ctrl+C copies the cursor cell's value, or the row; Edit / Ctrl+E /
+	// F2 start editing in the cursor column.
+	let cursorCol = $state(0);
 	function editColumn(): number {
-		return editStartCol >= 0 && editStartCol < visibleColumns().length ? editStartCol : 0;
+		return cursorCol >= 0 && cursorCol < visibleColumns().length ? cursorCol : 0;
+	}
+	// The column shown as the cursor (ROW_SELECTOR, or a column that is still shown)
+	function cursorColumn(): number {
+		return cursorCol < 0 ? ROW_SELECTOR : Math.min(cursorCol, Math.max(visibleColumns().length - 1, 0));
+	}
+
+	// Moves the cell cursor (arrows, Tab, Enter): another column, at a row's end the next or
+	// previous row. False when it stays (the list's first or last cell).
+	function moveCellCursor(move: CursorMove): boolean {
+		const row = currentRow();
+		const from = cursorColumn();
+		const to = moveCursor({ row, col: from }, move, visibleColumns().length, total);
+		if (to.row === row && to.col === from) return false;
+		cursorCol = to.col;
+		if (to.row !== row) moveToRow(to.row);
+		scrollToCursorCell = true;
+		return true;
+	}
+
+	// After a move of the cell cursor by key, the list scrolls sideways to the cursor cell
+	let scrollToCursorCell = $state(false);
+	$effect(() => {
+		if (!scrollToCursorCell) return;
+		void cursorCol;
+		void selectedIndex;
+		requestAnimationFrame(() => {
+			scrollCursorCellIntoView();
+			scrollToCursorCell = false;
+		});
+	});
+
+	// Scrolls the list sideways so the cursor cell is visible (rows scroll with the cursor row)
+	function scrollCursorCellIntoView() {
+		const cell = tableBodyElement?.querySelector(cursorColumn() === ROW_SELECTOR ? 'tr.selected td.row-selector' : 'tr.selected td.cell-cursor') as HTMLElement | null;
+		if (cell) scrollCellIntoView(selectedIndex, cell);
+	}
+
+	// The cell cursor's keys are the list's own: not in the search box or on a toolbar button
+	function onGrid(event?: KeyboardEvent): boolean {
+		const target = event?.target as Element | null;
+		return !target || target === listPageElement || !!target.closest?.('.table-container');
 	}
 
 	// Handle click on a cell in read-only display
@@ -2120,9 +2174,9 @@
 				enterCellSelected(rowIndex, colIndex);
 				return;
 			}
-			// One click only selects the row: editing starts with Edit / Ctrl+E / F2, in the
-			// column clicked last
-			editStartCol = colIndex;
+			// One click only selects the row and puts the cell cursor in the column: editing
+			// starts with Edit / Ctrl+E / F2 there
+			cursorCol = colIndex;
 			handleRowClick(rowIndex);
 		} else {
 			// Already in editable state, move to clicked cell
@@ -2526,6 +2580,18 @@
 			map['Ctrl+End'] = plain(moveLast);
 			map['PageDown'] = plain(movePageDown);
 			map['PageUp'] = plain(movePageUp);
+			// The cell cursor: Left/Right within the row (Left of the first column: the row
+			// selector, the whole row), Tab/Shift+Tab on into the next/previous row
+			const cellMove = (move: CursorMove) => (event?: KeyboardEvent): boolean | void => {
+				if (!onGrid(event) || displayRecords.length === 0) return false;
+				clearSelection();
+				// Tab at the list's last cell (Shift+Tab at the first) leaves the list
+				if (!moveCellCursor(move) && (move === 'next' || move === 'previous')) return false;
+			};
+			map['ArrowLeft'] = cellMove('left') as () => void;
+			map['ArrowRight'] = cellMove('right') as () => void;
+			map['Tab'] = cellMove('next') as () => void;
+			map['Shift+Tab'] = cellMove('previous') as () => void;
 			// Shift extends the selection from the anchor
 			map['Shift+ArrowDown'] = () => extendSelectionTo(currentRow() + 1);
 			map['Shift+ArrowUp'] = () => extendSelectionTo(currentRow() - 1);
@@ -2541,13 +2607,16 @@
 				if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return false;
 				if (total > 0) selection = selectAll(selection);
 			}) as () => void;
-			map['Enter'] = () => {
+			map['Enter'] = ((event?: KeyboardEvent) => {
 				if (page.page.card_page_id || pickOnEnter) {
 					openCard();
 				} else if (page.page.editable && selectedIndex >= 0) {
 					enterCellSelected(selectedIndex, editColumn());
+				} else {
+					// Nothing to open or edit: Enter moves the cell cursor on, as Tab does
+					return cellMove('next')(event);
 				}
-			};
+			}) as () => void;
 			if (page.page.editable) {
 				map['F2'] = () => {
 					if (selectedIndex >= 0) enterCellSelected(selectedIndex, editColumn());
@@ -2823,8 +2892,9 @@
 	// ---- Copy/paste of records (page copy_paste_allowed, CopyPasteAllowed) ----
 
 	// Ctrl+C: copy the selected records (or the cursor row) — their stored fields, from the
-	// server — into the browser tab's clipboard
-	async function handleCopyRecords() {
+	// server — into the browser tab's clipboard (pasted with Ctrl+V into a list of the table);
+	// returns them (null: nothing copied)
+	async function handleCopyRecords(): Promise<Array<Record<string, any>> | null> {
 		const request = selection.all
 			? { all: true }
 			: multiSelected
@@ -2832,16 +2902,64 @@
 				: selectedRecord
 					? { keys: [rowKey(selectedRecord)] }
 					: null;
-		if (!request) return;
+		if (!request) return null;
 		try {
 			const records = await api.copyRecords(page.page.source_table, request, request.all ? selectionQuery() : undefined);
 			saveClipboard({ table: page.page.source_table, company: get(currentCompany) ?? '', records });
-			toast.success(
-				records.length === 1 ? t(MSG.RECORD_COPIED) : t(MSG.RECORDS_COPIED, records.length.toLocaleString(locale))
-			);
+			return records;
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : String(err));
+			return null;
 		}
+	}
+
+	// Ctrl+C outside edit mode: with the cursor in a cell its value as shown; with the row
+	// selector or several rows selected the rows — as text into the system clipboard (the
+	// shown columns, tab-separated with the captions first, for a spreadsheet) and, on lists
+	// that allow it, as records for Ctrl+V
+	async function handleCopy() {
+		if (displayRecords.length === 0 || selectedIndex < 0) return;
+		if (multiSelected || cursorColumn() === ROW_SELECTOR) {
+			await copyRows();
+			return;
+		}
+		const field = visibleColumns()[cursorColumn()];
+		const record = displayRecords[selectedIndex];
+		if (field && record) await copyText(cellText(record, field));
+	}
+
+	async function copyRows() {
+		const selected = multiSelected
+			? displayRecords.filter((r) => isSelected(selection, rowKey(r)))
+			: selectedRecord
+				? [selectedRecord]
+				: [];
+		let rows = selected;
+		if (page.page.copy_paste_allowed) {
+			const records = await handleCopyRecords();
+			if (!records) return;
+			// All rows selected, more than are loaded: the text from the copied records
+			if (records.length > selected.length) rows = records;
+		}
+		if (rows.length === 0) return;
+		const cols = visibleColumns();
+		await copyText(
+			rowsToTsv(
+				cols.map((f) => getFieldCaption(f.source, captions, f.caption)),
+				rows.map((r) => cols.map((f) => cellText(r, f)))
+			)
+		);
+		toast.success(rows.length === 1 ? t(MSG.RECORD_COPIED) : t(MSG.RECORDS_COPIED, rows.length.toLocaleString(locale)));
+	}
+
+	// A cell's value as the list shows it (an option's caption, a lookup's text, Yes/No)
+	function cellText(record: Record<string, any>, field: Field): string {
+		const value = record[field.source];
+		if (typeof value === 'boolean' || fieldTypes[field.source] === 'bool') return value ? t(BTN.YES) : t(BTN.NO);
+		if (options[field.source]) return formatOptionValue(value, options[field.source]);
+		const lookup = lookupFor(lookups, field.source, record);
+		if (lookup?.rows?.length) return formatLookupValue(value, lookup);
+		return formatCellValue(value, field.source);
 	}
 
 	// Ctrl+V: insert the copied records into this table — with the key values the list is
@@ -3262,6 +3380,7 @@
 		<table class="table">
 			<thead>
 				<tr>
+					<th class="row-selector-header" aria-hidden="true"></th>
 					{#if showRowNumbers}
 						<th class="row-number-header">#</th>
 					{/if}
@@ -3364,11 +3483,27 @@
 							(windowOffset + index) % 2 === 1 ? 'row-even' : 'row-odd'
 						)}
 					>
+						<!-- The row selector: the cursor here selects the whole row (Ctrl+C copies it) -->
+						<!-- svelte-ignore a11y_click_events_have_key_events -->
+						<td
+							class="row-selector"
+							class:row-selector-cursor={isNavigation && !multiSelected && selectedIndex === index && cursorColumn() === ROW_SELECTOR}
+							onclick={(e) => {
+								if (!isNavigation) return;
+								if (e.ctrlKey || e.metaKey || e.shiftKey) {
+									handleSelectionClick(index, e);
+									return;
+								}
+								clearSelection();
+								cursorCol = ROW_SELECTOR;
+								handleRowClick(index);
+							}}
+						></td>
 						{#if showRowNumbers}
 							<td class="row-number-cell">{windowOffset + index + 1}</td>
 						{/if}
 						{#each visibleColumns() as field, colIndex}
-							<td class="p-0 border-r border-b border-gray-300 dark:border-gray-600">
+							<td class={cn('p-0 border-r border-b border-gray-300 dark:border-gray-600', isNavigation && !multiSelected && selectedIndex === index && cursorColumn() === colIndex && 'cell-cursor')}>
 								{#if isCellEditing && currentCellRow === index && currentCellCol === colIndex}
 									<!-- Cell-Editing Mode - Active input for this specific cell -->
 									{#if typeof record[field.source] === 'boolean' || fieldTypes[field.source] === 'bool'}
@@ -3679,6 +3814,7 @@
 														return;
 													}
 													clearSelection();
+													cursorCol = colIndex;
 													handlePrimaryKeyClick(index);
 												}}
 											>
@@ -3717,6 +3853,7 @@
 				{#if page.page.editable && !page.page.posted && (!isNavigation || editOnClick) && !searchQuery.trim() && !moreBelow && !(displayRecords.length > 0 && isEmptyNewRecord(displayRecords[displayRecords.length - 1]))}
 					<!-- trailing blank row, in edit mode only: click it to start a new record -->
 					<tr class="placeholder-row" onclick={handlePlaceholderRowClick}>
+						<td class="row-selector"></td>
 						{#if showRowNumbers}
 							<td class="row-number-cell"></td>
 						{/if}
@@ -4158,6 +4295,53 @@
 	:global(.dark) .table tbody tr.selected td,
 	:global(.dark) .table tbody tr.selected .read-cell-content {
 		color: rgb(var(--gray-50)) !important;
+	}
+
+	/* The row selector before the first column (spreadsheet-like): a click or Left from the
+	   first column puts the cursor there, the whole row is selected */
+	.row-selector-header,
+	.row-selector {
+		width: 12px;
+		min-width: 12px;
+		max-width: 12px;
+		padding: 0 !important;
+	}
+
+	.row-selector {
+		border-right: 1px solid rgb(var(--gray-300));
+		border-bottom: 1px solid rgb(var(--gray-300));
+		background-color: rgb(var(--gray-100));
+		cursor: pointer;
+	}
+
+	:global(.dark) .row-selector {
+		background-color: rgb(var(--gray-800));
+		border-color: rgb(var(--gray-600));
+	}
+
+	.table tbody tr.selected td.row-selector {
+		background-color: rgb(var(--accent-200));
+	}
+
+	.table tbody tr td.row-selector.row-selector-cursor {
+		background-color: rgb(var(--accent-600));
+	}
+
+	:global(.dark) .table tbody tr.selected td.row-selector {
+		background-color: rgb(var(--gray-600));
+	}
+
+	:global(.dark) .table tbody tr td.row-selector.row-selector-cursor {
+		background-color: rgb(var(--accent-400));
+	}
+
+	/* The cell cursor outside edit mode: the cell Ctrl+C copies */
+	.table tbody tr td.cell-cursor {
+		box-shadow: inset 0 0 0 2px rgb(var(--accent-600));
+	}
+
+	:global(.dark) .table tbody tr td.cell-cursor {
+		box-shadow: inset 0 0 0 2px rgb(var(--accent-300));
 	}
 
 	/* Cursor row while several rows are selected (it may be selected or not) */
