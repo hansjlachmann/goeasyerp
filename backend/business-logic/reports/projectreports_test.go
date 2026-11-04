@@ -14,6 +14,7 @@ import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
 	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
+	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
 )
 
@@ -74,4 +75,54 @@ func TestProjectReports(t *testing.T) {
 		t.Fatal("no completed demo project")
 	}
 	contains(reports.CompletedProjectsID, "Completed Projects", completed.No.String(), "Report Total")
+}
+
+// Report 1202 run from a project journal line prints its batch's lines and, under a line, what
+// posting would refuse: a blocked resource, a project not on Order, a missing number
+func TestProjectJournalTestReport(t *testing.T) {
+	src := projectCompany(t)
+	order := gtables.NewProject(src)
+	order.SetRange("status", gtables.Project_Status.Order)
+	quote := gtables.NewProject(src)
+	quote.SetRange("status", gtables.Project_Status.Quote)
+	if !order.FindFirst() || !quote.FindFirst() {
+		t.Fatal("no demo projects on Order and Quote")
+	}
+	res := gtables.NewResource(src)
+	mustOK(t, res.GetOrError("R0040"))
+	res.Blocked = true
+	mustOK(t, res.ModifyOrError(false))
+	lines := []struct {
+		projectNo types.Code
+		no        types.Code
+	}{{order.No, "R0010"}, {order.No, "R0040"}, {quote.No, "R0010"}, {order.No, ""}}
+	var first *gtables.ProjectJournalLine
+	for i, l := range lines {
+		line := gtables.NewProjectJournalLine(src)
+		line.Init()
+		line.Journal_template_name, line.Journal_batch_name, line.Line_no = "PROJECT", "DEFAULT", (i+1)*10000
+		line.Posting_date = types.NewDate(2026, 10, 5)
+		line.Document_no = "T1"
+		line.Project_no = l.projectNo
+		line.Type = gtables.ProjectJournalLine_Type.Resource
+		line.No = l.no
+		line.Gen_prod_posting_group = "SERVICES"
+		line.Quantity = types.MustDecimal("1")
+		mustOK(t, line.InsertOrError(false))
+		if first == nil {
+			first = line
+		}
+	}
+	result, err := reports.Execute(reports.ProjectJnlTestID, src.GetDB(), src.GetCompany(), src.GetDBType(), reports.RunOptions{Output: reports.OutputPDF, Context: first})
+	mustOK(t, err)
+	texts := printedTexts(result, 0)
+	for _, want := range []string{"Project Journal - Test", "PROJECT", "DEFAULT", "Warning!",
+		"Blocked must be No for resource R0040.", "Status must be Order for project " + quote.No.String() + ".", "No. must be specified."} {
+		if !strings.Contains(texts, want) {
+			t.Errorf("report 1202 does not print %q:\n%s", want, texts)
+		}
+	}
+	if strings.Count(texts, "Warning!") != 3 {
+		t.Errorf("%d warnings, want 3:\n%s", strings.Count(texts, "Warning!"), texts)
+	}
 }
