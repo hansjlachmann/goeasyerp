@@ -5,7 +5,22 @@
 Open-source ERP for small businesses: finance, sales, purchasing, inventory, projects and fixed
 assets in one system. Go backend, SvelteKit frontend, PostgreSQL or SQLite.
 
-The repository, Go module, container images and database keep the technical name `openerp`.
+The database, its user and the `OPENERP_*` settings keep the technical name `openerp`.
+
+## Try it on your own computer
+
+Only [Docker Desktop](https://www.docker.com/products/docker-desktop/) is needed (Windows, macOS
+or Linux):
+
+1. Download [`docker-compose.local.yml`](https://raw.githubusercontent.com/hansjlachmann/goeasyerp/main/docker-compose.local.yml)
+   and save it as `docker-compose.yml` in a folder of its own (e.g. `C:\GoEasyERP`).
+2. Open it in a text editor and replace `JWT_SECRET` with any long random text.
+3. In that folder run `docker compose up -d`.
+4. After 2-3 minutes open http://localhost:8000 and create the first user.
+
+Stop with `docker compose stop`, start again with `docker compose start`. Never run
+`docker compose down -v`: it deletes the database. For a server installation (HTTPS, backups) see
+[docs/operations.md](docs/operations.md).
 
 ## Project Structure
 

@@ -4,7 +4,8 @@
     ".": {
       "release-type": "go",
       "extra-files": [
-        { "type": "generic", "path": "backend/definitions/application.yaml" }
+        { "type": "generic", "path": "backend/definitions/application.yaml" },
+        { "type": "generic", "path": "docker-compose.local.yml" }
       ],
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
