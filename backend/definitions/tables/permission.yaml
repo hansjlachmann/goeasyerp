@@ -66,6 +66,28 @@ table:
       no: 8
       type: int
       db_name: object_id
+      table_relation:
+        conditions:
+          - when: {field: object_type, equal: 1}
+            table: Object
+            field: id
+            filters:
+              type: {const: 3}
+            lookup_columns:
+              - source: id
+                width: 80
+              - source: name
+                width: 250
+          - when: {field: object_type, equal: 2}
+            table: Object
+            field: id
+            filters:
+              type: {const: 5}
+            lookup_columns:
+              - source: id
+                width: 80
+              - source: name
+                width: 250
       caption: Object ID
 
     - name: can_execute

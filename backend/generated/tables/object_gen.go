@@ -13,6 +13,7 @@
 //	OnValidate_Type(rec *gtables.Object) error
 //	OnValidate_Id(rec *gtables.Object) error
 //	OnValidate_Name(rec *gtables.Object) error
+//	OnValidate_Runnable(rec *gtables.Object) error
 
 package tables
 
@@ -56,9 +57,10 @@ func (o ObjectType) IsValid() bool {
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterObjectLogic.
 type Object struct {
-	Type ObjectType `db:"type,pk"`
-	Id   int        `db:"id,pk"`
-	Name types.Text `db:"name"`
+	Type     ObjectType `db:"type,pk"`
+	Id       int        `db:"id,pk"`
+	Name     types.Text `db:"name"`
+	Runnable bool       `db:"runnable"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -146,13 +148,15 @@ var Object_Type = struct {
 // Object_FieldNo holds the field numbers of Object (FieldNo):
 // Object_FieldNo.Type is 1
 var Object_FieldNo = struct {
-	Type int
-	Id   int
-	Name int
+	Type     int
+	Id       int
+	Name     int
+	Runnable int
 }{
-	Type: 1,
-	Id:   3,
-	Name: 4,
+	Type:     1,
+	Id:       3,
+	Name:     4,
+	Runnable: 5,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -164,6 +168,8 @@ func (t *Object) FieldNo(fieldName string) int {
 		return 3
 	case "name":
 		return 4
+	case "runnable":
+		return 5
 	}
 	return 0
 }
@@ -177,6 +183,8 @@ func (t *Object) FieldName(fieldNo int) string {
 		return "id"
 	case 4:
 		return "name"
+	case 5:
+		return "runnable"
 	}
 	return ""
 }
@@ -266,13 +274,14 @@ func (t *Object) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Object: a business logic type implements the ones it needs
 type (
-	ObjectOnInsert        interface{ OnInsert(rec *Object) error }
-	ObjectOnModify        interface{ OnModify(rec *Object) error }
-	ObjectOnDelete        interface{ OnDelete(rec *Object) error }
-	ObjectOnRename        interface{ OnRename(rec *Object) error }
-	ObjectOnValidate_Type interface{ OnValidate_Type(rec *Object) error }
-	ObjectOnValidate_Id   interface{ OnValidate_Id(rec *Object) error }
-	ObjectOnValidate_Name interface{ OnValidate_Name(rec *Object) error }
+	ObjectOnInsert            interface{ OnInsert(rec *Object) error }
+	ObjectOnModify            interface{ OnModify(rec *Object) error }
+	ObjectOnDelete            interface{ OnDelete(rec *Object) error }
+	ObjectOnRename            interface{ OnRename(rec *Object) error }
+	ObjectOnValidate_Type     interface{ OnValidate_Type(rec *Object) error }
+	ObjectOnValidate_Id       interface{ OnValidate_Id(rec *Object) error }
+	ObjectOnValidate_Name     interface{ OnValidate_Name(rec *Object) error }
+	ObjectOnValidate_Runnable interface{ OnValidate_Runnable(rec *Object) error }
 )
 
 // objectLogic is the registered business logic of Object, in
@@ -308,6 +317,8 @@ func objectTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ObjectOnValidate_Id)
 	case "OnValidate_Name":
 		_, ok = logic.(ObjectOnValidate_Name)
+	case "OnValidate_Runnable":
+		_, ok = logic.(ObjectOnValidate_Runnable)
 	default:
 		return false, false
 	}
@@ -415,6 +426,7 @@ func GetObjectTableSchema() string {
 		type INTEGER CHECK (type >= 0 AND type <= 5),
 		id INTEGER,
 		name TEXT(80),
+		runnable INTEGER,
 		PRIMARY KEY (type, id)
 	`
 }
@@ -425,6 +437,7 @@ func GetObjectPostgresTableSchema() string {
 		type INTEGER CHECK (type >= 0 AND type <= 5),
 		id INTEGER,
 		name VARCHAR(80),
+		runnable BOOLEAN,
 		PRIMARY KEY (type, id)
 	`
 }
@@ -557,6 +570,7 @@ func (t *Object) StoreOldValues() {
 	t.oldValues["type"] = t.Type
 	t.oldValues["id"] = t.Id
 	t.oldValues["name"] = t.Name
+	t.oldValues["runnable"] = t.Runnable
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -579,6 +593,9 @@ func (t *Object) XRec() *Object {
 	}
 	if v, ok := t.oldValues["name"].(types.Text); ok {
 		x.Name = v
+	}
+	if v, ok := t.oldValues["runnable"].(bool); ok {
+		x.Runnable = v
 	}
 	return x
 }
@@ -659,6 +676,7 @@ func (t *Object) GetByPK(type_ ObjectType, id int) bool {
 	var type_Int int
 	var idVal int
 	var nameNull sql.NullString
+	var runnableBool sql.NullBool
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -667,7 +685,7 @@ func (t *Object) GetByPK(type_ ObjectType, id int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT type, id, name FROM "%s" WHERE 1=1 AND type = ? AND id = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT type, id, name, runnable FROM "%s" WHERE 1=1 AND type = ? AND id = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -677,6 +695,7 @@ func (t *Object) GetByPK(type_ ObjectType, id int) bool {
 		&type_Int,
 		&idVal,
 		&nameNull,
+		&runnableBool,
 	)
 
 	if err != nil {
@@ -693,6 +712,7 @@ func (t *Object) GetByPK(type_ ObjectType, id int) bool {
 	t.Type = ObjectType(type_Int)
 	t.Id = idVal
 	t.Name = types.NewText(nameNull.String)
+	t.Runnable = runnableBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -718,11 +738,12 @@ func (t *Object) Insert(runTrigger bool) bool {
 		t.Type,
 		t.Id,
 		t.Name,
+		t.Runnable,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (type, id, name) VALUES (?, ?, ?) ON CONFLICT (type, id) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (type, id, name, runnable) VALUES (?, ?, ?, ?) ON CONFLICT (type, id) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -763,10 +784,11 @@ func (t *Object) InsertAll(records []*Object, runTrigger bool) error {
 			r.Type,
 			r.Id,
 			r.Name,
+			r.Runnable,
 		})
 	}
 	tableName := ObjectTableName
-	columns := []string{"type", "id", "name"}
+	columns := []string{"type", "id", "name", "runnable"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -821,6 +843,10 @@ func (t *Object) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "name = ?")
 			values = append(values, t.Name)
 		}
+		if t.hasFieldChanged("runnable") {
+			setClauses = append(setClauses, "runnable = ?")
+			values = append(values, t.Runnable)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -830,6 +856,8 @@ func (t *Object) Modify(runTrigger bool) bool {
 		// No old values (fresh record), update all fields
 		setClauses = append(setClauses, "name = ?")
 		values = append(values, t.Name)
+		setClauses = append(setClauses, "runnable = ?")
+		values = append(values, t.Runnable)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -914,6 +942,11 @@ func (t *Object) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Text); ok {
 			return !t.Name.Equal(old)
 		}
+	case "runnable":
+		if old, ok := oldValue.(bool); ok {
+			return t.Runnable != old
+		}
+		return true // Type mismatch, assume changed
 	}
 
 	return false
@@ -938,7 +971,7 @@ func (t *Object) renameReferences(field string, oldValue, newValue interface{}) 
 		condValue  int
 	}
 	references := map[string][]reference{
-		"id": {{"Date_Compr_Register", false, "table_id", "", 0}, {"Printer_Selection", true, "report_id", "", 0}, {"Report_Selections", false, "report_id", "", 0}},
+		"id": {{"BOM_Journal_Template", false, "page_id", "", 0}, {"Date_Compr_Register", false, "table_id", "", 0}, {"FA_Journal_Template", false, "page_id", "", 0}, {"FA_Journal_Template", false, "maint_posting_report_id", "", 0}, {"FA_Reclass_Journal_Template", false, "page_id", "", 0}, {"Gen_Journal_Template", false, "page_id", "", 0}, {"Insurance_Journal_Template", false, "page_id", "", 0}, {"Intrastat_Jnl_Template", false, "page_id", "", 0}, {"Item_Journal_Template", false, "page_id", "", 0}, {"Job_Queue", false, "object_id_to_run", "object_type_to_run", 0}, {"Job_Queue", false, "object_id_to_run", "object_type_to_run", 1}, {"Permission", true, "object_id", "object_type", 1}, {"Permission", true, "object_id", "object_type", 2}, {"Printer_Selection", true, "report_id", "", 0}, {"Project_Journal_Template", false, "page_id", "", 0}, {"Report_Selections", false, "report_id", "", 0}, {"Req_Wksh_Template", false, "page_id", "", 0}, {"Res_Journal_Template", false, "page_id", "", 0}, {"Setup_Checklist_Line", false, "table_id", "", 0}, {"Setup_Checklist_Line", false, "page_id", "", 0}, {"Tax_Statement_Template", false, "page_id", "", 0}, {"User_Preferences", true, "page_id", "", 0}},
 	}
 	var companies []string
 	rows, err := t.db.Query(`SELECT name FROM "Company"`)
@@ -1178,6 +1211,8 @@ func (t *Object) columnName(fieldName string) (string, bool) {
 		return "id", true
 	case strings.ToLower("name"):
 		return "name", true
+	case strings.ToLower("runnable"):
+		return "runnable", true
 	}
 	return "", false
 }
@@ -1331,6 +1366,8 @@ func (t *Object) isKeyDateColumn(column string) bool {
 // isBoolColumn: a Boolean column
 func (t *Object) isBoolColumn(column string) bool {
 	switch column {
+	case "runnable":
+		return true
 	}
 	return false
 }
@@ -1535,18 +1572,20 @@ func (t *Object) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT type, id, name FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT type, id, name, runnable FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
 	query += t.forUpdate()
 	var typeInt int
 	var nameNull sql.NullString
+	var runnableBool sql.NullBool
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&typeInt,
 		&t.Id,
 		&nameNull,
+		&runnableBool,
 	)
 
 	if err != nil {
@@ -1560,6 +1599,7 @@ func (t *Object) FindFirst() bool {
 	// Populate fields
 	t.Type = ObjectType(typeInt)
 	t.Name = types.NewText(nameNull.String)
+	t.Runnable = runnableBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1580,18 +1620,20 @@ func (t *Object) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT type, id, name FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT type, id, name, runnable FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
 	query += t.forUpdate()
 	var typeInt int
 	var nameNull sql.NullString
+	var runnableBool sql.NullBool
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&typeInt,
 		&t.Id,
 		&nameNull,
+		&runnableBool,
 	)
 
 	if err != nil {
@@ -1605,6 +1647,7 @@ func (t *Object) FindLast() bool {
 	// Populate fields
 	t.Type = ObjectType(typeInt)
 	t.Name = types.NewText(nameNull.String)
+	t.Runnable = runnableBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1655,7 +1698,7 @@ func (t *Object) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT type, id, name FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT type, id, name, runnable FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1726,11 +1769,13 @@ func (t *Object) Next(steps ...int) bool {
 		// Scan the row
 		var typeInt int
 		var nameNull sql.NullString
+		var runnableBool sql.NullBool
 
 		err := t.currentRows.Scan(
 			&typeInt,
 			&t.Id,
 			&nameNull,
+			&runnableBool,
 		)
 
 		if err != nil {
@@ -1743,6 +1788,7 @@ func (t *Object) Next(steps ...int) bool {
 		// Populate fields
 		t.Type = ObjectType(typeInt)
 		t.Name = types.NewText(nameNull.String)
+		t.Runnable = runnableBool.Bool
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -1792,7 +1838,7 @@ func (t *Object) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT type, id, name FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT type, id, name, runnable FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1816,11 +1862,13 @@ func (t *Object) FindSetBuffered() bool {
 		// Scan the row
 		var typeInt int
 		var nameNull sql.NullString
+		var runnableBool sql.NullBool
 
 		err := rows.Scan(
 			&typeInt,
 			&record.Id,
 			&nameNull,
+			&runnableBool,
 		)
 
 		if err != nil {
@@ -1831,6 +1879,7 @@ func (t *Object) FindSetBuffered() bool {
 		// Populate special type fields
 		record.Type = ObjectType(typeInt)
 		record.Name = types.NewText(nameNull.String)
+		record.Runnable = runnableBool.Bool
 
 		// Store old values
 		record.StoreOldValues()
@@ -1862,6 +1911,7 @@ func (t *Object) copyFromBuffered(record *Object) {
 	t.Type = record.Type
 	t.Id = record.Id
 	t.Name = record.Name
+	t.Runnable = record.Runnable
 	t.StoreOldValues()
 }
 
@@ -2090,6 +2140,25 @@ func (t *Object) ValidateField(fieldName string, value interface{}) error {
 			}
 		}
 		return nil
+	case "runnable":
+		// Set field value
+		if v, ok := value.(bool); ok {
+			t.Runnable = v
+		} else if v, ok := value.(string); ok {
+			// Handle string boolean values from JSON/frontend
+			t.Runnable = v == "true" || v == "1"
+		} else {
+			return fmt.Errorf("invalid type for field runnable")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ObjectOnValidate_Runnable); ok {
+				if err := trg.OnValidate_Runnable(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -2108,6 +2177,8 @@ func (t *Object) FieldValue(no int) (any, bool) {
 		return t.Id, true
 	case 4:
 		return t.Name, true
+	case 5:
+		return t.Runnable, true
 	}
 	return nil, false
 }
@@ -2140,6 +2211,11 @@ func (t *Object) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.Name = types.NewText(v)
+			return true
+		}
+	case 5:
+		if v, ok := value.(bool); ok {
+			t.Runnable = v
 			return true
 		}
 	}
@@ -2590,6 +2666,8 @@ func (t *Object) columnValue(column string) (interface{}, bool) {
 		return t.Id, true
 	case "name":
 		return t.Name, true
+	case "runnable":
+		return t.Runnable, true
 	}
 	return nil, false
 }
@@ -2649,6 +2727,7 @@ func (t *Object) setKeyValues(values []interface{}) {
 // from the definition (Init); the primary key keeps its values
 func (t *Object) Init() {
 	t.Name = *new(types.Text)
+	t.Runnable = *new(bool)
 	t.applyDefaults()
 }
 
@@ -2683,9 +2762,10 @@ func (t *Object) ClearFilters() {
 // ToMap converts the current record to a map for JSON serialization
 func (t *Object) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"type": int(t.Type),
-		"id":   t.Id,
-		"name": t.Name.String(),
+		"type":     int(t.Type),
+		"id":       t.Id,
+		"name":     t.Name.String(),
+		"runnable": t.Runnable,
 	}
 }
 
@@ -2724,6 +2804,11 @@ func (t *Object) FromMap(data map[string]interface{}) {
 	if v, ok := data["name"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Name = types.NewText(s)
+		}
+	}
+	if v, ok := data["runnable"]; ok && v != nil {
+		if b, ok := v.(bool); ok {
+			t.Runnable = b
 		}
 	}
 }
@@ -2772,6 +2857,16 @@ func (t *Object) GetFields() []tables.FieldInfo {
 			Name:       "name",
 			Type:       tables.FieldTypeText,
 			Length:     80,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         5,
+			Name:       "runnable",
+			Type:       tables.FieldTypeBoolean,
+			Length:     0,
 			Required:   false,
 			Editable:   true,
 			PrimaryKey: false,

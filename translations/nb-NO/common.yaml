@@ -598,6 +598,7 @@ common:
     user_roles: "Brukerroller"
     user_members: "Brukertilganger"
     permissions: "Rettigheter"
+    objects: "Objekter"
     themes: "Temaer"
     installed_apps: "Installerte apper"
 

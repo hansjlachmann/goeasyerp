@@ -6010,6 +6010,7 @@ tables:
       type: "Type"
       id: "ID"
       name: "Navn"
+      runnable: "Kan kjøres"
     options:
       type:
         tabledata: "Tabelldata"

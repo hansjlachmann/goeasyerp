@@ -1,0 +1,41 @@
+package codeunits
+
+import "github.com/hansjlachmann/openerp/backend/foundation/objects"
+
+// The classic names of the registered codeunits (the Object table shows them, the registry's
+// names are the API's); custom codeunits use the 900–999 series (ABSOLUTE RULE: every
+// business-logic object declares its type, number and name)
+func init() {
+	objects.Codeunit(3, "G/L Account-Indent")
+	objects.Codeunit(6, "Fiscal Year-Close")
+	objects.Codeunit(61, "Sales-Disc. (Yes/No)")
+	objects.Codeunit(64, "Sales-Get Shipment")
+	objects.Codeunit(71, "Purch.-Disc. (Yes/No)")
+	objects.Codeunit(74, "Purch.-Get Receipt")
+	objects.Codeunit(81, "Sales-Post (Yes/No)")
+	objects.Codeunit(82, "Sales-Post + Print")
+	objects.Codeunit(83, "Sales-Quote to Order (Yes/No)")
+	objects.Codeunit(84, "Blnkt Sales Ord. to Ord. (Y/N)")
+	objects.Codeunit(91, "Purch.-Post (Yes/No)")
+	objects.Codeunit(92, "Purch.-Post + Print")
+	objects.Codeunit(93, "Purch.-Quote to Order (Yes/No)")
+	objects.Codeunit(94, "Blnkt Purch Ord. to Ord. (Y/N)")
+	objects.Codeunit(231, "Gen. Jnl.-Post")
+	objects.Codeunit(241, "Item Jnl.-Post")
+	objects.Codeunit(251, "BOM Jnl.-Post")
+	objects.Codeunit(271, "Res. Jnl.-Post")
+	objects.Codeunit(281, "Project Jnl.-Post")
+	objects.Codeunit(371, "Bank Acc. Recon. Post (Yes/No)")
+	objects.Codeunit(399, "Copy Tax Setup From Company")
+	objects.Codeunit(455, "Job Queue Send Test E-mail")
+	objects.Codeunit(901, "Create Demo Data")
+	objects.Codeunit(902, "Verify SIFT")
+	objects.Codeunit(903, "External Report Runner")
+	objects.Codeunit(904, "G/L Balance Check")
+	objects.Codeunit(990, "Hello World")
+	objects.Codeunit(991, "Progress Demo")
+	objects.Codeunit(5636, "FA. Jnl.-Post")
+	objects.Codeunit(5644, "FA Reclass. Jnl.-Transfer")
+	objects.Codeunit(5645, "FA Reclass. Jnl.-B.Transfer")
+	objects.Codeunit(5654, "Insurance Jnl.-Post")
+}

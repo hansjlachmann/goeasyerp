@@ -2,9 +2,9 @@ table:
   id: 2000000001
   name: Object
   caption: Object
-  description: The objects of this installation (tables, pages, reports, codeunits), written at startup
+  description: The objects of this installation (tables, pages, reports, codeunits — the registered and the declared ones), written at startup
   global: true
-  lookup_page_id: 358
+  lookup_page_id: 908
   data_caption_fields: [type, id, name]
   fields:
     - name: type
@@ -29,6 +29,14 @@ table:
       db_name: name
       caption: Name
       length: 80
+
+    # a codeunit with a Run of its own (registered: a page action or the Job Queue can run it) or
+    # a report; a library codeunit (365 Format Address) is not
+    - name: runnable
+      no: 5
+      type: bool
+      db_name: runnable
+      caption: Runnable
 
   keys:
     - name: Primary

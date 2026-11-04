@@ -2449,6 +2449,10 @@ func (t *FAJournalTemplate) ValidateField(fieldName string, value interface{}) e
 		default:
 			return fmt.Errorf("invalid type for field page_id")
 		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "page_id"); err != nil {
+			return err
+		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
 			if trg, ok := l.(FAJournalTemplateOnValidate_Page_id); ok {
@@ -2584,6 +2588,10 @@ func (t *FAJournalTemplate) ValidateField(fieldName string, value interface{}) e
 			}
 		default:
 			return fmt.Errorf("invalid type for field maint_posting_report_id")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "maint_posting_report_id"); err != nil {
+			return err
 		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
@@ -3640,6 +3648,20 @@ func (t *FAJournalTemplate) GetOptionFields() map[string][]string {
 // GetTableRelationFields returns fields that have table relations (foreign keys)
 func (t *FAJournalTemplate) GetTableRelationFields() map[string]tables.TableRelationInfo {
 	return map[string]tables.TableRelationInfo{
+		"page_id": {
+			Table:        "Object",
+			Field:        "id",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "id", Width: 80},
+				{Source: "name", Width: 250},
+			},
+			SearchTimeout: 0,
+			NoValidate:    true,
+			Filters: []tables.RelationFilterInfo{
+				{Column: "type", Field: "", Const: "2"},
+			},
+		},
 		"source_code": {
 			Table:        "Source_Code",
 			Field:        "code",
@@ -3659,6 +3681,20 @@ func (t *FAJournalTemplate) GetTableRelationFields() map[string]tables.TableRela
 				{Source: "description", Width: 250},
 			},
 			SearchTimeout: 0,
+		},
+		"maint_posting_report_id": {
+			Table:        "Object",
+			Field:        "id",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "id", Width: 80},
+				{Source: "name", Width: 250},
+			},
+			SearchTimeout: 0,
+			NoValidate:    true,
+			Filters: []tables.RelationFilterInfo{
+				{Column: "type", Field: "", Const: "3"},
+			},
 		},
 		"no_series": {
 			Table:        "No_Series",

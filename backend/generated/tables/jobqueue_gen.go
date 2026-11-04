@@ -3014,6 +3014,10 @@ func (t *JobQueue) ValidateField(fieldName string, value interface{}) error {
 		default:
 			return fmt.Errorf("invalid type for field object_id_to_run")
 		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "object_id_to_run"); err != nil {
+			return err
+		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
 			if trg, ok := l.(JobQueueOnValidate_Object_id_to_run); ok {
@@ -4396,6 +4400,27 @@ func (t *JobQueue) GetOptionFields() map[string][]string {
 // GetTableRelationFields returns fields that have table relations (foreign keys)
 func (t *JobQueue) GetTableRelationFields() map[string]tables.TableRelationInfo {
 	return map[string]tables.TableRelationInfo{
+		"object_id_to_run": {
+			Conditions: []tables.ConditionalRelationInfo{
+				{Field: "object_type_to_run", Value: 0, Relation: tables.TableRelationInfo{
+					Table: "Object", Field: "id", DisplayField: "",
+					LookupColumns: []tables.LookupColumnInfo{{Source: "id", Width: 80}, {Source: "name", Width: 250}},
+					SearchTimeout: 0,
+					Filters: []tables.RelationFilterInfo{
+						{Column: "runnable", Field: "", Const: "true"},
+						{Column: "type", Field: "", Const: "5"},
+					},
+				}},
+				{Field: "object_type_to_run", Value: 1, Relation: tables.TableRelationInfo{
+					Table: "Object", Field: "id", DisplayField: "",
+					LookupColumns: []tables.LookupColumnInfo{{Source: "id", Width: 80}, {Source: "name", Width: 250}},
+					SearchTimeout: 0,
+					Filters: []tables.RelationFilterInfo{
+						{Column: "type", Field: "", Const: "3"},
+					},
+				}},
+			},
+		},
 		"notification_language": {
 			Table:        "Language",
 			Field:        "code",

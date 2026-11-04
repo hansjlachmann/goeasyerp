@@ -28,6 +28,12 @@ page:
         - source: object_id_to_run
           width: 120
 
+        # the Object table's name of the codeunit or report (page trigger)
+        - source: object_caption_to_run
+          width: 220
+          calculated: true
+          type: types.Text
+
         - source: parameter
           width: 200
 
