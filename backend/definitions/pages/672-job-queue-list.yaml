@@ -22,6 +22,9 @@ page:
         - source: status
           width: 100
 
+        - source: object_type_to_run
+          width: 110
+
         - source: object_id_to_run
           width: 120
 
@@ -59,13 +62,14 @@ page:
           drilldown_filter_value: no
 
   actions:
+    # the job's codeunit or report now (a report: its request page, filled in from the Parameter)
     - name: Run
       caption: Run
       image: Run
       shortcut: F9
       promoted: true
       enabled: true
-      run_object: field:object_id_to_run
+      run_object: table:Job_Queue.Run
 
     - name: Send Test E-mail
       caption: Send Test E-mail

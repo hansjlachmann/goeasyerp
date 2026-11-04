@@ -211,6 +211,7 @@ common:
     show_optional_lines: "Vis valgfrie linjer"
     hide_optional_lines: "Skjul valgfrie linjer"
     available_to_reserve: "Tilgjengelig for reservasjon"
+    show_printout: "Vis utskrift"
 
   # Card page sections (page YAML section name in snake case)
   sections:

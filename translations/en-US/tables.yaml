@@ -319,6 +319,7 @@ tables:
       description: "Description"
       description_2: "Description 2"
       status: "Status"
+      object_type_to_run: "Object Type to Run"
       object_id_to_run: "Object ID to Run"
       parameter: "Parameter"
       next_start: "Next Start"
@@ -344,6 +345,9 @@ tables:
         daily: "Daily"
         weekly: "Weekly"
         monthly: "Monthly"
+      object_type_to_run:
+        codeunit: "Codeunit"
+        report: "Report"
       notify_on:
         never: "Never"
         always: "Always"
@@ -361,6 +365,8 @@ tables:
       error_message: "Error Message"
       start_date_time: "Start Date/Time"
       end_date_time: "End Date/Time"
+      printout: "Printout"
+      printout_file_name: "Printout File Name"
 
     # Option field values
     options:

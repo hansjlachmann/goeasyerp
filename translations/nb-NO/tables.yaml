@@ -319,6 +319,7 @@ tables:
       description: "Beskrivelse"
       description_2: "Beskrivelse 2"
       status: "Status"
+      object_type_to_run: "Objekttype som skal kjøres"
       object_id_to_run: "Objekt-ID som skal kjøres"
       parameter: "Parameter"
       next_start: "Neste start"
@@ -344,6 +345,9 @@ tables:
         daily: "Daglig"
         weekly: "Ukentlig"
         monthly: "Månedlig"
+      object_type_to_run:
+        codeunit: "Kodeenhet"
+        report: "Rapport"
       notify_on:
         never: "Aldri"
         always: "Alltid"
@@ -361,6 +365,8 @@ tables:
       error_message: "Feilmelding"
       start_date_time: "Startdato/-klokkeslett"
       end_date_time: "Sluttdato/-klokkeslett"
+      printout: "Utskrift"
+      printout_file_name: "Filnavn for utskrift"
 
     # Option field values
     options:

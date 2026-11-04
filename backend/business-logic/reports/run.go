@@ -205,6 +205,8 @@ type RunOptions struct {
 	Record ftables.Table
 	// Options: starting values of the request page options
 	Options map[string]string
+	// Filters: starting request filters per data item (a scheduled run's parameter)
+	Filters map[string][]ftables.FieldFilter
 	// Context: a value the report works on (Run.Context), set by the caller before the run
 	Context interface{}
 	// Output of a printed report run without a request page: OutputPreview, OutputPrint or
@@ -257,6 +259,11 @@ func Execute(id int, db database.Executor, company string, dbType database.DBTyp
 	}
 	for name, value := range opts.Options {
 		run.options[name] = value
+	}
+	for item, filters := range opts.Filters {
+		for _, f := range filters {
+			run.SetRequestFilter(item, f.Field, f.Expression)
+		}
 	}
 	if opts.Record != nil {
 		source, ok := opts.Record.(interface{ FilterExpressions() []ftables.FieldFilter })

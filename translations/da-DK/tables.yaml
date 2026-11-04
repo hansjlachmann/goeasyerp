@@ -319,6 +319,7 @@ tables:
       description: "Beskrivelse"
       description_2: "Beskrivelse 2"
       status: "Status"
+      object_type_to_run: "Objekttype, der skal køres"
       object_id_to_run: "Objekt-id til kørsel"
       parameter: "Parameter"
       next_start: "Næste start"
@@ -344,6 +345,9 @@ tables:
         daily: "Dagligt"
         weekly: "Ugentligt"
         monthly: "Månedligt"
+      object_type_to_run:
+        codeunit: "Codeunit"
+        report: "Rapport"
       notify_on:
         never: "Aldrig"
         always: "Altid"
@@ -361,6 +365,8 @@ tables:
       error_message: "Fejlmeddelelse"
       start_date_time: "Startdato/-tidspunkt"
       end_date_time: "Slutdato/-tidspunkt"
+      printout: "Udskrift"
+      printout_file_name: "Filnavn for udskrift"
 
     # Option field values
     options:

@@ -22,6 +22,14 @@ import (
 type Run struct {
 	Start, End time.Time
 	Err        error
+	// Printout: a report job's PDF, attached to the notification
+	Printout *Printout
+}
+
+// Printout is a scheduled report's PDF and its file name
+type Printout struct {
+	FileName string
+	PDF      []byte
 }
 
 // ShouldNotify reports whether a run's outcome is e-mailed, per the job's Notify On

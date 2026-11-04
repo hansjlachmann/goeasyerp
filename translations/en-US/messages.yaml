@@ -394,6 +394,7 @@ messages:
   JOBQUEUEENTRY_TEST: "TEST button: you are on line %1."
   JOBQUEUE_STATUS_IS: "Job queue %1 has the status %2."
   JOBQUEUE_TEST_ENTRY: "Test entry (added from the card)"
+  JOBQUEUE_NO_PRINTOUT: "Log entry %1 has no printout."
   JOBQUEUE_TEST_ENTRY_ADDED: "Log entry %1 was added."
   JOBQUEUEENTRY_SHOW_FIELD: "%1 of the current line: %2"
   JOBQUEUE_TEST_MAIL_PARTIAL: "Test e-mail sent to %1. Not sent to: %2"
