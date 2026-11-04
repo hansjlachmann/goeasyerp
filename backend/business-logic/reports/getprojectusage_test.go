@@ -25,7 +25,7 @@ func TestGetProjectUsage(t *testing.T) {
 	usage.SetRange("entry_type", gtables.ProjectLedgerEntry_Entry_type.Usage)
 	usage.SetRange("open", true)
 	openUsage := usage.Count()
-	usage.CalcSums("remaining_amount")
+	mustOK(t, usage.CalcSums("remaining_amount"))
 	remaining := usage.Remaining_amount
 	if openUsage == 0 || remaining.IsZero() {
 		t.Fatalf("no open usage: %d entries, %s", openUsage, remaining)
