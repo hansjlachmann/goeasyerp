@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync"
 
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 	"gopkg.in/yaml.v3"
 )
 

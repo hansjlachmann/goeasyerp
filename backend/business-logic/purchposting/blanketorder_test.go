@@ -3,8 +3,8 @@ package purchposting_test
 import (
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/blanketorder"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/blanketorder"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // A purchase blanket order is called off in orders: Make Order takes each line's Qty. to Receive

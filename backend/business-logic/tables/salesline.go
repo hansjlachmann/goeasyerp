@@ -1,13 +1,13 @@
 package tables
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/itemprice"
-	"github.com/hansjlachmann/openerp/backend/business-logic/resprice"
-	"github.com/hansjlachmann/openerp/backend/business-logic/salestax"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/itemprice"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/resprice"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salestax"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // salesLineLogic is the business logic of table 37 Sales Line.

@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"sync"
 
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 
 	// The table triggers (business logic) run for the records written here
-	_ "github.com/hansjlachmann/openerp/backend/business-logic/tables"
+	_ "github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
 )
 
 var (

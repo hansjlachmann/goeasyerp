@@ -1,7 +1,7 @@
 package tables
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // priceGroupLogic is the business logic of table 6 Price_Group.

@@ -1,7 +1,7 @@
 package tables
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // projectJournalQuantityLogic is the business logic of table 278 Project_Journal_Quantity.

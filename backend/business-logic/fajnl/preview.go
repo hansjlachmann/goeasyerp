@@ -1,11 +1,11 @@
 package fajnl
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/postingpreview"
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	"github.com/hansjlachmann/openerp/backend/foundation/functions"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/postingpreview"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/functions"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Preview Posting on the fixed asset journals

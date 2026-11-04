@@ -1,8 +1,8 @@
 package tables
 
 import (
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // bankAccountLedgerEntryLogic is the business logic of table 271 Bank Account Ledger Entry

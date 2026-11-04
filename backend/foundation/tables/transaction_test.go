@@ -12,7 +12,7 @@ import (
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 )
 
 func TestBeginTransaction(t *testing.T) {

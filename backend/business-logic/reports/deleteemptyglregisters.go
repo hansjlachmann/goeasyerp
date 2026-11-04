@@ -1,7 +1,7 @@
 package reports
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Report 99 Delete Empty G/L Registers: the G/L registers without G/L, customer, vendor, tax or

@@ -1,10 +1,10 @@
 package pages
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/pages"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Page 212 Project Budget shows the budget lines of one project: the page parameter's, else

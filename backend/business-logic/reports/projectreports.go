@@ -4,10 +4,10 @@ import (
 	"sort"
 	"strings"
 
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // The project reports (main menu Projects → Reports; the classic local project reports

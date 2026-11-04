@@ -1,12 +1,12 @@
 package reports
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/formataddress"
-	"github.com/hansjlachmann/openerp/backend/business-logic/salespost"
-	"github.com/hansjlachmann/openerp/backend/business-logic/salesprinted"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/formataddress"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salespost"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salesprinted"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // salesDocument is the printout of a sales document of one type — report 204 Sales - Quote

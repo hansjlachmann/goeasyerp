@@ -3,7 +3,7 @@ package migrations
 import (
 	"fmt"
 
-	fmigrations "github.com/hansjlachmann/openerp/backend/foundation/migrations"
+	fmigrations "github.com/hansjlachmann/goeasyerp/backend/foundation/migrations"
 )
 
 func init() {

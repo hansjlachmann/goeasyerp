@@ -1,7 +1,7 @@
 package tables
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // custItemDiscountLogic is the business logic of table 20 Cust./Item Discount (none: the table's relations, ranges and

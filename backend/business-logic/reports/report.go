@@ -33,7 +33,7 @@ import (
 	"sort"
 	"sync"
 
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 )
 
 // Report is a processing-only report

@@ -3,8 +3,8 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 	"io"
 	"net/http/httptest"
 	"net/url"
@@ -12,9 +12,9 @@ import (
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/session"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 	"golang.org/x/crypto/bcrypt"
 )
 

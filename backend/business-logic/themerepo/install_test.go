@@ -18,11 +18,11 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/themes"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/themes"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // fakeGitHub serves repositories owner/name → files at a commit

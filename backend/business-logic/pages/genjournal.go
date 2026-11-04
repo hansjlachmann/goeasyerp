@@ -1,10 +1,10 @@
 package pages
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/pages"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/genjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // The journal pages 39 General Journal, 253 Sales Journal, 254 Purchase Journal, 255 Cash

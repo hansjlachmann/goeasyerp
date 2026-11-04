@@ -4,10 +4,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/genjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // The project WIP and recognition batch jobs (Projects → Activities): 1295 Calculate Project WIP

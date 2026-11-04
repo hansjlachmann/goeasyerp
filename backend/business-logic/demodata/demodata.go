@@ -19,16 +19,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/sift"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 	"gopkg.in/yaml.v3"
 
 	// The table triggers (business logic) run for the records written here
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
 )
 
 //go:embed data/*.yaml

@@ -1,9 +1,9 @@
 package reservmgt
 
 import (
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // ModifyReservedQuantity is codeunit 405 Item Entry-Edit: an item ledger entry the Available -

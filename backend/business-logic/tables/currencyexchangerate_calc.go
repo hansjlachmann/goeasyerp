@@ -3,11 +3,11 @@ package tables
 import (
 	"github.com/shopspring/decimal"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // The exchange calculations of table 330 (its procedures): amounts between the local currency

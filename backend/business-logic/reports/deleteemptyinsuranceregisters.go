@@ -1,7 +1,7 @@
 package reports
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Report 5695 Delete Empty Insurance Reg.: the insurance registers without insurance coverage

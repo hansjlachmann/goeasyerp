@@ -1,9 +1,9 @@
 package tables
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/noseries"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/noseries"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // insuranceJournalLineLogic is the business logic of table 5635 Insurance Journal Line: a fixed

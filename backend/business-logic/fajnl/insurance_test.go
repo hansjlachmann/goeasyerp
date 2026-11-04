@@ -3,11 +3,11 @@ package fajnl_test
 import (
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/insurancejnl"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/genjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/insurancejnl"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // insuranceLine: a line of the demo's insurance journal INSURANCE/DEFAULT covering an asset by

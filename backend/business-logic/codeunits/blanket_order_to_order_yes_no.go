@@ -3,13 +3,13 @@ package codeunits
 import (
 	"errors"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/blanketorder"
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/blanketorder"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Codeunits 84 "Blnkt Sales Ord. to Ord. (Y/N)" and 94 "Blnkt Purch Ord. to Ord. (Y/N)": a

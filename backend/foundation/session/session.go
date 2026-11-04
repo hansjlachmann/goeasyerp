@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 )
 
 // PermissionOperation represents a CRUD operation type

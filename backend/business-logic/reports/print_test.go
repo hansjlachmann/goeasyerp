@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	"github.com/hansjlachmann/openerp/backend/foundation/pdf"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pdf"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 // printTestID is the test's printed report: copies of a document with lines (Integer loops)

@@ -4,9 +4,9 @@ import (
 	"encoding/base64"
 	"strings"
 
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 )
 
 // CodeunitFactory runs a report like a codeunit, so pages (run_object: report:<id>) start it

@@ -1,7 +1,7 @@
 package tables
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // transportMethodLogic is the business logic of table 259 Transport_Method.

@@ -1,6 +1,6 @@
 package codeunits
 
-import "github.com/hansjlachmann/openerp/backend/foundation/types"
+import "github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 
 // Regional are a user's regional settings (My Settings): the work date (blank: today) and how
 // dates and numbers are shown — DateFormat "dd.mm.yy", "dd.mm.yyyy", "dd/mm/yyyy", "mm/dd/yyyy",

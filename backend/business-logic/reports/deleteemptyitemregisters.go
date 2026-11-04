@@ -1,7 +1,7 @@
 package reports
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Report 799 Delete Empty Item Registers: the item registers without item or phys. inventory

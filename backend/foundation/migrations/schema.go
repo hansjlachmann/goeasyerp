@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 )
 
 // SQLite schema for migration infrastructure tables

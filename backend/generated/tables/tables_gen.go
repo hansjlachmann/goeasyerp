@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 )
 
 // tableRegistry holds the factory of every table by name

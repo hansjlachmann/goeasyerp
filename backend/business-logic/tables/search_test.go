@@ -2,11 +2,11 @@ package tables
 
 import (
 	"database/sql"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 // The list search is case-insensitive for non-ASCII letters on SQLite too (the application's

@@ -181,7 +181,7 @@ my-goeasyerp-extension/
 
 ```yaml
 core:
-  repository: hansjlachmann/openerp
+  repository: hansjlachmann/goeasyerp
   version: v0.1.9
 
 customer:
@@ -211,7 +211,7 @@ changing the base code. What already works in the base:
 // my-goeasyerp-extension/extensions/logic/customer.go
 package logic
 
-import gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+import gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 
 type customerLogic struct{}
 

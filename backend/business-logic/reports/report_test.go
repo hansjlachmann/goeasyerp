@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	_ "github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 func newTestDB(t *testing.T) *sql.DB {

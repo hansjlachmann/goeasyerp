@@ -7,13 +7,13 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/noseries"
-	_ "github.com/hansjlachmann/openerp/backend/business-logic/tables" // the No. Series Line triggers
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/noseries"
+	_ "github.com/hansjlachmann/goeasyerp/backend/business-logic/tables" // the No. Series Line triggers
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 const company = "c1"

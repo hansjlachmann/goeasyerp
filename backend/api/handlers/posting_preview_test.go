@@ -7,16 +7,16 @@ import (
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/hansjlachmann/openerp/backend/api/middleware"
-	"github.com/hansjlachmann/openerp/backend/business-logic/postingpreview"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/session"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/api/middleware"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/postingpreview"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 
 	// page 115's trigger (OnFindRecords)
-	_ "github.com/hansjlachmann/openerp/backend/business-logic/pages"
+	_ "github.com/hansjlachmann/goeasyerp/backend/business-logic/pages"
 )
 
 // A preview's entries are listed from the preview (an entries page with the page parameter

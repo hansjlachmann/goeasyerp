@@ -6,13 +6,13 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/postingpreview"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/postingpreview"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/pages"
-	"github.com/hansjlachmann/openerp/backend/foundation/session"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 )
 
 // temporaryRecord is a generated record that can be made temporary (InitTemporary)

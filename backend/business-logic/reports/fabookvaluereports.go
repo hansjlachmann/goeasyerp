@@ -3,8 +3,8 @@ package reports
 import (
 	"strconv"
 
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Report 5605 Fixed Asset - Book Value 01: per asset (or group) one line — acquisition cost and

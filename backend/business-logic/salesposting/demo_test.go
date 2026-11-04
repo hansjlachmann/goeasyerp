@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/demodata"
-	"github.com/hansjlachmann/openerp/backend/business-logic/itemjnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/salesposting"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/demodata"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/itemjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salesposting"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // The demo sales documents: posted through codeunit 80 — invoices, shipments, a credit memo —

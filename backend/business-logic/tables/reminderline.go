@@ -1,12 +1,12 @@
 package tables
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/salestax"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salestax"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // reminderLineLogic is the business logic of table 296 Reminder Line: a text, an additional fee

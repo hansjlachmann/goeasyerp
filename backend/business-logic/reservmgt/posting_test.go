@@ -3,13 +3,13 @@ package reservmgt_test
 import (
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/purchposting"
-	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
-	"github.com/hansjlachmann/openerp/backend/business-logic/salesposting"
-	"github.com/hansjlachmann/openerp/backend/business-logic/salesquotetoorder"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/purchposting"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reservmgt"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salesposting"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salesquotetoorder"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 var postingDate = types.NewDate(2026, 10, 20)

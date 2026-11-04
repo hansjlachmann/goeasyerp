@@ -8,16 +8,16 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	apitypes "github.com/hansjlachmann/openerp/backend/api/types"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	"github.com/hansjlachmann/openerp/backend/business-logic/themerepo"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
-	"github.com/hansjlachmann/openerp/backend/foundation/session"
-	"github.com/hansjlachmann/openerp/backend/foundation/themes"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	apitypes "github.com/hansjlachmann/goeasyerp/backend/api/types"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/themerepo"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/themes"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // ThemesHandler serves the color themes and the user's appearance (User_Personalization).

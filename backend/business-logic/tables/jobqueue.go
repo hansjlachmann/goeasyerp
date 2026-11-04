@@ -3,16 +3,16 @@ package tables
 import (
 	"errors"
 
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/functions"
-	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
-	"github.com/hansjlachmann/openerp/backend/foundation/mail"
-	"github.com/hansjlachmann/openerp/backend/foundation/session"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/functions"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/mail"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // jobQueueLogic is the business logic of table 472 Job_Queue. The notification addresses

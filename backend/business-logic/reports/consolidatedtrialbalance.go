@@ -3,9 +3,9 @@ package reports
 import (
 	"strings"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Report 17 Consolidated Trial Balance: for each G/L account the net change and balance of each

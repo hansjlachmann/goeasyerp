@@ -3,10 +3,10 @@ package genjnl
 import (
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/salestax"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salestax"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // checkBlankKeyDate: a tax detail with a blank Effective Date (in its primary key) is found,

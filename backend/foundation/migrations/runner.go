@@ -7,7 +7,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 )
 
 // Runner executes migrations with distributed locking

@@ -1,6 +1,6 @@
 package reports
 
-import gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+import gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 
 // Report 205 "Order Confirmation": prints sales orders for the customer to confirm
 // (salesDocument). Layout: backend/definitions/reports/205-order-confirmation.yaml.

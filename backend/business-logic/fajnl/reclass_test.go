@@ -1,13 +1,13 @@
 package fajnl_test
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/genjnl"
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/fareclass"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/fareclass"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // reclassLine: an FA reclass. journal line moving a share of FA0040's TAX amounts to FA0050

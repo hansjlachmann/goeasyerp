@@ -4,12 +4,12 @@
 package reqwksh
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
-	"github.com/hansjlachmann/openerp/backend/foundation/pages"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // OpenJournalPage opens a requisition worksheet page (TemplateSelection and OpenJnl): the

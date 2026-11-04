@@ -1,7 +1,7 @@
 package tables
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // salesShipmentHeaderLogic is the business logic of table 110 Sales Shipment Header: a posted sales shipment (written by sales

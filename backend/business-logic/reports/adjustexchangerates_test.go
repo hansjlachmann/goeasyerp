@@ -5,15 +5,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/demodata"
-	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/glcheck"
-	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/demodata"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/genjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/glcheck"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Adjust Exchange Rates after the euro and the pound rose (adjustment rates 12.00 and 14.00 from

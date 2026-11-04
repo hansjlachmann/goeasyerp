@@ -1,7 +1,7 @@
 package reports
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Report 5693 Delete Empty FA Registers: the FA registers without FA or maintenance ledger

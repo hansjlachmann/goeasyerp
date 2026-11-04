@@ -12,8 +12,8 @@ import (
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	fmigrations "github.com/hansjlachmann/openerp/backend/foundation/migrations"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	fmigrations "github.com/hansjlachmann/goeasyerp/backend/foundation/migrations"
 )
 
 // Runs on SQLite (nothing to do) and on Postgres when TEST_POSTGRES_DSN is set (in a

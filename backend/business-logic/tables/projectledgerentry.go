@@ -4,14 +4,14 @@ import (
 	"strconv"
 	"strings"
 
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	"github.com/hansjlachmann/openerp/backend/foundation/format"
-	"github.com/hansjlachmann/openerp/backend/foundation/functions"
-	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/format"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/functions"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // projectLedgerEntryLogic is the business logic of table 169 Project Ledger Entry (written by

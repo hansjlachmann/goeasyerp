@@ -1,13 +1,13 @@
 package reqwksh
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reservmgt"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // MakeOrder is codeunit 333 Req. Wksh.-Make Order: the lines of a worksheet with a number,

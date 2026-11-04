@@ -8,13 +8,13 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	_ "github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/functions"
-	"github.com/hansjlachmann/openerp/backend/foundation/pages"
-	"github.com/hansjlachmann/openerp/backend/foundation/session"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	_ "github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/functions"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Every function a page action or menu item calls (run_object "<type>:<object>.<function>")

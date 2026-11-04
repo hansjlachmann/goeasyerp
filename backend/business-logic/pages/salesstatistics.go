@@ -1,11 +1,11 @@
 package pages
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/salespost"
-	"github.com/hansjlachmann/openerp/backend/foundation/pages"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salespost"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Page 160 Sales Statistics: the document's totals (Sales-Post SumSalesLines) — amount before

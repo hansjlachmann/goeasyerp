@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/intrastatjnl"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/intrastatjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // The Intrastat reports, run from the Intrastat Journal (page 311) on its batch:

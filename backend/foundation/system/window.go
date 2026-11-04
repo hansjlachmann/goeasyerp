@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 )
 
 // Window is the progress window of a codeunit, opened with a template of text fields #1####

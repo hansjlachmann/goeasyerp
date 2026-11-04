@@ -2,13 +2,13 @@ package tables
 
 import (
 	"errors"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 	"strings"
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/secrets"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/secrets"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 // maxPassword is the longest password whose encrypted form fits the 250-character column

@@ -2,7 +2,7 @@ package pages
 
 import (
 	"fmt"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	"strings"
 	"sync"
 )

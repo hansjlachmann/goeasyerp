@@ -3,8 +3,8 @@ package tables
 import (
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // The Gen. posting groups tell whether their default tax group is filled in automatically

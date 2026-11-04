@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 )
 
 // User represents a system user (global, no company prefix)

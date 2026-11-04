@@ -4,10 +4,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/blanketorder"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/blanketorder"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // A blanket order is called off in orders: Make Order takes each line's Qty. to Ship into a new

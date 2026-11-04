@@ -1,7 +1,7 @@
 package reports
 
 import (
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
 )
 
 // The Delete Empty … Registers reports (99 G/L, 799 Item, 899 BOM, 1199 Resource, 5693 FA, 5695

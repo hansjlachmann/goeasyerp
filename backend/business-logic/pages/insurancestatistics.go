@@ -1,8 +1,8 @@
 package pages
 
 import (
-	"github.com/hansjlachmann/openerp/backend/foundation/pages"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Page 5646 Insurance Statistics: Over/Underinsured is the policy coverage less the total value

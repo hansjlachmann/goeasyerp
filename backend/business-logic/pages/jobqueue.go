@@ -1,9 +1,9 @@
 package pages
 
 import (
-	"github.com/hansjlachmann/openerp/backend/foundation/pages"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Page 672 Job Queue: Object Caption to Run — the name of the job's codeunit or report in the

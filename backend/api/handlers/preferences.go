@@ -3,16 +3,16 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	apitypes "github.com/hansjlachmann/openerp/backend/api/types"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	apitypes "github.com/hansjlachmann/goeasyerp/backend/api/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 // PreferencesHandler handles user preferences API requests

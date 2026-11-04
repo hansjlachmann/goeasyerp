@@ -4,15 +4,15 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/reminder"
-	"github.com/hansjlachmann/openerp/backend/business-logic/reminderissue"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reminder"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reminderissue"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // The reminder and finance charge memo reports (main menu Sales → Activities, the

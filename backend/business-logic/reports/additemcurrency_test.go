@@ -3,10 +3,10 @@ package reports_test
 import (
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/glcheck"
-	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/glcheck"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Item costs with euro as the additional reporting currency (11.50): report 86 gives the

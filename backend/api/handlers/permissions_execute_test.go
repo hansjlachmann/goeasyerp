@@ -9,11 +9,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/codeunits"
-	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/session"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 )
 
 // userCodeunit returns the user its run sees (USERID)

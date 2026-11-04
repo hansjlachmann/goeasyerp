@@ -5,11 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/glcheck"
-	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/genjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/glcheck"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Calc. and Post Tax Settlement after a sale, a purchase and a purchase with use tax: the test

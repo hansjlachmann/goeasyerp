@@ -1,9 +1,9 @@
 package pages
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/navigate"
-	"github.com/hansjlachmann/openerp/backend/foundation/pages"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/navigate"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Page 344 Navigate: its header fields Document No. and Posting Date are the page parameters

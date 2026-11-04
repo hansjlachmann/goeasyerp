@@ -3,7 +3,7 @@ package tables
 import (
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 // Date calculations of fixed asset depreciation (codeunits 5616 Depreciation Calculation and

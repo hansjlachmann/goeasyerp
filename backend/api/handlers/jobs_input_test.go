@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 )
 
 // Input dialog answers may hold numbers (number inputs): they reach the codeunit as text

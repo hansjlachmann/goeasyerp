@@ -1,12 +1,12 @@
 package reports
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/fadepr"
-	"github.com/hansjlachmann/openerp/backend/business-logic/fajnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/fadepr"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/fajnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Report 5692 Calculate Depreciation: the depreciation (and custom 1) of the fixed assets in a

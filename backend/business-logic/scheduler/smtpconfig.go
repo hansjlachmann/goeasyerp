@@ -3,8 +3,8 @@ package scheduler
 import (
 	"log"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/jobqueue"
-	"github.com/hansjlachmann/openerp/backend/foundation/mail"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/jobqueue"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/mail"
 )
 
 // currentMailer returns the mail sender to use for notifications. A mailer set

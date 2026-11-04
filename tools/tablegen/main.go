@@ -1786,21 +1786,21 @@ import (
 	"time"
 {{- end }}
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 {{- if .UsesFlowFilter }}
-	"github.com/hansjlachmann/openerp/backend/foundation/flowfilter"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 {{- end }}
 {{- if .EncryptedFields }}
-	"github.com/hansjlachmann/openerp/backend/foundation/secrets"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/secrets"
 {{- end }}
 {{- if .UsesSIFT }}
-	"github.com/hansjlachmann/openerp/backend/foundation/sift"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 {{- end }}
-	"github.com/hansjlachmann/openerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 {{- if or .HasCodeField .HasTextField .HasDecimalField .HasDateField .HasDateTimeField }}
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 {{- end }}
 )
 
@@ -6037,7 +6037,7 @@ func (t *{{ .StructName }}) GetTableRelationFields() map[string]tables.TableRela
 const businessTemplate = `package tables
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // {{ lowerFirst .StructName }}Logic is the business logic of table {{ .Table.ID }} {{ .Table.Name }}.
@@ -6081,8 +6081,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 )
 
 // tableRegistry holds the factory of every table by name

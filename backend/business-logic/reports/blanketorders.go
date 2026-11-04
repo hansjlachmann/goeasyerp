@@ -1,6 +1,6 @@
 package reports
 
-import gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+import gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 
 // Reports 210 "Blanket Sales Order" and 410 "Blanket Purchase Order": print blanket orders like
 // the orders (salesDocument / purchDocument). Layouts: backend/definitions/reports/210-…, 410-….

@@ -1,10 +1,10 @@
 package pages
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/reqwksh"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/pages"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reqwksh"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // The requisition worksheet pages 291 Req. Worksheet and 296 Recurring Req. Worksheet: OnOpenPage

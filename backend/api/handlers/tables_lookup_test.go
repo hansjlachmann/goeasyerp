@@ -3,14 +3,14 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 	"net/url"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/session"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 // newLookupTestApp has Customer and Payment Terms with n payment terms.

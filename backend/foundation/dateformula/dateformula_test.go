@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 func TestApply(t *testing.T) {

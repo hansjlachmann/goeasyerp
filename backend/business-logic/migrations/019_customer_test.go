@@ -6,8 +6,8 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	fmigrations "github.com/hansjlachmann/openerp/backend/foundation/migrations"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	fmigrations "github.com/hansjlachmann/goeasyerp/backend/foundation/migrations"
 )
 
 // On a company of the old schema: ZIP_Code becomes Post_Code (data, field numbers,

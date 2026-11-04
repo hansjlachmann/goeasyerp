@@ -1,8 +1,8 @@
 package tables
 
 import (
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // accountingPeriodLogic is the business logic of table 50 Accounting Period: periods of a closed

@@ -4,7 +4,7 @@
 package purchprinted
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Run is codeunit 317 Purch.Header-Printed: a quote or order printed

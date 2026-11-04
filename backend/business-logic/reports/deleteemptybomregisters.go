@@ -1,7 +1,7 @@
 package reports
 
 import (
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Report 899 Delete Empty BOM Registers: the BOM registers without BOM ledger entries in their

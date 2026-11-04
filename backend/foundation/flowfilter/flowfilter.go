@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 // Kind is the data type of a FlowFilter field.

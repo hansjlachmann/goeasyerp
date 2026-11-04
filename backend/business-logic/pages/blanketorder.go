@@ -1,8 +1,8 @@
 package pages
 
 import (
-	"github.com/hansjlachmann/openerp/backend/foundation/pages"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Pages 9303 Blanket Sales Orders / 9310 Blanket Purchase Orders: the blanket orders (Document

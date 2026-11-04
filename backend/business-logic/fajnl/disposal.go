@@ -1,11 +1,11 @@
 package fajnl
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/fadepr"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/fadepr"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Codeunit 5605 Calculate Disposal: the entries a disposal makes. The 14 amounts (classic ARRAY

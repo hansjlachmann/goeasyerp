@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/flowfilter"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 )
 
 // Field filters as the list pages apply them (the filter pane), shared with the request pages

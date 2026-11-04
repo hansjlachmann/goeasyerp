@@ -3,9 +3,9 @@ package tables
 import (
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 func newRateDB(t *testing.T) (*gtables.Currency, func(cur, date, exch, rel, relCur string, fix gtables.CurrencyExchangeRateFix_exchange_rate_amount)) {

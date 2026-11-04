@@ -4,10 +4,10 @@ import (
 	"strconv"
 
 	// Document-Print and PrintRecords: the Print functions of the document pages
-	_ "github.com/hansjlachmann/openerp/backend/business-logic/docprint"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/pages"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	_ "github.com/hansjlachmann/goeasyerp/backend/business-logic/docprint"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Pages 306 Report Selection - Sales, 347 - Purchase, 524 - Reminder and 385 - Bank Acc.: the

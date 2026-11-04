@@ -3,9 +3,9 @@ package salesquotetoorder_test
 import (
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/salespost"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salespost"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Invoices and credit memos: their numbers, a posting date, lines that ship and invoice their

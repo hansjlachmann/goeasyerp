@@ -1,6 +1,6 @@
 package codeunits
 
-import "github.com/hansjlachmann/openerp/backend/foundation/database"
+import "github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 
 // Codeunit is the interface that all codeunits must implement
 type Codeunit interface {

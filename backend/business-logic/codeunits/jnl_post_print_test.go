@@ -6,14 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/demodata"
-	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/pdf"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/demodata"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pdf"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // journalTest is a journal of the demo data: the line its page shows first, its test report,

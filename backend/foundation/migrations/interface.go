@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 )
 
 // Migration represents a database migration

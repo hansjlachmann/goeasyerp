@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 // Apply returns the date calculated from a date formula and a date. A formula is a sequence

@@ -3,8 +3,8 @@ package genjnl
 import (
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // A sale on a taxable G/L account takes the tax out of the amount: the revenue without tax, the

@@ -1,8 +1,8 @@
 package reports
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/setupchecklist"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/setupchecklist"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Report 26 Setup Checklist: the checklist lines in their order under their application area —

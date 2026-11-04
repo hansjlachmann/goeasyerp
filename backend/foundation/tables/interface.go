@@ -6,7 +6,7 @@ import (
 
 	"strconv"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 )
 
 // Table is the interface that all generated tables must implement.

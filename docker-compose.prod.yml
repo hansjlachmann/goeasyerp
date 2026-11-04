@@ -27,7 +27,7 @@ services:
       retries: 5
 
   backend:
-    image: ghcr.io/hansjlachmann/openerp/backend:${APP_VERSION:-latest}
+    image: ghcr.io/hansjlachmann/goeasyerp/backend:${APP_VERSION:-latest}
     restart: unless-stopped
     ports:
       # Users go through nginx (80/443). Published on PUBLISH_HOST (default 127.0.0.1) for a
@@ -58,7 +58,7 @@ services:
         condition: service_healthy
 
   frontend:
-    image: ghcr.io/hansjlachmann/openerp/frontend:${APP_VERSION:-latest}
+    image: ghcr.io/hansjlachmann/goeasyerp/frontend:${APP_VERSION:-latest}
     restart: unless-stopped
     ports:
       - "${PUBLISH_HOST:-127.0.0.1}:3000:3000"

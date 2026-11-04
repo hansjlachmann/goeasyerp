@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/format"
-	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/format"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 // formatDecimal prints a decimal in the language with decimal places "min:max" (blank: 0:5)

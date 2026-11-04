@@ -3,8 +3,8 @@ package handlers
 import (
 	"github.com/gofiber/fiber/v2"
 
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 )
 
 // maxSelectionRecords: the most records a codeunit can be run on from a list selection

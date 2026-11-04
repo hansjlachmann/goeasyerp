@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/session"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 )
 
 // CachedSession wraps a session with expiry info

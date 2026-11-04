@@ -6,8 +6,8 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	fmigrations "github.com/hansjlachmann/openerp/backend/foundation/migrations"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	fmigrations "github.com/hansjlachmann/goeasyerp/backend/foundation/migrations"
 )
 
 // A saved layout and a setup checklist line of page 358 move to page 908; other pages stay

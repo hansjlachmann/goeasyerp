@@ -1,8 +1,8 @@
 package tables
 
 import (
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // shipToAddressLogic is the business logic of table 222 Ship-to Address

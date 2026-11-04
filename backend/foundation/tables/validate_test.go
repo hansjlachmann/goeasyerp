@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
 func message(t *testing.T, err error, language string) string {

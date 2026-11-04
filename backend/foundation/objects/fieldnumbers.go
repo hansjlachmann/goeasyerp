@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 )
 
 // fieldDefinitionTable remembers, per physical table ("company$Customer" or a global table),

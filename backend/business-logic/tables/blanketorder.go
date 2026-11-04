@@ -1,8 +1,8 @@
 package tables
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/reservmgt"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reservmgt"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Blanket orders on the sales and purchase lines (fields 97/98 Blanket Order No./Line No.): a line

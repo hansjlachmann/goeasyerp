@@ -1,14 +1,14 @@
 package tables
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/itemprice"
-	"github.com/hansjlachmann/openerp/backend/business-logic/noseries"
-	"github.com/hansjlachmann/openerp/backend/business-logic/resprice"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/functions"
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/itemprice"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/noseries"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/resprice"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/functions"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // projectJournalLineLogic is the business logic of table 210 Project Journal Line: a project's

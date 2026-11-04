@@ -8,18 +8,18 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/demodata"
-	"github.com/hansjlachmann/openerp/backend/business-logic/itemjnl"
-	"github.com/hansjlachmann/openerp/backend/business-logic/purchposting"
-	"github.com/hansjlachmann/openerp/backend/business-logic/reports"
-	"github.com/hansjlachmann/openerp/backend/business-logic/salesposting"
-	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
-	"github.com/hansjlachmann/openerp/backend/business-logic/taxstatement"
-	"github.com/hansjlachmann/openerp/backend/foundation/database"
-	"github.com/hansjlachmann/openerp/backend/foundation/format"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/demodata"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/itemjnl"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/purchposting"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salesposting"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/taxstatement"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/format"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 func must(t *testing.T, err error) {

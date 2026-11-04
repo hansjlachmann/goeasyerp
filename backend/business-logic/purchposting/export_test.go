@@ -1,6 +1,6 @@
 package purchposting
 
-import gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+import gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 
 // SetVendorEntryHook changes the vendor entry's journal line before it is posted (a test of the
 // balance check); the returned function removes the hook

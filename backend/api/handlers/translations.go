@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"github.com/gofiber/fiber/v2"
-	apitypes "github.com/hansjlachmann/openerp/backend/api/types"
-	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
+	apitypes "github.com/hansjlachmann/goeasyerp/backend/api/types"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 )
 
 // TranslationsHandler handles translation-related API requests

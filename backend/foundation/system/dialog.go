@@ -3,7 +3,7 @@ package system
 import (
 	"errors"
 
-	"github.com/hansjlachmann/openerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 )
 
 // Message returns the result of a codeunit that shows an information dialog; the text is

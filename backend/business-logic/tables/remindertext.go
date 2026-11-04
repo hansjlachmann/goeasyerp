@@ -3,9 +3,9 @@ package tables
 import (
 	"fmt"
 
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // reminderTextLogic is the business logic of table 294 Reminder_Text.

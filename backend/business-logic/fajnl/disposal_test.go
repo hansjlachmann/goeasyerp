@@ -4,10 +4,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hansjlachmann/openerp/backend/business-logic/genjnl"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/types"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/genjnl"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // acquiredAndDepreciated: FA0090 in the COMPANY book acquired for 50,000 and depreciated by

@@ -6,11 +6,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	apitypes "github.com/hansjlachmann/openerp/backend/api/types"
-	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
-	"github.com/hansjlachmann/openerp/backend/foundation/i18n"
-	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
-	"github.com/hansjlachmann/openerp/backend/foundation/themes"
+	apitypes "github.com/hansjlachmann/goeasyerp/backend/api/types"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/themes"
 )
 
 // Pictures (BLOB fields such as Item.Picture): never sent in the table API's records (PublicMap

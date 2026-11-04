@@ -1,8 +1,8 @@
 package reports
 
 import (
-	"github.com/hansjlachmann/openerp/backend/foundation/system"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Report 1193 Implement Res. Price Change: the suggested price changes become the resource

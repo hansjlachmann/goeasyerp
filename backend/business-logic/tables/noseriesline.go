@@ -1,8 +1,8 @@
 package tables
 
 import (
-	"github.com/hansjlachmann/openerp/backend/business-logic/noseries"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/noseries"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // noSeriesLineLogic is the business logic of table 309 No_Series_Line.

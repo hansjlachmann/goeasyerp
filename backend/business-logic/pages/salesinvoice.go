@@ -1,8 +1,8 @@
 package pages
 
 import (
-	"github.com/hansjlachmann/openerp/backend/foundation/pages"
-	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Pages 9301 Sales Invoices and 9302 Sales Credit Memos: the documents of their type. Pages 43
