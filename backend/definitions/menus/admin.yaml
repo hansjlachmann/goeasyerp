@@ -201,6 +201,8 @@ menu:
           - separator: true
           - name: "G/L Balance Check"
             run_object: "codeunit:904"
+          - name: "Refused Postings"
+            page_id: 904
           - name: "Date Compression"
             items:
               - name: "General Ledger"
@@ -815,6 +817,8 @@ menu:
       - separator: true
       - name: "Job Queue"
         page_id: 672
+      - name: "Refused Postings"
+        page_id: 904
       - separator: true
       - name: "SMTP Setup"
         page_id: 409

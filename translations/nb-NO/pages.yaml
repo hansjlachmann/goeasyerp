@@ -1174,3 +1174,5 @@ pages:
       total_usage_cost: "Totalt – Kost totalt"
       total_inv_profit: "Totalt – Fortjeneste"
       total_inv_profit_pct: "Totalt – Fortjeneste %"
+  refused_postings:
+    caption: "Avviste bokføringer"
