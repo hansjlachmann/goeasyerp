@@ -3,6 +3,7 @@ package projectjnl_test
 import (
 	"database/sql"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -11,8 +12,10 @@ import (
 	"github.com/hansjlachmann/openerp/backend/business-logic/demodata"
 	"github.com/hansjlachmann/openerp/backend/business-logic/projectjnl"
 	"github.com/hansjlachmann/openerp/backend/business-logic/tables"
+	fcodeunits "github.com/hansjlachmann/openerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/openerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/openerp/backend/foundation/errors"
+	"github.com/hansjlachmann/openerp/backend/foundation/format"
 	ftables "github.com/hansjlachmann/openerp/backend/foundation/tables"
 	"github.com/hansjlachmann/openerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/openerp/backend/generated/tables"
@@ -179,6 +182,20 @@ func TestProjectSaleAppliesToUsage(t *testing.T) {
 		t.Errorf("invoiced price %s, want %s", project.Invoiced_price, usage.Total_price)
 	}
 
+	// Applied Entries: the usage shows the sale that closed it, the sale the usage it closed
+	applied, err := tables.AppliedProjectEntries(usage)
+	must(t, err)
+	if !applied.FindFirst() || applied.Entry_no != usage.Closed_by_entry_no || applied.Count() != 1 {
+		t.Errorf("entries applied to the usage: %v", applied.ToMap())
+	}
+	saleEntry := gtables.NewProjectLedgerEntry(src)
+	must(t, saleEntry.GetOrError(usage.Closed_by_entry_no))
+	applied, err = tables.AppliedProjectEntries(saleEntry)
+	must(t, err)
+	if !applied.FindFirst() || applied.Entry_no != usage.Entry_no || applied.Count() != 1 {
+		t.Errorf("entries applied to the sale: %v", applied.ToMap())
+	}
+
 	// the demo project on Quote takes no journal lines
 	quote := gtables.NewProject(src)
 	quote.SetRange("status", gtables.Project_Status.Quote)
@@ -191,5 +208,53 @@ func TestProjectSaleAppliesToUsage(t *testing.T) {
 	var appErr *apperrors.AppError
 	if !errors.As(err, &appErr) || appErr.Code != apperrors.ErrFieldMustBe {
 		t.Errorf("a project on Quote: %v", err)
+	}
+}
+
+// Reconcile on the entries opened from a sale line's Applies-to ID: the line's amount, the
+// remaining amount of the open usage marked with its ID, and the balance; from elsewhere it is
+// refused
+func TestProjectEntriesReconcile(t *testing.T) {
+	src := demoCompany(t)
+	project := projectOnOrder(t, src)
+	newLine(t, src, 10000, project.No, gtables.ProjectJournalLine_Type.Resource, "R0010", "4")
+	newLine(t, src, 20000, project.No, gtables.ProjectJournalLine_Type.Resource, "R0010", "2")
+	line := gtables.NewProjectJournalLine(src)
+	line.Journal_template_name, line.Journal_batch_name = "PROJECT", "DEFAULT"
+	_, err := projectjnl.NewProjectJnlPostBatch(src).Run(line)
+	must(t, err)
+
+	usage := gtables.NewProjectLedgerEntry(src)
+	usage.SetRange("project_no", project.No)
+	usage.SetRange("document_no", "P1")
+	// Set Applies-to ID on the entries page opened from the line
+	fcodeunits.SetCurrentPageParams(map[string]string{"applies_to_id": "SALE1", "line_entry_type": "sale", "line_total_price": "1000", "line_heading": "Invoice SI1"})
+	t.Cleanup(func() { fcodeunits.SetCurrentPageParams(nil) })
+	var total types.Decimal
+	for found := usage.FindSetBuffered(); found; found = usage.Next() {
+		_, err := tables.ProjectLedgEntrySetApplId(usage)
+		must(t, err)
+		total = total.Add(usage.Remaining_amount)
+	}
+	if total.IsZero() {
+		t.Fatal("no usage marked")
+	}
+
+	result, err := tables.ProjectLedgEntryReconcile(usage)
+	must(t, err)
+	message := result.Message
+	if result.Dialog != nil {
+		message = result.Dialog.Message
+	}
+	balance := dec("1000").Sub(total)
+	for _, want := range []string{"Invoice SI1", "1,000.00", format.Decimal(total, "2:2", "en-US"), format.Decimal(balance, "2:2", "en-US")} {
+		if !strings.Contains(message, want) {
+			t.Errorf("reconciliation %q without %q", message, want)
+		}
+	}
+
+	fcodeunits.SetCurrentPageParams(nil)
+	if _, err := tables.ProjectLedgEntryReconcile(usage); err == nil {
+		t.Error("Reconcile without a calling line was allowed")
 	}
 }

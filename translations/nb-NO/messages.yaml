@@ -615,3 +615,9 @@ Bokfører linjer #3###### @4@@@@@@@@@@@@@"
   RESERV_AUTO_NOT_POSSIBLE: "Automatisk reservasjon er ikke mulig.\nVil du reservere varene manuelt?"
   ITEM_TRACKING_LOT: ", Lotnr. %1"
   ITEM_TRACKING_SERIAL: ", Serienr. %1"
+
+  # Project ledger entries: Reconcile (form 365), Project Journal Reconcile (page 376)
+  PROJECT_JNL_RECONCILE_TOTAL: "Totalt %1"
+  PROJECT_RECONCILE_DOCUMENT: "Bilag %1"
+  PROJECT_RECONCILE_FROM_LINE_ONLY: "Denne funksjonen kan bare brukes når vinduet er åpnet fra en prosjektkladd eller fra en salgslinje."
+  PROJECT_RECONCILIATION: "Avstemming – %1\n\nBeløp: %2\nUtlignet beløp: %3\nSaldo: %4"

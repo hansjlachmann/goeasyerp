@@ -15,11 +15,13 @@ import (
 // group totals by class, subclass, location, main asset, dimension 1 or 2; Print per Fixed
 // Asset (PrintDetails). Budget reports are left out (budgeted assets are not migrated).
 //
-// The values set for the layouts, per prefix ("" the asset, "grp_" the group total before the
-// asset's line, "lgrp_" the group of the last asset, "tot_" the total): <p>start_<n>,
-// <p>net_<n>, <p>disp_<n>, <p>end_<n> for the types 1–6 (and <p>rstart_<n> … with Include
-// Reclassification), <p>show_<n> (the line is printed and the type has an amount), <p>bv_start,
-// <p>bv_end.
+// The groups are the data item's group sections, grouped by the value group_head_line (the
+// asset's class, subclass … — the option the user picks; blank without group totals): the group
+// footer (OnGroupFooter) sets the group's amounts from the group totals of the asset's amounts
+// (TotalValues). The values set for the layouts, per prefix ("" the asset, "grp_" the group
+// total, "tot_" the total): <p>start_<n>, <p>net_<n>, <p>disp_<n>, <p>end_<n> for the types 1–6
+// (and <p>rstart_<n> … with Include Reclassification), <p>show_<n> (the line is printed and the
+// type has an amount), <p>bv_start, <p>bv_end.
 
 const faBookValueTypes = 6
 
@@ -50,9 +52,38 @@ type faBookValue struct {
 	faDeprBook               *gtables.FADepreciationBook
 	acquisitionDate          types.Date
 	disposalDate             types.Date
-	group, total             faBookValueAmounts
-	groupHeadLine            string
-	printed                  int
+	total                    faBookValueAmounts
+}
+
+// faBookValueTotalValues: the asset's amounts its groups total (DataItem.TotalValues)
+func faBookValueTotalValues() []string {
+	var names []string
+	for j := 1; j <= faBookValueTypes; j++ {
+		n := itoa(j)
+		names = append(names, "start_"+n, "net_"+n, "disp_"+n, "rstart_"+n, "rnet_"+n, "rdisp_"+n)
+	}
+	return names
+}
+
+// faGroupFooter (the classic group footer): the group's amounts from the totals of its assets'
+// amounts, its text; no group footer without group totals
+func (r *faBookValue) faGroupFooter(fa *gtables.FixedAsset, group string, run *Run) error {
+	if r.groupTotals == 0 {
+		return Skip()
+	}
+	var a faBookValueAmounts
+	for j := 1; j <= faBookValueTypes; j++ {
+		n := itoa(j)
+		a.start[j-1] = run.GroupTotal("start_" + n)
+		a.netChange[j-1] = run.GroupTotal("net_" + n)
+		a.disposal[j-1] = run.GroupTotal("disp_" + n)
+		a.reclassStart[j-1] = run.GroupTotal("rstart_" + n)
+		a.reclassNetChange[j-1] = run.GroupTotal("rnet_" + n)
+		a.reclassDisposal[j-1] = run.GroupTotal("rdisp_" + n)
+	}
+	r.setAmountValues(run, "grp_", &a, true)
+	run.SetValue("group_total_text", run.Text("GROUP_TOTAL", run.Value("group_head_line")))
+	return nil
 }
 
 // faBookValueOptions: the request page of reports 5605 and 5606
@@ -126,8 +157,7 @@ func (r *faBookValue) faOnPreDataItem(rec *gtables.FixedAsset, run *Run) error {
 }
 
 // faOnAfterGetRecord: the asset's amounts (assets without the book, inactive, not acquired by the
-// ending date or disposed before the starting date are skipped); a new group prints the total of
-// the one before
+// ending date or disposed before the starting date are skipped) and its group
 func (r *faBookValue) faOnAfterGetRecord(fa *gtables.FixedAsset, run *Run) error {
 	r.faDeprBook = gtables.NewFADepreciationBook(run)
 	if !r.faDeprBook.Get(map[string]interface{}{"fa_no": fa.No, "depreciation_book_code": r.deprBookCode}) {
@@ -161,28 +191,15 @@ func (r *faBookValue) faOnAfterGetRecord(fa *gtables.FixedAsset, run *Run) error
 		}
 	}
 
-	groupHeadLine := r.makeGroupHeadLine(run, fa)
-	newGroup := r.printed == 0 || groupHeadLine != r.groupHeadLine
-	run.SetValue("print_group_footer", r.groupTotals > 0 && r.printed > 0 && newGroup)
-	if r.groupTotals > 0 && r.printed > 0 && newGroup {
-		r.setAmountValues(run, "grp_", &r.group, true)
-		run.SetValue("group_total_text", run.Text("GROUP_TOTAL", r.groupHeadLine))
-	} else {
-		r.setAmountValues(run, "grp_", &faBookValueAmounts{}, false)
+	// the asset's group (the group sections' group field): blank without group totals
+	groupHeadLine := ""
+	if r.groupTotals > 0 {
+		groupHeadLine = r.makeGroupHeadLine(run, fa)
 	}
-	if newGroup {
-		r.group = faBookValueAmounts{}
-		r.groupHeadLine = groupHeadLine
-	}
-	run.SetValue("print_group_header", r.printDetails && r.groupTotals > 0 && newGroup)
 	run.SetValue("group_head_line", groupHeadLine)
-	r.printed++
 
 	r.setAmountValues(run, "", &amounts, r.printDetails)
-	r.group.add(&amounts)
 	r.total.add(&amounts)
-	r.setAmountValues(run, "lgrp_", &r.group, r.groupTotals > 0)
-	run.SetValue("last_group_total_text", run.Text("GROUP_TOTAL", r.groupHeadLine))
 	r.setAmountValues(run, "tot_", &r.total, true)
 	return nil
 }

@@ -6805,6 +6805,18 @@ tables:
       entry_type:
         usage: "Forbrug"
         sale: "Salg"
+  project_journal_quantity:
+    caption: "Projektkladdeantal"
+    fields:
+      is_total: "Er total"
+      unit_of_measure_code: "Enhedskode"
+      line_type: "Linjetype"
+      work_type_code: "Arbejdstypekode"
+      quantity: "Antal"
+      unit_of_measure_text: "Enhed"
+    options:
+      line_type:
+        total: "I alt"
   project_register:
     caption: "Projektjournal"
     fields:

@@ -1,0 +1,79 @@
+# Report 1202 Project Journal - Test: the printed layout (see business-logic/reports/layout.go)
+report:
+  id: 1202
+  name: Project Journal - Test
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Project_Journal_Batch
+      new_page_per_record: true
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 22
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+            - {text: JOURNAL_TEMPLATE, x: 0, y: 12, width: 40}
+            - {field: journal_template_name, x: 41, y: 12, width: 30}
+            - {text: JOURNAL_BATCH, x: 0, y: 16, width: 40}
+            - {field: name, x: 41, y: 16, width: 30}
+        - type: header
+          print_on_every_page: true
+          height: 10.5
+          elements:
+            - {text: POSTING_DATE, x: 0, y: 1, width: 18, bold: true, wrap: true}
+            - {text: PROJECT_NO, x: 19, y: 1, width: 22, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 42, y: 1, width: 22, bold: true, wrap: true}
+            - {text: TYPE, x: 65, y: 1, width: 18, bold: true, wrap: true}
+            - {text: NO, x: 84, y: 1, width: 20, bold: true, wrap: true}
+            - {text: QUANTITY, x: 105, y: 1, width: 20, bold: true, wrap: true, align: right}
+            - {text: UNIT_OF_MEASURE, x: 127, y: 1, width: 14, bold: true, wrap: true}
+            - {text: WORK_TYPE, x: 142, y: 1, width: 20, bold: true, wrap: true}
+            - {text: UNIT_COST, x: 163, y: 1, width: 25, bold: true, wrap: true, align: right}
+            - {text: TOTAL_COST, x: 189, y: 1, width: 27, bold: true, wrap: true, align: right}
+            - {text: UNIT_PRICE, x: 217, y: 1, width: 25, bold: true, wrap: true, align: right}
+            - {text: TOTAL_PRICE, x: 243, y: 1, width: 30, bold: true, wrap: true, align: right}
+            - {line: true, x: 0, y: 9}
+    - name: Project_Journal_Line
+      sections:
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: body
+          height: 4.2
+          elements:
+            - {field: posting_date, x: 0, y: 0, width: 18}
+            - {field: project_no, x: 19, y: 0, width: 22}
+            - {field: document_no, x: 42, y: 0, width: 22}
+            - {field: type, x: 65, y: 0, width: 18}
+            - {field: "no", x: 84, y: 0, width: 20}
+            - {field: quantity, x: 105, y: 0, width: 20, align: right}
+            - {field: unit_of_measure_code, x: 127, y: 0, width: 14}
+            - {field: work_type_code, x: 142, y: 0, width: 20}
+            - {field: unit_cost, x: 163, y: 0, width: 25, align: right}
+            - {field: total_cost, x: 189, y: 0, width: 27, align: right}
+            - {field: unit_price, x: 217, y: 0, width: 25, align: right}
+            - {field: total_price, x: 243, y: 0, width: 30, align: right}
+        - type: footer
+          height: 8
+          elements:
+            - {line: true, x: 189, y: 1}
+            - {total: total_cost, x: 189, y: 2.5, width: 27, align: right, bold: true}
+            - {total: total_price, x: 243, y: 2.5, width: 30, align: right, bold: true}
+    - name: Error_Loop
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {text: WARNING, x: 19, y: 0, width: 20, bold: true}
+            - {value: error_text, x: 40, y: 0, width: 233, wrap: true}

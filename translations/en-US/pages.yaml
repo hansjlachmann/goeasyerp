@@ -1101,6 +1101,10 @@ pages:
       account_name: "Account Name"
   project_ledger_entries:
     caption: "Project Ledger Entries"
+  applied_project_entries:
+    caption: "Applied Project Entries"
+  project_journal_reconcile:
+    caption: "Project Journal Reconcile"
   project_statistics:
     caption: "Project Statistics"
     fields:
