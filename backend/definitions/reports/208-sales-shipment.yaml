@@ -59,7 +59,7 @@ report:
             - {text: ITEM_NO, x: 0, y: 108, width: 22, bold: true}
             - {text: UNIT, x: 22, y: 108, width: 15, bold: true}
             - {text: DESCRIPTION, x: 37, y: 108, width: 76, bold: true}
-            - {text: QUANTITY, x: 158, y: 108, width: 25, align: right, bold: true}
+            - {text: QUANTITY, x: 138, y: 108, width: 45, align: right, bold: true}
             - {line: true, x: 0, y: 113}
 
     - name: SalesShipmentLine

@@ -230,6 +230,8 @@ type Result struct {
 	Output   string
 	Pages    int
 	Texts    []pdf.PlacedText
+	// Broken: the words wrapped texts had to break, wider than their element (what tests check)
+	Broken []pdf.PlacedText
 	// A processing report's file (Run.WriteFile): its contents (FileName its name)
 	File []byte
 	// The printouts of the reports a processing report printed (Run.AddPrintouts) and the page
@@ -370,6 +372,7 @@ func (r *Run) printout(result Result) (Result, error) {
 	result.Output = r.output
 	result.Pages = r.printer.doc.Pages()
 	result.Texts = r.printer.doc.Texts()
+	result.Broken = r.printer.doc.Broken()
 	return result, nil
 }
 

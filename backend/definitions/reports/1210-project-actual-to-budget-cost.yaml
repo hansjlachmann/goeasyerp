@@ -42,8 +42,8 @@ report:
           height: 9
           elements:
             - {text: PHASE_TASK_STEP, x: 0, y: 1, width: 30, bold: true, wrap: true}
-            - {text: DESCRIPTION, x: 31, y: 1, width: 80, bold: true, wrap: true}
-            - {text: TYPE, x: 112, y: 1, width: 22, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 31, y: 1, width: 73, bold: true, wrap: true}
+            - {text: TYPE, x: 105, y: 1, width: 29, bold: true, wrap: true}
             - {text: NO, x: 135, y: 1, width: 24, bold: true, wrap: true}
             - {text: ACTUAL, x: 160, y: 1, width: 28, bold: true, wrap: true, align: right}
             - {text: BUDGET, x: 189, y: 1, width: 28, bold: true, wrap: true, align: right}
@@ -76,8 +76,8 @@ report:
         - type: body
           height: 4.2
           elements:
-            - {value: description, x: 31, y: 0, width: 80}
-            - {value: type, x: 112, y: 0, width: 22}
+            - {value: description, x: 31, y: 0, width: 73}
+            - {value: type, x: 105, y: 0, width: 29}
             - {value: "no", x: 135, y: 0, width: 24}
             - {value: actual, x: 160, y: 0, width: 28, align: right}
             - {value: budget, x: 189, y: 0, width: 28, align: right}

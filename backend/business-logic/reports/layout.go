@@ -169,6 +169,27 @@ func (e *Element) kind() string {
 	return kinds[0]
 }
 
+// tag names the element for tests ("field:amount", "text:TOTAL", "page_no")
+func (e *Element) tag() string {
+	switch e.kind() {
+	case "text":
+		return "text:" + e.Text
+	case "caption":
+		return "caption:" + e.Caption
+	case "field":
+		return "field:" + e.Field
+	case "value":
+		return "value:" + e.Value
+	case "total":
+		return "total:" + e.Total
+	case "total_value":
+		return "total_value:" + e.TotalValue
+	case "lines":
+		return "lines:" + e.Lines
+	}
+	return e.kind()
+}
+
 var decimalPlacesPattern = regexp.MustCompile(`^\d+:\d+$`)
 
 // item returns the layout of a data item (nil when the data item prints nothing)

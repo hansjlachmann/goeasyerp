@@ -49,6 +49,9 @@ type Style struct {
 	Bold  bool
 	Align string // "left" (default), "right", "center"
 	Mono  bool   // an amount: IBM Plex Mono
+	// Tag names what prints the text (the report element, e.g. "field:amount"); not printed,
+	// kept with the placed text for tests
+	Tag string
 }
 
 // size is the style's font size (9 points by default)
@@ -70,6 +73,11 @@ type PlacedText struct {
 	X, Y float64
 	Text string
 	Bold bool
+	// Full is the whole text when it did not fit its width and was cut ("" when it fit);
+	// Width is the box it was printed in and Tag the style's tag
+	Full  string
+	Width float64
+	Tag   string
 }
 
 // Document is a PDF being written
@@ -79,6 +87,7 @@ type Document struct {
 	height  float64
 	margins Margins
 	texts   []PlacedText
+	broken  []PlacedText // words SplitText had to break (wider than the width): Broken
 	images  map[string]bool
 }
 
@@ -161,6 +170,11 @@ func (d *Document) SplitText(text string, width float64, style Style) []string {
 			lines = append(lines, "")
 			continue
 		}
+		for _, word := range strings.Fields(paragraph) {
+			if d.f.GetStringWidth(word) > width+0.01 {
+				d.broken = append(d.broken, PlacedText{Text: word, Full: paragraph, Width: width, Bold: style.Bold, Tag: style.Tag})
+			}
+		}
 		lines = append(lines, d.f.SplitText(paragraph, width)...)
 	}
 	return lines
@@ -173,7 +187,9 @@ func (d *Document) Text(x, y, width float64, text string, style Style) {
 		return
 	}
 	d.setStyle(style)
-	if width > 0 {
+	full := ""
+	if width > 0 && d.f.GetStringWidth(text) > width+0.01 {
+		full = text
 		for text != "" && d.f.GetStringWidth(text) > width+0.01 {
 			runes := []rune(text)
 			text = string(runes[:len(runes)-1])
@@ -188,7 +204,7 @@ func (d *Document) Text(x, y, width float64, text string, style Style) {
 	}
 	d.f.SetXY(x, y)
 	d.f.CellFormat(width, style.LineHeight(), text, "", 0, align+"M", false, 0, "")
-	d.texts = append(d.texts, PlacedText{Page: d.f.PageNo(), X: x, Y: y, Text: text, Bold: style.Bold})
+	d.texts = append(d.texts, PlacedText{Page: d.f.PageNo(), X: x, Y: y, Text: text, Bold: style.Bold, Full: full, Width: width, Tag: style.Tag})
 }
 
 // Line draws a line from x1, y1 to x2, y2 (millimetres), width in millimetres (0: 0.2)
@@ -255,6 +271,10 @@ func (d *Document) Image(x, y, w, h float64, data []byte) error {
 
 // Texts returns the texts printed so far, in order (for tests)
 func (d *Document) Texts() []PlacedText { return d.texts }
+
+// Broken returns the words wrapped texts had to break because they were wider than their
+// width (Text: the word, Full: the text)
+func (d *Document) Broken() []PlacedText { return d.broken }
 
 // Bytes finishes the document and returns the PDF
 func (d *Document) Bytes() ([]byte, error) {

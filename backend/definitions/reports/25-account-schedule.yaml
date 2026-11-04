@@ -18,7 +18,7 @@ report:
           print_on_every_page: true
           height: 22
           elements:
-            - {value: company_name, x: 0, y: 0, width: 273, align: center, bold: true, size: 10}
+            - {value: company_name, x: 61.5, y: 0, width: 150, align: center, bold: true, size: 10}
             - {value: today, x: 213, y: 0, width: 60, align: right}
             - {text: PAGE, x: 213, y: 4, width: 50, align: right}
             - {page_no: true, x: 263, y: 4, width: 10, align: right}

@@ -61,6 +61,6 @@ report:
           elements:
             - {line: true, x: 120, y: 0.5, width: 25}
             - {value: item_no, x: 0, y: 1.5, width: 25, bold: true}
-            - {value: total_quantity_text, x: 26, y: 1.5, width: 80}
+            - {value: total_quantity_text, x: 26, y: 1.5, width: 62}
             - {text: AVERAGE_AGE, x: 90, y: 1.5, width: 28, align: right}
             - {value: average_age, x: 120, y: 1.5, width: 25, align: right, decimal_places: "0:0"}
