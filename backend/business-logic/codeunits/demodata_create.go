@@ -16,6 +16,7 @@ import (
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
@@ -24,8 +25,9 @@ import (
 // DemoDataCreate - Codeunit 901: Create Demo Data
 //
 // Run from the Job Queue (Run action or the scheduler) in the company to fill. The
-// job's parameter selects the size: SMALL (default), LARGE or HEAVY. The company must not
-// have customers yet; nothing is written if any part fails. Every run is logged as a
+// job's parameter selects the size: SMALL (default), LARGE or HEAVY. A company that already
+// has customers is emptied and filled again (but its job queue and user setup) — run from
+// the page, after a question; nothing changes if any part fails. Every run is logged as a
 // Job Queue Entry.
 const DemoDataCreateID = 901
 const DemoDataCreateName = "create-demo-data"
@@ -66,6 +68,15 @@ func (c *DemoDataCreate) Run(record interface{}) (fcodeunits.Result, error) {
 	ts := i18n.GetInstance()
 	lang := fcodeunits.CurrentLanguage()
 	start := types.Now()
+
+	// The demo replaces the company's data: asked when run from the page (a scheduled run
+	// replaces it)
+	cust := gtables.NewCustomer(ftables.DBSource(c.db, c.company, c.dbType))
+	if !cust.IsEmpty() && system.GuiAllowed() {
+		if !system.Confirm(ts.Message("DEMO_DATA_REPLACE_CONFIRM", lang), c.company) {
+			return fcodeunits.Result{}, nil
+		}
+	}
 
 	counts, err := c.create(jobQueue, ts, lang)
 	if err != nil {
@@ -122,8 +133,6 @@ func (c *DemoDataCreate) errorMessage(err error, ts *i18n.TranslationService, la
 	var sizeErr *demodata.SizeError
 	var insertErr *demodata.InsertError
 	switch {
-	case errors.Is(err, demodata.ErrCompanyNotEmpty):
-		return ts.MessageWithParams("DEMO_DATA_NOT_EMPTY", lang, c.company)
 	case errors.As(err, &sizeErr):
 		return ts.MessageWithParams("DEMO_DATA_BAD_SIZE", lang, sizeErr.Parameter)
 	case errors.As(err, &insertErr):

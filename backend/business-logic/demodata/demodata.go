@@ -3,8 +3,10 @@
 // files under data/; records are written through the table API (Insert with triggers),
 // so they obey the same rules as data entered by a user.
 //
-// Create runs in one transaction (all or nothing) and refuses a company that already
-// has customers. Generated values come from a fixed random seed and dates are relative
+// Create runs in one transaction (all or nothing). A company that already has customers is
+// emptied first (but its job queue and user setup), so the demo data can be created again;
+// without customers, setup records already there are kept.
+// Generated values come from a fixed random seed and dates are relative
 // to the run date, so every run produces the same data.
 package demodata
 
@@ -203,9 +205,6 @@ type Counts struct {
 	// and the first period of the next year; the oldest year is closed
 	AccountingPeriods int
 }
-
-// ErrCompanyNotEmpty is returned when the company already has customers.
-var ErrCompanyNotEmpty = errors.New("company already has customers")
 
 // SizeError is returned by ParseSize for an unknown size.
 type SizeError struct{ Parameter string }
@@ -408,11 +407,15 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 		}
 	}
 
-	var existing gtables.Customer
-	existing.InitWithDBType(exec, company, dbType)
+	// A company that has customers (demo data from an earlier run) is emptied first: the demo
+	// is created again. Without customers, setup records already there are kept.
+	existing := gtables.NewCustomer(ftables.DBSource(exec, company, dbType))
 	if !existing.IsEmpty() {
-		rollback()
-		return counts, ErrCompanyNotEmpty
+		err = clearCompany(exec, company, dbType)
+		if err != nil {
+			rollback()
+			return counts, err
+		}
 	}
 
 	p := newProgress(opts.Progress, opts.Size, len(setup.Countries)+len(setup.PaymentTerms)+recordCount(setup.MasterData)+recordCount(setup.CustomerData)+recordCount(setup.VendorData), len(customers), len(entries))

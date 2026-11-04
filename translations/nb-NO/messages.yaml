@@ -364,7 +364,7 @@ messages:
 
   # Demo data (codeunit 901)
   DEMO_DATA_DONE: "Demodata opprettet: %1 kunder med %2 kundeposter, %3 leverandører med %4 leverandørposter."
-  DEMO_DATA_NOT_EMPTY: "Selskapet \"%1\" har allerede kunder. Demodata opprettes bare i et selskap uten kunder."
+  DEMO_DATA_REPLACE_CONFIRM: "Selskapet \"%1\" har allerede data. Opprettelse av demodata sletter alt (unntatt jobbkøen og brukeroppsettet) og oppretter demoen på nytt. Vil du fortsette?"
   DEMO_DATA_BAD_SIZE: "Ukjent størrelse på demodata \"%1\". Sett parameteren på jobben til SMALL, LARGE eller HEAVY."
   DEMO_DATA_INSERT_FAILED: "Kunne ikke opprette %1 %2: %3. Ingen demodata ble opprettet."
   DEMO_DATA_SETUP: "Oppretter land og betalingsbetingelser..."
