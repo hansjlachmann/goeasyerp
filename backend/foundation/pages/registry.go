@@ -255,6 +255,29 @@ func (r *Registry) LookupPage(tableName string) int {
 	return best
 }
 
+// NewRecordPage is the page a lookup's New opens to enter a record of a table: its lookup page —
+// none (0) when that page enters nothing (read-only, editable: false, without a card page) or
+// the table is written by the system or by posting only (posted: true: the Object table, ledger
+// entries)
+func (r *Registry) NewRecordPage(tableName string) int {
+	if GetTableMetadata().IsPosted(tableName) {
+		return 0
+	}
+	id := r.LookupPage(tableName)
+	if id == 0 {
+		return 0
+	}
+	r.mu.RLock()
+	page, ok := r.pages[id]
+	r.mu.RUnlock()
+	// a read-only list without a card enters nothing (the Objects page); a read-only list with a
+	// card enters records on its card (the chart of accounts)
+	if ok && page.Page.Editable != nil && !*page.Page.Editable && page.Page.CardPageID == 0 {
+		return 0
+	}
+	return id
+}
+
 // CalculatedFields returns the calculated fields (calculated: true) of the pages showing a
 // table: page values a record sent from such a page carries, which are not table fields
 func (r *Registry) CalculatedFields(tableName string) map[string]bool {

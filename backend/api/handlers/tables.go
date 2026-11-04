@@ -164,7 +164,8 @@ type LookupData struct {
 	LazyURL string `json:"lazy_url,omitempty"`
 	// FreeText: the relation is the lookup only (validate: false) — typed text is kept as it is
 	FreeText bool `json:"free_text,omitempty"`
-	// NewPageID: the related table's list page — the lookup's "New" opens it with a new record
+	// NewPageID: the related table's list page — the lookup's "New" opens it with a new record;
+	// none for a read-only page or a system/posted table (no New in the dropdown)
 	NewPageID int `json:"new_page_id,omitempty"`
 	// KeyField: the related table's field the relation matches (the rows' _key) — a record
 	// picked from the New page gives its value
@@ -241,7 +242,7 @@ func (h *TablesHandler) buildLookup(tableName, fieldName string, relInfo ftables
 		Simple:        make(map[string]string),
 		SearchTimeout: relInfo.SearchTimeout,
 		FreeText:      relInfo.NoValidate,
-		NewPageID:     pages.GetRegistry().LookupPage(relInfo.Table),
+		NewPageID:     pages.GetRegistry().NewRecordPage(relInfo.Table),
 		KeyField:      relInfo.Field,
 	}
 	for _, f := range relInfo.Filters {

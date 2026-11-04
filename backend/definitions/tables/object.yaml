@@ -4,6 +4,7 @@ table:
   caption: Object
   description: The objects of this installation (tables, pages, reports, codeunits — the registered and the declared ones), written at startup
   global: true
+  posted: true   # a system table written at startup (apps.SyncObjects): the API inserts, changes and deletes nothing
   lookup_page_id: 908
   data_caption_fields: [type, id, name]
   fields:
