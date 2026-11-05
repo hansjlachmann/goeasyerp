@@ -1082,6 +1082,12 @@ func (t *IssuedReminderHeader) GetFieldCaption(fieldName, language string) strin
 	return ts.FieldCaption("Issued_Reminder_Header", fieldName, language)
 }
 
+// The fields' caption expressions (CaptionClass): their captions are resolved with them
+func init() {
+	i18n.SetCaptionClass(i18n.FieldKey("Issued_Reminder_Header", "dimension_1_code"), "1,1,1")
+	i18n.SetCaptionClass(i18n.FieldKey("Issued_Reminder_Header", "dimension_2_code"), "1,1,2")
+}
+
 // CreateTable creates the Issued_Reminder_Header table for the specified company (SQLite)
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *IssuedReminderHeader) CreateTable(db database.Executor, company string) error {

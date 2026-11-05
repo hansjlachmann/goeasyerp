@@ -67,7 +67,11 @@ type Key struct {
 
 // Field represents a single field in a table
 type Field struct {
-	No            int         `yaml:"no"`  // Field number (field ID): unique in the table, never changed or reused
+	No int `yaml:"no"` // Field number (field ID): unique in the table, never changed or reused
+	// CaptionClass (classic CaptionClass): the caption expression the field's caption is
+	// resolved with, "<area>,<arguments>" — "1,<kind>,<n>" a dimension field (the company's
+	// name for dimension n), "3,<text>" a free text (i18n/captionclass.go)
+	CaptionClass  string      `yaml:"caption_class"`
 	App           string      `yaml:"app"` // Set by extmerge on fields an extension adds: the extension's app id
 	Name          string      `yaml:"name"`
 	Type          string      `yaml:"type"`
@@ -371,6 +375,10 @@ func main() {
 	}
 	for _, p := range defs {
 		markGlobalSources(p.def, byStruct)
+		if err := validateCaptionClasses(p.def); err != nil {
+			fmt.Printf("✗ %s: %v\n", filepath.Base(p.file), err)
+			failed = true
+		}
 		if err := validateSIFTKeys(p.def); err != nil {
 			fmt.Printf("✗ %s: %v\n", filepath.Base(p.file), err)
 			failed = true
@@ -783,6 +791,24 @@ func flowFilterKind(f Field) (string, bool) {
 		return "KindCode", true
 	}
 	return "", false
+}
+
+// validateCaptionClasses checks the shape of the fields' caption expressions (the areas are
+// checked by i18n.CheckCaptionClass in the tests): "<area>,<arguments>", no quotes
+func validateCaptionClasses(def *TableDef) error {
+	for _, f := range append(append([]Field{}, def.Table.Fields...), def.FlowFilterFields...) {
+		if f.CaptionClass == "" {
+			continue
+		}
+		area, _, ok := strings.Cut(f.CaptionClass, ",")
+		if !ok || area == "" || strings.ContainsAny(f.CaptionClass, "\"\\\n") {
+			return fmt.Errorf("field %s: caption_class %q is not \"<area>,<arguments>\"", f.Name, f.CaptionClass)
+		}
+		if area == "1" && !strings.Contains(f.Name, "dimension") {
+			return fmt.Errorf("field %s: a dimension caption class (1,…) on a field that is not a dimension field", f.Name)
+		}
+	}
+	return nil
 }
 
 // markGlobalSources marks the FlowFields whose source table is global: they read it without
@@ -2181,6 +2207,23 @@ func (t *{{ .StructName }}) GetFieldCaption(fieldName, language string) string {
 	ts := i18n.GetInstance()
 	return ts.FieldCaption("{{ .Table.Name }}", fieldName, language)
 }
+{{- $captionClass := false }}{{ range .Table.Fields }}{{ if .CaptionClass }}{{ $captionClass = true }}{{ end }}{{ end }}{{ range .FlowFilterFields }}{{ if .CaptionClass }}{{ $captionClass = true }}{{ end }}{{ end }}
+{{- if $captionClass }}
+
+// The fields' caption expressions (CaptionClass): their captions are resolved with them
+func init() {
+{{- range .Table.Fields }}
+{{- if .CaptionClass }}
+	i18n.SetCaptionClass(i18n.FieldKey("{{ $.Table.Name }}", "{{ .Name }}"), "{{ .CaptionClass }}")
+{{- end }}
+{{- end }}
+{{- range .FlowFilterFields }}
+{{- if .CaptionClass }}
+	i18n.SetCaptionClass(i18n.FieldKey("{{ $.Table.Name }}", "{{ .Name }}"), "{{ .CaptionClass }}")
+{{- end }}
+{{- end }}
+}
+{{- end }}
 {{- if .HasOptionField }}
 
 // GetOptionCaption returns the option field value caption in the specified language

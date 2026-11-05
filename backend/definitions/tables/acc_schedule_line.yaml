@@ -70,6 +70,7 @@ table:
       flow_filter: true
 
     - name: dimension_1_filter
+      caption_class: "1,3,1"
       no: 12
       type: types.Code
       length: 10
@@ -84,6 +85,7 @@ table:
             width: 250
 
     - name: dimension_2_filter
+      caption_class: "1,3,2"
       no: 13
       type: types.Code
       length: 10

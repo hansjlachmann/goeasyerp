@@ -104,6 +104,7 @@ table:
             width: 250
 
     - name: dimension_1_code
+      caption_class: "1,1,1"
       no: 23
       type: types.Code
       db_name: dimension_1_code
@@ -118,6 +119,7 @@ table:
             width: 250
 
     - name: dimension_2_code
+      caption_class: "1,1,2"
       no: 24
       type: types.Code
       db_name: dimension_2_code

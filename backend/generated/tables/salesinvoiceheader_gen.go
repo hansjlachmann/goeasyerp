@@ -1737,6 +1737,12 @@ func (t *SalesInvoiceHeader) GetFieldCaption(fieldName, language string) string 
 	return ts.FieldCaption("Sales_Invoice_Header", fieldName, language)
 }
 
+// The fields' caption expressions (CaptionClass): their captions are resolved with them
+func init() {
+	i18n.SetCaptionClass(i18n.FieldKey("Sales_Invoice_Header", "dimension_1_code"), "1,1,1")
+	i18n.SetCaptionClass(i18n.FieldKey("Sales_Invoice_Header", "dimension_2_code"), "1,1,2")
+}
+
 // GetOptionCaption returns the option field value caption in the specified language
 func (t *SalesInvoiceHeader) GetOptionCaption(fieldName, optionValue, language string) string {
 	ts := i18n.GetInstance()

@@ -148,7 +148,13 @@ func (s *TranslationService) flattenMap(prefix string, m map[string]interface{},
 // Falls back to default language if not found
 func (s *TranslationService) Translate(key, language string) string {
 	text := s.translate(key, language)
-	if DimensionLabel == nil {
+	// a field caption with a declared caption expression (CaptionClass)
+	if expr := CaptionClassOf(key); expr != "" {
+		return s.ResolveCaptionClass(expr, text, language)
+	}
+	// field captions name their dimension by their CaptionClass only; the other texts about a
+	// dimension (table, page and menu captions, options, report texts) by their key
+	if DimensionLabel == nil || strings.Contains(key, ".fields.") {
 		return text
 	}
 	m := dimensionKey.FindStringSubmatch(key)
@@ -208,9 +214,9 @@ func (s *TranslationService) CanonicalLanguage(language string) string {
 // Set by the codeunits package (the goroutine's company context); nil: the generic names.
 var DimensionLabel func(n int) string
 
-// dimensionKey matches the keys of texts about a dimension: tables.x.fields.dimension_1_code,
-// tables.dimension_2.caption, pages.dimension_1_values.caption, options by_dimension_1, report
-// texts INCLUDES_DIMENSION_1 … (any letter case)
+// dimensionKey matches the keys of the other texts about a dimension (not field captions — they
+// declare a CaptionClass): tables.dimension_2.caption, pages.dimension_1_values.caption, options
+// by_dimension_1, report texts INCLUDES_DIMENSION_1 … (any letter case)
 var dimensionKey = regexp.MustCompile(`(?i)(?:^|[._])(?:new_|retain_|by_|close_by_)?dimension_([12])(?:_|\.|$)`)
 
 // replaceFold replaces old (any letter case) in s with new

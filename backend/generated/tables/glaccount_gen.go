@@ -1241,6 +1241,16 @@ func (t *GLAccount) GetFieldCaption(fieldName, language string) string {
 	return ts.FieldCaption("G_L_Account", fieldName, language)
 }
 
+// The fields' caption expressions (CaptionClass): their captions are resolved with them
+func init() {
+	i18n.SetCaptionClass(i18n.FieldKey("G_L_Account", "dimension_1_code"), "1,1,1")
+	i18n.SetCaptionClass(i18n.FieldKey("G_L_Account", "dimension_2_code"), "1,1,2")
+	i18n.SetCaptionClass(i18n.FieldKey("G_L_Account", "dimension_1_posting"), "1,1,1")
+	i18n.SetCaptionClass(i18n.FieldKey("G_L_Account", "dimension_2_posting"), "1,1,2")
+	i18n.SetCaptionClass(i18n.FieldKey("G_L_Account", "dimension_1_filter"), "1,3,1")
+	i18n.SetCaptionClass(i18n.FieldKey("G_L_Account", "dimension_2_filter"), "1,3,2")
+}
+
 // GetOptionCaption returns the option field value caption in the specified language
 func (t *GLAccount) GetOptionCaption(fieldName, optionValue, language string) string {
 	ts := i18n.GetInstance()

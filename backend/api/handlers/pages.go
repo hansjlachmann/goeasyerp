@@ -342,14 +342,26 @@ func optionKeys(values []string) []string {
 // markCalculated makes a calculated page field (filled by the page's triggers) read-only, gives
 // it its type, and lists it with the computed fields (not searched or sorted on the server)
 // pageFieldCaption is a page field's caption: the page's own (pages.<page>.fields.<source> — a
-// calculated field, or a caption that differs from the table's), else the table field's
+// calculated field, or a caption that differs from the table's), else the table field's —
+// resolved with the page field's caption expression, else the table field's (CaptionClass)
 func pageFieldCaption(ts *i18n.TranslationService, pageName, table string, field *pages.Field, lang string) string {
 	key := "pages." + normalizePageName(pageName) + ".fields." + field.Source
 	caption := ts.Translate(key, lang)
-	if caption != key {
+	if caption == key {
+		if field.CaptionClass == "" {
+			return ts.FieldCaption(table, field.Source, lang)
+		}
+		caption = ts.FieldCaption(table, field.Source, lang)
+	}
+	// the page field's caption expression (CaptionClass), else the table field's
+	expr := field.CaptionClass
+	if expr == "" {
+		expr = i18n.CaptionClassOf(i18n.FieldKey(table, field.Source))
+	}
+	if expr == "" {
 		return caption
 	}
-	return ts.FieldCaption(table, field.Source, lang)
+	return ts.ResolveCaptionClass(expr, caption, lang)
 }
 
 func markCalculated(page *pages.PageMetadata, field *pages.Field, fieldTypes map[string]string) {

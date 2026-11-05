@@ -994,6 +994,12 @@ func (t *FinanceChargeMemoHeader) GetFieldCaption(fieldName, language string) st
 	return ts.FieldCaption("Finance_Charge_Memo_Header", fieldName, language)
 }
 
+// The fields' caption expressions (CaptionClass): their captions are resolved with them
+func init() {
+	i18n.SetCaptionClass(i18n.FieldKey("Finance_Charge_Memo_Header", "dimension_1_code"), "1,1,1")
+	i18n.SetCaptionClass(i18n.FieldKey("Finance_Charge_Memo_Header", "dimension_2_code"), "1,1,2")
+}
+
 // CreateTable creates the Finance_Charge_Memo_Header table for the specified company (SQLite)
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *FinanceChargeMemoHeader) CreateTable(db database.Executor, company string) error {

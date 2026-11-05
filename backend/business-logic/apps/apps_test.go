@@ -12,6 +12,7 @@ import (
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
@@ -186,6 +187,47 @@ func TestCodeunitCaptionsTranslated(t *testing.T) {
 			k := fmt.Sprintf("codeunits.%d.caption", key.id)
 			if text := ts.Translate(k, language); text == k {
 				t.Errorf("codeunit %d has no caption in %s (%s in translations/%s/codeunits.yaml)", key.id, language, k, language)
+			}
+		}
+	}
+}
+
+// Every declared caption expression is valid (table fields, page fields), and every field whose
+// caption names a dimension declares one: field captions get the company's dimension names only
+// through their CaptionClass
+func TestCaptionClasses(t *testing.T) {
+	ts := i18n.GetInstance()
+	for key, expr := range i18n.CaptionClasses() {
+		if problem := i18n.CheckCaptionClass(expr); problem != "" {
+			t.Errorf("%s: caption_class %q: %s", key, expr, problem)
+		}
+	}
+	for id, page := range pages.GetRegistry().GetAllPages() {
+		fields := append([]pages.Field{}, page.Page.Footer...)
+		if page.Page.Layout.Repeater != nil {
+			fields = append(fields, page.Page.Layout.Repeater.Fields...)
+		}
+		for _, section := range page.Page.Layout.Sections {
+			fields = append(fields, section.Fields...)
+		}
+		for _, field := range fields {
+			if field.CaptionClass == "" {
+				continue
+			}
+			if problem := i18n.CheckCaptionClass(field.CaptionClass); problem != "" {
+				t.Errorf("page %d field %s: caption_class %q: %s", id, field.Source, field.CaptionClass, problem)
+			}
+		}
+	}
+	for _, key := range ts.KeysWithPrefix("en-US", "tables.") {
+		if !strings.Contains(key, ".fields.") {
+			continue
+		}
+		for n := 1; n <= 2; n++ {
+			generic := ts.Translate(fmt.Sprintf("tables.dimension_%d.caption", n), "en-US")
+			caption := ts.Translate(key, "en-US")
+			if strings.Contains(strings.ToLower(caption), strings.ToLower(generic)) && i18n.CaptionClassOf(key) == "" {
+				t.Errorf("%s (%q) names %s but declares no caption_class", key, caption, generic)
 			}
 		}
 	}

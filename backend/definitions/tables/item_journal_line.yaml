@@ -284,6 +284,7 @@ table:
       editable: false
 
     - name: dimension_1_code
+      caption_class: "1,1,1"
       no: 34
       type: types.Code
       db_name: dimension_1_code
@@ -298,6 +299,7 @@ table:
             width: 250
 
     - name: dimension_2_code
+      caption_class: "1,1,2"
       no: 35
       type: types.Code
       db_name: dimension_2_code
@@ -404,6 +406,7 @@ table:
             width: 250
 
     - name: new_dimension_1_code
+      caption_class: "1,1,1"
       no: 51
       type: types.Code
       db_name: new_dimension_1_code
@@ -418,6 +421,7 @@ table:
             width: 250
 
     - name: new_dimension_2_code
+      caption_class: "1,1,2"
       no: 52
       type: types.Code
       db_name: new_dimension_2_code
