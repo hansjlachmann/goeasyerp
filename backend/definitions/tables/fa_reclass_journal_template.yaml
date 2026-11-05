@@ -33,8 +33,9 @@ table:
         lookup_columns:
           - source: id
             width: 80
-          - source: name
+          - source: caption
             width: 250
+            search: name
 
   keys:
     - name: Primary

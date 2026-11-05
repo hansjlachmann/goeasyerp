@@ -1,0 +1,43 @@
+table:
+  id: 377
+  name: Object Translation
+  caption: Object Translation
+  description: The objects' captions in every language of this installation (from the translation files), written at startup with the Object table — Object's Caption (the user's language) reads them
+  global: true
+  posted: true   # a system table written at startup (apps.SyncObjects): the API inserts, changes and deletes nothing
+  fields:
+    - name: object_type
+      no: 1
+      type: Option
+      db_name: object_type
+      caption: Object Type
+      primary_key: true
+      options: ["TableData", "Table", "Page", "Report", "Dataport", "Codeunit"]
+
+    - name: object_id
+      no: 2
+      type: int
+      db_name: object_id
+      caption: Object ID
+      primary_key: true
+
+    # the language as the translations folder names it (en-US, nb-NO, da-DK)
+    - name: language_id
+      no: 3
+      type: types.Code
+      db_name: language_id
+      caption: Language ID
+      length: 10
+      primary_key: true
+
+    - name: object_name
+      no: 5
+      type: types.Text
+      db_name: object_name
+      caption: Object Name
+      length: 80
+
+  keys:
+    - name: Primary
+      fields: [object_type, object_id, language_id]
+      clustered: true

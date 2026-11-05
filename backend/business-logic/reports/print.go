@@ -3,6 +3,7 @@ package reports
 import (
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"slices"
 	"strings"
@@ -469,7 +470,7 @@ func (p *printer) prepare(f *frame, s *Section) (float64, drawFn) {
 		if size == 0 {
 			size = p.layout.FontSize
 		}
-		style := pdf.Style{Size: size, Bold: e.Bold, Align: e.Align, Mono: p.isAmount(f, e)}
+		style := pdf.Style{Size: size, Bold: e.Bold, Align: e.Align, Mono: p.isAmount(f, e), Tag: e.tag()}
 		lineHeight := style.LineHeight()
 		x := left + e.X
 		width := e.Width
@@ -526,6 +527,8 @@ func (p *printer) prepare(f *frame, s *Section) (float64, drawFn) {
 			text := p.text(f, totals, e)
 			lines := []string{text}
 			if e.Wrap {
+				style = p.fitWords(text, width, style)
+				lineHeight = style.LineHeight()
 				lines = p.doc.SplitText(text, width, style)
 			}
 			bottom = e.Y + float64(len(lines))*lineHeight
@@ -553,6 +556,29 @@ func (p *printer) prepare(f *frame, s *Section) (float64, drawFn) {
 
 // isAmount: an element printing a decimal — a field or value holding one, a total — prints in
 // the amounts' font (IBM Plex Mono)
+// fitWords: a wrapped text whose longest word is wider than the element prints smaller —
+// down to 80 % of its size — so the word is not broken in two (long compound words of some
+// languages in narrow column headings)
+func (p *printer) fitWords(text string, width float64, style pdf.Style) pdf.Style {
+	widest := 0.0
+	for _, word := range strings.Fields(text) {
+		wordWidth := p.doc.StringWidth(word, style)
+		if wordWidth > widest {
+			widest = wordWidth
+		}
+	}
+	if widest <= width+0.01 {
+		return style
+	}
+	size := style.Size
+	if size <= 0 {
+		size = 9
+	}
+	fitted := math.Floor(size*width/widest*10) / 10
+	style.Size = math.Max(fitted, size*0.8)
+	return style
+}
+
 func (p *printer) isAmount(f *frame, e *Element) bool {
 	switch e.kind() {
 	case "total", "total_value":

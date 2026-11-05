@@ -38,6 +38,7 @@ func twoCompanies(t *testing.T) (demo, empty ftables.Source) {
 	_, err = db.Exec(`INSERT INTO "Company" (name) VALUES ('demo'), ('new')`)
 	mustOK(t, err)
 	mustOK(t, (&gtables.Object{}).CreateTableWithDBType(db, "", database.DBTypeSQLite))
+	mustOK(t, (&gtables.ObjectTranslation{}).CreateTableWithDBType(db, "", database.DBTypeSQLite))
 	mustOK(t, apps.SyncObjects(db, database.DBTypeSQLite))
 	tx, err := ftables.BeginTransaction(db)
 	mustOK(t, err)

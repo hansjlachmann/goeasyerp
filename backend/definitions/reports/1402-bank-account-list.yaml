@@ -32,8 +32,8 @@ report:
           elements:
             - {text: NO, x: 0, y: 1, width: 20, bold: true, wrap: true}
             - {text: NAME, x: 21, y: 1, width: 60, bold: true, wrap: true}
-            - {text: BANK_ACCOUNT_NO, x: 82, y: 1, width: 40, bold: true, wrap: true}
-            - {text: BANK_BRANCH_NO, x: 123, y: 1, width: 22, bold: true, wrap: true}
+            - {text: BANK_ACCOUNT_NO, x: 82, y: 1, width: 36, bold: true, wrap: true}
+            - {text: BANK_BRANCH_NO, x: 119, y: 1, width: 26, bold: true, wrap: true}
             - {text: POSTING_GROUP, x: 146, y: 1, width: 26, bold: true, wrap: true}
             - {text: CURRENCY_CODE, x: 173, y: 1, width: 18, bold: true, wrap: true}
             - {text: BALANCE, x: 192, y: 1, width: 40, align: right, bold: true, wrap: true}
@@ -44,8 +44,8 @@ report:
           elements:
             - {field: "no", x: 0, y: 0, width: 20}
             - {field: name, x: 21, y: 0, width: 60}
-            - {field: bank_account_no, x: 82, y: 0, width: 40}
-            - {field: bank_branch_no, x: 123, y: 0, width: 22}
+            - {field: bank_account_no, x: 82, y: 0, width: 36}
+            - {field: bank_branch_no, x: 119, y: 0, width: 26}
             - {field: bank_acc_posting_group, x: 146, y: 0, width: 26}
             - {field: currency_code, x: 173, y: 0, width: 18}
             - {field: balance, x: 192, y: 0, width: 40, align: right}

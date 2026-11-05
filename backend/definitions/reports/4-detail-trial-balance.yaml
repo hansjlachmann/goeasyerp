@@ -36,9 +36,9 @@ report:
           height: 9
           elements:
             - {text: POSTING_DATE, x: 0, y: 1, width: 20, bold: true, wrap: true}
-            - {text: DOCUMENT_TYPE, x: 21, y: 1, width: 22, bold: true, wrap: true}
-            - {text: DOCUMENT_NO, x: 44, y: 1, width: 24, bold: true, wrap: true}
-            - {text: DESCRIPTION, x: 69, y: 1, width: 80, bold: true, wrap: true}
+            - {text: DOCUMENT_TYPE, x: 21, y: 1, width: 32, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 54, y: 1, width: 31, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 86, y: 1, width: 63, bold: true, wrap: true}
             - {text: DEBIT_AMOUNT, x: 150, y: 1, width: 30, align: right, bold: true, wrap: true}
             - {text: CREDIT_AMOUNT, x: 181, y: 1, width: 30, align: right, bold: true, wrap: true}
             - {text: BALANCE, x: 212, y: 1, width: 32, align: right, bold: true, wrap: true}
@@ -58,9 +58,9 @@ report:
           height: 4.2
           elements:
             - {field: posting_date, x: 0, y: 0, width: 20}
-            - {field: document_type, x: 21, y: 0, width: 22}
-            - {field: document_no, x: 44, y: 0, width: 24}
-            - {field: description, x: 69, y: 0, width: 80}
+            - {field: document_type, x: 21, y: 0, width: 32}
+            - {field: document_no, x: 54, y: 0, width: 31}
+            - {field: description, x: 86, y: 0, width: 63}
             - {field: debit_amount, x: 150, y: 0, width: 30, align: right, blank_zero: true}
             - {field: credit_amount, x: 181, y: 0, width: 30, align: right, blank_zero: true}
             - {value: balance, x: 212, y: 0, width: 32, align: right}
@@ -69,7 +69,7 @@ report:
           height: 7
           elements:
             - {line: true, x: 150, y: 0.5}
-            - {text: BALANCE_AT_END, x: 69, y: 1.5, width: 80}
+            - {text: BALANCE_AT_END, x: 86, y: 1.5, width: 63}
             - {total: debit_amount, x: 150, y: 1.5, width: 30, align: right, blank_zero: true}
             - {total: credit_amount, x: 181, y: 1.5, width: 30, align: right, blank_zero: true}
             - {value: balance, x: 212, y: 1.5, width: 32, align: right, bold: true}

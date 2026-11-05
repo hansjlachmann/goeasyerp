@@ -4098,7 +4098,7 @@ func (t *GenJournalTemplate) GetTableRelationFields() map[string]tables.TableRel
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
 				{Source: "id", Width: 80},
-				{Source: "name", Width: 250},
+				{Source: "caption", Width: 250, Search: "name"},
 			},
 			SearchTimeout: 0,
 			NoValidate:    true,

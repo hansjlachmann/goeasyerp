@@ -33,10 +33,10 @@ report:
           elements:
             - {text: FA_POSTING_DATE, x: 0, y: 1, width: 18, bold: true, wrap: true}
             - {text: FA_POSTING_CATEGORY, x: 19, y: 1, width: 18, bold: true, wrap: true}
-            - {text: FA_POSTING_TYPE, x: 38, y: 1, width: 28, bold: true}
-            - {text: DOCUMENT_TYPE, x: 67, y: 1, width: 16, bold: true, wrap: true}
-            - {text: DOCUMENT_NO, x: 84, y: 1, width: 22, bold: true}
-            - {text: DESCRIPTION, x: 107, y: 1, width: 50, bold: true}
+            - {text: FA_POSTING_TYPE, x: 38, y: 1, width: 37, bold: true, size: 7}
+            - {text: DOCUMENT_TYPE, x: 76, y: 1, width: 16, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 93, y: 1, width: 26, bold: true}
+            - {text: DESCRIPTION, x: 120, y: 1, width: 37, bold: true}
             - {text: AMOUNT, x: 158, y: 1, width: 24, align: right, bold: true}
             - {text: NO_OF_DEPRECIATION_DAYS, x: 183, y: 1, width: 17, align: right, bold: true, wrap: true}
             - {text: USER_ID, x: 202, y: 1, width: 20, bold: true}
@@ -57,10 +57,10 @@ report:
           elements:
             - {field: fa_posting_date, x: 0, y: 0, width: 18}
             - {field: fa_posting_category, x: 19, y: 0, width: 18}
-            - {field: fa_posting_type, x: 38, y: 0, width: 28}
-            - {field: document_type, x: 67, y: 0, width: 16}
-            - {field: document_no, x: 84, y: 0, width: 22}
-            - {field: description, x: 107, y: 0, width: 50}
+            - {field: fa_posting_type, x: 38, y: 0, width: 37}
+            - {field: document_type, x: 76, y: 0, width: 16}
+            - {field: document_no, x: 93, y: 0, width: 26}
+            - {field: description, x: 120, y: 0, width: 37}
             - {field: amount, x: 158, y: 0, width: 24, align: right}
             - {field: no_of_depreciation_days, x: 183, y: 0, width: 17, align: right, blank_zero: true}
             - {field: user_id, x: 202, y: 0, width: 20}

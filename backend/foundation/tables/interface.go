@@ -140,6 +140,9 @@ type FieldInfo struct {
 type LookupColumnInfo struct {
 	Source string // Field name to display
 	Width  int    // Column width in pixels (0 = auto)
+	// Search: the stored field the dropdown's search looks in for this column ("" = the column
+	// itself) — a FlowField column is shown, not searched (Object's Caption searches Name)
+	Search string
 }
 
 // TableRelationInfo contains metadata about a field's table relation

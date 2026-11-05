@@ -15,6 +15,7 @@ import (
 func TestSetupChecklistReport(t *testing.T) {
 	src := listCompany(t)
 	mustOK(t, (&gtables.Object{}).CreateTableWithDBType(src.GetDB(), "", src.GetDBType()))
+	mustOK(t, (&gtables.ObjectTranslation{}).CreateTableWithDBType(src.GetDB(), "", src.GetDBType()))
 	mustOK(t, apps.SyncObjects(src.GetDB(), src.GetDBType()))
 	mustOK(t, setupchecklist.UpdateChecklist(src))
 	comment := gtables.NewSetupChecklistComment(src)

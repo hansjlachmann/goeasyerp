@@ -1073,6 +1073,14 @@ func (t *BankAccount) GetFieldCaption(fieldName, language string) string {
 	return ts.FieldCaption("Bank_Account", fieldName, language)
 }
 
+// The fields' caption expressions (CaptionClass): their captions are resolved with them
+func init() {
+	i18n.SetCaptionClass(i18n.FieldKey("Bank_Account", "dimension_1_code"), "1,1,1")
+	i18n.SetCaptionClass(i18n.FieldKey("Bank_Account", "dimension_2_code"), "1,1,2")
+	i18n.SetCaptionClass(i18n.FieldKey("Bank_Account", "dimension_1_filter"), "1,3,1")
+	i18n.SetCaptionClass(i18n.FieldKey("Bank_Account", "dimension_2_filter"), "1,3,2")
+}
+
 // CreateTable creates the Bank_Account table for the specified company (SQLite)
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *BankAccount) CreateTable(db database.Executor, company string) error {

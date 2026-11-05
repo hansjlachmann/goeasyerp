@@ -61,6 +61,8 @@ type Object struct {
 	Id       int        `db:"id,pk"`
 	Name     types.Text `db:"name"`
 	Runnable bool       `db:"runnable"`
+	// FlowField: Lookup(Object_Translation.object_name)
+	Caption types.Text
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -152,11 +154,13 @@ var Object_FieldNo = struct {
 	Id       int
 	Name     int
 	Runnable int
+	Caption  int
 }{
 	Type:     1,
 	Id:       3,
 	Name:     4,
 	Runnable: 5,
+	Caption:  7,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -170,6 +174,8 @@ func (t *Object) FieldNo(fieldName string) int {
 		return 4
 	case "runnable":
 		return 5
+	case "caption":
+		return 7
 	}
 	return 0
 }
@@ -185,6 +191,8 @@ func (t *Object) FieldName(fieldNo int) string {
 		return "name"
 	case 5:
 		return "runnable"
+	case 7:
+		return "caption"
 	}
 	return ""
 }
@@ -427,6 +435,7 @@ func GetObjectTableSchema() string {
 		id INTEGER,
 		name TEXT(80),
 		runnable INTEGER,
+		caption TEXT(80),
 		PRIMARY KEY (type, id)
 	`
 }
@@ -438,6 +447,7 @@ func GetObjectPostgresTableSchema() string {
 		id INTEGER,
 		name VARCHAR(80),
 		runnable BOOLEAN,
+		caption VARCHAR(80),
 		PRIMARY KEY (type, id)
 	`
 }
@@ -1044,14 +1054,92 @@ func (t *Object) Delete(runTrigger bool) bool {
 	return true
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *Object) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
+	// If no field names specified, calculate all FlowFields
+	if len(fieldNames) == 0 {
+		t.calcFlowField_caption()
+		return
+	}
+
+	// Calculate only specified fields
+	for _, fieldName := range fieldNames {
+		switch fieldName {
+		case "caption":
+			t.calcFlowField_caption()
+		}
+	}
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// calcFlowField_caption calculates the caption FlowField
+// CalcFormula: Lookup(Object_Translation.object_name)
+func (t *Object) calcFlowField_caption() {
+	t.Caption = t.calcLookup_caption()
+}
+
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *Object) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
+	if len(records) == 0 {
+		return
+	}
+	if len(fieldNames) == 0 {
+		fieldNames = t.GetFlowFields()
+	}
+	for _, fieldName := range fieldNames {
+		switch fieldName {
+		case "caption":
+			t.calcForRecords_caption(records)
+		}
+	}
+}
+
+// calcForRecords_caption calculates the caption FlowField for a set of records
+// CalcFormula: Lookup(Object_Translation.object_name)
+func (t *Object) calcForRecords_caption(records []map[string]interface{}) {
+	// No single key field to group by: calculate per record, with this record's FlowFilters
+	for _, rec := range records {
+		r := &Object{db: t.db, company: t.company, dbType: t.dbType}
+		r.FromMap(rec)
+		r.calcFlowField_caption()
+		rec["caption"] = r.Caption
+	}
+}
+
+// Helper methods for FlowField calculations
+
+// calcLookup_caption reads Object_Translation.object_name of the first record matching the
+// flow filters (CalcFormula Lookup); blank when there is none
+func (t *Object) calcLookup_caption() types.Text {
+	tableName := ObjectTranslationTableName
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "object_type = ?")
+	args = append(args, t.Type)
+	whereClauses = append(whereClauses, "object_id = ?")
+	args = append(args, t.Id)
+	whereClauses = append(whereClauses, "language_id = ?")
+	args = append(args, i18n.SessionLanguageID())
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+	query := t.convertPlaceholders(fmt.Sprintf(`SELECT object_name FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
+	var value sql.NullString
+	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
+		fmt.Printf("Error: Failed to look up caption: %v\n", err)
+	}
+	return types.NewText(value.String)
 }
 
 // ========================================
@@ -1912,6 +2000,7 @@ func (t *Object) copyFromBuffered(record *Object) {
 	t.Id = record.Id
 	t.Name = record.Name
 	t.Runnable = record.Runnable
+	t.Caption = record.Caption
 	t.StoreOldValues()
 }
 
@@ -2186,6 +2275,8 @@ func (t *Object) FieldValue(no int) (any, bool) {
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *Object) flowFieldValue(no int) (any, bool) {
 	switch no {
+	case 7:
+		return t.Caption, true
 	}
 	return nil, false
 }
@@ -2766,6 +2857,8 @@ func (t *Object) ToMap() map[string]interface{} {
 		"id":       t.Id,
 		"name":     t.Name.String(),
 		"runnable": t.Runnable,
+		// FlowField: caption
+		"caption": t.Caption,
 	}
 }
 
@@ -2872,6 +2965,16 @@ func (t *Object) GetFields() []tables.FieldInfo {
 			PrimaryKey: false,
 			FlowField:  false,
 		},
+		{
+			No:         7,
+			Name:       "caption",
+			Type:       tables.FieldTypeText,
+			Length:     80,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  true,
+		},
 	}
 }
 
@@ -2890,7 +2993,9 @@ func (t *Object) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 
 // GetFlowFields returns names of FlowFields that need CalcFields
 func (t *Object) GetFlowFields() []string {
-	return []string{}
+	return []string{
+		"caption",
+	}
 }
 
 // GetOptionFields returns Option field names mapped to their option values

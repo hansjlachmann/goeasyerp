@@ -1624,6 +1624,14 @@ func (t *ItemJournalLine) GetFieldCaption(fieldName, language string) string {
 	return ts.FieldCaption("Item_Journal_Line", fieldName, language)
 }
 
+// The fields' caption expressions (CaptionClass): their captions are resolved with them
+func init() {
+	i18n.SetCaptionClass(i18n.FieldKey("Item_Journal_Line", "dimension_1_code"), "1,1,1")
+	i18n.SetCaptionClass(i18n.FieldKey("Item_Journal_Line", "dimension_2_code"), "1,1,2")
+	i18n.SetCaptionClass(i18n.FieldKey("Item_Journal_Line", "new_dimension_1_code"), "1,1,1")
+	i18n.SetCaptionClass(i18n.FieldKey("Item_Journal_Line", "new_dimension_2_code"), "1,1,2")
+}
+
 // GetOptionCaption returns the option field value caption in the specified language
 func (t *ItemJournalLine) GetOptionCaption(fieldName, optionValue, language string) string {
 	ts := i18n.GetInstance()

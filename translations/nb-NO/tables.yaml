@@ -6004,6 +6004,21 @@ tables:
       home_page: "Hjemmeside"
       federal_id_no: "Føderalt ID-nr."
       country_code: "Land/region-kode"
+  object_translation:
+    caption: "Objektoversettelse"
+    fields:
+      object_type: "Objekttype"
+      object_id: "Objekt-ID"
+      language_id: "Språk-ID"
+      object_name: "Objektnavn"
+    options:
+      object_type:
+        tabledata: "Tabelldata"
+        table: "Tabell"
+        page: "Side"
+        report: "Rapport"
+        dataport: "Dataport"
+        codeunit: "Kodeenhet"
   object:
     caption: "Objekt"
     fields:
@@ -6011,6 +6026,7 @@ tables:
       id: "ID"
       name: "Navn"
       runnable: "Kan kjøres"
+      caption: "Objekttekst"
     options:
       type:
         tabledata: "Tabelldata"

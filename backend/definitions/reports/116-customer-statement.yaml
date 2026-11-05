@@ -38,24 +38,24 @@ report:
             # The columns
             - {line: true, x: 0, y: 79}
             - {text: DATE, x: 0, y: 81, width: 19, bold: true}
-            - {text: TYPE, x: 20, y: 81, width: 22, bold: true}
-            - {text: DOCUMENT_NO, x: 43, y: 81, width: 24, bold: true}
-            - {text: DUE_DATE, x: 68, y: 81, width: 19, bold: true}
-            - {text: DEBITS, x: 88, y: 81, width: 30, align: right, bold: true}
-            - {text: CREDITS, x: 119, y: 81, width: 30, align: right, bold: true}
-            - {text: BALANCE, x: 150, y: 81, width: 33, align: right, bold: true}
+            - {text: TYPE, x: 20, y: 81, width: 36, bold: true}
+            - {text: DOCUMENT_NO, x: 57, y: 81, width: 24, bold: true}
+            - {text: DUE_DATE, x: 82, y: 81, width: 21, bold: true}
+            - {text: DEBITS, x: 104, y: 81, width: 25, align: right, bold: true}
+            - {text: CREDITS, x: 130, y: 81, width: 25, align: right, bold: true}
+            - {text: BALANCE, x: 156, y: 81, width: 27, align: right, bold: true}
             - {line: true, x: 0, y: 85.5}
         - type: body
           height: 4.6
           elements:
             - {value: line_date, x: 0, y: 0, width: 19}
-            - {value: line_document_type, x: 20, y: 0, width: 22}
-            - {value: line_document_no, x: 43, y: 0, width: 24}
-            - {value: line_due_date, x: 68, y: 0, width: 19}
-            - {value: line_debit, x: 88, y: 0, width: 30, align: right, blank_zero: true}
-            - {value: line_credit, x: 119, y: 0, width: 30, align: right, blank_zero: true}
-            - {value: line_balance, x: 150, y: 0, width: 33, align: right}
-            - {value: line_description, x: 20, y: 0, width: 66, print_if: line_description_only}
+            - {value: line_document_type, x: 20, y: 0, width: 36}
+            - {value: line_document_no, x: 57, y: 0, width: 24}
+            - {value: line_due_date, x: 82, y: 0, width: 21}
+            - {value: line_debit, x: 104, y: 0, width: 25, align: right, blank_zero: true}
+            - {value: line_credit, x: 130, y: 0, width: 25, align: right, blank_zero: true}
+            - {value: line_balance, x: 156, y: 0, width: 27, align: right}
+            - {value: line_description, x: 20, y: 0, width: 76, print_if: line_description_only}
         # The balance due and its aging
         - type: footer
           height: 30

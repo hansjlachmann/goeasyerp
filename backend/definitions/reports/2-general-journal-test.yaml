@@ -34,9 +34,9 @@ report:
             - {text: POSTING_DATE, x: 0, y: 1, width: 18, bold: true, wrap: true}
             - {text: DOCUMENT_TYPE, x: 19, y: 1, width: 16, bold: true, wrap: true}
             - {text: DOCUMENT_NO, x: 36, y: 1, width: 22, bold: true, wrap: true}
-            - {text: ACCOUNT_TYPE, x: 59, y: 1, width: 18, bold: true, wrap: true}
-            - {text: ACCOUNT_NO, x: 78, y: 1, width: 20, bold: true, wrap: true}
-            - {text: DESCRIPTION, x: 99, y: 1, width: 50, bold: true, wrap: true}
+            - {text: ACCOUNT_TYPE, x: 59, y: 1, width: 21, bold: true, wrap: true}
+            - {text: ACCOUNT_NO, x: 81, y: 1, width: 20, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 102, y: 1, width: 47, bold: true, wrap: true}
             - {text: AMOUNT, x: 150, y: 1, width: 25, bold: true, wrap: true, align: right}
             - {text: BAL_ACCOUNT_TYPE, x: 176, y: 1, width: 23, bold: true, wrap: true}
             - {text: BAL_ACCOUNT_NO, x: 200, y: 1, width: 20, bold: true, wrap: true}
@@ -49,15 +49,15 @@ report:
           print_if: recurring
           height: 10.5
           elements:
-            - {text: RECURRING_METHOD, x: 0, y: 1, width: 20, bold: true, wrap: true}
-            - {text: EXPIRATION_DATE, x: 21, y: 1, width: 16, bold: true, wrap: true}
-            - {text: RECURRING_FREQUENCY, x: 38, y: 1, width: 18, bold: true, wrap: true}
-            - {text: POSTING_DATE, x: 57, y: 1, width: 15, bold: true, wrap: true}
-            - {text: DOCUMENT_TYPE, x: 73, y: 1, width: 17, bold: true, wrap: true}
-            - {text: DOCUMENT_NO, x: 91, y: 1, width: 18, bold: true, wrap: true}
-            - {text: ACCOUNT_TYPE, x: 110, y: 1, width: 18, bold: true, wrap: true}
-            - {text: ACCOUNT_NO, x: 129, y: 1, width: 18, bold: true, wrap: true}
-            - {text: DESCRIPTION, x: 148, y: 1, width: 58, bold: true, wrap: true}
+            - {text: RECURRING_METHOD, x: 0, y: 1, width: 32, bold: true, wrap: true}
+            - {text: EXPIRATION_DATE, x: 33, y: 1, width: 17, bold: true, wrap: true}
+            - {text: RECURRING_FREQUENCY, x: 51, y: 1, width: 28, bold: true, wrap: true}
+            - {text: POSTING_DATE, x: 80, y: 1, width: 19, bold: true, wrap: true}
+            - {text: DOCUMENT_TYPE, x: 100, y: 1, width: 17, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 118, y: 1, width: 22, bold: true, wrap: true}
+            - {text: ACCOUNT_TYPE, x: 141, y: 1, width: 20, bold: true, wrap: true}
+            - {text: ACCOUNT_NO, x: 162, y: 1, width: 18, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 181, y: 1, width: 25, bold: true, wrap: true}
             - {text: AMOUNT, x: 207, y: 1, width: 32, bold: true, wrap: true, align: right}
             - {text: ALLOCATED_AMT_LCY, x: 240, y: 1, width: 33, bold: true, wrap: true, align: right}
             - {line: true, x: 0, y: 9}
@@ -75,9 +75,9 @@ report:
             - {field: posting_date, x: 0, y: 0, width: 18}
             - {field: document_type, x: 19, y: 0, width: 16}
             - {field: document_no, x: 36, y: 0, width: 22}
-            - {field: account_type, x: 59, y: 0, width: 18}
-            - {field: account_no, x: 78, y: 0, width: 20}
-            - {field: description, x: 99, y: 0, width: 50}
+            - {field: account_type, x: 59, y: 0, width: 21}
+            - {field: account_no, x: 81, y: 0, width: 20}
+            - {field: description, x: 102, y: 0, width: 47}
             - {field: amount, x: 150, y: 0, width: 25, align: right, decimal_places: "2:2"}
             - {field: bal_account_type, x: 176, y: 0, width: 23}
             - {field: bal_account_no, x: 200, y: 0, width: 20}
@@ -87,22 +87,22 @@ report:
           print_if: recurring
           height: 4.2
           elements:
-            - {field: recurring_method, x: 0, y: 0, width: 20}
-            - {field: expiration_date, x: 21, y: 0, width: 16}
-            - {field: recurring_frequency, x: 38, y: 0, width: 18}
-            - {field: posting_date, x: 57, y: 0, width: 15}
-            - {field: document_type, x: 73, y: 0, width: 17}
-            - {field: document_no, x: 91, y: 0, width: 18}
-            - {field: account_type, x: 110, y: 0, width: 18}
-            - {field: account_no, x: 129, y: 0, width: 18}
-            - {field: description, x: 148, y: 0, width: 58}
+            - {field: recurring_method, x: 0, y: 0, width: 32}
+            - {field: expiration_date, x: 33, y: 0, width: 17}
+            - {field: recurring_frequency, x: 51, y: 0, width: 28}
+            - {field: posting_date, x: 80, y: 0, width: 19}
+            - {field: document_type, x: 100, y: 0, width: 17}
+            - {field: document_no, x: 118, y: 0, width: 22}
+            - {field: account_type, x: 141, y: 0, width: 20}
+            - {field: account_no, x: 162, y: 0, width: 18}
+            - {field: description, x: 181, y: 0, width: 25}
             - {field: amount, x: 207, y: 0, width: 32, align: right, decimal_places: "2:2"}
             - {field: allocated_amt_lcy, x: 240, y: 0, width: 33, align: right, decimal_places: "2:2"}
         - type: footer
           height: 8
           elements:
             - {line: true, x: 150, y: 1}
-            - {text: TOTAL_LCY, x: 99, y: 2.5, width: 50, bold: true}
+            - {text: TOTAL_LCY, x: 102, y: 2.5, width: 47, bold: true}
             - {total: amount_lcy, x: 150, y: 2.5, width: 25, align: right, bold: true, decimal_places: "2:2"}
             - {total: balance_lcy, x: 244, y: 2.5, width: 29, align: right, bold: true, decimal_places: "2:2"}
     - name: Gen_Jnl_Allocation

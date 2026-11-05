@@ -1474,6 +1474,12 @@ func (t *ProjectLedgerEntry) GetFieldCaption(fieldName, language string) string 
 	return ts.FieldCaption("Project_Ledger_Entry", fieldName, language)
 }
 
+// The fields' caption expressions (CaptionClass): their captions are resolved with them
+func init() {
+	i18n.SetCaptionClass(i18n.FieldKey("Project_Ledger_Entry", "dimension_1_code"), "1,1,1")
+	i18n.SetCaptionClass(i18n.FieldKey("Project_Ledger_Entry", "dimension_2_code"), "1,1,2")
+}
+
 // GetOptionCaption returns the option field value caption in the specified language
 func (t *ProjectLedgerEntry) GetOptionCaption(fieldName, optionValue, language string) string {
 	ts := i18n.GetInstance()

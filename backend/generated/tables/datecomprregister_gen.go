@@ -70,7 +70,7 @@ func (o DateComprRegisterPeriod_length) IsValid() bool {
 type DateComprRegister struct {
 	No            int        `db:"no,pk"`
 	Creation_date types.Date `db:"creation_date"`
-	// FlowField: Lookup(Object.name)
+	// FlowField: Lookup(Object_Translation.object_name)
 	Table_caption         types.Text
 	Period_length         DateComprRegisterPeriod_length `db:"period_length"`
 	Ending_date           types.Date                     `db:"ending_date"`
@@ -1368,7 +1368,7 @@ func (t *DateComprRegister) CalcFields(fieldNames ...string) {
 }
 
 // calcFlowField_table_caption calculates the table_caption FlowField
-// CalcFormula: Lookup(Object.name)
+// CalcFormula: Lookup(Object_Translation.object_name)
 func (t *DateComprRegister) calcFlowField_table_caption() {
 	t.Table_caption = t.calcLookup_table_caption()
 }
@@ -1393,7 +1393,7 @@ func (t *DateComprRegister) CalcFieldsForRecords(records []map[string]interface{
 }
 
 // calcForRecords_table_caption calculates the table_caption FlowField for a set of records
-// CalcFormula: Lookup(Object.name)
+// CalcFormula: Lookup(Object_Translation.object_name)
 func (t *DateComprRegister) calcForRecords_table_caption(records []map[string]interface{}) {
 	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
@@ -1406,21 +1406,23 @@ func (t *DateComprRegister) calcForRecords_table_caption(records []map[string]in
 
 // Helper methods for FlowField calculations
 
-// calcLookup_table_caption reads Object.name of the first record matching the
+// calcLookup_table_caption reads Object_Translation.object_name of the first record matching the
 // flow filters (CalcFormula Lookup); blank when there is none
 func (t *DateComprRegister) calcLookup_table_caption() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, ObjectTableName)
+	tableName := ObjectTranslationTableName
 	var whereClauses []string
 	var args []interface{}
-	whereClauses = append(whereClauses, "type = ?")
+	whereClauses = append(whereClauses, "object_type = ?")
 	args = append(args, 1)
-	whereClauses = append(whereClauses, "id = ?")
+	whereClauses = append(whereClauses, "object_id = ?")
 	args = append(args, t.Table_id)
+	whereClauses = append(whereClauses, "language_id = ?")
+	args = append(args, i18n.SessionLanguageID())
 	whereClause := "1=1"
 	if len(whereClauses) > 0 {
 		whereClause = strings.Join(whereClauses, " AND ")
 	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT name FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
+	query := t.convertPlaceholders(fmt.Sprintf(`SELECT object_name FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
 	var value sql.NullString
 	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
 		fmt.Printf("Error: Failed to look up table_caption: %v\n", err)
@@ -4017,7 +4019,7 @@ func (t *DateComprRegister) GetTableRelationFields() map[string]tables.TableRela
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
 				{Source: "id", Width: 80},
-				{Source: "name", Width: 250},
+				{Source: "caption", Width: 250, Search: "name"},
 			},
 			SearchTimeout: 0,
 			Filters: []tables.RelationFilterInfo{

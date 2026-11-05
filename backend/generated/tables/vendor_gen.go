@@ -1458,6 +1458,14 @@ func (t *Vendor) GetFieldCaption(fieldName, language string) string {
 	return ts.FieldCaption("Vendor", fieldName, language)
 }
 
+// The fields' caption expressions (CaptionClass): their captions are resolved with them
+func init() {
+	i18n.SetCaptionClass(i18n.FieldKey("Vendor", "dimension_1_code"), "1,1,1")
+	i18n.SetCaptionClass(i18n.FieldKey("Vendor", "dimension_2_code"), "1,1,2")
+	i18n.SetCaptionClass(i18n.FieldKey("Vendor", "dimension_1_filter"), "1,3,1")
+	i18n.SetCaptionClass(i18n.FieldKey("Vendor", "dimension_2_filter"), "1,3,2")
+}
+
 // GetOptionCaption returns the option field value caption in the specified language
 func (t *Vendor) GetOptionCaption(fieldName, optionValue, language string) string {
 	ts := i18n.GetInstance()

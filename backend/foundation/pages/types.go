@@ -225,8 +225,11 @@ type Repeater struct {
 
 // Field represents a single field on a page
 type Field struct {
-	Source               string `yaml:"source" json:"source"`                                                     // Field name from table
-	Caption              string `yaml:"caption,omitempty" json:"caption,omitempty"`                               // Override caption
+	Source  string `yaml:"source" json:"source"`                       // Field name from table
+	Caption string `yaml:"caption,omitempty" json:"caption,omitempty"` // Override caption
+	// CaptionClass: the caption expression of a page field (classic CaptionClass,
+	// i18n/captionclass.go); empty: the table field's
+	CaptionClass         string `yaml:"caption_class,omitempty" json:"-"`
 	Editable             *bool  `yaml:"editable,omitempty" json:"editable,omitempty"`                             // false: read-only (also from the table field's editable: false)
 	Visible              *bool  `yaml:"visible,omitempty" json:"visible,omitempty"`                               // Field is visible (default true)
 	Importance           string `yaml:"importance,omitempty" json:"importance,omitempty"`                         // Promoted, Standard, Additional

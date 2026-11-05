@@ -31,11 +31,11 @@ report:
           height: 9
           elements:
             - {text: POSTING_DATE, x: 0, y: 1, width: 20, bold: true, wrap: true}
-            - {text: DOCUMENT_TYPE, x: 21, y: 1, width: 22, bold: true, wrap: true}
-            - {text: DOCUMENT_NO, x: 44, y: 1, width: 24, bold: true, wrap: true}
-            - {text: GL_ACCOUNT_NO, x: 69, y: 1, width: 20, bold: true, wrap: true}
-            - {text: ACCOUNT_NAME, x: 90, y: 1, width: 50, bold: true, wrap: true}
-            - {text: DESCRIPTION, x: 141, y: 1, width: 60, bold: true, wrap: true}
+            - {text: DOCUMENT_TYPE, x: 21, y: 1, width: 32, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 54, y: 1, width: 31, bold: true, wrap: true}
+            - {text: GL_ACCOUNT_NO, x: 86, y: 1, width: 18, bold: true, wrap: true}
+            - {text: ACCOUNT_NAME, x: 105, y: 1, width: 46, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 152, y: 1, width: 49, bold: true, wrap: true}
             - {text: AMOUNT, x: 202, y: 1, width: 32, align: right, bold: true, wrap: true}
             - {text: ENTRY_NO, x: 246, y: 1, width: 20, align: right, bold: true, wrap: true}
             - {line: true, x: 0, y: 7.5}
@@ -50,7 +50,7 @@ report:
           height: 8
           elements:
             - {line: true, x: 202, y: 1}
-            - {text: TOTAL, x: 141, y: 2, width: 40, bold: true}
+            - {text: TOTAL, x: 152, y: 2, width: 40, bold: true}
             - {value: total, x: 202, y: 2, width: 32, align: right, bold: true}
 
     - name: GLEntry
@@ -59,16 +59,16 @@ report:
           height: 4.2
           elements:
             - {field: posting_date, x: 0, y: 0, width: 20}
-            - {field: document_type, x: 21, y: 0, width: 22}
-            - {field: document_no, x: 44, y: 0, width: 24}
-            - {field: gl_account_no, x: 69, y: 0, width: 20}
-            - {value: account_name, x: 90, y: 0, width: 50}
-            - {field: description, x: 141, y: 0, width: 60}
+            - {field: document_type, x: 21, y: 0, width: 32}
+            - {field: document_no, x: 54, y: 0, width: 31}
+            - {field: gl_account_no, x: 86, y: 0, width: 18}
+            - {value: account_name, x: 105, y: 0, width: 46}
+            - {field: description, x: 152, y: 0, width: 49}
             - {field: amount, x: 202, y: 0, width: 32, align: right}
             - {field: entry_no, x: 246, y: 0, width: 20, align: right}
         - type: footer
           height: 6
           elements:
             - {line: true, x: 202, y: 0.5}
-            - {text: REGISTER_TOTAL, x: 141, y: 1.5, width: 40}
+            - {text: REGISTER_TOTAL, x: 152, y: 1.5, width: 40}
             - {total: amount, x: 202, y: 1.5, width: 32, align: right}

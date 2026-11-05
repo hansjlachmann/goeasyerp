@@ -40,7 +40,7 @@ type ReqWkshTemplate struct {
 	Description types.Text `db:"description"`
 	Page_id     int        `db:"page_id"`
 	Recurring   bool       `db:"recurring"`
-	// FlowField: Lookup(Object.name)
+	// FlowField: Lookup(Object_Translation.object_name)
 	Page_name types.Text
 
 	// Internal context (set by Init)
@@ -1016,7 +1016,7 @@ func (t *ReqWkshTemplate) CalcFields(fieldNames ...string) {
 }
 
 // calcFlowField_page_name calculates the page_name FlowField
-// CalcFormula: Lookup(Object.name)
+// CalcFormula: Lookup(Object_Translation.object_name)
 func (t *ReqWkshTemplate) calcFlowField_page_name() {
 	t.Page_name = t.calcLookup_page_name()
 }
@@ -1041,7 +1041,7 @@ func (t *ReqWkshTemplate) CalcFieldsForRecords(records []map[string]interface{},
 }
 
 // calcForRecords_page_name calculates the page_name FlowField for a set of records
-// CalcFormula: Lookup(Object.name)
+// CalcFormula: Lookup(Object_Translation.object_name)
 func (t *ReqWkshTemplate) calcForRecords_page_name(records []map[string]interface{}) {
 	// No single key field to group by: calculate per record, with this record's FlowFilters
 	for _, rec := range records {
@@ -1054,21 +1054,23 @@ func (t *ReqWkshTemplate) calcForRecords_page_name(records []map[string]interfac
 
 // Helper methods for FlowField calculations
 
-// calcLookup_page_name reads Object.name of the first record matching the
+// calcLookup_page_name reads Object_Translation.object_name of the first record matching the
 // flow filters (CalcFormula Lookup); blank when there is none
 func (t *ReqWkshTemplate) calcLookup_page_name() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, ObjectTableName)
+	tableName := ObjectTranslationTableName
 	var whereClauses []string
 	var args []interface{}
-	whereClauses = append(whereClauses, "type = ?")
+	whereClauses = append(whereClauses, "object_type = ?")
 	args = append(args, 2)
-	whereClauses = append(whereClauses, "id = ?")
+	whereClauses = append(whereClauses, "object_id = ?")
 	args = append(args, t.Page_id)
+	whereClauses = append(whereClauses, "language_id = ?")
+	args = append(args, i18n.SessionLanguageID())
 	whereClause := "1=1"
 	if len(whereClauses) > 0 {
 		whereClause = strings.Join(whereClauses, " AND ")
 	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT name FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
+	query := t.convertPlaceholders(fmt.Sprintf(`SELECT object_name FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
 	var value sql.NullString
 	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
 		fmt.Printf("Error: Failed to look up page_name: %v\n", err)
@@ -2907,7 +2909,7 @@ func (t *ReqWkshTemplate) GetTableRelationFields() map[string]tables.TableRelati
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{
 				{Source: "id", Width: 80},
-				{Source: "name", Width: 250},
+				{Source: "caption", Width: 250, Search: "name"},
 			},
 			SearchTimeout: 0,
 			NoValidate:    true,

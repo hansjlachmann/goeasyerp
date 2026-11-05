@@ -67,7 +67,11 @@ type Key struct {
 
 // Field represents a single field in a table
 type Field struct {
-	No            int         `yaml:"no"`  // Field number (field ID): unique in the table, never changed or reused
+	No int `yaml:"no"` // Field number (field ID): unique in the table, never changed or reused
+	// CaptionClass (classic CaptionClass): the caption expression the field's caption is
+	// resolved with, "<area>,<arguments>" — "1,<kind>,<n>" a dimension field (the company's
+	// name for dimension n), "3,<text>" a free text (i18n/captionclass.go)
+	CaptionClass  string      `yaml:"caption_class"`
 	App           string      `yaml:"app"` // Set by extmerge on fields an extension adds: the extension's app id
 	Name          string      `yaml:"name"`
 	Type          string      `yaml:"type"`
@@ -90,8 +94,11 @@ type Field struct {
 	FlowField         bool           `yaml:"flow_field"`   // For FlowFields (calculated fields)
 	CalcFormula       string         `yaml:"calc_formula"` // Sum, Count, Lookup, Exist, Average, Min, Max
 	SourceTable       string         `yaml:"source_table"` // Table to calculate from
-	SourceField       string         `yaml:"source_field"` // Field to aggregate
-	FlowFilters       []FlowFilter   `yaml:"flow_filters"` // Filter conditions
+	// SourceGlobal (derived): the source table is global — its name has no company prefix
+	// (Object, Object Translation)
+	SourceGlobal bool         `yaml:"-"`
+	SourceField  string       `yaml:"source_field"` // Field to aggregate
+	FlowFilters  []FlowFilter `yaml:"flow_filters"` // Filter conditions
 	// ReverseSign (Sum FlowFields): the total with the opposite sign (classic CalcFormula=-Sum,
 	// e.g. Customer Payments)
 	ReverseSign bool `yaml:"reverse_sign"`
@@ -139,7 +146,7 @@ type Field struct {
 // FlowFilter represents a filter condition for FlowField calculation
 type FlowFilter struct {
 	Field string `yaml:"field"` // Field name in source table
-	Type  string `yaml:"type"`  // "const", "field", "filter" (apply a FlowFilter field of this table) or "field_filter" (a stored field of this table holding a filter, e.g. Totaling)
+	Type  string `yaml:"type"`  // "const", "field", "filter" (apply a FlowFilter field of this table), "field_filter" (a stored field of this table holding a filter, e.g. Totaling) or "language" (the current user's language, i18n.SessionLanguage — Object Caption)
 	Value string `yaml:"value"` // Constant value, or field / FlowFilter field name of the current table
 	// UpperLimit (type "filter"): only the upper end of the FlowFilter applies — up to the
 	// filter's last date, from the start ("Balance at Date": Posting Date = UpperLimit(Date Filter))
@@ -161,6 +168,9 @@ type FlowFilter struct {
 type LookupColumn struct {
 	Source string `yaml:"source"` // Field name to display
 	Width  int    `yaml:"width"`  // Column width in pixels (optional)
+	// Search (optional): the stored field the dropdown's search looks in for this column — a
+	// FlowField is shown, not searched (Object's Caption searches its Name)
+	Search string `yaml:"search"`
 }
 
 // TableRelation represents a foreign key relationship to another table
@@ -359,10 +369,16 @@ func main() {
 			continue
 		}
 		splitFlowFilterFields(tableDef)
+		languageFlowFilters(tableDef)
 		defs = append(defs, parsed{yamlFile, tableDef})
 		byStruct[toPascalCase(tableDef.Table.Name)] = tableDef
 	}
 	for _, p := range defs {
+		markGlobalSources(p.def, byStruct)
+		if err := validateCaptionClasses(p.def); err != nil {
+			fmt.Printf("✗ %s: %v\n", filepath.Base(p.file), err)
+			failed = true
+		}
 		if err := validateSIFTKeys(p.def); err != nil {
 			fmt.Printf("✗ %s: %v\n", filepath.Base(p.file), err)
 			failed = true
@@ -775,6 +791,55 @@ func flowFilterKind(f Field) (string, bool) {
 		return "KindCode", true
 	}
 	return "", false
+}
+
+// validateCaptionClasses checks the shape of the fields' caption expressions (the areas are
+// checked by i18n.CheckCaptionClass in the tests): "<area>,<arguments>", no quotes
+func validateCaptionClasses(def *TableDef) error {
+	for _, f := range append(append([]Field{}, def.Table.Fields...), def.FlowFilterFields...) {
+		if f.CaptionClass == "" {
+			continue
+		}
+		area, _, ok := strings.Cut(f.CaptionClass, ",")
+		if !ok || area == "" || strings.ContainsAny(f.CaptionClass, "\"\\\n") {
+			return fmt.Errorf("field %s: caption_class %q is not \"<area>,<arguments>\"", f.Name, f.CaptionClass)
+		}
+		if area == "1" && !strings.Contains(f.Name, "dimension") {
+			return fmt.Errorf("field %s: a dimension caption class (1,…) on a field that is not a dimension field", f.Name)
+		}
+	}
+	return nil
+}
+
+// markGlobalSources marks the FlowFields whose source table is global: they read it without
+// the company prefix (a Lookup of Object read "<company>$Object", which does not exist)
+func markGlobalSources(def *TableDef, byStruct map[string]*TableDef) {
+	for i := range def.Table.Fields {
+		f := &def.Table.Fields[i]
+		if !f.FlowField {
+			continue
+		}
+		source, ok := byStruct[toPascalCase(f.SourceTable)]
+		if ok && source.Table.Global {
+			f.SourceGlobal = true
+		}
+	}
+}
+
+// languageFlowFilters turns the flow filters of type "language" into constant filters whose
+// value is the current user's language when the FlowField is calculated (i18n.SessionLanguageID:
+// "EN-US", "NB-NO" … as a Code field holds it) — classic Object Caption, read in the language the
+// client runs in
+func languageFlowFilters(def *TableDef) {
+	for i := range def.Table.Fields {
+		for j := range def.Table.Fields[i].FlowFilters {
+			ff := &def.Table.Fields[i].FlowFilters[j]
+			if ff.Type == "language" {
+				ff.Type = "const"
+				ff.Value = "i18n.SessionLanguageID()"
+			}
+		}
+	}
 }
 
 // validateFlowFilters checks FlowFilter field types and the "filter" flow filters of
@@ -1731,7 +1796,7 @@ func (t *{{ .StructName }}) CheckFields() error {
 {{- end }}
 {{- define "flowSource" }}
 	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, {{ toPascalCase .SourceTable }}TableName), false
+	tableName, useSIFT := {{ if .SourceGlobal }}{{ toPascalCase .SourceTable }}TableName{{ else }}fmt.Sprintf("%s$%s", t.company, {{ toPascalCase .SourceTable }}TableName){{ end }}, false
 {{- if .SIFTKey }}
 	tableName, useSIFT = sift.TableName(t.company, {{ toPascalCase .SourceTable }}TableName, "{{ .SIFTKey }}"), true
 {{- end }}
@@ -1741,7 +1806,7 @@ func (t *{{ .StructName }}) CheckFields() error {
 {{- if .SIFTKeyFiltered }}
 		tableName, useSIFT = sift.TableName(t.company, {{ toPascalCase .SourceTable }}TableName, "{{ .SIFTKeyFiltered }}"), true
 {{- else }}
-		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, {{ toPascalCase .SourceTable }}TableName), false
+		tableName, useSIFT = {{ if .SourceGlobal }}{{ toPascalCase .SourceTable }}TableName{{ else }}fmt.Sprintf("%s$%s", t.company, {{ toPascalCase .SourceTable }}TableName){{ end }}, false
 {{- end }}
 	}
 {{- end }}
@@ -2142,6 +2207,23 @@ func (t *{{ .StructName }}) GetFieldCaption(fieldName, language string) string {
 	ts := i18n.GetInstance()
 	return ts.FieldCaption("{{ .Table.Name }}", fieldName, language)
 }
+{{- $captionClass := false }}{{ range .Table.Fields }}{{ if .CaptionClass }}{{ $captionClass = true }}{{ end }}{{ end }}{{ range .FlowFilterFields }}{{ if .CaptionClass }}{{ $captionClass = true }}{{ end }}{{ end }}
+{{- if $captionClass }}
+
+// The fields' caption expressions (CaptionClass): their captions are resolved with them
+func init() {
+{{- range .Table.Fields }}
+{{- if .CaptionClass }}
+	i18n.SetCaptionClass(i18n.FieldKey("{{ $.Table.Name }}", "{{ .Name }}"), "{{ .CaptionClass }}")
+{{- end }}
+{{- end }}
+{{- range .FlowFilterFields }}
+{{- if .CaptionClass }}
+	i18n.SetCaptionClass(i18n.FieldKey("{{ $.Table.Name }}", "{{ .Name }}"), "{{ .CaptionClass }}")
+{{- end }}
+{{- end }}
+}
+{{- end }}
 {{- if .HasOptionField }}
 
 // GetOptionCaption returns the option field value caption in the specified language
@@ -3462,7 +3544,7 @@ func (t *{{ $.StructName }}) calcCount_{{ .Name }}() int {
 // calcLookup_{{ .Name }} reads {{ .SourceTable }}.{{ .SourceField }} of the first record matching the
 // flow filters (CalcFormula Lookup); blank when there is none
 func (t *{{ $.StructName }}) calcLookup_{{ .Name }}() {{ .Type }} {
-	tableName := fmt.Sprintf("%s$%s", t.company, {{ toPascalCase .SourceTable }}TableName)
+	tableName := {{ if .SourceGlobal }}{{ toPascalCase .SourceTable }}TableName{{ else }}fmt.Sprintf("%s$%s", t.company, {{ toPascalCase .SourceTable }}TableName){{ end }}
 	var whereClauses []string
 	var args []interface{}
 	{{- range .FlowFilters }}
@@ -5986,7 +6068,7 @@ func (t *{{ .StructName }}) GetTableRelationFields() map[string]tables.TableRela
 				{Field: "{{ dbFieldName $.Table.Fields .When.Field }}", Value: {{ .When.Equal }}, Relation: tables.TableRelationInfo{
 					Table: "{{ .Table }}", Field: "{{ .Field }}", DisplayField: "{{ .DisplayField }}",
 {{- if .LookupColumns }}
-					LookupColumns: []tables.LookupColumnInfo{ {{- range .LookupColumns }}{Source: "{{ .Source }}", Width: {{ .Width }}}, {{ end -}} },
+					LookupColumns: []tables.LookupColumnInfo{ {{- range .LookupColumns }}{Source: "{{ .Source }}", Width: {{ .Width }}{{ if .Search }}, Search: "{{ .Search }}"{{ end }}}, {{ end -}} },
 {{- end }}
 					SearchTimeout: {{ .SearchTimeout }},
 {{- if not .ShouldValidate }}
@@ -6011,7 +6093,7 @@ func (t *{{ .StructName }}) GetTableRelationFields() map[string]tables.TableRela
 {{- if .TableRelation.LookupColumns }}
 			LookupColumns: []tables.LookupColumnInfo{
 {{- range .TableRelation.LookupColumns }}
-				{Source: "{{ .Source }}", Width: {{ .Width }}},
+				{Source: "{{ .Source }}", Width: {{ .Width }}{{ if .Search }}, Search: "{{ .Search }}"{{ end }}},
 {{- end }}
 			},
 {{- end }}

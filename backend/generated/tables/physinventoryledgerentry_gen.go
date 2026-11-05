@@ -915,6 +915,12 @@ func (t *PhysInventoryLedgerEntry) GetFieldCaption(fieldName, language string) s
 	return ts.FieldCaption("Phys_Inventory_Ledger_Entry", fieldName, language)
 }
 
+// The fields' caption expressions (CaptionClass): their captions are resolved with them
+func init() {
+	i18n.SetCaptionClass(i18n.FieldKey("Phys_Inventory_Ledger_Entry", "dimension_1_code"), "1,1,1")
+	i18n.SetCaptionClass(i18n.FieldKey("Phys_Inventory_Ledger_Entry", "dimension_2_code"), "1,1,2")
+}
+
 // GetOptionCaption returns the option field value caption in the specified language
 func (t *PhysInventoryLedgerEntry) GetOptionCaption(fieldName, optionValue, language string) string {
 	ts := i18n.GetInstance()

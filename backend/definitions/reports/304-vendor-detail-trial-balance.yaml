@@ -36,9 +36,9 @@ report:
           height: 9
           elements:
             - {text: POSTING_DATE, x: 0, y: 1, width: 20, bold: true, wrap: true}
-            - {text: DOCUMENT_TYPE, x: 21, y: 1, width: 24, bold: true, wrap: true}
-            - {text: DOCUMENT_NO, x: 46, y: 1, width: 24, bold: true, wrap: true}
-            - {text: DESCRIPTION, x: 71, y: 1, width: 80, bold: true, wrap: true}
+            - {text: DOCUMENT_TYPE, x: 21, y: 1, width: 32, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 54, y: 1, width: 28, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 83, y: 1, width: 68, bold: true, wrap: true}
             - {text: AMOUNT_LCY, x: 152, y: 1, width: 30, align: right, bold: true, wrap: true}
             - {text: REMAINING_AMT_LCY, x: 183, y: 1, width: 28, align: right, bold: true, wrap: true}
             - {text: BALANCE_LCY, x: 212, y: 1, width: 32, align: right, bold: true, wrap: true}
@@ -58,9 +58,9 @@ report:
           height: 4.2
           elements:
             - {field: posting_date, x: 0, y: 0, width: 20}
-            - {field: document_type, x: 21, y: 0, width: 24}
-            - {field: document_no, x: 46, y: 0, width: 24}
-            - {field: description, x: 71, y: 0, width: 80}
+            - {field: document_type, x: 21, y: 0, width: 32}
+            - {field: document_no, x: 54, y: 0, width: 28}
+            - {field: description, x: 83, y: 0, width: 68}
             - {field: amount_lcy, x: 152, y: 0, width: 30, align: right}
             - {field: remaining_amt_lcy, x: 183, y: 0, width: 28, align: right}
             - {value: balance, x: 212, y: 0, width: 32, align: right}
@@ -69,6 +69,6 @@ report:
           height: 7
           elements:
             - {line: true, x: 152, y: 0.5}
-            - {text: BALANCE_AT_END, x: 71, y: 1.5, width: 80}
+            - {text: BALANCE_AT_END, x: 83, y: 1.5, width: 68}
             - {total: amount_lcy, x: 152, y: 1.5, width: 30, align: right}
             - {value: balance, x: 212, y: 1.5, width: 32, align: right, bold: true}

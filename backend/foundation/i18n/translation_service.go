@@ -148,7 +148,13 @@ func (s *TranslationService) flattenMap(prefix string, m map[string]interface{},
 // Falls back to default language if not found
 func (s *TranslationService) Translate(key, language string) string {
 	text := s.translate(key, language)
-	if DimensionLabel == nil {
+	// a field caption with a declared caption expression (CaptionClass)
+	if expr := CaptionClassOf(key); expr != "" {
+		return s.ResolveCaptionClass(expr, text, language)
+	}
+	// field captions name their dimension by their CaptionClass only; the other texts about a
+	// dimension (table, page and menu captions, options, report texts) by their key
+	if DimensionLabel == nil || strings.Contains(key, ".fields.") {
 		return text
 	}
 	m := dimensionKey.FindStringSubmatch(key)
@@ -168,15 +174,49 @@ func (s *TranslationService) Translate(key, language string) string {
 	return replaceFold(text, generic, label)
 }
 
+// UserLanguage returns the language of the current user (the goroutine's context). Set by the
+// codeunits package; nil: the default language.
+var UserLanguage func() string
+
+// SessionLanguage is the current user's language as one of the supported languages ("en-US",
+// "nb-NO" — the letter case of the translations folder), else the default language
+func SessionLanguage() string {
+	s := GetInstance()
+	language := ""
+	if UserLanguage != nil {
+		language = UserLanguage()
+	}
+	return s.CanonicalLanguage(language)
+}
+
+// SessionLanguageID is SessionLanguage in upper case, as a Code field holds a language
+// ("NB-NO"): the value of FlowField filters of type "language" (Object Translation's Language ID)
+func SessionLanguageID() string {
+	return strings.ToUpper(SessionLanguage())
+}
+
+// CanonicalLanguage returns the supported language matching language in any letter case, else
+// the default language
+func (s *TranslationService) CanonicalLanguage(language string) string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for lang := range s.translations {
+		if strings.EqualFold(lang, language) {
+			return lang
+		}
+	}
+	return s.defaultLang
+}
+
 // DimensionLabel returns the name the current company gives a dimension (General Ledger Setup
 // Dimension-1 / Dimension-2; "" when none): the texts of the generic dimension fields, tables,
 // pages and options show it instead of "Dimension 1" / "Dimension 2" (classic CaptionClass).
 // Set by the codeunits package (the goroutine's company context); nil: the generic names.
 var DimensionLabel func(n int) string
 
-// dimensionKey matches the keys of texts about a dimension: tables.x.fields.dimension_1_code,
-// tables.dimension_2.caption, pages.dimension_1_values.caption, options by_dimension_1, report
-// texts INCLUDES_DIMENSION_1 … (any letter case)
+// dimensionKey matches the keys of the other texts about a dimension (not field captions — they
+// declare a CaptionClass): tables.dimension_2.caption, pages.dimension_1_values.caption, options
+// by_dimension_1, report texts INCLUDES_DIMENSION_1 … (any letter case)
 var dimensionKey = regexp.MustCompile(`(?i)(?:^|[._])(?:new_|retain_|by_|close_by_)?dimension_([12])(?:_|\.|$)`)
 
 // replaceFold replaces old (any letter case) in s with new

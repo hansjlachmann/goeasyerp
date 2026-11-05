@@ -1,0 +1,296 @@
+# Codeunit captions (the Object table's Object Caption, Object Translation 377): codeunits.<number>.caption
+codeunits:
+  "3":
+    caption: "Finanskonto – indryk"
+  "6":
+    caption: "Luk regnskabsår"
+  "7":
+    caption: "Åbn finansbudget"
+  "8":
+    caption: "Kontoskema – styring"
+  "11":
+    caption: "Finanskladde – kontrollér linje"
+  "12":
+    caption: "Finanskladde – bogfør linje"
+  "13":
+    caption: "Finanskladde – bogfør bunke"
+  "14":
+    caption: "Finanskladde – vis poster"
+  "15":
+    caption: "Finanskladde – vis kort"
+  "21":
+    caption: "Varekladde – kontrollér linje"
+  "22":
+    caption: "Varekladde – bogfør linje"
+  "23":
+    caption: "Varekladde – bogfør bunke"
+  "31":
+    caption: "Styklistekladde – kontrollér linje"
+  "32":
+    caption: "Styklistekladde – bogfør linje"
+  "33":
+    caption: "Styklistekladde – bogfør bunke"
+  "51":
+    caption: "Stykliste – udfold stykliste"
+  "52":
+    caption: "Vare – find pris"
+  "54":
+    caption: "Stykliste – beregn kostpris"
+  "60":
+    caption: "Salg – beregn rabat"
+  "61":
+    caption: "Salg – rabat (Ja/Nej)"
+  "64":
+    caption: "Salg – hent følgeseddel"
+  "70":
+    caption: "Køb – beregn rabat"
+  "71":
+    caption: "Køb – rabat (Ja/Nej)"
+  "74":
+    caption: "Køb – hent købsleverance"
+  "80":
+    caption: "Salg – bogfør"
+  "81":
+    caption: "Salg – bogfør (Ja/Nej)"
+  "82":
+    caption: "Salg – bogfør og udskriv"
+  "83":
+    caption: "Salg – tilbud til ordre (Ja/Nej)"
+  "84":
+    caption: "Salgsrammeordre til ordre (Ja/Nej)"
+  "86":
+    caption: "Salg – tilbud til ordre"
+  "87":
+    caption: "Salgsrammeordre til ordre"
+  "90":
+    caption: "Køb – bogfør"
+  "91":
+    caption: "Køb – bogfør (Ja/Nej)"
+  "92":
+    caption: "Køb – bogfør og udskriv"
+  "93":
+    caption: "Køb – tilbud til ordre (Ja/Nej)"
+  "94":
+    caption: "Købsrammeordre til ordre (Ja/Nej)"
+  "96":
+    caption: "Køb – tilbud til ordre"
+  "97":
+    caption: "Købsrammeordre til ordre"
+  "101":
+    caption: "Debitorpost – angiv udlignings-id"
+  "111":
+    caption: "Kreditorpost – angiv udlignings-id"
+  "201":
+    caption: "Projektkladde – kontrollér linje"
+  "202":
+    caption: "Projektkladde – bogfør linje"
+  "203":
+    caption: "Projektkladde – bogfør bunke"
+  "211":
+    caption: "Ressourcekladde – kontrollér linje"
+  "212":
+    caption: "Ressourcekladde – bogfør linje"
+  "213":
+    caption: "Ressourcekladde – bogfør bunke"
+  "216":
+    caption: "Projektpost – angiv udlignings-id"
+  "220":
+    caption: "Ressource – find kostpris"
+  "221":
+    caption: "Ressource – find pris"
+  "225":
+    caption: "Finanskladde – udlign"
+  "230":
+    caption: "Finanskladde – styring"
+  "231":
+    caption: "Finanskladde – bogfør"
+  "232":
+    caption: "Finanskladde – bogfør og udskriv"
+  "240":
+    caption: "Varekladde – styring"
+  "241":
+    caption: "Varekladde – bogfør"
+  "242":
+    caption: "Varekladde – bogfør og udskriv"
+  "246":
+    caption: "Varekladde – udfold stykliste"
+  "250":
+    caption: "Styklistekladde – styring"
+  "251":
+    caption: "Styklistekladde – bogfør"
+  "252":
+    caption: "Styklistekladde – bogfør og udskriv"
+  "255":
+    caption: "Styklistejournal – vis vareposter"
+  "256":
+    caption: "Styklistejournal – vis ressourceposter"
+  "270":
+    caption: "Ressourcekladde – styring"
+  "271":
+    caption: "Ressourcekladde – bogfør"
+  "272":
+    caption: "Ressourcekladde – bogfør og udskriv"
+  "280":
+    caption: "Projektkladde – styring"
+  "281":
+    caption: "Projektkladde – bogfør"
+  "282":
+    caption: "Projektkladde – bogfør og udskriv"
+  "313":
+    caption: "Salg – udskrevet"
+  "314":
+    caption: "Følgeseddel – udskrevet"
+  "315":
+    caption: "Salgsfaktura – udskrevet"
+  "316":
+    caption: "Salgskreditnota – udskrevet"
+  "317":
+    caption: "Købsdokument – udskrevet"
+  "318":
+    caption: "Købsleverance – udskrevet"
+  "319":
+    caption: "Købsfaktura – udskrevet"
+  "320":
+    caption: "Købskreditnota – udskrevet"
+  "330":
+    caption: "Indkøbskladde – styring"
+  "333":
+    caption: "Indkøbskladde – opret ordre"
+  "340":
+    caption: "Afgiftsangivelse – styring"
+  "350":
+    caption: "Intrastatkladde – styring"
+  "356":
+    caption: "Datokomprimering – styring"
+  "358":
+    caption: "Datofilter – beregn"
+  "361":
+    caption: "Flyt poster"
+  "365":
+    caption: "Formatér adresse"
+  "366":
+    caption: "Ombyt konto i finanskladdelinje"
+  "370":
+    caption: "Bankkontoafstemning – bogfør"
+  "371":
+    caption: "Bankkontoafstemning – bogfør (Ja/Nej)"
+  "374":
+    caption: "Bankkontoafstemning – udlign poster"
+  "375":
+    caption: "Bankpost – angiv afstemningsnr."
+  "376":
+    caption: "Checkpost – angiv afstemningsnr."
+  "392":
+    caption: "Rykker – opret"
+  "393":
+    caption: "Rykker – udsted"
+  "394":
+    caption: "Rentenota – opret"
+  "395":
+    caption: "Rentenota – udsted"
+  "396":
+    caption: "Nummerserie – styring"
+  "398":
+    caption: "Salgsafgift – beregn"
+  "399":
+    caption: "Kopiér afgiftsopsætning fra virksomhed"
+  "400":
+    caption: "Reservation – styring"
+  "405":
+    caption: "Varepost – redigér"
+  "406":
+    caption: "Opsætningstjekliste – styring"
+  "455":
+    caption: "Jobkø – send test-mail"
+  "901":
+    caption: "Opret demodata"
+  "902":
+    caption: "Kontrollér SIFT"
+  "903":
+    caption: "Ekstern rapportkørsel"
+  "904":
+    caption: "Kontrol af finansbalancen"
+  "906":
+    caption: "Vis bogføring"
+  "907":
+    caption: "Jobkømeddelelser"
+  "990":
+    caption: "Hej verden"
+  "991":
+    caption: "Statusdemo"
+  "5400":
+    caption: "Disponibel – styring"
+  "5402":
+    caption: "Enhed – styring"
+  "5600":
+    caption: "Anlæg – indsæt post"
+  "5601":
+    caption: "Anlæg – indsæt finanskonto"
+  "5602":
+    caption: "Anlæg – hent finanskontonr."
+  "5604":
+    caption: "Opret anlægspost"
+  "5605":
+    caption: "Beregn afhændelse"
+  "5606":
+    caption: "Anlæg – kontrollér konsistens"
+  "5607":
+    caption: "Anlæg – automatisk post"
+  "5610":
+    caption: "Beregn afskrivning"
+  "5611":
+    caption: "Beregn normal afskrivning"
+  "5612":
+    caption: "Beregn bruger 1-afskrivning"
+  "5613":
+    caption: "Beregn afskrivning af anskaffelsespris"
+  "5617":
+    caption: "Anlæg – datoberegning"
+  "5618":
+    caption: "Afskrivningstabel – beregning"
+  "5623":
+    caption: "Anlæg – flyt poster"
+  "5624":
+    caption: "Annullér anlægsposter"
+  "5626":
+    caption: "Anlæg – generel rapport"
+  "5631":
+    caption: "Anlægskladde – kontrollér linje"
+  "5632":
+    caption: "Anlægskladde – bogfør linje"
+  "5633":
+    caption: "Anlægskladde – bogfør bunke"
+  "5636":
+    caption: "Anlægskladde – bogfør"
+  "5638":
+    caption: "Anlægskladde – styring"
+  "5639":
+    caption: "Anlæg – hent kladde"
+  "5640":
+    caption: "Duplikér afskrivningsprofil"
+  "5641":
+    caption: "Omklassificering – kontrollér linje"
+  "5642":
+    caption: "Omklassificering – overfør linje"
+  "5643":
+    caption: "Omklassificering – overfør bunke"
+  "5644":
+    caption: "Omklassificeringskladde – overfør"
+  "5645":
+    caption: "Omklassificeringskladde – overfør bunker"
+  "5646":
+    caption: "Omklassificeringskladde – styring"
+  "5647":
+    caption: "Opret vedligeholdelsespost"
+  "5651":
+    caption: "Forsikringskladde – kontrollér linje"
+  "5652":
+    caption: "Forsikringskladde – bogfør linje"
+  "5653":
+    caption: "Forsikringskladde – bogfør bunke"
+  "5654":
+    caption: "Forsikringskladde – bogfør"
+  "5656":
+    caption: "Forsikringskladde – styring"
+  "5657":
+    caption: "Opret forsikringsdækningspost"

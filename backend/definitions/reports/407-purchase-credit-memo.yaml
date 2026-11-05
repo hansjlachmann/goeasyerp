@@ -29,13 +29,13 @@ report:
             # The document
             - {text: CREDIT_MEMO, x: 93, y: 22, width: 90, align: right, size: 16, bold: true}
             - {value: copy_text, x: 93, y: 29, width: 90, align: right, bold: true}
-            - {text: CREDIT_MEMO_NO, x: 118, y: 35, width: 30}
+            - {text: CREDIT_MEMO_NO, x: 108, y: 35, width: 40}
             - {field: PurchCrMemoHdr.no, x: 148, y: 35, width: 35, align: right}
-            - {text: POSTING_DATE, x: 118, y: 39, width: 30}
+            - {text: POSTING_DATE, x: 108, y: 39, width: 40}
             - {field: PurchCrMemoHdr.posting_date, x: 148, y: 39, width: 35, align: right}
-            - {text: APPLIES_TO, x: 118, y: 43, width: 30}
+            - {text: APPLIES_TO, x: 108, y: 43, width: 40}
             - {field: PurchCrMemoHdr.applies_to_doc_no, x: 148, y: 43, width: 35, align: right}
-            - {text: PAGE, x: 118, y: 47, width: 30}
+            - {text: PAGE, x: 108, y: 47, width: 40}
             - {page_no: true, x: 148, y: 47, width: 35, align: right}
             # Bill-to and ship-to addresses
             - {text: VENDOR, x: 0, y: 52, width: 85, bold: true}
@@ -44,16 +44,16 @@ report:
             - {lines: ship_to_address, x: 98, y: 57, width: 85}
             # The terms
             - {line: true, x: 0, y: 93}
-            - {text: VENDOR_ID, x: 0, y: 94, width: 30, bold: true}
-            - {field: PurchCrMemoHdr.buy_from_vendor_no, x: 0, y: 98.5, width: 30}
-            - {text: VENDOR_CR_MEMO_NO, x: 30, y: 94, width: 35, bold: true}
-            - {field: PurchCrMemoHdr.vendor_cr_memo_no, x: 30, y: 98.5, width: 35}
-            - {text: PURCHASER, x: 65, y: 94, width: 40, bold: true}
-            - {value: salesperson, x: 65, y: 98.5, width: 40}
-            - {text: SHIP_VIA, x: 105, y: 94, width: 38, bold: true}
-            - {value: ship_via, x: 105, y: 98.5, width: 38}
-            - {text: TERMS, x: 143, y: 94, width: 40, bold: true}
-            - {value: terms, x: 143, y: 98.5, width: 40}
+            - {text: VENDOR_ID, x: 0, y: 94, width: 26, bold: true}
+            - {field: PurchCrMemoHdr.buy_from_vendor_no, x: 0, y: 98.5, width: 26}
+            - {text: VENDOR_CR_MEMO_NO, x: 27, y: 94, width: 44, bold: true, size: 8}
+            - {field: PurchCrMemoHdr.vendor_cr_memo_no, x: 27, y: 98.5, width: 44}
+            - {text: PURCHASER, x: 72, y: 94, width: 38, bold: true}
+            - {value: salesperson, x: 72, y: 98.5, width: 38}
+            - {text: SHIP_VIA, x: 111, y: 94, width: 34, bold: true}
+            - {value: ship_via, x: 111, y: 98.5, width: 34}
+            - {text: TERMS, x: 146, y: 94, width: 37, bold: true}
+            - {value: terms, x: 146, y: 98.5, width: 37}
             - {line: true, x: 0, y: 104}
             # The columns of the lines
             - {text: ITEM_NO, x: 0, y: 108, width: 22, bold: true}

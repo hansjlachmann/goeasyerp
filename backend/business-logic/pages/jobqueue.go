@@ -6,8 +6,8 @@ import (
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
-// Page 672 Job Queue: Object Caption to Run — the name of the job's codeunit or report in the
-// Object table (classic Object Caption to Run)
+// Page 672 Job Queue: Object Caption to Run — the caption of the job's codeunit or report in the
+// user's language (the Object table's Object Caption; classic Object Caption to Run)
 const jobQueueListPageID = 672
 
 func init() {
@@ -16,7 +16,8 @@ func init() {
 	})
 }
 
-// JobQueueObjectCaption: the Object table's name of the job's object ("" when it is not there)
+// JobQueueObjectCaption: the Object table's caption of the job's object in the user's language
+// ("" when it is not there)
 func JobQueueObjectCaption(rec *gtables.JobQueue) string {
 	if rec.Object_id_to_run == 0 {
 		return ""
@@ -29,5 +30,6 @@ func JobQueueObjectCaption(rec *gtables.JobQueue) string {
 	if !object.Get(map[string]interface{}{"type": objectType, "id": rec.Object_id_to_run}) {
 		return ""
 	}
-	return object.Name.String()
+	object.CalcFields("caption")
+	return object.Caption.String()
 }

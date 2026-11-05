@@ -732,6 +732,12 @@ func (t *InsuranceJournalLine) GetFieldCaption(fieldName, language string) strin
 	return ts.FieldCaption("Insurance_Journal_Line", fieldName, language)
 }
 
+// The fields' caption expressions (CaptionClass): their captions are resolved with them
+func init() {
+	i18n.SetCaptionClass(i18n.FieldKey("Insurance_Journal_Line", "dimension_1_code"), "1,1,1")
+	i18n.SetCaptionClass(i18n.FieldKey("Insurance_Journal_Line", "dimension_2_code"), "1,1,2")
+}
+
 // GetOptionCaption returns the option field value caption in the specified language
 func (t *InsuranceJournalLine) GetOptionCaption(fieldName, optionValue, language string) string {
 	ts := i18n.GetInstance()

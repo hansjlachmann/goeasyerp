@@ -42,8 +42,8 @@ report:
           height: 9
           elements:
             - {text: PHASE_TASK_STEP, x: 0, y: 1, width: 30, bold: true, wrap: true}
-            - {text: DESCRIPTION, x: 31, y: 1, width: 70, bold: true, wrap: true}
-            - {text: TYPE, x: 102, y: 1, width: 22, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 31, y: 1, width: 63, bold: true, wrap: true}
+            - {text: TYPE, x: 95, y: 1, width: 29, bold: true, wrap: true}
             - {text: NO, x: 125, y: 1, width: 22, bold: true, wrap: true}
             - {text: QUANTITY, x: 148, y: 1, width: 22, bold: true, wrap: true, align: right}
             - {text: UNIT_COST, x: 171, y: 1, width: 24, bold: true, wrap: true, align: right}
@@ -77,8 +77,8 @@ report:
         - type: body
           height: 4.2
           elements:
-            - {value: description, x: 31, y: 0, width: 70}
-            - {field: type, x: 102, y: 0, width: 22}
+            - {value: description, x: 31, y: 0, width: 63}
+            - {field: type, x: 95, y: 0, width: 29}
             - {field: "no", x: 125, y: 0, width: 22}
             - {field: quantity, x: 148, y: 0, width: 22, align: right, decimal_places: "2:5"}
             - {field: unit_cost, x: 171, y: 0, width: 24, align: right, decimal_places: "2:2"}

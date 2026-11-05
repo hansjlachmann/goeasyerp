@@ -32,8 +32,9 @@ table:
         lookup_columns:
           - source: id
             width: 80
-          - source: name
+          - source: caption
             width: 250
+            search: name
 
     - name: report_name
       no: 4
@@ -41,15 +42,17 @@ table:
       length: 80
       flow_field: true
       calc_formula: Lookup
-      source_table: Object
-      source_field: name
+      source_table: Object_Translation   # the object's caption in the user's language
+      source_field: object_name
       flow_filters:
-        - field: type
+        - field: object_type
           type: const
           value: 3
-        - field: id
+        - field: object_id
           type: field
           value: report_id
+        - field: language_id
+          type: language
 
   keys:
     - name: Primary

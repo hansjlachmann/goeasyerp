@@ -1,0 +1,296 @@
+# Codeunit captions (the Object table's Object Caption, Object Translation 377): codeunits.<number>.caption
+codeunits:
+  "3":
+    caption: "Finanskonto – innrykk"
+  "6":
+    caption: "Lukk regnskapsår"
+  "7":
+    caption: "Åpne finansbudsjett"
+  "8":
+    caption: "Kontoskjema – administrasjon"
+  "11":
+    caption: "Finanskladd – kontroller linje"
+  "12":
+    caption: "Finanskladd – bokfør linje"
+  "13":
+    caption: "Finanskladd – bokfør bunke"
+  "14":
+    caption: "Finanskladd – vis poster"
+  "15":
+    caption: "Finanskladd – vis kort"
+  "21":
+    caption: "Varekladd – kontroller linje"
+  "22":
+    caption: "Varekladd – bokfør linje"
+  "23":
+    caption: "Varekladd – bokfør bunke"
+  "31":
+    caption: "Styklistekladd – kontroller linje"
+  "32":
+    caption: "Styklistekladd – bokfør linje"
+  "33":
+    caption: "Styklistekladd – bokfør bunke"
+  "51":
+    caption: "Stykliste – utvid stykliste"
+  "52":
+    caption: "Vare – finn pris"
+  "54":
+    caption: "Stykliste – beregn kostnad"
+  "60":
+    caption: "Salg – beregn rabatt"
+  "61":
+    caption: "Salg – rabatt (Ja/Nei)"
+  "64":
+    caption: "Salg – hent følgeseddel"
+  "70":
+    caption: "Kjøp – beregn rabatt"
+  "71":
+    caption: "Kjøp – rabatt (Ja/Nei)"
+  "74":
+    caption: "Kjøp – hent mottak"
+  "80":
+    caption: "Salg – bokfør"
+  "81":
+    caption: "Salg – bokfør (Ja/Nei)"
+  "82":
+    caption: "Salg – bokfør og skriv ut"
+  "83":
+    caption: "Salg – tilbud til ordre (Ja/Nei)"
+  "84":
+    caption: "Salgsrammeordre til ordre (Ja/Nei)"
+  "86":
+    caption: "Salg – tilbud til ordre"
+  "87":
+    caption: "Salgsrammeordre til ordre"
+  "90":
+    caption: "Kjøp – bokfør"
+  "91":
+    caption: "Kjøp – bokfør (Ja/Nei)"
+  "92":
+    caption: "Kjøp – bokfør og skriv ut"
+  "93":
+    caption: "Kjøp – tilbud til ordre (Ja/Nei)"
+  "94":
+    caption: "Kjøpsrammeordre til ordre (Ja/Nei)"
+  "96":
+    caption: "Kjøp – tilbud til ordre"
+  "97":
+    caption: "Kjøpsrammeordre til ordre"
+  "101":
+    caption: "Kundepost – angi utlignings-ID"
+  "111":
+    caption: "Leverandørpost – angi utlignings-ID"
+  "201":
+    caption: "Prosjektkladd – kontroller linje"
+  "202":
+    caption: "Prosjektkladd – bokfør linje"
+  "203":
+    caption: "Prosjektkladd – bokfør bunke"
+  "211":
+    caption: "Ressurskladd – kontroller linje"
+  "212":
+    caption: "Ressurskladd – bokfør linje"
+  "213":
+    caption: "Ressurskladd – bokfør bunke"
+  "216":
+    caption: "Prosjektpost – angi utlignings-ID"
+  "220":
+    caption: "Ressurs – finn kostnad"
+  "221":
+    caption: "Ressurs – finn pris"
+  "225":
+    caption: "Finanskladd – utlign"
+  "230":
+    caption: "Finanskladd – administrasjon"
+  "231":
+    caption: "Finanskladd – bokfør"
+  "232":
+    caption: "Finanskladd – bokfør og skriv ut"
+  "240":
+    caption: "Varekladd – administrasjon"
+  "241":
+    caption: "Varekladd – bokfør"
+  "242":
+    caption: "Varekladd – bokfør og skriv ut"
+  "246":
+    caption: "Varekladd – utvid stykliste"
+  "250":
+    caption: "Styklistekladd – administrasjon"
+  "251":
+    caption: "Styklistekladd – bokfør"
+  "252":
+    caption: "Styklistekladd – bokfør og skriv ut"
+  "255":
+    caption: "Styklistejournal – vis vareposter"
+  "256":
+    caption: "Styklistejournal – vis ressursposter"
+  "270":
+    caption: "Ressurskladd – administrasjon"
+  "271":
+    caption: "Ressurskladd – bokfør"
+  "272":
+    caption: "Ressurskladd – bokfør og skriv ut"
+  "280":
+    caption: "Prosjektkladd – administrasjon"
+  "281":
+    caption: "Prosjektkladd – bokfør"
+  "282":
+    caption: "Prosjektkladd – bokfør og skriv ut"
+  "313":
+    caption: "Salg – skrevet ut"
+  "314":
+    caption: "Følgeseddel – skrevet ut"
+  "315":
+    caption: "Salgsfaktura – skrevet ut"
+  "316":
+    caption: "Salgskreditnota – skrevet ut"
+  "317":
+    caption: "Kjøpsdokument – skrevet ut"
+  "318":
+    caption: "Mottak – skrevet ut"
+  "319":
+    caption: "Kjøpsfaktura – skrevet ut"
+  "320":
+    caption: "Kjøpskreditnota – skrevet ut"
+  "330":
+    caption: "Innkjøpsforslag – administrasjon"
+  "333":
+    caption: "Innkjøpsforslag – opprett ordre"
+  "340":
+    caption: "Avgiftsoppgave – administrasjon"
+  "350":
+    caption: "Intrastatkladd – administrasjon"
+  "356":
+    caption: "Datokomprimering – administrasjon"
+  "358":
+    caption: "Datofilter – beregn"
+  "361":
+    caption: "Flytt poster"
+  "365":
+    caption: "Formater adresse"
+  "366":
+    caption: "Bytt konto i finanskladdlinje"
+  "370":
+    caption: "Bankkontoavstemming – bokfør"
+  "371":
+    caption: "Bankkontoavstemming – bokfør (Ja/Nei)"
+  "374":
+    caption: "Bankkontoavstemming – utlign poster"
+  "375":
+    caption: "Bankpost – angi avstemmingsnr."
+  "376":
+    caption: "Sjekkpost – angi avstemmingsnr."
+  "392":
+    caption: "Purring – opprett"
+  "393":
+    caption: "Purring – utsted"
+  "394":
+    caption: "Rentenota – opprett"
+  "395":
+    caption: "Rentenota – utsted"
+  "396":
+    caption: "Nummerserie – administrasjon"
+  "398":
+    caption: "Salgsavgift – beregn"
+  "399":
+    caption: "Kopier avgiftsoppsett fra selskap"
+  "400":
+    caption: "Reservasjon – administrasjon"
+  "405":
+    caption: "Varepost – rediger"
+  "406":
+    caption: "Oppsettsjekkliste – administrasjon"
+  "455":
+    caption: "Jobbkø – send test-e-post"
+  "901":
+    caption: "Opprett demodata"
+  "902":
+    caption: "Kontroller SIFT"
+  "903":
+    caption: "Ekstern rapportkjøring"
+  "904":
+    caption: "Kontroll av finansbalansen"
+  "906":
+    caption: "Forhåndsvis bokføring"
+  "907":
+    caption: "Jobbkøvarsler"
+  "990":
+    caption: "Hei verden"
+  "991":
+    caption: "Fremdriftsdemo"
+  "5400":
+    caption: "Tilgjengelighet – administrasjon"
+  "5402":
+    caption: "Enhet – administrasjon"
+  "5600":
+    caption: "Anlegg – sett inn post"
+  "5601":
+    caption: "Anlegg – sett inn finanskonto"
+  "5602":
+    caption: "Anlegg – hent finanskontonr."
+  "5604":
+    caption: "Opprett anleggspost"
+  "5605":
+    caption: "Beregn avhending"
+  "5606":
+    caption: "Anlegg – kontroller konsistens"
+  "5607":
+    caption: "Anlegg – automatisk post"
+  "5610":
+    caption: "Beregn avskrivning"
+  "5611":
+    caption: "Beregn normal avskrivning"
+  "5612":
+    caption: "Beregn bruker 1-avskrivning"
+  "5613":
+    caption: "Beregn avskrivning av anskaffelseskost"
+  "5617":
+    caption: "Anlegg – datoberegning"
+  "5618":
+    caption: "Avskrivningstabell – beregning"
+  "5623":
+    caption: "Anlegg – flytt poster"
+  "5624":
+    caption: "Annuller anleggsposter"
+  "5626":
+    caption: "Anlegg – generell rapport"
+  "5631":
+    caption: "Anleggskladd – kontroller linje"
+  "5632":
+    caption: "Anleggskladd – bokfør linje"
+  "5633":
+    caption: "Anleggskladd – bokfør bunke"
+  "5636":
+    caption: "Anleggskladd – bokfør"
+  "5638":
+    caption: "Anleggskladd – administrasjon"
+  "5639":
+    caption: "Anlegg – hent kladd"
+  "5640":
+    caption: "Dupliser avskrivningsprofil"
+  "5641":
+    caption: "Omklassifisering – kontroller linje"
+  "5642":
+    caption: "Omklassifisering – overfør linje"
+  "5643":
+    caption: "Omklassifisering – overfør bunke"
+  "5644":
+    caption: "Omklassifiseringskladd – overfør"
+  "5645":
+    caption: "Omklassifiseringskladd – overfør bunker"
+  "5646":
+    caption: "Omklassifiseringskladd – administrasjon"
+  "5647":
+    caption: "Opprett vedlikeholdspost"
+  "5651":
+    caption: "Forsikringskladd – kontroller linje"
+  "5652":
+    caption: "Forsikringskladd – bokfør linje"
+  "5653":
+    caption: "Forsikringskladd – bokfør bunke"
+  "5654":
+    caption: "Forsikringskladd – bokfør"
+  "5656":
+    caption: "Forsikringskladd – administrasjon"
+  "5657":
+    caption: "Opprett forsikringsdekningspost"

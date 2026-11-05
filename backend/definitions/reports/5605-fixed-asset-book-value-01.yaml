@@ -33,70 +33,70 @@ report:
           height: 20.5
           elements:
             - {value: group_code_name, x: 0, y: 0, width: 60}
-            - {value: head_1, x: 63, y: 4, width: 20, align: right, bold: true, wrap: true}
-            - {value: head_2, x: 84, y: 4, width: 20, align: right, bold: true, wrap: true}
-            - {value: head_3, x: 105, y: 4, width: 20, align: right, bold: true, wrap: true}
-            - {value: head_4, x: 126, y: 4, width: 20, align: right, bold: true, wrap: true}
-            - {value: head_5, x: 147, y: 4, width: 20, align: right, bold: true, wrap: true}
-            - {value: head_6, x: 168, y: 4, width: 20, align: right, bold: true, wrap: true}
-            - {value: head_7, x: 189, y: 4, width: 20, align: right, bold: true, wrap: true}
-            - {value: head_8, x: 210, y: 4, width: 20, align: right, bold: true, wrap: true}
-            - {value: head_9, x: 231, y: 4, width: 20, align: right, bold: true, wrap: true}
-            - {value: head_10, x: 252, y: 4, width: 20, align: right, bold: true, wrap: true}
+            - {value: head_1, x: 60, y: 4, width: 21, align: right, bold: true, wrap: true}
+            - {value: head_2, x: 81.2, y: 4, width: 21, align: right, bold: true, wrap: true}
+            - {value: head_3, x: 102.4, y: 4, width: 21, align: right, bold: true, wrap: true}
+            - {value: head_4, x: 123.6, y: 4, width: 21, align: right, bold: true, wrap: true}
+            - {value: head_5, x: 144.8, y: 4, width: 21, align: right, bold: true, wrap: true}
+            - {value: head_6, x: 166, y: 4, width: 21, align: right, bold: true, wrap: true}
+            - {value: head_7, x: 187.2, y: 4, width: 21, align: right, bold: true, wrap: true}
+            - {value: head_8, x: 208.4, y: 4, width: 21, align: right, bold: true, wrap: true}
+            - {value: head_9, x: 229.6, y: 4, width: 21, align: right, bold: true, wrap: true}
+            - {value: head_10, x: 250.8, y: 4, width: 21, align: right, bold: true, wrap: true}
             - {text: NO, x: 0, y: 14, width: 20, bold: true, print_if: print_details}
-            - {text: DESCRIPTION, x: 21, y: 14, width: 41, bold: true, print_if: print_details}
+            - {text: DESCRIPTION, x: 21, y: 14, width: 38, bold: true, print_if: print_details}
             - {line: true, x: 0, y: 18.5}
         # The group's total (group footer: OnGroupFooter sets the group's amounts)
         - type: group_footer
           group: group_head_line
           height: 6
           elements:
-            - {value: group_total_text, x: 0, y: 0.5, width: 62, bold: true}
-            - {value: grp_start_1, x: 63, y: 0.5, width: 20, align: right, bold: true}
-            - {value: grp_net_1, x: 84, y: 0.5, width: 20, align: right, bold: true}
-            - {value: grp_disp_1, x: 105, y: 0.5, width: 20, align: right, bold: true}
-            - {value: grp_end_1, x: 126, y: 0.5, width: 20, align: right, bold: true}
-            - {value: grp_start_2, x: 147, y: 0.5, width: 20, align: right, bold: true}
-            - {value: grp_net_2, x: 168, y: 0.5, width: 20, align: right, bold: true}
-            - {value: grp_disp_2, x: 189, y: 0.5, width: 20, align: right, bold: true}
-            - {value: grp_end_2, x: 210, y: 0.5, width: 20, align: right, bold: true}
-            - {value: grp_bv_start, x: 231, y: 0.5, width: 20, align: right, bold: true}
-            - {value: grp_bv_end, x: 252, y: 0.5, width: 20, align: right, bold: true}
+            - {value: group_total_text, x: 0, y: 0.5, width: 59, bold: true}
+            - {value: grp_start_1, x: 60, y: 0.5, width: 21, align: right, bold: true, size: 7.5}
+            - {value: grp_net_1, x: 81.2, y: 0.5, width: 21, align: right, bold: true, size: 7.5}
+            - {value: grp_disp_1, x: 102.4, y: 0.5, width: 21, align: right, bold: true, size: 7.5}
+            - {value: grp_end_1, x: 123.6, y: 0.5, width: 21, align: right, bold: true, size: 7.5}
+            - {value: grp_start_2, x: 144.8, y: 0.5, width: 21, align: right, bold: true, size: 7.5}
+            - {value: grp_net_2, x: 166, y: 0.5, width: 21, align: right, bold: true, size: 7.5}
+            - {value: grp_disp_2, x: 187.2, y: 0.5, width: 21, align: right, bold: true, size: 7.5}
+            - {value: grp_end_2, x: 208.4, y: 0.5, width: 21, align: right, bold: true, size: 7.5}
+            - {value: grp_bv_start, x: 229.6, y: 0.5, width: 21, align: right, bold: true, size: 7.5}
+            - {value: grp_bv_end, x: 250.8, y: 0.5, width: 21, align: right, bold: true, size: 7.5}
         # The group's head line (Print per Fixed Asset)
         - type: group_header
           group: group_head_line
           print_if: details_and_groups
           height: 6
           elements:
-            - {value: group_head_line, x: 0, y: 1.5, width: 62, bold: true}
+            - {value: group_head_line, x: 0, y: 1.5, width: 59, bold: true}
         - type: body
           print_if: print_details
           height: 4.2
           elements:
             - {field: "no", x: 0, y: 0, width: 20}
-            - {field: description, x: 21, y: 0, width: 41}
-            - {value: start_1, x: 63, y: 0, width: 20, align: right}
-            - {value: net_1, x: 84, y: 0, width: 20, align: right}
-            - {value: disp_1, x: 105, y: 0, width: 20, align: right}
-            - {value: end_1, x: 126, y: 0, width: 20, align: right}
-            - {value: start_2, x: 147, y: 0, width: 20, align: right}
-            - {value: net_2, x: 168, y: 0, width: 20, align: right}
-            - {value: disp_2, x: 189, y: 0, width: 20, align: right}
-            - {value: end_2, x: 210, y: 0, width: 20, align: right}
-            - {value: bv_start, x: 231, y: 0, width: 20, align: right}
-            - {value: bv_end, x: 252, y: 0, width: 20, align: right}
+            - {field: description, x: 21, y: 0, width: 38}
+            - {value: start_1, x: 60, y: 0, width: 21, align: right, size: 7.5}
+            - {value: net_1, x: 81.2, y: 0, width: 21, align: right, size: 7.5}
+            - {value: disp_1, x: 102.4, y: 0, width: 21, align: right, size: 7.5}
+            - {value: end_1, x: 123.6, y: 0, width: 21, align: right, size: 7.5}
+            - {value: start_2, x: 144.8, y: 0, width: 21, align: right, size: 7.5}
+            - {value: net_2, x: 166, y: 0, width: 21, align: right, size: 7.5}
+            - {value: disp_2, x: 187.2, y: 0, width: 21, align: right, size: 7.5}
+            - {value: end_2, x: 208.4, y: 0, width: 21, align: right, size: 7.5}
+            - {value: bv_start, x: 229.6, y: 0, width: 21, align: right, size: 7.5}
+            - {value: bv_end, x: 250.8, y: 0, width: 21, align: right, size: 7.5}
         - type: footer
           height: 8
           elements:
             - {line: true, x: 63, y: 1}
-            - {text: TOTAL, x: 0, y: 2, width: 62, bold: true}
-            - {value: tot_start_1, x: 63, y: 2, width: 20, align: right, bold: true}
-            - {value: tot_net_1, x: 84, y: 2, width: 20, align: right, bold: true}
-            - {value: tot_disp_1, x: 105, y: 2, width: 20, align: right, bold: true}
-            - {value: tot_end_1, x: 126, y: 2, width: 20, align: right, bold: true}
-            - {value: tot_start_2, x: 147, y: 2, width: 20, align: right, bold: true}
-            - {value: tot_net_2, x: 168, y: 2, width: 20, align: right, bold: true}
-            - {value: tot_disp_2, x: 189, y: 2, width: 20, align: right, bold: true}
-            - {value: tot_end_2, x: 210, y: 2, width: 20, align: right, bold: true}
-            - {value: tot_bv_start, x: 231, y: 2, width: 20, align: right, bold: true}
-            - {value: tot_bv_end, x: 252, y: 2, width: 20, align: right, bold: true}
+            - {text: TOTAL, x: 0, y: 2, width: 59, bold: true}
+            - {value: tot_start_1, x: 60, y: 2, width: 21, align: right, bold: true, size: 7.5}
+            - {value: tot_net_1, x: 81.2, y: 2, width: 21, align: right, bold: true, size: 7.5}
+            - {value: tot_disp_1, x: 102.4, y: 2, width: 21, align: right, bold: true, size: 7.5}
+            - {value: tot_end_1, x: 123.6, y: 2, width: 21, align: right, bold: true, size: 7.5}
+            - {value: tot_start_2, x: 144.8, y: 2, width: 21, align: right, bold: true, size: 7.5}
+            - {value: tot_net_2, x: 166, y: 2, width: 21, align: right, bold: true, size: 7.5}
+            - {value: tot_disp_2, x: 187.2, y: 2, width: 21, align: right, bold: true, size: 7.5}
+            - {value: tot_end_2, x: 208.4, y: 2, width: 21, align: right, bold: true, size: 7.5}
+            - {value: tot_bv_start, x: 229.6, y: 2, width: 21, align: right, bold: true, size: 7.5}
+            - {value: tot_bv_end, x: 250.8, y: 2, width: 21, align: right, bold: true, size: 7.5}
