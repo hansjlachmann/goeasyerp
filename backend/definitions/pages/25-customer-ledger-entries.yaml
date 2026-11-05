@@ -67,3 +67,33 @@ page:
       run_page: 444
       run_page_filter_field: customer_entry_no
       run_page_filter_value: entry_no
+
+    # Apply the entry to other open entries of the customer (classic Apply Entries on the ledger
+    # entries): mark them with Set Applies-to ID (F9), then Post Application (F11)
+    - name: Apply Entries
+      caption: Apply Entries
+      image: Approve
+      shortcut: Shift+F9
+      promoted: true
+      run_page: 232
+      run_page_params:
+        customer_no: customer_no
+
+    # Undo the entry's latest application (the application register, table 905)
+    - name: Unapply Entries
+      caption: Unapply Entries
+      image: Undo
+      promoted: true
+      run_object: table:Customer_ledger_entry.UnapplyEntries
+
+    # The applications of the entry (applied and unapplied)
+    - name: Applications
+      caption: Applications
+      image: History
+      promoted: true
+      run_page: 909
+      run_page_filters:
+        - field: account_type
+          const: "0"
+        - field: ledger_entry_no
+          value: entry_no

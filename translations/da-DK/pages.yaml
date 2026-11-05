@@ -937,6 +937,8 @@ pages:
     caption: "Afskrivningstabelkort"
   depreciation_table_lines:
     caption: "Linjer"
+  entry_applications:
+    caption: "Postudligninger"
   objects:
     caption: "Objekter"
   report_selection_sales:

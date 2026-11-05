@@ -100,6 +100,10 @@ codeunits:
     caption: "Ressource – find pris"
   "225":
     caption: "Finanskladde – udlign"
+  "226":
+    caption: "Debitorpost – udlign bogførte poster"
+  "227":
+    caption: "Kreditorpost – udlign bogførte poster"
   "230":
     caption: "Finanskladde – styring"
   "231":

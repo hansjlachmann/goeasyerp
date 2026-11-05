@@ -1,0 +1,215 @@
+table:
+  id: 905
+  name: "Entry_Application"
+  caption: Entry Application
+  posted: true   # written by the posting (codeunit 12) when it applies customer or vendor entries; the table API inserts, changes and deletes nothing
+  description: "Entry Application (table 905): one row per customer or vendor ledger entry an application changed — the application, the amount applied, the application's G/L transaction, and the entry's application fields as they were before it (Remaining Amount, Open, Closed by …), so the application can be unapplied (codeunits 226/227 Unapply Entries)"
+  lookup_page_id: 909
+  fields:
+    - name: entry_no
+      no: 1
+      type: int
+      db_name: entry_no
+      caption: Entry No.
+      primary_key: true
+    - name: application_no
+      no: 2
+      type: int
+      db_name: application_no
+      caption: Application No.
+    - name: account_type
+      no: 3
+      type: Option
+      db_name: account_type
+      caption: Account Type
+      options: ["Customer", "Vendor"]
+    - name: account_no
+      no: 4
+      type: types.Code
+      db_name: account_no
+      caption: Account No.
+      length: 20
+    - name: ledger_entry_no
+      no: 5
+      type: int
+      db_name: ledger_entry_no
+      caption: Ledger Entry No.
+    - name: applying_entry
+      no: 6
+      type: bool
+      db_name: applying_entry
+      caption: Applying Entry
+    - name: posting_date
+      no: 7
+      type: types.Date
+      db_name: posting_date
+      caption: Posting Date
+    - name: document_no
+      no: 8
+      type: types.Code
+      db_name: document_no
+      caption: Document No.
+      length: 20
+    - name: amount_applied
+      no: 9
+      type: types.Decimal
+      db_name: amount_applied
+      caption: Amount Applied
+    - name: transaction_no
+      no: 10
+      type: int
+      db_name: transaction_no
+      caption: Transaction No.
+    - name: user_id
+      no: 11
+      type: types.Code
+      db_name: user_id
+      caption: User ID
+      length: 50
+    - name: unapplied
+      no: 12
+      type: bool
+      db_name: unapplied
+      caption: Unapplied
+    - name: unapplied_transaction_no
+      no: 13
+      type: int
+      db_name: unapplied_transaction_no
+      caption: Unapplied Transaction No.
+    - name: unapplied_date
+      no: 14
+      type: types.Date
+      db_name: unapplied_date
+      caption: Unapplied Date
+    - name: unapplied_by_user_id
+      no: 15
+      type: types.Code
+      db_name: unapplied_by_user_id
+      caption: Unapplied by User ID
+      length: 50
+
+    # The entry's application fields before the application (restored by Unapply)
+    - name: amount
+      no: 20
+      type: types.Decimal
+      db_name: amount
+      caption: Amount Before
+    - name: amount_lcy
+      no: 21
+      type: types.Decimal
+      db_name: amount_lcy
+      caption: Amount (LCY) Before
+    - name: original_amount_lcy
+      no: 22
+      type: types.Decimal
+      db_name: original_amount_lcy
+      caption: Original Amount (LCY) Before
+    - name: remaining_amount
+      no: 23
+      type: types.Decimal
+      db_name: remaining_amount
+      caption: Remaining Amount Before
+    - name: remaining_amt_lcy
+      no: 24
+      type: types.Decimal
+      db_name: remaining_amt_lcy
+      caption: Remaining Amt. (LCY) Before
+    - name: open
+      no: 25
+      type: bool
+      db_name: open
+      caption: Open Before
+    - name: debit_amount
+      no: 26
+      type: types.Decimal
+      db_name: debit_amount
+      caption: Debit Amount Before
+    - name: credit_amount
+      no: 27
+      type: types.Decimal
+      db_name: credit_amount
+      caption: Credit Amount Before
+    - name: debit_amount_lcy
+      no: 28
+      type: types.Decimal
+      db_name: debit_amount_lcy
+      caption: Debit Amount (LCY) Before
+    - name: credit_amount_lcy
+      no: 29
+      type: types.Decimal
+      db_name: credit_amount_lcy
+      caption: Credit Amount (LCY) Before
+    - name: closed_by_entry_no
+      no: 30
+      type: int
+      db_name: closed_by_entry_no
+      caption: Closed by Entry No. Before
+    - name: closed_at_date
+      no: 31
+      type: types.Date
+      db_name: closed_at_date
+      caption: Closed at Date Before
+    - name: closed_by_amount
+      no: 32
+      type: types.Decimal
+      db_name: closed_by_amount
+      caption: Closed by Amount Before
+    - name: closed_by_amount_lcy
+      no: 33
+      type: types.Decimal
+      db_name: closed_by_amount_lcy
+      caption: Closed by Amount (LCY) Before
+    - name: closed_by_currency_code
+      no: 34
+      type: types.Code
+      db_name: closed_by_currency_code
+      caption: Closed by Currency Code Before
+      length: 10
+    - name: closed_by_currency_amount
+      no: 35
+      type: types.Decimal
+      db_name: closed_by_currency_amount
+      caption: Closed by Currency Amount Before
+    - name: pmt_disc_lcy
+      no: 36
+      type: types.Decimal
+      db_name: pmt_disc_lcy
+      caption: Pmt. Disc. (LCY) Before
+      # a customer entry's Pmt. Disc. Given (LCY), a vendor entry's Pmt. Disc. Rcd.(LCY)
+    - name: rounding_amount
+      no: 37
+      type: types.Decimal
+      db_name: rounding_amount
+      caption: Rounding Amount Before
+    - name: rounding_amount_lcy
+      no: 38
+      type: types.Decimal
+      db_name: rounding_amount_lcy
+      caption: Rounding Amount (LCY) Before
+    - name: rounding_currency
+      no: 39
+      type: types.Code
+      db_name: rounding_currency
+      caption: Rounding Currency Before
+      length: 10
+    - name: applies_to_id
+      no: 40
+      type: types.Code
+      db_name: applies_to_id
+      caption: Applies-to ID Before
+      length: 20
+    - name: calculate_interest
+      no: 41
+      type: bool
+      db_name: calculate_interest
+      caption: Calculate Interest Before
+      # a customer entry
+
+  keys:
+    - name: Primary
+      fields: [entry_no]
+      clustered: true
+    - name: application
+      fields: [application_no]
+    - name: ledger_entry
+      fields: [account_type, ledger_entry_no, application_no]

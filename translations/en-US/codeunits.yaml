@@ -100,6 +100,10 @@ codeunits:
     caption: "Resource-Find Price"
   "225":
     caption: "Gen. Jnl.-Apply"
+  "226":
+    caption: "CustEntry-Apply Posted Entries"
+  "227":
+    caption: "VendEntry-Apply Posted Entries"
   "230":
     caption: "GenJnlManagement"
   "231":

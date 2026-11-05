@@ -364,6 +364,11 @@ messages:
 
   # Demo data (codeunit 901)
   DEMO_DATA_DONE: "Demodata opprettet: %1 kunder med %2 kundeposter, %3 leverandører med %4 leverandørposter."
+  APPLY_POST_CONFIRM: "Vil du bokføre utligningen av %1 %2?"
+  APPLY_POSTED: "Utligningen er bokført."
+  UNAPPLY_NOTHING: "Post %1 har ingen utligning å oppheve."
+  UNAPPLY_CONFIRM: "Vil du oppheve utligning %1 bokført %2 (den siste utligningen av post %3)? Postene får tilbake restbeløpene sine, og utligningens finansposteringer tilbakeføres."
+  UNAPPLY_DONE: "Utligning %1 er opphevet."
   DEMO_DATA_REPLACE_CONFIRM: "Selskapet \"%1\" har allerede data. Opprettelse av demodata sletter alt (unntatt jobbkøen og brukeroppsettet) og oppretter demoen på nytt. Vil du fortsette?"
   DEMO_DATA_BAD_SIZE: "Ukjent størrelse på demodata \"%1\". Sett parameteren på jobben til SMALL, LARGE eller HEAVY."
   DEMO_DATA_INSERT_FAILED: "Kunne ikke opprette %1 %2: %3. Ingen demodata ble opprettet."

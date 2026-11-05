@@ -123,6 +123,7 @@ func (p *GenJnlPostLine) postVend(genJnlLine *gtables.GenJournalLine) error {
 
 	// Post vendor entry
 	p.resetApplicationTotals()
+	p.startEntryApplication(gtables.EntryApplication_Account_type.Vendor, genJnlLine.Account_no)
 	err = p.applyVendLedgEntry(vendLedgEntry, vend, genJnlLine)
 	if err != nil {
 		return err
@@ -211,6 +212,9 @@ func (p *GenJnlPostLine) applyVendLedgEntry(newVendLedgEntry *gtables.VendorLedg
 	for found {
 		oldVendLedgEntry2 := gtables.NewVendorLedgerEntry(p.src)
 		oldVendLedgEntry2.Copy(oldVendLedgEntry)
+		// the application register: the entries as they were before the application
+		p.recordVendEntry(newVendLedgEntry, true)
+		p.recordVendEntry(oldVendLedgEntry2, false)
 
 		// Calculate payment discount
 		if newVendLedgEntry.Document_type == gtables.VendorLedgerEntry_Document_type.Payment &&

@@ -67,6 +67,9 @@ type GenJnlPostLine struct {
 	unrealExchRateLosses      types.Decimal
 	gainsLossesBuffer         map[types.Code]*gainsLosses
 	gainsLossesOrder          []types.Code
+	// the application register of the current line (Entry Application)
+	entryAppl  *entryApplication
+	entryAppls []*entryApplication
 
 	// Tax entries
 	nextTaxEntryNo     int
@@ -575,6 +578,10 @@ func (p *GenJnlPostLine) finishCodeunit() error {
 		if err != nil {
 			return err
 		}
+	}
+	err = p.writeEntryApplications()
+	if err != nil {
+		return err
 	}
 	glEntry := gtables.NewGLEntry(p.src)
 	glEntry.Consistent(p.balance().balanced())
