@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.139](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.138...v0.1.139) (2026-11-05)
+
+
+### Features
+
+* Object Caption, CaptionClass and printed reports fitting the brand fonts ([#234](https://github.com/hansjlachmann/goeasyerp/issues/234)) ([7b4bf0d](https://github.com/hansjlachmann/goeasyerp/commit/7b4bf0d79d9e0542c08ea7f096799f53e15057c0))
+
+
+### Bug Fixes
+
+* FlowFields on a global table (Report Selections' Report Name on ([7b4bf0d](https://github.com/hansjlachmann/goeasyerp/commit/7b4bf0d79d9e0542c08ea7f096799f53e15057c0))
+
 ## [0.1.138](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.137...v0.1.138) (2026-11-04)
 
 
