@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.140](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.139...v0.1.140) (2026-11-06)
+
+
+### Features
+
+* apply posted customer and vendor entries, and unapply applications ([#236](https://github.com/hansjlachmann/goeasyerp/issues/236)) ([636caad](https://github.com/hansjlachmann/goeasyerp/commit/636caad2be1661234ca7b82fa93459791dcef1a6))
+
 ## [0.1.139](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.138...v0.1.139) (2026-11-05)
 
 
