@@ -1,0 +1,46 @@
+table:
+  id: 906
+  name: "Entry_Application_GL"
+  caption: Entry Application G/L
+  posted: true   # written with the Entry Application rows of an application
+  description: "Entry Application G/L (table 906): the G/L postings of an application of customer or vendor entries — receivables or payables account, payment discount, application rounding, exchange-rate gains and losses — posted with the opposite amounts when it is unapplied"
+  fields:
+    - name: application_no
+      no: 1
+      type: int
+      db_name: application_no
+      caption: Application No.
+      primary_key: true
+    - name: line_no
+      no: 2
+      type: int
+      db_name: line_no
+      caption: Line No.
+      primary_key: true
+    - name: gl_account_no
+      no: 3
+      type: types.Code
+      db_name: gl_account_no
+      caption: G/L Account No.
+      length: 20
+    - name: amount
+      no: 4
+      type: types.Decimal
+      db_name: amount
+      caption: Amount
+    - name: additional_currency_amount
+      no: 5
+      type: types.Decimal
+      db_name: additional_currency_amount
+      caption: Additional-Currency Amount
+    - name: use_add_curr_amount
+      no: 6
+      type: bool
+      db_name: use_add_curr_amount
+      caption: Use Add.-Curr. Amount
+      # the amount in the additional currency is given (else exchanged at posting)
+
+  keys:
+    - name: Primary
+      fields: [application_no, line_no]
+      clustered: true

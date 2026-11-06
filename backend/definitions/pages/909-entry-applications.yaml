@@ -1,0 +1,46 @@
+page:
+  id: 909
+  type: List
+  name: Entry Applications
+  source_table: Entry_Application
+  caption: Entry Applications
+  editable: false
+  # the application register (table 905): one row per customer or vendor entry an application
+  # changed, with the amount applied and whether it was unapplied — opened from the ledger
+  # entries (Applications)
+
+  layout:
+    repeater:
+      fields:
+        - source: application_no
+          width: 100
+        - source: posting_date
+          width: 100
+        - source: account_type
+          width: 100
+        - source: account_no
+          width: 110
+        - source: ledger_entry_no
+          width: 110
+        - source: document_no
+          width: 120
+        - source: applying_entry
+          width: 90
+        - source: amount_applied
+          width: 130
+        - source: transaction_no
+          width: 110
+        - source: user_id
+          width: 110
+        - source: unapplied
+          width: 90
+        - source: unapplied_date
+          width: 110
+        - source: unapplied_by_user_id
+          width: 120
+        - source: remaining_amount
+          width: 130
+          visible: false
+        - source: entry_no
+          width: 90
+          visible: false

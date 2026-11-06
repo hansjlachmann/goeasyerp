@@ -937,6 +937,8 @@ pages:
     caption: "Depreciation Table Card"
   depreciation_table_lines:
     caption: "Lines"
+  entry_applications:
+    caption: "Entry Applications"
   objects:
     caption: "Objects"
   report_selection_sales:

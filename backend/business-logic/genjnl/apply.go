@@ -25,9 +25,41 @@ func init() {
 	// (the ledger entry tables by their API names: a function finds its record type by it)
 	functions.Register("table", "Customer_ledger_entry", "SetAppliesToID", functions.For(SetCustApplID))
 	functions.Register("table", "Vendor_ledger_entry", "SetAppliesToID", functions.For(SetVendApplID))
+	// Opened from the ledger entries (Apply Entries, classic direct mode): the customer's or
+	// vendor's open entries; the entry under the cursor applies to the entries marked with the
+	// user's Applies-to ID (Post Application, F11)
+	pages.OnOpenPage(ApplyCustEntriesPageID, func(rec *gtables.CustomerLedgerEntry, page *pages.Open) error {
+		customerNo := page.Param("customer_no")
+		if customerNo != "" {
+			page.SetFilter("customer_no", customerNo)
+			page.SetFilter("open", true)
+		}
+		return nil
+	})
+	pages.OnOpenPage(ApplyVendEntriesPageID, func(rec *gtables.VendorLedgerEntry, page *pages.Open) error {
+		vendorNo := page.Param("vendor_no")
+		if vendorNo != "" {
+			page.SetFilter("vendor_no", vendorNo)
+			page.SetFilter("open", true)
+		}
+		return nil
+	})
 	pages.OnAfterGetRecord(ApplyCustEntriesPageID, func(rec *gtables.CustomerLedgerEntry, page *pages.Control) {
 		custLedgEntry := gtables.NewCustomerLedgerEntry(rec)
 		custLedgEntry.SetRange("customer_no", rec.Customer_no)
+		if system.PageParam("customer_no") != "" {
+			custLedgEntry.SetRange("open", true)
+			custLedgEntry.SetRange("applies_to_id", directApplID())
+			custLedgEntry.SetFilter("entry_no", "<>"+itoa(rec.Entry_no))
+			setDirectApplnTotals(page, rec.Remaining_amount, rec.Document_type == gtables.CustomerLedgerEntry_Document_type.Payment, rec.Posting_date,
+				func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date)) {
+					for found := custLedgEntry.FindSet(); found; found = custLedgEntry.Next() {
+						add(custLedgEntry.Remaining_amount, custLedgEntry.Pmt_disc_possible,
+							custLedgEntry.Document_type == gtables.CustomerLedgerEntry_Document_type.Invoice, custLedgEntry.Pmt_discount_date)
+					}
+				})
+			return
+		}
 		setApplnTotals(page, func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date)) {
 			custLedgEntry.SetRange("open", true)
 			custLedgEntry.SetRange("applies_to_id", system.PageParam("applies_to_id"))
@@ -40,6 +72,19 @@ func init() {
 	pages.OnAfterGetRecord(ApplyVendEntriesPageID, func(rec *gtables.VendorLedgerEntry, page *pages.Control) {
 		vendLedgEntry := gtables.NewVendorLedgerEntry(rec)
 		vendLedgEntry.SetRange("vendor_no", rec.Vendor_no)
+		if system.PageParam("vendor_no") != "" {
+			vendLedgEntry.SetRange("open", true)
+			vendLedgEntry.SetRange("applies_to_id", directApplID())
+			vendLedgEntry.SetFilter("entry_no", "<>"+itoa(rec.Entry_no))
+			setDirectApplnTotals(page, rec.Remaining_amount, rec.Document_type == gtables.VendorLedgerEntry_Document_type.Payment, rec.Posting_date,
+				func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date)) {
+					for found := vendLedgEntry.FindSet(); found; found = vendLedgEntry.Next() {
+						add(vendLedgEntry.Remaining_amount, vendLedgEntry.Pmt_disc_possible,
+							vendLedgEntry.Document_type == gtables.VendorLedgerEntry_Document_type.Invoice, vendLedgEntry.Pmt_discount_date)
+					}
+				})
+			return
+		}
 		setApplnTotals(page, func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date)) {
 			vendLedgEntry.SetRange("open", true)
 			vendLedgEntry.SetRange("applies_to_id", system.PageParam("applies_to_id"))
@@ -70,6 +115,32 @@ func setApplnTotals(page *pages.Control, entries func(add func(remaining, pmtDis
 	page.SetValue("appln_amount", applyingAmount)
 	page.SetValue("applied_amount", appliedAmount)
 	page.SetValue("appln_balance", appliedAmount.Add(applyingAmount))
+}
+
+// setDirectApplnTotals fills the footer opened from the ledger entries: the remaining amount of
+// the entry under the cursor (the applying entry), the amount of the other entries marked with
+// the user's Applies-to ID (a payment takes the discount still possible), and the balance
+func setDirectApplnTotals(page *pages.Control, applyingAmount types.Decimal, payment bool, postingDate types.Date, entries func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date))) {
+	var appliedAmount types.Decimal
+	entries(func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date) {
+		if payment && invoice && !pmtDiscountDate.Before(postingDate) {
+			remaining = remaining.Sub(pmtDiscPossible)
+		}
+		appliedAmount = appliedAmount.Add(remaining)
+	})
+	page.SetValue("appln_amount", applyingAmount)
+	page.SetValue("applied_amount", appliedAmount)
+	page.SetValue("appln_balance", appliedAmount.Add(applyingAmount))
+}
+
+// directApplID is the Applies-to ID Set Applies-to ID gives opened from the ledger entries: the
+// user ID, *** without one
+func directApplID() types.Code {
+	appliesToID := types.Code(system.UserId())
+	if appliesToID == "" {
+		appliesToID = "***"
+	}
+	return appliesToID
 }
 
 // SetCustApplID (codeunit 101 CustEntry-SetAppl.ID) marks the selected customer entries with the

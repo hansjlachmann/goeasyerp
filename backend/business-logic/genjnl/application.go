@@ -53,6 +53,8 @@ func (p *GenJnlPostLine) postApplicationGLEntries(genJnlLine *gtables.GenJournal
 	if err != nil {
 		return err
 	}
+	// the application register: what the application moved off the receivables or payables account
+	p.recordApplicationGL(account, p.applicationLCY().Neg(), addCurr.Neg(), true)
 	_, err = p.initGLEntry(account, genJnlLine.Amount_lcy.Sub(p.applicationLCY()), genJnlLine.Source_currency_amount.Sub(addCurr), true, true)
 	if err != nil {
 		return err
@@ -70,6 +72,7 @@ func (p *GenJnlPostLine) postApplicationGLEntries(genJnlLine *gtables.GenJournal
 		if err != nil {
 			return err
 		}
+		p.recordApplicationGL(pmtDiscAccount, p.totalPmtDiscLCY, p.totalPmtDiscAddCurr, true)
 		_, err = p.initGLEntry(pmtDiscAccount, p.totalPmtDiscLCY, p.totalPmtDiscAddCurr, true, true)
 		if err != nil {
 			return err
@@ -85,6 +88,7 @@ func (p *GenJnlPostLine) postApplicationGLEntries(genJnlLine *gtables.GenJournal
 		if err != nil {
 			return err
 		}
+		p.recordApplicationGL(roundingAccount, p.totalApplnRoundingLCY, p.totalApplnRoundingAddCurr, true)
 		_, err = p.initGLEntry(roundingAccount, p.totalApplnRoundingLCY, p.totalApplnRoundingAddCurr, true, true)
 		if err != nil {
 			return err
@@ -171,6 +175,7 @@ func (p *GenJnlPostLine) postGainsLosses() error {
 			if err != nil {
 				return err
 			}
+			p.recordApplicationGL(posting.account, posting.amount, types.Decimal{}, isAddCurr)
 			_, err = p.initGLEntry(posting.account, posting.amount, types.Decimal{}, isAddCurr, true)
 			if err != nil {
 				return err

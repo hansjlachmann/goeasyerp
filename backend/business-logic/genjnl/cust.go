@@ -115,6 +115,7 @@ func (p *GenJnlPostLine) postCust(genJnlLine *gtables.GenJournalLine) error {
 
 	// Post customer entry
 	p.resetApplicationTotals()
+	p.startEntryApplication(gtables.EntryApplication_Account_type.Customer, genJnlLine.Account_no)
 	err = p.applyCustLedgEntry(custLedgEntry, cust, genJnlLine)
 	if err != nil {
 		return err
@@ -203,6 +204,9 @@ func (p *GenJnlPostLine) applyCustLedgEntry(newCustLedgEntry *gtables.CustomerLe
 	for found {
 		oldCustLedgEntry2 := gtables.NewCustomerLedgerEntry(p.src)
 		oldCustLedgEntry2.Copy(oldCustLedgEntry)
+		// the application register: the entries as they were before the application
+		p.recordCustEntry(newCustLedgEntry, true)
+		p.recordCustEntry(oldCustLedgEntry2, false)
 
 		// Calculate payment discount
 		if newCustLedgEntry.Document_type == gtables.CustomerLedgerEntry_Document_type.Payment &&

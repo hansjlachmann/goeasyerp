@@ -20,6 +20,8 @@ func init() {
 	objects.Codeunit(92, "Purch.-Post + Print")
 	objects.Codeunit(93, "Purch.-Quote to Order (Yes/No)")
 	objects.Codeunit(94, "Blnkt Purch Ord. to Ord. (Y/N)")
+	objects.Codeunit(226, "CustEntry-Apply Posted Entries")
+	objects.Codeunit(227, "VendEntry-Apply Posted Entries")
 	objects.Codeunit(231, "Gen. Jnl.-Post")
 	objects.Codeunit(232, "Gen. Jnl.-Post+Print")
 	objects.Codeunit(241, "Item Jnl.-Post")

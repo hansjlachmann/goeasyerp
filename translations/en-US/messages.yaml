@@ -364,6 +364,11 @@ messages:
 
   # Demo data (codeunit 901)
   DEMO_DATA_DONE: "Demo data created: %1 customers with %2 customer ledger entries, %3 vendors with %4 vendor ledger entries."
+  APPLY_POST_CONFIRM: "Do you want to post the application of %1 %2?"
+  APPLY_POSTED: "The application was successfully posted."
+  UNAPPLY_NOTHING: "Entry %1 has no application to unapply."
+  UNAPPLY_CONFIRM: "Do you want to unapply application %1 posted on %2 (the latest application of entry %3)? The entries get back their remaining amounts and the application's G/L postings are reversed."
+  UNAPPLY_DONE: "Application %1 was unapplied."
   DEMO_DATA_REPLACE_CONFIRM: "Company \"%1\" already has data. Creating the demo data deletes all of it (except the job queue and user setup) and creates the demo again. Do you want to continue?"
   DEMO_DATA_BAD_SIZE: "Unknown demo data size \"%1\". Set the job parameter to SMALL, LARGE or HEAVY."
   DEMO_DATA_INSERT_FAILED: "Could not create %1 %2: %3. No demo data was created."

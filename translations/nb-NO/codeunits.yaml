@@ -100,6 +100,10 @@ codeunits:
     caption: "Ressurs – finn pris"
   "225":
     caption: "Finanskladd – utlign"
+  "226":
+    caption: "Kundepost – utlign bokførte poster"
+  "227":
+    caption: "Leverandørpost – utlign bokførte poster"
   "230":
     caption: "Finanskladd – administrasjon"
   "231":

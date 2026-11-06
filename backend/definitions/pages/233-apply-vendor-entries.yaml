@@ -78,3 +78,12 @@ page:
       shortcut: F9
       promoted: true
       run_object: table:Vendor_ledger_entry.SetAppliesToID
+
+    # Opened from the ledger entries: post the application of the entry under the cursor (it must
+    # be marked too) to the other entries marked with the user's Applies-to ID (codeunit 227)
+    - name: Post Application
+      caption: Post Application
+      image: Post
+      shortcut: F11
+      promoted: true
+      run_object: codeunit:227
