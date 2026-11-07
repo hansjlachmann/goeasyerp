@@ -61,7 +61,7 @@
 <style>
 	:global(.edge-nav-btn) {
 		@apply absolute top-1/2 -translate-y-1/2 z-50;
-		@apply w-12 h-12 rounded-full;
+		@apply w-9 h-9 rounded-full;
 		@apply bg-gray-700 dark:bg-gray-600;
 		@apply text-white;
 		@apply flex items-center justify-center;
@@ -78,10 +78,10 @@
 	}
 
 	:global(.edge-nav-left) {
-		left: 16px;
+		left: 4px;
 	}
 
 	:global(.edge-nav-right) {
-		right: 16px;
+		right: 4px;
 	}
 </style>

@@ -80,6 +80,8 @@
 		buttons[active].focus();
 	}
 
+	// On the button only the keys that open the menu are its own (taken before the page sees them:
+	// Enter would open the record, ↓ move the row); the page's shortcuts and Esc work from it
 	function handleTriggerKeydown(e: KeyboardEvent) {
 		if (!open && (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ')) {
 			e.preventDefault();
@@ -133,10 +135,7 @@
 <div
 	class="action-menu"
 	bind:this={triggerElement}
-	data-own-keys
-	onkeydown={(e) => {
-		if (!open && (e.target as HTMLElement).closest('.menu') === null) handleTriggerKeydown(e);
-	}}
+	onkeydowncapture={handleTriggerKeydown}
 >
 	<ActionButton caption={action.caption} image={action.image} {disabled} onclick={() => (open ? close() : openMenu())}>
 		{#snippet after()}

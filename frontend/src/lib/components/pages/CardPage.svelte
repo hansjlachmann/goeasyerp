@@ -810,6 +810,7 @@
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="sections-container"
+		class:beside-edge-nav={navigationEnabled}
 		bind:this={sectionsElement}
 		onkeydown={(e) => {
 			// Enter moves between the card's fields — not in a subpage (its list handles Enter)
@@ -1006,6 +1007,11 @@
 	.sections-container {
 		@apply flex flex-col gap-2 overflow-y-auto flex-1 min-h-0;
 		@apply px-1; /* Small padding for scrollbar spacing */
+	}
+
+	/* The previous/next buttons have their own room: they never cover a field or the scrollbar */
+	.sections-container.beside-edge-nav {
+		margin-inline: 2.75rem;
 	}
 
 	/* A subpage inside its section */

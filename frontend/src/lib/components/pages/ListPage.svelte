@@ -26,7 +26,7 @@
 	import { printoutOf } from '$lib/utils/printout';
 	import { toDecimalInput, fromDecimalInput } from '$lib/utils/regional';
 	import { headerFieldInput, headerValueTyped } from '$lib/utils/headerFields';
-	import { captionWithBreaks } from '$lib/utils/columnHeader';
+	import { captionWithBreaks, longestCaptionWord } from '$lib/utils/columnHeader';
 	import { apiFieldFilters } from '$lib/utils/flowFilter';
 	import DateInput from '../DateInput.svelte';
 	import ObjectRunner from '../ObjectRunner.svelte';
@@ -3195,8 +3195,30 @@
 	}
 
 	// Get column width (custom or default from field definition)
+	// A column is at least wide enough for its caption's longest word, so a caption wraps between
+	// words and never inside one (a width the user dragged stays as it is)
+	let headerMeasure = $state<{ font: string; room: number } | null>(null);
+	let measureContext: CanvasRenderingContext2D | null | undefined;
+	$effect(() => {
+		const label = listPageElement?.querySelector<HTMLElement>('.th-label, .th-sort span');
+		const th = label?.closest('th');
+		const menuButton = th?.querySelector<HTMLElement>('.th-content > button:not(.th-sort)');
+		if (!label || !th || headerMeasure) return;
+		const style = getComputedStyle(th);
+		const room = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + (menuButton?.offsetWidth ?? 0) + 16;
+		headerMeasure = { font: getComputedStyle(label).font, room };
+	});
+	function captionMinWidth(field: Field): number {
+		if (!headerMeasure) return 0;
+		measureContext ??= document.createElement('canvas').getContext('2d');
+		if (!measureContext) return 0;
+		measureContext.font = headerMeasure.font;
+		const word = longestCaptionWord(getFieldCaption(field.source, captions, field.caption));
+		return Math.ceil(measureContext.measureText(word).width + headerMeasure.room);
+	}
+
 	function getColumnWidth(field: Field): number {
-		return columnWidths[field.source] ?? field.width ?? 150;
+		return columnWidths[field.source] ?? Math.max(field.width ?? 150, captionMinWidth(field));
 	}
 
 	// Open customize modal

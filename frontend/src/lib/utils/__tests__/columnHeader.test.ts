@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { filterValueFor, withFilter, withoutFilter, moveColumn, hideColumn, captionWithBreaks } from '../columnHeader';
+import { filterValueFor, withFilter, withoutFilter, moveColumn, hideColumn, captionWithBreaks, longestCaptionWord } from '../columnHeader';
 
 describe('column header menu', () => {
 	it('filters to a value only when it can be matched exactly', () => {
@@ -58,5 +58,15 @@ describe('captionWithBreaks', () => {
 		expect(captionWithBreaks('Account Type')).toBe('Account Type');
 		expect(captionWithBreaks('A/ B')).toBe('A/ B');
 		expect(captionWithBreaks('A/')).toBe('A/');
+	});
+});
+
+describe('longestCaptionWord', () => {
+	it('takes the longest part that cannot wrap', () => {
+		expect(longestCaptionWord('Blocked')).toBe('Blocked');
+		expect(longestCaptionWord('Unit of Measure')).toBe('Measure');
+		expect(longestCaptionWord('Income/Balance')).toBe('Income/');
+		expect(longestCaptionWord('Sell-to Customer')).toBe('Customer');
+		expect(longestCaptionWord('')).toBe('');
 	});
 });

@@ -211,10 +211,42 @@
 	}
 
 	// A header field typed in (on leaving the field or Enter)
-	function handleHeaderChange(header: HeaderField, value: string) {
+	async function handleHeaderChange(header: HeaderField, value: string) {
 		const next = headerParam(header, value);
-		if (next === null || next === (pageParams[header.param] ?? '')) return;
+		if (next === null) return;
+		if (next === (pageParams[header.param] ?? '')) {
+			// The same value (a code typed in lower case): the field shows it as applied
+			const input = document.querySelector<HTMLInputElement>(`[data-header-param="${header.param}"]`);
+			if (input) input.value = headerValue(header);
+			return;
+		}
+		if (await headerValueRefused(header, next)) return;
 		reopenWith(header.param, next);
+	}
+
+	// A record's key typed into a header field (a journal's batch): the page's trigger decides
+	// which record opens. When that is another one, the typed one does not exist: the user is
+	// told and the page stays on the record it shows, with the cursor in the field.
+	let headerCheck: Promise<boolean> | null = null;
+	function headerValueRefused(header: HeaderField, next: string): Promise<boolean> {
+		if (!page?.page.has_open_trigger || !header.lookup_page) return Promise.resolve(false);
+		headerCheck ??= (async () => {
+			try {
+				const result = await api.openPage(page!.page.id, { ...pageParams, [header.param]: next });
+				if ((result.params?.[header.param] ?? '').toUpperCase() === next.toUpperCase()) return false;
+				const input = document.querySelector<HTMLInputElement>(`[data-header-param="${header.param}"]`);
+				if (input) {
+					input.value = headerValue(header);
+					input.focus();
+					input.select();
+				}
+				if (next !== '') toast.error(t(ERR.FIELD_NOT_EXIST, header.caption ?? header.source, next));
+				return true;
+			} finally {
+				headerCheck = null;
+			}
+		})();
+		return headerCheck;
 	}
 
 	// An action with apply_header_fields (Navigate's Find): every header field as typed becomes

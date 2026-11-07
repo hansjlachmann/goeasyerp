@@ -67,3 +67,10 @@ export function hideColumn(
 export function captionWithBreaks(caption: string): string {
 	return caption.replace(/\/(?=\S)/g, '/\u200B');
 }
+
+/** The longest part of a caption that stays on one line (it wraps at spaces, after / and -) */
+export function longestCaptionWord(caption: string): string {
+	return caption
+		.split(/\s+|(?<=[/-])/)
+		.reduce((longest, word) => (word.length > longest.length ? word : longest), '');
+}
