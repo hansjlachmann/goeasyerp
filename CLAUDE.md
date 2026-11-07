@@ -644,6 +644,10 @@ Uses Conventional Commits with Release Please for automated versioning:
 - `chore:` miscellaneous (hidden from changelog)
 - `BREAKING CHANGE:` in footer (major bump)
 
+## Commits go to main (ABSOLUTE RULE)
+
+All commits go directly to the `main` branch: no feature branches and no pull requests (decided 2026-11-07).
+
 ## Git Identity
 
 Always use this identity for commits — never update git config to anything else:

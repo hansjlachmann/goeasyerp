@@ -102,3 +102,7 @@ openerp-cli
 
 # Compiled Go test binaries (go test -c, -cpuprofile)
 *.test
+
+# Local material, never committed
+/reference/
+/*-code-txt/
