@@ -1,6 +1,7 @@
 table:
   id: 9
   name: "Country_Region"
+  refuse_delete_when_used: all
   caption: Country/Region
   description: Countries and regions (table 9 Country/Region)
   fields:

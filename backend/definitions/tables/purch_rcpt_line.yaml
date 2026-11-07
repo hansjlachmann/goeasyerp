@@ -1,6 +1,7 @@
 table:
   id: 121
   name: "Purch_Rcpt_Line"
+  history: true
   description: "Purch. Rcpt. Line (table 121): a line of a posted purchase receipt"
   fields:
     - name: buy_from_vendor_no

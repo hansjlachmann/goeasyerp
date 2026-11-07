@@ -1,6 +1,7 @@
 table:
   id: 291
   name: "Shipping_Agent"
+  refuse_delete_when_used: all
   caption: Shipping Agent
   description: "Shipping agents, carriers (table 291)"
   fields:

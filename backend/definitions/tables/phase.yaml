@@ -1,6 +1,7 @@
 table:
   id: 161
   name: "Phase"
+  refuse_delete_when_used: all
   caption: Phase
   description: "Project phases (table 161): the phase codes of budget lines and entries"
   lookup_page_id: 82

@@ -60,6 +60,8 @@ errors:
   # Deleting records with ledger entries
   ERR_DELETE_HAS_ENTRIES: "Du kan ikke slette %1 %2 fordi det finnes poster i et regnskapsår som ikke er avsluttet ennå."
   ERR_DELETE_OPEN_ENTRIES: "Du kan ikke slette %1 %2 fordi det finnes én eller flere åpne poster."
+  ERR_DELETE_IN_USE: "Du kan ikke slette %3 %4 fordi poster i %2 fortsatt bruker den (feltet %1)."
+  ERR_DELETE_BALANCE_NOT_ZERO: "Du kan ikke slette %1 %2 fordi postene har en saldo."
   ERR_CHANGE_OPEN_ENTRIES: "Du kan ikke endre %1 fordi det finnes én eller flere åpne poster for denne bankkontoen."
   ERR_FA_MAIN_ASSET_DELETE: "En hovedeiendel kan ikke slettes."
   ERR_FA_HAS_DEPR_BOOKS: "Du kan ikke slette %1 %2 fordi den har tilknyttede avskrivningsprofiler."

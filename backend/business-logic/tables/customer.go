@@ -11,8 +11,8 @@ import (
 
 // customerLogic is the business logic of table 18 Customer.
 //
-// Not migrated yet (their tables come later): OnDelete refuses while sales orders are
-// outstanding; the contact update (codeunit 5002) of OnInsert/OnModify/OnDelete.
+// Not migrated yet (its table comes later): the contact update (codeunit 5002) of
+// OnInsert/OnModify/OnDelete.
 type customerLogic struct{}
 
 func init() {

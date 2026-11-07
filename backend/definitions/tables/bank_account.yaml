@@ -1,6 +1,7 @@
 table:
   id: 270
   name: "Bank_Account"
+  refuse_delete_when_used: current
   caption: Bank Account
   description: "Bank accounts (table 270)"
   data_caption_fields: [no, name]

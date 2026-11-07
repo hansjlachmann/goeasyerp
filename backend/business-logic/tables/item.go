@@ -57,9 +57,14 @@ func (itemLogic) OnRename(rec *gtables.Item) error {
 	return nil
 }
 
-// OnDelete deletes the item's comment lines, vendors, prices, translations, units of measure,
-// variants and BOM components
+// OnDelete moves the item's ledger entries away (MoveItemEntries), then deletes its comment
+// lines, vendors, prices, translations, units of measure, variants and BOM components
 func (itemLogic) OnDelete(rec *gtables.Item) error {
+	err := moveItemEntries(rec)
+	if err != nil {
+		return err
+	}
+
 	DeleteComments(rec, gtables.CommentLine_Table_name.Item, rec.No)
 
 	itemVend := gtables.NewItemVendor(rec)
@@ -85,6 +90,32 @@ func (itemLogic) OnDelete(rec *gtables.Item) error {
 	bomComp := gtables.NewBOMComponent(rec)
 	bomComp.SetRange("parent_item_no", rec.No)
 	bomComp.DeleteAll()
+	return nil
+}
+
+// moveItemEntries: refused while the item has entries in a fiscal year that is not closed —
+// every entry, as long as there are no accounting periods — or open entries; otherwise the
+// entries lose their Item No.
+func moveItemEntries(rec *gtables.Item) error {
+	itemLedgEntry := gtables.NewItemLedgerEntry(rec)
+	itemLedgEntry.LockTable()
+	itemLedgEntry.SetCurrentKey("item_no")
+	itemLedgEntry.SetRange("item_no", rec.No)
+	accountingPeriod := gtables.NewAccountingPeriod(rec)
+	accountingPeriod.SetRange("closed", false)
+	if accountingPeriod.FindFirst() {
+		itemLedgEntry.SetFilter("posting_date", ">="+accountingPeriod.Starting_date.String())
+	}
+	if !itemLedgEntry.IsEmpty() {
+		return apperrors.DeleteHasEntries(gtables.ItemTableName, rec.No.String())
+	}
+	itemLedgEntry.SetRange("posting_date")
+	itemLedgEntry.SetRange("open", true)
+	if !itemLedgEntry.IsEmpty() {
+		return apperrors.DeleteOpenEntries(gtables.ItemTableName, rec.No.String())
+	}
+	itemLedgEntry.SetRange("open")
+	itemLedgEntry.ModifyAll("item_no", types.Code(""))
 	return nil
 }
 

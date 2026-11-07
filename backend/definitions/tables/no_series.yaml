@@ -1,6 +1,7 @@
 table:
   id: 308
   name: "No_Series"
+  refuse_delete_when_used: all
   caption: No. Series
   description: "Number series, the automatic numbers of records (table 308)"
   data_caption_fields: [code, description]

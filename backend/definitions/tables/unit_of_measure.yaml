@@ -1,6 +1,7 @@
 table:
   id: 204
   name: "Unit_of_Measure"
+  refuse_delete_when_used: all
   description: "Units of measure (table 204)"
   data_caption_fields: [code, description]
   fields:

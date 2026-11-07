@@ -1,6 +1,7 @@
 table:
   id: 284
   name: "Area"
+  refuse_delete_when_used: all
   caption: Area
   description: "The areas (regions) of the Intrastat declaration (table 284)"
   lookup_page_id: 405

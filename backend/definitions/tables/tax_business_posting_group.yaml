@@ -1,6 +1,7 @@
 table:
   id: 323
   name: "Tax_Business_Posting_Group"
+  refuse_delete_when_used: all
   caption: Tax Business Posting Group
   description: Tax business posting groups (table 323)
   fields:

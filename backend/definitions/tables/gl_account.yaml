@@ -1,6 +1,7 @@
 table:
   id: 15
   name: "G_L_Account"
+  refuse_delete_when_used: current
   caption: G/L Account
   description: General ledger accounts, the chart of accounts (table 15)
   data_caption_fields: [no, name]

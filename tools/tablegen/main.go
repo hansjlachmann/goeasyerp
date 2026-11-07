@@ -21,14 +21,21 @@ import (
 // TableDef represents a table definition from YAML
 type TableDef struct {
 	Table struct {
-		ID         int     `yaml:"id"`
-		Name       string  `yaml:"name"`
-		APIName    string  `yaml:"api_name"`    // Name in the API and the pages' source_table (default: name)
-		App        string  `yaml:"app"`         // Set by extmerge on a table of an extension: the extension's app id
-		Global     bool    `yaml:"global"`      // If true, table is global (no company prefix)
-		SetupTable bool    `yaml:"setup_table"` // If true, singleton setup table (single blank-PK record)
-		Fields     []Field `yaml:"fields"`
-		Keys       []Key   `yaml:"keys"`
+		ID         int    `yaml:"id"`
+		Name       string `yaml:"name"`
+		APIName    string `yaml:"api_name"`    // Name in the API and the pages' source_table (default: name)
+		App        string `yaml:"app"`         // Set by extmerge on a table of an extension: the extension's app id
+		Global     bool   `yaml:"global"`      // If true, table is global (no company prefix)
+		SetupTable bool   `yaml:"setup_table"` // If true, singleton setup table (single blank-PK record)
+		Posted     bool   `yaml:"posted"`      // Written by posting only (ledger entries, registers)
+		// History: a posted document — a record of what happened, kept as it was
+		History bool `yaml:"history"`
+		// RefuseDeleteWhenUsed: a delete with triggers is refused while a record refers to this
+		// one: "all" (any record, for codes such as Payment Terms) or "current" (not posted
+		// entries and documents: for master data whose OnDelete deals with its entries)
+		RefuseDeleteWhenUsed string  `yaml:"refuse_delete_when_used"`
+		Fields               []Field `yaml:"fields"`
+		Keys                 []Key   `yaml:"keys"`
 		// DataCaptionFields (classic DataCaptionFields): fields whose values the pages show in
 		// the title of a card ("Finance Charge Terms – STD Standard finance charge")
 		DataCaptionFields []string `yaml:"data_caption_fields"`
@@ -52,6 +59,8 @@ type Reference struct {
 	// CondColumn has CondValue (balancing accounts of type Customer)
 	CondColumn string
 	CondValue  int
+	// History: the referring table holds posted entries or documents
+	History bool
 }
 
 // Key represents an index/key on a table
@@ -399,6 +408,12 @@ func main() {
 		resolveFlowFieldSIFT(p.def, byStruct)
 	}
 	resolveReferences(defs, func(d parsed) *TableDef { return d.def })
+	for _, d := range defs {
+		if err := checkRefuseDelete(d.def); err != nil {
+			fmt.Printf("✗ %s: %v\n", filepath.Base(d.file), err)
+			os.Exit(1)
+		}
+	}
 
 	// The output directory holds generated code only: remove the files of the last run,
 	// so a table removed from the definitions leaves nothing behind
@@ -640,12 +655,34 @@ func resolveReferences[T any](items []T, defOf func(T) *TableDef) {
 						target.References[tf.DBName] = append(target.References[tf.DBName], Reference{
 							Table: d.Table.Name, Global: d.Table.Global, Column: f.DBName,
 							CondColumn: condColumn, CondValue: branch.When.Equal,
+							History: d.Table.Posted || d.Table.History,
 						})
 					}
 				}
 			}
 		}
 	}
+}
+
+// checkRefuseDelete: refuse_delete_when_used needs one key field (the references point to it)
+func checkRefuseDelete(d *TableDef) error {
+	switch d.Table.RefuseDeleteWhenUsed {
+	case "":
+		return nil
+	case "all", "current":
+	default:
+		return fmt.Errorf("%s: refuse_delete_when_used must be all or current, not %q", d.Table.Name, d.Table.RefuseDeleteWhenUsed)
+	}
+	keyFields := 0
+	for _, f := range d.Table.Fields {
+		if f.PrimaryKey {
+			keyFields++
+		}
+	}
+	if keyFields != 1 {
+		return fmt.Errorf("%s: refuse_delete_when_used needs a table with one primary key field", d.Table.Name)
+	}
+	return nil
 }
 
 // hasFieldFilter: a relation filter on another field of the record (WHERE x=FIELD(y)) — the
@@ -3158,6 +3195,27 @@ func (t *{{ .StructName }}) renameReferences(field string, oldValue, newValue in
 	return nil
 }
 {{- end }}
+{{- if .Table.RefuseDeleteWhenUsed }}
+
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *{{ .StructName }}) refuseDeleteWhenUsed() error {
+{{- range .Table.Fields }}
+{{- if .PrimaryKey }}
+{{- $key := . }}
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: {{ $.StructName }}TableName, Global: {{ $.Table.Global }}, Company: t.company,
+		KeyColumn: "{{ .DBName }}", Key: t.{{ upperFirst .Name }}, KeyText: fmt.Sprint(t.{{ upperFirst .Name }}),
+	}, []tables.Reference{
+{{- range $refs := index $.References .DBName }}
+{{- if or (eq $.Table.RefuseDeleteWhenUsed "all") (not .History) }}
+		{"{{ .Table }}", {{ .Global }}, "{{ .Column }}", "{{ .CondColumn }}", {{ .CondValue }}},
+{{- end }}
+{{- end }}
+	})
+{{- end }}
+{{- end }}
+}
+{{- end }}
 
 // Delete removes the record from the database
 func (t *{{ .StructName }}) Delete(runTrigger bool) bool {
@@ -3169,6 +3227,15 @@ func (t *{{ .StructName }}) Delete(runTrigger bool) bool {
 			t.triggerErr = err
 			return false
 		}
+{{- if .Table.RefuseDeleteWhenUsed }}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
+		}
+{{- end }}
 	}
 
 {{- if .Table.Global }}

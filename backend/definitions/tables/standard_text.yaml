@@ -1,6 +1,7 @@
 table:
   id: 7
   name: "Standard_Text"
+  refuse_delete_when_used: all
   caption: Standard Text
   description: Standard texts (table 7)
   fields:

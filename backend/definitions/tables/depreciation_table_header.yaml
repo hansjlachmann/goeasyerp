@@ -1,6 +1,7 @@
 table:
   id: 5642
   name: "Depreciation_Table_Header"
+  refuse_delete_when_used: all
   description: "Depreciation table headers (table 5642): user-defined depreciation — a percentage (or units) per period"
   lookup_page_id: 5663
   data_caption_fields: [code, description]

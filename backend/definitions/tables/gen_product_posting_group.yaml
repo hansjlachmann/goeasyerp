@@ -1,6 +1,7 @@
 table:
   id: 251
   name: "Gen_Product_Posting_Group"
+  refuse_delete_when_used: all
   caption: Gen. Product Posting Group
   description: General product posting groups (table 251)
   fields:

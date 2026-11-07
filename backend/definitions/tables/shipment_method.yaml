@@ -1,6 +1,7 @@
 table:
   id: 10
   name: "Shipment_Method"
+  refuse_delete_when_used: all
   caption: Shipment Method
   description: Shipment methods (table 10)
   fields:

@@ -1,6 +1,7 @@
 table:
   id: 92
   name: "Customer_Posting_Group"
+  refuse_delete_when_used: all
   caption: Customer Posting Group
   description: "Customer posting groups, the G/L accounts of receivables (table 92)"
   fields:

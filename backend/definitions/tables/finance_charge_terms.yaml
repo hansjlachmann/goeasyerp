@@ -1,6 +1,7 @@
 table:
   id: 5
   name: "Finance_Charge_Terms"
+  refuse_delete_when_used: all
   caption: Finance Charge Terms
   description: Finance charge terms (table 5)
   data_caption_fields: [code, description]

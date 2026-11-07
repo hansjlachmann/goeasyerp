@@ -900,6 +900,27 @@ func (t *WorkType) renameReferences(field string, oldValue, newValue interface{}
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *WorkType) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: WorkTypeTableName, Global: false, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"Project_Journal_Line", false, "work_type_code", "", 0},
+		{"Project_Journal_Quantity", false, "work_type_code", "", 0},
+		{"Project_Ledger_Entry", false, "work_type_code", "", 0},
+		{"Res_Journal_Line", false, "work_type_code", "", 0},
+		{"Res_Ledger_Entry", false, "work_type_code", "", 0},
+		{"Resource_Cost", false, "work_type_code", "", 0},
+		{"Resource_Price", false, "work_type_code", "", 0},
+		{"Resource_Price_Change", false, "work_type_code", "", 0},
+		{"Sales_Cr_Memo_Line", false, "work_type_code", "", 0},
+		{"Sales_Invoice_Line", false, "work_type_code", "", 0},
+		{"Sales_Line", false, "work_type_code", "", 0},
+		{"Sales_Shipment_Line", false, "work_type_code", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *WorkType) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -909,6 +930,13 @@ func (t *WorkType) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, WorkTypeTableName)

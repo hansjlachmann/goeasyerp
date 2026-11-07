@@ -22,8 +22,11 @@ func (financeChargeTermsLogic) OnModify(rec *gtables.FinanceChargeTerms) error {
 	return nil
 }
 
-// OnDelete runs before a record is deleted
+// OnDelete deletes the terms' texts
 func (financeChargeTermsLogic) OnDelete(rec *gtables.FinanceChargeTerms) error {
+	finChrgText := gtables.NewFinanceChargeText(rec)
+	finChrgText.SetRange("fin_charge_terms_code", rec.Code)
+	finChrgText.DeleteAll()
 	return nil
 }
 

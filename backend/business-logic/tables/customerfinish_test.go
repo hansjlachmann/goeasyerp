@@ -104,7 +104,7 @@ func TestDateFilterCalc(t *testing.T) {
 func TestCustomerDeleteWithPeriodsAndRelatedRecords(t *testing.T) {
 	db := newTestDB(t)
 	createTables(t, db, &gtables.Customer{}, &gtables.CustomerLedgerEntry{}, &gtables.AccountingPeriod{},
-		&gtables.CommentLine{}, &gtables.ShipToAddress{}, &gtables.CustomerBankAccount{}, &gtables.GLAccount{})
+		&gtables.CommentLine{}, &gtables.ShipToAddress{}, &gtables.CustomerBankAccount{}, &gtables.GLAccount{}, &gtables.GLEntry{})
 	src := ftables.DBSource(db, "c1", database.DBTypeSQLite)
 	addPeriods(t, db, 2025, 2, types.NewDate(2025, 12, 1))
 

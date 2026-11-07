@@ -9,6 +9,14 @@ type taxJurisdictionLogic struct{}
 
 func init() { gtables.RegisterTaxJurisdictionLogic(taxJurisdictionLogic{}) }
 
+// OnDelete deletes the jurisdiction's tax details
+func (taxJurisdictionLogic) OnDelete(rec *gtables.TaxJurisdiction) error {
+	taxDetail := gtables.NewTaxDetail(rec)
+	taxDetail.SetRange("tax_jurisdiction_code", rec.Code)
+	taxDetail.DeleteAll()
+	return nil
+}
+
 // OnValidate_Unrealized_tax_type: unrealized tax needs it in the General Ledger Setup
 func (taxJurisdictionLogic) OnValidate_Unrealized_tax_type(rec *gtables.TaxJurisdiction) error {
 	if rec.Unrealized_tax_type > 0 {

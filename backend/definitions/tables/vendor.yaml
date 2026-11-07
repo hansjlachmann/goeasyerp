@@ -1,6 +1,7 @@
 table:
   id: 23
   name: "Vendor"
+  refuse_delete_when_used: current
   description: "Vendors (table 23)"
   data_caption_fields: [no, name]
   auto_key: true   # OnInsert gives a vendor without No. the next number of its series

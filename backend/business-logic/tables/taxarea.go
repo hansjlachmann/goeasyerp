@@ -22,8 +22,11 @@ func (taxAreaLogic) OnModify(rec *gtables.TaxArea) error {
 	return nil
 }
 
-// OnDelete runs before a record is deleted
+// OnDelete deletes the area's lines
 func (taxAreaLogic) OnDelete(rec *gtables.TaxArea) error {
+	taxAreaLine := gtables.NewTaxAreaLine(rec)
+	taxAreaLine.SetRange("tax_area", rec.Code)
+	taxAreaLine.DeleteAll()
 	return nil
 }
 

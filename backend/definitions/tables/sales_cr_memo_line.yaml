@@ -1,6 +1,7 @@
 table:
   id: 115
   name: "Sales_Cr_Memo_Line"
+  history: true
   description: "Sales Cr.Memo Line (table 115): a line of a posted sales credit memo"
   fields:
     - name: sell_to_customer_no

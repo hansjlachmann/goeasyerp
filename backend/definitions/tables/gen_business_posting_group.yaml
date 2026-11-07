@@ -1,6 +1,7 @@
 table:
   id: 250
   name: "Gen_Business_Posting_Group"
+  refuse_delete_when_used: all
   caption: Gen. Business Posting Group
   description: General business posting groups (table 250)
   fields:

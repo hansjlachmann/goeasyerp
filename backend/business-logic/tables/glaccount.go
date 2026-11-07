@@ -32,6 +32,11 @@ func (gLAccountLogic) OnModify(rec *gtables.GLAccount) error {
 
 // OnDelete deletes the account's budget entries and comment lines
 func (gLAccountLogic) OnDelete(rec *gtables.GLAccount) error {
+	err := moveGLEntries(rec)
+	if err != nil {
+		return err
+	}
+
 	glBudgetEntry := gtables.NewGLBudgetEntry(rec)
 	glBudgetEntry.SetCurrentKey("budget_name", "gl_account_no", "date")
 	glBudgetEntry.SetRange("gl_account_no", rec.No)
@@ -201,4 +206,32 @@ func CheckGLAcc(rec *gtables.GLAccount) error {
 		return err
 	}
 	return rec.TestField("blocked", false)
+}
+
+// moveGLEntries: refused while the account has entries in a fiscal year that is not closed —
+// every entry, as long as there are no accounting periods — or a balance; otherwise the
+// entries lose their G/L Account No.
+func moveGLEntries(rec *gtables.GLAccount) error {
+	glEntry := gtables.NewGLEntry(rec)
+	glEntry.LockTable()
+	glEntry.SetCurrentKey("gl_account_no")
+	glEntry.SetRange("gl_account_no", rec.No)
+	accountingPeriod := gtables.NewAccountingPeriod(rec)
+	accountingPeriod.SetRange("closed", false)
+	if accountingPeriod.FindFirst() {
+		glEntry.SetFilter("posting_date", ">="+accountingPeriod.Starting_date.String())
+	}
+	if !glEntry.IsEmpty() {
+		return apperrors.DeleteHasEntries(gtables.GLAccountTableName, rec.No.String())
+	}
+	glEntry.SetRange("posting_date")
+	err := glEntry.CalcSums("amount")
+	if err != nil {
+		return err
+	}
+	if !glEntry.Amount.IsZero() {
+		return apperrors.DeleteBalanceNotZero(gtables.GLAccountTableName, rec.No.String())
+	}
+	glEntry.ModifyAll("gl_account_no", types.Code(""))
+	return nil
 }

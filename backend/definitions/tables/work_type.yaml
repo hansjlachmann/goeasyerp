@@ -1,6 +1,7 @@
 table:
   id: 200
   name: "Work_Type"
+  refuse_delete_when_used: all
   description: "Work Types (table 200)"
   lookup_page_id: 208
   fields:

@@ -992,6 +992,27 @@ func (t *ResourceGroup) renameReferences(field string, oldValue, newValue interf
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *ResourceGroup) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: ResourceGroupTableName, Global: false, Company: t.company,
+		KeyColumn: "no", Key: t.No, KeyText: fmt.Sprint(t.No),
+	}, []tables.Reference{
+		{"Project_Budget_Entry", false, "no", "type", 3},
+		{"Project_Budget_Entry", false, "resource_group_no", "", 0},
+		{"Project_Budget_Line", false, "no", "type", 3},
+		{"Project_Journal_Line", false, "resource_group_no", "", 0},
+		{"Project_Ledger_Entry", false, "resource_group_no", "", 0},
+		{"Res_Capacity_Entry", false, "resource_group_no", "", 0},
+		{"Res_Journal_Line", false, "resource_group_no", "", 0},
+		{"Res_Ledger_Entry", false, "resource_group_no", "", 0},
+		{"Resource", false, "resource_group_no", "", 0},
+		{"Resource_Cost", false, "code", "type", 1},
+		{"Resource_Price", false, "code", "type", 1},
+		{"Resource_Price_Change", false, "code", "type", 1},
+	})
+}
+
 // Delete removes the record from the database
 func (t *ResourceGroup) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -1001,6 +1022,13 @@ func (t *ResourceGroup) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ResourceGroupTableName)

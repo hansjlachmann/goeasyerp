@@ -1,6 +1,7 @@
 table:
   id: 27
   name: "Item"
+  refuse_delete_when_used: current
   description: "Items (table 27)"
   data_caption_fields: [no, description]
   auto_key: true   # OnInsert gives an item without No. the next number of its series

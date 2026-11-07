@@ -1,6 +1,7 @@
 table:
   id: 340
   name: "Customer_Discount_Group"
+  refuse_delete_when_used: all
   caption: Customer Discount Group
   description: "Customer discount groups (table 340)"
   fields:

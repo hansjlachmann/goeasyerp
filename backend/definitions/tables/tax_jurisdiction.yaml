@@ -1,6 +1,7 @@
 table:
   id: 320
   name: "Tax_Jurisdiction"
+  refuse_delete_when_used: all
   caption: Tax Jurisdiction
   description: "Tax jurisdictions (table 320): the authorities that levy sales tax, with their tax accounts"
   lookup_page_id: 466

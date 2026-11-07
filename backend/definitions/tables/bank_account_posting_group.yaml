@@ -1,6 +1,7 @@
 table:
   id: 277
   name: "Bank_Account_Posting_Group"
+  refuse_delete_when_used: all
   caption: Bank Account Posting Group
   description: "Bank account posting groups, the G/L account of a bank account (table 277)"
   lookup_page_id: 373

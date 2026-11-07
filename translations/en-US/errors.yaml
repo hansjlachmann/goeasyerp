@@ -60,6 +60,8 @@ errors:
   # Deleting records with ledger entries
   ERR_DELETE_HAS_ENTRIES: "You cannot delete %1 %2 because it has ledger entries in a fiscal year that has not been closed yet."
   ERR_DELETE_OPEN_ENTRIES: "You cannot delete %1 %2 because there are one or more open ledger entries."
+  ERR_DELETE_IN_USE: "You cannot delete %3 %4 because records in %2 still use it (field %1)."
+  ERR_DELETE_BALANCE_NOT_ZERO: "You cannot delete %1 %2 because its ledger entries have a balance."
   ERR_CHANGE_OPEN_ENTRIES: "You cannot change %1 because there are one or more open ledger entries for this bank account."
   ERR_FA_MAIN_ASSET_DELETE: "A main asset cannot be deleted."
   ERR_FA_HAS_DEPR_BOOKS: "You cannot delete %1 %2 because it has associated depreciation books."

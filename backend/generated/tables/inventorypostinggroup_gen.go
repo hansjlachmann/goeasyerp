@@ -914,6 +914,32 @@ func (t *InventoryPostingGroup) renameReferences(field string, oldValue, newValu
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *InventoryPostingGroup) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: InventoryPostingGroupTableName, Global: false, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"BOM_Journal_Line", false, "inventory_posting_group", "", 0},
+		{"Item", false, "inventory_posting_group", "", 0},
+		{"Item_Journal_Line", false, "inventory_posting_group", "", 0},
+		{"Item_Journal_Line", false, "source_posting_group", "source_type", 3},
+		{"Item_Ledger_Entry", false, "inventory_posting_group", "", 0},
+		{"Item_Ledger_Entry", false, "source_posting_group", "source_type", 3},
+		{"Phys_Inventory_Ledger_Entry", false, "inventory_posting_group", "", 0},
+		{"Project_Journal_Line", false, "posting_group", "type", 1},
+		{"Project_Ledger_Entry", false, "project_posting_group", "type", 1},
+		{"Purch_Cr_Memo_Line", false, "posting_group", "type", 2},
+		{"Purch_Inv_Line", false, "posting_group", "type", 2},
+		{"Purch_Rcpt_Line", false, "posting_group", "type", 2},
+		{"Purchase_Line", false, "posting_group", "type", 2},
+		{"Sales_Cr_Memo_Line", false, "posting_group", "type", 2},
+		{"Sales_Invoice_Line", false, "posting_group", "type", 2},
+		{"Sales_Line", false, "posting_group", "type", 2},
+		{"Sales_Shipment_Line", false, "posting_group", "type", 2},
+	})
+}
+
 // Delete removes the record from the database
 func (t *InventoryPostingGroup) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -923,6 +949,13 @@ func (t *InventoryPostingGroup) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, InventoryPostingGroupTableName)

@@ -1,6 +1,7 @@
 table:
   id: 208
   name: "Project_Posting_Group"
+  refuse_delete_when_used: all
   caption: Project Posting Group
   description: "Project posting groups, the G/L accounts of a project's postings (table 208)"
   lookup_page_id: 211

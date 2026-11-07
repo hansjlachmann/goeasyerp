@@ -1,6 +1,7 @@
 table:
   id: 93
   name: "Vendor_Posting_Group"
+  refuse_delete_when_used: all
   caption: Vendor Posting Group
   description: "Vendor posting groups, the G/L accounts of payables (table 93)"
   fields:

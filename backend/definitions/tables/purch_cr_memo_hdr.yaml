@@ -1,6 +1,7 @@
 table:
   id: 124
   name: "Purch_Cr_Memo_Hdr"
+  history: true
   description: "Purch. Cr. Memo Hdr. (table 124): a posted purchase credit memo"
   data_caption_fields: [no, buy_from_vendor_name]
   fields:

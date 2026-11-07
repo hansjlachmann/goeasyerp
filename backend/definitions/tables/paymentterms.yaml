@@ -1,6 +1,7 @@
 table:
   id: 3
   name: "Payment Terms"
+  refuse_delete_when_used: all
   api_name: Payment_terms # the name in the API and in pages (source_table)
   fields:
     - name: code

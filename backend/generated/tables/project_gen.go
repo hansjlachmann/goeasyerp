@@ -1947,6 +1947,27 @@ func (t *Project) renameReferences(field string, oldValue, newValue interface{})
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *Project) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: ProjectTableName, Global: false, Company: t.company,
+		KeyColumn: "no", Key: t.No, KeyText: fmt.Sprint(t.No),
+	}, []tables.Reference{
+		{"Comment_Line", false, "no", "table_name", 5},
+		{"Gen_Journal_Line", false, "project_no", "", 0},
+		{"Project_Budget_Entry", false, "project_no", "", 0},
+		{"Project_Budget_Line", false, "project_no", "", 0},
+		{"Project_Journal_Line", false, "project_no", "", 0},
+		{"Purchase_Header", false, "project_no", "", 0},
+		{"Purchase_Line", false, "project_no", "", 0},
+		{"Res_Journal_Line", false, "project_no", "", 0},
+		{"Resource_Price", false, "project_no", "", 0},
+		{"Resource_Price_Change", false, "project_no", "", 0},
+		{"Sales_Header", false, "project_no", "", 0},
+		{"Sales_Line", false, "project_no", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *Project) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -1956,6 +1977,13 @@ func (t *Project) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ProjectTableName)

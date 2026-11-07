@@ -877,6 +877,52 @@ func (t *TaxBusinessPostingGroup) renameReferences(field string, oldValue, newVa
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *TaxBusinessPostingGroup) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: TaxBusinessPostingGroupTableName, Global: false, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"Customer", false, "tax_bus_posting_group", "", 0},
+		{"FA_Ledger_Entry", false, "tax_bus_posting_group", "", 0},
+		{"Finance_Charge_Memo_Header", false, "tax_bus_posting_group", "", 0},
+		{"Gen_Business_Posting_Group", false, "def_tax_bus_posting_group", "", 0},
+		{"Gen_Jnl_Allocation", false, "tax_bus_posting_group", "", 0},
+		{"Gen_Journal_Line", false, "tax_bus_posting_group", "", 0},
+		{"Gen_Journal_Line", false, "bal_tax_bus_posting_group", "", 0},
+		{"G_L_Account", false, "tax_bus_posting_group", "", 0},
+		{"G_L_Entry", false, "tax_bus_posting_group", "", 0},
+		{"Issued_Fin_Charge_Memo_Header", false, "tax_bus_posting_group", "", 0},
+		{"Issued_Reminder_Header", false, "tax_bus_posting_group", "", 0},
+		{"Item", false, "tax_bus_posting_gr_price", "", 0},
+		{"Item_Price", false, "tax_bus_posting_gr_price", "", 0},
+		{"Item_Price_Change", false, "tax_bus_posting_gr_price", "", 0},
+		{"Maintenance_Ledger_Entry", false, "tax_bus_posting_group", "", 0},
+		{"Price_Group", false, "tax_bus_posting_gr_price", "", 0},
+		{"Purch_Cr_Memo_Hdr", false, "tax_bus_posting_group", "", 0},
+		{"Purch_Cr_Memo_Line", false, "tax_bus_posting_group", "", 0},
+		{"Purch_Inv_Header", false, "tax_bus_posting_group", "", 0},
+		{"Purch_Inv_Line", false, "tax_bus_posting_group", "", 0},
+		{"Purch_Rcpt_Header", false, "tax_bus_posting_group", "", 0},
+		{"Purch_Rcpt_Line", false, "tax_bus_posting_group", "", 0},
+		{"Purchase_Header", false, "tax_bus_posting_group", "", 0},
+		{"Purchase_Line", false, "tax_bus_posting_group", "", 0},
+		{"Reminder_Header", false, "tax_bus_posting_group", "", 0},
+		{"Sales_Cr_Memo_Header", false, "tax_bus_posting_group", "", 0},
+		{"Sales_Cr_Memo_Line", false, "tax_bus_posting_group", "", 0},
+		{"Sales_Header", false, "tax_bus_posting_group", "", 0},
+		{"Sales_Invoice_Header", false, "tax_bus_posting_group", "", 0},
+		{"Sales_Invoice_Line", false, "tax_bus_posting_group", "", 0},
+		{"Sales_Line", false, "tax_bus_posting_group", "", 0},
+		{"Sales_Shipment_Header", false, "tax_bus_posting_group", "", 0},
+		{"Sales_Shipment_Line", false, "tax_bus_posting_group", "", 0},
+		{"Tax_Entry", false, "tax_bus_posting_group", "", 0},
+		{"Tax_Posting_Setup", false, "tax_bus_posting_group", "", 0},
+		{"Tax_Statement_Line", false, "tax_bus_posting_group", "", 0},
+		{"Vendor", false, "tax_bus_posting_group", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *TaxBusinessPostingGroup) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -886,6 +932,13 @@ func (t *TaxBusinessPostingGroup) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, TaxBusinessPostingGroupTableName)

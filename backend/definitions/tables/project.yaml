@@ -1,6 +1,7 @@
 table:
   id: 167
   name: "Project"
+  refuse_delete_when_used: current
   caption: Project
   description: "Projects (table 167): work done for a customer, its budget, later its usage and invoicing"
   data_caption_fields: [no, description]

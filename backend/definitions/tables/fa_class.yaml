@@ -1,6 +1,7 @@
 table:
   id: 5607
   name: "FA_Class"
+  refuse_delete_when_used: all
   caption: FA Class
   description: "Fixed asset classes (table 5607)"
   lookup_page_id: 5615

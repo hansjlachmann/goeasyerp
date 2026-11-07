@@ -1,6 +1,7 @@
 table:
   id: 282
   name: "Entry_Exit_Point"
+  refuse_delete_when_used: all
   caption: Entry/Exit Point
   description: "The points where goods enter or leave the country (table 282, Intrastat)"
   lookup_page_id: 394

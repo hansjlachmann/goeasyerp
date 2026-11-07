@@ -1,6 +1,7 @@
 table:
   id: 292
   name: "Reminder_Terms"
+  refuse_delete_when_used: all
   caption: Reminder Terms
   description: "Reminder terms, the dunning rules (table 292)"
   data_caption_fields: [code, description]

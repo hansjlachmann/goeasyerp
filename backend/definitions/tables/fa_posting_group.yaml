@@ -1,6 +1,7 @@
 table:
   id: 5606
   name: "FA_Posting_Group"
+  refuse_delete_when_used: all
   caption: FA Posting Group
   description: "Fixed asset posting groups, the G/L accounts of fixed asset postings (table 5606)"
   lookup_page_id: 5613

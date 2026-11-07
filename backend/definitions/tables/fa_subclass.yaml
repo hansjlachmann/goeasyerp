@@ -1,6 +1,7 @@
 table:
   id: 5608
   name: "FA_Subclass"
+  refuse_delete_when_used: all
   caption: FA Subclass
   description: "Fixed asset subclasses (table 5608)"
   lookup_page_id: 5616

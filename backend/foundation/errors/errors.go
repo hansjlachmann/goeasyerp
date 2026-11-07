@@ -70,8 +70,10 @@ const (
 	ErrNoSeriesTooLong      ErrorCode = "ERR_NO_SERIES_TOO_LONG"
 
 	// Deleting master records with ledger entries (MoveEntries)
-	ErrDeleteHasEntries  ErrorCode = "ERR_DELETE_HAS_ENTRIES"
-	ErrDeleteOpenEntries ErrorCode = "ERR_DELETE_OPEN_ENTRIES"
+	ErrDeleteHasEntries     ErrorCode = "ERR_DELETE_HAS_ENTRIES"
+	ErrDeleteOpenEntries    ErrorCode = "ERR_DELETE_OPEN_ENTRIES"
+	ErrDeleteInUse          ErrorCode = "ERR_DELETE_IN_USE"
+	ErrDeleteBalanceNotZero ErrorCode = "ERR_DELETE_BALANCE_NOT_ZERO"
 	// Fixed assets (classic FA messages)
 	ErrFAMainAssetDelete ErrorCode = "ERR_FA_MAIN_ASSET_DELETE"
 	ErrFAHasDeprBooks    ErrorCode = "ERR_FA_HAS_DEPR_BOOKS"
@@ -149,6 +151,8 @@ type AppError struct {
 	Field2 string
 	// WithTableCaption puts Table's caption after the field captions
 	WithTableCaption bool
+	// Table2 (optional) is another table: its caption follows Table's
+	Table2 string
 	// Value (optional) is the last parameter, shown in the message's language: a boolean as
 	// Yes/No, an option of the table field as its caption
 	Value any
@@ -179,6 +183,9 @@ func (e *AppError) Message(language string) string {
 	}
 	if e.WithTableCaption {
 		captions = append(captions, ts.TableCaption(e.Table, language))
+	}
+	if e.Table2 != "" {
+		captions = append(captions, ts.TableCaption(e.Table2, language))
 	}
 	params = append(captions, e.Params...)
 	if e.Value != nil {
@@ -358,6 +365,18 @@ func DeleteHasEntries(table, key string) *AppError {
 // DeleteOpenEntries: a record (table, key) cannot be deleted while it has open ledger entries
 func DeleteOpenEntries(table, key string) *AppError {
 	return &AppError{Code: ErrDeleteOpenEntries, Table: table, WithTableCaption: true, Params: []string{key}}
+}
+
+// DeleteInUse: a record (table, key) cannot be deleted while a field of another table's record
+// refers to it
+func DeleteInUse(table, key, usedByTable, usedByField string) *AppError {
+	return &AppError{Code: ErrDeleteInUse, Table: usedByTable, Field: usedByField, WithTableCaption: true, Table2: table, Params: []string{key}}
+}
+
+// DeleteBalanceNotZero: a record (table, key) cannot be deleted while its ledger entries have a
+// balance
+func DeleteBalanceNotZero(table, key string) *AppError {
+	return &AppError{Code: ErrDeleteBalanceNotZero, Table: table, WithTableCaption: true, Params: []string{key}}
 }
 
 // FAMainAssetDelete: a main asset cannot be deleted

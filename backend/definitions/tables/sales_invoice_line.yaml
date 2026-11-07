@@ -1,6 +1,7 @@
 table:
   id: 113
   name: "Sales_Invoice_Line"
+  history: true
   description: "Sales Invoice Line (table 113): a line of a posted sales invoice"
   fields:
     - name: sell_to_customer_no

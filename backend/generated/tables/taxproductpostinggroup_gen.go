@@ -877,6 +877,40 @@ func (t *TaxProductPostingGroup) renameReferences(field string, oldValue, newVal
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *TaxProductPostingGroup) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: TaxProductPostingGroupTableName, Global: false, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"FA_Ledger_Entry", false, "tax_prod_posting_group", "", 0},
+		{"Finance_Charge_Memo_Line", false, "tax_prod_posting_group", "", 0},
+		{"Gen_Jnl_Allocation", false, "tax_prod_posting_group", "", 0},
+		{"Gen_Journal_Line", false, "tax_prod_posting_group", "", 0},
+		{"Gen_Journal_Line", false, "bal_tax_prod_posting_group", "", 0},
+		{"Gen_Product_Posting_Group", false, "def_tax_prod_posting_group", "", 0},
+		{"G_L_Account", false, "tax_prod_posting_group", "", 0},
+		{"G_L_Entry", false, "tax_prod_posting_group", "", 0},
+		{"Issued_Fin_Charge_Memo_Line", false, "tax_prod_posting_group", "", 0},
+		{"Issued_Reminder_Line", false, "tax_prod_posting_group", "", 0},
+		{"Item", false, "tax_prod_posting_group", "", 0},
+		{"Maintenance_Ledger_Entry", false, "tax_prod_posting_group", "", 0},
+		{"Purch_Cr_Memo_Line", false, "tax_prod_posting_group", "", 0},
+		{"Purch_Inv_Line", false, "tax_prod_posting_group", "", 0},
+		{"Purch_Rcpt_Line", false, "tax_prod_posting_group", "", 0},
+		{"Purchase_Line", false, "tax_prod_posting_group", "", 0},
+		{"Reminder_Line", false, "tax_prod_posting_group", "", 0},
+		{"Resource", false, "tax_prod_posting_group", "", 0},
+		{"Sales_Cr_Memo_Line", false, "tax_prod_posting_group", "", 0},
+		{"Sales_Invoice_Line", false, "tax_prod_posting_group", "", 0},
+		{"Sales_Line", false, "tax_prod_posting_group", "", 0},
+		{"Sales_Shipment_Line", false, "tax_prod_posting_group", "", 0},
+		{"Tax_Entry", false, "tax_prod_posting_group", "", 0},
+		{"Tax_Posting_Setup", false, "tax_prod_posting_group", "", 0},
+		{"Tax_Statement_Line", false, "tax_prod_posting_group", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *TaxProductPostingGroup) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -886,6 +920,13 @@ func (t *TaxProductPostingGroup) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, TaxProductPostingGroupTableName)

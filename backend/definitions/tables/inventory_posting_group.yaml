@@ -1,6 +1,7 @@
 table:
   id: 94
   name: "Inventory_Posting_Group"
+  refuse_delete_when_used: all
   description: "Inventory posting groups: the inventory account of the items (table 94)"
   fields:
     - name: code

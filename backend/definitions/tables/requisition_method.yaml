@@ -1,6 +1,7 @@
 table:
   id: 5408
   name: "Requisition_Method"
+  refuse_delete_when_used: all
   caption: Requisition Method
   description: "How a reorder quantity is calculated for an item (table 5408)"
   lookup_page_id: 5408

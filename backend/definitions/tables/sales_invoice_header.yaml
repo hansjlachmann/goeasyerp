@@ -1,6 +1,7 @@
 table:
   id: 112
   name: "Sales_Invoice_Header"
+  history: true
   description: "Sales Invoice Header (table 112): a posted sales invoice"
   data_caption_fields: [no, sell_to_customer_name]
   fields:

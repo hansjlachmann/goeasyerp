@@ -1,6 +1,7 @@
 table:
   id: 6
   name: "Price_Group"
+  refuse_delete_when_used: all
   caption: Price Group
   description: Price groups (table 6)
   fields:

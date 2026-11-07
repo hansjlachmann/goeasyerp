@@ -865,6 +865,99 @@ func (t *SourceCode) renameReferences(field string, oldValue, newValue interface
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *SourceCode) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: SourceCodeTableName, Global: false, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"Bank_Account_Ledger_Entry", false, "source_code", "", 0},
+		{"BOM_Journal_Line", false, "source_code", "", 0},
+		{"BOM_Journal_Template", false, "source_code", "", 0},
+		{"BOM_Register", false, "source_code", "", 0},
+		{"Customer Ledger Entry", false, "source_code", "", 0},
+		{"Date_Compr_Register", false, "source_code", "", 0},
+		{"FA_Journal_Line", false, "source_code", "", 0},
+		{"FA_Journal_Template", false, "source_code", "", 0},
+		{"FA_Register", false, "source_code", "", 0},
+		{"FA_Ledger_Entry", false, "source_code", "", 0},
+		{"Gen_Journal_Line", false, "source_code", "", 0},
+		{"Gen_Journal_Template", false, "source_code", "", 0},
+		{"G_L_Entry", false, "source_code", "", 0},
+		{"G_L_Register", false, "source_code", "", 0},
+		{"Ins_Coverage_Ledger_Entry", false, "source_code", "", 0},
+		{"Insurance_Journal_Line", false, "source_code", "", 0},
+		{"Insurance_Journal_Template", false, "source_code", "", 0},
+		{"Insurance_Register", false, "source_code", "", 0},
+		{"Issued_Fin_Charge_Memo_Header", false, "source_code", "", 0},
+		{"Issued_Reminder_Header", false, "source_code", "", 0},
+		{"Item_Journal_Line", false, "source_code", "", 0},
+		{"Item_Journal_Template", false, "source_code", "", 0},
+		{"Item_Ledger_Entry", false, "source_code", "", 0},
+		{"Item_Register", false, "source_code", "", 0},
+		{"Maintenance_Ledger_Entry", false, "source_code", "", 0},
+		{"Phys_Inventory_Ledger_Entry", false, "source_code", "", 0},
+		{"Project_Journal_Line", false, "source_code", "", 0},
+		{"Project_Journal_Template", false, "source_code", "", 0},
+		{"Project_Ledger_Entry", false, "source_code", "", 0},
+		{"Project_Register", false, "source_code", "", 0},
+		{"Purch_Cr_Memo_Hdr", false, "source_code", "", 0},
+		{"Purch_Inv_Header", false, "source_code", "", 0},
+		{"Purch_Rcpt_Header", false, "source_code", "", 0},
+		{"Res_Journal_Line", false, "source_code", "", 0},
+		{"Res_Journal_Template", false, "source_code", "", 0},
+		{"Res_Ledger_Entry", false, "source_code", "", 0},
+		{"Resource_Register", false, "source_code", "", 0},
+		{"Sales_Cr_Memo_Header", false, "source_code", "", 0},
+		{"Sales_Invoice_Header", false, "source_code", "", 0},
+		{"Sales_Shipment_Header", false, "source_code", "", 0},
+		{"Source_Code_Setup", false, "sales", "", 0},
+		{"Source_Code_Setup", false, "purchases", "", 0},
+		{"Source_Code_Setup", false, "exchange_rate_adjmt", "", 0},
+		{"Source_Code_Setup", false, "close_income_statement", "", 0},
+		{"Source_Code_Setup", false, "consolidation", "", 0},
+		{"Source_Code_Setup", false, "adjust_add_reporting_currency", "", 0},
+		{"Source_Code_Setup", false, "general_journal", "", 0},
+		{"Source_Code_Setup", false, "sales_journal", "", 0},
+		{"Source_Code_Setup", false, "purchase_journal", "", 0},
+		{"Source_Code_Setup", false, "cash_receipt_journal", "", 0},
+		{"Source_Code_Setup", false, "payment_journal", "", 0},
+		{"Source_Code_Setup", false, "sales_entry_application", "", 0},
+		{"Source_Code_Setup", false, "purchase_entry_application", "", 0},
+		{"Source_Code_Setup", false, "tax_settlement", "", 0},
+		{"Source_Code_Setup", false, "financially_voided_check", "", 0},
+		{"Source_Code_Setup", false, "finance_charge_memo", "", 0},
+		{"Source_Code_Setup", false, "reminder", "", 0},
+		{"Source_Code_Setup", false, "inventory_post_cost", "", 0},
+		{"Source_Code_Setup", false, "item_journal", "", 0},
+		{"Source_Code_Setup", false, "bom_journal", "", 0},
+		{"Source_Code_Setup", false, "resource_journal", "", 0},
+		{"Source_Code_Setup", false, "post_recognition", "", 0},
+		{"Source_Code_Setup", false, "post_value", "", 0},
+		{"Source_Code_Setup", false, "project_journal", "", 0},
+		{"Source_Code_Setup", false, "compress_project_ledger", "", 0},
+		{"Source_Code_Setup", false, "item_transfer_journal", "", 0},
+		{"Source_Code_Setup", false, "phys_inventory_journal", "", 0},
+		{"Source_Code_Setup", false, "fixed_asset_journal", "", 0},
+		{"Source_Code_Setup", false, "fixed_asset_g_l_journal", "", 0},
+		{"Source_Code_Setup", false, "insurance_journal", "", 0},
+		{"Source_Code_Setup", false, "compress_g_l", "", 0},
+		{"Source_Code_Setup", false, "compress_tax_entries", "", 0},
+		{"Source_Code_Setup", false, "compress_cust_ledger", "", 0},
+		{"Source_Code_Setup", false, "compress_vend_ledger", "", 0},
+		{"Source_Code_Setup", false, "compress_item_ledger", "", 0},
+		{"Source_Code_Setup", false, "compress_bom_ledger", "", 0},
+		{"Source_Code_Setup", false, "compress_res_ledger", "", 0},
+		{"Source_Code_Setup", false, "compress_bank_acc_ledger", "", 0},
+		{"Source_Code_Setup", false, "compress_check_ledger", "", 0},
+		{"Source_Code_Setup", false, "compress_fa_ledger", "", 0},
+		{"Source_Code_Setup", false, "compress_maintenance_ledger", "", 0},
+		{"Source_Code_Setup", false, "compress_insurance_ledger", "", 0},
+		{"Tax_Entry", false, "source_code", "", 0},
+		{"Vendor Ledger Entry", false, "source_code", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *SourceCode) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -874,6 +967,13 @@ func (t *SourceCode) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, SourceCodeTableName)

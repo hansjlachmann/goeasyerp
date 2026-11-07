@@ -992,6 +992,17 @@ func (t *DepreciationTableHeader) renameReferences(field string, oldValue, newVa
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *DepreciationTableHeader) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: DepreciationTableHeaderTableName, Global: false, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"Depreciation_Table_Line", false, "depreciation_table_code", "", 0},
+		{"FA_Depreciation_Book", false, "depreciation_table_code", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *DepreciationTableHeader) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -1001,6 +1012,13 @@ func (t *DepreciationTableHeader) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationTableHeaderTableName)

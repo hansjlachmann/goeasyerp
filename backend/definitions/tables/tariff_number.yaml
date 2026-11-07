@@ -1,6 +1,7 @@
 table:
   id: 260
   name: "Tariff_Number"
+  refuse_delete_when_used: all
   caption: Tariff Number
   description: "The tariff numbers (commodity codes) of the Intrastat declaration (table 260)"
   lookup_page_id: 310

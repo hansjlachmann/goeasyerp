@@ -1,6 +1,7 @@
 table:
   id: 5609
   name: "FA_Location"
+  refuse_delete_when_used: all
   caption: FA Location
   description: "Fixed asset locations (table 5609)"
   lookup_page_id: 5617

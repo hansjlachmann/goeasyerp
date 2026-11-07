@@ -975,6 +975,120 @@ func (t *NoSeries) renameReferences(field string, oldValue, newValue interface{}
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *NoSeries) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: NoSeriesTableName, Global: false, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"Bank_Account", false, "no_series", "", 0},
+		{"BOM_Journal_Batch", false, "no_series", "", 0},
+		{"BOM_Journal_Batch", false, "posting_no_series", "", 0},
+		{"BOM_Journal_Line", false, "posting_no_series", "", 0},
+		{"BOM_Journal_Template", false, "no_series", "", 0},
+		{"BOM_Journal_Template", false, "posting_no_series", "", 0},
+		{"Customer Ledger Entry", false, "no_series", "", 0},
+		{"Customer", false, "no_series", "", 0},
+		{"FA_Journal_Batch", false, "no_series", "", 0},
+		{"FA_Journal_Batch", false, "posting_no_series", "", 0},
+		{"FA_Journal_Line", false, "posting_no_series", "", 0},
+		{"FA_Journal_Template", false, "no_series", "", 0},
+		{"FA_Journal_Template", false, "posting_no_series", "", 0},
+		{"FA_Setup", false, "fixed_asset_nos", "", 0},
+		{"FA_Setup", false, "insurance_nos", "", 0},
+		{"FA_Ledger_Entry", false, "no_series", "", 0},
+		{"Finance_Charge_Memo_Header", false, "no_series", "", 0},
+		{"Finance_Charge_Memo_Header", false, "issuing_no_series", "", 0},
+		{"Fixed_Asset", false, "no_series", "", 0},
+		{"Gen_Journal_Batch", false, "no_series", "", 0},
+		{"Gen_Journal_Batch", false, "posting_no_series", "", 0},
+		{"Gen_Journal_Line", false, "posting_no_series", "", 0},
+		{"Gen_Journal_Template", false, "no_series", "", 0},
+		{"Gen_Journal_Template", false, "posting_no_series", "", 0},
+		{"General_Ledger_Setup", false, "bank_account_nos", "", 0},
+		{"Ins_Coverage_Ledger_Entry", false, "no_series", "", 0},
+		{"Insurance", false, "no_series", "", 0},
+		{"Insurance_Journal_Batch", false, "no_series", "", 0},
+		{"Insurance_Journal_Batch", false, "posting_no_series", "", 0},
+		{"Insurance_Journal_Line", false, "posting_no_series", "", 0},
+		{"Insurance_Journal_Template", false, "no_series", "", 0},
+		{"Insurance_Journal_Template", false, "posting_no_series", "", 0},
+		{"Inventory_Setup", false, "item_nos", "", 0},
+		{"Issued_Fin_Charge_Memo_Header", false, "no_series", "", 0},
+		{"Issued_Fin_Charge_Memo_Header", false, "pre_assigned_no_series", "", 0},
+		{"Issued_Reminder_Header", false, "no_series", "", 0},
+		{"Issued_Reminder_Header", false, "pre_assigned_no_series", "", 0},
+		{"Item", false, "no_series", "", 0},
+		{"Item", false, "serial_nos", "", 0},
+		{"Item_Journal_Batch", false, "no_series", "", 0},
+		{"Item_Journal_Batch", false, "posting_no_series", "", 0},
+		{"Item_Journal_Line", false, "posting_no_series", "", 0},
+		{"Item_Journal_Template", false, "no_series", "", 0},
+		{"Item_Journal_Template", false, "posting_no_series", "", 0},
+		{"Item_Ledger_Entry", false, "no_series", "", 0},
+		{"Maintenance_Ledger_Entry", false, "no_series", "", 0},
+		{"No_Series_Line", false, "series_code", "", 0},
+		{"No_Series_Relationship", false, "code", "", 0},
+		{"No_Series_Relationship", false, "series_code", "", 0},
+		{"Phys_Inventory_Ledger_Entry", false, "no_series", "", 0},
+		{"Project", false, "no_series", "", 0},
+		{"Project_Journal_Batch", false, "no_series", "", 0},
+		{"Project_Journal_Batch", false, "posting_no_series", "", 0},
+		{"Project_Journal_Line", false, "posting_no_series", "", 0},
+		{"Project_Journal_Template", false, "no_series", "", 0},
+		{"Project_Journal_Template", false, "posting_no_series", "", 0},
+		{"Project_Ledger_Entry", false, "no_series", "", 0},
+		{"Projects_Setup", false, "project_nos", "", 0},
+		{"Purch_Cr_Memo_Hdr", false, "no_series", "", 0},
+		{"Purch_Inv_Header", false, "no_series", "", 0},
+		{"Purch_Rcpt_Header", false, "no_series", "", 0},
+		{"Purchase_Header", false, "no_series", "", 0},
+		{"Purchase_Header", false, "posting_no_series", "", 0},
+		{"Purchase_Header", false, "receiving_no_series", "", 0},
+		{"Purchases_Payables_Setup", false, "vendor_nos", "", 0},
+		{"Purchases_Payables_Setup", false, "quote_nos", "", 0},
+		{"Purchases_Payables_Setup", false, "order_nos", "", 0},
+		{"Purchases_Payables_Setup", false, "invoice_nos", "", 0},
+		{"Purchases_Payables_Setup", false, "posted_invoice_nos", "", 0},
+		{"Purchases_Payables_Setup", false, "credit_memo_nos", "", 0},
+		{"Purchases_Payables_Setup", false, "posted_credit_memo_nos", "", 0},
+		{"Purchases_Payables_Setup", false, "posted_receipt_nos", "", 0},
+		{"Purchases_Payables_Setup", false, "blanket_order_nos", "", 0},
+		{"Reminder_Header", false, "no_series", "", 0},
+		{"Reminder_Header", false, "issuing_no_series", "", 0},
+		{"Res_Journal_Batch", false, "no_series", "", 0},
+		{"Res_Journal_Batch", false, "posting_no_series", "", 0},
+		{"Res_Journal_Line", false, "posting_no_series", "", 0},
+		{"Res_Journal_Template", false, "no_series", "", 0},
+		{"Res_Journal_Template", false, "posting_no_series", "", 0},
+		{"Res_Ledger_Entry", false, "no_series", "", 0},
+		{"Resource", false, "no_series", "", 0},
+		{"Resources_Setup", false, "resource_nos", "", 0},
+		{"Sales_Cr_Memo_Header", false, "no_series", "", 0},
+		{"Sales_Header", false, "no_series", "", 0},
+		{"Sales_Header", false, "posting_no_series", "", 0},
+		{"Sales_Header", false, "shipping_no_series", "", 0},
+		{"Sales_Invoice_Header", false, "no_series", "", 0},
+		{"Sales_Receivables_Setup", false, "customer_nos", "", 0},
+		{"Sales_Receivables_Setup", false, "quote_nos", "", 0},
+		{"Sales_Receivables_Setup", false, "order_nos", "", 0},
+		{"Sales_Receivables_Setup", false, "invoice_nos", "", 0},
+		{"Sales_Receivables_Setup", false, "posted_invoice_nos", "", 0},
+		{"Sales_Receivables_Setup", false, "credit_memo_nos", "", 0},
+		{"Sales_Receivables_Setup", false, "posted_credit_memo_nos", "", 0},
+		{"Sales_Receivables_Setup", false, "posted_shipment_nos", "", 0},
+		{"Sales_Receivables_Setup", false, "reminder_nos", "", 0},
+		{"Sales_Receivables_Setup", false, "issued_reminder_nos", "", 0},
+		{"Sales_Receivables_Setup", false, "fin_chrg_memo_nos", "", 0},
+		{"Sales_Receivables_Setup", false, "issued_fin_chrg_m_nos", "", 0},
+		{"Sales_Receivables_Setup", false, "blanket_order_nos", "", 0},
+		{"Sales_Shipment_Header", false, "no_series", "", 0},
+		{"Tax_Entry", false, "no_series", "", 0},
+		{"Vendor", false, "no_series", "", 0},
+		{"Vendor Ledger Entry", false, "no_series", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *NoSeries) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -984,6 +1098,13 @@ func (t *NoSeries) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, NoSeriesTableName)

@@ -1,6 +1,7 @@
 table:
   id: 2000000004
   name: "User_Role"
+  refuse_delete_when_used: all
   caption: User Role
   description: User roles for permission management
   global: true  # Global table - no company prefix

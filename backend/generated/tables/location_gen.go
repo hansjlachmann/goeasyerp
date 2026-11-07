@@ -865,6 +865,50 @@ func (t *Location) renameReferences(field string, oldValue, newValue interface{}
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *Location) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: LocationTableName, Global: false, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"Bin", false, "location_code", "", 0},
+		{"BOM_Journal_Line", false, "location_code", "", 0},
+		{"Company_Information", false, "location_code", "", 0},
+		{"Customer", false, "location_code", "", 0},
+		{"FA_Ledger_Entry", false, "location_code", "", 0},
+		{"Fixed_Asset", false, "location_code", "", 0},
+		{"Ins_Coverage_Ledger_Entry", false, "location_code", "", 0},
+		{"Insurance", false, "location_code", "", 0},
+		{"Item_Application_Entry", false, "location_code", "", 0},
+		{"Item_Journal_Line", false, "location_code", "", 0},
+		{"Item_Journal_Line", false, "new_location_code", "", 0},
+		{"Item_Ledger_Entry", false, "location_code", "", 0},
+		{"Maintenance_Ledger_Entry", false, "location_code", "", 0},
+		{"Phys_Inventory_Ledger_Entry", false, "location_code", "", 0},
+		{"Project_Journal_Line", false, "location_code", "", 0},
+		{"Project_Ledger_Entry", false, "location_code", "", 0},
+		{"Purch_Cr_Memo_Hdr", false, "location_code", "", 0},
+		{"Purch_Cr_Memo_Line", false, "location_code", "", 0},
+		{"Purch_Inv_Header", false, "location_code", "", 0},
+		{"Purch_Inv_Line", false, "location_code", "", 0},
+		{"Purch_Rcpt_Header", false, "location_code", "", 0},
+		{"Purch_Rcpt_Line", false, "location_code", "", 0},
+		{"Purchase_Header", false, "location_code", "", 0},
+		{"Purchase_Line", false, "location_code", "", 0},
+		{"Requisition_Line", false, "location_code", "", 0},
+		{"Reservation_Entry", false, "location_code", "", 0},
+		{"Sales_Cr_Memo_Header", false, "location_code", "", 0},
+		{"Sales_Cr_Memo_Line", false, "location_code", "", 0},
+		{"Sales_Header", false, "location_code", "", 0},
+		{"Sales_Invoice_Header", false, "location_code", "", 0},
+		{"Sales_Invoice_Line", false, "location_code", "", 0},
+		{"Sales_Line", false, "location_code", "", 0},
+		{"Sales_Shipment_Header", false, "location_code", "", 0},
+		{"Sales_Shipment_Line", false, "location_code", "", 0},
+		{"Ship_to_Address", false, "location_code", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *Location) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -874,6 +918,13 @@ func (t *Location) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, LocationTableName)

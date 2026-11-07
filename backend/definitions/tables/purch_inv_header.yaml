@@ -1,6 +1,7 @@
 table:
   id: 122
   name: "Purch_Inv_Header"
+  history: true
   description: "Purch. Inv. Header (table 122): a posted purchase invoice"
   data_caption_fields: [no, buy_from_vendor_name]
   fields:

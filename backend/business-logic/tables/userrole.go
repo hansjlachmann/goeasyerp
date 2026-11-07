@@ -22,8 +22,11 @@ func (userRoleLogic) OnModify(rec *gtables.UserRole) error {
 	return nil
 }
 
-// OnDelete runs before a record is deleted
+// OnDelete deletes the role's permissions (members keep the role from being deleted)
 func (userRoleLogic) OnDelete(rec *gtables.UserRole) error {
+	permission := gtables.NewPermission(rec)
+	permission.SetRange("role_id", rec.Code)
+	permission.DeleteAll()
 	return nil
 }
 

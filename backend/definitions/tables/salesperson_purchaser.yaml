@@ -1,6 +1,7 @@
 table:
   id: 13
   name: "Salesperson_Purchaser"
+  refuse_delete_when_used: all
   caption: Salesperson/Purchaser
   description: Salespeople and purchasers (table 13)
   fields:

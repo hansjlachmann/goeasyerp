@@ -950,6 +950,44 @@ func (t *GenProductPostingGroup) renameReferences(field string, oldValue, newVal
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *GenProductPostingGroup) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: GenProductPostingGroupTableName, Global: false, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"FA_Ledger_Entry", false, "gen_prod_posting_group", "", 0},
+		{"Finance_Charge_Memo_Line", false, "gen_prod_posting_group", "", 0},
+		{"Gen_Jnl_Allocation", false, "gen_prod_posting_group", "", 0},
+		{"Gen_Journal_Line", false, "gen_prod_posting_group", "", 0},
+		{"Gen_Journal_Line", false, "bal_gen_prod_posting_group", "", 0},
+		{"General_Posting_Setup", false, "gen_prod_posting_group", "", 0},
+		{"G_L_Account", false, "gen_prod_posting_group", "", 0},
+		{"G_L_Entry", false, "gen_prod_posting_group", "", 0},
+		{"Issued_Fin_Charge_Memo_Line", false, "gen_prod_posting_group", "", 0},
+		{"Issued_Reminder_Line", false, "gen_prod_posting_group", "", 0},
+		{"Item", false, "gen_prod_posting_group", "", 0},
+		{"Item_Journal_Line", false, "gen_prod_posting_group", "", 0},
+		{"Item_Ledger_Entry", false, "gen_prod_posting_group", "", 0},
+		{"Maintenance_Ledger_Entry", false, "gen_prod_posting_group", "", 0},
+		{"Project_Journal_Line", false, "gen_prod_posting_group", "", 0},
+		{"Project_Ledger_Entry", false, "gen_prod_posting_group", "", 0},
+		{"Purch_Cr_Memo_Line", false, "gen_prod_posting_group", "", 0},
+		{"Purch_Inv_Line", false, "gen_prod_posting_group", "", 0},
+		{"Purch_Rcpt_Line", false, "gen_prod_posting_group", "", 0},
+		{"Purchase_Line", false, "gen_prod_posting_group", "", 0},
+		{"Reminder_Line", false, "gen_prod_posting_group", "", 0},
+		{"Res_Journal_Line", false, "gen_prod_posting_group", "", 0},
+		{"Res_Ledger_Entry", false, "gen_prod_posting_group", "", 0},
+		{"Resource", false, "gen_prod_posting_group", "", 0},
+		{"Sales_Cr_Memo_Line", false, "gen_prod_posting_group", "", 0},
+		{"Sales_Invoice_Line", false, "gen_prod_posting_group", "", 0},
+		{"Sales_Line", false, "gen_prod_posting_group", "", 0},
+		{"Sales_Shipment_Line", false, "gen_prod_posting_group", "", 0},
+		{"Tax_Entry", false, "gen_prod_posting_group", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *GenProductPostingGroup) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -959,6 +997,13 @@ func (t *GenProductPostingGroup) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, GenProductPostingGroupTableName)

@@ -2332,6 +2332,123 @@ func (t *GLAccount) renameReferences(field string, oldValue, newValue interface{
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *GLAccount) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: GLAccountTableName, Global: false, Company: t.company,
+		KeyColumn: "no", Key: t.No, KeyText: fmt.Sprint(t.No),
+	}, []tables.Reference{
+		{"Acc_Schedule_Line", false, "totaling", "", 0},
+		{"Bank_Account_Posting_Group", false, "g_l_bank_account_no", "", 0},
+		{"Business_Unit", false, "exch_rate_loss_acc", "", 0},
+		{"Business_Unit", false, "exch_rate_gains_acc", "", 0},
+		{"Business_Unit", false, "residual_account", "", 0},
+		{"Comment_Line", false, "no", "table_name", 0},
+		{"Currency", false, "unrealized_gains_acc", "", 0},
+		{"Currency", false, "realized_gains_acc", "", 0},
+		{"Currency", false, "unrealized_losses_acc", "", 0},
+		{"Currency", false, "realized_losses_acc", "", 0},
+		{"Currency", false, "realized_gl_gains_account", "", 0},
+		{"Currency", false, "realized_gl_losses_account", "", 0},
+		{"Currency", false, "residual_gains_account", "", 0},
+		{"Currency", false, "residual_losses_account", "", 0},
+		{"Currency", false, "conv_lcy_rndg_debit_acc", "", 0},
+		{"Currency", false, "conv_lcy_rndg_credit_acc", "", 0},
+		{"Customer_Posting_Group", false, "receivables_account", "", 0},
+		{"Customer_Posting_Group", false, "service_charge_acc", "", 0},
+		{"Customer_Posting_Group", false, "payment_disc_acc", "", 0},
+		{"Customer_Posting_Group", false, "invoice_rounding_account", "", 0},
+		{"Customer_Posting_Group", false, "additional_fee_account", "", 0},
+		{"Customer_Posting_Group", false, "interest_account", "", 0},
+		{"Customer_Posting_Group", false, "curr_appln_rounding_account", "", 0},
+		{"FA_Allocation", false, "account_no", "", 0},
+		{"FA_Posting_Group", false, "acquisition_cost_account", "", 0},
+		{"FA_Posting_Group", false, "accum_depreciation_account", "", 0},
+		{"FA_Posting_Group", false, "write_down_account", "", 0},
+		{"FA_Posting_Group", false, "appreciation_account", "", 0},
+		{"FA_Posting_Group", false, "custom_1_account", "", 0},
+		{"FA_Posting_Group", false, "custom_2_account", "", 0},
+		{"FA_Posting_Group", false, "acq_cost_acc_on_disposal", "", 0},
+		{"FA_Posting_Group", false, "accum_depr_acc_on_disposal", "", 0},
+		{"FA_Posting_Group", false, "write_down_acc_on_disposal", "", 0},
+		{"FA_Posting_Group", false, "appreciation_acc_on_disposal", "", 0},
+		{"FA_Posting_Group", false, "custom_1_account_on_disposal", "", 0},
+		{"FA_Posting_Group", false, "custom_2_account_on_disposal", "", 0},
+		{"FA_Posting_Group", false, "gains_acc_on_disposal", "", 0},
+		{"FA_Posting_Group", false, "losses_acc_on_disposal", "", 0},
+		{"FA_Posting_Group", false, "book_value_acc_on_disposal", "", 0},
+		{"FA_Posting_Group", false, "sales_acc_on_disposal", "", 0},
+		{"FA_Posting_Group", false, "write_down_bal_acc_on_disp", "", 0},
+		{"FA_Posting_Group", false, "apprec_bal_acc_on_disp", "", 0},
+		{"FA_Posting_Group", false, "custom_1_bal_acc_on_disposal", "", 0},
+		{"FA_Posting_Group", false, "custom_2_bal_acc_on_disposal", "", 0},
+		{"FA_Posting_Group", false, "maintenance_expense_account", "", 0},
+		{"FA_Posting_Group", false, "maintenance_bal_acc", "", 0},
+		{"FA_Posting_Group", false, "acquisition_cost_bal_acc", "", 0},
+		{"FA_Posting_Group", false, "depreciation_expense_acc", "", 0},
+		{"FA_Posting_Group", false, "write_down_expense_acc", "", 0},
+		{"FA_Posting_Group", false, "appreciation_bal_account", "", 0},
+		{"FA_Posting_Group", false, "custom_1_expense_acc", "", 0},
+		{"FA_Posting_Group", false, "custom_2_expense_acc", "", 0},
+		{"FA_Posting_Group", false, "sales_bal_acc", "", 0},
+		{"Finance_Charge_Memo_Line", false, "no", "type", 1},
+		{"G_L_Budget_Entry", false, "gl_account_no", "", 0},
+		{"Gen_Jnl_Allocation", false, "account_no", "", 0},
+		{"Gen_Journal_Batch", false, "bal_account_no", "bal_account_type", 0},
+		{"Gen_Journal_Line", false, "account_no", "account_type", 0},
+		{"Gen_Journal_Line", false, "bal_account_no", "bal_account_type", 0},
+		{"Gen_Journal_Template", false, "bal_account_no", "bal_account_type", 0},
+		{"General_Posting_Setup", false, "sales_account", "", 0},
+		{"General_Posting_Setup", false, "sales_line_disc_account", "", 0},
+		{"General_Posting_Setup", false, "sales_inv_disc_account", "", 0},
+		{"General_Posting_Setup", false, "sales_payment_disc_account", "", 0},
+		{"General_Posting_Setup", false, "purch_account", "", 0},
+		{"General_Posting_Setup", false, "purch_line_disc_account", "", 0},
+		{"General_Posting_Setup", false, "purch_inv_disc_account", "", 0},
+		{"General_Posting_Setup", false, "purch_payment_disc_account", "", 0},
+		{"General_Posting_Setup", false, "cogs_account", "", 0},
+		{"General_Posting_Setup", false, "inventory_adjmt_account", "", 0},
+		{"General_Posting_Setup", false, "project_sales_adjmt_account", "", 0},
+		{"General_Posting_Setup", false, "project_cost_adjmt_account", "", 0},
+		{"General_Posting_Setup", false, "sales_credit_memo_account", "", 0},
+		{"General_Posting_Setup", false, "purch_credit_memo_account", "", 0},
+		{"G_L_Account", false, "totaling", "", 0},
+		{"Inventory_Posting_Group", false, "inventory_account", "", 0},
+		{"Payment_Method", false, "bal_account_no", "bal_account_type", 0},
+		{"Project_Budget_Entry", false, "no", "type", 2},
+		{"Project_Budget_Line", false, "no", "type", 2},
+		{"Project_Journal_Line", false, "no", "type", 2},
+		{"Project_Journal_Line", false, "balancing_acc_no", "", 0},
+		{"Project_Posting_Group", false, "wip_cost_account", "", 0},
+		{"Project_Posting_Group", false, "wip_sales_account", "", 0},
+		{"Project_Posting_Group", false, "cost_account", "", 0},
+		{"Project_Posting_Group", false, "sales_account", "", 0},
+		{"Project_Posting_Group", false, "g_l_exp_sales_acc", "", 0},
+		{"Purchase_Line", false, "no", "type", 1},
+		{"Reminder_Line", false, "no", "type", 1},
+		{"Requisition_Line", false, "no", "type", 1},
+		{"Sales_Line", false, "no", "type", 1},
+		{"Tax_Jurisdiction", false, "tax_account_sales", "", 0},
+		{"Tax_Jurisdiction", false, "tax_account_purchases", "", 0},
+		{"Tax_Jurisdiction", false, "unreal_tax_acc_sales", "", 0},
+		{"Tax_Jurisdiction", false, "unreal_tax_acc_purchases", "", 0},
+		{"Tax_Jurisdiction", false, "reverse_charge_purchases", "", 0},
+		{"Tax_Jurisdiction", false, "unreal_rev_charge_purch", "", 0},
+		{"Tax_Posting_Setup", false, "sales_vat_account", "", 0},
+		{"Tax_Posting_Setup", false, "sales_vat_unreal_account", "", 0},
+		{"Tax_Posting_Setup", false, "purchase_vat_account", "", 0},
+		{"Tax_Posting_Setup", false, "purch_vat_unreal_account", "", 0},
+		{"Tax_Posting_Setup", false, "reverse_chrg_vat_acc", "", 0},
+		{"Tax_Posting_Setup", false, "reverse_chrg_vat_unreal_acc", "", 0},
+		{"Tax_Statement_Line", false, "account_totaling", "", 0},
+		{"Vendor_Posting_Group", false, "payables_account", "", 0},
+		{"Vendor_Posting_Group", false, "service_charge_acc", "", 0},
+		{"Vendor_Posting_Group", false, "payment_disc_acc", "", 0},
+		{"Vendor_Posting_Group", false, "invoice_rounding_account", "", 0},
+		{"Vendor_Posting_Group", false, "curr_appln_rounding_account", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *GLAccount) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -2341,6 +2458,13 @@ func (t *GLAccount) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, GLAccountTableName)

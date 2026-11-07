@@ -2826,6 +2826,39 @@ func (t *Vendor) renameReferences(field string, oldValue, newValue interface{}) 
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *Vendor) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: VendorTableName, Global: false, Company: t.company,
+		KeyColumn: "no", Key: t.No, KeyText: fmt.Sprint(t.No),
+	}, []tables.Reference{
+		{"Comment_Line", false, "no", "table_name", 2},
+		{"Fixed_Asset", false, "vendor_no", "", 0},
+		{"Fixed_Asset", false, "maintenance_vendor_no", "", 0},
+		{"Gen_Journal_Batch", false, "bal_account_no", "bal_account_type", 2},
+		{"Gen_Journal_Line", false, "account_no", "account_type", 2},
+		{"Gen_Journal_Line", false, "bal_account_no", "bal_account_type", 2},
+		{"Gen_Journal_Line", false, "source_no", "source_type", 2},
+		{"Gen_Journal_Template", false, "bal_account_no", "bal_account_type", 2},
+		{"Insurance", false, "insurance_vendor_no", "", 0},
+		{"Item", false, "vendor_no", "", 0},
+		{"Item_Journal_Line", false, "source_no", "source_type", 2},
+		{"Item_Vendor", false, "vendor_no", "", 0},
+		{"Maintenance_Registration", false, "maintenance_vendor_no", "", 0},
+		{"Order_Address", false, "vendor_no", "", 0},
+		{"Purchase_Header", false, "buy_from_vendor_no", "", 0},
+		{"Purchase_Header", false, "pay_to_vendor_no", "", 0},
+		{"Purchase_Header", false, "invoice_disc_code", "", 0},
+		{"Purchase_Line", false, "buy_from_vendor_no", "", 0},
+		{"Purchase_Line", false, "pay_to_vendor_no", "", 0},
+		{"Requisition_Line", false, "vendor_no", "", 0},
+		{"Resource", false, "vendor_no", "", 0},
+		{"Vendor", false, "invoice_disc_code", "", 0},
+		{"Vendor", false, "pay_to_vendor_no", "", 0},
+		{"Vendor_Bank_Account", false, "vendor_no", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *Vendor) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -2835,6 +2868,13 @@ func (t *Vendor) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, VendorTableName)

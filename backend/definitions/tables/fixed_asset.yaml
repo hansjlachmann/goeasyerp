@@ -1,6 +1,7 @@
 table:
   id: 5600
   name: "Fixed_Asset"
+  refuse_delete_when_used: current
   caption: Fixed Asset
   description: "Fixed assets (table 5600)"
   data_caption_fields: [no, description]

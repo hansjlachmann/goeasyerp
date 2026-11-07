@@ -1,6 +1,7 @@
 table:
   id: 4
   name: "Currency"
+  refuse_delete_when_used: all
   caption: Currency
   description: Currencies (table 4 Currency)
   fields:

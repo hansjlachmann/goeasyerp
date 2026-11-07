@@ -900,6 +900,68 @@ func (t *Dimension1) renameReferences(field string, oldValue, newValue interface
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *Dimension1) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: Dimension1TableName, Global: false, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"Acc_Sched_Column", false, "dimension_1_filter", "", 0},
+		{"Bank_Account", false, "dimension_1_code", "", 0},
+		{"Bank_Account_Ledger_Entry", false, "dimension_1_code", "", 0},
+		{"BOM_Journal_Line", false, "dimension_1_code", "", 0},
+		{"Customer Ledger Entry", false, "dimension_1_code", "", 0},
+		{"Customer", false, "dimension_1_code", "", 0},
+		{"FA_Allocation", false, "dimension_1_code", "", 0},
+		{"FA_Journal_Line", false, "dimension_1_code", "", 0},
+		{"FA_Ledger_Entry", false, "dimension_1_code", "", 0},
+		{"Finance_Charge_Memo_Header", false, "dimension_1_code", "", 0},
+		{"Fixed_Asset", false, "dimension_1_code", "", 0},
+		{"G_L_Budget_Entry", false, "dimension_1_code", "", 0},
+		{"Gen_Jnl_Allocation", false, "dimension_1_code", "", 0},
+		{"Gen_Journal_Line", false, "dimension_1_code", "", 0},
+		{"G_L_Account", false, "dimension_1_code", "", 0},
+		{"G_L_Entry", false, "dimension_1_code", "", 0},
+		{"Ins_Coverage_Ledger_Entry", false, "dimension_1_code", "", 0},
+		{"Insurance", false, "dimension_1_code", "", 0},
+		{"Insurance_Journal_Line", false, "dimension_1_code", "", 0},
+		{"Issued_Fin_Charge_Memo_Header", false, "dimension_1_code", "", 0},
+		{"Issued_Reminder_Header", false, "dimension_1_code", "", 0},
+		{"Item_Journal_Line", false, "dimension_1_code", "", 0},
+		{"Item_Journal_Line", false, "new_dimension_1_code", "", 0},
+		{"Item_Ledger_Entry", false, "dimension_1_code", "", 0},
+		{"Maintenance_Ledger_Entry", false, "dimension_1_code", "", 0},
+		{"Phys_Inventory_Ledger_Entry", false, "dimension_1_code", "", 0},
+		{"Project", false, "dimension_1_code", "", 0},
+		{"Project_Budget_Line", false, "dimension_1_code", "", 0},
+		{"Project_Journal_Line", false, "dimension_1_code", "", 0},
+		{"Project_Ledger_Entry", false, "dimension_1_code", "", 0},
+		{"Purch_Cr_Memo_Hdr", false, "dimension_1_code", "", 0},
+		{"Purch_Cr_Memo_Line", false, "dimension_1_code", "", 0},
+		{"Purch_Inv_Header", false, "dimension_1_code", "", 0},
+		{"Purch_Inv_Line", false, "dimension_1_code", "", 0},
+		{"Purch_Rcpt_Header", false, "dimension_1_code", "", 0},
+		{"Purch_Rcpt_Line", false, "dimension_1_code", "", 0},
+		{"Purchase_Header", false, "dimension_1_code", "", 0},
+		{"Purchase_Line", false, "dimension_1_code", "", 0},
+		{"Reminder_Header", false, "dimension_1_code", "", 0},
+		{"Requisition_Line", false, "dimension_1_code", "", 0},
+		{"Res_Journal_Line", false, "dimension_1_code", "", 0},
+		{"Res_Ledger_Entry", false, "dimension_1_code", "", 0},
+		{"Resource", false, "dimension_1_code", "", 0},
+		{"Sales_Cr_Memo_Header", false, "dimension_1_code", "", 0},
+		{"Sales_Cr_Memo_Line", false, "dimension_1_code", "", 0},
+		{"Sales_Header", false, "dimension_1_code", "", 0},
+		{"Sales_Invoice_Header", false, "dimension_1_code", "", 0},
+		{"Sales_Invoice_Line", false, "dimension_1_code", "", 0},
+		{"Sales_Line", false, "dimension_1_code", "", 0},
+		{"Sales_Shipment_Header", false, "dimension_1_code", "", 0},
+		{"Sales_Shipment_Line", false, "dimension_1_code", "", 0},
+		{"Vendor", false, "dimension_1_code", "", 0},
+		{"Vendor Ledger Entry", false, "dimension_1_code", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *Dimension1) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -909,6 +971,13 @@ func (t *Dimension1) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, Dimension1TableName)

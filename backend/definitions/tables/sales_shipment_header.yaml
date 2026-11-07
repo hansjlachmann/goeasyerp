@@ -1,6 +1,7 @@
 table:
   id: 110
   name: "Sales_Shipment_Header"
+  history: true
   description: "Sales Shipment Header (table 110): a posted sales shipment"
   data_caption_fields: [no, sell_to_customer_name]
   fields:

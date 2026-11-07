@@ -1,6 +1,7 @@
 table:
   id: 111
   name: "Sales_Shipment_Line"
+  history: true
   description: "Sales Shipment Line (table 111): a line of a posted sales shipment"
   fields:
     - name: sell_to_customer_no

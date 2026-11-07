@@ -3497,6 +3497,35 @@ func (t *Item) renameReferences(field string, oldValue, newValue interface{}) er
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *Item) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: ItemTableName, Global: false, Company: t.company,
+		KeyColumn: "no", Key: t.No, KeyText: fmt.Sprint(t.No),
+	}, []tables.Reference{
+		{"BOM_Component", false, "parent_item_no", "", 0},
+		{"BOM_Component", false, "no", "type", 1},
+		{"BOM_Journal_Line", false, "item_no", "", 0},
+		{"Intrastat_Jnl_Line", false, "item_no", "", 0},
+		{"Item", false, "sales_qty_disc_code", "", 0},
+		{"Item", false, "alternative_item_no", "", 0},
+		{"Item_Journal_Line", false, "item_no", "", 0},
+		{"Item_Journal_Line", false, "source_no", "source_type", 3},
+		{"Item_Price", false, "item_no", "", 0},
+		{"Item_Price_Change", false, "item_no", "", 0},
+		{"Item_Translation", false, "item_no", "", 0},
+		{"Item_Unit_of_Measure", false, "item_no", "", 0},
+		{"Item_Variant", false, "item_no", "", 0},
+		{"Item_Vendor", false, "item_no", "", 0},
+		{"Project_Budget_Entry", false, "no", "type", 1},
+		{"Project_Budget_Line", false, "no", "type", 1},
+		{"Project_Journal_Line", false, "no", "type", 1},
+		{"Purchase_Line", false, "no", "type", 2},
+		{"Requisition_Line", false, "no", "type", 2},
+		{"Sales_Line", false, "no", "type", 2},
+	})
+}
+
 // Delete removes the record from the database
 func (t *Item) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -3506,6 +3535,13 @@ func (t *Item) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ItemTableName)

@@ -1,6 +1,7 @@
 table:
   id: 341
   name: "Item_Discount_Group"
+  refuse_delete_when_used: all
   description: "Item discount groups (table 341)"
   data_caption_fields: [code, description]
   fields:

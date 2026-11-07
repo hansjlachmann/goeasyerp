@@ -1,6 +1,7 @@
 table:
   id: 900
   name: "Menu"
+  refuse_delete_when_used: all
   caption: Menu
   description: Menu profiles for users
   global: true  # Global table - no company prefix

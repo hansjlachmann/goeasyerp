@@ -1,6 +1,7 @@
 table:
   id: 114
   name: "Sales_Cr_Memo_Header"
+  history: true
   description: "Sales Cr.Memo Header (table 114): a posted sales credit memo"
   data_caption_fields: [no, sell_to_customer_name]
   fields:

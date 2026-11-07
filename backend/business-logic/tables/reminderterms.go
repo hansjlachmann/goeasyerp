@@ -22,8 +22,15 @@ func (reminderTermsLogic) OnModify(rec *gtables.ReminderTerms) error {
 	return nil
 }
 
-// OnDelete runs before a record is deleted
+// OnDelete deletes the terms' levels and their texts
 func (reminderTermsLogic) OnDelete(rec *gtables.ReminderTerms) error {
+	reminderLevel := gtables.NewReminderLevel(rec)
+	reminderLevel.SetRange("reminder_terms_code", rec.Code)
+	reminderLevel.DeleteAll()
+
+	reminderText := gtables.NewReminderText(rec)
+	reminderText.SetRange("reminder_terms_code", rec.Code)
+	reminderText.DeleteAll()
 	return nil
 }
 

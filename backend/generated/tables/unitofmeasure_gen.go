@@ -877,6 +877,31 @@ func (t *UnitOfMeasure) renameReferences(field string, oldValue, newValue interf
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *UnitOfMeasure) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: UnitOfMeasureTableName, Global: false, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"BOM_Component", false, "unit_of_measure_code", "type", 2},
+		{"Item_Unit_of_Measure", false, "code", "", 0},
+		{"Project_Journal_Line", false, "unit_of_measure_code", "type", 0},
+		{"Project_Journal_Quantity", false, "unit_of_measure_code", "", 0},
+		{"Project_Ledger_Entry", false, "unit_of_measure_code", "type", 0},
+		{"Requisition_Line", false, "unit_of_measure_code", "type", 1},
+		{"Requisition_Line", false, "unit_of_measure_code", "type", 0},
+		{"Res_Journal_Line", false, "unit_of_measure_code", "", 0},
+		{"Res_Ledger_Entry", false, "unit_of_measure_code", "", 0},
+		{"Resource", false, "unit_of_measure_code", "", 0},
+		{"Sales_Cr_Memo_Line", false, "unit_of_measure_code", "type", 3},
+		{"Sales_Invoice_Line", false, "unit_of_measure_code", "type", 3},
+		{"Sales_Line", false, "unit_of_measure_code", "type", 3},
+		{"Sales_Shipment_Line", false, "unit_of_measure_code", "type", 3},
+		{"Unit_of_Measure_Translation", false, "code", "", 0},
+		{"Work_Type", false, "unit_of_measure_code", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *UnitOfMeasure) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -886,6 +911,13 @@ func (t *UnitOfMeasure) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, UnitOfMeasureTableName)

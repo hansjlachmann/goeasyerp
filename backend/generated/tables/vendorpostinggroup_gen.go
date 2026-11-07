@@ -1025,6 +1025,24 @@ func (t *VendorPostingGroup) renameReferences(field string, oldValue, newValue i
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *VendorPostingGroup) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: VendorPostingGroupTableName, Global: false, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"Exch_Rate_Adjmt_Reg", false, "posting_group", "account_type", 2},
+		{"Item_Journal_Line", false, "source_posting_group", "source_type", 2},
+		{"Item_Ledger_Entry", false, "source_posting_group", "source_type", 2},
+		{"Purch_Cr_Memo_Hdr", false, "vendor_posting_group", "", 0},
+		{"Purch_Inv_Header", false, "vendor_posting_group", "", 0},
+		{"Purch_Rcpt_Header", false, "vendor_posting_group", "", 0},
+		{"Purchase_Header", false, "vendor_posting_group", "", 0},
+		{"Vendor", false, "vendor_posting_group", "", 0},
+		{"Vendor Ledger Entry", false, "vendor_posting_group", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *VendorPostingGroup) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -1034,6 +1052,13 @@ func (t *VendorPostingGroup) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, VendorPostingGroupTableName)

@@ -1,6 +1,7 @@
 table:
   id: 162
   name: "Task"
+  refuse_delete_when_used: all
   caption: Task
   description: "Project tasks (table 162): the task codes of budget lines and entries"
   lookup_page_id: 83

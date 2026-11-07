@@ -913,6 +913,36 @@ func (t *Language) renameReferences(field string, oldValue, newValue interface{}
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *Language) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: LanguageTableName, Global: true, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"Bank_Account", false, "language_code", "", 0},
+		{"Customer", false, "language_code", "", 0},
+		{"Customer_Bank_Account", false, "language_code", "", 0},
+		{"Finance_Charge_Memo_Header", false, "language_code", "", 0},
+		{"Issued_Fin_Charge_Memo_Header", false, "language_code", "", 0},
+		{"Issued_Reminder_Header", false, "language_code", "", 0},
+		{"Item_Translation", false, "language_code", "", 0},
+		{"Job_Queue", false, "notification_language", "", 0},
+		{"Purch_Cr_Memo_Hdr", false, "language_code", "", 0},
+		{"Purch_Inv_Header", false, "language_code", "", 0},
+		{"Purch_Rcpt_Header", false, "language_code", "", 0},
+		{"Purchase_Header", false, "language_code", "", 0},
+		{"Reminder_Header", false, "language_code", "", 0},
+		{"Sales_Cr_Memo_Header", false, "language_code", "", 0},
+		{"Sales_Header", false, "language_code", "", 0},
+		{"Sales_Invoice_Header", false, "language_code", "", 0},
+		{"Sales_Shipment_Header", false, "language_code", "", 0},
+		{"Unit_of_Measure_Translation", false, "language_code", "", 0},
+		{"User", true, "language", "", 0},
+		{"Vendor", false, "language_code", "", 0},
+		{"Vendor_Bank_Account", false, "language_code", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *Language) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -922,6 +952,13 @@ func (t *Language) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := LanguageTableName

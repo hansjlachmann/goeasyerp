@@ -1,6 +1,7 @@
 table:
   id: 258
   name: "Transaction_Type"
+  refuse_delete_when_used: all
   caption: Transaction Type
   description: "Intrastat transaction types (table 258)"
   lookup_page_id: 308

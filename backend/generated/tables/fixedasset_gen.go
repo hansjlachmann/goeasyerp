@@ -1767,6 +1767,32 @@ func (t *FixedAsset) renameReferences(field string, oldValue, newValue interface
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *FixedAsset) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: FixedAssetTableName, Global: false, Company: t.company,
+		KeyColumn: "no", Key: t.No, KeyText: fmt.Sprint(t.No),
+	}, []tables.Reference{
+		{"Comment_Line", false, "no", "table_name", 10},
+		{"FA_Depreciation_Book", false, "fa_no", "", 0},
+		{"FA_Depreciation_Book", false, "component_of_main_asset", "", 0},
+		{"FA_Journal_Line", false, "fa_no", "", 0},
+		{"FA_Reclass_Journal_Line", false, "fa_no", "", 0},
+		{"FA_Reclass_Journal_Line", false, "new_fa_no", "", 0},
+		{"Fixed_Asset", false, "component_of_main_asset", "", 0},
+		{"Gen_Journal_Batch", false, "bal_account_no", "bal_account_type", 4},
+		{"Gen_Journal_Line", false, "account_no", "account_type", 4},
+		{"Gen_Journal_Line", false, "bal_account_no", "bal_account_type", 4},
+		{"Gen_Journal_Line", false, "source_no", "source_type", 4},
+		{"Gen_Journal_Template", false, "bal_account_no", "bal_account_type", 4},
+		{"Insurance_Journal_Line", false, "fa_no", "", 0},
+		{"Main_Asset_Component", false, "main_asset_no", "", 0},
+		{"Main_Asset_Component", false, "fa_no", "", 0},
+		{"Maintenance_Registration", false, "fa_no", "", 0},
+		{"Purchase_Line", false, "no", "type", 4},
+	})
+}
+
 // Delete removes the record from the database
 func (t *FixedAsset) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -1776,6 +1802,13 @@ func (t *FixedAsset) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, FixedAssetTableName)

@@ -1,6 +1,7 @@
 table:
   id: 8
   name: "Language"
+  refuse_delete_when_used: all
   caption: Language
   description: System languages
   global: true  # Global table - no company prefix

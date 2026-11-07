@@ -1,6 +1,7 @@
 table:
   id: 14
   name: "Location"
+  refuse_delete_when_used: all
   caption: Location
   description: Locations (table 14)
   fields:

@@ -3338,6 +3338,34 @@ func (t *Customer) renameReferences(field string, oldValue, newValue interface{}
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *Customer) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: CustomerTableName, Global: false, Company: t.company,
+		KeyColumn: "no", Key: t.No, KeyText: fmt.Sprint(t.No),
+	}, []tables.Reference{
+		{"Comment_Line", false, "no", "table_name", 1},
+		{"Customer", false, "invoice_disc_code", "", 0},
+		{"Customer", false, "bill_to_customer_no", "", 0},
+		{"Customer_Bank_Account", false, "customer_no", "", 0},
+		{"Finance_Charge_Memo_Header", false, "customer_no", "", 0},
+		{"Gen_Journal_Batch", false, "bal_account_no", "bal_account_type", 1},
+		{"Gen_Journal_Line", false, "account_no", "account_type", 1},
+		{"Gen_Journal_Line", false, "bal_account_no", "bal_account_type", 1},
+		{"Gen_Journal_Line", false, "source_no", "source_type", 1},
+		{"Gen_Journal_Template", false, "bal_account_no", "bal_account_type", 1},
+		{"Item_Journal_Line", false, "source_no", "source_type", 1},
+		{"Project", false, "bill_to_customer_no", "", 0},
+		{"Reminder_Header", false, "customer_no", "", 0},
+		{"Sales_Header", false, "sell_to_customer_no", "", 0},
+		{"Sales_Header", false, "bill_to_customer_no", "", 0},
+		{"Sales_Header", false, "invoice_disc_code", "", 0},
+		{"Sales_Line", false, "sell_to_customer_no", "", 0},
+		{"Sales_Line", false, "bill_to_customer_no", "", 0},
+		{"Ship_to_Address", false, "customer_no", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *Customer) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -3347,6 +3375,13 @@ func (t *Customer) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, CustomerTableName)

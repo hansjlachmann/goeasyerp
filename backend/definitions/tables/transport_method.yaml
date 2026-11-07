@@ -1,6 +1,7 @@
 table:
   id: 259
   name: "Transport_Method"
+  refuse_delete_when_used: all
   caption: Transport Method
   description: "Intrastat transport methods (table 259)"
   lookup_page_id: 309

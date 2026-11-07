@@ -1,6 +1,7 @@
 table:
   id: 289
   name: "Payment_Method"
+  refuse_delete_when_used: all
   caption: Payment Method
   description: "Payment methods of customers and vendors (table 289)"
   data_caption_fields: [code, description]

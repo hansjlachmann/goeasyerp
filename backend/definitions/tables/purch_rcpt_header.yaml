@@ -1,6 +1,7 @@
 table:
   id: 120
   name: "Purch_Rcpt_Header"
+  history: true
   description: "Purch. Rcpt. Header (table 120): a posted purchase receipt"
   data_caption_fields: [no, buy_from_vendor_name]
   fields:

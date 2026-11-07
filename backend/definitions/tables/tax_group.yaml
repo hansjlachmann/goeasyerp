@@ -1,6 +1,7 @@
 table:
   id: 321
   name: "Tax_Group"
+  refuse_delete_when_used: all
   caption: Tax Group
   description: Tax groups (table 321)
   data_caption_fields: [code, description]

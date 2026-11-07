@@ -1,6 +1,7 @@
 table:
   id: 152
   name: "Resource_Group"
+  refuse_delete_when_used: all
   description: "Resource Groups (table 152)"
   data_caption_fields: [no, name]
   lookup_page_id: 72

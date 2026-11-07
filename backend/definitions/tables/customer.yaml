@@ -1,6 +1,7 @@
 table:
   id: 18
   name: "Customer"
+  refuse_delete_when_used: current
   description: "Customers (table 18)"
   data_caption_fields: [no, name]
   auto_key: true   # OnInsert gives a customer without No. the next number of its series

@@ -877,6 +877,18 @@ func (t *BankAccountPostingGroup) renameReferences(field string, oldValue, newVa
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *BankAccountPostingGroup) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: BankAccountPostingGroupTableName, Global: false, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"Bank_Account", false, "bank_acc_posting_group", "", 0},
+		{"Bank_Account_Ledger_Entry", false, "bank_acc_posting_group", "", 0},
+		{"Exch_Rate_Adjmt_Reg", false, "posting_group", "account_type", 3},
+	})
+}
+
 // Delete removes the record from the database
 func (t *BankAccountPostingGroup) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -886,6 +898,13 @@ func (t *BankAccountPostingGroup) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountPostingGroupTableName)

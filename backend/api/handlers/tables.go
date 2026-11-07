@@ -1706,12 +1706,13 @@ func (h *TablesHandler) modifyInTransaction(table ftables.Table) (bool, error) {
 	return true, nil
 }
 
-// deleteInTransaction deletes the record like table.Delete(true); deleting a Company also
-// drops all its tables and SIFT objects, in the same transaction, so a failure keeps the
-// company and its data. err is set only when the transaction itself fails.
+// deleteInTransaction deletes the record like table.Delete(true), in one transaction: what
+// OnDelete did is undone when the delete is refused. Deleting a Company also drops all its
+// tables and SIFT objects, so a failure keeps the company and its data. err is set only when
+// the transaction itself fails.
 func (h *TablesHandler) deleteInTransaction(tableName string, table ftables.Table) (bool, error) {
 	setter, ok := table.(interface{ SetDB(database.Executor) })
-	if tableName != "Company" || !ok {
+	if !ok {
 		return table.Delete(true), nil
 	}
 	companyName := table.GetPrimaryKeyValue()
@@ -1725,9 +1726,11 @@ func (h *TablesHandler) deleteInTransaction(tableName string, table ftables.Tabl
 		_ = ftables.Rollback(tx)
 		return false, nil
 	}
-	if err := company.DropObjects(tx, h.dbType, companyName); err != nil {
-		_ = ftables.Rollback(tx)
-		return false, fmt.Errorf("delete company %s: %w", companyName, err)
+	if tableName == "Company" {
+		if err := company.DropObjects(tx, h.dbType, companyName); err != nil {
+			_ = ftables.Rollback(tx)
+			return false, fmt.Errorf("delete company %s: %w", companyName, err)
+		}
 	}
 	return true, ftables.Commit(tx)
 }

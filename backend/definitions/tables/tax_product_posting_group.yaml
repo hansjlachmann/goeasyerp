@@ -1,6 +1,7 @@
 table:
   id: 324
   name: "Tax_Product_Posting_Group"
+  refuse_delete_when_used: all
   caption: Tax Product Posting Group
   description: Tax product posting groups (table 324)
   fields:

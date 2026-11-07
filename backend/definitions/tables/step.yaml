@@ -1,6 +1,7 @@
 table:
   id: 163
   name: "Step"
+  refuse_delete_when_used: all
   caption: Step
   description: "Project steps (table 163): the step codes of budget lines and entries"
   lookup_page_id: 84

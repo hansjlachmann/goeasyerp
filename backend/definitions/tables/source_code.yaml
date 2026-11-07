@@ -1,6 +1,7 @@
 table:
   id: 230
   name: "Source_Code"
+  refuse_delete_when_used: all
   caption: Source Code
   description: "Source codes, where an entry came from (table 230)"
   fields:

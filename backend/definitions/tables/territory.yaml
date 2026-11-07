@@ -1,6 +1,7 @@
 table:
   id: 286
   name: "Territory"
+  refuse_delete_when_used: all
   caption: Territory
   description: "Sales territories (table 286)"
   fields:

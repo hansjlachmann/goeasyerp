@@ -1,6 +1,7 @@
 table:
   id: 123
   name: "Purch_Inv_Line"
+  history: true
   description: "Purch. Inv. Line (table 123): a line of a posted purchase invoice"
   fields:
     - name: buy_from_vendor_no

@@ -1,6 +1,7 @@
 table:
   id: 11
   name: "Dimension_1"
+  refuse_delete_when_used: all
   caption: Dimension 1
   description: "Dimension 1 values (table 11, the classic Department): a posting dimension; General Ledger Setup Dimension-1 names it"
   fields:

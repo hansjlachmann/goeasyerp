@@ -877,6 +877,26 @@ func (t *ShipmentMethod) renameReferences(field string, oldValue, newValue inter
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *ShipmentMethod) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: ShipmentMethodTableName, Global: false, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"Customer", false, "shipment_method_code", "", 0},
+		{"Purch_Cr_Memo_Hdr", false, "shipment_method_code", "", 0},
+		{"Purch_Inv_Header", false, "shipment_method_code", "", 0},
+		{"Purch_Rcpt_Header", false, "shipment_method_code", "", 0},
+		{"Purchase_Header", false, "shipment_method_code", "", 0},
+		{"Sales_Cr_Memo_Header", false, "shipment_method_code", "", 0},
+		{"Sales_Header", false, "shipment_method_code", "", 0},
+		{"Sales_Invoice_Header", false, "shipment_method_code", "", 0},
+		{"Sales_Shipment_Header", false, "shipment_method_code", "", 0},
+		{"Ship_to_Address", false, "shipment_method_code", "", 0},
+		{"Vendor", false, "shipment_method_code", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *ShipmentMethod) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -886,6 +906,13 @@ func (t *ShipmentMethod) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ShipmentMethodTableName)

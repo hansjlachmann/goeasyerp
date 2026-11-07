@@ -1,6 +1,7 @@
 table:
   id: 125
   name: "Purch_Cr_Memo_Line"
+  history: true
   description: "Purch. Cr. Memo Line (table 125): a line of a posted purchase credit memo"
   fields:
     - name: buy_from_vendor_no

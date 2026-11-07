@@ -877,6 +877,24 @@ func (t *TransactionType) renameReferences(field string, oldValue, newValue inte
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *TransactionType) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: TransactionTypeTableName, Global: false, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"Intrastat_Jnl_Line", false, "transaction_type", "", 0},
+		{"Item_Journal_Line", false, "transaction_type", "", 0},
+		{"Item_Ledger_Entry", false, "transaction_type", "", 0},
+		{"Project_Journal_Line", false, "transaction_type", "", 0},
+		{"Project_Ledger_Entry", false, "transaction_type", "", 0},
+		{"Purchase_Header", false, "transaction_type", "", 0},
+		{"Purchase_Line", false, "transaction_type", "", 0},
+		{"Sales_Header", false, "transaction_type", "", 0},
+		{"Sales_Line", false, "transaction_type", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *TransactionType) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -886,6 +904,13 @@ func (t *TransactionType) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, TransactionTypeTableName)

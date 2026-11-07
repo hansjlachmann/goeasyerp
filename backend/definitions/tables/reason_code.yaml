@@ -1,6 +1,7 @@
 table:
   id: 231
   name: "Reason_Code"
+  refuse_delete_when_used: all
   caption: Reason Code
   description: Reason codes of entries (table 231)
   fields:

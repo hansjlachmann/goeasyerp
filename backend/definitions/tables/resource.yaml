@@ -1,6 +1,7 @@
 table:
   id: 156
   name: "Resource"
+  refuse_delete_when_used: current
   description: "Resources (table 156)"
   data_caption_fields: [no, name]
   auto_key: true   # OnInsert gives a resource without No. the next number of its series

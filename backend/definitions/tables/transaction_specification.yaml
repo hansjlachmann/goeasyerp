@@ -1,6 +1,7 @@
 table:
   id: 285
   name: "Transaction_Specification"
+  refuse_delete_when_used: all
   caption: Transaction Specification
   description: "Intrastat transaction specifications (table 285)"
   lookup_page_id: 406

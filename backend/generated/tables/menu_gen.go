@@ -913,6 +913,16 @@ func (t *Menu) renameReferences(field string, oldValue, newValue interface{}) er
 	return nil
 }
 
+// refuseDeleteWhenUsed: a record still refers to this one
+func (t *Menu) refuseDeleteWhenUsed() error {
+	return tables.RefuseDeleteWhenUsed(t.exec(), t.dbType, tables.DeletedRecord{
+		Table: MenuTableName, Global: true, Company: t.company,
+		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
+	}, []tables.Reference{
+		{"User", true, "menu", "", 0},
+	})
+}
+
 // Delete removes the record from the database
 func (t *Menu) Delete(runTrigger bool) bool {
 	// OnDelete trigger of the business logic
@@ -922,6 +932,13 @@ func (t *Menu) Delete(runTrigger bool) bool {
 			fmt.Printf("Error: OnDelete trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
+		}
+		// Refused while a record still refers to this one (refuse_delete_when_used)
+		if t.temp == nil {
+			if err := t.refuseDeleteWhenUsed(); err != nil {
+				t.triggerErr = err
+				return false
+			}
 		}
 	}
 	tableName := MenuTableName

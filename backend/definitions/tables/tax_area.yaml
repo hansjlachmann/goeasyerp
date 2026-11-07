@@ -1,6 +1,7 @@
 table:
   id: 318
   name: "Tax_Area"
+  refuse_delete_when_used: all
   caption: Tax Area
   description: Tax areas (table 318)
   data_caption_fields: [code, description]

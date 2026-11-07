@@ -1,6 +1,7 @@
 table:
   id: 5630
   name: "Insurance_Type"
+  refuse_delete_when_used: all
   caption: Insurance Type
   description: "Insurance types (table 5630)"
   lookup_page_id: 5648
