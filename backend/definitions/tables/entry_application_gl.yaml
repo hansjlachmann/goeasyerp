@@ -26,11 +26,13 @@ table:
     - name: amount
       no: 4
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: amount
       caption: Amount
     - name: additional_currency_amount
       no: 5
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: additional_currency_amount
       caption: Additional-Currency Amount
     - name: use_add_curr_amount

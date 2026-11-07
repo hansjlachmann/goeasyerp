@@ -25,6 +25,8 @@
 	import { startJob, type SyncJobResult, type ErrorDetails } from '$lib/services/jobs';
 	import { printoutOf } from '$lib/utils/printout';
 	import { toDecimalInput, fromDecimalInput } from '$lib/utils/regional';
+	import { headerFieldInput, headerValueTyped } from '$lib/utils/headerFields';
+	import { captionWithBreaks } from '$lib/utils/columnHeader';
 	import { apiFieldFilters } from '$lib/utils/flowFilter';
 	import DateInput from '../DateInput.svelte';
 	import ObjectRunner from '../ObjectRunner.svelte';
@@ -449,7 +451,21 @@
 			}
 
 			// Skip other shortcuts if we're in an input field (but not cell-editing inputs in the table)
-			if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement) return;
+			if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement) {
+				// … except an action's shortcut in a header field above the list, where the cursor
+				// starts on a journal. A value typed there is not applied yet, and the action would
+				// run on the batch still shown: leaving the field applies it (the page opens again),
+				// and the user presses the key again on what is then shown
+				const header = headerFieldInput(event.target);
+				const headerAction = header ? allActions().find(a => a.shortcut && normalizeShortcut(a.shortcut) === shortcutKey) : undefined;
+				if (header && headerAction) {
+					event.preventDefault();
+					event.stopPropagation();
+					if (headerValueTyped(header)) header.blur();
+					else handleAction(headerAction.name);
+				}
+				return;
+			}
 
 			// Ctrl+C in navigation mode: the cursor cell's value, or the rows (the row selector,
 			// several rows selected) — here, not in the list's own shortcuts, so they also work
@@ -3429,7 +3445,7 @@
 										}}
 										title={sortField === field.source && sortDirection === 'asc' ? t(LIST.SORT_DESC) : t(LIST.SORT_ASC)}
 									>
-										<span>{getFieldCaption(field.source, captions, field.caption)}</span>
+										<span>{captionWithBreaks(getFieldCaption(field.source, captions, field.caption))}</span>
 										{#if sortField === field.source}
 											<!-- An arrow, unlike the ▾ of the column menu -->
 											<svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -3442,7 +3458,7 @@
 										{/if}
 									</button>
 								{:else}
-									<span class="th-label">{getFieldCaption(field.source, captions, field.caption)}</span>
+									<span class="th-label">{captionWithBreaks(getFieldCaption(field.source, captions, field.caption))}</span>
 								{/if}
 								<button
 									type="button"

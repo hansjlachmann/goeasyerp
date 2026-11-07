@@ -191,6 +191,7 @@ type Counts struct {
 	SalesQuotes          int
 	SalesOrders          int
 	SalesInvoices        int
+	SalesCrMemos         int
 	PostedSalesShipments int
 	PostedSalesInvoices  int
 	PostedSalesCrMemos   int
@@ -198,6 +199,7 @@ type Counts struct {
 	PurchaseQuotes      int
 	PurchaseOrders      int
 	PurchaseInvoices    int
+	PurchaseCrMemos     int
 	PostedPurchReceipts int
 	PostedPurchInvoices int
 	PostedPurchCrMemos  int

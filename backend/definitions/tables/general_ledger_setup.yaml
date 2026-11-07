@@ -55,6 +55,7 @@ table:
     - name: cust_balances_due
       no: 44
       type: types.Decimal
+      decimal_places: "2:2"
       flow_field: true
       calc_formula: Sum
       source_table: CustomerLedgerEntry
@@ -76,6 +77,7 @@ table:
     - name: vendor_balances_due
       no: 45
       type: types.Decimal
+      decimal_places: "2:2"
       flow_field: true
       calc_formula: Sum
       reverse_sign: true   # classic -Sum

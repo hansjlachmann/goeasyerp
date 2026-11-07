@@ -1066,6 +1066,7 @@
 									data-header-param={header.param}
 									use:focusOnOpen={header === page.page.header_fields[0]}
 									value={headerValue(header)}
+									data-applied-value={headerValue(header)}
 									autocomplete="off"
 									onchange={(e) => handleHeaderChange(header, (e.currentTarget as HTMLInputElement).value)}
 									onkeydown={(e) => {

@@ -53,7 +53,7 @@ func TestDemoPurchases(t *testing.T) {
 	if n := gtables.NewPurchRcptHeader(src).Count(); n != counts.PostedPurchReceipts {
 		t.Errorf("posted receipts %d, counted %d", n, counts.PostedPurchReceipts)
 	}
-	if n := gtables.NewPurchaseHeader(src).Count(); n != counts.PurchaseQuotes+counts.PurchaseOrders+counts.PurchaseInvoices+counts.PurchBlanketOrders {
+	if n := gtables.NewPurchaseHeader(src).Count(); n != counts.PurchaseQuotes+counts.PurchaseOrders+counts.PurchaseInvoices+counts.PurchaseCrMemos+counts.PurchBlanketOrders {
 		t.Errorf("open documents %d", n)
 	}
 	glEntry := gtables.NewGLEntry(src)

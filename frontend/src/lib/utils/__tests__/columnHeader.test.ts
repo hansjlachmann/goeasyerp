@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { filterValueFor, withFilter, withoutFilter, moveColumn, hideColumn } from '../columnHeader';
+import { filterValueFor, withFilter, withoutFilter, moveColumn, hideColumn, captionWithBreaks } from '../columnHeader';
 
 describe('column header menu', () => {
 	it('filters to a value only when it can be matched exactly', () => {
@@ -46,5 +46,17 @@ describe('column header menu', () => {
 
 	it('hides a column, keeping its order', () => {
 		expect(hideColumn({ city: { visible: true, order: 3 } }, 'city')).toEqual({ city: { visible: false, order: 3 } });
+	});
+});
+
+describe('captionWithBreaks', () => {
+	it('lets a caption wrap after a slash, showing nothing extra', () => {
+		expect(captionWithBreaks('Income/Balance')).toBe('Income/\u200BBalance');
+		expect(captionWithBreaks('Income/Balance').replace('\u200B', '')).toBe('Income/Balance');
+	});
+	it('leaves other captions and a trailing slash as they are', () => {
+		expect(captionWithBreaks('Account Type')).toBe('Account Type');
+		expect(captionWithBreaks('A/ B')).toBe('A/ B');
+		expect(captionWithBreaks('A/')).toBe('A/');
 	});
 });

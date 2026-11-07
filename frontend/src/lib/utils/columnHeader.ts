@@ -59,3 +59,11 @@ export function hideColumn(
 ): Record<string, ItemCustomization> {
 	return { ...customizations, [source]: { ...(customizations[source] ?? {}), visible: false } };
 }
+
+/**
+ * A column caption that wraps after a slash ("Income/" and "Balance" on two lines) rather than
+ * inside a word: browsers do not break there on their own. A zero-width space, so nothing shows.
+ */
+export function captionWithBreaks(caption: string): string {
+	return caption.replace(/\/(?=\S)/g, '/\u200B');
+}

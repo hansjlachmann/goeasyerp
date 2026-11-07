@@ -66,6 +66,7 @@ table:
     - name: base
       no: 8
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: base
       precision: 18
       scale: 2
@@ -73,6 +74,7 @@ table:
     - name: amount
       no: 9
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: amount
       precision: 18
       scale: 2
@@ -178,6 +180,7 @@ table:
     - name: unrealized_amount
       no: 22
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: unrealized_amount
       precision: 18
       scale: 2
@@ -185,6 +188,7 @@ table:
     - name: unrealized_base
       no: 23
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: unrealized_base
       precision: 18
       scale: 2
@@ -192,6 +196,7 @@ table:
     - name: remaining_unrealized_amount
       no: 24
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: remaining_unrealized_amount
       precision: 18
       scale: 2
@@ -199,6 +204,7 @@ table:
     - name: remaining_unrealized_base
       no: 25
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: remaining_unrealized_base
       precision: 18
       scale: 2
@@ -207,6 +213,7 @@ table:
     - name: additional_currency_amount
       no: 43
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: additional_currency_amount
       precision: 18
       scale: 2
@@ -214,6 +221,7 @@ table:
     - name: additional_currency_base
       no: 44
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: additional_currency_base
       precision: 18
       scale: 2
@@ -221,6 +229,7 @@ table:
     - name: add_currency_unrealized_amt
       no: 45
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: add_currency_unrealized_amt
       precision: 18
       scale: 2
@@ -228,6 +237,7 @@ table:
     - name: add_currency_unrealized_base
       no: 46
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: add_currency_unrealized_base
       precision: 18
       scale: 2
@@ -235,6 +245,7 @@ table:
     - name: add_curr_rem_unreal_amount
       no: 49
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: add_curr_rem_unreal_amount
       precision: 18
       scale: 2
@@ -242,6 +253,7 @@ table:
     - name: add_curr_rem_unreal_base
       no: 50
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: add_curr_rem_unreal_base
       precision: 18
       scale: 2

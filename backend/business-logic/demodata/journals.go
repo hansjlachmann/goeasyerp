@@ -58,6 +58,7 @@ func insertDemoJournals(src ftables.Source, today time.Time, counts *Counts, p *
 		{"resource journals", j.resourceJournals},
 		{"project journals", j.projectJournals},
 		{"BOM journal", j.bomJournal},
+		{"recurring BOM and fixed asset journals", j.recurringBOMFAJournals},
 		{"depreciation table", j.depreciationTable},
 		{"resource price changes", j.resourcePriceChanges},
 		{"item price changes", j.itemPriceChanges},
@@ -883,6 +884,57 @@ func (j *demoJournals) recurringItemResJournals() error {
 	r.Recurring_frequency = "1W"
 	r.Description = "Team meeting, week %2"
 	err = r.InsertOrError(true)
+	if err == nil {
+		j.lines++
+	}
+	return err
+}
+
+// recurringBOMFAJournals: template RECURRING of the BOM journal — a kit assembled every month —
+// and of the fixed asset journal — the delivery van's monthly service in the TAX book
+func (j *demoJournals) recurringBOMFAJournals() error {
+	b := gtables.NewBOMJournalLine(j.src)
+	b.Journal_template_name = "RECURRING"
+	b.Journal_batch_name = "DEFAULT"
+	b.Line_no = 10000
+	err := tables.SetUpNewBOMJnlLine(b, gtables.NewBOMJournalLine(j.src))
+	if err != nil {
+		return err
+	}
+	b.Posting_date = j.today
+	b.Document_no = "KIT-%3"
+	err = set(b, "recurring_method", gtables.BOMJournalLine_Recurring_method.Fixed, "item_no", types.Code("2100"),
+		"location_code", types.Code("MAIN"), "quantity", types.NewDecimalFromInt(1))
+	if err != nil {
+		return err
+	}
+	b.Recurring_frequency = "1M"
+	b.Description = "Monthly kit, month %3"
+	err = b.InsertOrError(true)
+	if err != nil {
+		return err
+	}
+	j.lines++
+
+	f := gtables.NewFAJournalLine(j.src)
+	f.Journal_template_name = "RECURRING"
+	f.Journal_batch_name = "DEFAULT"
+	f.Line_no = 10000
+	err = tables.SetUpNewFAJnlLine(f, gtables.NewFAJournalLine(j.src))
+	if err != nil {
+		return err
+	}
+	f.Fa_posting_date = j.today
+	f.Document_no = "SERVICE-%3"
+	err = set(f, "recurring_method", gtables.FAJournalLine_Recurring_method.FFixed, "fa_no", types.Code("FA0010"),
+		"depreciation_book_code", types.Code("TAX"), "fa_posting_type", gtables.FAJournalLine_Fa_posting_type.Maintenance,
+		"amount", types.NewDecimalFromInt(1500))
+	if err != nil {
+		return err
+	}
+	f.Recurring_frequency = "1M"
+	f.Description = "Van service, month %3"
+	err = f.InsertOrError(true)
 	if err == nil {
 		j.lines++
 	}

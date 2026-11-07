@@ -53,6 +53,7 @@ table:
     - name: amount_applied
       no: 9
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: amount_applied
       caption: Amount Applied
     - name: transaction_no
@@ -92,26 +93,31 @@ table:
     - name: amount
       no: 20
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: amount
       caption: Amount Before
     - name: amount_lcy
       no: 21
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: amount_lcy
       caption: Amount (LCY) Before
     - name: original_amount_lcy
       no: 22
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: original_amount_lcy
       caption: Original Amount (LCY) Before
     - name: remaining_amount
       no: 23
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: remaining_amount
       caption: Remaining Amount Before
     - name: remaining_amt_lcy
       no: 24
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: remaining_amt_lcy
       caption: Remaining Amt. (LCY) Before
     - name: open
@@ -122,21 +128,25 @@ table:
     - name: debit_amount
       no: 26
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: debit_amount
       caption: Debit Amount Before
     - name: credit_amount
       no: 27
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: credit_amount
       caption: Credit Amount Before
     - name: debit_amount_lcy
       no: 28
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: debit_amount_lcy
       caption: Debit Amount (LCY) Before
     - name: credit_amount_lcy
       no: 29
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: credit_amount_lcy
       caption: Credit Amount (LCY) Before
     - name: closed_by_entry_no
@@ -152,11 +162,13 @@ table:
     - name: closed_by_amount
       no: 32
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: closed_by_amount
       caption: Closed by Amount Before
     - name: closed_by_amount_lcy
       no: 33
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: closed_by_amount_lcy
       caption: Closed by Amount (LCY) Before
     - name: closed_by_currency_code
@@ -168,22 +180,26 @@ table:
     - name: closed_by_currency_amount
       no: 35
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: closed_by_currency_amount
       caption: Closed by Currency Amount Before
     - name: pmt_disc_lcy
       no: 36
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: pmt_disc_lcy
       caption: Pmt. Disc. (LCY) Before
       # a customer entry's Pmt. Disc. Given (LCY), a vendor entry's Pmt. Disc. Rcd.(LCY)
     - name: rounding_amount
       no: 37
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: rounding_amount
       caption: Rounding Amount Before
     - name: rounding_amount_lcy
       no: 38
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: rounding_amount_lcy
       caption: Rounding Amount (LCY) Before
     - name: rounding_currency

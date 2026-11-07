@@ -215,6 +215,7 @@ table:
     - name: amount
       no: 13
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: amount
       precision: 18
       scale: 2
@@ -222,6 +223,7 @@ table:
     - name: debit_amount
       no: 14
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: debit_amount
       precision: 18
       scale: 2
@@ -229,6 +231,7 @@ table:
     - name: credit_amount
       no: 15
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: credit_amount
       precision: 18
       scale: 2
@@ -236,6 +239,7 @@ table:
     - name: amount_lcy
       no: 16
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: amount_lcy
       precision: 18
       scale: 2
@@ -243,6 +247,7 @@ table:
     - name: balance_lcy
       no: 17
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: balance_lcy
       editable: false
       precision: 18
@@ -261,6 +266,7 @@ table:
     - name: sales_purch_lcy
       no: 19
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: sales_purch_lcy
       precision: 18
       scale: 2
@@ -268,6 +274,7 @@ table:
     - name: profit_lcy
       no: 20
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: profit_lcy
       precision: 18
       scale: 2
@@ -275,6 +282,7 @@ table:
     - name: inv_discount_lcy
       no: 21
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: inv_discount_lcy
       precision: 18
       scale: 2
@@ -407,6 +415,7 @@ table:
     - name: tax_amount
       no: 44
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: tax_amount
       editable: false
       precision: 18
@@ -599,6 +608,7 @@ table:
     - name: bal_tax_amount
       no: 69
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: bal_tax_amount
       editable: false
       precision: 18
@@ -613,6 +623,7 @@ table:
     - name: tax_base_amount
       no: 71
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: tax_base_amount
       precision: 18
       scale: 2
@@ -620,6 +631,7 @@ table:
     - name: bal_tax_base_amount
       no: 72
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: bal_tax_base_amount
       precision: 18
       scale: 2
@@ -856,6 +868,7 @@ table:
     - name: source_currency_amount
       no: 100
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: source_currency_amount
       editable: false
       precision: 18
@@ -864,6 +877,7 @@ table:
     - name: source_curr_tax_base_amount
       no: 101
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: source_curr_tax_base_amount
       editable: false
       precision: 18
@@ -891,6 +905,7 @@ table:
     - name: source_curr_tax_amount
       no: 102
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: source_curr_tax_amount
       editable: false
       precision: 18
@@ -899,6 +914,7 @@ table:
     - name: tax_amount_lcy
       no: 104
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: tax_amount_lcy
       editable: false
       precision: 18
@@ -907,6 +923,7 @@ table:
     - name: tax_base_amount_lcy
       no: 105
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: tax_base_amount_lcy
       editable: false
       precision: 18
@@ -915,6 +932,7 @@ table:
     - name: bal_tax_amount_lcy
       no: 106
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: bal_tax_amount_lcy
       editable: false
       precision: 18
@@ -923,6 +941,7 @@ table:
     - name: bal_tax_base_amount_lcy
       no: 107
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: bal_tax_base_amount_lcy
       editable: false
       precision: 18

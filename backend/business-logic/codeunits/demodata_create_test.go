@@ -141,6 +141,14 @@ func TestDemoDataFillsTheMainMenu(t *testing.T) {
 	if !gtables.NewJobQueue(ftables.DBSource(db, "demo", database.DBTypeSQLite)).Get("DEMO") {
 		t.Error("the second run deleted the job queue")
 	}
+	// lists that show part of a table: the table having records does not fill them
+	salesCrMemo := gtables.NewSalesHeader(ftables.DBSource(db, "demo", database.DBTypeSQLite))
+	salesCrMemo.SetRange("document_type", gtables.SalesHeader_Document_type.CreditMemo)
+	purchCrMemo := gtables.NewPurchaseHeader(ftables.DBSource(db, "demo", database.DBTypeSQLite))
+	purchCrMemo.SetRange("document_type", gtables.PurchaseHeader_Document_type.CreditMemo)
+	if salesCrMemo.Count() == 0 || purchCrMemo.Count() == 0 {
+		t.Errorf("open credit memos: %d sales, %d purchase", salesCrMemo.Count(), purchCrMemo.Count())
+	}
 	if counts.JournalLines < 15 {
 		t.Errorf("%d journal lines", counts.JournalLines)
 	}
@@ -307,6 +315,26 @@ func TestDemoDataFillsTheMainMenu(t *testing.T) {
 	inTx("FA journal", func(src ftables.Source) error {
 		l := gtables.NewFAJournalLine(src)
 		l.FindFirst()
+		_, err := fajnl.NewFAJnlPostBatch(src).Run(l)
+		return err
+	})
+	inTx("recurring BOM journal", func(src ftables.Source) error {
+		l := gtables.NewBOMJournalLine(src)
+		l.SetRange("journal_template_name", "RECURRING")
+		if !l.FindFirst() {
+			t.Error("the recurring BOM journal has no lines")
+			return nil
+		}
+		_, err := bomjnl.NewBOMJnlPostBatch(src).Run(l)
+		return err
+	})
+	inTx("recurring FA journal", func(src ftables.Source) error {
+		l := gtables.NewFAJournalLine(src)
+		l.SetRange("journal_template_name", "RECURRING")
+		if !l.FindFirst() {
+			t.Error("the recurring FA journal has no lines")
+			return nil
+		}
 		_, err := fajnl.NewFAJnlPostBatch(src).Run(l)
 		return err
 	})

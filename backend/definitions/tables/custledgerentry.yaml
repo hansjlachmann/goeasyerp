@@ -99,6 +99,7 @@ table:
     - name: amount
       no: 13
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: amount
       precision: 18
       scale: 2
@@ -106,6 +107,7 @@ table:
     - name: remaining_amount
       no: 14
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: remaining_amount
       precision: 18
       scale: 2
@@ -113,6 +115,7 @@ table:
     - name: closed_by_amount
       no: 46
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: closed_by_amount
       precision: 18
       scale: 2
@@ -121,6 +124,7 @@ table:
     - name: original_amount_lcy
       no: 15
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: original_amount_lcy
       precision: 18
       scale: 2
@@ -128,6 +132,7 @@ table:
     - name: remaining_amt_lcy
       no: 16
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: remaining_amt_lcy
       precision: 18
       scale: 2
@@ -135,6 +140,7 @@ table:
     - name: amount_lcy
       no: 17
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: amount_lcy
       precision: 18
       scale: 2
@@ -142,6 +148,7 @@ table:
     - name: closed_by_amount_lcy
       no: 54
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: closed_by_amount_lcy
       precision: 18
       scale: 2
@@ -182,6 +189,7 @@ table:
     - name: sales_lcy
       no: 18
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: sales_lcy
       precision: 18
       scale: 2
@@ -189,6 +197,7 @@ table:
     - name: profit_lcy
       no: 19
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: profit_lcy
       precision: 18
       scale: 2
@@ -196,6 +205,7 @@ table:
     - name: inv_discount_lcy
       no: 20
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: inv_discount_lcy
       precision: 18
       scale: 2
@@ -210,6 +220,7 @@ table:
     - name: pmt_disc_possible
       no: 39
       type: types.Decimal
+      decimal_places: "2:2"
       editable: true   # a posted entry: the user may change it (the other fields come from posting)
       db_name: pmt_disc_possible
       precision: 18
@@ -218,6 +229,7 @@ table:
     - name: pmt_disc_given_lcy
       no: 40
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: pmt_disc_given_lcy
       precision: 18
       scale: 2
@@ -474,6 +486,7 @@ table:
     - name: closed_by_currency_amount
       no: 68
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: closed_by_currency_amount
       precision: 18
       scale: 2
@@ -487,6 +500,7 @@ table:
     - name: rounding_amount
       no: 71
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: rounding_amount
       precision: 18
       scale: 2
@@ -494,6 +508,7 @@ table:
     - name: rounding_amount_lcy
       no: 72
       type: types.Decimal
+      decimal_places: "2:2"
       db_name: rounding_amount_lcy
       precision: 18
       scale: 2

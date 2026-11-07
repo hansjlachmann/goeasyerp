@@ -227,7 +227,7 @@ func postDemoSales(src ftables.Source, open func(src ftables.Source) SalesPoster
 		}
 	}
 
-	// open documents: quotes, orders (one shipped in part), an invoice
+	// open documents: quotes, orders (one shipped in part), an invoice, a credit memo
 	for i := 0; i < 3; i++ {
 		_, err = newDocument(gtables.SalesHeader_Document_type.Quote, today.AddDate(0, 0, -i))
 		if err != nil {
@@ -276,6 +276,11 @@ func postDemoSales(src ftables.Source, open func(src ftables.Source) SalesPoster
 		return err
 	}
 	counts.SalesInvoices++
+	_, err = newDocument(gtables.SalesHeader_Document_type.CreditMemo, today)
+	if err != nil {
+		return err
+	}
+	counts.SalesCrMemos++
 
 	// a blanket order called off in part: an order of half of each line (Make Order), shipped
 	// and invoiced — the blanket lines show it

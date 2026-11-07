@@ -229,7 +229,7 @@ func postDemoPurchases(src ftables.Source, open func(src ftables.Source) PurchPo
 		}
 	}
 
-	// open documents: quotes, orders (one received in part), an invoice
+	// open documents: quotes, orders (one received in part), an invoice, a credit memo
 	for i := 0; i < 2; i++ {
 		_, err = newDocument(gtables.PurchaseHeader_Document_type.Quote, today.AddDate(0, 0, -i), "")
 		if err != nil {
@@ -270,6 +270,11 @@ func postDemoPurchases(src ftables.Source, open func(src ftables.Source) PurchPo
 		return err
 	}
 	counts.PurchaseInvoices++
+	_, err = newDocument(gtables.PurchaseHeader_Document_type.CreditMemo, today, "")
+	if err != nil {
+		return err
+	}
+	counts.PurchaseCrMemos++
 
 	// a blanket order called off in part: an order of half of each line (Make Order), received
 	// and invoiced — the blanket lines show it
