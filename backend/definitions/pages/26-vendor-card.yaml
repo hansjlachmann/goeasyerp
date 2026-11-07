@@ -94,6 +94,7 @@ page:
       promoted: true
       enabled: true
       run_page: 27
+
     - name: New
       caption: New
       image: New
@@ -115,61 +116,59 @@ page:
       promoted: true
       enabled: true
 
-    - name: Ledger Entries
-      caption: Ledger Entries
-      image: Entries
-      shortcut: Ctrl+F7
+    - name: Vendor
+      caption: Vendor
+      image: Customer
       promoted: true
-      run_page: 29
-      run_page_filter_field: vendor_no
-      run_page_filter_value: no
+      items:
+        - name: Ledger Entries
+          caption: Ledger Entries
+          image: Entries
+          shortcut: Ctrl+F7
+          run_page: 29
+          run_page_filter_field: vendor_no
+          run_page_filter_value: no
+        - name: Comments
+          caption: Comments
+          image: Document
+          run_page: 124
+          run_page_filters:
+            - {field: table_name, const: "2"}   # Vendor
+            - {field: "no", value: "no"}
+        - name: Bank Accounts
+          caption: Bank Accounts
+          image: Card
+          run_page: 426
+          run_page_filter_field: vendor_no
+          run_page_filter_value: "no"
+        - name: Order Addresses
+          caption: Order Addresses
+          image: Navigate
+          run_page: 369
+          run_page_filter_field: vendor_no
+          run_page_filter_value: "no"
+        - name: Statistics
+          caption: Statistics
+          image: Statistics
+          shortcut: F7
+          run_page: 152
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
 
-    - name: Statistics
-      caption: Statistics
-      image: Statistics
-      shortcut: F7
-      promoted: true
-      run_page: 152
-      run_page_filter_field: "no"
-      run_page_filter_value: "no"
-
-    - name: Comments
-      caption: Comments
+    - name: Purchases
+      caption: Purchases
       image: Document
       promoted: true
-      run_page: 124
-      run_page_filters:
-        - {field: table_name, const: "2"}   # Vendor
-        - {field: "no", value: "no"}
-
-    - name: Bank Accounts
-      caption: Bank Accounts
-      image: Card
-      promoted: true
-      run_page: 426
-      run_page_filter_field: vendor_no
-      run_page_filter_value: "no"
-
-    - name: Order Addresses
-      caption: Order Addresses
-      image: Navigate
-      promoted: true
-      run_page: 369
-      run_page_filter_field: vendor_no
-      run_page_filter_value: "no"
-
-    - name: Items
-      caption: Items
-      image: Lines
-      promoted: true
-      run_page: 297
-      run_page_filter_field: vendor_no
-      run_page_filter_value: "no"
-
-    - name: Invoice Discounts
-      caption: Invoice Discounts
-      image: Calculate
-      promoted: true
-      run_page: 28
-      run_page_filter_field: code
-      run_page_filter_value: invoice_disc_code
+      items:
+        - name: Items
+          caption: Items
+          image: Lines
+          run_page: 297
+          run_page_filter_field: vendor_no
+          run_page_filter_value: "no"
+        - name: Invoice Discounts
+          caption: Invoice Discounts
+          image: Calculate
+          run_page: 28
+          run_page_filter_field: code
+          run_page_filter_value: invoice_disc_code

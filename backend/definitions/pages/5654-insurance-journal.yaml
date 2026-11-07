@@ -108,18 +108,20 @@ page:
           run_page_filter_field: insurance_no
           run_page_filter_value: insurance_no
 
-    # The batch (codeunit 5654 Insurance Jnl.-Post, after asking)
-    - name: Post
-      caption: Post
+    - name: Posting
+      caption: Posting
       image: Post
-      shortcut: F11
       promoted: true
-      run_object: codeunit:5654
-
-    # what Post would write for the batch, nothing saved (Posting Preview 115)
-    - name: Preview Posting
-      caption: Preview Posting
-      image: Search
-      shortcut: Ctrl+Alt+F9
-      promoted: true
-      run_object: "table:Insurance_Journal_Line.PreviewPosting"
+      items:
+        # The batch (codeunit 5654 Insurance Jnl.-Post, after asking)
+        - name: Post
+          caption: Post
+          image: Post
+          shortcut: F11
+          run_object: codeunit:5654
+        # what Post would write for the batch, nothing saved (Posting Preview 115)
+        - name: Preview Posting
+          caption: Preview Posting
+          image: Search
+          shortcut: Ctrl+Alt+F9
+          run_object: "table:Insurance_Journal_Line.PreviewPosting"

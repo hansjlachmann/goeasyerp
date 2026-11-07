@@ -196,6 +196,35 @@ page:
           shortcut: Ctrl+F5
           run_object: table:Gen_Journal_Line.ShowEntries
 
+    - name: Posting
+      caption: Posting
+      image: Post
+      promoted: true
+      items:
+        # what posting the batch would refuse, per line (report 2 General Journal - Test)
+        - name: Test Report
+          caption: Test Report
+          image: Print
+          run_object: report:2
+        # Posting: the batch (codeunit 231 Gen. Jnl.-Post, after asking; the list's filters say which batch)
+        - name: Post
+          caption: Post
+          image: Post
+          shortcut: F11
+          run_object: codeunit:231
+        # Post, then the template's posting report on the register (codeunit 232 Gen. Jnl.-Post+Print)
+        - name: Post and Print
+          caption: Post and Print
+          image: Print
+          shortcut: Shift+F11
+          run_object: codeunit:232
+        # what Post would write for the batch, nothing saved (Posting Preview 115)
+        - name: Preview Posting
+          caption: Preview Posting
+          image: Search
+          shortcut: Ctrl+Alt+F9
+          run_object: "table:Gen_Journal_Line.PreviewPosting"
+
     # The G/L accounts the line's amount is allocated to (page 284)
     - name: Allocations
       caption: Allocations
@@ -209,34 +238,3 @@ page:
           value: journal_batch_name
         - field: journal_line_no
           value: line_no
-
-    # Posting: the batch (codeunit 231 Gen. Jnl.-Post, after asking; the list's filters say which batch)
-    - name: Post
-      caption: Post
-      image: Post
-      shortcut: F11
-      promoted: true
-      run_object: codeunit:231
-
-    # Post, then the template's posting report on the register (codeunit 232 Gen. Jnl.-Post+Print)
-    - name: Post and Print
-      caption: Post and Print
-      image: Print
-      shortcut: Shift+F11
-      promoted: true
-      run_object: codeunit:232
-
-    # what posting the batch would refuse, per line (report 2 General Journal - Test)
-    - name: Test Report
-      caption: Test Report
-      image: Print
-      promoted: true
-      run_object: report:2
-
-    # what Post would write for the batch, nothing saved (Posting Preview 115)
-    - name: Preview Posting
-      caption: Preview Posting
-      image: Search
-      shortcut: Ctrl+Alt+F9
-      promoted: true
-      run_object: "table:Gen_Journal_Line.PreviewPosting"

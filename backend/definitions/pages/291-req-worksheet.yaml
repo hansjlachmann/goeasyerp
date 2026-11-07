@@ -128,36 +128,39 @@ page:
       shortcut: Ctrl+D
       promoted: true
 
-    # the line's item (codeunit 335 Req. Wksh.-Show Card)
-    - name: Card
-      caption: Card
+    - name: Item
+      caption: Item
       image: Card
-      shortcut: Shift+F5
       promoted: true
-      run_page: 30
-      run_page_filter_field: "no"
-      run_page_filter_value: "no"
+      items:
+        # the line's item (codeunit 335 Req. Wksh.-Show Card)
+        - name: Card
+          caption: Card
+          image: Card
+          shortcut: Shift+F5
+          run_page: 30
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        - name: Reservation Entries
+          caption: Reservation Entries
+          image: Entries
+          run_object: table:Requisition_Line.ShowReservationEntries
 
-    - name: Reorder Inventory Items
-      caption: Reorder Inventory Items
+    - name: Functions
+      caption: Functions
       image: Calculate
       promoted: true
-      run_object: report:699
-
-    - name: Make Orders
-      caption: Make Orders
-      image: Document
-      promoted: true
-      run_object: report:493
-
-    # Reservations of the line: the Reservation page (the sources it can reserve from) and its entries
-    - name: Reserve
-      caption: Reserve
-      image: Lines
-      promoted: true
-      run_object: table:Requisition_Line.ShowReservation
-    - name: Reservation Entries
-      caption: Reservation Entries
-      image: Entries
-      promoted: true
-      run_object: table:Requisition_Line.ShowReservationEntries
+      items:
+        - name: Reorder Inventory Items
+          caption: Reorder Inventory Items
+          image: Calculate
+          run_object: report:699
+        - name: Make Orders
+          caption: Make Orders
+          image: Document
+          run_object: report:493
+        # Reservations of the line: the Reservation page (the sources it can reserve from) and its entries
+        - name: Reserve
+          caption: Reserve
+          image: Lines
+          run_object: table:Requisition_Line.ShowReservation

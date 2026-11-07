@@ -132,44 +132,42 @@ page:
       shortcut: Ctrl+D
       promoted: true
 
-    - name: Statistics
-      caption: Statistics
-      image: Statistics
-      shortcut: F7
+    - name: Customer
+      caption: Customer
+      image: Customer
       promoted: true
-      run_page: 151
-      run_page_filter_field: "no"
-      run_page_filter_value: "no"
+      items:
+        - name: Comments
+          caption: Comments
+          image: Document
+          run_page: 124
+          run_page_filters:
+            - {field: table_name, const: "1"}   # Customer
+            - {field: "no", value: "no"}
+        - name: Bank Accounts
+          caption: Bank Accounts
+          image: Card
+          run_page: 424
+          run_page_filter_field: customer_no
+          run_page_filter_value: "no"
+        - name: Ship-to Addresses
+          caption: Ship-to Addresses
+          image: Navigate
+          run_page: 301
+          run_page_filter_field: customer_no
+          run_page_filter_value: "no"
+        - name: Statistics
+          caption: Statistics
+          image: Statistics
+          shortcut: F7
+          run_page: 151
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
 
     - name: Invoice Discounts
       caption: Invoice Discounts
       image: Calculate
-      promoted: true
       run_page: 23
       run_page_filter_field: code
       run_page_filter_value: invoice_disc_code
-
-    - name: Comments
-      caption: Comments
-      image: Document
       promoted: true
-      run_page: 124
-      run_page_filters:
-        - {field: table_name, const: "1"}   # Customer
-        - {field: "no", value: "no"}
-
-    - name: Bank Accounts
-      caption: Bank Accounts
-      image: Card
-      promoted: true
-      run_page: 424
-      run_page_filter_field: customer_no
-      run_page_filter_value: "no"
-
-    - name: Ship-to Addresses
-      caption: Ship-to Addresses
-      image: Navigate
-      promoted: true
-      run_page: 301
-      run_page_filter_field: customer_no
-      run_page_filter_value: "no"

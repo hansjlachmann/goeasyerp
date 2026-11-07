@@ -59,55 +59,55 @@ page:
       shortcut: Ctrl+D
       promoted: true
 
-    - name: Budget
-      caption: Budget
-      image: Calculate
+    - name: Project
+      caption: Project
+      image: Card
       promoted: true
-      run_page: 212
-      run_page_params:
-        project: "no"
+      items:
+        - name: Comments
+          caption: Comments
+          image: Document
+          run_page: 124
+          run_page_filters:
+            - {field: table_name, const: "5"}   # Project
+            - {field: "no", value: "no"}
+        - name: Statistics
+          caption: Statistics
+          image: Statistics
+          shortcut: F7
+          run_page: 222
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
 
-    - name: Quantity Allocated
-      caption: Quantity Allocated
+    - name: Planning
+      caption: Planning
       image: Calendar
       promoted: true
-      run_page: 215
-      run_page_filter_field: "no"
-      run_page_filter_value: "no"
-
-    - name: Budget Entries
-      caption: Budget Entries
-      image: Entries
-      promoted: true
-      run_page: 220
-      run_page_filter_field: project_no
-      run_page_filter_value: "no"
-
-    - name: Comments
-      caption: Comments
-      image: Document
-      promoted: true
-      run_page: 124
-      run_page_filters:
-        - {field: table_name, const: "5"}   # Project
-        - {field: "no", value: "no"}
-
-    - name: Statistics
-      caption: Statistics
-      image: Statistics
-      shortcut: F7
-      promoted: true
-      run_page: 222
-      run_page_filter_field: "no"
-      run_page_filter_value: "no"
-
-    # the projects' budgets per resource and per resource group and period (pages 221, 228)
-    - name: Resource Allocated per Project
-      caption: Resource Allocated per Project
-      image: Calendar
-      run_page: 221
-
-    - name: Res. Gr. Allocated per Project
-      caption: Res. Gr. Allocated per Project
-      image: Calendar
-      run_page: 228
+      items:
+        - name: Budget
+          caption: Budget
+          image: Calculate
+          run_page: 212
+          run_page_params:
+            project: "no"
+        - name: Budget Entries
+          caption: Budget Entries
+          image: Entries
+          run_page: 220
+          run_page_filter_field: project_no
+          run_page_filter_value: "no"
+        - name: Quantity Allocated
+          caption: Quantity Allocated
+          image: Calendar
+          run_page: 215
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        # the projects' budgets per resource and per resource group and period (pages 221, 228)
+        - name: Resource Allocated per Project
+          caption: Resource Allocated per Project
+          image: Calendar
+          run_page: 221
+        - name: Res. Gr. Allocated per Project
+          caption: Res. Gr. Allocated per Project
+          image: Calendar
+          run_page: 228

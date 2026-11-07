@@ -29,64 +29,112 @@
 	}: Props = $props();
 </script>
 
-<div class="page-header">
-	<div class="flex items-center justify-between">
-		<div class="flex items-center gap-4">
-			{#if title || subtitle}
-				<div>
-					{#if title}<h1 class="header-title">{title}</h1>{/if}
-					{#if subtitle}
-						<p class="header-subtitle">{subtitle}</p>
-					{/if}
-				</div>
-			{/if}
+<div class="page-header" class:has-close={!!onclose}>
+	<!-- With a title: the title and the page's tools (search, customize, filter) on the first row,
+	     the functions on rows of their own below it, starting at the left edge. Without a title
+	     (cards, subpages) the functions come first. Everything wraps: nothing leaves the screen. -->
+	<div class="header-bar" class:has-title={!!(title || subtitle)}>
+		{#if title || subtitle}
+			<div class="header-heading">
+				{#if title}<h1 class="header-title">{title}</h1>{/if}
+				{#if subtitle}
+					<p class="header-subtitle">{subtitle}</p>
+				{/if}
+			</div>
+		{/if}
 
-			{#if leftActions}
-				<div class="flex gap-3">
-					{@render leftActions()}
-				</div>
-			{/if}
-		</div>
+		{#if leftActions}
+			<div class="header-left">
+				{@render leftActions()}
+			</div>
+		{/if}
 
-		<div class="flex items-center gap-3">
-			{#if rightActions}
-				<div class="flex gap-3">
-					{@render rightActions()}
-				</div>
-			{:else if actions.length > 0}
-				<div class="flex gap-3">
-					{#each actions as action}
-						<Button variant={action.variant || 'secondary'} onclick={action.onClick}>
-							{action.label}
-							{#if action.shortcut}
-								<span class="ml-2 text-xs opacity-70">({action.shortcut})</span>
-							{/if}
-						</Button>
-					{/each}
-				</div>
-			{/if}
-
-			{#if onclose}
-				<!-- not a Tab stop: Esc closes -->
-				<button
-					class="close-button"
-					tabindex="-1"
-					onclick={onclose}
-					title={t(HELP.CLOSE)}
-					aria-label={t(MODAL.CLOSE)}
-				>
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-					</svg>
-				</button>
-			{/if}
-		</div>
+		{#if rightActions}
+			<div class="header-right">
+				{@render rightActions()}
+			</div>
+		{:else if actions.length > 0}
+			<div class="header-right">
+				{#each actions as action}
+					<Button variant={action.variant || 'secondary'} onclick={action.onClick}>
+						{action.label}
+						{#if action.shortcut}
+							<span class="ml-2 text-xs opacity-70">({action.shortcut})</span>
+						{/if}
+					</Button>
+				{/each}
+			</div>
+		{/if}
 	</div>
+
+	{#if onclose}
+		<!-- not a Tab stop: Esc closes -->
+		<button
+			class="close-button"
+			tabindex="-1"
+			onclick={onclose}
+			title={t(HELP.CLOSE)}
+			aria-label={t(MODAL.CLOSE)}
+		>
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+			</svg>
+		</button>
+	{/if}
 </div>
 
 <style>
 	.page-header {
 		@apply bg-surface border-b border-gray-200 px-6 py-4;
+		position: relative;
+		min-width: 0;
+	}
+
+	/* The close button sits in the top right corner: keep the rows clear of it */
+	.page-header.has-close {
+		padding-right: 3.5rem;
+	}
+
+	.header-bar {
+		@apply flex flex-wrap items-center gap-x-4 gap-y-2;
+		min-width: 0;
+	}
+
+	.header-heading {
+		flex: none;
+		max-width: 100%;
+	}
+
+	.header-left {
+		@apply flex flex-wrap items-center gap-x-1 gap-y-1;
+		flex: 1 1 auto;
+		min-width: 0;
+		max-width: 100%;
+	}
+
+	.header-left:empty {
+		display: none;
+	}
+
+	/* No title (cards, subpages): the tools follow the functions on the same rows */
+	.header-bar:not(.has-title) {
+		@apply gap-x-1 gap-y-1;
+	}
+
+	.header-bar:not(.has-title) .header-left {
+		display: contents;
+	}
+
+	/* Below the title and the tools, across the whole width */
+	.has-title .header-left {
+		order: 1;
+		flex-basis: 100%;
+	}
+
+	.header-right {
+		@apply flex flex-wrap items-center gap-x-1 gap-y-1;
+		margin-left: auto;
+		max-width: 100%;
 	}
 
 	:global(.dark) .page-header {
@@ -96,6 +144,7 @@
 
 	.header-title {
 		@apply text-2xl font-bold text-heading;
+		white-space: nowrap;
 	}
 
 	:global(.dark) .header-title {
@@ -111,6 +160,9 @@
 	}
 
 	.close-button {
+		position: absolute;
+		top: 0.75rem;
+		right: 0.75rem;
 		@apply p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors;
 	}
 

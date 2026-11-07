@@ -48,37 +48,36 @@ page:
       shortcut: Ctrl+D
       promoted: true
 
-
-    - name: Post
-      caption: Post
+    - name: Posting
+      caption: Posting
       image: Post
-      shortcut: F11
       promoted: true
-      run_object: codeunit:91
-
-    # what Post would write, nothing saved (Posting Preview 115)
-    - name: Preview Posting
-      caption: Preview Posting
-      image: Search
-      shortcut: Ctrl+Alt+F9
-      promoted: true
-      run_object: "table:Purchase_Header.PreviewPosting"
-
-    - name: Post and Print
-      caption: Post and Print
-      image: Print
-      shortcut: Shift+F11
-      promoted: true
-      run_object: codeunit:92
+      items:
+        - name: Post
+          caption: Post
+          image: Post
+          shortcut: F11
+          run_object: codeunit:91
+        - name: Post and Print
+          caption: Post and Print
+          image: Print
+          shortcut: Shift+F11
+          run_object: codeunit:92
+        # what Post would write, nothing saved (Posting Preview 115)
+        - name: Preview Posting
+          caption: Preview Posting
+          image: Search
+          shortcut: Ctrl+Alt+F9
+          run_object: "table:Purchase_Header.PreviewPosting"
 
     - name: Statistics
       caption: Statistics
       image: Statistics
       shortcut: F9
-      promoted: true
       run_page: 161
       run_page_filters:
         - field: document_type
           value: document_type
         - field: "no"
           value: "no"
+      promoted: true

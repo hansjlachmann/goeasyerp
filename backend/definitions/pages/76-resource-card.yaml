@@ -84,63 +84,67 @@ page:
       shortcut: Ctrl+D
       promoted: true
 
-    - name: Costs
-      caption: Costs
+    - name: Resource
+      caption: Resource
+      image: Card
+      promoted: true
+      items:
+        - name: Comments
+          caption: Comments
+          image: Document
+          run_page: 124
+          run_page_filters:
+            - {field: table_name, const: "4"}   # Resource
+            - {field: "no", value: "no"}
+        - name: Picture
+          caption: Picture
+          image: Attach
+          run_page: 407
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        - name: Ledger Entries
+          caption: Ledger Entries
+          image: Entries
+          shortcut: Ctrl+F5
+          run_page: 202
+          run_page_filter_field: resource_no
+          run_page_filter_value: "no"
+
+    - name: Costs and Prices
+      caption: Costs and Prices
       image: Calculate
       promoted: true
-      run_page: 203
-      run_page_filters:
-        - {field: type, const: "0"}   # Resource
-        - {field: code, value: "no"}
+      items:
+        - name: Costs
+          caption: Costs
+          image: Calculate
+          run_page: 203
+          run_page_filters:
+            - {field: type, const: "0"}   # Resource
+            - {field: code, value: "no"}
+        - name: Prices
+          caption: Prices
+          image: Calculate
+          run_page: 204
+          run_page_filters:
+            - {field: type, const: "0"}   # Resource
+            - {field: code, value: "no"}
 
-    - name: Prices
-      caption: Prices
-      image: Calculate
-      promoted: true
-      run_page: 204
-      run_page_filters:
-        - {field: type, const: "0"}   # Resource
-        - {field: code, value: "no"}
-
-    - name: Comments
-      caption: Comments
-      image: Document
-      promoted: true
-      run_page: 124
-      run_page_filters:
-        - {field: table_name, const: "4"}   # Resource
-        - {field: "no", value: "no"}
-
-    - name: Picture
-      caption: Picture
-      image: Attach
-      promoted: true
-      run_page: 407
-      run_page_filter_field: "no"
-      run_page_filter_value: "no"
-
-    - name: Ledger Entries
-      caption: Ledger Entries
-      image: Entries
-      shortcut: Ctrl+F5
-      promoted: true
-      run_page: 202
-      run_page_filter_field: resource_no
-      run_page_filter_value: "no"
-
-    - name: Resource Availability
-      caption: Resource Availability
+    - name: Planning
+      caption: Planning
       image: Calendar
       promoted: true
-      run_page: 225
-      run_page_filter_field: "no"
-      run_page_filter_value: "no"
-
-    # the projects' budgets of the resource per period (page 221)
-    - name: Resource Allocated per Project
-      caption: Resource Allocated per Project
-      image: Calendar
-      promoted: true
-      run_page: 221
-      run_page_filter_field: "no"
-      run_page_filter_value: "no"
+      items:
+        - name: Resource Availability
+          caption: Resource Availability
+          image: Calendar
+          run_page: 225
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        # the projects' budgets of the resource per period (page 221)
+        - name: Resource Allocated per Project
+          caption: Resource Allocated per Project
+          image: Calendar
+          run_page: 221
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"

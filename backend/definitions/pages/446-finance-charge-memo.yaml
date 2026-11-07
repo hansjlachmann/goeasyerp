@@ -93,6 +93,33 @@ page:
       shortcut: Ctrl+D
       promoted: true
 
+    - name: Memo
+      caption: Memo
+      image: Document
+      promoted: true
+      items:
+        - name: Customer
+          caption: Customer
+          image: Customer
+          shortcut: Shift+F5
+          run_page: 21
+          run_page_filter_field: "no"
+          run_page_filter_value: customer_no
+        - name: Customer Ledger Entries
+          caption: Customer Ledger Entries
+          image: Entries
+          shortcut: Ctrl+F7
+          run_page: 25
+          run_page_filter_field: customer_no
+          run_page_filter_value: customer_no
+        - name: Comments
+          caption: Comments
+          image: Document
+          run_page: 454
+          run_page_filters:
+            - {field: type, const: "0"}
+            - {field: "no", value: "no"}
+
     - name: Functions
       caption: Functions
       image: Calculate
@@ -111,30 +138,3 @@ page:
       shortcut: F9
       promoted: true
       run_object: report:193
-
-    - name: Customer
-      caption: Customer
-      image: Customer
-      shortcut: Shift+F5
-      promoted: true
-      run_page: 21
-      run_page_filter_field: "no"
-      run_page_filter_value: customer_no
-
-    - name: Customer Ledger Entries
-      caption: Customer Ledger Entries
-      image: Entries
-      shortcut: Ctrl+F7
-      promoted: true
-      run_page: 25
-      run_page_filter_field: customer_no
-      run_page_filter_value: customer_no
-
-    - name: Comments
-      caption: Comments
-      image: Document
-      promoted: true
-      run_page: 454
-      run_page_filters:
-        - {field: type, const: "0"}
-        - {field: "no", value: "no"}

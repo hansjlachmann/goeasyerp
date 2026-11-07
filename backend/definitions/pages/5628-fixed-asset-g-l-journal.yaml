@@ -265,14 +265,6 @@ page:
           shortcut: Ctrl+F5
           run_object: table:Gen_Journal_Line.ShowEntries
 
-    # Apply the line to the open entries of its customer or vendor (codeunit 225)
-    - name: Apply Entries
-      caption: Apply Entries
-      image: Navigate
-      shortcut: Shift+F9
-      promoted: true
-      run_object: table:Gen_Journal_Line.ApplyEntries
-
     # The balancing lines of the cursor line's fixed asset from its FA posting group (and its FA
     # allocations), inserted below it (codeunit 5601 GetBalAcc)
     - name: Functions
@@ -284,33 +276,39 @@ page:
           caption: Insert FA Bal. Account
           run_object: table:Gen_Journal_Line.InsertFABalAccount
 
-    # Posting: the batch (codeunit 231 Gen. Jnl.-Post, after asking; the list's filters say which batch)
-    - name: Post
-      caption: Post
+    - name: Posting
+      caption: Posting
       image: Post
-      shortcut: F11
       promoted: true
-      run_object: codeunit:231
+      items:
+        # what posting the batch would refuse, per line (report 2 General Journal - Test)
+        - name: Test Report
+          caption: Test Report
+          image: Print
+          run_object: report:2
+        # Posting: the batch (codeunit 231 Gen. Jnl.-Post, after asking; the list's filters say which batch)
+        - name: Post
+          caption: Post
+          image: Post
+          shortcut: F11
+          run_object: codeunit:231
+        # Post, then the template's posting report on the register (codeunit 232 Gen. Jnl.-Post+Print)
+        - name: Post and Print
+          caption: Post and Print
+          image: Print
+          shortcut: Shift+F11
+          run_object: codeunit:232
+        # what Post would write for the batch, nothing saved (Posting Preview 115)
+        - name: Preview Posting
+          caption: Preview Posting
+          image: Search
+          shortcut: Ctrl+Alt+F9
+          run_object: "table:Gen_Journal_Line.PreviewPosting"
 
-    # Post, then the template's posting report on the register (codeunit 232 Gen. Jnl.-Post+Print)
-    - name: Post and Print
-      caption: Post and Print
-      image: Print
-      shortcut: Shift+F11
+    # Apply the line to the open entries of its customer or vendor (codeunit 225)
+    - name: Apply Entries
+      caption: Apply Entries
+      image: Navigate
+      shortcut: Shift+F9
       promoted: true
-      run_object: codeunit:232
-
-    # what posting the batch would refuse, per line (report 2 General Journal - Test)
-    - name: Test Report
-      caption: Test Report
-      image: Print
-      promoted: true
-      run_object: report:2
-
-    # what Post would write for the batch, nothing saved (Posting Preview 115)
-    - name: Preview Posting
-      caption: Preview Posting
-      image: Search
-      shortcut: Ctrl+Alt+F9
-      promoted: true
-      run_object: "table:Gen_Journal_Line.PreviewPosting"
+      run_object: table:Gen_Journal_Line.ApplyEntries

@@ -404,6 +404,8 @@
 			// theirs — the filter pane's Esc is handled just below
 			// (only those inside this list: a card's subpage wrapper is around the list, its keys
 			// are the list's)
+			// An open action menu floats on <body>, outside the list, and its keys are its own too
+			if ((event.target as Element | null)?.closest?.('[data-action-menu]')) return;
 			const ownKeys = (event.target as Element | null)?.closest?.('[data-own-keys]');
 			if (ownKeys && listPageElement?.contains(ownKeys) && !ownKeys.closest('.filter-pane')) return;
 			// A subpage's shortcuts only while the cursor is in it (the card has its own)
@@ -3243,7 +3245,7 @@
 	function handleSearchShortcut(e: KeyboardEvent) {
 		if (e.ctrlKey && e.key === 'f') {
 			e.preventDefault();
-			searchInputElement?.focus();
+			searchInputElement?.focus({ preventScroll: true });
 			searchInputElement?.select();
 		}
 	}
@@ -3255,25 +3257,6 @@
 	<!-- A subpage has no title (its card section has the caption) and no search box -->
 	<PageHeader title={subpage ? '' : page.page.caption} onclose={returnUrl || pageNav.framed || (onclose && !subpage) ? closeList : undefined}>
 		{#snippet leftActions()}
-			{#if page.page.editable}
-				<!-- Save state indicator - fixed width container to prevent layout shift -->
-				<div class="save-state-container">
-					<div class="saving-indicator" class:visible={saveState === 'saving'}>
-						<svg class="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-						</svg>
-						<span class="text-sm text-gray-600 dark:text-gray-400">{t(MSG.SAVING)}</span>
-					</div>
-					<div class="saved-indicator" class:visible={saveState === 'saved'}>
-						<svg class="h-4 w-4 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-						</svg>
-						<span class="text-sm text-green-600 dark:text-green-400 font-medium">{t(MSG.SAVED)}</span>
-					</div>
-				</div>
-			{/if}
-
 			{#each page.page.actions?.filter((a) => a.promoted) || [] as action}
 					{#if action.items}
 						<!-- A menu button: its items need a record when they run something -->
@@ -3313,6 +3296,28 @@
 					/>
 					{/if}
 				{/each}
+
+		{/snippet}
+
+		{#snippet rightActions()}
+			{#if page.page.editable}
+				<!-- Save state indicator - fixed width container to prevent layout shift -->
+				<div class="save-state-container">
+					<div class="saving-indicator" class:visible={saveState === 'saving'}>
+						<svg class="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+						</svg>
+						<span class="text-sm text-gray-600 dark:text-gray-400">{t(MSG.SAVING)}</span>
+					</div>
+					<div class="saved-indicator" class:visible={saveState === 'saved'}>
+						<svg class="h-4 w-4 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+						</svg>
+						<span class="text-sm text-green-600 dark:text-green-400 font-medium">{t(MSG.SAVED)}</span>
+					</div>
+				</div>
+			{/if}
 
 				<!-- Quick Search -->
 				{#if !subpage}
@@ -3364,9 +3369,7 @@
 					{/if}
 				</div>
 				{/if}
-		{/snippet}
 
-		{#snippet rightActions()}
 			<!-- Row Numbers toggle button -->
 			<ActionButton caption="" image="Rows" active={showRowNumbers} onclick={handleToggleRowNumbers} title={t(LIST.TOGGLE_ROW_NUMBERS)} />
 
@@ -4094,9 +4097,23 @@
 		@apply gap-2;
 	}
 
+	/* The actions start at the grid's left edge and end at its right edge */
+	.list-page :global(.page-header) {
+		padding-left: 0;
+	}
+
+	.list-page :global(.page-header:not(.has-close)) {
+		padding-right: 0;
+	}
+
+	.list-page :global(.header-title),
+	.list-page :global(.header-subtitle) {
+		padding-left: 0.625rem; /* the action buttons' own padding: their icons line up with the title */
+	}
+
 	/* … with a low action bar (no title) */
 	.list-page.subpage :global(.page-header) {
-		@apply px-3 py-1.5;
+		@apply py-1.5;
 	}
 
 	.list-content {

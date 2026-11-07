@@ -76,9 +76,14 @@ func TestGetPageTranslatesCopy(t *testing.T) {
 		t.Fatalf("decode: %v (%s)", err, raw)
 	}
 	captions := map[string]string{}
-	for _, a := range out.Data.Page.Actions {
-		captions[a.Name] = a.Caption
+	var collect func(actions []pages.Action)
+	collect = func(actions []pages.Action) {
+		for _, a := range actions {
+			captions[a.Name] = a.Caption
+			collect(a.Items)
+		}
 	}
+	collect(out.Data.Page.Actions)
 	for _, s := range out.Data.Page.Layout.Sections {
 		captions[s.Name] = s.Caption
 	}
@@ -89,11 +94,16 @@ func TestGetPageTranslatesCopy(t *testing.T) {
 	}
 
 	shared, _ := pages.GetRegistry().GetPage(21)
-	for _, a := range shared.Page.Actions {
-		if a.Name == "Ledger Entries" && a.Caption != "Ledger Entries" {
-			t.Errorf("registry page changed: caption %q", a.Caption)
+	var checkShared func(actions []pages.Action)
+	checkShared = func(actions []pages.Action) {
+		for _, a := range actions {
+			if a.Name == "Ledger Entries" && a.Caption != "Ledger Entries" {
+				t.Errorf("registry page changed: caption %q", a.Caption)
+			}
+			checkShared(a.Items)
 		}
 	}
+	checkShared(shared.Page.Actions)
 	for _, s := range shared.Page.Layout.Sections {
 		for _, f := range s.Fields {
 			if f.PrimaryKey {

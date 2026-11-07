@@ -101,46 +101,42 @@ page:
       promoted: true
       enabled: true
 
-    - name: Ledger Entries
-      caption: Ledger Entries
-      image: Entries
-      shortcut: Ctrl+F7
+    - name: "Bank Acc."
+      caption: "Bank Acc."
+      image: Card
       promoted: true
-      run_page: 372
-      run_page_filter_field: bank_account_no
-      run_page_filter_value: "no"
-
-    - name: Check Ledger Entries
-      caption: Check Ledger Entries
-      image: Entries
-      promoted: true
-      run_page: 374
-      run_page_filter_field: bank_account_no
-      run_page_filter_value: "no"
-
-    - name: Statistics
-      caption: Statistics
-      image: Statistics
-      shortcut: F7
-      promoted: true
-      run_page: 375
-      run_page_filter_field: "no"
-      run_page_filter_value: "no"
-
-    # The posted reconciliations of the account (page 389)
-    - name: Statements
-      caption: Statements
-      image: Document
-      promoted: true
-      run_page: 389
-      run_page_filter_field: bank_account_no
-      run_page_filter_value: "no"
-
-    - name: Comments
-      caption: Comments
-      image: Document
-      promoted: true
-      run_page: 124
-      run_page_filters:
-        - {field: table_name, const: "8"}   # Bank Account
-        - {field: "no", value: "no"}
+      items:
+        - name: Ledger Entries
+          caption: Ledger Entries
+          image: Entries
+          shortcut: Ctrl+F7
+          run_page: 372
+          run_page_filter_field: bank_account_no
+          run_page_filter_value: "no"
+        - name: Check Ledger Entries
+          caption: Check Ledger Entries
+          image: Entries
+          run_page: 374
+          run_page_filter_field: bank_account_no
+          run_page_filter_value: "no"
+        - name: Statistics
+          caption: Statistics
+          image: Statistics
+          shortcut: F7
+          run_page: 375
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        # The posted reconciliations of the account (page 389)
+        - name: Statements
+          caption: Statements
+          image: Document
+          run_page: 389
+          run_page_filter_field: bank_account_no
+          run_page_filter_value: "no"
+        - name: Comments
+          caption: Comments
+          image: Document
+          run_page: 124
+          run_page_filters:
+            - {field: table_name, const: "8"}   # Bank Account
+            - {field: "no", value: "no"}

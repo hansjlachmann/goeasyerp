@@ -8,6 +8,19 @@ common:
 
   # Common actions
   actions:
+    # Menu buttons of the action bar
+    sales: "Salg"
+    purchases: "Køb"
+    posting: "Bogføring"
+    planning: "Planlægning"
+    quote: "Tilbud"
+    order: "Ordre"
+    invoice: "Faktura"
+    reminder: "Rykker"
+    cr_memo: "Kreditnota"
+    memo: "Rentenota"
+    costs_and_prices: "Kostpriser og priser"
+    bank_acc: "Bankkonto"
     project: "Projekt"
     project_ledger: "Projektposter"
     budget: "Budget"

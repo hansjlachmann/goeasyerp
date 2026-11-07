@@ -118,150 +118,136 @@ page:
       shortcut: Ctrl+D
       promoted: true
 
-    - name: Units of Measure
-      caption: Units of Measure
-      image: Rows
+    - name: Item
+      caption: Item
+      image: Card
       promoted: true
-      run_page: 5404
-      run_page_filter_field: item_no
-      run_page_filter_value: "no"
+      items:
+        - name: Entries
+          caption: Entries
+          image: Entries
+          items:
+            - name: Ledger Entries
+              caption: Ledger Entries
+              image: Entries
+              shortcut: Ctrl+F5
+              run_page: 38
+              run_page_filter_field: item_no
+              run_page_filter_value: "no"
+            - name: Application Entries
+              caption: Application Entries
+              image: Navigate
+              run_page: 506
+              run_page_filter_field: item_no
+              run_page_filter_value: "no"
+            - name: Phys. Inventory Ledger Entries
+              caption: Phys. Inventory Ledger Entries
+              image: Entries
+              run_page: 390
+              run_page_filter_field: item_no
+              run_page_filter_value: "no"
+        - name: Turnover
+          caption: Turnover
+          image: Statistics
+          run_page: 158
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        # The item per period, location or variant (classic Item Availability by), its turnover
+        - name: Item Availability by
+          caption: Item Availability by
+          image: Calendar
+          items:
+            - name: Period
+              caption: Period
+              run_page: 157
+              run_page_filter_field: "no"
+              run_page_filter_value: "no"
+            - name: Location
+              caption: Location
+              run_page: 492
+              run_page_filter_field: "no"
+              run_page_filter_value: "no"
+            - name: Variant
+              caption: Variant
+              run_page: 5414
+              run_page_filter_field: "no"
+              run_page_filter_value: "no"
+            - name: Bin
+              caption: Bin
+              run_page: 5412
+              run_page_filter_field: "no"
+              run_page_filter_value: "no"
+        - name: Comments
+          caption: Comments
+          image: Document
+          run_page: 124
+          run_page_filters:
+            - {field: table_name, const: "3"}   # Item
+            - {field: "no", value: "no"}
+        - name: Picture
+          caption: Picture
+          image: Attach
+          run_page: 346
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        - name: Units of Measure
+          caption: Units of Measure
+          image: Rows
+          run_page: 5404
+          run_page_filter_field: item_no
+          run_page_filter_value: "no"
+        - name: Variants
+          caption: Variants
+          image: Lines
+          run_page: 5401
+          run_page_filter_field: item_no
+          run_page_filter_value: "no"
+        - name: Translations
+          caption: Translations
+          image: Document
+          run_page: 35
+          run_page_filter_field: item_no
+          run_page_filter_value: "no"
+        - name: Bill of Materials
+          caption: Bill of Materials
+          image: Rows
+          run_page: 36
+          run_page_filter_field: parent_item_no
+          run_page_filter_value: "no"
+        # The standard cost from the components (codeunit 54; this level or all levels)
+        - name: Calc. Standard Cost
+          caption: Calc. Standard Cost
+          image: Calculate
+          run_object: table:Item.CalcStandardCost
 
-    - name: Variants
-      caption: Variants
-      image: Lines
-      promoted: true
-      run_page: 5401
-      run_page_filter_field: item_no
-      run_page_filter_value: "no"
-
-    - name: Translations
-      caption: Translations
+    - name: Sales
+      caption: Sales
       image: Document
       promoted: true
-      run_page: 35
-      run_page_filter_field: item_no
-      run_page_filter_value: "no"
+      items:
+        - name: Item/Cust. Discounts
+          caption: Item/Cust. Discounts
+          image: Calculate
+          run_page: 32
+          run_page_filter_field: item_discount_group
+          run_page_filter_value: item_cust_disc_gr
+        - name: Quantity Discounts
+          caption: Quantity Discounts
+          image: Calculate
+          run_page: 34
+          run_page_filter_field: code
+          run_page_filter_value: sales_qty_disc_code
+        - name: Prices
+          caption: Prices
+          image: Calculate
+          run_page: 33
+          run_page_filter_field: item_no
+          run_page_filter_value: "no"
 
     - name: Vendors
       caption: Vendors
       image: Navigate
-      promoted: true
       run_page: 114
       run_page_filter_field: item_no
       run_page_filter_value: "no"
-
-    - name: Comments
-      caption: Comments
-      image: Document
       promoted: true
-      run_page: 124
-      run_page_filters:
-        - {field: table_name, const: "3"}   # Item
-        - {field: "no", value: "no"}
-
-    - name: Prices
-      caption: Prices
-      image: Calculate
-      promoted: true
-      run_page: 33
-      run_page_filter_field: item_no
-      run_page_filter_value: "no"
-
-    - name: Quantity Discounts
-      caption: Quantity Discounts
-      image: Calculate
-      promoted: true
-      run_page: 34
-      run_page_filter_field: code
-      run_page_filter_value: sales_qty_disc_code
-
-    - name: Item/Cust. Discounts
-      caption: Item/Cust. Discounts
-      image: Calculate
-      promoted: true
-      run_page: 32
-      run_page_filter_field: item_discount_group
-      run_page_filter_value: item_cust_disc_gr
-
-    - name: Ledger Entries
-      caption: Ledger Entries
-      image: Entries
-      shortcut: Ctrl+F5
-      promoted: true
-      run_page: 38
-      run_page_filter_field: item_no
-      run_page_filter_value: "no"
-
-    - name: Application Entries
-      caption: Application Entries
-      image: Navigate
-      promoted: true
-      run_page: 506
-      run_page_filter_field: item_no
-      run_page_filter_value: "no"
-
-    - name: Phys. Inventory Ledger Entries
-      caption: Phys. Inventory Ledger Entries
-      image: Entries
-      promoted: true
-      run_page: 390
-      run_page_filter_field: item_no
-      run_page_filter_value: "no"
-
-    - name: Picture
-      caption: Picture
-      image: Attach
-      promoted: true
-      run_page: 346
-      run_page_filter_field: "no"
-      run_page_filter_value: "no"
-
-    - name: Bill of Materials
-      caption: Bill of Materials
-      image: Rows
-      promoted: true
-      run_page: 36
-      run_page_filter_field: parent_item_no
-      run_page_filter_value: "no"
-
-    # The standard cost from the components (codeunit 54; this level or all levels)
-    - name: Calc. Standard Cost
-      caption: Calc. Standard Cost
-      image: Calculate
-      promoted: true
-      run_object: table:Item.CalcStandardCost
-
-    # The item per period, location or variant (classic Item Availability by), its turnover
-    - name: Item Availability by
-      caption: Item Availability by
-      image: Calendar
-      promoted: true
-      items:
-        - name: Period
-          caption: Period
-          run_page: 157
-          run_page_filter_field: "no"
-          run_page_filter_value: "no"
-        - name: Location
-          caption: Location
-          run_page: 492
-          run_page_filter_field: "no"
-          run_page_filter_value: "no"
-        - name: Variant
-          caption: Variant
-          run_page: 5414
-          run_page_filter_field: "no"
-          run_page_filter_value: "no"
-        - name: Bin
-          caption: Bin
-          run_page: 5412
-          run_page_filter_field: "no"
-          run_page_filter_value: "no"
-
-    - name: Turnover
-      caption: Turnover
-      image: Statistics
-      promoted: true
-      run_page: 158
-      run_page_filter_field: "no"
-      run_page_filter_value: "no"

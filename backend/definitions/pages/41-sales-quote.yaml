@@ -119,6 +119,44 @@ page:
       shortcut: Ctrl+D
       promoted: true
 
+    - name: Quote
+      caption: Quote
+      image: Document
+      promoted: true
+      items:
+        - name: Statistics
+          caption: Statistics
+          image: Statistics
+          shortcut: F9
+          run_page: 160
+          run_page_filters:
+            - field: document_type
+              value: document_type
+            - field: "no"
+              value: "no"
+        - name: Customer
+          caption: Customer
+          image: Customer
+          shortcut: Shift+F5
+          run_page: 21
+          run_page_filter_field: "no"
+          run_page_filter_value: sell_to_customer_no
+        - name: Comments
+          caption: Comments
+          image: Document
+          run_page: 67
+          run_page_filters:
+            - field: document_type
+              value: document_type
+            - field: "no"
+              value: "no"
+
+    - name: Calculate Invoice Discount
+      caption: Calculate Invoice Discount
+      image: Calculate
+      run_object: codeunit:61
+      promoted: true
+
     - name: Print
       caption: Print
       image: Print
@@ -130,41 +168,3 @@ page:
       image: Document
       promoted: true
       run_object: codeunit:83
-
-    - name: Statistics
-      caption: Statistics
-      image: Statistics
-      shortcut: F9
-      promoted: true
-      run_page: 160
-      run_page_filters:
-        - field: document_type
-          value: document_type
-        - field: "no"
-          value: "no"
-
-    - name: Customer
-      caption: Customer
-      image: Customer
-      shortcut: Shift+F5
-      promoted: true
-      run_page: 21
-      run_page_filter_field: "no"
-      run_page_filter_value: sell_to_customer_no
-
-    - name: Comments
-      caption: Comments
-      image: Document
-      promoted: true
-      run_page: 67
-      run_page_filters:
-        - field: document_type
-          value: document_type
-        - field: "no"
-          value: "no"
-
-    - name: Calculate Invoice Discount
-      caption: Calculate Invoice Discount
-      image: Calculate
-      promoted: true
-      run_object: codeunit:61

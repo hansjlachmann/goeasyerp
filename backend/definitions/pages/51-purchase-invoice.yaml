@@ -117,69 +117,70 @@ page:
       shortcut: Ctrl+D
       promoted: true
 
-
-    - name: Post
-      caption: Post
-      image: Post
-      shortcut: F11
-      promoted: true
-      run_object: codeunit:91
-
-    # what Post would write, nothing saved (Posting Preview 115)
-    - name: Preview Posting
-      caption: Preview Posting
-      image: Search
-      shortcut: Ctrl+Alt+F9
-      promoted: true
-      run_object: "table:Purchase_Header.PreviewPosting"
-
-    - name: Get Receipt Lines
-      caption: Get Receipt Lines
-      image: Lines
-      promoted: true
-      run_object: codeunit:74
-
-    - name: Post and Print
-      caption: Post and Print
-      image: Print
-      shortcut: Shift+F11
-      promoted: true
-      run_object: codeunit:92
-
-    - name: Statistics
-      caption: Statistics
-      image: Statistics
-      shortcut: F9
-      promoted: true
-      run_page: 161
-      run_page_filters:
-        - field: document_type
-          value: document_type
-        - field: "no"
-          value: "no"
-
-    - name: Vendor
-      caption: Vendor
-      image: Customer
-      shortcut: Shift+F5
-      promoted: true
-      run_page: 26
-      run_page_filter_field: "no"
-      run_page_filter_value: buy_from_vendor_no
-
-    - name: Comments
-      caption: Comments
+    - name: Invoice
+      caption: Invoice
       image: Document
       promoted: true
-      run_page: 66
-      run_page_filters:
-        - field: document_type
-          value: document_type
-        - field: "no"
-          value: "no"
+      items:
+        - name: Statistics
+          caption: Statistics
+          image: Statistics
+          shortcut: F9
+          run_page: 161
+          run_page_filters:
+            - field: document_type
+              value: document_type
+            - field: "no"
+              value: "no"
+        - name: Vendor
+          caption: Vendor
+          image: Customer
+          shortcut: Shift+F5
+          run_page: 26
+          run_page_filter_field: "no"
+          run_page_filter_value: buy_from_vendor_no
+        - name: Comments
+          caption: Comments
+          image: Document
+          run_page: 66
+          run_page_filters:
+            - field: document_type
+              value: document_type
+            - field: "no"
+              value: "no"
 
-    - name: Calculate Invoice Discount
-      caption: Calculate Invoice Discount
+    - name: Functions
+      caption: Functions
       image: Calculate
       promoted: true
-      run_object: codeunit:71
+      items:
+        - name: Calculate Invoice Discount
+          caption: Calculate Invoice Discount
+          image: Calculate
+          run_object: codeunit:71
+        - name: Get Receipt Lines
+          caption: Get Receipt Lines
+          image: Lines
+          run_object: codeunit:74
+
+    - name: Posting
+      caption: Posting
+      image: Post
+      promoted: true
+      items:
+        - name: Post
+          caption: Post
+          image: Post
+          shortcut: F11
+          run_object: codeunit:91
+        - name: Post and Print
+          caption: Post and Print
+          image: Print
+          shortcut: Shift+F11
+          run_object: codeunit:92
+        # what Post would write, nothing saved (Posting Preview 115)
+        - name: Preview Posting
+          caption: Preview Posting
+          image: Search
+          shortcut: Ctrl+Alt+F9
+          run_object: "table:Purchase_Header.PreviewPosting"

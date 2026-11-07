@@ -8,6 +8,19 @@ common:
 
   # Common actions
   actions:
+    # Menu buttons of the action bar
+    sales: "Sales"
+    purchases: "Purchases"
+    posting: "Posting"
+    planning: "Planning"
+    quote: "Quote"
+    order: "Order"
+    invoice: "Invoice"
+    reminder: "Reminder"
+    cr_memo: "Cr. Memo"
+    memo: "Memo"
+    costs_and_prices: "Costs and Prices"
+    bank_acc: "Bank Acc."
     project: "Project"
     project_ledger: "Project Ledger"
     budget: "Budget"

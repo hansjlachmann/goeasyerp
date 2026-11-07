@@ -132,46 +132,43 @@ page:
           run_page: 38
           run_page_filter_field: item_no
           run_page_filter_value: item_no
+        - name: Reservation Entries
+          caption: Reservation Entries
+          image: Entries
+          run_object: table:Item_Journal_Line.ShowReservationEntries
 
-    # Posting: the batch (codeunit 241 Item Jnl.-Post, after asking; the list's filters say which batch)
-    - name: Post
-      caption: Post
+    - name: Posting
+      caption: Posting
       image: Post
-      shortcut: F11
       promoted: true
-      run_object: codeunit:241
-
-    # Post, then the template's posting report on the register (codeunit 242 Item Jnl.-Post+Print)
-    - name: Post and Print
-      caption: Post and Print
-      image: Print
-      shortcut: Shift+F11
-      promoted: true
-      run_object: codeunit:242
-
-    # what posting the batch would refuse, per line (report 702 Inventory Posting - Test)
-    - name: Test Report
-      caption: Test Report
-      image: Print
-      promoted: true
-      run_object: report:702
-
-    # what Post would write for the batch, nothing saved (Posting Preview 115)
-    - name: Preview Posting
-      caption: Preview Posting
-      image: Search
-      shortcut: Ctrl+Alt+F9
-      promoted: true
-      run_object: "table:Item_Journal_Line.PreviewPosting"
+      items:
+        # what posting the batch would refuse, per line (report 702 Inventory Posting - Test)
+        - name: Test Report
+          caption: Test Report
+          image: Print
+          run_object: report:702
+        # Posting: the batch (codeunit 241 Item Jnl.-Post, after asking; the list's filters say which batch)
+        - name: Post
+          caption: Post
+          image: Post
+          shortcut: F11
+          run_object: codeunit:241
+        # Post, then the template's posting report on the register (codeunit 242 Item Jnl.-Post+Print)
+        - name: Post and Print
+          caption: Post and Print
+          image: Print
+          shortcut: Shift+F11
+          run_object: codeunit:242
+        # what Post would write for the batch, nothing saved (Posting Preview 115)
+        - name: Preview Posting
+          caption: Preview Posting
+          image: Search
+          shortcut: Ctrl+Alt+F9
+          run_object: "table:Item_Journal_Line.PreviewPosting"
 
     # Reservations of the line: the Reservation page (the sources it can reserve from) and its entries
     - name: Reserve
       caption: Reserve
       image: Lines
-      promoted: true
       run_object: table:Item_Journal_Line.ShowReservation
-    - name: Reservation Entries
-      caption: Reservation Entries
-      image: Entries
       promoted: true
-      run_object: table:Item_Journal_Line.ShowReservationEntries

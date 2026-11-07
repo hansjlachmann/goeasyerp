@@ -134,9 +134,16 @@ func TestPageDefinitions(t *testing.T) {
 				t.Errorf("page %d: card/list page %d does not exist", id, other)
 			}
 		}
+		// The page finds an action by its name, also inside its menu buttons: a menu and one of
+		// its items with the same name would open nothing.
+		actionNames := map[string]bool{}
 		var check func(actions []pages.Action)
 		check = func(actions []pages.Action) {
 			for _, a := range actions {
+				if actionNames[a.Name] {
+					t.Errorf("page %d: action name %q is used twice", id, a.Name)
+				}
+				actionNames[a.Name] = true
 				if a.RunPage != 0 && !exists(a.RunPage) {
 					t.Errorf("page %d: action %s opens page %d, which does not exist", id, a.Name, a.RunPage)
 				}

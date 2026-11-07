@@ -78,6 +78,37 @@ page:
       shortcut: Ctrl+D
       promoted: true
 
+    - name: Planning
+      caption: Planning
+      image: Calendar
+      promoted: true
+      items:
+        # the line's resource or resource group: its budget against its capacity per period (pages 227, 231)
+        - name: Resource Availability
+          caption: Resource Availability
+          image: Calendar
+          run_object: table:Project_Budget_Line.ResourceAvailability
+        - name: Res. Gr. Availability
+          caption: Res. Gr. Availability
+          image: Calendar
+          run_object: table:Project_Budget_Line.ResGrAvailability
+
+    - name: Functions
+      caption: Functions
+      image: Calculate
+      promoted: true
+      items:
+        # the line's budget entries and Starting Date moved by a date formula (form 366)
+        - name: Change Budget Dates
+          caption: Change Budget Dates
+          image: Calendar
+          run_object: table:Project_Budget_Line.ChangeDates
+        # Copy Project Budget (report 1296): the lines of another project into this one
+        - name: Copy Budget
+          caption: Copy Budget
+          image: Copy
+          run_object: report:1296
+
     - name: Budget Entries
       caption: Budget Entries
       image: Entries
@@ -99,29 +130,3 @@ page:
       run_page: 215
       run_page_filter_field: "no"
       run_page_filter_value: project_no
-    # Copy Project Budget (report 1296): the lines of another project into this one
-    - name: Copy Budget
-      caption: Copy Budget
-      image: Copy
-      promoted: true
-      run_object: report:1296
-
-    # the line's resource or resource group: its budget against its capacity per period (pages 227, 231)
-    - name: Resource Availability
-      caption: Resource Availability
-      image: Calendar
-      promoted: true
-      run_object: table:Project_Budget_Line.ResourceAvailability
-
-    - name: Res. Gr. Availability
-      caption: Res. Gr. Availability
-      image: Calendar
-      promoted: true
-      run_object: table:Project_Budget_Line.ResGrAvailability
-
-    # the line's budget entries and Starting Date moved by a date formula (form 366)
-    - name: Change Budget Dates
-      caption: Change Budget Dates
-      image: Calendar
-      promoted: true
-      run_object: table:Project_Budget_Line.ChangeDates

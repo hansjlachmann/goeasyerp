@@ -84,61 +84,53 @@ page:
       promoted: true
       enabled: true
 
-    - name: Depreciation Books
-      caption: Depreciation Books
-      image: Lines
+    - name: Fixed Asset
+      caption: Fixed Asset
+      image: Card
       promoted: true
-      run_page: 5619
-      run_page_filter_field: fa_no
-      run_page_filter_value: "no"
-
-    - name: Ledger Entries
-      caption: Ledger Entries
-      image: Entries
-      shortcut: Ctrl+F7
-      promoted: true
-      run_page: 5604
-      run_page_filter_field: fa_no
-      run_page_filter_value: "no"
-
-    - name: Maintenance Ledger Entries
-      caption: Maintenance Ledger Entries
-      image: Entries
-      promoted: true
-      run_page: 5641
-      run_page_filter_field: fa_no
-      run_page_filter_value: "no"
-
-    - name: Statistics
-      caption: Statistics
-      image: Statistics
-      shortcut: F7
-      promoted: true
-      run_page: 5602
-      run_page_filter_field: fa_no
-      run_page_filter_value: "no"
-
-    - name: Main Asset Components
-      caption: Main Asset Components
-      image: Rows
-      promoted: true
-      run_page: 5658
-      run_page_filter_field: main_asset_no
-      run_page_filter_value: "no"
-
-    - name: Maintenance Registration
-      caption: Maintenance Registration
-      image: Calendar
-      promoted: true
-      run_page: 5625
-      run_page_filter_field: fa_no
-      run_page_filter_value: "no"
-
-    - name: Comments
-      caption: Comments
-      image: Document
-      promoted: true
-      run_page: 124
-      run_page_filters:
-        - {field: table_name, const: "10"}   # Fixed Asset
-        - {field: "no", value: "no"}
+      items:
+        - name: Depreciation Books
+          caption: Depreciation Books
+          image: Lines
+          run_page: 5619
+          run_page_filter_field: fa_no
+          run_page_filter_value: "no"
+        - name: Ledger Entries
+          caption: Ledger Entries
+          image: Entries
+          shortcut: Ctrl+F7
+          run_page: 5604
+          run_page_filter_field: fa_no
+          run_page_filter_value: "no"
+        - name: Maintenance Ledger Entries
+          caption: Maintenance Ledger Entries
+          image: Entries
+          run_page: 5641
+          run_page_filter_field: fa_no
+          run_page_filter_value: "no"
+        - name: Statistics
+          caption: Statistics
+          image: Statistics
+          shortcut: F7
+          run_page: 5602
+          run_page_filter_field: fa_no
+          run_page_filter_value: "no"
+        - name: Main Asset Components
+          caption: Main Asset Components
+          image: Rows
+          run_page: 5658
+          run_page_filter_field: main_asset_no
+          run_page_filter_value: "no"
+        - name: Maintenance Registration
+          caption: Maintenance Registration
+          image: Calendar
+          run_page: 5625
+          run_page_filter_field: fa_no
+          run_page_filter_value: "no"
+        - name: Comments
+          caption: Comments
+          image: Document
+          run_page: 124
+          run_page_filters:
+            - {field: table_name, const: "10"}   # Fixed Asset
+            - {field: "no", value: "no"}

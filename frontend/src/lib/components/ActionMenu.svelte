@@ -148,7 +148,7 @@
 
 	{#if open}
 		<!-- svelte-ignore a11y_interactive_supports_focus -->
-		<div class="menu" role="menu" data-own-keys use:portal style={menuStyle} bind:this={menuElement} onkeydown={handleMenuKeydown}>
+		<div class="menu" role="menu" data-own-keys data-action-menu use:portal style={menuStyle} bind:this={menuElement} onkeydown={handleMenuKeydown}>
 			{#each menuRows as row (row.item.name + row.level)}
 				{#if row.heading}
 					<div class="menu-heading" role="presentation" style="padding-left: {0.75 + row.level * 1.25}rem">

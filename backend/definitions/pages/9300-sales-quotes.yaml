@@ -51,6 +51,18 @@ page:
       shortcut: Ctrl+D
       promoted: true
 
+    - name: Statistics
+      caption: Statistics
+      image: Statistics
+      shortcut: F9
+      run_page: 160
+      run_page_filters:
+        - field: document_type
+          value: document_type
+        - field: "no"
+          value: "no"
+      promoted: true
+
     - name: Print
       caption: Print
       image: Print
@@ -62,15 +74,3 @@ page:
       image: Document
       promoted: true
       run_object: codeunit:83
-
-    - name: Statistics
-      caption: Statistics
-      image: Statistics
-      shortcut: F9
-      promoted: true
-      run_page: 160
-      run_page_filters:
-        - field: document_type
-          value: document_type
-        - field: "no"
-          value: "no"
