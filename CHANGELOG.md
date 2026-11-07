@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.141](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.140...v0.1.141) (2026-11-07)
+
+
+### Bug Fixes
+
+* action bar wraps, aligns with the list grid and groups functions into menus ([2a10068](https://github.com/hansjlachmann/goeasyerp/commit/2a1006849793040c2a1a2cdb59279f7260c9f8f1))
+* list header shortcuts, caption wrapping, amount decimals and demo data gaps ([c54129c](https://github.com/hansjlachmann/goeasyerp/commit/c54129cd88bfa33906aa8c610a4fe568d534f598))
+* menu button keys, card edge buttons, whole-word captions and unknown journal batches ([a2e0a52](https://github.com/hansjlachmann/goeasyerp/commit/a2e0a52efd723dc0578a6e238783b38fec3cfb50))
+
 ## [0.1.140](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.139...v0.1.140) (2026-11-06)
 
 
