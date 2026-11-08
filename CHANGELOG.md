@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.144](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.143...v0.1.144) (2026-11-08)
+
+
+### Features
+
+* store page layouts on the server, so they follow the user ([33ad3ef](https://github.com/hansjlachmann/goeasyerp/commit/33ad3ef0b12fb52e87878711ac56950b3945520c))
+
+
+### Bug Fixes
+
+* align numbers right in lists, column captions, footers and cards ([6ece848](https://github.com/hansjlachmann/goeasyerp/commit/6ece8482a53c0cee7dfb44f35f3cf7135354bd65))
+* keep a list's filters and FlowFilters when coming back to it ([b37e17c](https://github.com/hansjlachmann/goeasyerp/commit/b37e17c2c195c60072b0cf926346d92a41827885))
+
 ## [0.1.143](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.142...v0.1.143) (2026-11-08)
 
 
