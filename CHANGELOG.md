@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.143](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.142...v0.1.143) (2026-11-08)
+
+
+### Bug Fixes
+
+* drill down with the FlowField's own filters on every summed column ([86bcfaf](https://github.com/hansjlachmann/goeasyerp/commit/86bcfaffbdd57c34c076b218646e0f308553aab3))
+
 ## [0.1.142](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.141...v0.1.142) (2026-11-08)
 
 
