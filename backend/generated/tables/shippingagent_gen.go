@@ -957,13 +957,13 @@ func (t *ShippingAgent) refuseDeleteWhenUsed() error {
 		Table: ShippingAgentTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Customer", false, "shipping_agent_code", "", 0},
-		{"Sales_Cr_Memo_Header", false, "shipping_agent_code", "", 0},
-		{"Sales_Header", false, "shipping_agent_code", "", 0},
-		{"Sales_Invoice_Header", false, "shipping_agent_code", "", 0},
-		{"Sales_Shipment_Header", false, "shipping_agent_code", "", 0},
-		{"Ship_to_Address", false, "shipping_agent_code", "", 0},
-		{"Vendor", false, "shipping_agent_code", "", 0},
+		{Table: "Customer", Column: "shipping_agent_code"},
+		{Table: "Sales_Cr_Memo_Header", Column: "shipping_agent_code"},
+		{Table: "Sales_Header", Column: "shipping_agent_code"},
+		{Table: "Sales_Invoice_Header", Column: "shipping_agent_code"},
+		{Table: "Sales_Shipment_Header", Column: "shipping_agent_code"},
+		{Table: "Ship_to_Address", Column: "shipping_agent_code"},
+		{Table: "Vendor", Column: "shipping_agent_code"},
 	})
 }
 

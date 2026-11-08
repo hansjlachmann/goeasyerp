@@ -998,8 +998,8 @@ func (t *DepreciationTableHeader) refuseDeleteWhenUsed() error {
 		Table: DepreciationTableHeaderTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Depreciation_Table_Line", false, "depreciation_table_code", "", 0},
-		{"FA_Depreciation_Book", false, "depreciation_table_code", "", 0},
+		{Table: "Depreciation_Table_Line", Column: "depreciation_table_code"},
+		{Table: "FA_Depreciation_Book", Column: "depreciation_table_code"},
 	})
 }
 

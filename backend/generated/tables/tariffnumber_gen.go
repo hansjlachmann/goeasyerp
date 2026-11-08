@@ -904,8 +904,8 @@ func (t *TariffNumber) refuseDeleteWhenUsed() error {
 		Table: TariffNumberTableName, Global: false, Company: t.company,
 		KeyColumn: "no", Key: t.No, KeyText: fmt.Sprint(t.No),
 	}, []tables.Reference{
-		{"Intrastat_Jnl_Line", false, "tariff_no", "", 0},
-		{"Item", false, "tariff_no", "", 0},
+		{Table: "Intrastat_Jnl_Line", Column: "tariff_no"},
+		{Table: "Item", Column: "tariff_no"},
 	})
 }
 

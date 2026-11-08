@@ -871,9 +871,9 @@ func (t *Territory) refuseDeleteWhenUsed() error {
 		Table: TerritoryTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Bank_Account", false, "territory_code", "", 0},
-		{"Customer", false, "territory_code", "", 0},
-		{"Vendor", false, "territory_code", "", 0},
+		{Table: "Bank_Account", Column: "territory_code"},
+		{Table: "Customer", Column: "territory_code"},
+		{Table: "Vendor", Column: "territory_code"},
 	})
 }
 

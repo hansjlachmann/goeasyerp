@@ -1031,7 +1031,7 @@ func (t *ProjectPostingGroup) refuseDeleteWhenUsed() error {
 		Table: ProjectPostingGroupTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Project", false, "project_posting_group", "", 0},
+		{Table: "Project", Column: "project_posting_group"},
 	})
 }
 

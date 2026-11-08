@@ -871,11 +871,11 @@ func (t *FALocation) refuseDeleteWhenUsed() error {
 		Table: FALocationTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"FA_Ledger_Entry", false, "fa_location_code", "", 0},
-		{"Fixed_Asset", false, "fa_location_code", "", 0},
-		{"Ins_Coverage_Ledger_Entry", false, "fa_location_code", "", 0},
-		{"Insurance", false, "fa_location_code", "", 0},
-		{"Maintenance_Ledger_Entry", false, "fa_location_code", "", 0},
+		{Table: "FA_Ledger_Entry", Column: "fa_location_code"},
+		{Table: "Fixed_Asset", Column: "fa_location_code"},
+		{Table: "Ins_Coverage_Ledger_Entry", Column: "fa_location_code"},
+		{Table: "Insurance", Column: "fa_location_code"},
+		{Table: "Maintenance_Ledger_Entry", Column: "fa_location_code"},
 	})
 }
 

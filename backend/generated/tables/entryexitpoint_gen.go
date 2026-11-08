@@ -883,15 +883,15 @@ func (t *EntryExitPoint) refuseDeleteWhenUsed() error {
 		Table: EntryExitPointTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Intrastat_Jnl_Line", false, "entry_exit_point", "", 0},
-		{"Item_Journal_Line", false, "entry_exit_point", "", 0},
-		{"Item_Ledger_Entry", false, "entry_exit_point", "", 0},
-		{"Project_Journal_Line", false, "entry_exit_point", "", 0},
-		{"Project_Ledger_Entry", false, "entry_exit_point", "", 0},
-		{"Purchase_Header", false, "entry_point", "", 0},
-		{"Purchase_Line", false, "entry_point", "", 0},
-		{"Sales_Header", false, "exit_point", "", 0},
-		{"Sales_Line", false, "exit_point", "", 0},
+		{Table: "Intrastat_Jnl_Line", Column: "entry_exit_point"},
+		{Table: "Item_Journal_Line", Column: "entry_exit_point"},
+		{Table: "Item_Ledger_Entry", Column: "entry_exit_point"},
+		{Table: "Project_Journal_Line", Column: "entry_exit_point"},
+		{Table: "Project_Ledger_Entry", Column: "entry_exit_point"},
+		{Table: "Purchase_Header", Column: "entry_point"},
+		{Table: "Purchase_Line", Column: "entry_point"},
+		{Table: "Sales_Header", Column: "exit_point"},
+		{Table: "Sales_Line", Column: "exit_point"},
 	})
 }
 

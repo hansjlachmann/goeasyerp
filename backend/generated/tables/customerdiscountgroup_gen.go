@@ -883,12 +883,12 @@ func (t *CustomerDiscountGroup) refuseDeleteWhenUsed() error {
 		Table: CustomerDiscountGroupTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Cust_Item_Discount", false, "customer_disc_group", "", 0},
-		{"Customer", false, "cust_item_disc_gr", "", 0},
-		{"Sales_Cr_Memo_Header", false, "cust_item_disc_gr", "", 0},
-		{"Sales_Header", false, "cust_item_disc_gr", "", 0},
-		{"Sales_Invoice_Header", false, "cust_item_disc_gr", "", 0},
-		{"Sales_Shipment_Header", false, "cust_item_disc_gr", "", 0},
+		{Table: "Cust_Item_Discount", Column: "customer_disc_group"},
+		{Table: "Customer", Column: "cust_item_disc_gr"},
+		{Table: "Sales_Cr_Memo_Header", Column: "cust_item_disc_gr"},
+		{Table: "Sales_Header", Column: "cust_item_disc_gr"},
+		{Table: "Sales_Invoice_Header", Column: "cust_item_disc_gr"},
+		{Table: "Sales_Shipment_Header", Column: "cust_item_disc_gr"},
 	})
 }
 

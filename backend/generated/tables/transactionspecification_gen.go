@@ -883,15 +883,15 @@ func (t *TransactionSpecification) refuseDeleteWhenUsed() error {
 		Table: TransactionSpecificationTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Intrastat_Jnl_Line", false, "transaction_specification", "", 0},
-		{"Item_Journal_Line", false, "transaction_specification", "", 0},
-		{"Item_Ledger_Entry", false, "transaction_specification", "", 0},
-		{"Project_Journal_Line", false, "transaction_specification", "", 0},
-		{"Project_Ledger_Entry", false, "transaction_specification", "", 0},
-		{"Purchase_Header", false, "transaction_specification", "", 0},
-		{"Purchase_Line", false, "transaction_specification", "", 0},
-		{"Sales_Header", false, "transaction_specification", "", 0},
-		{"Sales_Line", false, "transaction_specification", "", 0},
+		{Table: "Intrastat_Jnl_Line", Column: "transaction_specification"},
+		{Table: "Item_Journal_Line", Column: "transaction_specification"},
+		{Table: "Item_Ledger_Entry", Column: "transaction_specification"},
+		{Table: "Project_Journal_Line", Column: "transaction_specification"},
+		{Table: "Project_Ledger_Entry", Column: "transaction_specification"},
+		{Table: "Purchase_Header", Column: "transaction_specification"},
+		{Table: "Purchase_Line", Column: "transaction_specification"},
+		{Table: "Sales_Header", Column: "transaction_specification"},
+		{Table: "Sales_Line", Column: "transaction_specification"},
 	})
 }
 

@@ -883,15 +883,15 @@ func (t *TransactionType) refuseDeleteWhenUsed() error {
 		Table: TransactionTypeTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Intrastat_Jnl_Line", false, "transaction_type", "", 0},
-		{"Item_Journal_Line", false, "transaction_type", "", 0},
-		{"Item_Ledger_Entry", false, "transaction_type", "", 0},
-		{"Project_Journal_Line", false, "transaction_type", "", 0},
-		{"Project_Ledger_Entry", false, "transaction_type", "", 0},
-		{"Purchase_Header", false, "transaction_type", "", 0},
-		{"Purchase_Line", false, "transaction_type", "", 0},
-		{"Sales_Header", false, "transaction_type", "", 0},
-		{"Sales_Line", false, "transaction_type", "", 0},
+		{Table: "Intrastat_Jnl_Line", Column: "transaction_type"},
+		{Table: "Item_Journal_Line", Column: "transaction_type"},
+		{Table: "Item_Ledger_Entry", Column: "transaction_type"},
+		{Table: "Project_Journal_Line", Column: "transaction_type"},
+		{Table: "Project_Ledger_Entry", Column: "transaction_type"},
+		{Table: "Purchase_Header", Column: "transaction_type"},
+		{Table: "Purchase_Line", Column: "transaction_type"},
+		{Table: "Sales_Header", Column: "transaction_type"},
+		{Table: "Sales_Line", Column: "transaction_type"},
 	})
 }
 

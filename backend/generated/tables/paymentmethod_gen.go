@@ -994,16 +994,16 @@ func (t *PaymentMethod) refuseDeleteWhenUsed() error {
 		Table: PaymentMethodTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Customer", false, "payment_method_code", "", 0},
-		{"Purch_Cr_Memo_Hdr", false, "payment_method_code", "", 0},
-		{"Purch_Inv_Header", false, "payment_method_code", "", 0},
-		{"Purch_Rcpt_Header", false, "payment_method_code", "", 0},
-		{"Purchase_Header", false, "payment_method_code", "", 0},
-		{"Sales_Cr_Memo_Header", false, "payment_method_code", "", 0},
-		{"Sales_Header", false, "payment_method_code", "", 0},
-		{"Sales_Invoice_Header", false, "payment_method_code", "", 0},
-		{"Sales_Shipment_Header", false, "payment_method_code", "", 0},
-		{"Vendor", false, "payment_method_code", "", 0},
+		{Table: "Customer", Column: "payment_method_code"},
+		{Table: "Purch_Cr_Memo_Hdr", Column: "payment_method_code"},
+		{Table: "Purch_Inv_Header", Column: "payment_method_code"},
+		{Table: "Purch_Rcpt_Header", Column: "payment_method_code"},
+		{Table: "Purchase_Header", Column: "payment_method_code"},
+		{Table: "Sales_Cr_Memo_Header", Column: "payment_method_code"},
+		{Table: "Sales_Header", Column: "payment_method_code"},
+		{Table: "Sales_Invoice_Header", Column: "payment_method_code"},
+		{Table: "Sales_Shipment_Header", Column: "payment_method_code"},
+		{Table: "Vendor", Column: "payment_method_code"},
 	})
 }
 

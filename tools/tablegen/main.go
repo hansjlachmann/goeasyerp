@@ -3208,7 +3208,7 @@ func (t *{{ .StructName }}) refuseDeleteWhenUsed() error {
 	}, []tables.Reference{
 {{- range $refs := index $.References .DBName }}
 {{- if or (eq $.Table.RefuseDeleteWhenUsed "all") (not .History) }}
-		{"{{ .Table }}", {{ .Global }}, "{{ .Column }}", "{{ .CondColumn }}", {{ .CondValue }}},
+		{Table: "{{ .Table }}",{{ if .Global }} Global: true,{{ end }} Column: "{{ .Column }}"{{ if .CondColumn }}, CondColumn: "{{ .CondColumn }}", CondValue: {{ .CondValue }}{{ end }}},
 {{- end }}
 {{- end }}
 	})

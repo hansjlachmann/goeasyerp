@@ -1031,15 +1031,15 @@ func (t *VendorPostingGroup) refuseDeleteWhenUsed() error {
 		Table: VendorPostingGroupTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Exch_Rate_Adjmt_Reg", false, "posting_group", "account_type", 2},
-		{"Item_Journal_Line", false, "source_posting_group", "source_type", 2},
-		{"Item_Ledger_Entry", false, "source_posting_group", "source_type", 2},
-		{"Purch_Cr_Memo_Hdr", false, "vendor_posting_group", "", 0},
-		{"Purch_Inv_Header", false, "vendor_posting_group", "", 0},
-		{"Purch_Rcpt_Header", false, "vendor_posting_group", "", 0},
-		{"Purchase_Header", false, "vendor_posting_group", "", 0},
-		{"Vendor", false, "vendor_posting_group", "", 0},
-		{"Vendor Ledger Entry", false, "vendor_posting_group", "", 0},
+		{Table: "Exch_Rate_Adjmt_Reg", Column: "posting_group", CondColumn: "account_type", CondValue: 2},
+		{Table: "Item_Journal_Line", Column: "source_posting_group", CondColumn: "source_type", CondValue: 2},
+		{Table: "Item_Ledger_Entry", Column: "source_posting_group", CondColumn: "source_type", CondValue: 2},
+		{Table: "Purch_Cr_Memo_Hdr", Column: "vendor_posting_group"},
+		{Table: "Purch_Inv_Header", Column: "vendor_posting_group"},
+		{Table: "Purch_Rcpt_Header", Column: "vendor_posting_group"},
+		{Table: "Purchase_Header", Column: "vendor_posting_group"},
+		{Table: "Vendor", Column: "vendor_posting_group"},
+		{Table: "Vendor Ledger Entry", Column: "vendor_posting_group"},
 	})
 }
 

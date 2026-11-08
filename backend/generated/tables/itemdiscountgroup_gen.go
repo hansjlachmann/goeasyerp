@@ -883,8 +883,8 @@ func (t *ItemDiscountGroup) refuseDeleteWhenUsed() error {
 		Table: ItemDiscountGroupTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Cust_Item_Discount", false, "item_discount_group", "", 0},
-		{"Item", false, "item_cust_disc_gr", "", 0},
+		{Table: "Cust_Item_Discount", Column: "item_discount_group"},
+		{Table: "Item", Column: "item_cust_disc_gr"},
 	})
 }
 

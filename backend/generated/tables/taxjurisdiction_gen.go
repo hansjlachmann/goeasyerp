@@ -1317,11 +1317,11 @@ func (t *TaxJurisdiction) refuseDeleteWhenUsed() error {
 		Table: TaxJurisdictionTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Tax_Area_Line", false, "tax_jurisdiction_code", "", 0},
-		{"Tax_Detail", false, "tax_jurisdiction_code", "", 0},
-		{"Tax_Entry", false, "tax_jurisdiction_code", "", 0},
-		{"Tax_Jurisdiction", false, "report_to_jurisdiction", "", 0},
-		{"Tax_Statement_Line", false, "tax_jurisdiction_code", "", 0},
+		{Table: "Tax_Area_Line", Column: "tax_jurisdiction_code"},
+		{Table: "Tax_Detail", Column: "tax_jurisdiction_code"},
+		{Table: "Tax_Entry", Column: "tax_jurisdiction_code"},
+		{Table: "Tax_Jurisdiction", Column: "report_to_jurisdiction"},
+		{Table: "Tax_Statement_Line", Column: "tax_jurisdiction_code"},
 	})
 }
 

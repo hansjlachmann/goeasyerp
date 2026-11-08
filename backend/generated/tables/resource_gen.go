@@ -2151,17 +2151,17 @@ func (t *Resource) refuseDeleteWhenUsed() error {
 		Table: ResourceTableName, Global: false, Company: t.company,
 		KeyColumn: "no", Key: t.No, KeyText: fmt.Sprint(t.No),
 	}, []tables.Reference{
-		{"BOM_Component", false, "no", "type", 2},
-		{"Project", false, "person_responsible", "", 0},
-		{"Project_Budget_Entry", false, "no", "type", 0},
-		{"Project_Budget_Line", false, "no", "type", 0},
-		{"Project_Journal_Line", false, "no", "type", 0},
-		{"Res_Capacity_Entry", false, "resource_no", "", 0},
-		{"Res_Journal_Line", false, "resource_no", "", 0},
-		{"Resource_Cost", false, "code", "type", 0},
-		{"Resource_Price", false, "code", "type", 0},
-		{"Resource_Price_Change", false, "code", "type", 0},
-		{"Sales_Line", false, "no", "type", 3},
+		{Table: "BOM_Component", Column: "no", CondColumn: "type", CondValue: 2},
+		{Table: "Project", Column: "person_responsible"},
+		{Table: "Project_Budget_Entry", Column: "no", CondColumn: "type", CondValue: 0},
+		{Table: "Project_Budget_Line", Column: "no", CondColumn: "type", CondValue: 0},
+		{Table: "Project_Journal_Line", Column: "no", CondColumn: "type", CondValue: 0},
+		{Table: "Res_Capacity_Entry", Column: "resource_no"},
+		{Table: "Res_Journal_Line", Column: "resource_no"},
+		{Table: "Resource_Cost", Column: "code", CondColumn: "type", CondValue: 0},
+		{Table: "Resource_Price", Column: "code", CondColumn: "type", CondValue: 0},
+		{Table: "Resource_Price_Change", Column: "code", CondColumn: "type", CondValue: 0},
+		{Table: "Sales_Line", Column: "no", CondColumn: "type", CondValue: 3},
 	})
 }
 

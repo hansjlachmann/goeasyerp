@@ -883,9 +883,9 @@ func (t *BankAccountPostingGroup) refuseDeleteWhenUsed() error {
 		Table: BankAccountPostingGroupTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Bank_Account", false, "bank_acc_posting_group", "", 0},
-		{"Bank_Account_Ledger_Entry", false, "bank_acc_posting_group", "", 0},
-		{"Exch_Rate_Adjmt_Reg", false, "posting_group", "account_type", 3},
+		{Table: "Bank_Account", Column: "bank_acc_posting_group"},
+		{Table: "Bank_Account_Ledger_Entry", Column: "bank_acc_posting_group"},
+		{Table: "Exch_Rate_Adjmt_Reg", Column: "posting_group", CondColumn: "account_type", CondValue: 3},
 	})
 }
 

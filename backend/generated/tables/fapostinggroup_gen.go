@@ -2030,11 +2030,11 @@ func (t *FAPostingGroup) refuseDeleteWhenUsed() error {
 		Table: FAPostingGroupTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"FA_Allocation", false, "code", "", 0},
-		{"FA_Depreciation_Book", false, "fa_posting_group", "", 0},
-		{"FA_Journal_Line", false, "fa_posting_group", "", 0},
-		{"FA_Ledger_Entry", false, "fa_posting_group", "", 0},
-		{"Maintenance_Ledger_Entry", false, "fa_posting_group", "", 0},
+		{Table: "FA_Allocation", Column: "code"},
+		{Table: "FA_Depreciation_Book", Column: "fa_posting_group"},
+		{Table: "FA_Journal_Line", Column: "fa_posting_group"},
+		{Table: "FA_Ledger_Entry", Column: "fa_posting_group"},
+		{Table: "Maintenance_Ledger_Entry", Column: "fa_posting_group"},
 	})
 }
 

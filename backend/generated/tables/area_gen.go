@@ -871,15 +871,15 @@ func (t *Area) refuseDeleteWhenUsed() error {
 		Table: AreaTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Intrastat_Jnl_Line", false, "area", "", 0},
-		{"Item_Journal_Line", false, "area", "", 0},
-		{"Item_Ledger_Entry", false, "area", "", 0},
-		{"Project_Journal_Line", false, "area", "", 0},
-		{"Project_Ledger_Entry", false, "area", "", 0},
-		{"Purchase_Header", false, "area", "", 0},
-		{"Purchase_Line", false, "area", "", 0},
-		{"Sales_Header", false, "area", "", 0},
-		{"Sales_Line", false, "area", "", 0},
+		{Table: "Intrastat_Jnl_Line", Column: "area"},
+		{Table: "Item_Journal_Line", Column: "area"},
+		{Table: "Item_Ledger_Entry", Column: "area"},
+		{Table: "Project_Journal_Line", Column: "area"},
+		{Table: "Project_Ledger_Entry", Column: "area"},
+		{Table: "Purchase_Header", Column: "area"},
+		{Table: "Purchase_Line", Column: "area"},
+		{Table: "Sales_Header", Column: "area"},
+		{Table: "Sales_Line", Column: "area"},
 	})
 }
 

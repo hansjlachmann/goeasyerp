@@ -884,8 +884,8 @@ func (t *UserRole) refuseDeleteWhenUsed() error {
 		Table: UserRoleTableName, Global: true, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Permission", true, "role_id", "", 0},
-		{"User_Member", true, "role_id", "", 0},
+		{Table: "Permission", Global: true, Column: "role_id"},
+		{Table: "User_Member", Global: true, Column: "role_id"},
 	})
 }
 

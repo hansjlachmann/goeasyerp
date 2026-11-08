@@ -883,7 +883,7 @@ func (t *InsuranceType) refuseDeleteWhenUsed() error {
 		Table: InsuranceTypeTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Insurance", false, "insurance_type", "", 0},
+		{Table: "Insurance", Column: "insurance_type"},
 	})
 }
 

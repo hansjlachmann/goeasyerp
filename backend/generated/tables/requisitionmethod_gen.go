@@ -1097,7 +1097,7 @@ func (t *RequisitionMethod) refuseDeleteWhenUsed() error {
 		Table: RequisitionMethodTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Item", false, "requisition_method_code", "", 0},
+		{Table: "Item", Column: "requisition_method_code"},
 	})
 }
 

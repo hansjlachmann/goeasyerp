@@ -1355,13 +1355,13 @@ func (t *FinanceChargeTerms) refuseDeleteWhenUsed() error {
 		Table: FinanceChargeTermsTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Customer", false, "fin_charge_terms_code", "", 0},
-		{"Finance_Charge_Memo_Header", false, "fin_charge_terms_code", "", 0},
-		{"Finance_Charge_Text", false, "fin_charge_terms_code", "", 0},
-		{"Issued_Fin_Charge_Memo_Header", false, "fin_charge_terms_code", "", 0},
-		{"Issued_Reminder_Header", false, "fin_charge_terms_code", "", 0},
-		{"Reminder_Header", false, "fin_charge_terms_code", "", 0},
-		{"Vendor", false, "fin_charge_terms_code", "", 0},
+		{Table: "Customer", Column: "fin_charge_terms_code"},
+		{Table: "Finance_Charge_Memo_Header", Column: "fin_charge_terms_code"},
+		{Table: "Finance_Charge_Text", Column: "fin_charge_terms_code"},
+		{Table: "Issued_Fin_Charge_Memo_Header", Column: "fin_charge_terms_code"},
+		{Table: "Issued_Reminder_Header", Column: "fin_charge_terms_code"},
+		{Table: "Reminder_Header", Column: "fin_charge_terms_code"},
+		{Table: "Vendor", Column: "fin_charge_terms_code"},
 	})
 }
 

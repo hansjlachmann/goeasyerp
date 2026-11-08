@@ -2249,15 +2249,15 @@ func (t *BankAccount) refuseDeleteWhenUsed() error {
 		Table: BankAccountTableName, Global: false, Company: t.company,
 		KeyColumn: "no", Key: t.No, KeyText: fmt.Sprint(t.No),
 	}, []tables.Reference{
-		{"Bank_Acc_Reconciliation", false, "bank_account_no", "", 0},
-		{"Bank_Acc_Reconciliation_Line", false, "bank_account_no", "", 0},
-		{"Comment_Line", false, "no", "table_name", 8},
-		{"Gen_Journal_Batch", false, "bal_account_no", "bal_account_type", 3},
-		{"Gen_Journal_Line", false, "account_no", "account_type", 3},
-		{"Gen_Journal_Line", false, "bal_account_no", "bal_account_type", 3},
-		{"Gen_Journal_Line", false, "source_no", "source_type", 3},
-		{"Gen_Journal_Template", false, "bal_account_no", "bal_account_type", 3},
-		{"Payment_Method", false, "bal_account_no", "bal_account_type", 1},
+		{Table: "Bank_Acc_Reconciliation", Column: "bank_account_no"},
+		{Table: "Bank_Acc_Reconciliation_Line", Column: "bank_account_no"},
+		{Table: "Comment_Line", Column: "no", CondColumn: "table_name", CondValue: 8},
+		{Table: "Gen_Journal_Batch", Column: "bal_account_no", CondColumn: "bal_account_type", CondValue: 3},
+		{Table: "Gen_Journal_Line", Column: "account_no", CondColumn: "account_type", CondValue: 3},
+		{Table: "Gen_Journal_Line", Column: "bal_account_no", CondColumn: "bal_account_type", CondValue: 3},
+		{Table: "Gen_Journal_Line", Column: "source_no", CondColumn: "source_type", CondValue: 3},
+		{Table: "Gen_Journal_Template", Column: "bal_account_no", CondColumn: "bal_account_type", CondValue: 3},
+		{Table: "Payment_Method", Column: "bal_account_no", CondColumn: "bal_account_type", CondValue: 1},
 	})
 }
 

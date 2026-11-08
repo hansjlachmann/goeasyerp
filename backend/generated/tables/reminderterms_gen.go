@@ -992,11 +992,11 @@ func (t *ReminderTerms) refuseDeleteWhenUsed() error {
 		Table: ReminderTermsTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Customer", false, "reminder_terms_code", "", 0},
-		{"Issued_Reminder_Header", false, "reminder_terms_code", "", 0},
-		{"Reminder_Header", false, "reminder_terms_code", "", 0},
-		{"Reminder_Level", false, "reminder_terms_code", "", 0},
-		{"Reminder_Text", false, "reminder_terms_code", "", 0},
+		{Table: "Customer", Column: "reminder_terms_code"},
+		{Table: "Issued_Reminder_Header", Column: "reminder_terms_code"},
+		{Table: "Reminder_Header", Column: "reminder_terms_code"},
+		{Table: "Reminder_Level", Column: "reminder_terms_code"},
+		{Table: "Reminder_Text", Column: "reminder_terms_code"},
 	})
 }
 

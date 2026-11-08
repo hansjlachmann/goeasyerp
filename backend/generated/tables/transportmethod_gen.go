@@ -883,15 +883,15 @@ func (t *TransportMethod) refuseDeleteWhenUsed() error {
 		Table: TransportMethodTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"Intrastat_Jnl_Line", false, "transport_method", "", 0},
-		{"Item_Journal_Line", false, "transport_method", "", 0},
-		{"Item_Ledger_Entry", false, "transport_method", "", 0},
-		{"Project_Journal_Line", false, "transport_method", "", 0},
-		{"Project_Ledger_Entry", false, "transport_method", "", 0},
-		{"Purchase_Header", false, "transport_method", "", 0},
-		{"Purchase_Line", false, "transport_method", "", 0},
-		{"Sales_Header", false, "transport_method", "", 0},
-		{"Sales_Line", false, "transport_method", "", 0},
+		{Table: "Intrastat_Jnl_Line", Column: "transport_method"},
+		{Table: "Item_Journal_Line", Column: "transport_method"},
+		{Table: "Item_Ledger_Entry", Column: "transport_method"},
+		{Table: "Project_Journal_Line", Column: "transport_method"},
+		{Table: "Project_Ledger_Entry", Column: "transport_method"},
+		{Table: "Purchase_Header", Column: "transport_method"},
+		{Table: "Purchase_Line", Column: "transport_method"},
+		{Table: "Sales_Header", Column: "transport_method"},
+		{Table: "Sales_Line", Column: "transport_method"},
 	})
 }
 

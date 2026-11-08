@@ -919,7 +919,7 @@ func (t *Menu) refuseDeleteWhenUsed() error {
 		Table: MenuTableName, Global: true, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
-		{"User", true, "menu", "", 0},
+		{Table: "User", Global: true, Column: "menu"},
 	})
 }
 
