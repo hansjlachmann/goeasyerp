@@ -67,14 +67,10 @@ page:
         - source: acquisition_cost
           width: 130
           drilldown: 5604
-          drilldown_filter_field: fa_no
-          drilldown_filter_value: fa_no
 
         - source: book_value
           width: 130
           drilldown: 5604
-          drilldown_filter_field: fa_no
-          drilldown_filter_value: fa_no
 
         - source: acquisition_date
           width: 120

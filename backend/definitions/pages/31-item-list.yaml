@@ -32,8 +32,6 @@ page:
         - source: quantity_on_hand
           width: 120
           drilldown: 38
-          drilldown_filter_field: item_no
-          drilldown_filter_value: "no"
         - source: unit_cost
           width: 120
         - source: last_direct_cost

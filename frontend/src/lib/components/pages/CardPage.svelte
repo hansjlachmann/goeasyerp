@@ -54,6 +54,8 @@
 		saveBlockedMessage?: string; // Error message to display when blocked
 		onclearerror?: () => void; // Callback to clear the error state
 		navigationEnabled?: boolean;
+		// FlowFilters the record was read with (a modal card: its list's, ISO): FlowField drilldowns apply them
+		flowFilters?: import('$lib/types/api').TableFilter[];
 		initialEditMode?: boolean;
 		canNavigateFirst?: boolean;
 		canNavigatePrevious?: boolean;
@@ -82,6 +84,7 @@
 		saveBlockedMessage = '',
 		onclearerror,
 		navigationEnabled = false,
+		flowFilters = [],
 		initialEditMode,
 		canNavigateFirst = false,
 		canNavigatePrevious = false,
@@ -360,10 +363,11 @@
 	// drilldown_filter_value); Esc or the close button returns to the card
 	let drilldown = $state<{ pageId: number; filters: import('$lib/types/api').TableFilter[] } | null>(null);
 	async function openDrilldown(field: import('$lib/types/pages').Field) {
-		// a FlowField without filters of its own: the server gives the FlowField's filters
+		// a FlowField without filters of its own: the server gives the FlowField's filters, with
+		// the FlowFilters the card was read with (a modal card: its list's)
 		if (field.drilldown_flow_filters && record) {
 			try {
-				const result = await api.drilldown(page.page.id, field.source, stripInternalFields($state.snapshot(record)));
+				const result = await api.drilldown(page.page.id, field.source, stripInternalFields($state.snapshot(record)), flowFilters);
 				drilldown = { pageId: result.page_id, filters: result.filters };
 			} catch (err) {
 				toast.error(err instanceof Error ? err.message : String(err));

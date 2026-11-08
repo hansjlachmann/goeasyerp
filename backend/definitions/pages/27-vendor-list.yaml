@@ -65,18 +65,12 @@ page:
         - source: balance_lcy
           width: 140
           drilldown: 29
-          drilldown_filter_field: vendor_no
-          drilldown_filter_value: "no"
         - source: balance_due_lcy
           width: 150
           drilldown: 29
-          drilldown_filter_field: vendor_no
-          drilldown_filter_value: "no"
         - source: purchases_lcy
           width: 130
           drilldown: 29
-          drilldown_filter_field: vendor_no
-          drilldown_filter_value: "no"
         - source: blocked
           width: 90
 

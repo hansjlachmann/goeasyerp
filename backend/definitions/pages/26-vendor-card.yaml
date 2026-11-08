@@ -27,8 +27,6 @@ page:
           - source: search_name
           - source: balance_lcy
             drilldown: 29   # Vendor Ledger Entries of this vendor, in a modal
-            drilldown_filter_field: vendor_no
-            drilldown_filter_value: "no"
             style: Strong
           - source: purchaser_code
           - source: blocked
@@ -36,8 +34,6 @@ page:
           - source: comment
           - source: no_of_ledger_entries
             drilldown: 29
-            drilldown_filter_field: vendor_no
-            drilldown_filter_value: "no"
 
       - name: Communication
         caption: Communication

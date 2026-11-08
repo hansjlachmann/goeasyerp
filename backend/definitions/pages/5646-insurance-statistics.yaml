@@ -19,8 +19,6 @@ page:
           - source: policy_coverage
           - source: total_value_insured
             drilldown: 5647
-            drilldown_filter_field: insurance_no
-            drilldown_filter_value: "no"
           - source: over_underinsured
             calculated: true
             type: types.Decimal

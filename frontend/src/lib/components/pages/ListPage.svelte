@@ -3992,6 +3992,7 @@
 		onsave={handleModalSave}
 		onclearerror={handleClearError}
 		navigationQuery={cardNavigationQuery}
+		flowFilters={apiFlowFilters(currentFlowFilters, page.page.flow_filter_fields, locale)}
 		onnavigate={(rec) => {
 			modalOriginalRecord = deepCopy(rec);
 		}}

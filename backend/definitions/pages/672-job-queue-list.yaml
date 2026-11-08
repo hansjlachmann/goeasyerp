@@ -64,8 +64,6 @@ page:
         - source: number_of_entries
           width: 120
           drilldown: 673
-          drilldown_filter_field: job_queue_no
-          drilldown_filter_value: no
 
   actions:
     # the job's codeunit or report now (a report: its request page, filled in from the Parameter)

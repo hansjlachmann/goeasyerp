@@ -78,8 +78,6 @@ page:
         - source: no_of_lines
           width: 110
           drilldown: 457
-          drilldown_filter_field: series_code
-          drilldown_filter_value: code
 
         - source: default_nos
           width: 120

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
@@ -42,11 +43,11 @@ func TestFlowFieldDrilldown(t *testing.T) {
 		t.Errorf("drilldown_flow_filters: %v", marked)
 	}
 
-	filters := func(body string) map[string]string {
+	filtersOf := func(pageID, target int, body string) map[string]string {
 		t.Helper()
-		out := postJSON(t, app, "/api/pages/16/drilldown", body)
+		out := postJSON(t, app, fmt.Sprintf("/api/pages/%d/drilldown", pageID), body)
 		data, _ := out["data"].(map[string]interface{})
-		if data == nil || data["page_id"] != float64(20) {
+		if data == nil || data["page_id"] != float64(target) {
 			t.Fatalf("drilldown: %v", out)
 		}
 		got := map[string]string{}
@@ -56,6 +57,10 @@ func TestFlowFieldDrilldown(t *testing.T) {
 			got[m["field"].(string)] = m["expression"].(string)
 		}
 		return got
+	}
+	filters := func(body string) map[string]string {
+		t.Helper()
+		return filtersOf(16, 20, body)
 	}
 	got := filters(`{"field":"net_change","record":{"no":"6100","totaling":""}}`)
 	if len(got) != 1 || got["gl_account_no"] != "6100" {
@@ -70,6 +75,17 @@ func TestFlowFieldDrilldown(t *testing.T) {
 		"flow_filters":[{"field":"date_filter","expression":"2026-01-01..2026-03-31"}]}`)
 	if got["gl_account_no"] != "6000..6990" || got["posting_date"] != "..2026-03-31" {
 		t.Errorf("balance at date: %v", got)
+	}
+	// Balance Due (LCY) on the Customer List: the open entries, the Date Filter on the Due Date
+	got = filtersOf(22, 25, `{"field":"balance_due_lcy","record":{"no":"C00010"},
+		"flow_filters":[{"field":"date_filter","expression":"..2026-03-31"}]}`)
+	if got["customer_no"] != "C00010" || got["open"] != "true" || got["due_date"] != "..2026-03-31" || len(got) != 3 {
+		t.Errorf("balance due: %v", got)
+	}
+	// a fixed asset's Depreciation: its book and the posting type and category by number
+	got = filtersOf(5602, 5604, `{"field":"depreciation","record":{"fa_no":"FA0010","depreciation_book_code":"COMPANY"}}`)
+	if got["fa_no"] != "FA0010" || got["depreciation_book_code"] != "COMPANY" || got["fa_posting_type"] != "1" || got["fa_posting_category"] != "0" || len(got) != 4 {
+		t.Errorf("FA depreciation: %v", got)
 	}
 	// a field without a drilldown is refused
 	out = postJSON(t, app, "/api/pages/16/drilldown", `{"field":"name","record":{}}`)

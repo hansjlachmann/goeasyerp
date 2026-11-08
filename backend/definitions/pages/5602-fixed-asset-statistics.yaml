@@ -24,40 +24,22 @@ page:
         fields:
           - source: acquisition_cost
             drilldown: 5604
-            drilldown_filter_field: fa_no
-            drilldown_filter_value: fa_no
           - source: depreciation
             drilldown: 5604
-            drilldown_filter_field: fa_no
-            drilldown_filter_value: fa_no
           - source: write_down
             drilldown: 5604
-            drilldown_filter_field: fa_no
-            drilldown_filter_value: fa_no
           - source: appreciation
             drilldown: 5604
-            drilldown_filter_field: fa_no
-            drilldown_filter_value: fa_no
           - source: custom_1
             drilldown: 5604
-            drilldown_filter_field: fa_no
-            drilldown_filter_value: fa_no
           - source: custom_2
             drilldown: 5604
-            drilldown_filter_field: fa_no
-            drilldown_filter_value: fa_no
           - source: book_value
             drilldown: 5604
-            drilldown_filter_field: fa_no
-            drilldown_filter_value: fa_no
           - source: salvage_value
             drilldown: 5604
-            drilldown_filter_field: fa_no
-            drilldown_filter_value: fa_no
           - source: depreciable_basis
             drilldown: 5604
-            drilldown_filter_field: fa_no
-            drilldown_filter_value: fa_no
           - source: maintenance
           - source: proceeds_on_disposal
           - source: gain_loss

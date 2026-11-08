@@ -17,8 +17,6 @@ page:
           - source: name
           - source: balance_lcy
             drilldown: 29
-            drilldown_filter_field: vendor_no
-            drilldown_filter_value: "no"
           - source: total_lcy
             calculated: true
             type: types.Decimal

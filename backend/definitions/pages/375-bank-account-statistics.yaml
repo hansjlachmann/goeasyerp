@@ -17,8 +17,6 @@ page:
           - source: name
           - source: balance
             drilldown: 372
-            drilldown_filter_field: bank_account_no
-            drilldown_filter_value: "no"
           - source: balance_lcy
           - source: min_balance
           - source: currency_code

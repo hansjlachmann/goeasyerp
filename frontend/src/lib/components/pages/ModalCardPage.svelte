@@ -31,6 +31,8 @@
 		navigationQuery?: NavigationQuery;
 		// Moved to another record (Previous/Next): it is the saved state to compare edits with
 		onnavigate?: (record: Record<string, any>) => void;
+		// The list's FlowFilters (ISO): the card's FlowField drilldowns apply them
+		flowFilters?: import('$lib/types/api').TableFilter[];
 	}
 
 	let {
@@ -49,7 +51,8 @@
 		onsave,
 		onclearerror,
 		navigationQuery,
-		onnavigate
+		onnavigate,
+		flowFilters = []
 	}: Props = $props();
 
 	// Get primary key field name from page definition
@@ -297,6 +300,7 @@
 			{onclearerror}
 			onbacktolist={onclose}
 			navigationEnabled={false}
+			{flowFilters}
 		/>
 	</div>
 </Modal>

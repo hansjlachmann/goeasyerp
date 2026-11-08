@@ -18,8 +18,6 @@ page:
           width: 120
           visible: false
           drilldown: 224
-          drilldown_filter_field: resource_group_no
-          drilldown_filter_value: "no"
 
   actions:
     - name: New

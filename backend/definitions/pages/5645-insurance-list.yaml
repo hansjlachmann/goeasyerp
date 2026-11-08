@@ -39,8 +39,6 @@ page:
         - source: total_value_insured
           width: 140
           drilldown: 5647
-          drilldown_filter_field: insurance_no
-          drilldown_filter_value: "no"
 
         - source: fa_class_code
           width: 120

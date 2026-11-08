@@ -27,8 +27,6 @@ page:
           - source: territory_code
           - source: balance_lcy
             drilldown: 25   # Customer Ledger Entries of this customer, in a modal
-            drilldown_filter_field: customer_no
-            drilldown_filter_value: no
             style: Strong
           - source: credit_limit_lcy
           - source: salesperson_code
@@ -37,8 +35,6 @@ page:
           - source: comment
           - source: no_of_ledger_entries
             drilldown: 25   # Customer Ledger Entries of this customer, in a modal
-            drilldown_filter_field: customer_no
-            drilldown_filter_value: no
 
       - name: Communication
         caption: Communication

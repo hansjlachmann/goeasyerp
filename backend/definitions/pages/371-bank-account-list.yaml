@@ -59,15 +59,11 @@ page:
         - source: balance
           width: 140
           drilldown: 372
-          drilldown_filter_field: bank_account_no
-          drilldown_filter_value: "no"
 
         - source: balance_lcy
           width: 140
           visible: false
           drilldown: 372
-          drilldown_filter_field: bank_account_no
-          drilldown_filter_value: "no"
 
         - source: blocked
           width: 90

@@ -22,8 +22,6 @@ page:
           - source: search_description
           - source: quantity_on_hand
             drilldown: 38
-            drilldown_filter_field: item_no
-            drilldown_filter_value: "no"
           - source: qty_on_purch_order
           - source: qty_on_sales_order
           - source: blocked
@@ -49,8 +47,6 @@ page:
           - source: inventory_posting_group
           - source: net_invoiced_qty
             drilldown: 38
-            drilldown_filter_field: item_no
-            drilldown_filter_value: "no"
           - source: allow_invoice_disc
           - source: sales_qty_disc_code
           - source: item_cust_disc_gr

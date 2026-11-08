@@ -95,20 +95,14 @@ page:
         - source: balance_lcy
           width: 140
           drilldown: 25
-          drilldown_filter_field: customer_no
-          drilldown_filter_value: no
 
         - source: balance_due_lcy
           width: 150
           drilldown: 25
-          drilldown_filter_field: customer_no
-          drilldown_filter_value: no
 
         - source: sales_lcy
           width: 130
           drilldown: 25
-          drilldown_filter_field: customer_no
-          drilldown_filter_value: no
 
         - source: blocked
           width: 90

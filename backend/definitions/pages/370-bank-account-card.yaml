@@ -27,13 +27,9 @@ page:
           - source: search_name
           - source: balance
             drilldown: 372   # Bank Account Ledger Entries of this bank account, in a modal
-            drilldown_filter_field: bank_account_no
-            drilldown_filter_value: "no"
             style: Strong
           - source: balance_lcy
             drilldown: 372
-            drilldown_filter_field: bank_account_no
-            drilldown_filter_value: "no"
           - source: min_balance
           - source: our_contact_code
           - source: blocked
