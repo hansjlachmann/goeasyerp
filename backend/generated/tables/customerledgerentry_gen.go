@@ -5458,6 +5458,10 @@ func (t *CustomerLedgerEntry) ValidateField(fieldName string, value interface{})
 		} else {
 			return fmt.Errorf("invalid type for field customer_posting_group")
 		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "customer_posting_group"); err != nil {
+			return err
+		}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
 			if trg, ok := l.(CustomerLedgerEntryOnValidate_Customer_posting_group); ok {
@@ -8652,6 +8656,16 @@ func (t *CustomerLedgerEntry) GetTableRelationFields() map[string]tables.TableRe
 			LookupColumns: []tables.LookupColumnInfo{
 				{Source: "code", Width: 100},
 				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"customer_posting_group": {
+			Table:        "Customer_Posting_Group",
+			Field:        "code",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "code", Width: 100},
+				{Source: "receivables_account", Width: 250},
 			},
 			SearchTimeout: 0,
 		},

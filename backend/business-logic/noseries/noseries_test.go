@@ -9,6 +9,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/noseries"
 	_ "github.com/hansjlachmann/goeasyerp/backend/business-logic/tables" // the No. Series Line triggers
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -104,6 +105,27 @@ func TestGetNextNo(t *testing.T) {
 	}
 	if _, err := m.GetNextNo("NONE", day(5), true); err == nil || code(t, err) != apperrors.ErrRecordNotFound {
 		t.Errorf("unknown series: %v", err)
+	}
+}
+
+// Without a Warning function the user is told: the warning comes with the request's notes
+func TestGetNextNoWarningNotifiesTheUser(t *testing.T) {
+	db := newDB(t)
+	addSeries(t, db, "CUST", true, true, false)
+	addLine(t, db, "CUST", 10000, types.Date{}, "C00010", "C00030", "C00020", 10)
+	m := noseries.New(ftables.DBSource(db, company, database.DBTypeSQLite))
+
+	fcodeunits.StartNotes()
+	for range 2 {
+		_, err := m.GetNextNo("CUST", day(5), true)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	notes := fcodeunits.TakeNotes()
+	want := apperrors.NoSeriesEndingNo("C00030", "CUST").Message("en-US")
+	if len(notes) != 1 || notes[0] != want {
+		t.Errorf("notes = %q, want [%q]", notes, want)
 	}
 }
 

@@ -1072,7 +1072,7 @@ func (t *CustomerPostingGroup) renameReferences(field string, oldValue, newValue
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Customer", false, "customer_posting_group", "", 0}, {"Exch_Rate_Adjmt_Reg", false, "posting_group", "account_type", 1}, {"Finance_Charge_Memo_Header", false, "customer_posting_group", "", 0}, {"Issued_Fin_Charge_Memo_Header", false, "customer_posting_group", "", 0}, {"Issued_Reminder_Header", false, "customer_posting_group", "", 0}, {"Item_Journal_Line", false, "source_posting_group", "source_type", 1}, {"Item_Ledger_Entry", false, "source_posting_group", "source_type", 1}, {"Reminder_Header", false, "customer_posting_group", "", 0}, {"Sales_Cr_Memo_Header", false, "customer_posting_group", "", 0}, {"Sales_Header", false, "customer_posting_group", "", 0}, {"Sales_Invoice_Header", false, "customer_posting_group", "", 0}, {"Sales_Shipment_Header", false, "customer_posting_group", "", 0}},
+		"code": {{"Customer Ledger Entry", false, "customer_posting_group", "", 0}, {"Customer", false, "customer_posting_group", "", 0}, {"Exch_Rate_Adjmt_Reg", false, "posting_group", "account_type", 1}, {"Finance_Charge_Memo_Header", false, "customer_posting_group", "", 0}, {"Issued_Fin_Charge_Memo_Header", false, "customer_posting_group", "", 0}, {"Issued_Reminder_Header", false, "customer_posting_group", "", 0}, {"Item_Journal_Line", false, "source_posting_group", "source_type", 1}, {"Item_Ledger_Entry", false, "source_posting_group", "source_type", 1}, {"Reminder_Header", false, "customer_posting_group", "", 0}, {"Sales_Cr_Memo_Header", false, "customer_posting_group", "", 0}, {"Sales_Header", false, "customer_posting_group", "", 0}, {"Sales_Invoice_Header", false, "customer_posting_group", "", 0}, {"Sales_Shipment_Header", false, "customer_posting_group", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
@@ -1105,6 +1105,7 @@ func (t *CustomerPostingGroup) refuseDeleteWhenUsed() error {
 		Table: CustomerPostingGroupTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
+		{Table: "Customer Ledger Entry", Column: "customer_posting_group"},
 		{Table: "Customer", Column: "customer_posting_group"},
 		{Table: "Exch_Rate_Adjmt_Reg", Column: "posting_group", CondColumn: "account_type", CondValue: 1},
 		{Table: "Finance_Charge_Memo_Header", Column: "customer_posting_group"},

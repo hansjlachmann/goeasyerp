@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"strings"
 
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
@@ -40,7 +41,7 @@ type Manager struct {
 	trying            bool       // TryGetNextNo: no warning
 
 	// Warning (optional) is told when a series reaches its Warning No. (classic Message);
-	// the number is assigned all the same
+	// the number is assigned all the same. Without it the user is told (fcodeunits.Notify)
 	Warning func(err error)
 }
 
@@ -290,8 +291,11 @@ func (m *Manager) GetNextNo(noSeriesCode types.Code, seriesDate types.Date, modi
 	if line.Ending_no != "" && line.Warning_no != "" && line.Last_no_used >= line.Warning_no &&
 		noSeriesCode != m.warningSeriesCode && !m.trying {
 		m.warningSeriesCode = noSeriesCode
+		warning := apperrors.NoSeriesEndingNo(line.Ending_no.String(), noSeriesCode.String())
 		if m.Warning != nil {
-			m.Warning(apperrors.NoSeriesEndingNo(line.Ending_no.String(), noSeriesCode.String()))
+			m.Warning(warning)
+		} else {
+			fcodeunits.Notify(warning.Message(fcodeunits.CurrentLanguage()))
 		}
 	}
 	err := line.Validate("open", line.Open)

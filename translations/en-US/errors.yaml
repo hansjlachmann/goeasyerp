@@ -29,6 +29,7 @@ errors:
   ERR_DELETE_RECORD_FAILED: "%1 %2 cannot be deleted: %3 Nothing was deleted."
   ERR_COPY_TOO_MANY: "More than %1 records: copy and paste them in smaller parts (filter the list first)."
   ERR_SELECTION_TOO_MANY: "More than %1 records are selected: select fewer (filter the list first)."
+  ERR_TOO_MANY_REQUESTS: "Too many requests. Please wait a moment and try again."
   ERR_INCONSISTENT: "The transaction cannot be completed because it would leave inconsistencies in: %1. Nothing was saved."
   ERR_POSTED_TABLE: "%1 is written by posting only: its records cannot be entered, deleted or renamed."
   ERR_GL_NOT_BALANCED: "The transaction cannot be completed because the G/L entries do not balance: document %1 on %2 is off by %3. Nothing was saved."

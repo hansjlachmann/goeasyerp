@@ -17,7 +17,9 @@
 
 <style>
 	.toast-container {
-		@apply fixed bottom-4 right-4 z-50;
+		@apply fixed bottom-4 right-4;
+		/* above modals (z-50) and floating menus (1000): a message about a modal card shows over it */
+		z-index: 1100;
 		@apply flex flex-col gap-2;
 	}
 </style>

@@ -240,6 +240,14 @@ table:
       type: types.Code
       db_name: customer_posting_group
       length: 10
+      table_relation:
+        table: Customer_Posting_Group
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: receivables_account
+            width: 250
 
     - name: dimension_1_code
       caption_class: "1,1,1"

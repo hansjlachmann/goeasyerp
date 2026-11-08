@@ -243,6 +243,9 @@ export async function startJob(
 						};
 						if (callbacks.onRunPage) callbacks.onRunPage(event, respond);
 						else respond(null); // nothing can show the page: cancel
+					} else if (event.event_type === 'notify') {
+						// A note from the code (it goes on): shown as a message
+						toast.info(event.message, 8000);
 					} else if (event.event_type === 'hyperlink') {
 						// Hyperlink from the codeunit: open http(s)/mailto URLs in a new tab
 						if (/^(https?:\/\/|mailto:)/i.test(event.message)) {

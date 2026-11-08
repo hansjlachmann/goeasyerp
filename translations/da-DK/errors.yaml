@@ -29,6 +29,7 @@ errors:
   ERR_DELETE_RECORD_FAILED: "%1 %2 kan ikke slettes: %3 Intet blev slettet."
   ERR_COPY_TOO_MANY: "Mere end %1 poster: kopiér og indsæt dem i mindre dele (filtrer listen først)."
   ERR_SELECTION_TOO_MANY: "Mere end %1 poster er markeret: markér færre (filtrer listen først)."
+  ERR_TOO_MANY_REQUESTS: "For mange forespørgsler. Vent et øjeblik, og prøv igen."
   ERR_INCONSISTENT: "Transaktionen kan ikke gennemføres, fordi den ville efterlade uoverensstemmelser i: %1. Intet blev gemt."
   ERR_POSTED_TABLE: "%1 skrives kun ved bogføring: posterne kan ikke indtastes, slettes eller omdøbes."
   ERR_GL_NOT_BALANCED: "Transaktionen kan ikke gennemføres, fordi finansposterne ikke balancerer: bilag %1 den %2 afviger med %3. Intet blev gemt."

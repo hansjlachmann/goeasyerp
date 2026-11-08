@@ -14,8 +14,17 @@ import type {
 import type { Appearance, AppearanceSettings, ThemeInstallResult, ThemeList } from '$lib/theme/apply';
 import { handleApiResponse, handleApiResponseVoid, handleApiResponseFull, handleApiResponseWithCaptions, type DataWithCaptions } from '$lib/utils/apiHelpers';
 import type { CompanyInfo } from '$lib/utils/company';
+import { showNotes } from '$lib/utils/notes';
 
 const API_BASE = '/api';
+
+// Every API call of this client: the answer's notes (a number series reaching its Warning
+// No. …) are shown to the user
+async function fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+	const response = await globalThis.fetch(input, init);
+	showNotes(response);
+	return response;
+}
 
 /** What the matrix endpoints take: the card section, its record, the user's filters and the view */
 export interface MatrixRequest {

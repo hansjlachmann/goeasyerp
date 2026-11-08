@@ -39,6 +39,7 @@ const (
 	ErrDeleteRecordFailed ErrorCode = "ERR_DELETE_RECORD_FAILED"
 	ErrCopyTooMany        ErrorCode = "ERR_COPY_TOO_MANY"
 	ErrSelectionTooMany   ErrorCode = "ERR_SELECTION_TOO_MANY"
+	ErrTooManyRequests    ErrorCode = "ERR_TOO_MANY_REQUESTS"
 	ErrInconsistent       ErrorCode = "ERR_INCONSISTENT"
 	ErrPostedTable        ErrorCode = "ERR_POSTED_TABLE"
 	ErrGLNotBalanced      ErrorCode = "ERR_GL_NOT_BALANCED"
@@ -854,4 +855,9 @@ func PageNotFound(pageID string) *AppError {
 		Code:   ErrPageNotFound,
 		Params: []string{pageID},
 	}
+}
+
+// TooManyRequests: a client sent more requests than the rate limit allows
+func TooManyRequests() *AppError {
+	return &AppError{Code: ErrTooManyRequests}
 }

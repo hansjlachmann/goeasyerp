@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"encoding/json"
+	"net/url"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -99,6 +101,25 @@ func UserContext() fiber.Handler {
 		fcodeunits.SetCurrentContext(sess.GetUserID(), sess.GetUserName(), sess.GetCompany(), sess.GetLanguage())
 		fcodeunits.SetCurrentAccess(sess)
 		defer fcodeunits.ClearCurrentContext()
-		return c.Next()
+		fcodeunits.StartNotes()
+		err := c.Next()
+		setNotesHeader(c, fcodeunits.TakeNotes())
+		return err
 	}
+}
+
+// NotesHeader carries the notes of a request (fcodeunits.Notify, e.g. a number series reaching
+// its Warning No.): a JSON array of texts, URL-encoded (header values are ASCII); the browser
+// shows each
+const NotesHeader = "X-App-Notes"
+
+func setNotesHeader(c *fiber.Ctx, notes []string) {
+	if len(notes) == 0 {
+		return
+	}
+	data, err := json.Marshal(notes)
+	if err != nil {
+		return
+	}
+	c.Set(NotesHeader, url.QueryEscape(string(data)))
 }

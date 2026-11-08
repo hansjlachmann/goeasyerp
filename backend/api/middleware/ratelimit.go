@@ -1,7 +1,13 @@
 package middleware
 
 import (
+	"sort"
+	"strconv"
+	"strings"
 	"time"
+
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
@@ -47,10 +53,60 @@ func ThemeInstallRateLimit() fiber.Handler {
 	})
 }
 
-// rateLimitReached responds with 429 in the app's standard {success, error} envelope.
+// rateLimitReached responds with 429 in the app's standard {success, error} envelope. The
+// limiters run before the session is read, so the message is in the browser's language
+// (Accept-Language), else the default language.
 func rateLimitReached(c *fiber.Ctx) error {
+	ts := i18n.GetInstance()
+	language := acceptedLanguage(c.Get(fiber.HeaderAcceptLanguage), ts.GetSupportedLanguages())
+	if language == "" {
+		language = ts.GetDefaultLanguage()
+	}
 	return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
 		"success": false,
-		"error":   "Too many requests, please try again later",
+		"error":   apperrors.TooManyRequests().Message(language),
 	})
+}
+
+// acceptedLanguage returns the first language of an Accept-Language header that is supported
+// (nb-NO, or nb for nb-NO), "" when none is (the default language)
+func acceptedLanguage(header string, supported []string) string {
+	type tag struct {
+		name string
+		q    float64
+	}
+	var tags []tag
+	for _, part := range strings.Split(header, ",") {
+		name, params, _ := strings.Cut(strings.TrimSpace(part), ";")
+		q := 1.0
+		if v, ok := strings.CutPrefix(strings.TrimSpace(params), "q="); ok {
+			parsed, err := strconv.ParseFloat(v, 64)
+			if err == nil {
+				q = parsed
+			}
+		}
+		if name != "" && name != "*" && q > 0 {
+			tags = append(tags, tag{name, q})
+		}
+	}
+	sort.SliceStable(tags, func(i, j int) bool { return tags[i].q > tags[j].q })
+	sort.Strings(supported)
+	for _, t := range tags {
+		for _, lang := range supported {
+			if strings.EqualFold(lang, t.name) {
+				return lang
+			}
+		}
+		primary, _, _ := strings.Cut(t.name, "-")
+		if strings.EqualFold(primary, "no") || strings.EqualFold(primary, "nn") {
+			primary = "nb" // Norwegian: Bokmål
+		}
+		for _, lang := range supported {
+			langPrimary, _, _ := strings.Cut(lang, "-")
+			if strings.EqualFold(langPrimary, primary) {
+				return lang
+			}
+		}
+	}
+	return ""
 }
