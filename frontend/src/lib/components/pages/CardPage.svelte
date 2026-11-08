@@ -14,7 +14,7 @@
 	import { shortcuts, createShortcutMap, normalizeShortcut } from '$lib/utils/shortcuts';
 	import { currentUser } from '$lib/stores/user';
 	import { lookupFor, getFieldCaption, isItemVisible, isBlobType, type ItemCustomization } from '$lib/utils/fieldHelpers';
-	import { loadPageCustomizations, savePageCustomizations } from '$lib/utils/customizationStorage';
+	import { loadPageCustomizations, savePageCustomizations, layoutVersion, syncPageLayout } from '$lib/utils/customizationStorage';
 	import { getRecordId, isNewRecord, deepCopy, getPrimaryKeyField, getPrimaryKeyFields, stripInternalFields, hasRecordChanged, sameFieldValue } from '$lib/utils/recordHelpers';
 	import { runPagePath, type RunPageAction } from '$lib/utils/runPage';
 	import { withReturn } from '$lib/utils/returnUrl';
@@ -219,14 +219,17 @@
 		}
 	});
 
-	// Load customizations from localStorage on mount
+	// Load customizations (the browser's copy of the user's layout; again when it came from the server)
 	$effect(() => {
+		void $layoutVersion;
 		if (!page?.page) return; // Guard during cleanup
 		const userId = $currentUser?.user_id || 'anonymous';
 		fieldCustomizations = loadPageCustomizations<Record<string, ItemCustomization>>(
 			userId,
 			page.page.id
 		);
+		// a modal card is not opened through PageRenderer: its layout from the server (once)
+		void syncPageLayout(userId, page.page.id);
 	});
 
 	// Auto-save state

@@ -38,7 +38,7 @@
 	import { get } from 'svelte/store';
 	import { getFieldCaption, formatValue, formatOptionValue, formatLookupValue, isAdvancedLookup, isItemVisible, isDateType, isDateTimeType, isDecimalType, isNumberType, isCodeType, formatDate, formatDateTime, formatDecimal, cellStyle, lookupFor, toDateTimeInput, fromDateTimeInput, type ItemCustomization } from '$lib/utils/fieldHelpers';
 	import { currentLanguage, currentCompany } from '$lib/stores/session';
-	import { loadPageCustomizations, savePageCustomizations, loadColumnWidths, saveColumnWidths, loadRowNumbersPreference, saveRowNumbersPreference } from '$lib/utils/customizationStorage';
+	import { loadPageCustomizations, savePageCustomizations, loadColumnWidths, saveColumnWidths, loadRowNumbersPreference, saveRowNumbersPreference, layoutVersion } from '$lib/utils/customizationStorage';
 	import { tick, untrack } from 'svelte';
 	import { withReturn } from '$lib/utils/returnUrl';
 	import { runPagePath, openPagePath, filteredPagePath } from '$lib/utils/runPage';
@@ -503,8 +503,9 @@
 	// Note: Focus is handled explicitly in transition functions, handleCellKeyDown(), and insertNewRow()
 	// No auto-focus effect needed - it interferes with user clicks
 
-	// Load customizations from localStorage on mount
+	// Load customizations (the browser's copy of the user's layout; again when it came from the server)
 	$effect(() => {
+		void $layoutVersion;
 		const userId = $currentUser?.user_id || 'anonymous';
 		columnCustomizations = loadPageCustomizations<Record<string, ItemCustomization>>(
 			userId,

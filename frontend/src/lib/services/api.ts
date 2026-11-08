@@ -249,6 +249,23 @@ export const api = {
 		return handleApiResponse<OpenPageResult>(response, `open page ${pageId}`);
 	},
 
+	// A user's preferences of one type for a page (the user is the session's): name → data
+	async getPreferences(pageId: number, type: string): Promise<{ preference_name: string; preference_data: string }[]> {
+		const response = await fetch(`${API_BASE}/preferences/${pageId}/${encodeURIComponent(type)}`);
+		return (await handleApiResponse<{ preference_name: string; preference_data: string }[] | null>(response, `preferences ${pageId}`)) ?? [];
+	},
+
+	// keepalive: the request outlives the page (sent while the tab closes)
+	async savePreference(pageId: number, type: string, name: string, data: Record<string, unknown>, keepalive = false): Promise<void> {
+		const response = await fetch(`${API_BASE}/preferences/${pageId}/${encodeURIComponent(type)}`, {
+			method: 'POST',
+			keepalive,
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ preference_name: name, preference_data: data })
+		});
+		await handleApiResponse(response, `save preference ${pageId}`);
+	},
+
 	// A FlowField's drilldown (field.drilldown_flow_filters): the page it opens and the filters,
 	// as the FlowField calculates — the record's values, a total account's Totaling, the
 	// FlowFilters set (ISO, as the list sends them)

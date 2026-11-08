@@ -15,6 +15,9 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
+// maxPreferenceData: the most a preference may hold (JSON bytes)
+const maxPreferenceData = 64 * 1024
+
 // PreferencesHandler handles user preferences API requests
 type PreferencesHandler struct {
 	db     *sql.DB
@@ -108,6 +111,10 @@ func (h *PreferencesHandler) SavePreference(c *fiber.Ctx) error {
 	dataJSON, err := json.Marshal(requestBody.PreferenceData)
 	if err != nil {
 		return c.Status(500).JSON(apitypes.NewErrorResponse(apperrors.PreferenceSerialize().Message(language)))
+	}
+	// A page's layout or a filter preset is small; a user cannot fill the global table
+	if len(dataJSON) > maxPreferenceData {
+		return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.InvalidRequestBody().Message(language)))
 	}
 
 	// Convert page_id string to int

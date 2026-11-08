@@ -581,7 +581,7 @@ Matches classic ERP (see `screenshots/GeneralJournal01-07.png`).
 
 ### Column Customization
 - Users can hide, reorder, and resize columns via the Customize dialog.
-- Customizations are persisted per user per page to localStorage.
+- Customizations (visible, order — also a card's fields), column widths and row numbers are the user's layout of the page, stored on the server: User Preferences (global table), type `LAYOUT`, name `DEFAULT`, one record per user and page (`POST/GET /api/preferences/:page_id/:type`, at most 64 KB). `utils/customizationStorage.ts`: the pages read the browser's copy (localStorage) at once; opening a page takes the server's layout once per session (`syncPageLayout` — PageRenderer before the page renders, CardPage for modal cards; `layoutVersion` makes the pages read it again); every change goes to the copy and, 500 ms after the last one, to the server (pending changes are sent with `keepalive` when the tab closes). A layout only the browser has is sent to the server the first time.
 - The `visibleColumns` derived value applies visibility and custom ordering.
 
 ### Composite Key Encoding

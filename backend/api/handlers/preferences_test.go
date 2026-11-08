@@ -60,4 +60,10 @@ func TestPreferencesSaveAndRead(t *testing.T) {
 	if err := db.QueryRow(`SELECT COUNT(*), MAX(preference_data) FROM "User_Preferences"`).Scan(&rows, &data); err != nil || rows != 1 || !strings.Contains(data, "phone") {
 		t.Errorf("%d rows, data %q, %v", rows, data, err)
 	}
+
+	// A preference larger than a layout or preset is refused
+	big := `{"preference_name":"DEFAULT","preference_data":{"x":"` + strings.Repeat("a", maxPreferenceData) + `"}}`
+	if r := postJSON(t, appIn("cronus"), "/api/preferences/22/LAYOUT", big); r["success"] == true {
+		t.Errorf("oversized preference saved")
+	}
 }

@@ -28,6 +28,7 @@
 	import { getRecordId, getRecordLabel, getPrimaryKeyField, getPrimaryKeyFields, recordKeyText, canInsertNewRecord, deepCopy, applyServerValues } from '$lib/utils/recordHelpers';
 	import { createNavigationActions } from '$lib/utils/navigationHelpers';
 	import { getJson } from '$lib/utils/storage';
+	import { syncPageLayout } from '$lib/utils/customizationStorage';
 	import { estimateRowsPerPage, windowSize, windowOffsetFor, type ListWindowRequest } from '$lib/utils/listWindow';
 	import { apiFlowFilters, apiFieldFilters, toApiFlowFilter } from '$lib/utils/flowFilter';
 	import { currentLanguage } from '$lib/stores/session';
@@ -386,6 +387,8 @@
 			pageLoading = true;
 			error = null;
 
+			// The user's layout of the page (columns, widths) from the server, with the definition
+			const layoutSync = syncPageLayout(get(currentUser)?.user_id, Number(pageid));
 			// Fetch page definition
 			const response = await fetch(`/api/pages/${pageid}`);
 			if (!response.ok) {
@@ -409,6 +412,7 @@
 				throw new Error(result.error || 'Failed to load page');
 			}
 
+			await layoutSync;
 			page = result.data;
 			// Opened from a codeunit: a read-only list (the codeunit waits for the user)
 			if (embedded && !editableLookup && page) page = { ...page, page: { ...page.page, editable: false } };
