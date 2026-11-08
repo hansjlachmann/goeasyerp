@@ -200,7 +200,9 @@
 			initialFocusDone = true;
 			// Use longer timeout to ensure modal animation completes and DOM is ready
 			setTimeout(() => {
-				const input = document.getElementById(page.page.focus_field!);
+				// the card may have closed in the meantime (page is null then)
+				const focusField = page?.page?.focus_field;
+				const input = focusField ? document.getElementById(focusField) : null;
 				if (input) {
 					input.focus();
 					// Select all text if it's an input
@@ -433,6 +435,15 @@
 	function isBackToList(action: Action): boolean {
 		return !!action.run_page && action.run_page === page.page.list_page_id && !action.run_page_filter_field && !action.run_page_filters?.length;
 	}
+
+	// Actions that are not promoted have no button: the Actions menu holds them
+	const moreActions = $derived<Action | null>(
+		(() => {
+			// (page is null while the card closes)
+			const hidden = (page?.page?.actions ?? []).filter((a) => !a.promoted);
+			return hidden.length > 0 ? { name: '__more_actions', caption: t(LIST.MORE_ACTIONS), image: 'Run', items: hidden } : null;
+		})()
+	);
 
 	function runCardAction(action: Action) {
 		if (isBackToList(action)) {
@@ -781,6 +792,14 @@
 					/>
 				{/if}
 			{/each}
+			{#if moreActions}
+				<!-- The actions without a button of their own -->
+				<ActionMenu
+					action={moreActions}
+					itemDisabled={(item) => !moreActions.items?.includes(item) && !!item.run_object && checkIsNewRecord()}
+					onselect={runCardAction}
+				/>
+			{/if}
 		{/snippet}
 
 		{#snippet rightActions()}

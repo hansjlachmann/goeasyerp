@@ -215,6 +215,7 @@ messages:
   HELP_LIST_EDIT: "Edit the selected record"
   HELP_LIST_NEW: "New record"
   HELP_LIST_DELETE: "Delete the selected record(s)"
+  HELP_LIST_ROW_MENU: "The row menu: Edit, New, Delete and the page's actions for the row (Delete: the selected rows)"
   HELP_LIST_SEARCH: "Search"
   HELP_LIST_FILTER_PANE: "Show/hide filter pane — field picker focused: Alt+↓, Enter, type value, Enter"
   HELP_LIST_NAVIGATE: "Navigate: all entries of the row's document (entry lists)"
@@ -307,6 +308,7 @@ messages:
   LIST_HIDE_COLUMN: "Hide Column"
   LIST_COLUMN_MENU: "Column options"
   LIST_DRAG_COLUMN: "Drag to move the column"
+  LIST_MORE_ACTIONS: "Actions"
 
   # Filter Pane
   FILTER_TITLE: "Filter %1"

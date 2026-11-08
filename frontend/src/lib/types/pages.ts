@@ -205,6 +205,14 @@ export interface Action {
 	image?: string; // the button's icon (actionIcons.ts names, e.g. "New", "Post"); a bullet by default
 }
 
+/** An entry of a menu of actions (MenuPanel): an action, with a line above it or a note */
+export interface MenuEntry extends Action {
+	/** a line above the entry */
+	separator?: boolean;
+	/** text after the caption (e.g. the number of rows it acts on) */
+	note?: string;
+}
+
 export interface MenuDefinition {
 	menu: MenuGroup[];
 }

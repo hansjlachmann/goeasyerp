@@ -215,6 +215,7 @@ messages:
   HELP_LIST_EDIT: "Rediger valgt post"
   HELP_LIST_NEW: "Ny post"
   HELP_LIST_DELETE: "Slett valgt(e) post(er)"
+  HELP_LIST_ROW_MENU: "Radmenyen: Rediger, Ny, Slett og sidens handlinger for raden (Slett: de merkede radene)"
   HELP_LIST_SEARCH: "Søk"
   HELP_LIST_FILTER_PANE: "Vis/skjul filterrute — feltvelger i fokus: Alt+↓, Enter, skriv verdi, Enter"
   HELP_LIST_NAVIGATE: "Naviger: alle poster for radens bilag (postlister)"
@@ -307,6 +308,7 @@ messages:
   LIST_HIDE_COLUMN: "Skjul kolonne"
   LIST_COLUMN_MENU: "Kolonnevalg"
   LIST_DRAG_COLUMN: "Dra for å flytte kolonnen"
+  LIST_MORE_ACTIONS: "Handlinger"
 
   # Filter Pane
   FILTER_TITLE: "Filtrer %1"

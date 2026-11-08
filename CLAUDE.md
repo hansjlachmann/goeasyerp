@@ -431,6 +431,11 @@ The list page uses a spreadsheet-style 3-state cell model (like Excel/LibreOffic
 | Ctrl+C | The cursor cell's value as shown; with the row selector or several rows selected the rows (see below) |
 | Ctrl+V | Paste the copied records — on lists with `copy_paste_allowed: true` only (see below) |
 | Escape | With several rows selected: back to the cursor row; otherwise navigate to home (`/`) |
+| Right-click / Shift+F10 / context menu key | The row menu (see below) |
+
+### Row menu and Actions menu
+- Right-click on a row (navigation mode; in a cell being edited the browser's own menu), Shift+F10 or the context menu key opens the row menu (`MenuPanel.svelte`, also the dropdown of every menu button — `ActionMenu`): the page's actions as on its action bar, menu buttons as sub-menus, enabled by the same rules (`actionDisabled`, `menuItemDisabled` in `ListPage.svelte`). A row outside the selection is selected first; Delete deletes the selected rows ("Delete (2)"), the other actions use the cursor row, as on the action bar. Esc, a click outside or scrolling closes it.
+- Actions without `promoted: true` have no button: lists and cards show them in an **Actions** menu button at the end of the action bar (`moreActions`).
 
 ### Cell cursor and Ctrl+C in navigation mode
 - A list outside edit mode has a cell cursor (`cursorCol` in `ListPage.svelte`, moves in `utils/listCursor.ts`): a click puts it in the clicked cell (outlined, `cell-cursor`), the arrows/Tab/Enter move it (table above), the list scrolls sideways to it, and Edit/F2/Ctrl+E start editing in its column; leaving edit mode keeps it in the column edited last. Every row starts with a narrow **row selector** box (`row-selector`, spreadsheet-like): the cursor on it (a click, or Left from the first column) selects the whole row.

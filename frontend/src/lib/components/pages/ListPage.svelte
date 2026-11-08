@@ -11,10 +11,11 @@
 	import PageRenderer from './PageRenderer.svelte';
 	import PageFrames from './PageFrames.svelte';
 	import ActionMenu from '../ActionMenu.svelte';
+	import MenuPanel from '../MenuPanel.svelte';
 	import ActionButton from '../ActionButton.svelte';
 	import { newLineNo, newLineNoAbove } from '$lib/utils/autoSplitKey';
 	import type { FixedFilter } from '$lib/types/api';
-	import type { RequestDataItem, RequestInputField, Action } from '$lib/types/pages';
+	import type { RequestDataItem, RequestInputField, Action, MenuEntry } from '$lib/types/pages';
 	import LookupDropdown from './LookupDropdown.svelte';
 	import OptionDropdown from './OptionDropdown.svelte';
 	import CustomizeFieldsModal from './CustomizeFieldsModal.svelte';
@@ -872,6 +873,120 @@
 	// A menu item: run what it runs (an item without run_object / run_page does nothing)
 	async function handleMenuItem(item: Action) {
 		if (item.run_object || item.run_page || item.run_page_field) await handleAction(item.name);
+	}
+
+	// Whether an action button can run now (the action bar, the Actions menu, the row menu)
+	function actionDisabled(action: Action): boolean {
+		// New and Refresh are always enabled
+		if (action.name === 'New' || action.name === 'Refresh') return false;
+
+		// Edit opens the card (a list with a card page: needs a row), or edits the
+		// lines of an editable list
+		if (action.name === 'Edit') return page.page.card_page_id ? !selectedRecord : page.page.editable !== true;
+
+		// Delete requires a selected record (or several selected rows)
+		if (action.name === 'Delete') return !selectedRecord && !multiSelected;
+
+		// A codeunit or report runs on the list's filters: no row needed (an empty
+		// journal can be calculated or posted)
+		if (runsOnListFilters(action.run_object)) return false;
+
+		// Searching again with the header fields needs no row (Navigate's Find)
+		if (action.apply_header_fields) return false;
+
+		// Other buttons require selection
+		return !selectedRecord;
+	}
+
+	// Whether a menu button's item can run: when it runs something, it needs a record unless it
+	// runs on the list's filters
+	function menuItemDisabled(item: Action): boolean {
+		return !!(item.run_object || item.run_page || item.run_page_field) && !runsOnListFilters(item.run_object) && !selectedRecord;
+	}
+
+	// The page's own actions (top level): buttons; their menu buttons' items are menu items
+	const topLevelActions = $derived(new Set(page.page.actions ?? []));
+
+	// An entry of the Actions menu or the row menu: a button's action or a menu button's item
+	function entryDisabled(item: Action): boolean {
+		return topLevelActions.has(item) ? actionDisabled(item) : menuItemDisabled(item);
+	}
+
+	async function runEntry(item: Action) {
+		if (topLevelActions.has(item)) await handleAction(item.name);
+		else await handleMenuItem(item);
+	}
+
+	// Actions that are not promoted have no button: the Actions menu holds them
+	const moreActions = $derived<Action | null>(
+		(() => {
+			const hidden = (page.page.actions ?? []).filter((a) => !a.promoted);
+			return hidden.length > 0 ? { name: '__more_actions', caption: t(LIST.MORE_ACTIONS), image: 'Run', items: hidden } : null;
+		})()
+	);
+
+	// ---- The row menu (right-click on a row, Shift+F10, the context menu key) ----
+	// Every action of the page, as on the action bar (menu buttons as sub-menus), for the
+	// cursor row; Delete deletes the selected rows. A right-click on a row outside the selection
+	// selects that row first. Navigation mode only: in a cell the browser's menu (copy, paste).
+	let rowMenu = $state<{ x: number; y: number } | null>(null);
+
+	const rowMenuEntries = $derived<MenuEntry[]>(
+		(page.page.actions ?? []).map((action, i) => {
+			const previous = (page.page.actions ?? [])[i - 1];
+			const isRecordAction = ['New', 'Edit', 'Delete'].includes(action.name);
+			const entry: MenuEntry = { ...action };
+			// a line between the record's own actions and the page's functions
+			if (i > 0 && !isRecordAction && previous && ['New', 'Edit', 'Delete'].includes(previous.name)) entry.separator = true;
+			if (action.name === 'Delete' && multiSelected) entry.note = `(${selectedCount})`;
+			return entry;
+		})
+	);
+
+	// The row menu's entries are copies: find the page's action again by its name
+	function rowMenuAction(item: Action): Action {
+		return (page.page.actions ?? []).find((a) => a.name === item.name && !item.items === !a.items) ?? item;
+	}
+
+	function rowMenuDisabled(item: Action): boolean {
+		const action = rowMenuAction(item);
+		return topLevelActions.has(action) ? actionDisabled(action) : menuItemDisabled(item);
+	}
+
+	async function runRowMenuEntry(item: Action) {
+		const action = rowMenuAction(item);
+		if (topLevelActions.has(action)) await handleAction(action.name);
+		else await handleMenuItem(item);
+	}
+
+	function handleRowContextMenu(index: number, event: MouseEvent) {
+		if (!isNavigation || rowMenuEntries.length === 0) return;
+		event.preventDefault();
+		const record = displayRecords[index];
+		if (!record) return;
+		// A row outside the selection: it becomes the selection (and the cursor row)
+		if (!(multiSelected && isSelected(selection, rowKey(record)))) {
+			clearSelection();
+			const cell = (event.target as HTMLElement | null)?.closest('td');
+			const col = cell?.dataset.cursorCol;
+			if (col !== undefined && col !== '') cursorCol = Number(col);
+			selectedIndex = index;
+		}
+		rowMenu = { x: event.clientX, y: event.clientY };
+	}
+
+	// Shift+F10 / the context menu key: the menu at the cursor row
+	function openRowMenuAtCursor() {
+		if (selectedIndex < 0 || rowMenuEntries.length === 0) return;
+		const row = tableBodyElement?.querySelector<HTMLElement>(`tr[data-row-index="${selectedIndex}"]`);
+		const box = row?.getBoundingClientRect();
+		if (!box) return;
+		rowMenu = { x: box.left + 24, y: box.bottom };
+	}
+
+	function closeRowMenu(refocus: boolean) {
+		rowMenu = null;
+		if (refocus) listPageElement?.focus({ preventScroll: true });
 	}
 
 	// Handle action clicks
@@ -2654,6 +2769,9 @@
 				if (multiSelected) handleBulkDelete();
 				else if (selectedRecord) handleDelete();
 			};
+			// The row menu from the keyboard
+			map['Shift+F10'] = openRowMenuAtCursor;
+			map['ContextMenu'] = openRowMenuAtCursor;
 		}
 
 		return map;
@@ -3292,7 +3410,7 @@
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<div class="list-page" class:embedded={pickOnEnter} class:subpage use:shortcuts={shortcutMap()} tabindex="0" bind:this={listPageElement} onkeydown={handleSearchShortcut} role="application" aria-label={page.page.caption}>
+<div class="list-page" class:embedded={pickOnEnter} class:subpage use:shortcuts={shortcutMap()} tabindex="0" bind:this={listPageElement} onkeydown={handleSearchShortcut} oncontextmenu={(e) => { if (rowMenu) e.preventDefault(); }} role="application" aria-label={page.page.caption}>
 	<!-- A subpage has no title (its card section has the caption) and no search box -->
 	<PageHeader title={subpage ? '' : page.page.caption} onclose={returnUrl || pageNav.framed || (onclose && !subpage) ? closeList : undefined}>
 		{#snippet leftActions()}
@@ -3301,40 +3419,23 @@
 						<!-- A menu button: its items need a record when they run something -->
 						<ActionMenu
 							{action}
-							itemDisabled={(item) => !!(item.run_object || item.run_page || item.run_page_field) && !runsOnListFilters(item.run_object) && !selectedRecord}
+							itemDisabled={menuItemDisabled}
 							onselect={handleMenuItem}
 						/>
 					{:else}
-					{@const isDisabled = (() => {
-						// New and Refresh are always enabled
-						if (action.name === 'New' || action.name === 'Refresh') return false;
-
-						// Edit opens the card (a list with a card page: needs a row), or edits the
-						// lines of an editable list
-						if (action.name === 'Edit') return page.page.card_page_id ? !selectedRecord : page.page.editable !== true;
-
-						// Delete requires a selected record
-						if (action.name === 'Delete') return !selectedRecord;
-
-						// A codeunit or report runs on the list's filters: no row needed (an empty
-						// journal can be calculated or posted)
-						if (runsOnListFilters(action.run_object)) return false;
-
-						// Searching again with the header fields needs no row (Navigate's Find)
-						if (action.apply_header_fields) return false;
-
-						// Other buttons require selection
-						return !selectedRecord;
-					})()}
 					<ActionButton
 						caption={action.caption}
 						image={action.image}
 						shortcut={action.shortcut}
 						onclick={() => handleAction(action.name)}
-						disabled={isDisabled}
+						disabled={actionDisabled(action)}
 					/>
 					{/if}
 				{/each}
+				{#if moreActions}
+					<!-- The actions without a button of their own -->
+					<ActionMenu action={moreActions} itemDisabled={entryDisabled} onselect={runEntry} />
+				{/if}
 
 		{/snippet}
 
@@ -3538,6 +3639,7 @@
 					<tr
 						data-row-index={index}
 						onmousedown={(e) => handleRowMouseDown(index, e)}
+						oncontextmenu={(e) => handleRowContextMenu(index, e)}
 						ondblclick={pickOnEnter ? () => onrowclick?.(record, cardNavigationQuery) : undefined}
 						onmouseenter={() => handleRowDragOver(index)}
 						class={cn(
@@ -3568,7 +3670,7 @@
 							<td class="row-number-cell">{windowOffset + index + 1}</td>
 						{/if}
 						{#each visibleColumns() as field, colIndex}
-							<td class={cn('p-0 border-r border-b border-gray-300 dark:border-gray-600', isDecimalType(fieldTypes[field.source]) && 'amount', isNumberType(fieldTypes[field.source]) && 'numeric', isNavigation && !multiSelected && selectedIndex === index && cursorColumn() === colIndex && 'cell-cursor')}>
+							<td data-cursor-col={colIndex} class={cn('p-0 border-r border-b border-gray-300 dark:border-gray-600', isDecimalType(fieldTypes[field.source]) && 'amount', isNumberType(fieldTypes[field.source]) && 'numeric', isNavigation && !multiSelected && selectedIndex === index && cursorColumn() === colIndex && 'cell-cursor')}>
 								{#if isCellEditing && currentCellRow === index && currentCellCol === colIndex}
 									<!-- Cell-Editing Mode - Active input for this specific cell -->
 									{#if typeof record[field.source] === 'boolean' || fieldTypes[field.source] === 'bool'}
@@ -3970,6 +4072,19 @@
 		</span>
 	</div>
 </div>
+
+<!-- The row menu (right-click, Shift+F10) -->
+{#if rowMenu}
+	<MenuPanel
+		actions={rowMenuEntries}
+		x={rowMenu.x}
+		y={rowMenu.y}
+		fit
+		itemDisabled={rowMenuDisabled}
+		onpick={runRowMenuEntry}
+		onclose={closeRowMenu}
+	/>
+{/if}
 
 <!-- Column header menu -->
 {#if columnMenu}
