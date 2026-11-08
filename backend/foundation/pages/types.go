@@ -243,6 +243,10 @@ type Field struct {
 	// this record's field, filtered like an action's run_page_filters (Navigate's No. of Records)
 	DrilldownPageField string          `yaml:"drilldown_page_field,omitempty" json:"drilldown_page_field,omitempty"`
 	DrilldownFilters   []RunPageFilter `yaml:"drilldown_filters,omitempty" json:"drilldown_filters,omitempty"`
+	// DrilldownFlowFilters (set at runtime): the field is a FlowField whose drilldown has no
+	// filters of its own, so it opens the page with the FlowField's filters — the record's
+	// values, a total account's Totaling, the FlowFilters set (POST /api/pages/:id/drilldown)
+	DrilldownFlowFilters bool `yaml:"-" json:"drilldown_flow_filters,omitempty"`
 	// DrilldownDateField: in a period grid, the date field of the drilldown page the row's dates
 	// filter (else the grid's)
 	DrilldownDateField string `yaml:"drilldown_date_field,omitempty" json:"drilldown_date_field,omitempty"`

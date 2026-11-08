@@ -156,6 +156,7 @@ export interface Field {
 	drilldown_page_field?: string; // the drilldown opens the page whose number is in this record's field
 	check_box?: boolean; // a Yes/No FlowFilter above a matrix shown as a check box
 	drilldown_filters?: RunPageFilter[]; // with these filters (as an action's run_page_filters)
+	drilldown_flow_filters?: boolean; // a FlowField's drilldown with its own filters (api.drilldown)
 	primary_key?: boolean;
 	required?: boolean;
 	masked?: boolean; // write-only secret (Masked): password input, value never shown

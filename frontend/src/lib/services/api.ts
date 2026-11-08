@@ -249,6 +249,23 @@ export const api = {
 		return handleApiResponse<OpenPageResult>(response, `open page ${pageId}`);
 	},
 
+	// A FlowField's drilldown (field.drilldown_flow_filters): the page it opens and the filters,
+	// as the FlowField calculates — the record's values, a total account's Totaling, the
+	// FlowFilters set (ISO, as the list sends them)
+	async drilldown(
+		pageId: number,
+		field: string,
+		record: Record<string, unknown>,
+		flowFilters: TableFilter[] = []
+	): Promise<{ page_id: number; filters: TableFilter[] }> {
+		const response = await fetch(`${API_BASE}/pages/${pageId}/drilldown`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ field, record, flow_filters: flowFilters })
+		});
+		return handleApiResponse<{ page_id: number; filters: TableFilter[] }>(response, `drilldown ${pageId} ${field}`);
+	},
+
 	async modifyRecord<T = TableRecord>(
 		tableName: string,
 		id: string,

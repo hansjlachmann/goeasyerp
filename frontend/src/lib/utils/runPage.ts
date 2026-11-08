@@ -75,3 +75,9 @@ export function openPagePath(openPage: unknown): string | null {
 	// back to the page the codeunit ran from (Esc / close)
 	return returns === true ? withReturn(path) : path;
 }
+
+/** The URL of a page opened with these filters (a FlowField's drilldown): one filter= each */
+export function filteredPagePath(pageId: number, filters: { field: string; expression: string }[]): string {
+	const query = filters.map((f) => `filter=${encodeURIComponent(`${f.field}=${f.expression}`)}`);
+	return `/pages/${pageId}` + (query.length ? `?${query.join('&')}` : '');
+}

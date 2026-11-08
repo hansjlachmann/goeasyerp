@@ -41,7 +41,7 @@
 	import { loadPageCustomizations, savePageCustomizations, loadColumnWidths, saveColumnWidths, loadRowNumbersPreference, saveRowNumbersPreference } from '$lib/utils/customizationStorage';
 	import { tick, untrack } from 'svelte';
 	import { withReturn } from '$lib/utils/returnUrl';
-	import { runPagePath, openPagePath } from '$lib/utils/runPage';
+	import { runPagePath, openPagePath, filteredPagePath } from '$lib/utils/runPage';
 	import { apiFlowFilters } from '$lib/utils/flowFilter';
 	import ColumnHeaderMenu, { type ColumnMenuItem } from './ColumnHeaderMenu.svelte';
 	import { keyValuesFromFilters, loadClipboard, recordsToPaste, saveClipboard, singleValueFilters } from '$lib/utils/recordClipboard';
@@ -3246,6 +3246,22 @@
 	}
 
 	// Apply filters
+	// DrillDown on a FlowField without filters of its own: the server gives the page and the
+	// FlowField's filters for the row (a total account's Totaling, the list's FlowFilters)
+	async function openFlowFieldDrilldown(field: import('$lib/types/pages').Field, record: Record<string, any>) {
+		try {
+			const result = await api.drilldown(
+				page.page.id,
+				field.source,
+				stripInternalFields($state.snapshot(record)),
+				apiFlowFilters(currentFlowFilters, page.page.flow_filter_fields, locale)
+			);
+			pageNav.open(withReturn(filteredPagePath(result.page_id, result.filters), getRecordId(record, primaryKeyField, primaryKeyFieldsList)));
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : String(err));
+		}
+	}
+
 	function handleApplyFilters(filters: TableFilter[], flowFilters: TableFilter[]) {
 		onfilter?.(filters, flowFilters);
 	}
@@ -3873,6 +3889,10 @@
 												class="primary-key-link"
 												onclick={(e) => {
 													e.stopPropagation();
+													if (field.drilldown_flow_filters) {
+														openFlowFieldDrilldown(field, record);
+														return;
+													}
 													// The page in the row's field with the drilldown's filters (Navigate's No. of Records)
 													const url = field.drilldown_page_field
 														? runPagePath({ run_page_field: field.drilldown_page_field, run_page_filters: field.drilldown_filters }, record)

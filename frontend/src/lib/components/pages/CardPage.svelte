@@ -359,7 +359,17 @@
 	// in a modal over the card, filtered to this record (drilldown_filter_field = this record's
 	// drilldown_filter_value); Esc or the close button returns to the card
 	let drilldown = $state<{ pageId: number; filters: import('$lib/types/api').TableFilter[] } | null>(null);
-	function openDrilldown(field: import('$lib/types/pages').Field) {
+	async function openDrilldown(field: import('$lib/types/pages').Field) {
+		// a FlowField without filters of its own: the server gives the FlowField's filters
+		if (field.drilldown_flow_filters && record) {
+			try {
+				const result = await api.drilldown(page.page.id, field.source, stripInternalFields($state.snapshot(record)));
+				drilldown = { pageId: result.page_id, filters: result.filters };
+			} catch (err) {
+				toast.error(err instanceof Error ? err.message : String(err));
+			}
+			return;
+		}
 		const filters: import('$lib/types/api').TableFilter[] = [];
 		if (field.drilldown_filter_field && field.drilldown_filter_value) {
 			const value = record?.[field.drilldown_filter_value];

@@ -180,6 +180,7 @@ func (h *PagesHandler) GetPage(c *fiber.Ctx) error {
 					field.Masked = true
 				}
 				applyTableField(field)
+				markFlowFieldDrilldown(tableMeta, pageDef.Page.SourceTable, field)
 			}
 			// A period grid's filter fields and columns (FlowFields or calculated)
 			if grid := pageDef.Page.Layout.Sections[i].PeriodGrid; grid != nil {
@@ -223,6 +224,7 @@ func (h *PagesHandler) GetPage(c *fiber.Ctx) error {
 					field.Masked = true
 				}
 				applyTableField(field)
+				markFlowFieldDrilldown(tableMeta, pageDef.Page.SourceTable, field)
 			}
 		}
 
@@ -503,4 +505,15 @@ func (h *PagesHandler) GetAllPages(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(apitypes.NewSuccessResponse(pageList))
+}
+
+// markFlowFieldDrilldown: a FlowField's drilldown without filters of its own opens its page
+// with the FlowField's filters (field.DrilldownFlowFilters; POST /api/pages/:id/drilldown)
+func markFlowFieldDrilldown(tableMeta *pages.TableMetadata, table string, field *pages.Field) {
+	if field.Drilldown == 0 || field.DrilldownFilterField != "" || field.DrilldownPageField != "" {
+		return
+	}
+	if _, ok := tableMeta.GetFlowField(table, field.Source); ok {
+		field.DrilldownFlowFilters = true
+	}
 }

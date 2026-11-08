@@ -281,7 +281,7 @@ func TestItemsByBin(t *testing.T) {
 	}
 	for i, e := range []struct {
 		item, location, bin string
-		qty               int64
+		qty                 int64
 	}{{"I1", "MAIN", "A", 5}, {"I1", "MAIN", "A", -2}, {"I1", "MAIN", "B", 4}, {"I2", "OSLO", "S", 7}, {"I2", "MAIN", "", 9}} {
 		entry := gtables.NewItemLedgerEntry(src)
 		entry.Entry_no, entry.Item_no, entry.Location_code, entry.Bin_code = i+1, types.Code(e.item), types.Code(e.location), types.Code(e.bin)

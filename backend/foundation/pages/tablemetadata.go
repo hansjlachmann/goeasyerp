@@ -12,15 +12,16 @@ import (
 
 // TableMetadata holds metadata about tables for page rendering
 type TableMetadata struct {
-	primaryKeys    map[string][]string          // table name -> primary key field names (supports composite keys)
-	requiredFields map[string]map[string]bool   // table name -> field name -> required
-	maskedFields   map[string]map[string]bool   // table name -> field name -> masked (write-only secret)
-	fieldTypes     map[string]map[string]string // table name -> field name -> type (e.g., "bool", "code", "text")
-	captionFields  map[string][]string          // table name -> data_caption_fields (the card title)
-	lookupPages    map[string]int               // table name -> lookup_page_id (the lookup's "New" opens it)
-	autoKeys       map[string]bool              // table name -> auto_key (OnInsert assigns a blank key)
-	postedTables   map[string]bool              // table name -> posted (written by posting only)
-	editableFields map[string]map[string]bool   // table name -> fields with editable: true (a posted table's fields the user may change)
+	primaryKeys    map[string][]string                // table name -> primary key field names (supports composite keys)
+	requiredFields map[string]map[string]bool         // table name -> field name -> required
+	maskedFields   map[string]map[string]bool         // table name -> field name -> masked (write-only secret)
+	fieldTypes     map[string]map[string]string       // table name -> field name -> type (e.g., "bool", "code", "text")
+	captionFields  map[string][]string                // table name -> data_caption_fields (the card title)
+	lookupPages    map[string]int                     // table name -> lookup_page_id (the lookup's "New" opens it)
+	autoKeys       map[string]bool                    // table name -> auto_key (OnInsert assigns a blank key)
+	postedTables   map[string]bool                    // table name -> posted (written by posting only)
+	editableFields map[string]map[string]bool         // table name -> fields with editable: true (a posted table's fields the user may change)
+	flowFields     map[string]map[string]FlowFieldDef // table name -> FlowField -> its source table and filters (the drilldown)
 	mu             sync.RWMutex
 }
 
@@ -44,6 +45,28 @@ type tableFieldDef struct {
 	Required   bool   `yaml:"required"`
 	Masked     bool   `yaml:"masked"`
 	Editable   *bool  `yaml:"editable"`
+	// FlowFields: the source table and the filters of the calculation (CalcFormula)
+	FlowField   bool            `yaml:"flow_field"`
+	SourceTable string          `yaml:"source_table"`
+	FlowFilters []FlowFilterDef `yaml:"flow_filters"`
+}
+
+// FlowFieldDef is a FlowField's CalcFormula as the table YAML gives it: the source table and
+// the filters on its fields
+type FlowFieldDef struct {
+	SourceTable string
+	Filters     []FlowFilterDef
+}
+
+// FlowFilterDef is one filter of a FlowField's CalcFormula: Field (of the source table) is
+// Type field — the record's Value field —, field_filter — the filter held in the record's
+// Value field —, filter — the record's FlowFilter Value, when set (UpperLimit: up to its
+// upper end) —, const — Value itself — or language (the user's language)
+type FlowFilterDef struct {
+	Field      string `yaml:"field"`
+	Type       string `yaml:"type"`
+	Value      string `yaml:"value"`
+	UpperLimit bool   `yaml:"upper_limit"`
 }
 
 var (
@@ -64,6 +87,7 @@ func GetTableMetadata() *TableMetadata {
 			autoKeys:       make(map[string]bool),
 			postedTables:   make(map[string]bool),
 			editableFields: make(map[string]map[string]bool),
+			flowFields:     make(map[string]map[string]FlowFieldDef),
 		}
 		if err := tableMetadata.Load(); err != nil {
 			fmt.Printf("Warning: Failed to load table metadata: %v\n", err)
@@ -137,6 +161,12 @@ func (tm *TableMetadata) loadTableFile(filePath string) error {
 		}
 		if field.Type != "" {
 			fTypes[field.Name] = field.Type
+		}
+		if field.FlowField && field.SourceTable != "" {
+			if tm.flowFields[metadataKey(tableDef.Table.Name)] == nil {
+				tm.flowFields[metadataKey(tableDef.Table.Name)] = map[string]FlowFieldDef{}
+			}
+			tm.flowFields[metadataKey(tableDef.Table.Name)][field.Name] = FlowFieldDef{SourceTable: field.SourceTable, Filters: field.FlowFilters}
 		}
 	}
 	if len(pkFields) > 0 {
@@ -270,4 +300,13 @@ func (tm *TableMetadata) IsFieldRequired(tableName, fieldName string) bool {
 // frontend keyed their rows randomly and lost focus on every render.
 func metadataKey(tableName string) string {
 	return strings.ToLower(strings.ReplaceAll(strings.TrimSpace(tableName), " ", "_"))
+}
+
+// GetFlowField returns a FlowField's source table and filters (CalcFormula); false when the
+// field is not a FlowField of the table
+func (tm *TableMetadata) GetFlowField(tableName, field string) (FlowFieldDef, bool) {
+	tm.mu.RLock()
+	defer tm.mu.RUnlock()
+	def, ok := tm.flowFields[metadataKey(tableName)][field]
+	return def, ok
 }

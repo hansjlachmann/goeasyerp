@@ -32,29 +32,21 @@ page:
 
         - source: net_change
           width: 140
-          drilldown: 20
-          drilldown_filter_field: gl_account_no
-          drilldown_filter_value: no
+          drilldown: 20   # the FlowField's filters: a total account's Totaling, the Date Filter …
 
         - source: balance_at_date
           width: 150
-          drilldown: 20
-          drilldown_filter_field: gl_account_no
-          drilldown_filter_value: no
+          drilldown: 20   # the FlowField's filters: a total account's Totaling, the Date Filter …
 
         - source: additional_currency_net_change
           width: 150
           visible: false
-          drilldown: 20
-          drilldown_filter_field: gl_account_no
-          drilldown_filter_value: no
+          drilldown: 20   # the FlowField's filters: a total account's Totaling, the Date Filter …
 
         - source: add_currency_balance_at_date
           width: 150
           visible: false
-          drilldown: 20
-          drilldown_filter_field: gl_account_no
-          drilldown_filter_value: no
+          drilldown: 20   # the FlowField's filters: a total account's Totaling, the Date Filter …
 
         - source: totaling
           width: 160

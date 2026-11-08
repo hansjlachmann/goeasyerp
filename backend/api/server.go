@@ -144,6 +144,7 @@ func (s *Server) Setup() {
 	// Page routes
 	api.Get("/pages", pagesHandler.GetAllPages)
 	api.Get("/pages/:id", pagesHandler.GetPage)
+	api.Post("/pages/:id/drilldown", handlers.PageDrilldown)                                               // a FlowField's drilldown: its page and filters
 	api.Post("/pages/:id/field-states", handlers.NewPageTriggersHandler(s.db, s.dbType).FieldStates)       // page triggers (OnAfterGetRecord)
 	api.Post("/pages/:id/period-grid", handlers.NewPageTriggersHandler(s.db, s.dbType).PeriodGrid)         // a card section of periods (FlowFields per period)
 	api.Post("/pages/:id/matrix", handlers.NewPageTriggersHandler(s.db, s.dbType).Matrix)                  // a card section of records against periods
