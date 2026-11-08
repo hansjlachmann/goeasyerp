@@ -17,7 +17,7 @@ type DrilldownFilter struct {
 
 // FlowFieldDrilldownFilters gives the filters of a FlowField's drilldown, as the FlowField
 // calculates (classic DrillDown on a FlowField: its source table filtered by the CalcFormula):
-// a field filter takes the record's value (blank: ''), a field_filter the filter held in the
+// a field filter takes the record's value (blank: ”), a field_filter the filter held in the
 // record's field — when it has one it replaces the equality on the same field (a total account
 // sums its Totaling) —, a filter the FlowFilter set on the record (flowFilters by name; only
 // when set, UpperLimit: up to its upper end — kinds give the FlowFilters' kinds), a const its
