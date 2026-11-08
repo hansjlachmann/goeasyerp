@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.142](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.141...v0.1.142) (2026-11-08)
+
+
+### Features
+
+* refuse deleting records that are still in use ([6586968](https://github.com/hansjlachmann/goeasyerp/commit/658696828de2c9bcaa3b23ee5a9978e2b6578d91))
+
+
+### Bug Fixes
+
+* drill down on FlowFields with their own filters, so total accounts show their Totaling range ([ea855c2](https://github.com/hansjlachmann/goeasyerp/commit/ea855c2226eee2a16efd5a6467c8fc6f52e7b698))
+* generate keyed delete-rule references so vet passes ([8ab1eff](https://github.com/hansjlachmann/goeasyerp/commit/8ab1eff37ca1818b2e4b07f029d73e34fa880bf5))
+
 ## [0.1.141](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.140...v0.1.141) (2026-11-07)
 
 
