@@ -24,6 +24,17 @@ export function isDecimalType(fieldType: string | undefined): boolean {
 	return fieldType === 'types.Decimal' || fieldType === 'Decimal' || fieldType === 'decimal';
 }
 
+/** Check if a field type is a whole number (YAML "int", Go "Integer") */
+export function isIntegerType(fieldType: string | undefined): boolean {
+	if (!fieldType) return false;
+	return fieldType === 'int' || fieldType === 'int64' || fieldType === 'Integer' || fieldType === 'BigInteger';
+}
+
+/** Numbers (decimals and whole numbers) are aligned right, in lists, cards and footers */
+export function isNumberType(fieldType: string | undefined): boolean {
+	return isDecimalType(fieldType) || isIntegerType(fieldType);
+}
+
 /** Check if a field type represents a DateTime (from YAML "types.DateTime" or Go "DateTime") */
 export function isDateTimeType(fieldType: string | undefined): boolean {
 	if (!fieldType) return false;

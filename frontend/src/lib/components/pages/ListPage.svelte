@@ -36,7 +36,7 @@
 	import { currentUser } from '$lib/stores/user';
 	import { companySwitchOpen } from '$lib/stores/companySwitch';
 	import { get } from 'svelte/store';
-	import { getFieldCaption, formatValue, formatOptionValue, formatLookupValue, isAdvancedLookup, isItemVisible, isDateType, isDateTimeType, isDecimalType, isCodeType, formatDate, formatDateTime, formatDecimal, cellStyle, lookupFor, toDateTimeInput, fromDateTimeInput, type ItemCustomization } from '$lib/utils/fieldHelpers';
+	import { getFieldCaption, formatValue, formatOptionValue, formatLookupValue, isAdvancedLookup, isItemVisible, isDateType, isDateTimeType, isDecimalType, isNumberType, isCodeType, formatDate, formatDateTime, formatDecimal, cellStyle, lookupFor, toDateTimeInput, fromDateTimeInput, type ItemCustomization } from '$lib/utils/fieldHelpers';
 	import { currentLanguage, currentCompany } from '$lib/stores/session';
 	import { loadPageCustomizations, savePageCustomizations, loadColumnWidths, saveColumnWidths, loadRowNumbersPreference, saveRowNumbersPreference } from '$lib/utils/customizationStorage';
 	import { tick, untrack } from 'svelte';
@@ -3450,6 +3450,7 @@
 					{#each visibleColumns() as field}
 						<th
 							style="width: {getColumnWidth(field)}px"
+							class:numeric={isNumberType(fieldTypes[field.source])}
 							class:drag-over={dragOverColumn === field.source && draggedColumn !== field.source}
 							ondragover={(e) => {
 								if (!draggedColumn) return;
@@ -3566,7 +3567,7 @@
 							<td class="row-number-cell">{windowOffset + index + 1}</td>
 						{/if}
 						{#each visibleColumns() as field, colIndex}
-							<td class={cn('p-0 border-r border-b border-gray-300 dark:border-gray-600', isDecimalType(fieldTypes[field.source]) && 'amount', isNavigation && !multiSelected && selectedIndex === index && cursorColumn() === colIndex && 'cell-cursor')}>
+							<td class={cn('p-0 border-r border-b border-gray-300 dark:border-gray-600', isDecimalType(fieldTypes[field.source]) && 'amount', isNumberType(fieldTypes[field.source]) && 'numeric', isNavigation && !multiSelected && selectedIndex === index && cursorColumn() === colIndex && 'cell-cursor')}>
 								{#if isCellEditing && currentCellRow === index && currentCellCol === colIndex}
 									<!-- Cell-Editing Mode - Active input for this specific cell -->
 									{#if typeof record[field.source] === 'boolean' || fieldTypes[field.source] === 'bool'}
@@ -3946,7 +3947,7 @@
 					{#if typeof footerRow?.[field.source] === 'boolean'}
 						<input type="checkbox" class="footer-value" checked={footerRow[field.source]} disabled />
 					{:else}
-						<span class={cn('footer-value', footerIsAmount(footerRow?.[field.source], field) && 'amount')}>{footerRow ? formatFooterValue(footerRow[field.source], field) : ''}</span>
+						<span class={cn('footer-value', footerIsAmount(footerRow?.[field.source], field) && 'amount', (footerIsAmount(footerRow?.[field.source], field) || isNumberType(fieldTypes[field.source])) && 'numeric')}>{footerRow ? formatFooterValue(footerRow[field.source], field) : ''}</span>
 					{/if}
 				</div>
 			{/each}
@@ -4264,6 +4265,17 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 4px;
+	}
+
+	/* Numbers (decimals, whole numbers) align right: the cells, their inputs and the caption */
+	td.numeric,
+	td.numeric :global(input:not([type='checkbox'])),
+	.footer-value.numeric {
+		text-align: right;
+	}
+	th.numeric .th-label {
+		text-align: right;
+		justify-content: flex-end;
 	}
 
 	.th-label {

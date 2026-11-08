@@ -2,7 +2,7 @@
 	import type { Field } from '$lib/types/pages';
 	import type { LookupData } from '$lib/types/api';
 	import { cn } from '$lib/utils/cn';
-	import { getFieldStyleClasses, formatValue, formatOptionValue, formatLookupValue, isAdvancedLookup as isAdvancedLookupData, isDateType, isDateTimeType, isDecimalType, formatDate, formatDateTime, formatDecimal, toDateTimeInput, fromDateTimeInput } from '$lib/utils/fieldHelpers';
+	import { getFieldStyleClasses, formatValue, formatOptionValue, formatLookupValue, isAdvancedLookup as isAdvancedLookupData, isDateType, isDateTimeType, isDecimalType, isNumberType, formatDate, formatDateTime, formatDecimal, toDateTimeInput, fromDateTimeInput } from '$lib/utils/fieldHelpers';
 	import { toDecimalInput, fromDecimalInput } from '$lib/utils/regional';
 	import DateInput from '../DateInput.svelte';
 	import { currentLanguage } from '$lib/stores/session';
@@ -62,6 +62,7 @@
 	const isDateField = $derived(isDateType(fieldType));
 	const isDateTimeField = $derived(isDateTimeType(fieldType));
 	const isDecimalField = $derived(isDecimalType(fieldType));
+	const isNumberField = $derived(isNumberType(fieldType));
 
 	// Check if this is an option/enum field (has options provided)
 	const isOptionField = $derived(options && Object.keys(options).length > 0);
@@ -248,7 +249,7 @@
 					id={field.source}
 					type={inputType()}
 					autocomplete={field.masked ? 'new-password' : 'off'}
-					class={cn('input', fieldStyle, isDecimalField && 'amount', error ? 'input-error' : '', onassistedit ? 'with-assist' : '')}
+					class={cn('input', fieldStyle, isDecimalField && 'amount', isNumberField && 'numeric', error ? 'input-error' : '', onassistedit ? 'with-assist' : '')}
 					value={isDateTimeField ? toDateTimeInput(value) : isDecimalField ? toDecimalInput(value, locale) : (value ?? '')}
 					{tabindex}
 					oninput={handleChange}
@@ -333,7 +334,7 @@
 				</select>
 			</div>
 		{:else}
-			<div class={cn('field-value', fieldStyle, isDecimalField && 'amount')}>
+			<div class={cn('field-value', fieldStyle, isDecimalField && 'amount', isNumberField && 'numeric')}>
 				{#if ondrilldown}
 					<button type="button" class="drilldown-link" {tabindex} onclick={() => ondrilldown()}>
 						{formatDecimal(value, field.decimal_places)}
@@ -514,6 +515,14 @@
 		background-color: var(--color-bg-input);
 		border-color: var(--color-border-secondary);
 		color: var(--color-text-primary);
+	}
+
+	/* Numbers (decimals, whole numbers) align right, as in the lists */
+	.field-value.numeric {
+		@apply justify-end;
+	}
+	input.numeric {
+		text-align: right;
 	}
 
 	/* Strong style for important values */
