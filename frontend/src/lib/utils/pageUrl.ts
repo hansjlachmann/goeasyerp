@@ -9,6 +9,7 @@ export interface PageUrlProps {
 	pageId: number;
 	recordId?: string;
 	filter: string[];
+	flowFilter: string[];
 	returnUrl?: string;
 	select?: string;
 	openCard: boolean;
@@ -19,7 +20,7 @@ export interface PageUrlProps {
 }
 
 // Query parameters of the app (the others are the page's own: a journal's template and batch)
-const reserved = new Set(['record', 'filter', 'back', 'select', 'card', 'new', 'nav', 'edit']);
+const reserved = new Set(['record', 'filter', 'flowfilter', 'back', 'select', 'card', 'new', 'nav', 'edit']);
 
 export function parsePageUrl(url: URL, pageId: number, pathRecordId?: string): PageUrlProps {
 	const params = url.searchParams;
@@ -31,6 +32,8 @@ export function parsePageUrl(url: URL, pageId: number, pathRecordId?: string): P
 		pageId,
 		recordId: pathRecordId ?? (params.get('record') || undefined),
 		filter: params.getAll('filter'), // field=expression, one per filter
+		// FlowFilters as typed (Date Filter): field=expression, one per FlowFilter
+		flowFilter: params.getAll('flowfilter'),
 		// Opened from a drilldown or card action: where Esc / close returns to, and the record
 		// to select when this page is the one returned to
 		returnUrl: safeReturnUrl(params.get('back')),

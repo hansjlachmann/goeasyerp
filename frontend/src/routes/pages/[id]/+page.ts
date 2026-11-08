@@ -8,6 +8,7 @@ export const load: PageLoad = ({ params, url }) => {
 		openParams: page.openParams,
 		recordId: page.recordId,
 		filter: page.filter,
+		flowFilter: page.flowFilter,
 		returnUrl: page.returnUrl,
 		select: page.select,
 		openCard: page.openCard,

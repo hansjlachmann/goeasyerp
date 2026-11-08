@@ -19,6 +19,7 @@
 			pageid={page.pageId}
 			recordid={page.recordId}
 			initialFilter={page.filter}
+			initialFlowFilter={page.flowFilter}
 			initialSelect={page.select}
 			openCard={page.openCard}
 			startNew={page.startNew}

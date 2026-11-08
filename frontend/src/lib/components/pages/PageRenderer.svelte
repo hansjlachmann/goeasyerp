@@ -37,6 +37,7 @@
 		pageid: number;
 		recordid?: string;
 		initialFilter?: string | string[]; // ?filter=field=expression (several: one per field)
+		initialFlowFilter?: string[]; // ?flowfilter=field=expression: the FlowFilters as typed (Date Filter)
 		returnUrl?: string; // opened from a drilldown/card action: Esc and close go back here
 		initialSelect?: string; // record key to select (returning from a drilldown)
 		openCard?: boolean; // and open its modal card again (returning from a card's action)
@@ -77,6 +78,7 @@
 		pageid,
 		recordid,
 		initialFilter,
+		initialFlowFilter,
 		returnUrl,
 		initialSelect,
 		openCard = false,
@@ -150,6 +152,18 @@
 			else url.searchParams.set(name, value);
 		}
 		return url.pathname + url.search;
+	}
+
+	// The list's filters and FlowFilters go into its URL, so the way back to it — Esc from a
+	// drilldown or an action's page (their back= is this URL), a reload — opens it filtered again
+	function keepFiltersInUrl() {
+		if (embedded || subpage || lookupMode || typeof window === 'undefined') return;
+		const url = pageNav.location();
+		url.searchParams.delete('filter');
+		url.searchParams.delete('flowfilter');
+		for (const f of currentFilters) url.searchParams.append('filter', `${f.field}=${f.expression}`);
+		for (const f of currentFlowFilters) url.searchParams.append('flowfilter', `${f.field}=${f.expression}`);
+		pageNav.replaceState(url.pathname + url.search);
 	}
 
 	// Opens the page again with a changed parameter (a picked template, another batch)
@@ -346,7 +360,8 @@
 	// svelte-ignore state_referenced_locally - the initial filters only set the starting state
 	let currentFilters: import('$lib/types/api').TableFilter[] = $state(initialFilters ?? parseInitialFilter(initialFilter));
 	// FlowFilters as typed in the filter pane (e.g. Date Filter "01.01.26..31.03.26"); sent as ISO
-	let currentFlowFilters: import('$lib/types/api').TableFilter[] = $state([]);
+	// svelte-ignore state_referenced_locally - the URL's FlowFilters only set the starting state
+	let currentFlowFilters: import('$lib/types/api').TableFilter[] = $state(parseInitialFilter(initialFlowFilter));
 
 	function parseInitialFilter(filter: string | string[] | undefined): import('$lib/types/api').TableFilter[] {
 		const filters: import('$lib/types/api').TableFilter[] = [];
@@ -623,15 +638,13 @@
 		}
 	}
 
-	// Returning from a drilldown to an unfiltered list: start with the window around the
-	// record to select (its position in primary key order), not at the top
+	// Returning from a drilldown to a list: start with the window around the record to
+	// select (its position in the list's filters and order), not at the top
 	async function initialListOffset(): Promise<number> {
-		if (!page || !initialSelect || (currentFilters.length > 0 && !embedded)) return 0;
+		if (!page || !initialSelect) return 0;
 		try {
-			const ids = await api.getRecordIDs(
-				page.page.source_table,
-				currentFilters.length > 0 ? { filters: apiFilters(currentFilters) } : undefined
-			);
+			// the list's own query, so the position is the record's place in the list's windows
+			const ids = await api.getRecordIDs(page.page.source_table, listQuery());
 			const position = ids.indexOf(initialSelect);
 			if (position < 0) return 0;
 			const perPage = estimateRowsPerPage(typeof window !== 'undefined' ? window.innerHeight : 800);
@@ -909,6 +922,7 @@
 	async function handleFilterChange(filters: import('$lib/types/api').TableFilter[], flowFilters: import('$lib/types/api').TableFilter[] = []) {
 		currentFilters = filters;
 		currentFlowFilters = flowFilters;
+		keepFiltersInUrl();
 		await loadListData(0);
 	}
 
