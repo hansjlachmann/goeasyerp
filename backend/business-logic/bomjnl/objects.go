@@ -11,6 +11,8 @@ func init() {
 	objects.Codeunit(33, "BOM Jnl.-Post Batch")
 	objects.Codeunit(51, "BOM-Explode BOM")
 	objects.Codeunit(54, "BOM-Calculate Cost")
+	objects.Codeunit(63, "Sales-Explode BOM")
+	objects.Codeunit(73, "Purch.-Explode BOM")
 	objects.Codeunit(246, "Item Jnl.-Explode BOM")
 	objects.Codeunit(250, "BOMJnlManagement")
 	objects.Codeunit(255, "BOM Reg.-Show Item Ledger")

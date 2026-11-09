@@ -94,6 +94,10 @@ codeunits:
     caption: "Ressourcekladde – bogfør bunke"
   "312":
     caption: "Debitor - kontroller kreditmaks."
+  "63":
+    caption: "Salg - udfold stykliste"
+  "73":
+    caption: "Køb - udfold stykliste"
   "216":
     caption: "Projektpost – angiv udlignings-id"
   "220":

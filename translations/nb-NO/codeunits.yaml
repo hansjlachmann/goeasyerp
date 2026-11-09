@@ -94,6 +94,10 @@ codeunits:
     caption: "Ressurskladd – bokfør bunke"
   "312":
     caption: "Kunde - kontroller kredittgrense"
+  "63":
+    caption: "Salg - utvid stykkliste"
+  "73":
+    caption: "Kjøp - utvid stykkliste"
   "216":
     caption: "Prosjektpost – angi utlignings-ID"
   "220":

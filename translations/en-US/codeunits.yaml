@@ -94,6 +94,10 @@ codeunits:
     caption: "Res. Jnl.-Post Batch"
   "312":
     caption: "Cust-Check Cr. Limit"
+  "63":
+    caption: "Sales-Explode BOM"
+  "73":
+    caption: "Purch.-Explode BOM"
   "216":
     caption: "Project Entry-Set Appl. ID"
   "220":

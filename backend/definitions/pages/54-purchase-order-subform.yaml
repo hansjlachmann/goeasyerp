@@ -156,6 +156,12 @@ page:
       promoted: true
 
     # Reservations of the line: the Reservation page (the sources it can reserve from) and its entries
+    # the line's bill of materials as a line per component (codeunit 73)
+    - name: Explode BOM
+      caption: Explode BOM
+      image: Lines
+      promoted: true
+      run_object: table:Purchase_Line.ExplodeBOM
     - name: Reserve
       caption: Reserve
       image: Lines
