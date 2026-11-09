@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.148](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.147...v0.1.148) (2026-11-09)
+
+
+### Features
+
+* amount font setting in Appearance ([f3ef50a](https://github.com/hansjlachmann/goeasyerp/commit/f3ef50a93ce93cd238e550a5ab248a97a54739c9))
+* application between currencies, recalculate sales tax, drop shipment status ([bff7855](https://github.com/hansjlachmann/goeasyerp/commit/bff785532b733a3839a18226cd7940b63b4b7154))
+* drop shipments and reminder test reports ([88b2b98](https://github.com/hansjlachmann/goeasyerp/commit/88b2b9877e9a51b4e6c204397b6fa97594ac7468))
+* payments and checks, document test reports and batch posting ([69b2330](https://github.com/hansjlachmann/goeasyerp/commit/69b2330f91be389d582fc38fdd6838aeb81f8341))
+
 ## [0.1.147](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.146...v0.1.147) (2026-11-09)
 
 
