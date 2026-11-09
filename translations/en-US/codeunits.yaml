@@ -92,6 +92,8 @@ codeunits:
     caption: "Res. Jnl.-Post Line"
   "213":
     caption: "Res. Jnl.-Post Batch"
+  "312":
+    caption: "Cust-Check Cr. Limit"
   "216":
     caption: "Project Entry-Set Appl. ID"
   "220":

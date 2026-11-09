@@ -3,6 +3,7 @@ package tables
 import (
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/noseries"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salestax"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
@@ -638,6 +639,17 @@ func (genJournalLineLogic) OnValidate_Amount(rec *gtables.GenJournalLine) error 
 		return err
 	}
 	rec.Amount = system.Round(rec.Amount, currency.Amount_rounding_precision)
+	currFieldNo := fcodeunits.CurrFieldNo()
+	if currFieldNo != 0 && currFieldNo != rec.FieldNo("applies_to_doc_no") &&
+		((rec.Account_type == gtables.GenJournalLine_Account_type.Customer && rec.Account_no != "" && rec.Amount.IsPositive() &&
+			currFieldNo != rec.FieldNo("bal_account_no")) ||
+			(rec.Bal_account_type == gtables.GenJournalLine_Bal_account_type.Customer && rec.Bal_account_no != "" && rec.Amount.IsNegative() &&
+				currFieldNo != rec.FieldNo("account_no"))) {
+		err = CustCheckCrLimitGenJnlLine(rec)
+		if err != nil {
+			return err
+		}
+	}
 	if rec.Currency_code == "" {
 		rec.Amount_lcy = rec.Amount
 	} else {

@@ -1526,11 +1526,21 @@ func validateChangedFields(table ftables.Table, tableName string, data map[strin
 		if now, ok := table.ToMap()[fieldName]; ok && fmt.Sprint(now) == fmt.Sprint(value) {
 			continue
 		}
-		if err := table.ValidateField(fieldName, value); err != nil {
+		if err := validateByUser(table, fieldName, value); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// validateByUser runs ValidateField for a value the user entered: its triggers see the field as
+// CurrFieldNo (the classic warnings that only concern typing, e.g. the credit limit)
+func validateByUser(table ftables.Table, fieldName string, value interface{}) error {
+	if rec, ok := table.(interface{ FieldNo(string) int }); ok {
+		fcodeunits.SetCurrFieldNo(rec.FieldNo(fieldName))
+		defer fcodeunits.SetCurrFieldNo(0)
+	}
+	return table.ValidateField(fieldName, value)
 }
 
 // newRecordReadOnlyValues are the read-only (editable: false), non-key fields of a new record
@@ -1672,7 +1682,7 @@ func (h *TablesHandler) ValidateField(c *fiber.Ctx) error {
 	}
 
 	// Validate field (runs OnValidate trigger)
-	if err := table.ValidateField(req.Field, req.Value); err != nil {
+	if err := validateByUser(table, req.Field, req.Value); err != nil {
 		return c.JSON(apitypes.APIResponse{
 			Success: false,
 			Error:   errorMessage(err, language),

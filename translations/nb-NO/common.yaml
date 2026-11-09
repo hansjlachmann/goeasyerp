@@ -182,6 +182,7 @@ common:
     post_and_print: "Bokfør og skriv ut"
     preview_posting: "Forhåndsvis bokføring"
     get_shipment_lines: "Hent leveringslinjer"
+    copy_document: "Kopier dokument"
     get_receipt_lines: "Hent mottakslinjer"
     show_document: "Vis bilag"
     ok: "OK"

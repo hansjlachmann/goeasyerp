@@ -4,6 +4,7 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/itemprice"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/resprice"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salestax"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
@@ -996,7 +997,15 @@ func updateSalesLineAmounts(rec *gtables.SalesLine, testType bool) error {
 			rec.Tax_percent = types.Decimal{}
 		}
 	}
-	return initSalesLineOutstandingAmount(rec)
+	err = initSalesLineOutstandingAmount(rec)
+	if err != nil {
+		return err
+	}
+	if fcodeunits.CurrFieldNo() != 0 && rec.Document_type <= gtables.SalesLine_Document_type.Invoice &&
+		rec.Outstanding_amount.Add(rec.Shipped_not_invoiced).IsPositive() {
+		return CustCheckCrLimitSalesLine(rec)
+	}
+	return nil
 }
 
 // calcSalesLineOriginalAmount (CalcOriginalAmount): Quantity × Unit Price — without the tax when

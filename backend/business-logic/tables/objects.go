@@ -8,6 +8,7 @@ import "github.com/hansjlachmann/goeasyerp/backend/foundation/objects"
 func init() {
 	objects.Codeunit(7, "GLBudget-Open")
 	objects.Codeunit(216, "Project Entry-Set Appl. ID")
+	objects.Codeunit(312, "Cust-Check Cr. Limit")
 	objects.Codeunit(358, "DateFilter-Calc")
 	objects.Codeunit(361, "MoveEntries")
 	objects.Codeunit(5400, "Available Management")

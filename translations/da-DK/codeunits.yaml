@@ -92,6 +92,8 @@ codeunits:
     caption: "Ressourcekladde – bogfør linje"
   "213":
     caption: "Ressourcekladde – bogfør bunke"
+  "312":
+    caption: "Debitor - kontroller kreditmaks."
   "216":
     caption: "Projektpost – angiv udlignings-id"
   "220":

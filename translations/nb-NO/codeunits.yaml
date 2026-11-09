@@ -92,6 +92,8 @@ codeunits:
     caption: "Ressurskladd – bokfør linje"
   "213":
     caption: "Ressurskladd – bokfør bunke"
+  "312":
+    caption: "Kunde - kontroller kredittgrense"
   "216":
     caption: "Prosjektpost – angi utlignings-ID"
   "220":

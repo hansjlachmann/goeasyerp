@@ -151,11 +151,20 @@ page:
             - field: "no"
               value: "no"
 
-    - name: Calculate Invoice Discount
-      caption: Calculate Invoice Discount
+    - name: Functions
+      caption: Functions
       image: Calculate
-      run_object: codeunit:61
       promoted: true
+      items:
+        - name: Calculate Invoice Discount
+          caption: Calculate Invoice Discount
+          image: Calculate
+          run_object: codeunit:61
+        # the lines (and header) of another document, open or posted (report 292)
+        - name: Copy Document
+          caption: Copy Document
+          image: Copy
+          run_object: report:292
 
     - name: Print
       caption: Print

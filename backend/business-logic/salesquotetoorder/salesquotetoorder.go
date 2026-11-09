@@ -5,17 +5,31 @@ package salesquotetoorder
 
 import (
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reservmgt"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // Run (OnRun) makes the order of a quote and returns it (GetSalesOrderHeader); the quote lines'
-// reservations go to the order lines. Not migrated: the credit limit check (codeunit 312), the
-// availability check (311).
+// reservations go to the order lines; with a dialog the customer's credit limit is checked first
+// (codeunit 312). Not migrated: the availability check (311).
 func Run(rec *gtables.SalesHeader) (*gtables.SalesHeader, error) {
 	err := rec.TestField("document_type", gtables.SalesHeader_Document_type.Quote)
 	if err != nil {
 		return nil, err
+	}
+
+	// the customer's credit limit with the quote as an order (asked only with a dialog)
+	rec.CalcFields("amount_including_tax")
+	if system.GuiAllowed() {
+		creditCheckHeader := gtables.NewSalesHeader(rec)
+		creditCheckHeader.Copy(rec)
+		creditCheckHeader.Document_type = gtables.SalesHeader_Document_type.Order
+		err = tables.CustCheckCrLimitSalesHeader(creditCheckHeader)
+		if err != nil {
+			return nil, err
+		}
 	}
 	cust := gtables.NewCustomer(rec)
 	err = cust.GetOrError(rec.Sell_to_customer_no)

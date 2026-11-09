@@ -289,6 +289,30 @@ func (salesHeaderLogic) OnValidate_Bill_to_customer_no(rec *gtables.SalesHeader)
 	if err != nil {
 		return err
 	}
+
+	if fcodeunits.CurrFieldNo() != 0 && rec.Document_type <= gtables.SalesHeader_Document_type.Invoice {
+		rec.Amount_including_tax = types.Decimal{}
+		switch rec.Document_type {
+		case gtables.SalesHeader_Document_type.Quote, gtables.SalesHeader_Document_type.Invoice:
+			err = CustCheckCrLimitSalesHeader(rec)
+		case gtables.SalesHeader_Document_type.Order:
+			if rec.Bill_to_customer_no != xRec.Bill_to_customer_no {
+				salesLine := gtables.NewSalesLine(rec)
+				salesLine.SetRange("document_type", gtables.SalesLine_Document_type.Order)
+				salesLine.SetRange("document_no", rec.No)
+				err = salesLine.CalcSums("outstanding_amount", "shipped_not_invoiced")
+				if err != nil {
+					return err
+				}
+				rec.Amount_including_tax = salesLine.Outstanding_amount.Add(salesLine.Shipped_not_invoiced)
+			}
+			err = CustCheckCrLimitSalesHeader(rec)
+		}
+		if err != nil {
+			return err
+		}
+		rec.CalcFields("amount_including_tax")
+	}
 	rec.Bill_to_name = cust.Name
 	rec.Bill_to_name_2 = cust.Name_2
 	rec.Bill_to_address = cust.Address

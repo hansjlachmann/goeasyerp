@@ -162,6 +162,11 @@ page:
           caption: Get Receipt Lines
           image: Lines
           run_object: codeunit:74
+        # the lines (and header) of another document, open or posted (report 492)
+        - name: Copy Document
+          caption: Copy Document
+          image: Copy
+          run_object: report:492
 
     - name: Posting
       caption: Posting

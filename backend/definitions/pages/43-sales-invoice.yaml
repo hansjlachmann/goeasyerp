@@ -172,6 +172,11 @@ page:
           caption: Get Project Usage
           image: Lines
           run_object: report:294
+        # the lines (and header) of another document, open or posted (report 292)
+        - name: Copy Document
+          caption: Copy Document
+          image: Copy
+          run_object: report:292
 
     - name: Posting
       caption: Posting
