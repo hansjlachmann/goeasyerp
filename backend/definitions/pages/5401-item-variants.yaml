@@ -38,3 +38,12 @@ page:
       image: Delete
       shortcut: Ctrl+D
       promoted: true
+
+    - name: Translations
+      caption: Translations
+      image: Document
+      promoted: true
+      run_page: 35
+      run_page_filters:
+        - {field: item_no, value: item_no}
+        - {field: variant_code, value: code}

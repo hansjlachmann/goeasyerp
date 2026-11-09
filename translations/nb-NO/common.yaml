@@ -8,6 +8,25 @@ common:
 
   # Common actions
   actions:
+    # Links from master data, documents and registers
+    blanket_orders: "Rammeordrer"
+    bom_registers: "Stykklistejournaler"
+    fa_registers: "Anleggsjournaler"
+    g_l_registers: "Finansjournaler"
+    insurance_registers: "Forsikringsjournaler"
+    invoices: "Fakturaer"
+    item_card: "Varekort"
+    item_registers: "Varejournaler"
+    orders: "Ordrer"
+    project_budget: "Prosjektbudsjett"
+    project_registers: "Prosjektjournaler"
+    quotes: "Tilbud"
+    receipts: "Mottak"
+    res_group_capacity: "Ressursgruppekapasitet"
+    resource_capacity: "Ressurskapasitet"
+    resource_registers: "Ressursjournaler"
+    shipments: "Leveranser"
+    source: "Kilde"
     # Menu buttons of the action bar
     sales: "Salg"
     purchases: "Kjøp"

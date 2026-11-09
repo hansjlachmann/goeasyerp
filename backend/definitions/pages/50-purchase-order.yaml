@@ -151,6 +151,18 @@ page:
               value: document_type
             - field: "no"
               value: "no"
+        - name: Receipts
+          caption: Receipts
+          image: History
+          run_page: 145
+          run_page_filter_field: order_no
+          run_page_filter_value: "no"
+        - name: Invoices
+          caption: Invoices
+          image: History
+          run_page: 146
+          run_page_filter_field: order_no
+          run_page_filter_value: "no"
 
     - name: Posting
       caption: Posting

@@ -162,10 +162,32 @@ page:
           run_page_filter_field: "no"
           run_page_filter_value: "no"
 
-    - name: Invoice Discounts
-      caption: Invoice Discounts
-      image: Calculate
-      run_page: 23
-      run_page_filter_field: code
-      run_page_filter_value: invoice_disc_code
+    - name: Sales
+      caption: Sales
+      image: Document
       promoted: true
+      items:
+        - name: Invoice Discounts
+          caption: Invoice Discounts
+          image: Calculate
+          run_page: 23
+          run_page_filter_field: code
+          run_page_filter_value: invoice_disc_code
+        - name: Quotes
+          caption: Quotes
+          image: Document
+          run_page: 9300
+          run_page_filter_field: sell_to_customer_no
+          run_page_filter_value: "no"
+        - name: Blanket Orders
+          caption: Blanket Orders
+          image: Document
+          run_page: 9303
+          run_page_filter_field: sell_to_customer_no
+          run_page_filter_value: "no"
+        - name: Orders
+          caption: Orders
+          image: Document
+          run_page: 9305
+          run_page_filter_field: sell_to_customer_no
+          run_page_filter_value: "no"

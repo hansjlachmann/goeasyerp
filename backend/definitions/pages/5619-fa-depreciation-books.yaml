@@ -118,3 +118,21 @@ page:
       run_page: 5602
       run_page_filter_field: fa_no
       run_page_filter_value: fa_no
+
+    - name: Ledger Entries
+      caption: Ledger Entries
+      image: Entries
+      promoted: true
+      run_page: 5604
+      run_page_filters:
+        - {field: fa_no, value: fa_no}
+        - {field: depreciation_book_code, value: depreciation_book_code}
+
+    - name: Maintenance Ledger Entries
+      caption: Maintenance Ledger Entries
+      image: Entries
+      promoted: true
+      run_page: 5641
+      run_page_filters:
+        - {field: fa_no, value: fa_no}
+        - {field: depreciation_book_code, value: depreciation_book_code}

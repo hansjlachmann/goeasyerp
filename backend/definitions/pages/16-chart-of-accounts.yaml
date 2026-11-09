@@ -111,21 +111,37 @@ page:
       promoted: true
       enabled: true
 
-    - name: Ledger Entries
-      caption: Ledger Entries
-      image: Entries
+    - name: Account
+      caption: Account
+      image: Card
       promoted: true
-      run_page: 20
-      run_page_filter_field: gl_account_no
-      run_page_filter_value: no
-
-    - name: Balance/Budget
-      caption: Balance/Budget
-      image: Statistics
-      promoted: true
-      run_page: 154
-      run_page_filter_field: "no"
-      run_page_filter_value: "no"
+      items:
+        - name: Ledger Entries
+          caption: Ledger Entries
+          image: Entries
+          run_page: 20
+          run_page_filter_field: gl_account_no
+          run_page_filter_value: "no"
+        - name: Comments
+          caption: Comments
+          image: Document
+          run_page: 124
+          run_page_filters:
+            - {field: table_name, const: "0"}   # G/L Account
+            - {field: "no", value: "no"}
+        - name: Extended Texts
+          caption: Extended Texts
+          image: Document
+          run_page: 391
+          run_page_filters:
+            - {field: table_name, const: "1"}   # G/L Account
+            - {field: "no", value: "no"}
+        - name: Balance/Budget
+          caption: Balance/Budget
+          image: Statistics
+          run_page: 154
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
 
     - name: Functions
       caption: Functions
@@ -137,12 +153,3 @@ page:
           caption: Indent Chart of Accounts
           image: Rows
           run_object: codeunit:3
-
-    - name: Extended Texts
-      caption: Extended Texts
-      image: Document
-      promoted: true
-      run_page: 391
-      run_page_filters:
-        - {field: table_name, const: "1"}   # G/L Account
-        - {field: "no", value: "no"}

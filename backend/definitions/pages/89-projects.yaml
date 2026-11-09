@@ -78,6 +78,13 @@ page:
           run_page: 222
           run_page_filter_field: "no"
           run_page_filter_value: "no"
+        - name: Ledger Entries
+          caption: Ledger Entries
+          image: Entries
+          run_page: 92
+          run_page_filter_field: project_no
+          run_page_filter_value: "no"
+
 
     - name: Planning
       caption: Planning
@@ -111,3 +118,19 @@ page:
           caption: Res. Gr. Allocated per Project
           image: Calendar
           run_page: 228
+        - name: Resource Availability
+          caption: Resource Availability
+          image: Calendar
+          run_page: 225
+        - name: Res. Group Availability
+          caption: Res. Group Availability
+          image: Calendar
+          run_page: 226
+
+    - name: Prices
+      caption: Prices
+      image: Calculate
+      promoted: true
+      run_page: 204
+      run_page_filter_field: project_no
+      run_page_filter_value: "no"

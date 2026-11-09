@@ -66,6 +66,16 @@ page:
           run_page: 372
           run_page_filters:
             - {field: entry_no, from: from_entry_no, to: to_entry_no}
+        - name: Fixed Asset Ledger
+          caption: Fixed Asset Ledger
+          run_page: 5604
+          run_page_filters:
+            - {field: g_l_entry_no, from: from_entry_no, to: to_entry_no}
+        - name: Maintenance Ledger
+          caption: Maintenance Ledger
+          run_page: 5641
+          run_page_filters:
+            - {field: g_l_entry_no, from: from_entry_no, to: to_entry_no}
         - name: Tax Register
           caption: Tax Register
           run_page: 315

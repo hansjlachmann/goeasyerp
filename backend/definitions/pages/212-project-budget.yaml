@@ -92,6 +92,14 @@ page:
           caption: Res. Gr. Availability
           image: Calendar
           run_object: table:Project_Budget_Line.ResGrAvailability
+        - name: Resource Allocated per Project
+          caption: Resource Allocated per Project
+          image: Calendar
+          run_page: 221
+        - name: Res. Gr. Allocated per Project
+          caption: Res. Gr. Allocated per Project
+          image: Calendar
+          run_page: 228
 
     - name: Functions
       caption: Functions

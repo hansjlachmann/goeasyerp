@@ -76,6 +76,15 @@ page:
           run_page: 228
           run_page_filter_field: "no"
           run_page_filter_value: "no"
+        - name: Res. Group Capacity
+          caption: Res. Group Capacity
+          image: Calendar
+          run_page: 214
+        - name: Project Budget
+          caption: Project Budget
+          image: Calendar
+          run_page: 212
+
 
     - name: Comments
       caption: Comments

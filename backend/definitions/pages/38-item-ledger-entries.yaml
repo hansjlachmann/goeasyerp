@@ -130,3 +130,14 @@ page:
       run_page_params:
         document_no: document_no
         posting_date: posting_date
+
+    # The open reservations of the entry (classic ShowReservationEntries: the entry as the supply)
+    - name: Reservation Entries
+      caption: Reservation Entries
+      image: Entries
+      promoted: true
+      run_page: 497
+      run_page_filters:
+        - {field: reservation_status, const: "0"}   # Open
+        - {field: from_type, const: "6"}           # Item Ledger Entry
+        - {field: from_ref_no, value: entry_no}

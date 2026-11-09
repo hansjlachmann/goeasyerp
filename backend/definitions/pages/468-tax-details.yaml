@@ -57,3 +57,14 @@ page:
       shortcut: Ctrl+D
       promoted: true
       enabled: true
+
+    # The tax entries of the detail's jurisdiction, tax group and tax type
+    - name: Ledger Entries
+      caption: Ledger Entries
+      image: Entries
+      promoted: true
+      run_page: 315
+      run_page_filters:
+        - {field: tax_jurisdiction_code, value: tax_jurisdiction_code}
+        - {field: tax_group_used, value: tax_group_code}
+        - {field: tax_type, value: tax_type}

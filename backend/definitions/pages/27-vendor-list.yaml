@@ -98,6 +98,12 @@ page:
       image: Customer
       promoted: true
       items:
+        - name: Ledger Entries
+          caption: Ledger Entries
+          image: Entries
+          run_page: 29
+          run_page_filter_field: vendor_no
+          run_page_filter_value: "no"
         - name: Comments
           caption: Comments
           image: Document
@@ -142,3 +148,21 @@ page:
           run_page: 28
           run_page_filter_field: code
           run_page_filter_value: invoice_disc_code
+        - name: Quotes
+          caption: Quotes
+          image: Document
+          run_page: 9306
+          run_page_filter_field: buy_from_vendor_no
+          run_page_filter_value: "no"
+        - name: Blanket Orders
+          caption: Blanket Orders
+          image: Document
+          run_page: 9310
+          run_page_filter_field: buy_from_vendor_no
+          run_page_filter_value: "no"
+        - name: Orders
+          caption: Orders
+          image: Document
+          run_page: 9307
+          run_page_filter_field: buy_from_vendor_no
+          run_page_filter_value: "no"

@@ -8,6 +8,25 @@ common:
 
   # Common actions
   actions:
+    # Links from master data, documents and registers
+    blanket_orders: "Blanket Orders"
+    bom_registers: "BOM Registers"
+    fa_registers: "FA Registers"
+    g_l_registers: "G/L Registers"
+    insurance_registers: "Insurance Registers"
+    invoices: "Invoices"
+    item_card: "Item Card"
+    item_registers: "Item Registers"
+    orders: "Orders"
+    project_budget: "Project Budget"
+    project_registers: "Project Registers"
+    quotes: "Quotes"
+    receipts: "Receipts"
+    res_group_capacity: "Res. Group Capacity"
+    resource_capacity: "Resource Capacity"
+    resource_registers: "Resource Registers"
+    shipments: "Shipments"
+    source: "Source"
     # Menu buttons of the action bar
     sales: "Sales"
     purchases: "Purchases"

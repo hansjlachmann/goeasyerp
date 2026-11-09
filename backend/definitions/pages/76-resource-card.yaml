@@ -156,3 +156,11 @@ page:
           run_page: 221
           run_page_filter_field: "no"
           run_page_filter_value: "no"
+        - name: Resource Capacity
+          caption: Resource Capacity
+          image: Calendar
+          run_page: 213
+        - name: Project Budget
+          caption: Project Budget
+          image: Calendar
+          run_page: 212

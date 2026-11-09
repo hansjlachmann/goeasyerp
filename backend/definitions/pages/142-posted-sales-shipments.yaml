@@ -53,3 +53,14 @@ page:
       run_page_params:
         document_no: "no"
         posting_date: posting_date
+
+    - name: Comments
+      caption: Comments
+      image: Document
+      promoted: true
+      run_page: 67
+      run_page_filters:
+        - field: document_type
+          const: "5"
+        - field: "no"
+          value: "no"

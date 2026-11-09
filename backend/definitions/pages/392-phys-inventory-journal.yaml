@@ -121,6 +121,12 @@ page:
           run_page: 38
           run_page_filter_field: item_no
           run_page_filter_value: item_no
+        - name: Phys. Inventory Ledger Entries
+          caption: Phys. Inventory Ledger Entries
+          image: Entries
+          run_page: 390
+          run_page_filter_field: item_no
+          run_page_filter_value: item_no
         # the item at the line's place up to its date (classic Item Availability by): a pick changes
         # the line's date, variant, location or bin after a question
         - name: Item Availability by

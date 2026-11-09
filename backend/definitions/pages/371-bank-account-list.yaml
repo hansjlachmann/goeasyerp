@@ -122,3 +122,9 @@ page:
           run_page_filters:
             - {field: table_name, const: "8"}   # Bank Account
             - {field: "no", value: "no"}
+        - name: Statements
+          caption: Statements
+          image: Document
+          run_page: 389
+          run_page_filter_field: bank_account_no
+          run_page_filter_value: "no"

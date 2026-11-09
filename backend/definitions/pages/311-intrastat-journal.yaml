@@ -144,3 +144,12 @@ page:
       image: Export
       promoted: true
       run_object: report:593
+
+    - name: Item Card
+      caption: Item Card
+      image: Card
+      shortcut: Shift+F5
+      promoted: true
+      run_page: 30
+      run_page_filter_field: "no"
+      run_page_filter_value: item_no

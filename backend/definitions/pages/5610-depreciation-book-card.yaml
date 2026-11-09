@@ -112,3 +112,15 @@ page:
         - name: Copy Depreciation Book
           caption: Copy Depreciation Book
           run_object: report:5687
+
+    - name: Functions
+      caption: Functions
+      image: Calculate
+      promoted: true
+      items:
+        - name: Create FA Depreciation Books
+          caption: Create FA Depreciation Books
+          run_object: report:5689
+        - name: Cancel FA Ledger Entries
+          caption: Cancel FA Ledger Entries
+          run_object: report:5688

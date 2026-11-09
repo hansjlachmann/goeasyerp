@@ -37,3 +37,52 @@ page:
       shortcut: Ctrl+D
       promoted: true
       enabled: true
+
+    # The registers of the postings with the source code (classic Source › …)
+    - name: Source
+      caption: Source
+      image: History
+      promoted: true
+      items:
+        - name: G/L Registers
+          caption: G/L Registers
+          image: History
+          run_page: 116
+          run_page_filter_field: source_code
+          run_page_filter_value: code
+        - name: Item Registers
+          caption: Item Registers
+          image: History
+          run_page: 117
+          run_page_filter_field: source_code
+          run_page_filter_value: code
+        - name: BOM Registers
+          caption: BOM Registers
+          image: History
+          run_page: 267
+          run_page_filter_field: source_code
+          run_page_filter_value: code
+        - name: Resource Registers
+          caption: Resource Registers
+          image: History
+          run_page: 274
+          run_page_filter_field: source_code
+          run_page_filter_value: code
+        - name: Project Registers
+          caption: Project Registers
+          image: History
+          run_page: 278
+          run_page_filter_field: source_code
+          run_page_filter_value: code
+        - name: FA Registers
+          caption: FA Registers
+          image: History
+          run_page: 5627
+          run_page_filter_field: source_code
+          run_page_filter_value: code
+        - name: Insurance Registers
+          caption: Insurance Registers
+          image: History
+          run_page: 5656
+          run_page_filter_field: source_code
+          run_page_filter_value: code

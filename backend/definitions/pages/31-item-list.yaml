@@ -105,6 +105,13 @@ page:
               run_page: 506
               run_page_filter_field: item_no
               run_page_filter_value: "no"
+            - name: Reservation Entries
+              caption: Reservation Entries
+              image: Entries
+              run_page: 497
+              run_page_filters:
+                - {field: item_no, value: "no"}
+                - {field: reservation_status, const: "0"}   # Open
             - name: Phys. Inventory Ledger Entries
               caption: Phys. Inventory Ledger Entries
               image: Entries
@@ -186,6 +193,10 @@ page:
           run_page: 36
           run_page_filter_field: parent_item_no
           run_page_filter_value: "no"
+        - name: Calc. Standard Cost
+          caption: Calc. Standard Cost
+          image: Calculate
+          run_object: table:Item.CalcStandardCost
 
     - name: Sales
       caption: Sales
