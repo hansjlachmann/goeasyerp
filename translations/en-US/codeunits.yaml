@@ -92,6 +92,8 @@ codeunits:
     caption: "Res. Jnl.-Post Line"
   "213":
     caption: "Res. Jnl.-Post Batch"
+  "311":
+    caption: "Item-Check Avail."
   "312":
     caption: "Cust-Check Cr. Limit"
   "63":

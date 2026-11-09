@@ -95,6 +95,38 @@ func SalesExplodeBOM(rec *gtables.SalesLine) (fcodeunits.Result, error) {
 		lineSpacing = 10000
 	}
 
+	// The components the order or invoice takes: the availability warning (codeunit 311)
+	if rec.Document_type == gtables.SalesLine_Document_type.Order || rec.Document_type == gtables.SalesLine_Document_type.Invoice {
+		availBOMComp := gtables.NewBOMComponent(rec)
+		availBOMComp.SetRange("parent_item_no", rec.No)
+		availBOMComp.SetRange("type", gtables.BOMComponent_Type.Item)
+		availBOMComp.SetFilter("no", "<>''")
+		for found := availBOMComp.FindSetBuffered(); found; found = availBOMComp.Next() {
+			item := gtables.NewItem(rec)
+			err = item.GetOrError(availBOMComp.No)
+			if err != nil {
+				return fcodeunits.Result{}, err
+			}
+			toSalesLine = gtables.NewSalesLine(rec)
+			toSalesLine.Copy(rec)
+			toSalesLine.Line_no = 0
+			toSalesLine.No = availBOMComp.No
+			toSalesLine.Variant_code = availBOMComp.Variant_code
+			toSalesLine.Unit_of_measure_code = availBOMComp.Unit_of_measure_code
+			toSalesLine.Qty_per_unit_of_measure, err = tables.GetQtyPerUnitOfMeasure(item, availBOMComp.Unit_of_measure_code)
+			if err != nil {
+				return fcodeunits.Result{}, err
+			}
+			toSalesLine.Outstanding_quantity = system.Round(rec.Quantity_base.Mul(availBOMComp.Quantity_per), unitPrecision)
+			if toSalesLine.Outstanding_quantity.IsPositive() {
+				err = tables.ItemCheckAvailSalesLine(toSalesLine)
+				if err != nil {
+					return fcodeunits.Result{}, err
+				}
+			}
+		}
+	}
+
 	// The line keeps its description only
 	toSalesLine = gtables.NewSalesLine(rec)
 	err = toSalesLine.GetOrError(map[string]interface{}{"document_type": int(rec.Document_type), "document_no": rec.Document_no, "line_no": rec.Line_no})

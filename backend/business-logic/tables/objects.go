@@ -8,6 +8,7 @@ import "github.com/hansjlachmann/goeasyerp/backend/foundation/objects"
 func init() {
 	objects.Codeunit(7, "GLBudget-Open")
 	objects.Codeunit(216, "Project Entry-Set Appl. ID")
+	objects.Codeunit(311, "Item-Check Avail.")
 	objects.Codeunit(312, "Cust-Check Cr. Limit")
 	objects.Codeunit(378, "Transfer Extended Text")
 	objects.Codeunit(379, "Transfer Old Ext. Text Lines")

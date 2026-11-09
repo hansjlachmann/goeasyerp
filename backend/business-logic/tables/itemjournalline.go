@@ -10,9 +10,8 @@ import (
 
 // itemJournalLineLogic is the business logic of table 83 Item Journal Line.
 //
-// Not migrated yet: reservations (the line's reserved quantities, the reservation checks of
-// OnModify, OnDelete, OnRename and the fields), the availability warning (codeunit 311 Item-Check
-// Avail.), item tracking (serial and lot numbers) and bins.
+// A quantity the user enters that takes more than is available gives the availability warning
+// (codeunit 311 Item-Check Avail.).
 type itemJournalLineLogic struct{}
 
 func init() { gtables.RegisterItemJournalLineLogic(itemJournalLineLogic{}) }
@@ -66,12 +65,19 @@ func (itemJournalLineLogic) OnValidate_Item_no(rec *gtables.ItemJournalLine) err
 	}
 	switch rec.Entry_type {
 	case gtables.ItemJournalLine_Entry_type.Purchase:
-		return rec.Validate("unit_of_measure_code", item.Purch_unit_of_measure)
+		err = rec.Validate("unit_of_measure_code", item.Purch_unit_of_measure)
 	case gtables.ItemJournalLine_Entry_type.Sale:
-		return rec.Validate("unit_of_measure_code", item.Sales_unit_of_measure)
+		err = rec.Validate("unit_of_measure_code", item.Sales_unit_of_measure)
 	default:
-		return rec.Validate("unit_of_measure_code", item.Base_unit_of_measure)
+		err = rec.Validate("unit_of_measure_code", item.Base_unit_of_measure)
 	}
+	if err != nil {
+		return err
+	}
+	if rec.Reserve != gtables.ItemJournalLine_Reserve.Always {
+		return checkItemJnlItemAvailable(rec)
+	}
+	return nil
 }
 
 // GetItemJnlUnitAmount (GetUnitAmount): the unit amount of the entry type — a purchase and a
@@ -143,7 +149,14 @@ func (itemJournalLineLogic) OnValidate_Quantity(rec *gtables.ItemJournalLine) er
 	if err != nil {
 		return err
 	}
-	return validateItemJnlQuantity(rec)
+	err = validateItemJnlQuantity(rec)
+	if err != nil {
+		return err
+	}
+	if rec.Reserve != gtables.ItemJournalLine_Reserve.Always {
+		return checkItemJnlItemAvailable(rec)
+	}
+	return nil
 }
 
 // validateItemJnlQuantity: the base quantity, invoiced quantities and amount follow the quantity

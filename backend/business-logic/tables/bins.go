@@ -11,6 +11,9 @@ import (
 // OnValidate_Location_code: the line's bin belonged to the old location
 func (salesLineLogic) OnValidate_Location_code(rec *gtables.SalesLine) error {
 	rec.Bin_code = ""
+	if rec.Reserve != gtables.SalesLine_Reserve.Always {
+		return checkSalesLineItemAvailable(rec)
+	}
 	return nil
 }
 
@@ -21,18 +24,31 @@ func (purchaseLineLogic) OnValidate_Location_code(rec *gtables.PurchaseLine) err
 
 func (itemJournalLineLogic) OnValidate_Location_code(rec *gtables.ItemJournalLine) error {
 	rec.Bin_code = ""
+	if rec.Reserve != gtables.ItemJournalLine_Reserve.Always {
+		return checkItemJnlItemAvailable(rec)
+	}
 	return nil
 }
 
 func (bomJournalLineLogic) OnValidate_Location_code(rec *gtables.BOMJournalLine) error {
 	rec.Bin_code = ""
+	if rec.Reserve != gtables.BOMJournalLine_Reserve.Always {
+		return checkBOMJnlItemAvailable(rec)
+	}
 	return nil
 }
 
 // OnValidate_Bin_code: a bin needs the line's location (an item line on purchase documents and
 // requisition lines)
 func (salesLineLogic) OnValidate_Bin_code(rec *gtables.SalesLine) error {
-	return rec.TestField("location_code")
+	err := rec.TestField("location_code")
+	if err != nil {
+		return err
+	}
+	if rec.Reserve != gtables.SalesLine_Reserve.Always {
+		return checkSalesLineItemAvailable(rec)
+	}
+	return nil
 }
 
 func (purchaseLineLogic) OnValidate_Bin_code(rec *gtables.PurchaseLine) error {

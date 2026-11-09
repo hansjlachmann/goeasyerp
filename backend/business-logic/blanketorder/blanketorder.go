@@ -8,7 +8,9 @@ package blanketorder
 
 import (
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reservmgt"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
@@ -16,9 +18,15 @@ import (
 // SalesToOrder (codeunit 87 OnRun) makes the order of a sales blanket order and returns it
 // (GetSalesOrderHeader). Each blanket line's Qty. to Ship (Base) plus what orders not yet posted
 // take from it cannot be more than its outstanding quantity; the blanket line's reservations go
-// with the quantity to the order line. Not migrated: the credit limit and availability checks
-// (codeunits 312, 311).
+// with the quantity to the order line; with a dialog an order line that takes more of an item than
+// is available asks first (codeunit 311). Not migrated: the credit limit check (codeunit 312).
 func SalesToOrder(rec *gtables.SalesHeader) (*gtables.SalesHeader, error) {
+	return SalesToOrderHideValidationDialog(rec, false)
+}
+
+// SalesToOrderHideValidationDialog (SetHideValidationDialog + OnRun): hideValidationDialog
+// leaves out the availability question (code that makes orders without asking: demo data)
+func SalesToOrderHideValidationDialog(rec *gtables.SalesHeader, hideValidationDialog bool) (*gtables.SalesHeader, error) {
 	err := rec.TestField("document_type", gtables.SalesHeader_Document_type.BlanketOrder)
 	if err != nil {
 		return nil, err
@@ -85,6 +93,9 @@ func SalesToOrder(rec *gtables.SalesHeader) (*gtables.SalesHeader, error) {
 			}
 			if err == nil {
 				err = salesOrderLine.Validate("line_discount_percent", salesBlanketOrderLine.Line_discount_percent)
+			}
+			if err == nil && (salesOrderLine.Reserve != gtables.SalesLine_Reserve.Always) && !hideValidationDialog && system.GuiAllowed() {
+				err = tables.ItemCheckAvailSalesLine(salesOrderLine)
 			}
 			if err == nil && !salesBlanketOrderLine.Reserved_qty_base.IsZero() {
 				err = reservmgt.New(rec).TransferSaleLineToSalesLine(salesBlanketOrderLine, salesOrderLine, salesBlanketOrderLine.Qty_to_ship_base)

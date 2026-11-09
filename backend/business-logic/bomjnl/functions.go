@@ -228,6 +228,35 @@ func ItemJnlExplodeBOM(rec *gtables.ItemJournalLine) (fcodeunits.Result, error) 
 		lineSpacing = 10000
 	}
 
+	// The components the line takes: the availability warning (codeunit 311)
+	for found := fromBOMComp.FindSetBuffered(); found; found = fromBOMComp.Next() {
+		if fromBOMComp.No == "" {
+			continue
+		}
+		item := gtables.NewItem(rec)
+		err = item.GetOrError(fromBOMComp.No)
+		if err != nil {
+			return fcodeunits.Result{}, err
+		}
+		toItemJnlLine = gtables.NewItemJournalLine(rec)
+		toItemJnlLine.Copy(rec)
+		toItemJnlLine.Line_no = 0
+		toItemJnlLine.Item_no = fromBOMComp.No
+		toItemJnlLine.Variant_code = fromBOMComp.Variant_code
+		toItemJnlLine.Unit_of_measure_code = fromBOMComp.Unit_of_measure_code
+		toItemJnlLine.Qty_per_unit_of_measure, err = tables.GetQtyPerUnitOfMeasure(item, fromBOMComp.Unit_of_measure_code)
+		if err != nil {
+			return fcodeunits.Result{}, err
+		}
+		toItemJnlLine.Quantity = system.Round(rec.Quantity_base.Mul(fromBOMComp.Quantity_per), unitPrecision)
+		if toItemJnlLine.Quantity.IsPositive() {
+			err = tables.ItemCheckAvailItemJnlLine(toItemJnlLine)
+			if err != nil {
+				return fcodeunits.Result{}, err
+			}
+		}
+	}
+
 	// The line keeps its description only
 	description := rec.Description
 	toItemJnlLine = gtables.NewItemJournalLine(rec)

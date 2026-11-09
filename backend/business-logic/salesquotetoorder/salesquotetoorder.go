@@ -12,8 +12,8 @@ import (
 )
 
 // Run (OnRun) makes the order of a quote and returns it (GetSalesOrderHeader); the quote lines'
-// reservations go to the order lines; with a dialog the customer's credit limit is checked first
-// (codeunit 312). Not migrated: the availability check (311).
+// reservations go to the order lines; with a dialog the customer's credit limit (codeunit 312)
+// and the items' availability (codeunit 311) are checked first.
 func Run(rec *gtables.SalesHeader) (*gtables.SalesHeader, error) {
 	err := rec.TestField("document_type", gtables.SalesHeader_Document_type.Quote)
 	if err != nil {
@@ -29,6 +29,24 @@ func Run(rec *gtables.SalesHeader) (*gtables.SalesHeader, error) {
 		err = tables.CustCheckCrLimitSalesHeader(creditCheckHeader)
 		if err != nil {
 			return nil, err
+		}
+
+		salesQuoteLine := gtables.NewSalesLine(rec)
+		salesQuoteLine.SetRange("document_type", gtables.SalesLineDocument_type(rec.Document_type))
+		salesQuoteLine.SetRange("document_no", rec.No)
+		salesQuoteLine.SetRange("type", gtables.SalesLine_Type.Item)
+		salesQuoteLine.SetFilter("no", "<>''")
+		for found := salesQuoteLine.FindSetBuffered(); found; found = salesQuoteLine.Next() {
+			if salesQuoteLine.Outstanding_quantity.IsPositive() {
+				salesLine := gtables.NewSalesLine(rec)
+				salesLine.Copy(salesQuoteLine)
+				salesLine.Reserved_qty_base = types.Decimal{}
+				salesLine.Line_no = 0
+				err = tables.ItemCheckAvailSalesLine(salesLine)
+				if err != nil {
+					return nil, err
+				}
+			}
 		}
 	}
 	cust := gtables.NewCustomer(rec)

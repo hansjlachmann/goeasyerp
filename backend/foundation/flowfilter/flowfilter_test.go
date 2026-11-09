@@ -28,6 +28,9 @@ func TestClause(t *testing.T) {
 		{KindText, "*oslo*", `posting_date LIKE ? ESCAPE '\'`, "[%oslo%]"},
 		{KindText, "50%*", `posting_date LIKE ? ESCAPE '\'`, `[50\%%]`},
 		{KindText, "A..M", "posting_date BETWEEN ? AND ?", "[A M]"},
+		{KindCode, "''", "posting_date = ?", "[]"},
+		{KindCode, "''|main", "(posting_date = ? OR posting_date = ?)", "[ MAIN]"},
+		{KindCode, "<>''", "posting_date <> ?", "[]"},
 	}
 	for _, tt := range tests {
 		sql, args, err := Clause("posting_date", tt.kind, tt.expr)

@@ -14,10 +14,10 @@ import (
 // salesLineLogic is the business logic of table 37 Sales Line.
 //
 // Orders: the quantities to ship and invoice (all that is outstanding, by default) and the
-// shipped/invoiced quantities, which posting fills. Not migrated yet: return orders and credit
-// memo quantities, reservations and the availability warning (codeunit 311), item tracking, bins,
-// jobs, drop shipments, blanket orders, extended texts, the credit limit check (codeunit 312)
-// and Fixed Asset lines; the line's Amount and Amount Including Tax are calculated, not typed.
+// shipped/invoiced quantities, which posting fills. A quantity the user enters gives the
+// availability warning (codeunit 311) and the credit limit warning (codeunit 312). Not part of
+// the version followed: return orders, drop shipments and Fixed Asset lines; the line's Amount
+// and Amount Including Tax are calculated, not typed.
 type salesLineLogic struct{}
 
 func init() { gtables.RegisterSalesLineLogic(salesLineLogic{}) }
@@ -317,6 +317,12 @@ func (salesLineLogic) OnValidate_Quantity(rec *gtables.SalesLine) error {
 		return err
 	}
 	initSalesLineQtyToShip(rec)
+	if rec.Reserve != gtables.SalesLine_Reserve.Always {
+		err = checkSalesLineItemAvailable(rec)
+		if err != nil {
+			return err
+		}
+	}
 	rec.Quantity_disc_percent = types.Decimal{}
 	if rec.Type == gtables.SalesLine_Type.Item {
 		salesHeader, _, err := getSalesHeader(rec)
@@ -757,6 +763,10 @@ func (salesLineLogic) OnValidate_Variant_code(rec *gtables.SalesLine) error {
 	}
 	rec.Description = itemVariant.Description
 	rec.Description_2 = itemVariant.Description_2
+	err = checkSalesLineItemAvailable(rec)
+	if err != nil {
+		return err
+	}
 	salesHeader, _, err := getSalesHeader(rec)
 	if err != nil {
 		return err

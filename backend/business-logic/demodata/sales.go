@@ -308,7 +308,7 @@ func postDemoSales(src ftables.Source, open func(src ftables.Source) SalesPoster
 			return err
 		}
 	}
-	order, err := blanketorder.SalesToOrder(blanket)
+	order, err := blanketorder.SalesToOrderHideValidationDialog(blanket, true)
 	if err != nil {
 		return err
 	}

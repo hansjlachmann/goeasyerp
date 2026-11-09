@@ -13,8 +13,8 @@ import (
 
 // projectJournalLineLogic is the business logic of table 210 Project Journal Line: a project's
 // usage of a resource, an item or a G/L account before posting.
-//
-// Not migrated yet: the item availability warning (codeunit 311 ItemCheckAvail).
+// An item the user enters that takes more than is available gives the availability warning
+// (codeunit 311 Item-Check Avail.).
 type projectJournalLineLogic struct{}
 
 func init() {
@@ -129,6 +129,10 @@ func (projectJournalLineLogic) OnValidate_No(rec *gtables.ProjectJournalLine) er
 		if err != nil {
 			return err
 		}
+		err = checkProjectJnlItemAvailable(rec)
+		if err != nil {
+			return err
+		}
 	case gtables.ProjectJournalLine_Type.AccountGL:
 		glAcc := gtables.NewGLAccount(rec)
 		err := glAcc.GetOrError(rec.No)
@@ -165,7 +169,7 @@ func (projectJournalLineLogic) OnValidate_Quantity(rec *gtables.ProjectJournalLi
 	rec.Quantity_base = qtyBase
 	rec.Total_cost = system.Round(rec.Quantity.Mul(rec.Unit_cost))
 	rec.Total_price = system.Round(rec.Quantity.Mul(rec.Unit_price))
-	return nil
+	return checkProjectJnlItemAvailable(rec)
 }
 
 // OnValidate_Unit_cost: an item at standard cost keeps its cost; the total cost and profit %
@@ -217,7 +221,7 @@ func (projectJournalLineLogic) OnValidate_Unit_of_measure_code(rec *gtables.Proj
 // OnValidate_Location_code: a new location clears the bin
 func (projectJournalLineLogic) OnValidate_Location_code(rec *gtables.ProjectJournalLine) error {
 	rec.Bin_code = ""
-	return nil
+	return checkProjectJnlItemAvailable(rec)
 }
 
 // OnValidate_Work_type_code: a resource's unit of measure of the work type (else the
@@ -284,10 +288,13 @@ func (projectJournalLineLogic) OnValidate_Variant_code(rec *gtables.ProjectJourn
 
 // OnValidate_Bin_code: a bin needs the location
 func (projectJournalLineLogic) OnValidate_Bin_code(rec *gtables.ProjectJournalLine) error {
-	if rec.Bin_code == "" {
-		return nil
+	if rec.Bin_code != "" {
+		err := rec.TestField("location_code")
+		if err != nil {
+			return err
+		}
 	}
-	return rec.TestField("location_code")
+	return checkProjectJnlItemAvailable(rec)
 }
 
 // OnValidate_Quantity_base: only in the base unit; the quantity follows

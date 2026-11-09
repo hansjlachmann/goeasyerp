@@ -7,7 +7,7 @@
 //
 // Syntax: alternatives separated by '|'; each alternative is a value, a range "a..b",
 // an open range "..b" or "a..", "<>value", or a comparison "<value", "<=value", ">value",
-// ">=value". Text and Code accept '*' wildcards. Booleans accept Yes/No, true/false, 1/0.
+// ">=value". Text and Code accept '*' wildcards and ” for the blank value ("”|MAIN"). Booleans accept Yes/No, true/false, 1/0.
 // Dates are ISO (YYYY-MM-DD), a closing date with a C (C2026-12-31: after the date, so
 // "..2026-12-31" leaves it out) — the frontend converts the user's local date format before
 // sending. Decimals accept a decimal point or comma ("1500,50"), no thousands separators.
@@ -212,6 +212,9 @@ func alternative(column string, kind Kind, part string) (string, []interface{}, 
 func value(kind Kind, s string) (interface{}, error) {
 	if s == "" {
 		return nil, fmt.Errorf("missing value")
+	}
+	if s == "''" && (kind == KindText || kind == KindCode) {
+		return "", nil
 	}
 	switch kind {
 	case KindDate:

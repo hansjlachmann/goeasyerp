@@ -92,6 +92,8 @@ codeunits:
     caption: "Ressourcekladde – bogfør linje"
   "213":
     caption: "Ressourcekladde – bogfør bunke"
+  "311":
+    caption: "Vare - kontroller disponibel"
   "312":
     caption: "Debitor - kontroller kreditmaks."
   "63":
