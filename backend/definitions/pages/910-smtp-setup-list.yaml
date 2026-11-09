@@ -1,5 +1,5 @@
 page:
-  id: 409
+  id: 910
   type: List
   name: SMTP Setup List
   source_table: SMTP_Setup

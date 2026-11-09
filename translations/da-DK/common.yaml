@@ -8,6 +8,17 @@ common:
 
   # Common actions
   actions:
+    # G/L balance and budget views
+    account_balance: "Kontosaldo"
+    balance: "Saldo"
+    balance_by_dim_1_2: "Saldo pr. dim. 1/2"
+    budget_by_dim_1_2: "Budget pr. dim. 1/2"
+    by_business_units: "Pr. koncernenhed"
+    by_dimension_1: "Pr. Dimension 1"
+    by_dimension_2: "Pr. Dimension 2"
+    by_periods: "Pr. periode"
+    g_l_balance: "Finanssaldo"
+    g_l_balance_budget: "Finanssaldo/budget"
     # Statistics pages
     customer_sales: "Debitorsalg"
     entry_statistics: "Poststatistik"

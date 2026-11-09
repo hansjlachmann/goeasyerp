@@ -1738,3 +1738,27 @@ pages:
     caption: "Leverandørstatistikk etter valuta"
     fields:
       total_amount: "Totalt"
+
+  # G/L balance and budget views (classic forms 408–422)
+  g_l_balance_by_periods:
+    caption: "Finanssaldo etter perioder"
+  g_l_balance_by_dimension_1:
+    caption: "Finanssaldo etter Dimensjon 1"
+  g_l_balance_by_dimension_2:
+    caption: "Finanssaldo etter Dimensjon 2"
+  g_l_balance_by_business_units:
+    caption: "Finanssaldo etter konsernenheter"
+  g_l_acc_balance_by_dim_1_2:
+    caption: "Finanskontosaldo etter dim. 1/2"
+  g_l_balance:
+    caption: "Finanssaldo"
+  g_l_account_balance:
+    caption: "Finanskontosaldo"
+  g_l_budget_by_dimension_1:
+    caption: "Finansbudsjett etter Dimensjon 1"
+  g_l_budget_by_dimension_2:
+    caption: "Finansbudsjett etter Dimensjon 2"
+  g_l_acc_budget_by_dim_1_2:
+    caption: "Finanskontobudsjett etter dim. 1/2"
+  g_l_balance_budget:
+    caption: "Finanssaldo/budsjett"

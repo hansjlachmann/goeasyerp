@@ -644,3 +644,12 @@ Posting lines #3###### @4@@@@@@@@@@@@@"
   ITEM_AVAIL_QUESTION: "%1\n\n%2\n\nDo you still want to record the quantity?"
   ITEM_AVAIL_CHANGE_FIELD: "Change %1 from %2 to %3?"
   BOM_PURCH_RESOURCE_NOT_TRANSFERRED: "You cannot purchase resources. Resource %1 was not transferred."
+
+  # G/L Balance (414) and G/L Balance/Budget (422): the matrix columns
+  GL_BALANCE_DEBIT_AMOUNT: "Debit Amount"
+  GL_BALANCE_CREDIT_AMOUNT: "Credit Amount"
+  GL_BALANCE_NET_CHANGE: "Net Change"
+  GL_BALANCE_BUDGETED_DEBIT_AMOUNT: "Budgeted Debit Amount"
+  GL_BALANCE_BUDGETED_CREDIT_AMOUNT: "Budgeted Credit Amount"
+  GL_BALANCE_BUDGETED_AMOUNT: "Budgeted Amount"
+  GL_BALANCE_BUDGET_PCT: "Balance/Budget (%)"

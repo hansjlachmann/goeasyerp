@@ -163,6 +163,12 @@ type Matrix struct {
 	// previous/next) — the period goes into DateFilter; RowFilters (a field of the rows → a
 	// field of the card record) select the rows (the schedule's lines)
 	Calculated bool `yaml:"calculated,omitempty" json:"calculated,omitempty"`
+	// ViewAs: a calculated matrix offers View as Net Change / Balance at Date (the period, or up
+	// to its end, in the rows' date filter)
+	ViewAs bool `yaml:"view_as,omitempty" json:"view_as,omitempty"`
+	// CardDateFilter: a calculated matrix whose rows have no date filter (the dimension values
+	// of one G/L account) puts its period into this FlowFilter of the card record instead
+	CardDateFilter string `yaml:"card_date_filter,omitempty" json:"card_date_filter,omitempty"`
 	// NoPeriods: a calculated matrix whose columns are not periods (Items by Bin: the bins) — no
 	// View by, no previous/next
 	NoPeriods              bool              `yaml:"no_periods,omitempty" json:"no_periods,omitempty"`

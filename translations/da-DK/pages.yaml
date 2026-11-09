@@ -1738,3 +1738,27 @@ pages:
     caption: "Kreditorstatistik pr. valuta"
     fields:
       total_amount: "I alt"
+
+  # G/L balance and budget views (classic forms 408–422)
+  g_l_balance_by_periods:
+    caption: "Finanssaldo pr. periode"
+  g_l_balance_by_dimension_1:
+    caption: "Finanssaldo pr. Dimension 1"
+  g_l_balance_by_dimension_2:
+    caption: "Finanssaldo pr. Dimension 2"
+  g_l_balance_by_business_units:
+    caption: "Finanssaldo pr. koncernenhed"
+  g_l_acc_balance_by_dim_1_2:
+    caption: "Finanskontosaldo pr. dim. 1/2"
+  g_l_balance:
+    caption: "Finanssaldo"
+  g_l_account_balance:
+    caption: "Finanskontosaldo"
+  g_l_budget_by_dimension_1:
+    caption: "Finansbudget pr. Dimension 1"
+  g_l_budget_by_dimension_2:
+    caption: "Finansbudget pr. Dimension 2"
+  g_l_acc_budget_by_dim_1_2:
+    caption: "Finanskontobudget pr. dim. 1/2"
+  g_l_balance_budget:
+    caption: "Finanssaldo/budget"

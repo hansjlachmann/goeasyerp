@@ -72,6 +72,13 @@ page:
           run_page_filters:
             - {field: table_name, const: "1"}   # G/L Account
             - {field: "no", value: "no"}
+        - name: Budget by Dim. 1/2
+          caption: Budget by Dim. 1/2
+          image: Statistics
+          run_page: 420
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+
 
     - name: Functions
       caption: Functions
@@ -81,3 +88,22 @@ page:
         - name: Copy Budget
           caption: Copy Budget
           run_object: report:96
+
+    # The G/L accounts' budget by dimensions, and balance against budget (classic Budget menu)
+    - name: Budget
+      caption: Budget
+      image: Statistics
+      promoted: true
+      items:
+        - name: By Dimension 1
+          caption: By Dimension 1
+          image: Statistics
+          run_page: 417
+        - name: By Dimension 2
+          caption: By Dimension 2
+          image: Statistics
+          run_page: 418
+        - name: G/L Balance/Budget
+          caption: G/L Balance/Budget
+          image: Statistics
+          run_page: 422

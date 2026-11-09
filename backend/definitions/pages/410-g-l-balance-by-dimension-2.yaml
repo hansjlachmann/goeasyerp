@@ -1,0 +1,34 @@
+page:
+  id: 410
+  type: List
+  name: G/L Balance by Dimension 2
+  source_table: G_L_Account
+  caption: G/L Balance by Dimension 2
+  # classic form 410: the G/L accounts against the Dimension 2 values in one period (columns and cells:
+  # business-logic/pages/glbalance.go)
+
+  layout:
+    matrix:
+      table: G_L_Account
+      value: net_change
+      calculated: true
+      view_as: true
+      date_filter: date_filter
+      view_by: 2
+      filters:
+        - source: dimension_1_filter
+          drilldown_filter_field: dimension_1_code
+        - source: business_unit_filter
+          drilldown_filter_field: business_unit_code
+      drilldown: 20
+      drilldown_row_field: gl_account_no
+      drilldown_row_value: totaling   # a total account: the accounts it totals
+      drilldown_date_field: posting_date
+      fields:
+        - source: "no"
+          width: 90
+          style_expr: {field: account_type, not_equal: 0, style: Strong}
+        - source: name
+          width: 260
+          indent_field: indentation
+          style_expr: {field: account_type, not_equal: 0, style: Strong}

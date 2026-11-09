@@ -151,6 +151,15 @@ func (m *matrixContext) rowRecord(db ftables.Source) (ftables.Table, error) {
 	return rec, nil
 }
 
+// calculatedDateFilter: a calculated matrix's period as its date filter — Net Change the period,
+// Balance at Date (a matrix with view_as) up to its end
+func (m *matrixContext) calculatedDateFilter(period periods.Period) string {
+	if m.matrix.ViewAs {
+		return m.dateFilter(period.Start.String(), period.End.String())
+	}
+	return period.Start.String() + ".." + period.End.String()
+}
+
 // dateFilter: a column's period as the date filter of the view (Balance at Date: up to its end)
 func (m *matrixContext) dateFilter(start, end string) string {
 	if m.req.ViewAs == 1 {
@@ -365,7 +374,10 @@ func (m *matrixContext) calculated(c *fiber.Ctx) error {
 	}
 	rec, err := m.rowRecord(m.src)
 	if err == nil {
-		err = rec.SetFlowFilter(m.matrix.DateFilter, period.Start.String()+".."+period.End.String())
+		// Net Change: the period; Balance at Date (a matrix with view_as): up to its end
+		if m.matrix.DateFilter != "" {
+			err = rec.SetFlowFilter(m.matrix.DateFilter, m.calculatedDateFilter(period))
+		}
 	}
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(apitypes.NewErrorResponse(errorMessage(err, m.language)))
@@ -374,6 +386,12 @@ func (m *matrixContext) calculated(c *fiber.Ctx) error {
 	card := factory()
 	card.InitWithDBType(m.src.GetDB(), m.src.GetCompany(), m.src.GetDBType())
 	card.FromMap(m.req.Record)
+	if m.matrix.CardDateFilter != "" {
+		err = card.SetFlowFilter(m.matrix.CardDateFilter, m.calculatedDateFilter(period))
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(apitypes.NewErrorResponse(errorMessage(err, m.language)))
+		}
+	}
 
 	rows := []matrixRow{}
 	for found := rec.FindSet(); found && len(rows) < matrixMaxRows; found = rec.Next() {
@@ -388,7 +406,14 @@ func (m *matrixContext) calculated(c *fiber.Ctx) error {
 				fields[f.StyleExpr.Field] = data[f.StyleExpr.Field]
 			}
 		}
-		rows = append(rows, matrixRow{Key: ftables.KeyString(rec), Fields: fields})
+		drilldown := ""
+		if m.matrix.DrilldownRowValue != "" && data[m.matrix.DrilldownRowValue] != nil {
+			drilldown = fmt.Sprint(data[m.matrix.DrilldownRowValue])
+		}
+		if drilldown == "" {
+			drilldown = ftables.KeyString(rec)
+		}
+		rows = append(rows, matrixRow{Key: ftables.KeyString(rec), Fields: fields, Drilldown: drilldown})
 	}
 	columns, values, err := pages.RunMatrixCalculate(m.pageID, card, rec)
 	if err != nil {

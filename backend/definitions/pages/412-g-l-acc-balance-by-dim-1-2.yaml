@@ -1,0 +1,39 @@
+page:
+  id: 412
+  type: Card
+  name: G/L Acc. Balance by Dim. 1/2
+  source_table: G_L_Account
+  caption: G/L Acc. Balance by Dim. 1/2
+  editable: false
+  # classic form 412 with its lines (form 413): one G/L account's net change (or balance at date)
+  # in one period, the Dimension 1 values against the Dimension 2 values (glbalance.go)
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+            editable: false
+          - source: name
+            editable: false
+      - name: Dimensions
+        caption: Dimensions
+        matrix:
+          table: Dimension_1
+          value: net_change
+          calculated: true
+          view_as: true
+          date_filter: ""
+          card_date_filter: date_filter
+          view_by: 2
+          fields:
+            - source: code
+              width: 90
+            - source: name
+              width: 220
+          drilldown: 20
+          drilldown_row_field: dimension_1_code
+          drilldown_date_field: posting_date
+          drilldown_record_filters:
+            gl_account_no: "no"

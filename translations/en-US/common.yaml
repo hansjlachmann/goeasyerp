@@ -8,6 +8,17 @@ common:
 
   # Common actions
   actions:
+    # G/L balance and budget views
+    account_balance: "Account Balance"
+    balance: "Balance"
+    balance_by_dim_1_2: "Balance by Dim. 1/2"
+    budget_by_dim_1_2: "Budget by Dim. 1/2"
+    by_business_units: "By Business Units"
+    by_dimension_1: "By Dimension 1"
+    by_dimension_2: "By Dimension 2"
+    by_periods: "By Periods"
+    g_l_balance: "G/L Balance"
+    g_l_balance_budget: "G/L Balance/Budget"
     # Statistics pages
     customer_sales: "Customer Sales"
     entry_statistics: "Entry Statistics"

@@ -89,6 +89,7 @@ export interface Matrix {
 	drilldown_date_field?: string;
 	drilldown_record_filters?: Record<string, string>; // drilldown page field → card record field
 	calculated?: boolean; // columns and cells from the page's trigger, for one period
+	view_as?: boolean; // a calculated matrix offers View as Net Change / Balance at Date
 	no_periods?: boolean; // a calculated matrix without periods (Items by Bin): no View by, no previous/next
 	row_filters?: Record<string, string>; // row field → card record field
 }
@@ -100,6 +101,7 @@ export interface MatrixColumn {
 	name?: string;
 	decimal_places?: string; // calculated columns: how the values show
 	percent?: boolean;
+	drilldown_filters?: Record<string, string>; // a calculated column's own drilldown filters
 }
 
 /** A record (row) of a matrix: its key, fields, drilldown value and cells (decimals as text) */

@@ -644,3 +644,12 @@ Bogfører linjer #3###### @4@@@@@@@@@@@@@"
   ITEM_AVAIL_QUESTION: "%1\n\n%2\n\nVil du stadig registrere antallet?"
   ITEM_AVAIL_CHANGE_FIELD: "Vil du ændre %1 fra %2 til %3?"
   BOM_PURCH_RESOURCE_NOT_TRANSFERRED: "Du kan ikke købe ressourcer. Ressource %1 blev ikke overført."
+
+  # G/L Balance (414) and G/L Balance/Budget (422): the matrix columns
+  GL_BALANCE_DEBIT_AMOUNT: "Debetbeløb"
+  GL_BALANCE_CREDIT_AMOUNT: "Kreditbeløb"
+  GL_BALANCE_NET_CHANGE: "Bevægelse"
+  GL_BALANCE_BUDGETED_DEBIT_AMOUNT: "Budgetteret debetbeløb"
+  GL_BALANCE_BUDGETED_CREDIT_AMOUNT: "Budgetteret kreditbeløb"
+  GL_BALANCE_BUDGETED_AMOUNT: "Budgetteret beløb"
+  GL_BALANCE_BUDGET_PCT: "Saldo/budget (%)"

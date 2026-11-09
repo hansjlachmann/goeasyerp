@@ -1738,3 +1738,27 @@ pages:
     caption: "Vendor Stats. by Currencies"
     fields:
       total_amount: "Total"
+
+  # G/L balance and budget views (classic forms 408–422)
+  g_l_balance_by_periods:
+    caption: "G/L Balance by Periods"
+  g_l_balance_by_dimension_1:
+    caption: "G/L Balance by Dimension 1"
+  g_l_balance_by_dimension_2:
+    caption: "G/L Balance by Dimension 2"
+  g_l_balance_by_business_units:
+    caption: "G/L Balance by Business Units"
+  g_l_acc_balance_by_dim_1_2:
+    caption: "G/L Acc. Balance by Dim. 1/2"
+  g_l_balance:
+    caption: "G/L Balance"
+  g_l_account_balance:
+    caption: "G/L Account Balance"
+  g_l_budget_by_dimension_1:
+    caption: "G/L Budget by Dimension 1"
+  g_l_budget_by_dimension_2:
+    caption: "G/L Budget by Dimension 2"
+  g_l_acc_budget_by_dim_1_2:
+    caption: "G/L Acc. Budget by Dim. 1/2"
+  g_l_balance_budget:
+    caption: "G/L Balance/Budget"

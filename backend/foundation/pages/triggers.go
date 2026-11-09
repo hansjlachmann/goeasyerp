@@ -407,6 +407,9 @@ type MatrixColumn struct {
 	Name          string `json:"name"`
 	DecimalPlaces string `json:"decimal_places,omitempty"`
 	Percent       bool   `json:"percent,omitempty"`
+	// DrilldownFilters: a column's own filters of the matrix's drilldown page (the column's
+	// dimension value: dimension_1_code → SALES), next to the row's and the period's
+	DrilldownFilters map[string]string `json:"drilldown_filters,omitempty"`
 }
 
 var matrixCalculate = map[int]func(card, rows any) ([]MatrixColumn, map[string][]string, error){}

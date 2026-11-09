@@ -832,7 +832,7 @@ menu:
         page_id: 904
       - separator: true
       - name: "SMTP Setup"
-        page_id: 409
+        page_id: 910
       - name: "Languages"
         page_id: 9
       - name: "Themes"

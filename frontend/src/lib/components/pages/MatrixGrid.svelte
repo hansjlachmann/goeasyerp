@@ -313,9 +313,15 @@
 		if (matrix.drilldown_row_field && row.drilldown) {
 			filters.push({ field: matrix.drilldown_row_field, expression: row.drilldown });
 		}
-		if (matrix.drilldown_date_field) {
-			const range = viewAs === 1 ? `..${column.end}` : `${column.start}..${column.end}`;
+		// a calculated matrix: its one period and the column's own filters
+		const start = matrix.calculated ? period?.start : column.start;
+		const end = matrix.calculated ? period?.end : column.end;
+		if (matrix.drilldown_date_field && end) {
+			const range = viewAs === 1 ? `..${end}` : `${start}..${end}`;
 			filters.push({ field: matrix.drilldown_date_field, expression: range });
+		}
+		for (const [field, value] of Object.entries(column.drilldown_filters ?? {})) {
+			filters.push({ field, expression: value });
 		}
 		for (const [field, recordField] of Object.entries(matrix.drilldown_record_filters ?? {})) {
 			const value = record?.[recordField];
@@ -340,7 +346,7 @@
 				</button>
 			{/each}
 		</div>
-		{#if !matrix.calculated}
+		{#if !matrix.calculated || matrix.view_as}
 		<div class="control-group" role="radiogroup" aria-label={t(PERIOD.VIEW_AS)}>
 			<span class="control-label">{t(PERIOD.VIEW_AS)}</span>
 			<button type="button" class="choice" class:active={viewAs === 0} aria-pressed={viewAs === 0} onclick={() => (viewAs = 0)}>

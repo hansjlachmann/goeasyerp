@@ -43,7 +43,9 @@ func checkMatrix(t *testing.T, id int, mx *pages.Matrix, cardFields map[string]b
 	} else if !flowFields[mx.Value] {
 		t.Errorf("page %d: matrix value %q is not a FlowField of %s", id, mx.Value, mx.Table)
 	}
-	if !flowFilters[mx.DateFilter] {
+	// with card_date_filter and no date filter the period goes into the card record instead
+	periodOnCard := mx.CardDateFilter != "" && mx.DateFilter == ""
+	if !periodOnCard && !flowFilters[mx.DateFilter] {
 		t.Errorf("page %d: matrix date filter %q is not a FlowFilter of %s", id, mx.DateFilter, mx.Table)
 	}
 	for rowField, cardField := range mx.RecordFilters {

@@ -1,0 +1,34 @@
+page:
+  id: 418
+  type: List
+  name: G/L Budget by Dimension 2
+  source_table: G_L_Account
+  caption: G/L Budget by Dimension 2
+  # classic form 418: the G/L accounts' budgeted amount against the Dimension 2 values in one period
+  # (read-only here: amounts are entered in G/L Budget by Periods 113; glbalance.go)
+
+  layout:
+    matrix:
+      table: G_L_Account
+      value: budgeted_amount
+      calculated: true
+      view_as: true
+      date_filter: date_filter
+      view_by: 2
+      filters:
+        - source: budget_filter
+          drilldown_filter_field: budget_name
+        - source: dimension_1_filter
+          drilldown_filter_field: dimension_1_code
+      drilldown: 120
+      drilldown_row_field: gl_account_no
+      drilldown_row_value: totaling
+      drilldown_date_field: date
+      fields:
+        - source: "no"
+          width: 90
+          style_expr: {field: account_type, not_equal: 0, style: Strong}
+        - source: name
+          width: 260
+          indent_field: indentation
+          style_expr: {field: account_type, not_equal: 0, style: Strong}
