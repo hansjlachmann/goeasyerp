@@ -49,3 +49,18 @@ func BOMNoSpaceToExplode() *AppError { return &AppError{Code: ErrBOMNoSpaceToExp
 func BOMTooManyLevels(levels int) *AppError {
 	return &AppError{Code: ErrBOMTooManyLevels, Params: []string{strconv.Itoa(levels)}}
 }
+
+// Extended texts (tables 279/280, codeunit 378)
+const (
+	ErrExtTextNoResourcePurch ErrorCode = "ERR_EXT_TEXT_NO_RESOURCE_PURCH"
+	ErrExtTextNoSpace         ErrorCode = "ERR_EXT_TEXT_NO_SPACE"
+)
+
+// ExtTextNoResourcePurch: an extended text of a resource cannot be used on purchases ("You cannot
+// purchase resources.")
+func ExtTextNoResourcePurch(table, field string) *AppError {
+	return &AppError{Code: ErrExtTextNoResourcePurch, Table: table, Field: field}
+}
+
+// ExtTextNoSpace: there are no free line numbers for the extended text lines
+func ExtTextNoSpace() *AppError { return &AppError{Code: ErrExtTextNoSpace} }

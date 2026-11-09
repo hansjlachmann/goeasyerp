@@ -341,3 +341,5 @@ errors:
   ERR_SERIAL_ALREADY_ON_INVENTORY: "Serienr. %1 er allerede på lager."
   ERR_SERIAL_SHIPPED_NOT_RECEIVED: "Serienr. %1 er allerede leveret til en debitor, men er endnu ikke modtaget fra en kreditor."
   ERR_SERIAL_QTY_MUST_BE_ONE: "%1 skal være 1 eller -1, når Serienr. er angivet."
+  ERR_EXT_TEXT_NO_RESOURCE_PURCH: "Du kan ikke købe ressourcer."
+  ERR_EXT_TEXT_NO_SPACE: "Der er ikke plads nok til at indsætte udvidede tekstlinjer."

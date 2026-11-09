@@ -341,3 +341,5 @@ errors:
   ERR_SERIAL_ALREADY_ON_INVENTORY: "Serial No. %1 is already on inventory."
   ERR_SERIAL_SHIPPED_NOT_RECEIVED: "Serial No. %1 has already been shipped to a customer but has not yet been received from a vendor."
   ERR_SERIAL_QTY_MUST_BE_ONE: "%1 must be 1 or -1 when Serial No. has been entered."
+  ERR_EXT_TEXT_NO_RESOURCE_PURCH: "You cannot purchase resources."
+  ERR_EXT_TEXT_NO_SPACE: "There is not enough space to insert extended text lines."

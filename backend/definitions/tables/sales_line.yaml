@@ -974,6 +974,12 @@ table:
       type: bool
       db_name: apply_and_close_project
 
+    - name: attached_to_line_no
+      no: 80
+      type: int
+      db_name: attached_to_line_no
+      editable: false
+
   keys:
     - name: Primary
       fields: [document_type, document_no, line_no]

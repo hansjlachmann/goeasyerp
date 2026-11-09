@@ -563,6 +563,11 @@ table:
           type: filter
           value: date_filter
 
+    - name: automatic_ext_text
+      no: 55
+      type: bool
+      db_name: automatic_ext_text
+
   keys:
     - name: Primary
       fields: [no]

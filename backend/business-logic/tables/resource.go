@@ -70,7 +70,7 @@ func (resourceLogic) OnDelete(rec *gtables.Resource) error {
 	resPrice.DeleteAll()
 
 	DeleteComments(rec, gtables.CommentLine_Table_name.Resource, rec.No)
-	return nil
+	return DeleteExtendedTexts(rec, gtables.ExtendedTextHeader_Table_name.Resource, rec.No)
 }
 
 // OnRename sets Last Date Modified

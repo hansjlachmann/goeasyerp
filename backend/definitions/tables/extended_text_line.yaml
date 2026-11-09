@@ -1,0 +1,49 @@
+table:
+  id: 280
+  name: "Extended_Text_Line"
+  caption: Extended Text Line
+  description: The lines of an extended text (table 280)
+  fields:
+    - name: table_name
+      no: 1
+      type: Option
+      db_name: table_name
+      primary_key: true
+      options: ["Standard Text", "G/L Account", "Item", "Resource"]
+
+    - name: "no"
+      no: 2
+      type: types.Code
+      db_name: no
+      primary_key: true
+      length: 20
+
+    - name: language_code
+      no: 3
+      type: types.Code
+      db_name: language_code
+      primary_key: true
+      length: 10
+
+    - name: text_no
+      no: 4
+      type: int
+      db_name: text_no
+      primary_key: true
+
+    - name: line_no
+      no: 5
+      type: int
+      db_name: line_no
+      primary_key: true
+
+    - name: text
+      no: 6
+      type: types.Text
+      db_name: text
+      length: 50
+
+  keys:
+    - name: Primary
+      fields: [table_name, "no", language_code, text_no, line_no]
+      clustered: true

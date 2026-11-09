@@ -36,6 +36,7 @@ page:
           width: 120
         - source: "no"
           width: 110
+          on_after_validate: table:Finance_Charge_Memo_Line.InsertExtendedText(false)   # the automatic extended text
         - source: description
           width: 300
         - source: original_amount
@@ -50,3 +51,29 @@ page:
         - source: tax_amount
           width: 110
           visible: false
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+
+    # the line's extended text, always (codeunit 378)
+    - name: Insert Ext. Texts
+      caption: Insert Ext. Texts
+      image: Document
+      promoted: true
+      run_object: table:Finance_Charge_Memo_Line.InsertExtendedText(true)

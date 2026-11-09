@@ -102,6 +102,7 @@ type copySalesDocument struct {
 	req             copyDocumentRequest
 	nextLineNo      int
 	linesNotCopied  int
+	oldExtTextLines transferOldExtTextLines
 }
 
 func (r *copySalesDocument) Definition() *Definition {
@@ -413,6 +414,7 @@ func (r *copySalesDocument) copySalesLine(run *Run, fromSalesLine *gtables.Sales
 		salesLine.Shipment_no = ""
 		salesLine.Shipment_line_no = 0
 	}
+	salesLine.Attached_to_line_no = r.oldExtTextLines.transferExtendedText(fromSalesLine.Line_no, r.nextLineNo, fromSalesLine.Attached_to_line_no)
 	if !copyThisLine {
 		r.linesNotCopied++
 		return nil
@@ -429,6 +431,7 @@ type copyPurchDocument struct {
 	req             copyDocumentRequest
 	nextLineNo      int
 	linesNotCopied  int
+	oldExtTextLines transferOldExtTextLines
 }
 
 func (r *copyPurchDocument) Definition() *Definition {
@@ -710,9 +713,24 @@ func (r *copyPurchDocument) copyPurchLine(run *Run, fromPurchLine *gtables.Purch
 		purchLine.Receipt_line_no = 0
 		purchLine.Expected_receipt_date = r.purchHeader.Expected_receipt_date
 	}
+	purchLine.Attached_to_line_no = r.oldExtTextLines.transferExtendedText(fromPurchLine.Line_no, r.nextLineNo, fromPurchLine.Attached_to_line_no)
 	if !copyThisLine {
 		r.linesNotCopied++
 		return nil
 	}
 	return purchLine.InsertOrError(false)
+}
+
+// transferOldExtTextLines is codeunit 379 Transfer Old Ext. Text Lines: the line numbers a copy
+// gave the lines, so a copied text line is attached to the copy of its line
+type transferOldExtTextLines map[int]int
+
+// transferExtendedText (TransferExtendedText): remembers the line's new number and returns the
+// new number of the line it is attached to (0: not attached, or that line was not copied)
+func (t *transferOldExtTextLines) transferExtendedText(oldLineNo, newLineNo, oldAttachedToLineNo int) int {
+	if *t == nil {
+		*t = transferOldExtTextLines{}
+	}
+	(*t)[oldLineNo] = newLineNo
+	return (*t)[oldAttachedToLineNo]
 }

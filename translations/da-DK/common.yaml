@@ -183,6 +183,8 @@ common:
     preview_posting: "Vis bogføring"
     get_shipment_lines: "Hent leverancelinjer"
     copy_document: "Kopier dokument"
+    extended_texts: "Udvidede tekster"
+    insert_ext_texts: "Indsæt udvidede tekster"
     get_receipt_lines: "Hent modtagelseslinjer"
     show_document: "Vis bilag"
     ok: "OK"
@@ -241,6 +243,7 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    reminders: "Rykkere"
     projects: "Projekter"
     budgeted: "Budgetteret"
     realized: "Realiseret"

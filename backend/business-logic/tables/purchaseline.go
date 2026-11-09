@@ -39,7 +39,18 @@ func (purchaseLineLogic) OnDelete(rec *gtables.PurchaseLine) error {
 	if err != nil {
 		return err
 	}
-	return checkPurchBlanketOrderLineDelete(rec)
+	err = checkPurchBlanketOrderLineDelete(rec)
+	if err != nil {
+		return err
+	}
+
+	// the line's extended text lines go with it
+	purchLine2 := gtables.NewPurchaseLine(rec)
+	purchLine2.SetRange("document_type", rec.Document_type)
+	purchLine2.SetRange("document_no", rec.Document_no)
+	purchLine2.SetRange("attached_to_line_no", rec.Line_no)
+	purchLine2.DeleteAll()
+	return nil
 }
 
 // OnRename: a purchase line is never renamed

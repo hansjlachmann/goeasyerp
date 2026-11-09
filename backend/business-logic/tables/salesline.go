@@ -46,7 +46,18 @@ func (salesLineLogic) OnDelete(rec *gtables.SalesLine) error {
 			return err
 		}
 	}
-	return checkSalesBlanketOrderLineDelete(rec)
+	err = checkSalesBlanketOrderLineDelete(rec)
+	if err != nil {
+		return err
+	}
+
+	// the line's extended text lines go with it
+	salesLine2 := gtables.NewSalesLine(rec)
+	salesLine2.SetRange("document_type", rec.Document_type)
+	salesLine2.SetRange("document_no", rec.Document_no)
+	salesLine2.SetRange("attached_to_line_no", rec.Line_no)
+	salesLine2.DeleteAll()
+	return nil
 }
 
 // OnRename: a sales line is never renamed

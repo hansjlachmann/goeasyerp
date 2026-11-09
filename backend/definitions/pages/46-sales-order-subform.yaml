@@ -24,6 +24,7 @@ page:
           width: 110
         - source: "no"
           width: 120
+          on_after_validate: table:Sales_Line.InsertExtendedText(false)   # the automatic extended text
         - source: variant_code
           width: 100
           visible: false
@@ -123,6 +124,12 @@ page:
       promoted: true
 
     # Reservations of the line: the Reservation page (the sources it can reserve from) and its entries
+    # the line's extended text, always (codeunit 378)
+    - name: Insert Ext. Texts
+      caption: Insert Ext. Texts
+      image: Document
+      promoted: true
+      run_object: table:Sales_Line.InsertExtendedText(true)
     # the line's bill of materials as a line per component (codeunit 63)
     - name: Explode BOM
       caption: Explode BOM

@@ -98,6 +98,10 @@ codeunits:
     caption: "Salg - udfold stykliste"
   "73":
     caption: "Køb - udfold stykliste"
+  "378":
+    caption: "Overfør udvidet tekst"
+  "379":
+    caption: "Overfør gamle udvidede tekstlinjer"
   "216":
     caption: "Projektpost – angiv udlignings-id"
   "220":

@@ -54,9 +54,15 @@ func CreateInvLines(salesHeader *gtables.SalesHeader, shipmentNo types.Code, shi
 	}
 	salesShptLine := gtables.NewSalesShipmentLine(salesHeader)
 	salesShptLine.SetRange("document_no", shipmentNo)
-	salesShptLine.SetFilter("qty_shipped_not_invoiced", "<>0")
 	var shptLines []*gtables.SalesShipmentLine
-	for found := salesShptLine.FindSet(); found; found = salesShptLine.Next() {
+	// the lines not invoiced, with their extended text lines (Transfer Old Ext. Text Lines)
+	transferred := map[int]bool{}
+	for found := salesShptLine.FindSetBuffered(); found; found = salesShptLine.Next() {
+		extTextLine := salesShptLine.Attached_to_line_no != 0 && transferred[salesShptLine.Attached_to_line_no]
+		if salesShptLine.Qty_shipped_not_invoiced.IsZero() && !extTextLine {
+			continue
+		}
+		transferred[salesShptLine.Line_no] = true
 		line := gtables.NewSalesShipmentLine(salesHeader)
 		line.Copy(salesShptLine)
 		shptLines = append(shptLines, line)
@@ -73,9 +79,22 @@ func CreateInvLines(salesHeader *gtables.SalesHeader, shipmentNo types.Code, shi
 	if err != nil {
 		return err
 	}
+	newLineNos := map[int]int{}
 	for _, shptLine := range shptLines {
 		nextLineNo = nextLineNo + 10000
-		err = insertInvLineFromShptLine(salesHeader, shptLine, nextLineNo)
+		newLineNos[shptLine.Line_no] = nextLineNo
+		if shptLine.Attached_to_line_no != 0 {
+			// an extended text line: its text, attached to the invoice line of its line
+			textLine := gtables.NewSalesLine(salesHeader)
+			textLine.Document_type = gtables.SalesLineDocument_type(salesHeader.Document_type)
+			textLine.Document_no = salesHeader.No
+			textLine.Line_no = nextLineNo
+			textLine.Description = shptLine.Description
+			textLine.Attached_to_line_no = newLineNos[shptLine.Attached_to_line_no]
+			err = textLine.InsertOrError(false)
+		} else {
+			err = insertInvLineFromShptLine(salesHeader, shptLine, nextLineNo)
+		}
 		if err != nil {
 			return err
 		}

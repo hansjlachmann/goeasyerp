@@ -616,8 +616,32 @@ func RecreatePurchLines(rec *gtables.PurchaseHeader) error {
 	}
 	purchLine.DeleteAll()
 	lineNo := 0
+	extendedTextAdded := false
 	for i := range purchLineTmp {
 		old := &purchLineTmp[i]
+		if old.Attached_to_line_no != 0 {
+			// the text lines of the line before: its extended text inserted again, once
+			if !extendedTextAdded {
+				transferExtendedText := &TransferExtendedText{}
+				_, err = transferExtendedText.PurchCheckIfAnyExtText(purchLine, true)
+				if err != nil {
+					return err
+				}
+				err = transferExtendedText.InsertPurchExtText(purchLine)
+				if err != nil {
+					return err
+				}
+				last := gtables.NewPurchaseLine(rec)
+				last.SetRange("document_type", purchLine.Document_type)
+				last.SetRange("document_no", rec.No)
+				if last.FindLast() {
+					lineNo = last.Line_no
+				}
+				extendedTextAdded = true
+			}
+			continue
+		}
+		extendedTextAdded = false
 		purchLine = gtables.NewPurchaseLine(rec)
 		lineNo += 10000
 		purchLine.Document_type = gtables.PurchaseLineDocument_type(rec.Document_type)

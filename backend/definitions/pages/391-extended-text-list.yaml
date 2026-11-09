@@ -1,0 +1,47 @@
+page:
+  id: 391
+  type: List
+  name: Extended Text List
+  source_table: Extended_Text_Header   # opened filtered on a standard text, G/L account, item or resource
+  caption: Extended Text List
+  card_page_id: 386
+  modal_card: true
+
+  layout:
+    repeater:
+      fields:
+        - source: table_name
+          width: 110
+          visible: false
+        - source: "no"
+          width: 110
+          visible: false
+        - source: language_code
+          width: 100
+        - source: all_language_codes
+          width: 120
+        - source: text_no
+          width: 80
+        - source: starting_date
+          width: 110
+        - source: ending_date
+          width: 110
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

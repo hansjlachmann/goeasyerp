@@ -838,7 +838,7 @@ func (t *StandardText) renameReferences(field string, oldValue, newValue interfa
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Finance_Charge_Memo_Line", false, "no", "type", 0}, {"Issued_Fin_Charge_Memo_Line", false, "no", "type", 0}, {"Issued_Reminder_Line", false, "no", "type", 0}, {"Purch_Cr_Memo_Line", false, "no", "type", 0}, {"Purch_Inv_Line", false, "no", "type", 0}, {"Purch_Rcpt_Line", false, "no", "type", 0}, {"Purchase_Line", false, "no", "type", 0}, {"Reminder_Line", false, "no", "type", 0}, {"Sales_Cr_Memo_Line", false, "no", "type", 0}, {"Sales_Invoice_Line", false, "no", "type", 0}, {"Sales_Line", false, "no", "type", 0}, {"Sales_Shipment_Line", false, "no", "type", 0}},
+		"code": {{"Extended_Text_Header", false, "no", "table_name", 0}, {"Finance_Charge_Memo_Line", false, "no", "type", 0}, {"Issued_Fin_Charge_Memo_Line", false, "no", "type", 0}, {"Issued_Reminder_Line", false, "no", "type", 0}, {"Purch_Cr_Memo_Line", false, "no", "type", 0}, {"Purch_Inv_Line", false, "no", "type", 0}, {"Purch_Rcpt_Line", false, "no", "type", 0}, {"Purchase_Line", false, "no", "type", 0}, {"Reminder_Line", false, "no", "type", 0}, {"Sales_Cr_Memo_Line", false, "no", "type", 0}, {"Sales_Invoice_Line", false, "no", "type", 0}, {"Sales_Line", false, "no", "type", 0}, {"Sales_Shipment_Line", false, "no", "type", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
@@ -871,6 +871,7 @@ func (t *StandardText) refuseDeleteWhenUsed() error {
 		Table: StandardTextTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
+		{Table: "Extended_Text_Header", Column: "no", CondColumn: "table_name", CondValue: 0},
 		{Table: "Finance_Charge_Memo_Line", Column: "no", CondColumn: "type", CondValue: 0},
 		{Table: "Issued_Fin_Charge_Memo_Line", Column: "no", CondColumn: "type", CondValue: 0},
 		{Table: "Issued_Reminder_Line", Column: "no", CondColumn: "type", CondValue: 0},

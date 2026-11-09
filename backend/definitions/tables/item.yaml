@@ -1444,6 +1444,11 @@ table:
         field: code
         validate: false
 
+    - name: automatic_ext_text
+      no: 96
+      type: bool
+      db_name: automatic_ext_text
+
   keys:
     - name: Primary
       fields: [no]

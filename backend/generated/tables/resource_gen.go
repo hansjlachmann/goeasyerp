@@ -43,6 +43,7 @@
 //	OnValidate_No_series(rec *gtables.Resource) error
 //	OnValidate_Tax_group_code(rec *gtables.Resource) error
 //	OnValidate_Tax_prod_posting_group(rec *gtables.Resource) error
+//	OnValidate_Automatic_ext_text(rec *gtables.Resource) error
 
 package tables
 
@@ -158,6 +159,7 @@ type Resource struct {
 	Qty_on_order_project types.Decimal
 	// FlowField: Sum(ProjectBudgetEntry.quantity)
 	Qty_quoted_project types.Decimal
+	Automatic_ext_text bool `db:"automatic_ext_text"`
 	// FlowFilter date_filter (types.Date): the filter expression FlowFields apply — not stored
 	Date_filter string
 	// FlowFilter unit_of_measure_filter (types.Code): the filter expression FlowFields apply — not stored
@@ -297,6 +299,7 @@ var Resource_FieldNo = struct {
 	Sales_price              int
 	Qty_on_order_project     int
 	Qty_quoted_project       int
+	Automatic_ext_text       int
 	Date_filter              int
 	Unit_of_measure_filter   int
 	Chargeable_filter        int
@@ -344,6 +347,7 @@ var Resource_FieldNo = struct {
 	Sales_price:              49,
 	Qty_on_order_project:     42,
 	Qty_quoted_project:       43,
+	Automatic_ext_text:       55,
 	Date_filter:              39,
 	Unit_of_measure_filter:   40,
 	Chargeable_filter:        50,
@@ -438,6 +442,8 @@ func (t *Resource) FieldNo(fieldName string) int {
 		return 42
 	case "qty_quoted_project":
 		return 43
+	case "automatic_ext_text":
+		return 55
 	case "date_filter":
 		return 39
 	case "unit_of_measure_filter":
@@ -537,6 +543,8 @@ func (t *Resource) FieldName(fieldNo int) string {
 		return "qty_on_order_project"
 	case 43:
 		return "qty_quoted_project"
+	case 55:
+		return "automatic_ext_text"
 	case 39:
 		return "date_filter"
 	case 40:
@@ -669,6 +677,7 @@ type (
 	ResourceOnValidate_No_series                interface{ OnValidate_No_series(rec *Resource) error }
 	ResourceOnValidate_Tax_group_code           interface{ OnValidate_Tax_group_code(rec *Resource) error }
 	ResourceOnValidate_Tax_prod_posting_group   interface{ OnValidate_Tax_prod_posting_group(rec *Resource) error }
+	ResourceOnValidate_Automatic_ext_text       interface{ OnValidate_Automatic_ext_text(rec *Resource) error }
 )
 
 // resourceLogic is the registered business logic of Resource, in
@@ -764,6 +773,8 @@ func resourceTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ResourceOnValidate_Tax_group_code)
 	case "OnValidate_Tax_prod_posting_group":
 		_, ok = logic.(ResourceOnValidate_Tax_prod_posting_group)
+	case "OnValidate_Automatic_ext_text":
+		_, ok = logic.(ResourceOnValidate_Automatic_ext_text)
 	default:
 		return false, false
 	}
@@ -991,7 +1002,8 @@ func GetResourceTableSchema() string {
 		sales_cost TEXT,
 		sales_price TEXT,
 		qty_on_order_project TEXT,
-		qty_quoted_project TEXT
+		qty_quoted_project TEXT,
+		automatic_ext_text INTEGER
 	`
 }
 
@@ -1040,7 +1052,8 @@ func GetResourcePostgresTableSchema() string {
 		sales_cost NUMERIC,
 		sales_price NUMERIC,
 		qty_on_order_project NUMERIC,
-		qty_quoted_project NUMERIC
+		qty_quoted_project NUMERIC,
+		automatic_ext_text BOOLEAN
 	`
 }
 
@@ -1220,6 +1233,7 @@ func (t *Resource) StoreOldValues() {
 	t.oldValues["no_series"] = t.No_series
 	t.oldValues["tax_group_code"] = t.Tax_group_code
 	t.oldValues["tax_prod_posting_group"] = t.Tax_prod_posting_group
+	t.oldValues["automatic_ext_text"] = t.Automatic_ext_text
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1333,6 +1347,9 @@ func (t *Resource) XRec() *Resource {
 	if v, ok := t.oldValues["tax_prod_posting_group"].(types.Code); ok {
 		x.Tax_prod_posting_group = v
 	}
+	if v, ok := t.oldValues["automatic_ext_text"].(bool); ok {
+		x.Automatic_ext_text = v
+	}
 	return x
 }
 
@@ -1427,6 +1444,7 @@ func (t *Resource) GetByPK(no types.Code) bool {
 	var no_seriesNull sql.NullString
 	var tax_group_codeNull sql.NullString
 	var tax_prod_posting_groupNull sql.NullString
+	var automatic_ext_textBool sql.NullBool
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1434,7 +1452,7 @@ func (t *Resource) GetByPK(no types.Code) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group FROM "%s" WHERE 1=1 AND no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group, automatic_ext_text FROM "%s" WHERE 1=1 AND no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1474,6 +1492,7 @@ func (t *Resource) GetByPK(no types.Code) bool {
 		&no_seriesNull,
 		&tax_group_codeNull,
 		&tax_prod_posting_groupNull,
+		&automatic_ext_textBool,
 	)
 
 	if err != nil {
@@ -1520,6 +1539,7 @@ func (t *Resource) GetByPK(no types.Code) bool {
 	t.No_series = types.NewCode(no_seriesNull.String)
 	t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
 	t.Tax_prod_posting_group = types.NewCode(tax_prod_posting_groupNull.String)
+	t.Automatic_ext_text = automatic_ext_textBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1575,11 +1595,12 @@ func (t *Resource) Insert(runTrigger bool) bool {
 		t.No_series,
 		t.Tax_group_code,
 		t.Tax_prod_posting_group,
+		t.Automatic_ext_text,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group, automatic_ext_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1650,10 +1671,11 @@ func (t *Resource) InsertAll(records []*Resource, runTrigger bool) error {
 			r.No_series,
 			r.Tax_group_code,
 			r.Tax_prod_posting_group,
+			r.Automatic_ext_text,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ResourceTableName)
-	columns := []string{"no", "type", "name", "search_name", "name_2", "address", "address_2", "city", "social_security_no", "title", "education", "contract_class", "employment_date", "resource_group_no", "dimension_1_code", "dimension_2_code", "unit_of_measure_code", "direct_unit_cost", "indirect_cost_percent", "unit_cost", "profit_percent", "price_profit_calculation", "unit_price", "vendor_no", "last_date_modified", "blocked", "gen_prod_posting_group", "picture", "post_code", "state", "no_series", "tax_group_code", "tax_prod_posting_group"}
+	columns := []string{"no", "type", "name", "search_name", "name_2", "address", "address_2", "city", "social_security_no", "title", "education", "contract_class", "employment_date", "resource_group_no", "dimension_1_code", "dimension_2_code", "unit_of_measure_code", "direct_unit_cost", "indirect_cost_percent", "unit_cost", "profit_percent", "price_profit_calculation", "unit_price", "vendor_no", "last_date_modified", "blocked", "gen_prod_posting_group", "picture", "post_code", "state", "no_series", "tax_group_code", "tax_prod_posting_group", "automatic_ext_text"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1825,6 +1847,10 @@ func (t *Resource) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "tax_prod_posting_group = ?")
 			values = append(values, t.Tax_prod_posting_group)
 		}
+		if t.hasFieldChanged("automatic_ext_text") {
+			setClauses = append(setClauses, "automatic_ext_text = ?")
+			values = append(values, t.Automatic_ext_text)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -1896,6 +1922,8 @@ func (t *Resource) Modify(runTrigger bool) bool {
 		values = append(values, t.Tax_group_code)
 		setClauses = append(setClauses, "tax_prod_posting_group = ?")
 		values = append(values, t.Tax_prod_posting_group)
+		setClauses = append(setClauses, "automatic_ext_text = ?")
+		values = append(values, t.Automatic_ext_text)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -2094,6 +2122,11 @@ func (t *Resource) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Tax_prod_posting_group.Equal(old)
 		}
+	case "automatic_ext_text":
+		if old, ok := oldValue.(bool); ok {
+			return t.Automatic_ext_text != old
+		}
+		return true // Type mismatch, assume changed
 	}
 
 	return false
@@ -2118,7 +2151,7 @@ func (t *Resource) renameReferences(field string, oldValue, newValue interface{}
 		condValue  int
 	}
 	references := map[string][]reference{
-		"no": {{"BOM_Component", false, "no", "type", 2}, {"Project", false, "person_responsible", "", 0}, {"Project_Budget_Entry", false, "no", "type", 0}, {"Project_Budget_Line", false, "no", "type", 0}, {"Project_Journal_Line", false, "no", "type", 0}, {"Project_Ledger_Entry", false, "no", "type", 0}, {"Res_Capacity_Entry", false, "resource_no", "", 0}, {"Res_Journal_Line", false, "resource_no", "", 0}, {"Res_Ledger_Entry", false, "resource_no", "", 0}, {"Resource_Cost", false, "code", "type", 0}, {"Resource_Price", false, "code", "type", 0}, {"Resource_Price_Change", false, "code", "type", 0}, {"Sales_Cr_Memo_Line", false, "no", "type", 3}, {"Sales_Invoice_Line", false, "no", "type", 3}, {"Sales_Line", false, "no", "type", 3}, {"Sales_Shipment_Line", false, "no", "type", 3}},
+		"no": {{"BOM_Component", false, "no", "type", 2}, {"Extended_Text_Header", false, "no", "table_name", 3}, {"Project", false, "person_responsible", "", 0}, {"Project_Budget_Entry", false, "no", "type", 0}, {"Project_Budget_Line", false, "no", "type", 0}, {"Project_Journal_Line", false, "no", "type", 0}, {"Project_Ledger_Entry", false, "no", "type", 0}, {"Res_Capacity_Entry", false, "resource_no", "", 0}, {"Res_Journal_Line", false, "resource_no", "", 0}, {"Res_Ledger_Entry", false, "resource_no", "", 0}, {"Resource_Cost", false, "code", "type", 0}, {"Resource_Price", false, "code", "type", 0}, {"Resource_Price_Change", false, "code", "type", 0}, {"Sales_Cr_Memo_Line", false, "no", "type", 3}, {"Sales_Invoice_Line", false, "no", "type", 3}, {"Sales_Line", false, "no", "type", 3}, {"Sales_Shipment_Line", false, "no", "type", 3}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
@@ -2152,6 +2185,7 @@ func (t *Resource) refuseDeleteWhenUsed() error {
 		KeyColumn: "no", Key: t.No, KeyText: fmt.Sprint(t.No),
 	}, []tables.Reference{
 		{Table: "BOM_Component", Column: "no", CondColumn: "type", CondValue: 2},
+		{Table: "Extended_Text_Header", Column: "no", CondColumn: "table_name", CondValue: 3},
 		{Table: "Project", Column: "person_responsible"},
 		{Table: "Project_Budget_Entry", Column: "no", CondColumn: "type", CondValue: 0},
 		{Table: "Project_Budget_Line", Column: "no", CondColumn: "type", CondValue: 0},
@@ -4312,6 +4346,8 @@ func (t *Resource) columnName(fieldName string) (string, bool) {
 		return "tax_group_code", true
 	case strings.ToLower("tax_prod_posting_group"):
 		return "tax_prod_posting_group", true
+	case strings.ToLower("automatic_ext_text"):
+		return "automatic_ext_text", true
 	}
 	return "", false
 }
@@ -4478,6 +4514,8 @@ func (t *Resource) isKeyDateColumn(column string) bool {
 func (t *Resource) isBoolColumn(column string) bool {
 	switch column {
 	case "blocked":
+		return true
+	case "automatic_ext_text":
 		return true
 	}
 	return false
@@ -4703,7 +4741,7 @@ func (t *Resource) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group, automatic_ext_text FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4740,6 +4778,7 @@ func (t *Resource) FindFirst() bool {
 	var no_seriesNull sql.NullString
 	var tax_group_codeNull sql.NullString
 	var tax_prod_posting_groupNull sql.NullString
+	var automatic_ext_textBool sql.NullBool
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&noNull,
@@ -4775,6 +4814,7 @@ func (t *Resource) FindFirst() bool {
 		&no_seriesNull,
 		&tax_group_codeNull,
 		&tax_prod_posting_groupNull,
+		&automatic_ext_textBool,
 	)
 
 	if err != nil {
@@ -4818,6 +4858,7 @@ func (t *Resource) FindFirst() bool {
 	t.No_series = types.NewCode(no_seriesNull.String)
 	t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
 	t.Tax_prod_posting_group = types.NewCode(tax_prod_posting_groupNull.String)
+	t.Automatic_ext_text = automatic_ext_textBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -4838,7 +4879,7 @@ func (t *Resource) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group, automatic_ext_text FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4875,6 +4916,7 @@ func (t *Resource) FindLast() bool {
 	var no_seriesNull sql.NullString
 	var tax_group_codeNull sql.NullString
 	var tax_prod_posting_groupNull sql.NullString
+	var automatic_ext_textBool sql.NullBool
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&noNull,
@@ -4910,6 +4952,7 @@ func (t *Resource) FindLast() bool {
 		&no_seriesNull,
 		&tax_group_codeNull,
 		&tax_prod_posting_groupNull,
+		&automatic_ext_textBool,
 	)
 
 	if err != nil {
@@ -4953,6 +4996,7 @@ func (t *Resource) FindLast() bool {
 	t.No_series = types.NewCode(no_seriesNull.String)
 	t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
 	t.Tax_prod_posting_group = types.NewCode(tax_prod_posting_groupNull.String)
+	t.Automatic_ext_text = automatic_ext_textBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -5003,7 +5047,7 @@ func (t *Resource) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group, automatic_ext_text FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5104,6 +5148,7 @@ func (t *Resource) Next(steps ...int) bool {
 		var no_seriesNull sql.NullString
 		var tax_group_codeNull sql.NullString
 		var tax_prod_posting_groupNull sql.NullString
+		var automatic_ext_textBool sql.NullBool
 
 		err := t.currentRows.Scan(
 			&noNull,
@@ -5139,6 +5184,7 @@ func (t *Resource) Next(steps ...int) bool {
 			&no_seriesNull,
 			&tax_group_codeNull,
 			&tax_prod_posting_groupNull,
+			&automatic_ext_textBool,
 		)
 
 		if err != nil {
@@ -5181,6 +5227,7 @@ func (t *Resource) Next(steps ...int) bool {
 		t.No_series = types.NewCode(no_seriesNull.String)
 		t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
 		t.Tax_prod_posting_group = types.NewCode(tax_prod_posting_groupNull.String)
+		t.Automatic_ext_text = automatic_ext_textBool.Bool
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -5230,7 +5277,7 @@ func (t *Resource) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT no, type, name, search_name, name_2, address, address_2, city, social_security_no, title, education, contract_class, employment_date, resource_group_no, dimension_1_code, dimension_2_code, unit_of_measure_code, direct_unit_cost, indirect_cost_percent, unit_cost, profit_percent, price_profit_calculation, unit_price, vendor_no, last_date_modified, blocked, gen_prod_posting_group, picture, post_code, state, no_series, tax_group_code, tax_prod_posting_group, automatic_ext_text FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5284,6 +5331,7 @@ func (t *Resource) FindSetBuffered() bool {
 		var no_seriesNull sql.NullString
 		var tax_group_codeNull sql.NullString
 		var tax_prod_posting_groupNull sql.NullString
+		var automatic_ext_textBool sql.NullBool
 
 		err := rows.Scan(
 			&noNull,
@@ -5319,6 +5367,7 @@ func (t *Resource) FindSetBuffered() bool {
 			&no_seriesNull,
 			&tax_group_codeNull,
 			&tax_prod_posting_groupNull,
+			&automatic_ext_textBool,
 		)
 
 		if err != nil {
@@ -5359,6 +5408,7 @@ func (t *Resource) FindSetBuffered() bool {
 		record.No_series = types.NewCode(no_seriesNull.String)
 		record.Tax_group_code = types.NewCode(tax_group_codeNull.String)
 		record.Tax_prod_posting_group = types.NewCode(tax_prod_posting_groupNull.String)
+		record.Automatic_ext_text = automatic_ext_textBool.Bool
 
 		// Store old values
 		record.StoreOldValues()
@@ -5430,6 +5480,7 @@ func (t *Resource) copyFromBuffered(record *Resource) {
 	t.Sales_price = record.Sales_price
 	t.Qty_on_order_project = record.Qty_on_order_project
 	t.Qty_quoted_project = record.Qty_quoted_project
+	t.Automatic_ext_text = record.Automatic_ext_text
 	t.StoreOldValues()
 }
 
@@ -6335,6 +6386,25 @@ func (t *Resource) ValidateField(fieldName string, value interface{}) error {
 			}
 		}
 		return nil
+	case "automatic_ext_text":
+		// Set field value
+		if v, ok := value.(bool); ok {
+			t.Automatic_ext_text = v
+		} else if v, ok := value.(string); ok {
+			// Handle string boolean values from JSON/frontend
+			t.Automatic_ext_text = v == "true" || v == "1"
+		} else {
+			return fmt.Errorf("invalid type for field automatic_ext_text")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(ResourceOnValidate_Automatic_ext_text); ok {
+				if err := trg.OnValidate_Automatic_ext_text(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -6413,6 +6483,8 @@ func (t *Resource) FieldValue(no int) (any, bool) {
 		return t.Tax_group_code, true
 	case 58:
 		return t.Tax_prod_posting_group, true
+	case 55:
+		return t.Automatic_ext_text, true
 	}
 	return nil, false
 }
@@ -6699,6 +6771,11 @@ func (t *Resource) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.Tax_prod_posting_group = types.NewCode(v)
+			return true
+		}
+	case 55:
+		if v, ok := value.(bool); ok {
+			t.Automatic_ext_text = v
 			return true
 		}
 	}
@@ -7243,6 +7320,8 @@ func (t *Resource) columnValue(column string) (interface{}, bool) {
 		return t.Tax_group_code, true
 	case "tax_prod_posting_group":
 		return t.Tax_prod_posting_group, true
+	case "automatic_ext_text":
+		return t.Automatic_ext_text, true
 	}
 	return nil, false
 }
@@ -7329,6 +7408,7 @@ func (t *Resource) Init() {
 	t.No_series = *new(types.Code)
 	t.Tax_group_code = *new(types.Code)
 	t.Tax_prod_posting_group = *new(types.Code)
+	t.Automatic_ext_text = *new(bool)
 	t.applyDefaults()
 }
 
@@ -7416,6 +7496,7 @@ func (t *Resource) ToMap() map[string]interface{} {
 		"qty_on_order_project": t.Qty_on_order_project.String(),
 		// FlowField: qty_quoted_project
 		"qty_quoted_project": t.Qty_quoted_project.String(),
+		"automatic_ext_text": t.Automatic_ext_text,
 	}
 }
 
@@ -7640,6 +7721,11 @@ func (t *Resource) FromMap(data map[string]interface{}) {
 	if v, ok := data["tax_prod_posting_group"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Tax_prod_posting_group = types.NewCode(s)
+		}
+	}
+	if v, ok := data["automatic_ext_text"]; ok && v != nil {
+		if b, ok := v.(bool); ok {
+			t.Automatic_ext_text = b
 		}
 	}
 }
@@ -8108,6 +8194,16 @@ func (t *Resource) GetFields() []tables.FieldInfo {
 			PrimaryKey:    false,
 			FlowField:     true,
 			DecimalPlaces: "0:5",
+		},
+		{
+			No:         55,
+			Name:       "automatic_ext_text",
+			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
 		},
 	}
 }

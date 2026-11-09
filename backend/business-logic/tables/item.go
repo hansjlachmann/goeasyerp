@@ -79,6 +79,11 @@ func (itemLogic) OnDelete(rec *gtables.Item) error {
 	itemTranslation.SetRange("item_no", rec.No)
 	itemTranslation.DeleteAll()
 
+	err = DeleteExtendedTexts(rec, gtables.ExtendedTextHeader_Table_name.Item, rec.No)
+	if err != nil {
+		return err
+	}
+
 	itemUnitOfMeasure := gtables.NewItemUnitOfMeasure(rec)
 	itemUnitOfMeasure.SetRange("item_no", rec.No)
 	itemUnitOfMeasure.DeleteAll()

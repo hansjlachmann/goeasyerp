@@ -137,3 +137,12 @@ page:
           caption: Indent Chart of Accounts
           image: Rows
           run_object: codeunit:3
+
+    - name: Extended Texts
+      caption: Extended Texts
+      image: Document
+      promoted: true
+      run_page: 391
+      run_page_filters:
+        - {field: table_name, const: "1"}   # G/L Account
+        - {field: "no", value: "no"}

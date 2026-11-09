@@ -1,0 +1,84 @@
+page:
+  id: 386
+  type: Card
+  name: Extended Text
+  source_table: Extended_Text_Header
+  caption: Extended Text
+  list_page_id: 391
+  enable_navigation: true
+  editable: true
+  focus_field: language_code
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: table_name
+            editable: false
+          - source: "no"
+            editable: false
+          - source: language_code
+          - source: all_language_codes
+          - source: starting_date
+          - source: ending_date
+          - source: text_no
+
+      # The text (Extended Text Line), linked by the header's key
+      - name: Lines
+        caption: Lines
+        subpage:
+          page_id: 387
+          link:
+            table_name: table_name
+            "no": "no"
+            language_code: language_code
+            text_no: text_no
+
+      - name: Sales
+        caption: Sales
+        fields:
+          - source: sales_quote
+          - source: sales_order
+          - source: sales_invoice
+          - source: sales_credit_memo
+
+      - name: Purchases
+        caption: Purchases
+        fields:
+          - source: purchase_quote
+          - source: purchase_order
+          - source: purchase_invoice
+          - source: purchase_credit_memo
+
+      - name: Reminders
+        caption: Reminders
+        fields:
+          - source: reminder
+          - source: finance_charge_memo
+
+  actions:
+    - name: Back to List
+      caption: Back to List
+      image: Back
+      shortcut: Esc
+      promoted: true
+      run_page: 391
+
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

@@ -873,7 +873,7 @@ func (t *Language) renameReferences(field string, oldValue, newValue interface{}
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Bank_Account", false, "language_code", "", 0}, {"Customer", false, "language_code", "", 0}, {"Customer_Bank_Account", false, "language_code", "", 0}, {"Finance_Charge_Memo_Header", false, "language_code", "", 0}, {"Issued_Fin_Charge_Memo_Header", false, "language_code", "", 0}, {"Issued_Reminder_Header", false, "language_code", "", 0}, {"Item_Translation", false, "language_code", "", 0}, {"Job_Queue", false, "notification_language", "", 0}, {"Purch_Cr_Memo_Hdr", false, "language_code", "", 0}, {"Purch_Inv_Header", false, "language_code", "", 0}, {"Purch_Rcpt_Header", false, "language_code", "", 0}, {"Purchase_Header", false, "language_code", "", 0}, {"Reminder_Header", false, "language_code", "", 0}, {"Sales_Cr_Memo_Header", false, "language_code", "", 0}, {"Sales_Header", false, "language_code", "", 0}, {"Sales_Invoice_Header", false, "language_code", "", 0}, {"Sales_Shipment_Header", false, "language_code", "", 0}, {"Unit_of_Measure_Translation", false, "language_code", "", 0}, {"User", true, "language", "", 0}, {"Vendor", false, "language_code", "", 0}, {"Vendor_Bank_Account", false, "language_code", "", 0}},
+		"code": {{"Bank_Account", false, "language_code", "", 0}, {"Customer", false, "language_code", "", 0}, {"Customer_Bank_Account", false, "language_code", "", 0}, {"Extended_Text_Header", false, "language_code", "", 0}, {"Finance_Charge_Memo_Header", false, "language_code", "", 0}, {"Issued_Fin_Charge_Memo_Header", false, "language_code", "", 0}, {"Issued_Reminder_Header", false, "language_code", "", 0}, {"Item_Translation", false, "language_code", "", 0}, {"Job_Queue", false, "notification_language", "", 0}, {"Purch_Cr_Memo_Hdr", false, "language_code", "", 0}, {"Purch_Inv_Header", false, "language_code", "", 0}, {"Purch_Rcpt_Header", false, "language_code", "", 0}, {"Purchase_Header", false, "language_code", "", 0}, {"Reminder_Header", false, "language_code", "", 0}, {"Sales_Cr_Memo_Header", false, "language_code", "", 0}, {"Sales_Header", false, "language_code", "", 0}, {"Sales_Invoice_Header", false, "language_code", "", 0}, {"Sales_Shipment_Header", false, "language_code", "", 0}, {"Unit_of_Measure_Translation", false, "language_code", "", 0}, {"User", true, "language", "", 0}, {"Vendor", false, "language_code", "", 0}, {"Vendor_Bank_Account", false, "language_code", "", 0}},
 	}
 	var companies []string
 	rows, err := t.db.Query(`SELECT name FROM "Company"`)
@@ -922,6 +922,7 @@ func (t *Language) refuseDeleteWhenUsed() error {
 		{Table: "Bank_Account", Column: "language_code"},
 		{Table: "Customer", Column: "language_code"},
 		{Table: "Customer_Bank_Account", Column: "language_code"},
+		{Table: "Extended_Text_Header", Column: "language_code"},
 		{Table: "Finance_Charge_Memo_Header", Column: "language_code"},
 		{Table: "Issued_Fin_Charge_Memo_Header", Column: "language_code"},
 		{Table: "Issued_Reminder_Header", Column: "language_code"},

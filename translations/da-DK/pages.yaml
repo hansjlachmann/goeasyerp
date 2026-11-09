@@ -715,6 +715,12 @@ pages:
       volume: "Rumfang"
       amount_lcy: "Beløb (RV)"
       balance_lcy: "Saldo (RV)"
+  extended_text_list:
+    caption: "Oversigt over udvidede tekster"
+  extended_text:
+    caption: "Udvidet tekst"
+  extended_text_lines:
+    caption: "Udvidede tekstlinjer"
   sales_statistics:
     caption: "Salgsstatistik"
     fields:  # the calculated fields (OnAfterGetRecord)

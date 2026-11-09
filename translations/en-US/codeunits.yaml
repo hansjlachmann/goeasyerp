@@ -98,6 +98,10 @@ codeunits:
     caption: "Sales-Explode BOM"
   "73":
     caption: "Purch.-Explode BOM"
+  "378":
+    caption: "Transfer Extended Text"
+  "379":
+    caption: "Transfer Old Ext. Text Lines"
   "216":
     caption: "Project Entry-Set Appl. ID"
   "220":

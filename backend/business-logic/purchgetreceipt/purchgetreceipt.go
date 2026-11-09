@@ -54,9 +54,15 @@ func CreateInvLines(purchHeader *gtables.PurchaseHeader, receiptNo types.Code, r
 	}
 	purchRcptLine := gtables.NewPurchRcptLine(purchHeader)
 	purchRcptLine.SetRange("document_no", receiptNo)
-	purchRcptLine.SetFilter("qty_rcd_not_invoiced", "<>0")
 	var rcptLines []*gtables.PurchRcptLine
-	for found := purchRcptLine.FindSet(); found; found = purchRcptLine.Next() {
+	// the lines not invoiced, with their extended text lines (Transfer Old Ext. Text Lines)
+	transferred := map[int]bool{}
+	for found := purchRcptLine.FindSetBuffered(); found; found = purchRcptLine.Next() {
+		extTextLine := purchRcptLine.Attached_to_line_no != 0 && transferred[purchRcptLine.Attached_to_line_no]
+		if purchRcptLine.Qty_rcd_not_invoiced.IsZero() && !extTextLine {
+			continue
+		}
+		transferred[purchRcptLine.Line_no] = true
 		line := gtables.NewPurchRcptLine(purchHeader)
 		line.Copy(purchRcptLine)
 		rcptLines = append(rcptLines, line)
@@ -73,9 +79,22 @@ func CreateInvLines(purchHeader *gtables.PurchaseHeader, receiptNo types.Code, r
 	if err != nil {
 		return err
 	}
+	newLineNos := map[int]int{}
 	for _, rcptLine := range rcptLines {
 		nextLineNo = nextLineNo + 10000
-		err = insertInvLineFromRcptLine(purchHeader, rcptLine, nextLineNo)
+		newLineNos[rcptLine.Line_no] = nextLineNo
+		if rcptLine.Attached_to_line_no != 0 {
+			// an extended text line: its text, attached to the invoice line of its line
+			textLine := gtables.NewPurchaseLine(purchHeader)
+			textLine.Document_type = gtables.PurchaseLineDocument_type(purchHeader.Document_type)
+			textLine.Document_no = purchHeader.No
+			textLine.Line_no = nextLineNo
+			textLine.Description = rcptLine.Description
+			textLine.Attached_to_line_no = newLineNos[rcptLine.Attached_to_line_no]
+			err = textLine.InsertOrError(false)
+		} else {
+			err = insertInvLineFromRcptLine(purchHeader, rcptLine, nextLineNo)
+		}
 		if err != nil {
 			return err
 		}

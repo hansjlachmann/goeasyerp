@@ -173,6 +173,13 @@ page:
           run_page: 35
           run_page_filter_field: item_no
           run_page_filter_value: "no"
+        - name: Extended Texts
+          caption: Extended Texts
+          image: Document
+          run_page: 391
+          run_page_filters:
+            - {field: table_name, const: "2"}   # Item
+            - {field: "no", value: "no"}
         - name: Bill of Materials
           caption: Bill of Materials
           image: Rows

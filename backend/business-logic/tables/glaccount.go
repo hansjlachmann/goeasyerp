@@ -43,7 +43,7 @@ func (gLAccountLogic) OnDelete(rec *gtables.GLAccount) error {
 	glBudgetEntry.DeleteAll()
 
 	DeleteComments(rec, gtables.CommentLine_Table_name.GLAccount, rec.No)
-	return nil
+	return DeleteExtendedTexts(rec, gtables.ExtendedTextHeader_Table_name.GLAccount, rec.No)
 }
 
 // OnRename sets Last Date Modified

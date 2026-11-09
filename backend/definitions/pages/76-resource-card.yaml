@@ -22,6 +22,7 @@ page:
           - source: unit_of_measure_code
           - source: resource_group_no
           - source: blocked
+          - source: automatic_ext_text
           - source: last_date_modified
           - source: comment
       - name: Invoicing
@@ -95,6 +96,13 @@ page:
           run_page: 124
           run_page_filters:
             - {field: table_name, const: "4"}   # Resource
+            - {field: "no", value: "no"}
+        - name: Extended Texts
+          caption: Extended Texts
+          image: Document
+          run_page: 391
+          run_page_filters:
+            - {field: table_name, const: "3"}   # Resource
             - {field: "no", value: "no"}
         - name: Picture
           caption: Picture

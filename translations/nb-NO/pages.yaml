@@ -715,6 +715,12 @@ pages:
       volume: "Volum"
       amount_lcy: "Beløp (NOK)"
       balance_lcy: "Saldo (NOK)"
+  extended_text_list:
+    caption: "Utvidet tekst-liste"
+  extended_text:
+    caption: "Utvidet tekst"
+  extended_text_lines:
+    caption: "Utvidede tekstlinjer"
   sales_statistics:
     caption: "Salgsstatistikk"
     fields:  # the calculated fields (OnAfterGetRecord)

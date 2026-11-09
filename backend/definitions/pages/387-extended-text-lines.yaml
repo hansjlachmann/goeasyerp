@@ -1,0 +1,48 @@
+page:
+  id: 387
+  type: List
+  name: Extended Text Lines
+  source_table: Extended_Text_Line   # the text of the Extended Text card (386), linked by its key
+  caption: Lines
+  editable: true
+  auto_split_key: true
+
+  layout:
+    repeater:
+      fields:
+        - source: table_name
+          width: 100
+          visible: false
+        - source: "no"
+          width: 100
+          visible: false
+        - source: language_code
+          width: 100
+          visible: false
+        - source: text_no
+          width: 80
+          visible: false
+        - source: line_no
+          width: 80
+          visible: false
+        - source: text
+          width: 450
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

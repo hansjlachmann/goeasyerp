@@ -558,6 +558,47 @@ tables:
       allow_invoice_disc: "Allow Invoice Disc."
 
   # Standard Text (Table 7)
+  extended_text_header:
+    caption: "Extended Text Header"
+    fields:
+      table_name: "Table Name"
+      no: "No."
+      language_code: "Language Code"
+      text_no: "Text No."
+      starting_date: "Starting Date"
+      ending_date: "Ending Date"
+      all_language_codes: "All Language Codes"
+      sales_quote: "Sales Quote"
+      sales_invoice: "Sales Invoice"
+      sales_order: "Sales Order"
+      sales_credit_memo: "Sales Credit Memo"
+      purchase_quote: "Purchase Quote"
+      purchase_invoice: "Purchase Invoice"
+      purchase_order: "Purchase Order"
+      purchase_credit_memo: "Purchase Credit Memo"
+      reminder: "Reminder"
+      finance_charge_memo: "Finance Charge Memo"
+    options:
+      table_name:
+        standard_text: "Standard Text"
+        g_l_account: "G/L Account"
+        item: "Item"
+        resource: "Resource"
+  extended_text_line:
+    caption: "Extended Text Line"
+    fields:
+      table_name: "Table Name"
+      no: "No."
+      language_code: "Language Code"
+      text_no: "Text No."
+      line_no: "Line No."
+      text: "Text"
+    options:
+      table_name:
+        standard_text: "Standard Text"
+        g_l_account: "G/L Account"
+        item: "Item"
+        resource: "Resource"
   standard_text:
     caption: "Standard Text"
     fields:
@@ -3694,6 +3735,7 @@ tables:
   item:
     caption: "Item"
     fields:
+      automatic_ext_text: "Automatic Ext. Text"
       add_curr_average_cost: "Add.-Curr. Average Cost"
       qty_on_purch_order: "Qty. on Purch. Order"
       qty_on_sales_order: "Qty. on Sales Order"
@@ -4121,6 +4163,7 @@ tables:
   resource:
     caption: "Resource"
     fields:
+      automatic_ext_text: "Automatic Ext. Text"
       qty_on_order_project: "Qty. on Order (Project)"
       qty_quoted_project: "Qty. Quoted (Project)"
       usage_qty: "Usage (Qty.)"
@@ -4621,6 +4664,7 @@ tables:
   sales_line:
     caption: "Sales Line"
     fields:
+      attached_to_line_no: "Attached to Line No."
       project_no: "Project No."
       appl_to_project_entry: "Appl.-to Project Entry"
       phase_code: "Phase Code"
@@ -4809,6 +4853,7 @@ tables:
   sales_shipment_line:
     caption: "Sales Shipment Line"
     fields:
+      attached_to_line_no: "Attached to Line No."
       project_no: "Project No."
       appl_to_project_entry: "Appl.-to Project Entry"
       phase_code: "Phase Code"
@@ -4976,6 +5021,7 @@ tables:
   sales_invoice_line:
     caption: "Sales Invoice Line"
     fields:
+      attached_to_line_no: "Attached to Line No."
       project_no: "Project No."
       appl_to_project_entry: "Appl.-to Project Entry"
       phase_code: "Phase Code"
@@ -5137,6 +5183,7 @@ tables:
   sales_cr_memo_line:
     caption: "Sales Cr.Memo Line"
     fields:
+      attached_to_line_no: "Attached to Line No."
       project_no: "Project No."
       appl_to_project_entry: "Appl.-to Project Entry"
       phase_code: "Phase Code"
@@ -5324,6 +5371,7 @@ tables:
   purchase_line:
     caption: "Purchase Line"
     fields:
+      attached_to_line_no: "Attached to Line No."
       project_no: "Project No."
       phase_code: "Phase Code"
       task_code: "Task Code"
@@ -5703,6 +5751,7 @@ tables:
   purch_rcpt_line:
     caption: "Purch. Rcpt. Line"
     fields:
+      attached_to_line_no: "Attached to Line No."
       project_no: "Project No."
       phase_code: "Phase Code"
       task_code: "Task Code"
@@ -5778,6 +5827,7 @@ tables:
   purch_inv_line:
     caption: "Purch. Inv. Line"
     fields:
+      attached_to_line_no: "Attached to Line No."
       project_no: "Project No."
       phase_code: "Phase Code"
       task_code: "Task Code"
@@ -5861,6 +5911,7 @@ tables:
   purch_cr_memo_line:
     caption: "Purch. Cr. Memo Line"
     fields:
+      attached_to_line_no: "Attached to Line No."
       project_no: "Project No."
       phase_code: "Phase Code"
       task_code: "Task Code"

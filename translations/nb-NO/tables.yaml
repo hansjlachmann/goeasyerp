@@ -558,6 +558,47 @@ tables:
       allow_invoice_disc: "Tillat fakturarabatt"
 
   # Standard Text (Table 7)
+  extended_text_header:
+    caption: "Utvidet teksthode"
+    fields:
+      table_name: "Tabellnavn"
+      no: "Nr."
+      language_code: "Språkkode"
+      text_no: "Tekstnr."
+      starting_date: "Startdato"
+      ending_date: "Sluttdato"
+      all_language_codes: "Alle språkkoder"
+      sales_quote: "Salgstilbud"
+      sales_invoice: "Salgsfaktura"
+      sales_order: "Salgsordre"
+      sales_credit_memo: "Salgskreditnota"
+      purchase_quote: "Kjøpstilbud"
+      purchase_invoice: "Kjøpsfaktura"
+      purchase_order: "Kjøpsordre"
+      purchase_credit_memo: "Kjøpskreditnota"
+      reminder: "Purring"
+      finance_charge_memo: "Rentenota"
+    options:
+      table_name:
+        standard_text: "Standardtekst"
+        g_l_account: "Finanskonto"
+        item: "Vare"
+        resource: "Ressurs"
+  extended_text_line:
+    caption: "Utvidet tekstlinje"
+    fields:
+      table_name: "Tabellnavn"
+      no: "Nr."
+      language_code: "Språkkode"
+      text_no: "Tekstnr."
+      line_no: "Linjenr."
+      text: "Tekst"
+    options:
+      table_name:
+        standard_text: "Standardtekst"
+        g_l_account: "Finanskonto"
+        item: "Vare"
+        resource: "Ressurs"
   standard_text:
     caption: "Standardtekst"
     fields:
@@ -3694,6 +3735,7 @@ tables:
   item:
     caption: "Vare"
     fields:
+      automatic_ext_text: "Automatisk utvidet tekst"
       add_curr_average_cost: "Gjennomsnittskost i tilleggsvaluta"
       qty_on_purch_order: "Antall i innkjøpsordre"
       qty_on_sales_order: "Antall i salgsordre"
@@ -4121,6 +4163,7 @@ tables:
   resource:
     caption: "Ressurs"
     fields:
+      automatic_ext_text: "Automatisk utvidet tekst"
       qty_on_order_project: "Antall i ordre (prosjekt)"
       qty_quoted_project: "Antall i tilbud (prosjekt)"
       usage_qty: "Forbruk (antall)"
@@ -4621,6 +4664,7 @@ tables:
   sales_line:
     caption: "Salgslinje"
     fields:
+      attached_to_line_no: "Knyttet til linjenr."
       project_no: "Prosjektnr."
       appl_to_project_entry: "Utlign. mot prosjektpost"
       phase_code: "Fasekode"
@@ -4809,6 +4853,7 @@ tables:
   sales_shipment_line:
     caption: "Salgsleveringslinje"
     fields:
+      attached_to_line_no: "Knyttet til linjenr."
       project_no: "Prosjektnr."
       appl_to_project_entry: "Utlign. mot prosjektpost"
       phase_code: "Fasekode"
@@ -4976,6 +5021,7 @@ tables:
   sales_invoice_line:
     caption: "Salgsfakturalinje"
     fields:
+      attached_to_line_no: "Knyttet til linjenr."
       project_no: "Prosjektnr."
       appl_to_project_entry: "Utlign. mot prosjektpost"
       phase_code: "Fasekode"
@@ -5137,6 +5183,7 @@ tables:
   sales_cr_memo_line:
     caption: "Salgskreditnotalinje"
     fields:
+      attached_to_line_no: "Knyttet til linjenr."
       project_no: "Prosjektnr."
       appl_to_project_entry: "Utlign. mot prosjektpost"
       phase_code: "Fasekode"
@@ -5324,6 +5371,7 @@ tables:
   purchase_line:
     caption: "Kjøpslinje"
     fields:
+      attached_to_line_no: "Knyttet til linjenr."
       project_no: "Prosjektnr."
       phase_code: "Fasekode"
       task_code: "Oppgavekode"
@@ -5703,6 +5751,7 @@ tables:
   purch_rcpt_line:
     caption: "Kjøpsmottakslinje"
     fields:
+      attached_to_line_no: "Knyttet til linjenr."
       project_no: "Prosjektnr."
       phase_code: "Fasekode"
       task_code: "Oppgavekode"
@@ -5778,6 +5827,7 @@ tables:
   purch_inv_line:
     caption: "Kjøpsfakturalinje"
     fields:
+      attached_to_line_no: "Knyttet til linjenr."
       project_no: "Prosjektnr."
       phase_code: "Fasekode"
       task_code: "Oppgavekode"
@@ -5861,6 +5911,7 @@ tables:
   purch_cr_memo_line:
     caption: "Kjøpskreditnotalinje"
     fields:
+      attached_to_line_no: "Knyttet til linjenr."
       project_no: "Prosjektnr."
       phase_code: "Fasekode"
       task_code: "Oppgavekode"

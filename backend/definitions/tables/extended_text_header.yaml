@@ -1,0 +1,162 @@
+table:
+  id: 279
+  name: "Extended_Text_Header"
+  caption: Extended Text Header
+  description: The extended texts of standard texts, G/L accounts, items and resources (table 279)
+  data_caption_fields: ["no", language_code, text_no]
+  lookup_page_id: 391
+  auto_key: true   # Text No. is the next number of the record and language (OnInsert)
+  fields:
+    - name: table_name
+      no: 1
+      type: Option
+      db_name: table_name
+      primary_key: true
+      options: ["Standard Text", "G/L Account", "Item", "Resource"]
+
+    - name: "no"
+      no: 2
+      type: types.Code
+      db_name: no
+      primary_key: true
+      length: 20
+      table_relation:
+        conditions:
+          - when: {field: table_name, equal: 0}
+            table: Standard_Text
+            field: code
+            lookup_columns:
+              - source: code
+                width: 100
+              - source: description
+                width: 250
+          - when: {field: table_name, equal: 1}
+            table: G_L_Account
+            field: "no"
+            filters:
+              account_type: {const: 0}
+            lookup_columns:
+              - source: "no"
+                width: 100
+              - source: name
+                width: 250
+          - when: {field: table_name, equal: 2}
+            table: Item
+            field: "no"
+            lookup_columns:
+              - source: "no"
+                width: 100
+              - source: description
+                width: 250
+          - when: {field: table_name, equal: 3}
+            table: Resource
+            field: "no"
+            lookup_columns:
+              - source: "no"
+                width: 100
+              - source: name
+                width: 250
+
+    - name: language_code
+      no: 3
+      type: types.Code
+      db_name: language_code
+      primary_key: true
+      length: 10
+      table_relation:
+        table: Language
+        field: code
+        lookup_columns:
+          - source: code
+            width: 80
+          - source: name
+            width: 200
+
+    - name: text_no
+      no: 4
+      type: int
+      db_name: text_no
+      primary_key: true
+      editable: false
+
+    - name: starting_date
+      no: 5
+      type: types.Date
+      db_name: starting_date
+
+    - name: ending_date
+      no: 6
+      type: types.Date
+      db_name: ending_date
+
+    - name: all_language_codes
+      no: 7
+      type: bool
+      db_name: all_language_codes
+
+    - name: sales_quote
+      no: 11
+      type: bool
+      db_name: sales_quote
+      default: true
+
+    - name: sales_invoice
+      no: 12
+      type: bool
+      db_name: sales_invoice
+      default: true
+
+    - name: sales_order
+      no: 13
+      type: bool
+      db_name: sales_order
+      default: true
+
+    - name: sales_credit_memo
+      no: 14
+      type: bool
+      db_name: sales_credit_memo
+      default: true
+
+    - name: purchase_quote
+      no: 15
+      type: bool
+      db_name: purchase_quote
+      default: true
+
+    - name: purchase_invoice
+      no: 16
+      type: bool
+      db_name: purchase_invoice
+      default: true
+
+    - name: purchase_order
+      no: 17
+      type: bool
+      db_name: purchase_order
+      default: true
+
+    - name: purchase_credit_memo
+      no: 18
+      type: bool
+      db_name: purchase_credit_memo
+      default: true
+
+    - name: reminder
+      no: 19
+      type: bool
+      db_name: reminder
+      default: true
+
+    - name: finance_charge_memo
+      no: 20
+      type: bool
+      db_name: finance_charge_memo
+      default: true
+
+  keys:
+    - name: Primary
+      fields: [table_name, "no", language_code, text_no]
+      clustered: true
+    - name: dates
+      fields: [table_name, "no", language_code, all_language_codes, starting_date, ending_date]

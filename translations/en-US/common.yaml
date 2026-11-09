@@ -183,6 +183,8 @@ common:
     preview_posting: "Preview Posting"
     get_shipment_lines: "Get Shipment Lines"
     copy_document: "Copy Document"
+    extended_texts: "Extended Texts"
+    insert_ext_texts: "Insert Ext. Texts"
     get_receipt_lines: "Get Receipt Lines"
     show_document: "Show Document"
     ok: "OK"
@@ -241,6 +243,7 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    reminders: "Reminders"
     projects: "Projects"
     budgeted: "Budgeted"
     realized: "Realized"

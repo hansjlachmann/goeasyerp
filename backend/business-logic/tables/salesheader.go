@@ -640,8 +640,32 @@ func RecreateSalesLines(rec *gtables.SalesHeader) error {
 	}
 	salesLine.DeleteAll()
 	lineNo := 0
+	extendedTextAdded := false
 	for i := range salesLineTmp {
 		old := &salesLineTmp[i]
+		if old.Attached_to_line_no != 0 {
+			// the text lines of the line before: its extended text inserted again, once
+			if !extendedTextAdded {
+				transferExtendedText := &TransferExtendedText{}
+				_, err = transferExtendedText.SalesCheckIfAnyExtText(salesLine, true)
+				if err != nil {
+					return err
+				}
+				err = transferExtendedText.InsertSalesExtText(salesLine)
+				if err != nil {
+					return err
+				}
+				last := gtables.NewSalesLine(rec)
+				last.SetRange("document_type", salesLine.Document_type)
+				last.SetRange("document_no", rec.No)
+				if last.FindLast() {
+					lineNo = last.Line_no
+				}
+				extendedTextAdded = true
+			}
+			continue
+		}
+		extendedTextAdded = false
 		salesLine = gtables.NewSalesLine(rec)
 		lineNo += 10000
 		salesLine.Document_type = gtables.SalesLineDocument_type(rec.Document_type)

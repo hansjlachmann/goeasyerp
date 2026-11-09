@@ -22,9 +22,9 @@ func (standardTextLogic) OnModify(rec *gtables.StandardText) error {
 	return nil
 }
 
-// OnDelete runs before a record is deleted
+// OnDelete: the standard text's extended texts go with it
 func (standardTextLogic) OnDelete(rec *gtables.StandardText) error {
-	return nil
+	return DeleteExtendedTexts(rec, gtables.ExtendedTextHeader_Table_name.StandardText, rec.Code)
 }
 
 // OnRename runs before a primary key field is changed (rec.OldValue has the old value)

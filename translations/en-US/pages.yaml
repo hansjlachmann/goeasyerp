@@ -715,6 +715,12 @@ pages:
       volume: "Volume"
       amount_lcy: "Amount (LCY)"
       balance_lcy: "Balance (LCY)"
+  extended_text_list:
+    caption: "Extended Text List"
+  extended_text:
+    caption: "Extended Text"
+  extended_text_lines:
+    caption: "Extended Text Lines"
   sales_statistics:
     caption: "Sales Statistics"
     fields:  # the calculated fields (OnAfterGetRecord)
