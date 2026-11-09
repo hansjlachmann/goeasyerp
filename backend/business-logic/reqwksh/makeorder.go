@@ -4,6 +4,7 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reservmgt"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
@@ -116,7 +117,7 @@ func (m *MakeOrder) code() error {
 	m.orderCounter = 0
 	m.orderLineCounter = 0
 	purchOrderHeader := gtables.NewPurchaseHeader(reqLine)
-	reqLine.SetCurrentKey("worksheet_template_name", "journal_batch_name", "vendor_no", "order_address_code", "currency_code")
+	reqLine.SetCurrentKey("worksheet_template_name", "journal_batch_name", "vendor_no", "sell_to_customer_no", "ship_to_code", "order_address_code", "currency_code")
 	var lines []*gtables.RequisitionLine
 	for found := reqLine.FindSet(); found; found = reqLine.Next() {
 		line := gtables.NewRequisitionLine(reqLine)
@@ -126,6 +127,8 @@ func (m *MakeOrder) code() error {
 	for _, line := range lines {
 		if purchOrderHeader.Buy_from_vendor_no != "" &&
 			(purchOrderHeader.Buy_from_vendor_no != line.Vendor_no || purchOrderHeader.Currency_code != line.Currency_code) ||
+			purchOrderHeader.Sell_to_customer_no != line.Sell_to_customer_no ||
+			purchOrderHeader.Ship_to_code != line.Ship_to_code ||
 			purchOrderHeader.Order_address_code != line.Order_address_code {
 			err = m.finalizeOrderHeader(purchOrderHeader)
 			if err != nil {
@@ -222,6 +225,8 @@ func (m *MakeOrder) insertPurchOrderLine(reqLine2 *gtables.RequisitionLine, purc
 	}
 
 	if purchOrderHeader.Buy_from_vendor_no != reqLine2.Vendor_no ||
+		purchOrderHeader.Sell_to_customer_no != reqLine2.Sell_to_customer_no ||
+		purchOrderHeader.Ship_to_code != reqLine2.Ship_to_code ||
 		purchOrderHeader.Order_address_code != reqLine2.Order_address_code ||
 		purchOrderHeader.Currency_code != reqLine2.Currency_code {
 		var err error
@@ -285,6 +290,9 @@ func (m *MakeOrder) insertPurchOrderLine(reqLine2 *gtables.RequisitionLine, purc
 	purchOrderLine.Bin_code = reqLine2.Bin_code
 	purchOrderLine.Serial_no = reqLine2.Serial_no
 	purchOrderLine.Lot_no = reqLine2.Lot_no
+	purchOrderLine.Sales_order_no = reqLine2.Sales_order_no
+	purchOrderLine.Sales_order_line_no = reqLine2.Sales_order_line_no
+	purchOrderLine.Drop_shipment = reqLine2.Sales_order_line_no != 0
 	purchOrderLine.Reserve = gtables.PurchaseLineReserve(reqLine2.Reserve)
 	if !reqLine2.Reserved_qty_base.IsZero() {
 		err = reservmgt.New(reqLine2).TransferReqLineToPurchLine(reqLine2, purchOrderLine)
@@ -299,7 +307,71 @@ func (m *MakeOrder) insertPurchOrderLine(reqLine2 *gtables.RequisitionLine, purc
 	if err != nil {
 		return nil, err
 	}
+	if purchOrderLine.Drop_shipment {
+		err = linkDropShipment(reqLine2, purchOrderLine)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return purchOrderHeader, nil
+}
+
+// linkDropShipment: the sales order line a drop shipment line buys for — still the worksheet
+// line's (customer, ship-to address, item, outstanding quantity, location, unit of measure,
+// variant, bin) and not linked yet — gets the purchase order line and its cost
+func linkDropShipment(reqLine2 *gtables.RequisitionLine, purchOrderLine *gtables.PurchaseLine) error {
+	salesOrderLine := gtables.NewSalesLine(reqLine2)
+	salesOrderLine.LockTable()
+	salesOrderHeader := gtables.NewSalesHeader(reqLine2)
+	salesOrderHeader.LockTable()
+	err := salesOrderHeader.GetOrError(map[string]interface{}{"document_type": int(gtables.SalesHeader_Document_type.Order), "no": reqLine2.Sales_order_no})
+	if err == nil {
+		err = reqLine2.TestField("ship_to_code", salesOrderHeader.Ship_to_code)
+	}
+	if err == nil {
+		err = salesOrderLine.GetOrError(map[string]interface{}{"document_type": int(gtables.SalesLine_Document_type.Order),
+			"document_no": reqLine2.Sales_order_no, "line_no": reqLine2.Sales_order_line_no})
+	}
+	if err == nil {
+		err = salesOrderLine.TestField("drop_shipment", true)
+	}
+	if err == nil {
+		err = salesOrderLine.TestField("type", gtables.SalesLine_Type.Item)
+	}
+	if err != nil {
+		return err
+	}
+	if salesOrderLine.Purch_order_line_no != 0 {
+		return apperrors.DropShptAlreadyAssociated(salesOrderLine.No.String(), salesOrderLine.Document_no.String(), salesOrderLine.Purchase_order_no.String())
+	}
+	checks := []struct {
+		field string
+		value interface{}
+	}{
+		{"sell_to_customer_no", salesOrderLine.Sell_to_customer_no},
+		{"type", gtables.RequisitionLine_Type.Item},
+		{"quantity", salesOrderLine.Outstanding_quantity},
+		{"no", salesOrderLine.No},
+		{"location_code", salesOrderLine.Location_code},
+		{"unit_of_measure_code", salesOrderLine.Unit_of_measure_code},
+		{"variant_code", salesOrderLine.Variant_code},
+		{"bin_code", salesOrderLine.Bin_code},
+		{"qty_per_unit_of_measure", salesOrderLine.Qty_per_unit_of_measure},
+	}
+	for _, check := range checks {
+		err = reqLine2.TestField(check.field, check.value)
+		if err != nil {
+			return err
+		}
+	}
+	salesOrderLine.Unit_cost_lcy = purchOrderLine.Unit_cost_lcy
+	err = salesOrderLine.Validate("unit_cost_lcy", salesOrderLine.Unit_cost_lcy)
+	if err != nil {
+		return err
+	}
+	salesOrderLine.Purchase_order_no = purchOrderLine.Document_no
+	salesOrderLine.Purch_order_line_no = purchOrderLine.Line_no
+	return salesOrderLine.ModifyOrError(false)
 }
 
 // purchLineType: the purchase line type of a worksheet line's type (Account (G/L) → G/L Account)
@@ -345,9 +417,21 @@ func (m *MakeOrder) insertHeader(reqLine2 *gtables.RequisitionLine) (*gtables.Pu
 			return nil, err
 		}
 	}
+	if reqLine2.Sell_to_customer_no != "" {
+		err = purchOrderHeader.Validate("sell_to_customer_no", reqLine2.Sell_to_customer_no)
+		if err != nil {
+			return nil, err
+		}
+	}
 	err = purchOrderHeader.Validate("currency_code", reqLine2.Currency_code)
 	if err != nil {
 		return nil, err
+	}
+	if reqLine2.Ship_to_code != "" {
+		err = purchOrderHeader.Validate("ship_to_code", reqLine2.Ship_to_code)
+		if err != nil {
+			return nil, err
+		}
 	}
 	err = purchOrderHeader.ModifyOrError(true)
 	if err != nil {
@@ -362,8 +446,10 @@ func (m *MakeOrder) insertHeader(reqLine2 *gtables.RequisitionLine) (*gtables.Pu
 func (m *MakeOrder) finalizeOrderHeader(purchOrderHeader *gtables.PurchaseHeader) error {
 	reqLine2 := gtables.NewRequisitionLine(m.reqLine)
 	reqLine2.CopyFilters(m.reqLine)
-	reqLine2.SetCurrentKey("worksheet_template_name", "journal_batch_name", "vendor_no", "order_address_code", "currency_code")
+	reqLine2.SetCurrentKey("worksheet_template_name", "journal_batch_name", "vendor_no", "sell_to_customer_no", "ship_to_code", "order_address_code", "currency_code")
 	reqLine2.SetRange("vendor_no", purchOrderHeader.Buy_from_vendor_no)
+	reqLine2.SetRange("sell_to_customer_no", purchOrderHeader.Sell_to_customer_no)
+	reqLine2.SetRange("ship_to_code", purchOrderHeader.Ship_to_code)
 	reqLine2.SetRange("order_address_code", purchOrderHeader.Order_address_code)
 	reqLine2.SetRange("currency_code", purchOrderHeader.Currency_code)
 	if m.reqTemplate.Recurring {

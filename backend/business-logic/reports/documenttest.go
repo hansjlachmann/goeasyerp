@@ -22,7 +22,8 @@ import (
 //   - 402 Purchase Document - Test: the same for purchases (receive instead of ship, the
 //     vendor's invoice or credit memo no. — mandatory and not used before —, fixed assets).
 //
-// Drop shipments are not part of this application (their checks are left out).
+// Drop shipments: the linked purchase/sales orders' numbers, the lines' links, receiving and
+// invoicing a purchase drop shipment in two postings after the sale is invoiced.
 const (
 	SalesDocumentTestID = 202
 	PurchDocumentTestID = 402
@@ -308,6 +309,28 @@ func (r *salesDocumentTest) headerOnAfterGetRecord(salesHeader *gtables.SalesHea
 	if r.invoice && salesHeader.Posting_no == "" && salesHeader.Document_type == gtables.SalesHeader_Document_type.Order && salesHeader.Posting_no_series == "" {
 		r.headerErrors = append(r.headerErrors, run.Text("MUST_BE_SPECIFIED", caption("posting_no_series")))
 	}
+	// drop shipments: the purchase orders the shipment receives
+	if r.ship {
+		salesLine := gtables.NewSalesLine(run)
+		salesLine.SetRange("document_type", int(salesHeader.Document_type))
+		salesLine.SetRange("document_no", salesHeader.No)
+		salesLine.SetFilter("purch_order_line_no", "<>0")
+		purchOrderHeader := gtables.NewPurchaseHeader(run)
+		for found := salesLine.FindSetBuffered(); found; found = salesLine.Next() {
+			if purchOrderHeader.No == salesLine.Purchase_order_no {
+				continue
+			}
+			if !purchOrderHeader.Get(map[string]interface{}{"document_type": int(gtables.PurchaseHeader_Document_type.Order), "no": salesLine.Purchase_order_no}) {
+				continue
+			}
+			if purchOrderHeader.Pay_to_vendor_no == "" {
+				r.headerErrors = append(r.headerErrors, run.Text("MUST_BE_ENTERED_ON_PURCH_ORDER", purchOrderHeader.GetFieldCaption("pay_to_vendor_no", r.language)))
+			}
+			if purchOrderHeader.Receiving_no == "" && purchOrderHeader.Receiving_no_series == "" {
+				r.headerErrors = append(r.headerErrors, run.Text("MUST_BE_ENTERED_ON_PURCH_ORDER", purchOrderHeader.GetFieldCaption("receiving_no_series", r.language)))
+			}
+		}
+	}
 	if salesHeader.Document_type == gtables.SalesHeader_Document_type.Order && salesSetup.Ext_doc_no_mandatory && salesHeader.External_document_no == "" {
 		r.headerErrors = append(r.headerErrors, run.Text("MUST_BE_SPECIFIED", caption("external_document_no")))
 	}
@@ -374,6 +397,15 @@ func (r *salesDocumentTest) lineOnAfterGetRecord(salesLine *gtables.SalesLine, r
 	} else {
 		if !salesLine.Amount.IsZero() {
 			r.lineErrors = append(r.lineErrors, run.Text("AMOUNT_ZERO_WHEN_NO_QUANTITY", caption("amount"), caption("quantity")))
+		}
+	}
+
+	if salesLine.Drop_shipment {
+		if salesLine.Type != gtables.SalesLine_Type.Item {
+			r.lineErrors = append(r.lineErrors, run.Text("DROP_SHIPMENT_ONLY_ITEMS"))
+		}
+		if !salesLine.Qty_to_ship.IsZero() && salesLine.Purch_order_line_no == 0 {
+			r.lineErrors = append(r.lineErrors, run.Text("DROP_SHIPMENT_NOT_ASSOCIATED", salesLine.Line_no))
 		}
 	}
 
@@ -677,6 +709,47 @@ func (r *purchDocumentTest) headerOnAfterGetRecord(purchHeader *gtables.Purchase
 	}
 	if !r.receive && !r.invoice {
 		r.headerErrors = append(r.headerErrors, run.Text("NOTHING_TO_POST"))
+	}
+	// drop shipments: received and invoiced in two postings, invoiced after the sale
+	dropShipLine := gtables.NewPurchaseLine(run)
+	dropShipLine.SetRange("document_type", int(purchHeader.Document_type))
+	dropShipLine.SetRange("document_no", purchHeader.No)
+	dropShipLine.SetFilter("sales_order_line_no", "<>0")
+	if r.invoice {
+		for found := dropShipLine.FindSetBuffered(); found; found = dropShipLine.Next() {
+			salesOrderLine := gtables.NewSalesLine(run)
+			if !salesOrderLine.Get(map[string]interface{}{"document_type": int(gtables.SalesLine_Document_type.Order),
+				"document_no": dropShipLine.Sales_order_no, "line_no": dropShipLine.Sales_order_line_no}) {
+				continue
+			}
+			qtyToInvoice := dropShipLine.Qty_to_invoice
+			if r.receive && !qtyToInvoice.IsZero() && !dropShipLine.Qty_to_receive.IsZero() {
+				r.headerErrors = append(r.headerErrors, run.Text("DROP_SHIPMENT_RECEIVE_AND_INVOICE"))
+			}
+			if dropShipLine.Quantity_received.Sub(dropShipLine.Quantity_invoiced).Abs().LessThan(qtyToInvoice.Abs()) {
+				qtyToInvoice = dropShipLine.Quantity_received.Sub(dropShipLine.Quantity_invoiced)
+			}
+			if dropShipLine.Quantity.Sub(qtyToInvoice.Add(dropShipLine.Quantity_invoiced)).Abs().LessThan(salesOrderLine.Quantity.Sub(salesOrderLine.Quantity_invoiced).Abs()) {
+				r.headerErrors = append(r.headerErrors, run.Text("DROP_SHIPMENT_INVOICE_SALES_FIRST", dropShipLine.Sales_order_no))
+			}
+		}
+	}
+	if r.receive {
+		salesOrderHeader := gtables.NewSalesHeader(run)
+		for found := dropShipLine.FindSetBuffered(); found; found = dropShipLine.Next() {
+			if salesOrderHeader.No == dropShipLine.Sales_order_no {
+				continue
+			}
+			if !salesOrderHeader.Get(map[string]interface{}{"document_type": int(gtables.SalesHeader_Document_type.Order), "no": dropShipLine.Sales_order_no}) {
+				continue
+			}
+			if salesOrderHeader.Bill_to_customer_no == "" {
+				r.headerErrors = append(r.headerErrors, run.Text("MUST_BE_ENTERED_ON_SALES_ORDER", salesOrderHeader.GetFieldCaption("bill_to_customer_no", r.language)))
+			}
+			if salesOrderHeader.Shipping_no == "" && salesOrderHeader.Shipping_no_series == "" {
+				r.headerErrors = append(r.headerErrors, run.Text("MUST_BE_ENTERED_ON_SALES_ORDER", salesOrderHeader.GetFieldCaption("shipping_no_series", r.language)))
+			}
+		}
 	}
 	if r.invoice && purchHeader.Document_type != gtables.PurchaseHeader_Document_type.CreditMemo && purchHeader.Due_date.IsZero() {
 		r.headerErrors = append(r.headerErrors, run.Text("MUST_BE_SPECIFIED", caption("due_date")))

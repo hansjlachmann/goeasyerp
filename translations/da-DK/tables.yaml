@@ -4692,6 +4692,9 @@ tables:
   sales_line:
     caption: "Salgslinje"
     fields:
+      purchase_order_no: "Købsordrenr."
+      purch_order_line_no: "Købsordrelinjenr."
+      drop_shipment: "Direkte levering"
       attached_to_line_no: "Tilknyttet linjenr."
       project_no: "Projektnr."
       appl_to_project_entry: "Udlign. med projektpost"
@@ -4881,6 +4884,7 @@ tables:
   sales_shipment_line:
     caption: "Salgsleverancelinje"
     fields:
+      drop_shipment: "Direkte levering"
       attached_to_line_no: "Tilknyttet linjenr."
       project_no: "Projektnr."
       appl_to_project_entry: "Udlign. med projektpost"
@@ -5049,6 +5053,7 @@ tables:
   sales_invoice_line:
     caption: "Salgsfakturalinje"
     fields:
+      drop_shipment: "Direkte levering"
       attached_to_line_no: "Tilknyttet linjenr."
       project_no: "Projektnr."
       appl_to_project_entry: "Udlign. med projektpost"
@@ -5293,6 +5298,8 @@ tables:
   purchase_header:
     caption: "Købshoved"
     fields:
+      ship_to_code: "Leveringsadressekode"
+      sell_to_customer_no: "Kundenr."
       project_no: "Projektnr."
       transaction_type: "Transaktionstype"
       transport_method: "Transportmåde"
@@ -5399,6 +5406,9 @@ tables:
   purchase_line:
     caption: "Købslinje"
     fields:
+      sales_order_no: "Salgsordrenr."
+      sales_order_line_no: "Salgsordrelinjenr."
+      drop_shipment: "Direkte levering"
       attached_to_line_no: "Tilknyttet linjenr."
       project_no: "Projektnr."
       phase_code: "Fasekode"
@@ -5779,6 +5789,7 @@ tables:
   purch_rcpt_line:
     caption: "Købsmodtagelseslinje"
     fields:
+      drop_shipment: "Direkte levering"
       attached_to_line_no: "Tilknyttet linjenr."
       project_no: "Projektnr."
       phase_code: "Fasekode"
@@ -6243,6 +6254,10 @@ tables:
   requisition_line:
     caption: "Indkøbskladdelinje"
     fields:
+      sales_order_no: "Salgsordrenr."
+      sales_order_line_no: "Salgsordrelinjenr."
+      sell_to_customer_no: "Kundenr."
+      ship_to_code: "Leveringsadressekode"
       worksheet_template_name: "Kladdeskabelonnavn"
       journal_batch_name: "Kladdenavn"
       line_no: "Linjenr."

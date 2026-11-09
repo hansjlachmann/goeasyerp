@@ -389,9 +389,61 @@ table:
           - source: description
             width: 250
 
+    # Drop shipments: the sales order line the line buys for (Get Sales Orders), its customer and
+    # ship-to address — Make Orders makes a purchase order per customer and ship-to address
+    - name: sales_order_no
+      no: 23
+      type: types.Code
+      db_name: sales_order_no
+      length: 20
+      editable: false
+      table_relation:
+        table: Sales_Header
+        field: no
+        validate: false
+        filters:
+          document_type: {const: 1}   # Order
+
+    - name: sales_order_line_no
+      no: 24
+      type: int
+      db_name: sales_order_line_no
+      editable: false
+
+    - name: sell_to_customer_no
+      no: 25
+      type: types.Code
+      db_name: sell_to_customer_no
+      length: 20
+      editable: false
+      table_relation:
+        table: Customer
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: ship_to_code
+      no: 26
+      type: types.Code
+      db_name: ship_to_code
+      length: 10
+      editable: false
+      table_relation:
+        table: Ship_to_Address
+        field: code
+        filters:
+          customer_no: {field: sell_to_customer_no}
+
   keys:
     - name: Primary
       fields: [worksheet_template_name, journal_batch_name, line_no]
       clustered: true
     - name: vendor
       fields: [worksheet_template_name, journal_batch_name, vendor_no, order_address_code, currency_code]
+    # Make Orders: a purchase order per vendor, customer (drop shipments), ship-to address, order
+    # address and currency
+    - name: vendor_customer
+      fields: [worksheet_template_name, journal_batch_name, vendor_no, sell_to_customer_no, ship_to_code, order_address_code, currency_code]

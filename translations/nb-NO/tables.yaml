@@ -4692,6 +4692,9 @@ tables:
   sales_line:
     caption: "Salgslinje"
     fields:
+      purchase_order_no: "Innkjøpsordrenr."
+      purch_order_line_no: "Innkjøpsordrelinjenr."
+      drop_shipment: "Direktelevering"
       attached_to_line_no: "Knyttet til linjenr."
       project_no: "Prosjektnr."
       appl_to_project_entry: "Utlign. mot prosjektpost"
@@ -4881,6 +4884,7 @@ tables:
   sales_shipment_line:
     caption: "Salgsleveringslinje"
     fields:
+      drop_shipment: "Direktelevering"
       attached_to_line_no: "Knyttet til linjenr."
       project_no: "Prosjektnr."
       appl_to_project_entry: "Utlign. mot prosjektpost"
@@ -5049,6 +5053,7 @@ tables:
   sales_invoice_line:
     caption: "Salgsfakturalinje"
     fields:
+      drop_shipment: "Direktelevering"
       attached_to_line_no: "Knyttet til linjenr."
       project_no: "Prosjektnr."
       appl_to_project_entry: "Utlign. mot prosjektpost"
@@ -5293,6 +5298,8 @@ tables:
   purchase_header:
     caption: "Kjøpshode"
     fields:
+      ship_to_code: "Leveringsadressekode"
+      sell_to_customer_no: "Salg til kundenr."
       project_no: "Prosjektnr."
       transaction_type: "Transaksjonstype"
       transport_method: "Transportmåte"
@@ -5399,6 +5406,9 @@ tables:
   purchase_line:
     caption: "Kjøpslinje"
     fields:
+      sales_order_no: "Salgsordrenr."
+      sales_order_line_no: "Salgsordrelinjenr."
+      drop_shipment: "Direktelevering"
       attached_to_line_no: "Knyttet til linjenr."
       project_no: "Prosjektnr."
       phase_code: "Fasekode"
@@ -5779,6 +5789,7 @@ tables:
   purch_rcpt_line:
     caption: "Kjøpsmottakslinje"
     fields:
+      drop_shipment: "Direktelevering"
       attached_to_line_no: "Knyttet til linjenr."
       project_no: "Prosjektnr."
       phase_code: "Fasekode"
@@ -6243,6 +6254,10 @@ tables:
   requisition_line:
     caption: "Innkjøpskladdelinje"
     fields:
+      sales_order_no: "Salgsordrenr."
+      sales_order_line_no: "Salgsordrelinjenr."
+      sell_to_customer_no: "Salg til kundenr."
+      ship_to_code: "Leveringsadressekode"
       worksheet_template_name: "Kladdemalnavn"
       journal_batch_name: "Kladdenavn"
       line_no: "Linjenr."

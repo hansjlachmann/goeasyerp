@@ -139,9 +139,18 @@ page:
           caption: Update Finance Charge Text
           run_object: report:186
 
-    - name: Issue
-      caption: Issue
+    - name: Issuing
+      caption: Issuing
       image: Post
-      shortcut: F9
       promoted: true
-      run_object: report:193
+      items:
+        # what issuing would refuse (codeunit 228: Report Selections F.C.Test)
+        - name: Test Report
+          caption: Test Report
+          image: Print
+          run_object: "table:Finance_Charge_Memo_Header.TestReport"
+        - name: Issue
+          caption: Issue
+          image: Post
+          shortcut: F9
+          run_object: report:193

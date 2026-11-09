@@ -123,3 +123,38 @@ func TestBatchPostInvoices(t *testing.T) {
 		t.Error("Replace Posting Date without a posting date was not refused")
 	}
 }
+
+// Reminder - Test / Finance Charge Memo - Test print an open reminder and memo with their lines
+// and totals; a reminder without posting date is a warning
+func TestReminderTestReports(t *testing.T) {
+	src := fullDemoCompany(t)
+
+	reminderHeader := gtables.NewReminderHeader(src)
+	if !reminderHeader.FindFirst() {
+		t.Fatal("no open reminder")
+	}
+	print := func(id int, context ftables.Table) string {
+		result, err := reports.Execute(id, src.GetDB(), src.GetCompany(), src.GetDBType(), reports.RunOptions{Output: reports.OutputPDF, Context: context})
+		mustOK(t, err)
+		return printedTexts(result, 0)
+	}
+	texts := print(reports.ReminderTestID, reminderHeader)
+	if !strings.Contains(texts, reminderHeader.No.String()) || !strings.Contains(texts, "Total") || strings.Contains(texts, "Warning!") {
+		t.Errorf("reminder %s:\n%s", reminderHeader.No, texts)
+	}
+	reminderHeader.Posting_date = types.Date{}
+	mustOK(t, reminderHeader.ModifyOrError(false))
+	texts = print(reports.ReminderTestID, reminderHeader)
+	if !strings.Contains(texts, "Warning!") || !strings.Contains(texts, "must be specified") {
+		t.Errorf("reminder without posting date:\n%s", texts)
+	}
+
+	finChrgMemoHeader := gtables.NewFinanceChargeMemoHeader(src)
+	if !finChrgMemoHeader.FindFirst() {
+		t.Fatal("no open finance charge memo")
+	}
+	texts = print(reports.FinanceChargeMemoTestID, finChrgMemoHeader)
+	if !strings.Contains(texts, finChrgMemoHeader.No.String()) || !strings.Contains(texts, "Total") {
+		t.Errorf("finance charge memo %s:\n%s", finChrgMemoHeader.No, texts)
+	}
+}

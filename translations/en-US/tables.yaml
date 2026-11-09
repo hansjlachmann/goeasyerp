@@ -4692,6 +4692,9 @@ tables:
   sales_line:
     caption: "Sales Line"
     fields:
+      purchase_order_no: "Purchase Order No."
+      purch_order_line_no: "Purch. Order Line No."
+      drop_shipment: "Drop Shipment"
       attached_to_line_no: "Attached to Line No."
       project_no: "Project No."
       appl_to_project_entry: "Appl.-to Project Entry"
@@ -4881,6 +4884,7 @@ tables:
   sales_shipment_line:
     caption: "Sales Shipment Line"
     fields:
+      drop_shipment: "Drop Shipment"
       attached_to_line_no: "Attached to Line No."
       project_no: "Project No."
       appl_to_project_entry: "Appl.-to Project Entry"
@@ -5049,6 +5053,7 @@ tables:
   sales_invoice_line:
     caption: "Sales Invoice Line"
     fields:
+      drop_shipment: "Drop Shipment"
       attached_to_line_no: "Attached to Line No."
       project_no: "Project No."
       appl_to_project_entry: "Appl.-to Project Entry"
@@ -5293,6 +5298,8 @@ tables:
   purchase_header:
     caption: "Purchase Header"
     fields:
+      ship_to_code: "Ship-to Code"
+      sell_to_customer_no: "Sell-to Customer No."
       project_no: "Project No."
       transaction_type: "Transaction Type"
       transport_method: "Transport Method"
@@ -5399,6 +5406,9 @@ tables:
   purchase_line:
     caption: "Purchase Line"
     fields:
+      sales_order_no: "Sales Order No."
+      sales_order_line_no: "Sales Order Line No."
+      drop_shipment: "Drop Shipment"
       attached_to_line_no: "Attached to Line No."
       project_no: "Project No."
       phase_code: "Phase Code"
@@ -5779,6 +5789,7 @@ tables:
   purch_rcpt_line:
     caption: "Purch. Rcpt. Line"
     fields:
+      drop_shipment: "Drop Shipment"
       attached_to_line_no: "Attached to Line No."
       project_no: "Project No."
       phase_code: "Phase Code"
@@ -6243,6 +6254,10 @@ tables:
   requisition_line:
     caption: "Requisition Line"
     fields:
+      sales_order_no: "Sales Order No."
+      sales_order_line_no: "Sales Order Line No."
+      sell_to_customer_no: "Sell-to Customer No."
+      ship_to_code: "Ship-to Code"
       worksheet_template_name: "Worksheet Template Name"
       journal_batch_name: "Journal Batch Name"
       line_no: "Line No."

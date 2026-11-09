@@ -91,6 +91,7 @@ func init() {
 		}
 		page.SetFilter("document_type", fromSubtype)
 		page.SetFilter("type", int(gtables.SalesLine_Type.Item))
+		page.SetFilter("drop_shipment", false)
 		page.SetFilter("no", f.ItemNo)
 		page.SetFilter("variant_code", f.VariantCode)
 		page.SetFilter("location_code", f.LocationCode)
@@ -118,6 +119,7 @@ func init() {
 			return err
 		}
 		page.SetFilter("type", int(gtables.RequisitionLine_Type.Item))
+		page.SetFilter("sales_order_no", "")
 		page.SetFilter("no", f.ItemNo)
 		page.SetFilter("variant_code", f.VariantCode)
 		page.SetFilter("location_code", f.LocationCode)
@@ -143,6 +145,7 @@ func init() {
 		}
 		page.SetFilter("document_type", fromSubtype)
 		page.SetFilter("type", int(gtables.PurchaseLine_Type.Item))
+		page.SetFilter("drop_shipment", false)
 		page.SetFilter("no", f.ItemNo)
 		page.SetFilter("variant_code", f.VariantCode)
 		page.SetFilter("location_code", f.LocationCode)

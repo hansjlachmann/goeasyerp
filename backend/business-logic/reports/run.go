@@ -308,6 +308,16 @@ func Execute(id int, db database.Executor, company string, dbType database.DBTyp
 				return Result{}, err
 			}
 			run.DB = tx
+			// the record the report runs on works in the transaction too (it writes through it:
+			// Make Orders empties the worksheet it came from)
+			if rec, ok := run.context.(interface {
+				SetDB(database.Executor)
+				GetDB() database.Executor
+			}); ok {
+				contextDB := rec.GetDB()
+				rec.SetDB(tx)
+				defer rec.SetDB(contextDB) // the caller's record works in its own database again
+			}
 		}
 	}
 

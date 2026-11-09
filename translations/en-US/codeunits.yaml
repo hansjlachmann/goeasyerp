@@ -40,6 +40,8 @@ codeunits:
     caption: "Sales-Calc. Discount"
   "61":
     caption: "Sales-Disc. (Yes/No)"
+  "76":
+    caption: "Purch.-Get Drop Shpt."
   "64":
     caption: "Sales-Get Shipment"
   "70":

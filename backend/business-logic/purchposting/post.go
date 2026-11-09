@@ -49,7 +49,10 @@ type PurchPost struct {
 
 	totals           *purchpost.Totals // the invoiced amounts in the document's currency and in LCY
 	invPostingBuffer []*invPostingBuffer
-	faLineNo         int
+
+	// drop shipments: what the lines shipped on sales order lines
+	dropShipPostBuffer []*dropShipPostBuffer
+	faLineNo           int
 
 	// What was posted: the posted documents' numbers, and whether the document is gone
 	ReceiptNo types.Code
@@ -116,6 +119,12 @@ func (p *PurchPost) Run(purchHeader *gtables.PurchaseHeader) error {
 	err = p.postLines()
 	if err != nil {
 		return err
+	}
+	if len(p.dropShipPostBuffer) > 0 {
+		err = p.insertDropShipShipments()
+		if err != nil {
+			return err
+		}
 	}
 	if purchHeader.Invoice {
 		err = p.invoiceRounding()
@@ -250,7 +259,11 @@ func (p *PurchPost) checkAndUpdate() error {
 			purchHeader.Posting_no = purchHeader.No
 		}
 	}
-	err := purchHeader.ModifyOrError(false)
+	err := p.checkDropShipments()
+	if err != nil {
+		return err
+	}
+	err = purchHeader.ModifyOrError(false)
 	if err != nil {
 		return err
 	}
@@ -433,6 +446,16 @@ func (p *PurchPost) postLines() error {
 			if err != nil {
 				return err
 			}
+			// a drop shipment: the sales order line ships what is received, applied to its entry
+			if !qtyToReceive.IsZero() && purchLine.Sales_order_line_no != 0 {
+				buffer := &dropShipPostBuffer{orderNo: purchLine.Sales_order_no, orderLineNo: purchLine.Sales_order_line_no,
+					quantity: qtyToReceive, quantityBase: qtyToReceiveBase}
+				buffer.itemShptEntryNo, err = p.postAssocItemJnlLine(purchLine, buffer.quantity, buffer.quantityBase, itemRcptEntryNo)
+				if err != nil {
+					return err
+				}
+				p.dropShipPostBuffer = append(p.dropShipPostBuffer, buffer)
+			}
 		}
 		if !qtyToInvoice.IsZero() {
 			err := p.fillInvPostingBuffer(purchLine, lineFCY, lineLCY)
@@ -555,7 +578,11 @@ func (p *PurchPost) invoiceReceiptLine(purchLine *gtables.PurchaseLine, qtyToInv
 	if !purchOrderLine.Get(map[string]interface{}{"document_type": int(gtables.PurchaseLine_Document_type.Order), "document_no": purchRcptLine.Order_no, "line_no": purchRcptLine.Order_line_no}) {
 		return nil
 	}
-	return p.updateOrderLine(purchOrderLine, types.Decimal{}, types.Decimal{}, qtyToInvoice, qtyToInvoiceBase)
+	err = p.updateOrderLine(purchOrderLine, types.Decimal{}, types.Decimal{}, qtyToInvoice, qtyToInvoiceBase)
+	if err != nil {
+		return err
+	}
+	return checkDropShipmentReceiptInvoice(purchOrderLine)
 }
 
 // amountPart: the LCY amounts of part of the invoiced quantity
@@ -635,6 +662,7 @@ func (p *PurchPost) postItemJnlLine(purchLine *gtables.PurchaseLine, qtyToReceiv
 		itemJnlLine.Unit_amount = purchLine.Unit_cost_lcy
 	}
 	itemJnlLine.Reserve = gtables.ItemJournalLineReserve(purchLine.Reserve)
+	itemJnlLine.Drop_shipment = purchLine.Drop_shipment
 
 	// the line's reservations go with the quantity received to the item journal line (codeunit
 	// 22 gives them to the entry it posts)

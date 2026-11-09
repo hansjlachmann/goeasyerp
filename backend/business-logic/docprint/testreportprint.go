@@ -33,6 +33,8 @@ func init() {
 	functions.Register("table", gtables.GenJournalLineTableName, "PrintCheck", functions.For(PrintCheck), functions.WithPrint())
 	functions.Register("table", gtables.SalesHeaderTableName, "TestReport", functions.For(PrintTestSalesHeader), functions.WithPrint())
 	functions.Register("table", gtables.PurchaseHeaderTableName, "TestReport", functions.For(PrintTestPurchHeader), functions.WithPrint())
+	functions.Register("table", gtables.ReminderHeaderTableName, "TestReport", functions.For(PrintReminderHeader), functions.WithPrint())
+	functions.Register("table", gtables.FinanceChargeMemoHeaderTableName, "TestReport", functions.For(PrintFinChrgMemoHeader), functions.WithPrint())
 }
 
 // testReportRecord is the record a test report runs on
@@ -204,4 +206,16 @@ func PrintTestPurchHeader(purchHeader *gtables.PurchaseHeader) (fcodeunits.Resul
 		purchHeader.Get(map[string]interface{}{"document_type": int(purchHeader.Document_type), "no": purchHeader.No})
 	}
 	return PrintRecords(purchHeader, gtables.ReportSelections_Usage.PTest, true)
+}
+
+// PrintReminderHeader (codeunit 228 PrintReminderHeader): the Rem.Test reports (122 Reminder -
+// Test) on the reminder with their request page
+func PrintReminderHeader(reminderHeader *gtables.ReminderHeader) (fcodeunits.Result, error) {
+	return PrintRecords(reminderHeader, gtables.ReportSelections_Usage.RemTest, true)
+}
+
+// PrintFinChrgMemoHeader (codeunit 228 PrintFinChrgMemoHeader): the F.C.Test reports (123
+// Finance Charge Memo - Test) on the memo with their request page
+func PrintFinChrgMemoHeader(finChrgMemoHeader *gtables.FinanceChargeMemoHeader) (fcodeunits.Result, error) {
+	return PrintRecords(finChrgMemoHeader, gtables.ReportSelections_Usage.FCTest, true)
 }

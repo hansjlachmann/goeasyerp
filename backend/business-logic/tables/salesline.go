@@ -36,6 +36,9 @@ func (salesLineLogic) OnInsert(rec *gtables.SalesLine) error {
 
 // OnDelete: an order line shipped but not invoiced stays
 func (salesLineLogic) OnDelete(rec *gtables.SalesLine) error {
+	if rec.Purch_order_line_no != 0 {
+		return apperrors.SalesLineDeleteAssoc(rec.Purchase_order_no.String())
+	}
 	err := rec.TestField("reserved_qty_base", types.Decimal{})
 	if err != nil {
 		return err
@@ -105,6 +108,10 @@ func salesLineDate(salesHeader *gtables.SalesHeader) types.Date {
 
 // OnValidate_Type: a new type starts the line again (not on a line already shipped)
 func (salesLineLogic) OnValidate_Type(rec *gtables.SalesLine) error {
+	err0 := testSalesLineNotAssociated(rec, "type")
+	if err0 != nil {
+		return err0
+	}
 	err := testSalesLineNotShipped(rec)
 	if err == nil {
 		err = rec.TestField("reserved_qty_base", types.Decimal{})
@@ -122,6 +129,10 @@ func (salesLineLogic) OnValidate_Type(rec *gtables.SalesLine) error {
 // location, price group, posting and tax groups) and the account, item or resource: description,
 // unit of measure, unit cost, posting groups, the price and the quantity it had
 func (salesLineLogic) OnValidate_No(rec *gtables.SalesLine) error {
+	err0 := testSalesLineNotAssociated(rec, "no")
+	if err0 != nil {
+		return err0
+	}
 	err := testSalesLineNotShipped(rec)
 	if err == nil {
 		err = rec.TestField("reserved_qty_base", types.Decimal{})
@@ -292,6 +303,10 @@ func testSalesLineNotShipped(rec *gtables.SalesLine) error {
 // outstanding quantity and amount, the quantities to ship and invoice, and the item's quantity
 // discount for the base quantity (when the document and the line allow it)
 func (salesLineLogic) OnValidate_Quantity(rec *gtables.SalesLine) error {
+	err0 := testSalesLineNotAssociated(rec, "quantity")
+	if err0 != nil {
+		return err0
+	}
 	quantityBase, err := calcSalesLineBaseQty(rec, rec.Quantity)
 	if err != nil {
 		return err
@@ -523,6 +538,13 @@ func (salesLineLogic) OnValidate_Unit_price(rec *gtables.SalesLine) error {
 
 // OnValidate_Unit_cost_lcy: Unit Cost in the document's currency
 func (salesLineLogic) OnValidate_Unit_cost_lcy(rec *gtables.SalesLine) error {
+	// a drop shipment's cost comes from its purchase line: not entered by the user
+	if fcodeunits.CurrFieldNo() == rec.FieldNo("unit_cost_lcy") && rec.Unit_cost_lcy != rec.XRec().Unit_cost_lcy {
+		err0 := testSalesLineNotAssociated(rec, "unit_cost_lcy")
+		if err0 != nil {
+			return err0
+		}
+	}
 	salesHeader, currency, err := getSalesHeader(rec)
 	if err != nil {
 		return err
@@ -630,6 +652,10 @@ func (salesLineLogic) OnValidate_Price_group_code(rec *gtables.SalesLine) error 
 // measure
 // OnValidate_Project_no: a reserved line keeps its project; the unit price for the project
 func (salesLineLogic) OnValidate_Project_no(rec *gtables.SalesLine) error {
+	err0 := rec.TestField("drop_shipment", false)
+	if err0 != nil {
+		return err0
+	}
 	rec.CalcFields("reserved_qty_base")
 	err := rec.TestField("reserved_qty_base", types.Decimal{})
 	if err != nil {
@@ -749,6 +775,10 @@ func (salesLineLogic) OnValidate_Tax_prod_posting_group(rec *gtables.SalesLine) 
 
 // OnValidate_Variant_code: the variant's description (translated by the document's language)
 func (salesLineLogic) OnValidate_Variant_code(rec *gtables.SalesLine) error {
+	err0 := testSalesLineNotAssociated(rec, "variant_code")
+	if err0 != nil {
+		return err0
+	}
 	if rec.Variant_code == "" {
 		return nil
 	}
@@ -785,6 +815,10 @@ func (salesLineLogic) OnValidate_Variant_code(rec *gtables.SalesLine) error {
 // language); an item's quantity per unit, weights, volume, unit cost and price for the unit;
 // the quantity again
 func (salesLineLogic) OnValidate_Unit_of_measure_code(rec *gtables.SalesLine) error {
+	err0 := testSalesLineNotAssociated(rec, "unit_of_measure_code")
+	if err0 != nil {
+		return err0
+	}
 	if rec.Unit_of_measure_code == "" {
 		rec.Unit_of_measure = ""
 	} else {

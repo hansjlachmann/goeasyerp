@@ -31,6 +31,10 @@ func (salesLineLogic) OnModify(rec *gtables.SalesLine) error {
 		}
 	}
 	// the line's reservations (classic ReservMgt.…VerifyChange)
+	err := dropShipmentReservedSalesLine(rec)
+	if err != nil {
+		return err
+	}
 	return reservmgt.New(rec).SalesLineVerifyChange(rec)
 }
 
@@ -104,6 +108,10 @@ func (purchaseLineLogic) OnModify(rec *gtables.PurchaseLine) error {
 		}
 	}
 	// the line's reservations (classic ReservMgt.…VerifyChange)
+	err := dropShipmentReservedPurchLine(rec)
+	if err != nil {
+		return err
+	}
 	return reservmgt.New(rec).PurchLineVerifyChange(rec)
 }
 

@@ -856,6 +856,40 @@ table:
           - source: description
             width: 250
 
+    # Drop shipments: the customer the goods go to (blank: the company) and that customer's ship-to
+    # address
+    - name: ship_to_code
+      no: 12
+      type: types.Code
+      db_name: ship_to_code
+      length: 10
+      table_relation:
+        table: Ship_to_Address
+        field: code
+        filters:
+          customer_no: {field: sell_to_customer_no}
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: sell_to_customer_no
+      no: 72
+      type: types.Code
+      db_name: sell_to_customer_no
+      length: 20
+      table_relation:
+        table: Customer
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+          - source: city
+            width: 250
+
   keys:
     - name: Primary
       fields: [document_type, "no"]

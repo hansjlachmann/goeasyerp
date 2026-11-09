@@ -36,6 +36,15 @@ page:
         - source: location_code
           width: 100
           visible: false
+        # delivers a sales order line straight to the customer (drop shipment)
+        - source: drop_shipment
+          width: 90
+        - source: sales_order_no
+          width: 110
+          visible: false
+        - source: sales_order_line_no
+          width: 100
+          visible: false
         - source: quantity
           width: 100
           on_after_validate: table:Purchase_Line.ReserveAlways
@@ -202,3 +211,15 @@ page:
           caption: Reservation Entries
           image: Entries
           run_object: table:Purchase_Line.ShowReservationEntries
+        # the sales order of a drop shipment line
+        - name: Drop Shipment
+          caption: Drop Shipment
+          image: Document
+          items:
+            - name: Sales Order
+              caption: Sales Order
+              image: Document
+              run_page: 42
+              run_page_filters:
+                - {field: document_type, const: "1"}
+                - {field: "no", value: sales_order_no}

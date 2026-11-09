@@ -27,8 +27,9 @@ import (
 // and is deleted when everything is invoiced; an invoice or credit memo is deleted. The caller
 // runs it in a transaction.
 //
-// Not migrated: the VAT calculation types (as in the journals), prepayments, drop shipments,
-// reservations and item tracking, combined shipments, the credit limit and archive.
+// Drop shipments: shipping a line linked to a purchase order line receives it (dropshipment.go).
+//
+// Not migrated: the VAT calculation types (as in the journals), prepayments, the archive.
 type SalesPost struct {
 	src                ftables.Source
 	salesSetup         *gtables.SalesReceivablesSetup
@@ -49,6 +50,11 @@ type SalesPost struct {
 
 	totals           *salespost.Totals // the invoiced amounts in the document's currency and in LCY
 	invPostingBuffer []*invPostingBuffer
+
+	// drop shipments: what the lines received on purchase order lines, and the purchase entry the
+	// line shipping now is applied to
+	dropShipPostBuffer []*dropShipPostBuffer
+	applToItemEntry    int
 
 	// What was posted: the posted documents' numbers, and whether the document is gone
 	ShipmentNo types.Code
@@ -102,6 +108,12 @@ func (p *SalesPost) Run(salesHeader *gtables.SalesHeader) error {
 	err = p.postLines()
 	if err != nil {
 		return err
+	}
+	if len(p.dropShipPostBuffer) > 0 {
+		err = p.insertDropShipReceipts()
+		if err != nil {
+			return err
+		}
 	}
 	if salesHeader.Invoice {
 		err = p.invoiceRounding()
@@ -218,7 +230,11 @@ func (p *SalesPost) checkAndUpdate() error {
 			salesHeader.Posting_no = salesHeader.No
 		}
 	}
-	err := salesHeader.ModifyOrError(false)
+	err := p.prepareDropShipments()
+	if err != nil {
+		return err
+	}
+	err = salesHeader.ModifyOrError(false)
 	if err != nil {
 		return err
 	}
@@ -380,6 +396,10 @@ func (p *SalesPost) postLines() error {
 			}
 			continue
 		}
+		err := checkDropShipmentLine(salesLine, qtyToShip)
+		if err != nil {
+			return err
+		}
 		if qtyToShip.IsZero() && qtyToInvoice.IsZero() {
 			continue
 		}
@@ -403,8 +423,19 @@ func (p *SalesPost) postLines() error {
 				}
 			}
 		case salesLine.Type == gtables.SalesLine_Type.Item:
-			var err error
+			// a drop shipment: the purchase order line is received first, the sale applied to it
+			if !qtyToShip.IsZero() && salesLine.Purch_order_line_no != 0 {
+				buffer := &dropShipPostBuffer{orderNo: salesLine.Purchase_order_no, orderLineNo: salesLine.Purch_order_line_no,
+					quantity: qtyToShip, quantityBase: qtyToShipBase}
+				buffer.itemShptEntryNo, err = p.postAssocItemJnlLine(salesLine, buffer.quantity, buffer.quantityBase)
+				if err != nil {
+					return err
+				}
+				p.dropShipPostBuffer = append(p.dropShipPostBuffer, buffer)
+				p.applToItemEntry = buffer.itemShptEntryNo
+			}
 			itemShptEntryNo, err = p.postItemLines(salesLine, qtyToShip, qtyToShipBase, qtyToInvoice, qtyToInvoiceBase, lineLCY)
+			p.applToItemEntry = 0
 			if err != nil {
 				return err
 			}
@@ -422,7 +453,7 @@ func (p *SalesPost) postLines() error {
 				return err
 			}
 		}
-		err := p.postProjectJnlLine(salesLine, qtyToInvoice, qtyToInvoiceBase, lineFCY, lineLCY)
+		err = p.postProjectJnlLine(salesLine, qtyToInvoice, qtyToInvoiceBase, lineFCY, lineLCY)
 		if err != nil {
 			return err
 		}
@@ -620,6 +651,10 @@ func (p *SalesPost) postItemJnlLine(salesLine *gtables.SalesLine, qtyToShip, qty
 		itemJnlLine.Unit_amount = salesLine.Unit_price
 	}
 	itemJnlLine.Reserve = gtables.ItemJournalLineReserve(salesLine.Reserve)
+	itemJnlLine.Drop_shipment = salesLine.Drop_shipment
+	if !qtyToShip.IsZero() {
+		itemJnlLine.Applies_to_entry = p.applToItemEntry
+	}
 
 	// the line's reservations go with the quantity shipped to the item journal line (codeunit 22
 	// applies the reserved entries)
@@ -1101,6 +1136,12 @@ func (p *SalesPost) updateOrderLine(salesLine *gtables.SalesLine, qtyToShip, qty
 		return err
 	}
 	tables.InitSalesLineQtyToShip(salesLine)
+	if salesLine.Purch_order_line_no != 0 && salesLine.Quantity.Equal(salesLine.Quantity_invoiced) {
+		err = updateAssocLines(salesLine)
+		if err != nil {
+			return err
+		}
+	}
 	return salesLine.ModifyOrError(false)
 }
 

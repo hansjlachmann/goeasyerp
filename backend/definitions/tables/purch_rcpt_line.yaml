@@ -683,6 +683,11 @@ table:
       type: int
       db_name: blanket_order_line_no
 
+    - name: drop_shipment
+      no: 73
+      type: bool
+      db_name: drop_shipment
+
   keys:
     - name: Primary
       fields: [document_no, line_no]

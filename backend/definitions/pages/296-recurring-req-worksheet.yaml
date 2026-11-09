@@ -79,6 +79,15 @@ page:
           width: 100
         - source: vendor_no
           width: 100
+        # drop shipments (Get Sales Orders): the sales order line, its customer and ship-to address
+        - source: sell_to_customer_no
+          width: 110
+        - source: ship_to_code
+          width: 100
+          visible: false
+        - source: sales_order_no
+          width: 110
+          visible: false
         - source: order_address_code
           width: 100
           visible: false

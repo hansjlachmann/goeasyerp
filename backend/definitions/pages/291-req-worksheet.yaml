@@ -77,6 +77,15 @@ page:
           on_after_validate: table:Requisition_Line.ReserveAlways
         - source: vendor_no
           width: 100
+        # drop shipments (Get Sales Orders): the sales order line, its customer and ship-to address
+        - source: sell_to_customer_no
+          width: 110
+        - source: ship_to_code
+          width: 100
+          visible: false
+        - source: sales_order_no
+          width: 110
+          visible: false
         - source: order_address_code
           width: 100
           visible: false
@@ -177,6 +186,22 @@ page:
           caption: Make Orders
           image: Document
           run_object: report:493
+        # drop shipments: the sales order lines to buy (report 698) and the line's sales order
+        - name: Drop Shipment
+          caption: Drop Shipment
+          image: Document
+          items:
+            - name: Get Sales Orders
+              caption: Get Sales Orders
+              image: Lines
+              run_object: report:698
+            - name: Sales Order
+              caption: Sales Order
+              image: Document
+              run_page: 42
+              run_page_filters:
+                - {field: document_type, const: "1"}
+                - {field: "no", value: sales_order_no}
         # Reservations of the line: the Reservation page (the sources it can reserve from) and its entries
         - name: Reserve
           caption: Reserve

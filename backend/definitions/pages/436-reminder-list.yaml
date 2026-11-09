@@ -58,12 +58,33 @@ page:
       promoted: true
       run_object: report:188
 
-    - name: Issue
-      caption: Issue
-      image: Post
-      shortcut: F9
+    - name: Functions
+      caption: Functions
+      image: Calculate
       promoted: true
-      run_object: report:190
+      items:
+        - name: Suggest Reminder Lines
+          caption: Suggest Reminder Lines
+          run_object: report:189
+        - name: Update Reminder Text
+          caption: Update Reminder Text
+          run_object: report:187
+
+    - name: Issuing
+      caption: Issuing
+      image: Post
+      promoted: true
+      items:
+        # what issuing would refuse (codeunit 228: Report Selections Rem.Test)
+        - name: Test Report
+          caption: Test Report
+          image: Print
+          run_object: "table:Reminder_Header.TestReport"
+        - name: Issue
+          caption: Issue
+          image: Post
+          shortcut: F9
+          run_object: report:190
 
     - name: Reminder
       caption: Reminder

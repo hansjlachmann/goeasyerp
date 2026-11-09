@@ -40,6 +40,8 @@ codeunits:
     caption: "Salg – beregn rabat"
   "61":
     caption: "Salg – rabat (Ja/Nej)"
+  "76":
+    caption: "Køb – hent direkte levering"
   "64":
     caption: "Salg – hent følgeseddel"
   "70":

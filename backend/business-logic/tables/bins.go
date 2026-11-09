@@ -10,6 +10,10 @@ import (
 
 // OnValidate_Location_code: the line's bin belonged to the old location
 func (salesLineLogic) OnValidate_Location_code(rec *gtables.SalesLine) error {
+	err0 := testSalesLineNotAssociated(rec, "location_code")
+	if err0 != nil {
+		return err0
+	}
 	rec.Bin_code = ""
 	if rec.Reserve != gtables.SalesLine_Reserve.Always {
 		return checkSalesLineItemAvailable(rec)
@@ -18,6 +22,10 @@ func (salesLineLogic) OnValidate_Location_code(rec *gtables.SalesLine) error {
 }
 
 func (purchaseLineLogic) OnValidate_Location_code(rec *gtables.PurchaseLine) error {
+	err0 := testPurchLineNotDropShipment(rec, "location_code")
+	if err0 != nil {
+		return err0
+	}
 	rec.Bin_code = ""
 	return nil
 }
@@ -41,6 +49,10 @@ func (bomJournalLineLogic) OnValidate_Location_code(rec *gtables.BOMJournalLine)
 // OnValidate_Bin_code: a bin needs the line's location (an item line on purchase documents and
 // requisition lines)
 func (salesLineLogic) OnValidate_Bin_code(rec *gtables.SalesLine) error {
+	err0 := testSalesLineNotAssociated(rec, "bin_code")
+	if err0 != nil {
+		return err0
+	}
 	err := rec.TestField("location_code")
 	if err != nil {
 		return err
@@ -52,6 +64,10 @@ func (salesLineLogic) OnValidate_Bin_code(rec *gtables.SalesLine) error {
 }
 
 func (purchaseLineLogic) OnValidate_Bin_code(rec *gtables.PurchaseLine) error {
+	err0 := testPurchLineNotDropShipment(rec, "bin_code")
+	if err0 != nil {
+		return err0
+	}
 	err := rec.TestField("type", gtables.PurchaseLine_Type.Item)
 	if err != nil {
 		return err

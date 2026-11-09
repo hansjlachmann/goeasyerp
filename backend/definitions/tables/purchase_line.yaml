@@ -997,6 +997,33 @@ table:
       db_name: attached_to_line_no
       editable: false
 
+    # Drop shipments: the sales order line this purchase line delivers to the customer (Get Sales
+    # Order, Make Orders); receiving it ships the sales order line
+    - name: sales_order_no
+      no: 71
+      type: types.Code
+      db_name: sales_order_no
+      length: 20
+      editable: false
+      table_relation:
+        table: Sales_Header
+        field: no
+        validate: false
+        filters:
+          document_type: {const: 1}   # Order
+
+    - name: sales_order_line_no
+      no: 72
+      type: int
+      db_name: sales_order_line_no
+      editable: false
+
+    - name: drop_shipment
+      no: 73
+      type: bool
+      db_name: drop_shipment
+      editable: false
+
   keys:
     - name: Primary
       fields: [document_type, document_no, line_no]

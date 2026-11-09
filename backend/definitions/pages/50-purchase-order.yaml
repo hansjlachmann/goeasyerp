@@ -75,6 +75,9 @@ page:
       - name: Shipping
         caption: Shipping
         fields:
+          # drop shipments: the customer the vendor delivers to (blank: the company)
+          - source: sell_to_customer_no
+          - source: ship_to_code
           - source: ship_to_name
           - source: ship_to_address
           - source: ship_to_address_2
@@ -205,6 +208,15 @@ page:
           caption: Copy Document
           image: Copy
           run_object: report:492
+        # the drop shipment lines of a sales order of the order's customer (codeunit 76)
+        - name: Drop Shipment
+          caption: Drop Shipment
+          image: Document
+          items:
+            - name: Get Sales Order
+              caption: Get Sales Order
+              image: Lines
+              run_object: codeunit:76
 
     - name: Print
       caption: Print

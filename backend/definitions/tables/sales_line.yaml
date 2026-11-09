@@ -980,6 +980,32 @@ table:
       db_name: attached_to_line_no
       editable: false
 
+    # Drop shipments: the item goes from the vendor straight to the customer. The purchase order
+    # line made for it (Get Sales Order, Make Orders) is linked here; posting one posts the other
+    - name: purchase_order_no
+      no: 71
+      type: types.Code
+      db_name: purchase_order_no
+      length: 20
+      editable: false
+      table_relation:
+        table: Purchase_Header
+        field: no
+        validate: false
+        filters:
+          document_type: {const: 1}   # Order
+
+    - name: purch_order_line_no
+      no: 72
+      type: int
+      db_name: purch_order_line_no
+      editable: false
+
+    - name: drop_shipment
+      no: 73
+      type: bool
+      db_name: drop_shipment
+
   keys:
     - name: Primary
       fields: [document_type, document_no, line_no]

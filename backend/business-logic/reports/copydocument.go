@@ -410,6 +410,10 @@ func (r *copySalesDocument) copySalesLine(run *Run, fromSalesLine *gtables.Sales
 		salesLine.Shipment_date = r.salesHeader.Shipment_date
 		salesLine.Appl_to_project_entry = 0
 		salesLine.Project_applies_to_id = ""
+		// a drop shipment's link to its purchase order line is not copied
+		salesLine.Purchase_order_no = ""
+		salesLine.Purch_order_line_no = 0
+		salesLine.Drop_shipment = false
 		// a line of an invoice made from shipments does not invoice them again
 		salesLine.Shipment_no = ""
 		salesLine.Shipment_line_no = 0
@@ -709,6 +713,10 @@ func (r *copyPurchDocument) copyPurchLine(run *Run, fromPurchLine *gtables.Purch
 			return err
 		}
 		tables.InitPurchLineQtyToReceive(purchLine)
+		// a drop shipment's link to its sales order line is not copied
+		purchLine.Sales_order_no = ""
+		purchLine.Sales_order_line_no = 0
+		purchLine.Drop_shipment = false
 		purchLine.Receipt_no = ""
 		purchLine.Receipt_line_no = 0
 		purchLine.Expected_receipt_date = r.purchHeader.Expected_receipt_date

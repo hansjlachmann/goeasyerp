@@ -45,6 +45,10 @@
 //	OnValidate_Serial_no(rec *gtables.RequisitionLine) error
 //	OnValidate_Lot_no(rec *gtables.RequisitionLine) error
 //	OnValidate_Bin_code(rec *gtables.RequisitionLine) error
+//	OnValidate_Sales_order_no(rec *gtables.RequisitionLine) error
+//	OnValidate_Sales_order_line_no(rec *gtables.RequisitionLine) error
+//	OnValidate_Sell_to_customer_no(rec *gtables.RequisitionLine) error
+//	OnValidate_Ship_to_code(rec *gtables.RequisitionLine) error
 
 package tables
 
@@ -158,6 +162,10 @@ type RequisitionLine struct {
 	Serial_no               types.Code                      `db:"serial_no"`
 	Lot_no                  types.Code                      `db:"lot_no"`
 	Bin_code                types.Code                      `db:"bin_code"`
+	Sales_order_no          types.Code                      `db:"sales_order_no"`
+	Sales_order_line_no     int                             `db:"sales_order_line_no"`
+	Sell_to_customer_no     types.Code                      `db:"sell_to_customer_no"`
+	Ship_to_code            types.Code                      `db:"ship_to_code"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -296,6 +304,10 @@ var RequisitionLine_FieldNo = struct {
 	Serial_no               int
 	Lot_no                  int
 	Bin_code                int
+	Sales_order_no          int
+	Sales_order_line_no     int
+	Sell_to_customer_no     int
+	Ship_to_code            int
 }{
 	Worksheet_template_name: 1,
 	Journal_batch_name:      2,
@@ -332,6 +344,10 @@ var RequisitionLine_FieldNo = struct {
 	Serial_no:               27,
 	Lot_no:                  5400,
 	Bin_code:                5403,
+	Sales_order_no:          23,
+	Sales_order_line_no:     24,
+	Sell_to_customer_no:     25,
+	Ship_to_code:            26,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -407,6 +423,14 @@ func (t *RequisitionLine) FieldNo(fieldName string) int {
 		return 5400
 	case "bin_code":
 		return 5403
+	case "sales_order_no":
+		return 23
+	case "sales_order_line_no":
+		return 24
+	case "sell_to_customer_no":
+		return 25
+	case "ship_to_code":
+		return 26
 	}
 	return 0
 }
@@ -484,6 +508,14 @@ func (t *RequisitionLine) FieldName(fieldNo int) string {
 		return "lot_no"
 	case 5403:
 		return "bin_code"
+	case 23:
+		return "sales_order_no"
+	case 24:
+		return "sales_order_line_no"
+	case 25:
+		return "sell_to_customer_no"
+	case 26:
+		return "ship_to_code"
 	}
 	return ""
 }
@@ -690,6 +722,18 @@ type (
 	RequisitionLineOnValidate_Bin_code interface {
 		OnValidate_Bin_code(rec *RequisitionLine) error
 	}
+	RequisitionLineOnValidate_Sales_order_no interface {
+		OnValidate_Sales_order_no(rec *RequisitionLine) error
+	}
+	RequisitionLineOnValidate_Sales_order_line_no interface {
+		OnValidate_Sales_order_line_no(rec *RequisitionLine) error
+	}
+	RequisitionLineOnValidate_Sell_to_customer_no interface {
+		OnValidate_Sell_to_customer_no(rec *RequisitionLine) error
+	}
+	RequisitionLineOnValidate_Ship_to_code interface {
+		OnValidate_Ship_to_code(rec *RequisitionLine) error
+	}
 )
 
 // requisitionLineLogic is the registered business logic of Requisition_Line, in
@@ -789,6 +833,14 @@ func requisitionLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(RequisitionLineOnValidate_Lot_no)
 	case "OnValidate_Bin_code":
 		_, ok = logic.(RequisitionLineOnValidate_Bin_code)
+	case "OnValidate_Sales_order_no":
+		_, ok = logic.(RequisitionLineOnValidate_Sales_order_no)
+	case "OnValidate_Sales_order_line_no":
+		_, ok = logic.(RequisitionLineOnValidate_Sales_order_line_no)
+	case "OnValidate_Sell_to_customer_no":
+		_, ok = logic.(RequisitionLineOnValidate_Sell_to_customer_no)
+	case "OnValidate_Ship_to_code":
+		_, ok = logic.(RequisitionLineOnValidate_Ship_to_code)
 	default:
 		return false, false
 	}
@@ -929,6 +981,15 @@ func (t *RequisitionLine) CheckFields() error {
 	if err := tables.CheckMaxLength(RequisitionLineTableName, "bin_code", string(t.Bin_code), 10); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(RequisitionLineTableName, "sales_order_no", string(t.Sales_order_no), 20); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(RequisitionLineTableName, "sell_to_customer_no", string(t.Sell_to_customer_no), 20); err != nil {
+		return err
+	}
+	if err := tables.CheckMaxLength(RequisitionLineTableName, "ship_to_code", string(t.Ship_to_code), 10); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -991,6 +1052,10 @@ func GetRequisitionLineTableSchema() string {
 		serial_no TEXT(20),
 		lot_no TEXT(20),
 		bin_code TEXT(10),
+		sales_order_no TEXT(20),
+		sales_order_line_no INTEGER,
+		sell_to_customer_no TEXT(20),
+		ship_to_code TEXT(10),
 		PRIMARY KEY (worksheet_template_name, journal_batch_name, line_no)
 	`
 }
@@ -1033,6 +1098,10 @@ func GetRequisitionLinePostgresTableSchema() string {
 		serial_no VARCHAR(20),
 		lot_no VARCHAR(20),
 		bin_code VARCHAR(10),
+		sales_order_no VARCHAR(20),
+		sales_order_line_no INTEGER,
+		sell_to_customer_no VARCHAR(20),
+		ship_to_code VARCHAR(10),
 		PRIMARY KEY (worksheet_template_name, journal_batch_name, line_no)
 	`
 }
@@ -1109,6 +1178,12 @@ func (t *RequisitionLine) SyncKeys(db database.Executor, company string, dbType 
 	if _, err := db.Exec(fmt.Sprintf(`CREATE INDEX IF NOT EXISTS "%s" ON "%s" (worksheet_template_name, journal_batch_name, vendor_no, order_address_code, currency_code)`,
 		fmt.Sprintf("%s$Requisition_Line$vendor", company), tableName)); err != nil {
 		return fmt.Errorf("failed to create index vendor: %w", err)
+	}
+	// Index "company$Table$key"; a global table's indexes are shared by all companies:
+	// "Table$key" (a company prefix created a copy of every index per company)
+	if _, err := db.Exec(fmt.Sprintf(`CREATE INDEX IF NOT EXISTS "%s" ON "%s" (worksheet_template_name, journal_batch_name, vendor_no, sell_to_customer_no, ship_to_code, order_address_code, currency_code)`,
+		fmt.Sprintf("%s$Requisition_Line$vendor_customer", company), tableName)); err != nil {
+		return fmt.Errorf("failed to create index vendor_customer: %w", err)
 	}
 	var keys []sift.Key
 	for _, spec := range requisitionLineSIFTSpecs() {
@@ -1210,6 +1285,10 @@ func (t *RequisitionLine) StoreOldValues() {
 	t.oldValues["serial_no"] = t.Serial_no
 	t.oldValues["lot_no"] = t.Lot_no
 	t.oldValues["bin_code"] = t.Bin_code
+	t.oldValues["sales_order_no"] = t.Sales_order_no
+	t.oldValues["sales_order_line_no"] = t.Sales_order_line_no
+	t.oldValues["sell_to_customer_no"] = t.Sell_to_customer_no
+	t.oldValues["ship_to_code"] = t.Ship_to_code
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1329,6 +1408,18 @@ func (t *RequisitionLine) XRec() *RequisitionLine {
 	if v, ok := t.oldValues["bin_code"].(types.Code); ok {
 		x.Bin_code = v
 	}
+	if v, ok := t.oldValues["sales_order_no"].(types.Code); ok {
+		x.Sales_order_no = v
+	}
+	if v, ok := t.oldValues["sales_order_line_no"].(int); ok {
+		x.Sales_order_line_no = v
+	}
+	if v, ok := t.oldValues["sell_to_customer_no"].(types.Code); ok {
+		x.Sell_to_customer_no = v
+	}
+	if v, ok := t.oldValues["ship_to_code"].(types.Code); ok {
+		x.Ship_to_code = v
+	}
 	return x
 }
 
@@ -1443,6 +1534,10 @@ func (t *RequisitionLine) GetByPK(worksheet_template_name types.Code, journal_ba
 	var serial_noNull sql.NullString
 	var lot_noNull sql.NullString
 	var bin_codeNull sql.NullString
+	var sales_order_noNull sql.NullString
+	var sales_order_line_noVal int
+	var sell_to_customer_noNull sql.NullString
+	var ship_to_codeNull sql.NullString
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -1452,7 +1547,7 @@ func (t *RequisitionLine) GetByPK(worksheet_template_name types.Code, journal_ba
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code FROM "%s" WHERE 1=1 AND worksheet_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code, sales_order_no, sales_order_line_no, sell_to_customer_no, ship_to_code FROM "%s" WHERE 1=1 AND worksheet_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1494,6 +1589,10 @@ func (t *RequisitionLine) GetByPK(worksheet_template_name types.Code, journal_ba
 		&serial_noNull,
 		&lot_noNull,
 		&bin_codeNull,
+		&sales_order_noNull,
+		&sales_order_line_noVal,
+		&sell_to_customer_noNull,
+		&ship_to_codeNull,
 	)
 
 	if err != nil {
@@ -1542,6 +1641,10 @@ func (t *RequisitionLine) GetByPK(worksheet_template_name types.Code, journal_ba
 	t.Serial_no = types.NewCode(serial_noNull.String)
 	t.Lot_no = types.NewCode(lot_noNull.String)
 	t.Bin_code = types.NewCode(bin_codeNull.String)
+	t.Sales_order_no = types.NewCode(sales_order_noNull.String)
+	t.Sales_order_line_no = sales_order_line_noVal
+	t.Sell_to_customer_no = types.NewCode(sell_to_customer_noNull.String)
+	t.Ship_to_code = types.NewCode(ship_to_codeNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1599,11 +1702,15 @@ func (t *RequisitionLine) Insert(runTrigger bool) bool {
 		t.Serial_no,
 		t.Lot_no,
 		t.Bin_code,
+		t.Sales_order_no,
+		t.Sales_order_line_no,
+		t.Sell_to_customer_no,
+		t.Ship_to_code,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (worksheet_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code, sales_order_no, sales_order_line_no, sell_to_customer_no, ship_to_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (worksheet_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1676,10 +1783,14 @@ func (t *RequisitionLine) InsertAll(records []*RequisitionLine, runTrigger bool)
 			r.Serial_no,
 			r.Lot_no,
 			r.Bin_code,
+			r.Sales_order_no,
+			r.Sales_order_line_no,
+			r.Sell_to_customer_no,
+			r.Ship_to_code,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, RequisitionLineTableName)
-	columns := []string{"worksheet_template_name", "journal_batch_name", "line_no", "type", "no", "description", "description_2", "quantity", "vendor_no", "direct_unit_cost", "quantity_disc_percent", "expected_receipt_date", "requester_id", "confirmed", "dimension_1_code", "dimension_2_code", "location_code", "recurring_method", "expiration_date", "recurring_frequency", "order_date", "vendor_item_no", "order_address_code", "currency_code", "currency_factor", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "reserved_quantity", "reserve", "reserved_qty_base", "serial_no", "lot_no", "bin_code"}
+	columns := []string{"worksheet_template_name", "journal_batch_name", "line_no", "type", "no", "description", "description_2", "quantity", "vendor_no", "direct_unit_cost", "quantity_disc_percent", "expected_receipt_date", "requester_id", "confirmed", "dimension_1_code", "dimension_2_code", "location_code", "recurring_method", "expiration_date", "recurring_frequency", "order_date", "vendor_item_no", "order_address_code", "currency_code", "currency_factor", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "reserved_quantity", "reserve", "reserved_qty_base", "serial_no", "lot_no", "bin_code", "sales_order_no", "sales_order_line_no", "sell_to_customer_no", "ship_to_code"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1865,6 +1976,22 @@ func (t *RequisitionLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "bin_code = ?")
 			values = append(values, t.Bin_code)
 		}
+		if t.hasFieldChanged("sales_order_no") {
+			setClauses = append(setClauses, "sales_order_no = ?")
+			values = append(values, t.Sales_order_no)
+		}
+		if t.hasFieldChanged("sales_order_line_no") {
+			setClauses = append(setClauses, "sales_order_line_no = ?")
+			values = append(values, t.Sales_order_line_no)
+		}
+		if t.hasFieldChanged("sell_to_customer_no") {
+			setClauses = append(setClauses, "sell_to_customer_no = ?")
+			values = append(values, t.Sell_to_customer_no)
+		}
+		if t.hasFieldChanged("ship_to_code") {
+			setClauses = append(setClauses, "ship_to_code = ?")
+			values = append(values, t.Ship_to_code)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -1936,6 +2063,14 @@ func (t *RequisitionLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Lot_no)
 		setClauses = append(setClauses, "bin_code = ?")
 		values = append(values, t.Bin_code)
+		setClauses = append(setClauses, "sales_order_no = ?")
+		values = append(values, t.Sales_order_no)
+		setClauses = append(setClauses, "sales_order_line_no = ?")
+		values = append(values, t.Sales_order_line_no)
+		setClauses = append(setClauses, "sell_to_customer_no = ?")
+		values = append(values, t.Sell_to_customer_no)
+		setClauses = append(setClauses, "ship_to_code = ?")
+		values = append(values, t.Ship_to_code)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -2131,6 +2266,23 @@ func (t *RequisitionLine) hasFieldChanged(fieldName string) bool {
 	case "bin_code":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Bin_code.Equal(old)
+		}
+	case "sales_order_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Sales_order_no.Equal(old)
+		}
+	case "sales_order_line_no":
+		if old, ok := oldValue.(int); ok {
+			return t.Sales_order_line_no != old
+		}
+		return true // Type mismatch, assume changed
+	case "sell_to_customer_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Sell_to_customer_no.Equal(old)
+		}
+	case "ship_to_code":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Ship_to_code.Equal(old)
 		}
 	}
 
@@ -2408,6 +2560,14 @@ func (t *RequisitionLine) columnName(fieldName string) (string, bool) {
 		return "lot_no", true
 	case strings.ToLower("bin_code"):
 		return "bin_code", true
+	case strings.ToLower("sales_order_no"):
+		return "sales_order_no", true
+	case strings.ToLower("sales_order_line_no"):
+		return "sales_order_line_no", true
+	case strings.ToLower("sell_to_customer_no"):
+		return "sell_to_customer_no", true
+	case strings.ToLower("ship_to_code"):
+		return "ship_to_code", true
 	}
 	return "", false
 }
@@ -2789,7 +2949,7 @@ func (t *RequisitionLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code, sales_order_no, sales_order_line_no, sell_to_customer_no, ship_to_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2828,6 +2988,9 @@ func (t *RequisitionLine) FindFirst() bool {
 	var serial_noNull sql.NullString
 	var lot_noNull sql.NullString
 	var bin_codeNull sql.NullString
+	var sales_order_noNull sql.NullString
+	var sell_to_customer_noNull sql.NullString
+	var ship_to_codeNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&worksheet_template_nameNull,
@@ -2865,6 +3028,10 @@ func (t *RequisitionLine) FindFirst() bool {
 		&serial_noNull,
 		&lot_noNull,
 		&bin_codeNull,
+		&sales_order_noNull,
+		&t.Sales_order_line_no,
+		&sell_to_customer_noNull,
+		&ship_to_codeNull,
 	)
 
 	if err != nil {
@@ -2910,6 +3077,9 @@ func (t *RequisitionLine) FindFirst() bool {
 	t.Serial_no = types.NewCode(serial_noNull.String)
 	t.Lot_no = types.NewCode(lot_noNull.String)
 	t.Bin_code = types.NewCode(bin_codeNull.String)
+	t.Sales_order_no = types.NewCode(sales_order_noNull.String)
+	t.Sell_to_customer_no = types.NewCode(sell_to_customer_noNull.String)
+	t.Ship_to_code = types.NewCode(ship_to_codeNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2930,7 +3100,7 @@ func (t *RequisitionLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code, sales_order_no, sales_order_line_no, sell_to_customer_no, ship_to_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2969,6 +3139,9 @@ func (t *RequisitionLine) FindLast() bool {
 	var serial_noNull sql.NullString
 	var lot_noNull sql.NullString
 	var bin_codeNull sql.NullString
+	var sales_order_noNull sql.NullString
+	var sell_to_customer_noNull sql.NullString
+	var ship_to_codeNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&worksheet_template_nameNull,
@@ -3006,6 +3179,10 @@ func (t *RequisitionLine) FindLast() bool {
 		&serial_noNull,
 		&lot_noNull,
 		&bin_codeNull,
+		&sales_order_noNull,
+		&t.Sales_order_line_no,
+		&sell_to_customer_noNull,
+		&ship_to_codeNull,
 	)
 
 	if err != nil {
@@ -3051,6 +3228,9 @@ func (t *RequisitionLine) FindLast() bool {
 	t.Serial_no = types.NewCode(serial_noNull.String)
 	t.Lot_no = types.NewCode(lot_noNull.String)
 	t.Bin_code = types.NewCode(bin_codeNull.String)
+	t.Sales_order_no = types.NewCode(sales_order_noNull.String)
+	t.Sell_to_customer_no = types.NewCode(sell_to_customer_noNull.String)
+	t.Ship_to_code = types.NewCode(ship_to_codeNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -3101,7 +3281,7 @@ func (t *RequisitionLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code, sales_order_no, sales_order_line_no, sell_to_customer_no, ship_to_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3204,6 +3384,9 @@ func (t *RequisitionLine) Next(steps ...int) bool {
 		var serial_noNull sql.NullString
 		var lot_noNull sql.NullString
 		var bin_codeNull sql.NullString
+		var sales_order_noNull sql.NullString
+		var sell_to_customer_noNull sql.NullString
+		var ship_to_codeNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&worksheet_template_nameNull,
@@ -3241,6 +3424,10 @@ func (t *RequisitionLine) Next(steps ...int) bool {
 			&serial_noNull,
 			&lot_noNull,
 			&bin_codeNull,
+			&sales_order_noNull,
+			&t.Sales_order_line_no,
+			&sell_to_customer_noNull,
+			&ship_to_codeNull,
 		)
 
 		if err != nil {
@@ -3285,6 +3472,9 @@ func (t *RequisitionLine) Next(steps ...int) bool {
 		t.Serial_no = types.NewCode(serial_noNull.String)
 		t.Lot_no = types.NewCode(lot_noNull.String)
 		t.Bin_code = types.NewCode(bin_codeNull.String)
+		t.Sales_order_no = types.NewCode(sales_order_noNull.String)
+		t.Sell_to_customer_no = types.NewCode(sell_to_customer_noNull.String)
+		t.Ship_to_code = types.NewCode(ship_to_codeNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -3334,7 +3524,7 @@ func (t *RequisitionLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code, sales_order_no, sales_order_line_no, sell_to_customer_no, ship_to_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3390,6 +3580,9 @@ func (t *RequisitionLine) FindSetBuffered() bool {
 		var serial_noNull sql.NullString
 		var lot_noNull sql.NullString
 		var bin_codeNull sql.NullString
+		var sales_order_noNull sql.NullString
+		var sell_to_customer_noNull sql.NullString
+		var ship_to_codeNull sql.NullString
 
 		err := rows.Scan(
 			&worksheet_template_nameNull,
@@ -3427,6 +3620,10 @@ func (t *RequisitionLine) FindSetBuffered() bool {
 			&serial_noNull,
 			&lot_noNull,
 			&bin_codeNull,
+			&sales_order_noNull,
+			&record.Sales_order_line_no,
+			&sell_to_customer_noNull,
+			&ship_to_codeNull,
 		)
 
 		if err != nil {
@@ -3469,6 +3666,9 @@ func (t *RequisitionLine) FindSetBuffered() bool {
 		record.Serial_no = types.NewCode(serial_noNull.String)
 		record.Lot_no = types.NewCode(lot_noNull.String)
 		record.Bin_code = types.NewCode(bin_codeNull.String)
+		record.Sales_order_no = types.NewCode(sales_order_noNull.String)
+		record.Sell_to_customer_no = types.NewCode(sell_to_customer_noNull.String)
+		record.Ship_to_code = types.NewCode(ship_to_codeNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -3532,6 +3732,10 @@ func (t *RequisitionLine) copyFromBuffered(record *RequisitionLine) {
 	t.Serial_no = record.Serial_no
 	t.Lot_no = record.Lot_no
 	t.Bin_code = record.Bin_code
+	t.Sales_order_no = record.Sales_order_no
+	t.Sales_order_line_no = record.Sales_order_line_no
+	t.Sell_to_customer_no = record.Sell_to_customer_no
+	t.Ship_to_code = record.Ship_to_code
 	t.StoreOldValues()
 }
 
@@ -4552,6 +4756,99 @@ func (t *RequisitionLine) ValidateField(fieldName string, value interface{}) err
 			}
 		}
 		return nil
+	case "sales_order_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Sales_order_no = v
+		} else if v, ok := value.(string); ok {
+			t.Sales_order_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field sales_order_no")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales_order_no"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(RequisitionLineOnValidate_Sales_order_no); ok {
+				if err := trg.OnValidate_Sales_order_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "sales_order_line_no":
+		// Set field value
+		switch v := value.(type) {
+		case int:
+			t.Sales_order_line_no = v
+		case float64:
+			t.Sales_order_line_no = int(v)
+		case string:
+			if v == "" {
+				t.Sales_order_line_no = 0
+			} else if i, err := strconv.Atoi(v); err == nil {
+				t.Sales_order_line_no = i
+			} else {
+				return fmt.Errorf("invalid integer value for field sales_order_line_no: %s", v)
+			}
+		default:
+			return fmt.Errorf("invalid type for field sales_order_line_no")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(RequisitionLineOnValidate_Sales_order_line_no); ok {
+				if err := trg.OnValidate_Sales_order_line_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "sell_to_customer_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Sell_to_customer_no = v
+		} else if v, ok := value.(string); ok {
+			t.Sell_to_customer_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field sell_to_customer_no")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sell_to_customer_no"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(RequisitionLineOnValidate_Sell_to_customer_no); ok {
+				if err := trg.OnValidate_Sell_to_customer_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "ship_to_code":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Ship_to_code = v
+		} else if v, ok := value.(string); ok {
+			t.Ship_to_code = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field ship_to_code")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "ship_to_code"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(RequisitionLineOnValidate_Ship_to_code); ok {
+				if err := trg.OnValidate_Ship_to_code(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -4634,6 +4931,14 @@ func (t *RequisitionLine) FieldValue(no int) (any, bool) {
 		return t.Lot_no, true
 	case 5403:
 		return t.Bin_code, true
+	case 23:
+		return t.Sales_order_no, true
+	case 24:
+		return t.Sales_order_line_no, true
+	case 25:
+		return t.Sell_to_customer_no, true
+	case 26:
+		return t.Ship_to_code, true
 	}
 	return nil, false
 }
@@ -4900,6 +5205,38 @@ func (t *RequisitionLine) SetFieldValue(no int, value any) bool {
 			t.Bin_code = types.NewCode(v)
 			return true
 		}
+	case 23:
+		if v, ok := value.(types.Code); ok {
+			t.Sales_order_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Sales_order_no = types.NewCode(v)
+			return true
+		}
+	case 24:
+		if v, ok := value.(int); ok {
+			t.Sales_order_line_no = v
+			return true
+		}
+	case 25:
+		if v, ok := value.(types.Code); ok {
+			t.Sell_to_customer_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Sell_to_customer_no = types.NewCode(v)
+			return true
+		}
+	case 26:
+		if v, ok := value.(types.Code); ok {
+			t.Ship_to_code = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Ship_to_code = types.NewCode(v)
+			return true
+		}
 	}
 	return false
 }
@@ -4991,6 +5328,8 @@ func (t *RequisitionLine) CalcSums(fieldNames ...string) error {
 			column = "reserved_quantity"
 		case "reserved_qty_base":
 			column = "reserved_qty_base"
+		case "sales_order_line_no":
+			column = "sales_order_line_no"
 		default:
 			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Requisition_Line", name)
 		}
@@ -5054,6 +5393,12 @@ func (t *RequisitionLine) CalcSums(fieldNames ...string) error {
 				return fmt.Errorf("CalcSums Requisition_Line.%s: %w", column, err)
 			}
 			t.Reserved_qty_base = d
+		case "sales_order_line_no":
+			f, err := strconv.ParseFloat(total, 64)
+			if err != nil {
+				return fmt.Errorf("CalcSums Requisition_Line.%s: %w", column, err)
+			}
+			t.Sales_order_line_no = int(f)
 		}
 	}
 	return nil
@@ -5477,6 +5822,14 @@ func (t *RequisitionLine) columnValue(column string) (interface{}, bool) {
 		return t.Lot_no, true
 	case "bin_code":
 		return t.Bin_code, true
+	case "sales_order_no":
+		return t.Sales_order_no, true
+	case "sales_order_line_no":
+		return t.Sales_order_line_no, true
+	case "sell_to_customer_no":
+		return t.Sell_to_customer_no, true
+	case "ship_to_code":
+		return t.Ship_to_code, true
 	}
 	return nil, false
 }
@@ -5571,6 +5924,10 @@ func (t *RequisitionLine) Init() {
 	t.Serial_no = *new(types.Code)
 	t.Lot_no = *new(types.Code)
 	t.Bin_code = *new(types.Code)
+	t.Sales_order_no = *new(types.Code)
+	t.Sales_order_line_no = *new(int)
+	t.Sell_to_customer_no = *new(types.Code)
+	t.Ship_to_code = *new(types.Code)
 	t.applyDefaults()
 }
 
@@ -5640,6 +5997,10 @@ func (t *RequisitionLine) ToMap() map[string]interface{} {
 		"serial_no":               t.Serial_no.String(),
 		"lot_no":                  t.Lot_no.String(),
 		"bin_code":                t.Bin_code.String(),
+		"sales_order_no":          t.Sales_order_no.String(),
+		"sales_order_line_no":     t.Sales_order_line_no,
+		"sell_to_customer_no":     t.Sell_to_customer_no.String(),
+		"ship_to_code":            t.Ship_to_code.String(),
 	}
 }
 
@@ -5918,6 +6279,34 @@ func (t *RequisitionLine) FromMap(data map[string]interface{}) {
 	if v, ok := data["bin_code"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Bin_code = types.NewCode(s)
+		}
+	}
+	if v, ok := data["sales_order_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Sales_order_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["sales_order_line_no"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Sales_order_line_no = int(val)
+		case int:
+			t.Sales_order_line_no = val
+		case string:
+			// a record key from a URL or a list selection
+			if n, err := strconv.Atoi(val); err == nil {
+				t.Sales_order_line_no = n
+			}
+		}
+	}
+	if v, ok := data["sell_to_customer_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Sell_to_customer_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["ship_to_code"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Ship_to_code = types.NewCode(s)
 		}
 	}
 }
@@ -6302,6 +6691,50 @@ func (t *RequisitionLine) GetFields() []tables.FieldInfo {
 			PrimaryKey: false,
 			FlowField:  false,
 		},
+		{
+			No:         23,
+			Name:       "sales_order_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+			ReadOnly:   true,
+		},
+		{
+			No:         24,
+			Name:       "sales_order_line_no",
+			Type:       tables.FieldTypeInteger,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+			ReadOnly:   true,
+		},
+		{
+			No:         25,
+			Name:       "sell_to_customer_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+			ReadOnly:   true,
+		},
+		{
+			No:         26,
+			Name:       "ship_to_code",
+			Type:       tables.FieldTypeCode,
+			Length:     10,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+			ReadOnly:   true,
+		},
 	}
 }
 
@@ -6500,6 +6933,35 @@ func (t *RequisitionLine) GetTableRelationFields() map[string]tables.TableRelati
 			SearchTimeout: 0,
 			Filters: []tables.RelationFilterInfo{
 				{Column: "location_code", Field: "location_code", Const: ""},
+			},
+		},
+		"sales_order_no": {
+			Table:         "Sales_Header",
+			Field:         "no",
+			DisplayField:  "",
+			SearchTimeout: 0,
+			NoValidate:    true,
+			Filters: []tables.RelationFilterInfo{
+				{Column: "document_type", Field: "", Const: "1"},
+			},
+		},
+		"sell_to_customer_no": {
+			Table:        "Customer",
+			Field:        "no",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "no", Width: 100},
+				{Source: "name", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"ship_to_code": {
+			Table:         "Ship_to_Address",
+			Field:         "code",
+			DisplayField:  "",
+			SearchTimeout: 0,
+			Filters: []tables.RelationFilterInfo{
+				{Column: "customer_no", Field: "sell_to_customer_no", Const: ""},
 			},
 		},
 	}

@@ -50,7 +50,7 @@ func (purchaseLineLogic) OnDelete(rec *gtables.PurchaseLine) error {
 	purchLine2.SetRange("document_no", rec.Document_no)
 	purchLine2.SetRange("attached_to_line_no", rec.Line_no)
 	purchLine2.DeleteAll()
-	return nil
+	return unlinkDropShipmentSalesLine(rec)
 }
 
 // OnRename: a purchase line is never renamed
@@ -111,6 +111,10 @@ func testPurchLineNotReceived(rec *gtables.PurchaseLine) error {
 
 // OnValidate_Type: a new type starts the line again (not on a line already received)
 func (purchaseLineLogic) OnValidate_Type(rec *gtables.PurchaseLine) error {
+	err0 := testPurchLineNotDropShipment(rec, "type")
+	if err0 != nil {
+		return err0
+	}
 	err := testPurchLineNotReceived(rec)
 	if err == nil {
 		err = rec.TestField("reserved_qty_base", types.Decimal{})
@@ -133,6 +137,10 @@ func (purchaseLineLogic) OnValidate_Type(rec *gtables.PurchaseLine) error {
 // unit of measure, sales price, indirect cost %, posting groups, the direct unit cost and the
 // quantity it had
 func (purchaseLineLogic) OnValidate_No(rec *gtables.PurchaseLine) error {
+	err0 := testPurchLineNotDropShipment(rec, "no")
+	if err0 != nil {
+		return err0
+	}
 	err := testPurchLineNotReceived(rec)
 	if err == nil {
 		err = rec.TestField("reserved_qty_base", types.Decimal{})
@@ -298,6 +306,10 @@ func (purchaseLineLogic) OnValidate_No(rec *gtables.PurchaseLine) error {
 // OnValidate_Quantity: Quantity (Base) — not below what is received —, the outstanding
 // quantity and amount, the quantities to receive and invoice, and the quantity discount
 func (purchaseLineLogic) OnValidate_Quantity(rec *gtables.PurchaseLine) error {
+	err0 := testPurchLineNotDropShipment(rec, "quantity")
+	if err0 != nil {
+		return err0
+	}
 	quantityBase, err := calcPurchLineBaseQty(rec, rec.Quantity)
 	if err != nil {
 		return err
@@ -681,6 +693,10 @@ func (purchaseLineLogic) OnValidate_Tax_prod_posting_group(rec *gtables.Purchase
 
 // OnValidate_Variant_code: the variant's description (translated by the document's language)
 func (purchaseLineLogic) OnValidate_Variant_code(rec *gtables.PurchaseLine) error {
+	err0 := testPurchLineNotDropShipment(rec, "variant_code")
+	if err0 != nil {
+		return err0
+	}
 	if rec.Variant_code == "" {
 		return nil
 	}
@@ -713,6 +729,10 @@ func (purchaseLineLogic) OnValidate_Variant_code(rec *gtables.PurchaseLine) erro
 // language); an item's quantity per unit, weights, volume, unit cost and direct unit cost for
 // the unit; the quantity again (not on a line already received)
 func (purchaseLineLogic) OnValidate_Unit_of_measure_code(rec *gtables.PurchaseLine) error {
+	err0 := testPurchLineNotDropShipment(rec, "unit_of_measure_code")
+	if err0 != nil {
+		return err0
+	}
 	err := rec.TestField("quantity_received", types.Decimal{})
 	if err != nil {
 		return err
@@ -901,7 +921,7 @@ func updatePurchLineUnitCost(rec *gtables.PurchaseLine) error {
 		}
 	}
 	rec.Unit_cost = system.Round(rec.Unit_cost, currency.Unit_amount_rounding_precision)
-	return nil
+	return updatePurchLineSalesCost(rec)
 }
 
 // UpdatePurchLineAmounts (UpdateAmounts): Amount after the line and invoice discounts, the tax
@@ -1031,6 +1051,10 @@ func getPurchLineFAPostingGroup(rec *gtables.PurchaseLine) error {
 // accounts' posting groups); other lines have none of the FA fields
 // OnValidate_Project_no: not on fixed asset lines; a reserved line keeps its project
 func (purchaseLineLogic) OnValidate_Project_no(rec *gtables.PurchaseLine) error {
+	err0 := testPurchLineNotDropShipment(rec, "project_no")
+	if err0 != nil {
+		return err0
+	}
 	if rec.Type == gtables.PurchaseLine_Type.FixedAsset {
 		if rec.Project_no != "" {
 			return apperrors.FANotTogetherWith(gtables.PurchaseLineTableName, "project_no", "type", rec.Type)
