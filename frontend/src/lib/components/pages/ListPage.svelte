@@ -1351,6 +1351,25 @@
 		if (fn) void fieldRunner?.run(fn, savedRecord, { quiet: true });
 	}
 
+	// A field function changed the lines (the extended text a line's No. inserted): the page
+	// reloads (also the card's totals); in a cell mode the list shows its editable copy of the
+	// rows, so the copy is read again from the reloaded window, keeping rows not saved yet
+	async function refreshAfterFieldFunction() {
+		onaction?.('Refresh');
+		if (!editableActive || !onwindow) return;
+		const unsaved = editableRecords.filter((r) => r._isNew);
+		await loadWindow({ offset: windowOffset, limit: windowSize(rowsPerPage()) });
+		if (!editableActive) return;
+		editableRecords = [...toEditableRecords(), ...unsaved];
+		// the rebuilt rows replaced the cell that had the focus: give it back, unless the user
+		// has put it somewhere else meanwhile
+		await tick();
+		const active = document.activeElement;
+		if (active && active !== document.body) return;
+		if (cellState === 'cell-selected') focusCellSelectedElement(currentCellRow, currentCellCol);
+		else if (cellState === 'cell-editing') focusCell(currentCellRow, currentCellCol, false);
+	}
+
 	// A field's own lookup (on_lookup, classic OnLookup): its function works on the row as it is
 	// (it may open a page); the row takes the record it gives back and saves the field
 	async function runFieldLookup(record: Record<string, any>, field: Field) {
@@ -1430,8 +1449,11 @@
 					source: pk,
 					required: page.page.layout.repeater?.fields?.find(f => f.source === pk)?.required
 				}));
-				// DelayedInsert pages: keep the row uncommitted until the user leaves it
-				if (page.page.delayed_insert && !leavingRow) {
+				// DelayedInsert pages: keep the row uncommitted until the user leaves it — unless the
+				// field has an OnAfterValidate, whose function works on the saved line (the classic
+				// subforms save the record first there: CurrForm.SAVERECORD)
+				const hasAfterValidate = !!page.page.layout.repeater?.fields?.find((f) => f.source === fieldName)?.on_after_validate;
+				if (page.page.delayed_insert && !leavingRow && !hasAfterValidate) {
 					return;
 				}
 				if (!shouldInsertNewRecord(record, record._pristine ?? {}, pkFields, page.page.auto_key)) {
@@ -4140,7 +4162,7 @@
 />
 
 <!-- Progress Modal (for codeunits with progress) -->
-<ObjectRunner bind:this={fieldRunner} ondone={(refresh) => { if (refresh) onaction?.('Refresh'); }} />
+<ObjectRunner bind:this={fieldRunner} ondone={(refresh) => { if (refresh) void refreshAfterFieldFunction(); }} />
 
 <ProgressModal
 	open={progressModalOpen}
