@@ -1,0 +1,72 @@
+page:
+  id: 401
+  type: Card
+  name: Purch. Credit Memo Statistics
+  source_table: Purch_Cr_Memo_Hdr   # opened from the posted document (F9)
+  caption: Purch. Credit Memo Statistics
+  editable: false
+
+  # The calculated fields are filled by the page's OnAfterGetRecord trigger
+  # (business-logic/pages/postedstatistics.go); their captions are pages.<page>.fields.*
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+          - source: buy_from_vendor_name
+          - source: line_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: inv_discount_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: tax_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_incl_tax
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: amount_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: parcels
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: net_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: gross_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: volume
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+
+      - name: Vendor
+        caption: Vendor
+        fields:
+          - source: pay_to_vendor_no
+          - source: balance_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+

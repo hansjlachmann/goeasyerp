@@ -100,6 +100,15 @@ page:
       promoted: true
       run_object: table:Sales_Invoice_Header.PrintRecords
 
+    - name: Statistics
+      caption: Statistics
+      image: Statistics
+      shortcut: F9
+      promoted: true
+      run_page: 397
+      run_page_filter_field: "no"
+      run_page_filter_value: "no"
+
     - name: Navigate
       caption: Navigate
       image: Navigate

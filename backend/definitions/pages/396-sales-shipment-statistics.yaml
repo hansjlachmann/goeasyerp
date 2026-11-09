@@ -1,0 +1,38 @@
+page:
+  id: 396
+  type: Card
+  name: Sales Shipment Statistics
+  source_table: Sales_Shipment_Header   # opened from the posted document (F9)
+  caption: Sales Shipment Statistics
+  editable: false
+
+  # The calculated fields are filled by the page's OnAfterGetRecord trigger
+  # (business-logic/pages/postedstatistics.go); their captions are pages.<page>.fields.*
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+          - source: sell_to_customer_name
+          - source: quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: parcels
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: net_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: gross_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: volume
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+

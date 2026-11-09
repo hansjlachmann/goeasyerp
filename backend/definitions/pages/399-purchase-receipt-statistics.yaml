@@ -1,0 +1,38 @@
+page:
+  id: 399
+  type: Card
+  name: Purchase Receipt Statistics
+  source_table: Purch_Rcpt_Header   # opened from the posted document (F9)
+  caption: Purchase Receipt Statistics
+  editable: false
+
+  # The calculated fields are filled by the page's OnAfterGetRecord trigger
+  # (business-logic/pages/postedstatistics.go); their captions are pages.<page>.fields.*
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+          - source: buy_from_vendor_name
+          - source: quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: parcels
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: net_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: gross_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: volume
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+
