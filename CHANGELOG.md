@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.145](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.144...v0.1.145) (2026-11-08)
+
+
+### Features
+
+* a row menu on lists (right-click, Shift+F10) and an Actions menu ([b1a7db7](https://github.com/hansjlachmann/goeasyerp/commit/b1a7db7cf2ae451625714888a8c7269fdf49100d))
+
+
+### Bug Fixes
+
+* show the number series warning, translate the rate-limit message, relate Customer Posting Group ([33a7a4d](https://github.com/hansjlachmann/goeasyerp/commit/33a7a4db083ba857ff709bb73ded9e46fb9d2060))
+
 ## [0.1.144](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.143...v0.1.144) (2026-11-08)
 
 
