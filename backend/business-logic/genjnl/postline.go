@@ -2,6 +2,7 @@ package genjnl
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/fajnl"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salestax"
@@ -396,7 +397,17 @@ func (p *GenJnlPostLine) postBankAcc(genJnlLine *gtables.GenJournalLine) error {
 			return apperrors.JnlBankPmtCurrency(jnlLine, "bank_payment_type", bankAcc.No.String())
 		}
 		switch genJnlLine.Bank_payment_type {
-		case gtables.GenJournalLine_Bank_payment_type.ComputerCheck, gtables.GenJournalLine_Bank_payment_type.ElectronicPayment:
+		case gtables.GenJournalLine_Bank_payment_type.ComputerCheck:
+			// the check printed for the line (report 1401) is posted with the bank entry
+			err = genJnlLine.TestField("check_printed", true)
+			if err != nil {
+				return err
+			}
+			err = p.postPrintedChecks(genJnlLine, bankAccLedgEntry, strconv.Itoa(int(gtables.CheckLedgerEntry_Entry_status.Printed)))
+			if err != nil {
+				return err
+			}
+		case gtables.GenJournalLine_Bank_payment_type.ElectronicPayment:
 			return apperrors.JnlCheckPrintingNotYet(jnlLine, "bank_payment_type", genJnlLine.Bank_payment_type)
 		case gtables.GenJournalLine_Bank_payment_type.ManualCheck:
 			err = p.insertManualCheck(genJnlLine, bankAcc, bankAccLedgEntry)
@@ -417,6 +428,30 @@ func (p *GenJnlPostLine) postBankAcc(genJnlLine *gtables.GenJournalLine) error {
 	p.glEntry.Bal_account_type = gtables.GLEntryBal_account_type(genJnlLine.Bal_account_type)
 	p.glEntry.Bal_account_no = genJnlLine.Bal_account_no
 	return p.insertGLEntry(true)
+}
+
+// postPrintedChecks marks the bank account's check ledger entries of the line's check no.
+// (Document No.) in the entry status filter (option numbers) as posted, on the bank account ledger entry posted
+func (p *GenJnlPostLine) postPrintedChecks(genJnlLine *gtables.GenJournalLine, bankAccLedgEntry *gtables.BankAccountLedgerEntry, entryStatusFilter string) error {
+	checkLedgEntry := gtables.NewCheckLedgerEntry(p.src)
+	checkLedgEntry.LockTable()
+	checkLedgEntry.SetRange("bank_account_no", genJnlLine.Account_no)
+	checkLedgEntry.SetFilter("entry_status", entryStatusFilter)
+	checkLedgEntry.SetRange("check_no", genJnlLine.Document_no)
+	for found := checkLedgEntry.FindSetBuffered(); found; found = checkLedgEntry.Next() {
+		checkLedgEntry2 := gtables.NewCheckLedgerEntry(p.src)
+		err := checkLedgEntry2.GetOrError(checkLedgEntry.Entry_no)
+		if err != nil {
+			return err
+		}
+		checkLedgEntry2.Entry_status = gtables.CheckLedgerEntry_Entry_status.Posted
+		checkLedgEntry2.Bank_account_ledger_entry_no = bankAccLedgEntry.Entry_no
+		err = checkLedgEntry2.ModifyOrError(false)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // insertManualCheck records a manual check in the check ledger (its check no. is the document

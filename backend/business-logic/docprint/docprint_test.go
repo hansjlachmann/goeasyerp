@@ -80,9 +80,9 @@ func TestUsageReports(t *testing.T) {
 	if len(ids) != 1 || ids[0] != reports.SalesQuoteID {
 		t.Errorf("default S.Quote reports %v, want [204]", ids)
 	}
-	_, err = reports.UsageReports(src, gtables.ReportSelections_Usage.STest)
+	_, err = reports.UsageReports(src, gtables.ReportSelections_Usage.ProdOrder)
 	if err == nil {
-		t.Error("S.Test has no report: want an error")
+		t.Error("Prod. Order has no report: want an error")
 	}
 
 	// the lines in their sequence, Report ID 0 left out

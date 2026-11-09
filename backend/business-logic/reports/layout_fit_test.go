@@ -81,8 +81,15 @@ var layoutFitOptions = map[int]map[string]string{
 	17:   {"starting_date": "2026-01-01", "ending_date": "2026-12-31"},
 	18:   {"starting_date": "2026-01-01", "ending_date": "2026-12-31"},
 	20:   {"starting_date": "2026-07-01", "ending_date": "2026-09-30", "posting_date": "2026-10-06", "document_no": "SETTLE-TEST", "settlement_account": "2330", "show_tax_entries": "true"},
+	1401: {"bank_account": "B010", "last_check_no": "FIT1000", "test_print": "true"},
 	5605: {"depreciation_book": "COMPANY", "starting_date": "2026-01-01", "ending_date": "2026-10-06"},
 	5606: {"depreciation_book": "COMPANY", "starting_date": "2026-01-01", "ending_date": "2026-10-06"},
+}
+
+// layoutFitFilters: the request filters some reports need (Check: one payment journal — the
+// demo journals also hold fixed asset lines, which a check refuses)
+var layoutFitFilters = map[int]map[string][]ftables.FieldFilter{
+	1401: {"GenJnlLine": {{Field: "journal_template_name", Expression: "PAYMENT"}}},
 }
 
 // layoutFitSkipped: reports that cannot print without special input
@@ -142,7 +149,7 @@ func TestPrintedLayoutsFit(t *testing.T) {
 			}
 			tx, err := ftables.BeginTransaction(db)
 			mustOK(t, err)
-			result, err := reports.Execute(id, tx, "demo", database.DBTypeSQLite, reports.RunOptions{Output: reports.OutputPDF, Options: layoutFitOptions[id]})
+			result, err := reports.Execute(id, tx, "demo", database.DBTypeSQLite, reports.RunOptions{Output: reports.OutputPDF, Options: layoutFitOptions[id], Filters: layoutFitFilters[id]})
 			_ = ftables.Rollback(tx)
 			if err != nil {
 				t.Errorf("report %d (%s) does not print the demo data: %v", id, language, err)

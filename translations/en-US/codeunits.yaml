@@ -122,6 +122,8 @@ codeunits:
     caption: "Sales-Explode BOM"
   "73":
     caption: "Purch.-Explode BOM"
+  "367":
+    caption: "CheckManagement"
   "372":
     caption: "Bank Acc. Recon. Post+Print"
   "378":

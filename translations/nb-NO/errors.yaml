@@ -247,6 +247,8 @@ errors:
   ERR_JNL_REQUIRED_WHEN: "%2 må fylles ut når %1 er %3."
   ERR_JNL_CHECK_EXISTS: "Sjekk %1 finnes allerede for denne bankkontoen."
   ERR_JNL_CHECK_PRINTING_NOT_YET: "%1 %2 kan ikke bokføres ennå: det kommer med utskrift av sjekker."
+  ERR_CHECK_ALREADY_EXISTS: "Sjekk %1 finnes allerede for denne bankkontoen."
+  ERR_CHECK_AMOUNT_TOO_LONG: "%1 gir et beløp i tekst som er for langt."
   ERR_JNL_NAME_TOO_LONG: "%1 kan ikke være lengre enn %2 tegn."
   ERR_JNL_CORRECTION_SAME: "%1 må være den samme på alle linjer i samme bilag."
   ERR_JNL_DOC_OUT_OF_BALANCE: "%1 %3 er ikke i balanse med %4. Kontroller at %2, %1 og beløpet er riktige på hver linje."

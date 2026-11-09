@@ -8,6 +8,13 @@ common:
 
   # Common actions
   actions:
+    # Payments and checks
+    payments: "Betalinger"
+    preview_check: "Vis check"
+    print_check: "Udskriv check"
+    suggest_vendor_payments: "Foreslå kreditorbetalinger"
+    void_all_checks: "Annuller alle checks"
+    void_check: "Annuller check"
     # Line lists and their links
     posted_credit_memos: "Bogførte kreditnotaer"
     posted_invoices: "Bogførte fakturaer"
@@ -225,6 +232,7 @@ common:
     edit: "Rediger"
     delete: "Slet"
     post: "Bogfør"
+    post_batch: "Massebogfør"
     post_and_print: "Bogfør og udskriv"
     preview_posting: "Vis bogføring"
     get_shipment_lines: "Hent leverancelinjer"
@@ -289,6 +297,8 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    # Payments and checks
+    check: "Check"
     # Statistics pages
     last_credit_memo: "Seneste kreditnota"
     last_finance_charge_memo: "Seneste rentenota"

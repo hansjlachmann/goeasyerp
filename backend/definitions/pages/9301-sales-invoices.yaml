@@ -58,11 +58,21 @@ page:
       image: Post
       promoted: true
       items:
+        # what posting would refuse (codeunit 228: Report Selections S.Test)
+        - name: Test Report
+          caption: Test Report
+          image: Print
+          run_object: "table:Sales_Header.TestReport"
         - name: Post
           caption: Post
           image: Post
           shortcut: F11
           run_object: codeunit:81
+        # every document in the filters, each in its own transaction
+        - name: Post Batch
+          caption: Post Batch
+          image: Post
+          run_object: report:297
         - name: Post and Print
           caption: Post and Print
           image: Print

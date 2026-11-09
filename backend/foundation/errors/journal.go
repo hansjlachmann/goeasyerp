@@ -81,6 +81,8 @@ const (
 	ErrJnlRequiredWhen         ErrorCode = "ERR_JNL_REQUIRED_WHEN"
 	ErrJnlCheckExists          ErrorCode = "ERR_JNL_CHECK_EXISTS"
 	ErrJnlCheckPrintingNotYet  ErrorCode = "ERR_JNL_CHECK_PRINTING_NOT_YET"
+	ErrCheckAlreadyExists      ErrorCode = "ERR_CHECK_ALREADY_EXISTS"
+	ErrCheckAmountTooLong      ErrorCode = "ERR_CHECK_AMOUNT_TOO_LONG"
 	ErrJnlNameTooLong          ErrorCode = "ERR_JNL_NAME_TOO_LONG"
 	ErrJnlCorrectionSame       ErrorCode = "ERR_JNL_CORRECTION_SAME"
 	ErrJnlDocOutOfBalance      ErrorCode = "ERR_JNL_DOC_OUT_OF_BALANCE"
@@ -163,6 +165,16 @@ func JnlCheckExists(checkNo string) *AppError {
 // JnlCheckPrintingNotYet: computer checks and electronic payments come with check printing
 func JnlCheckPrintingNotYet(table, field string, value any) *AppError {
 	return &AppError{Code: ErrJnlCheckPrintingNotYet, Table: table, Field: field, Value: value}
+}
+
+// CheckAlreadyExists: a check no. is printed, posted or financially voided for the bank account
+func CheckAlreadyExists(checkNo string) *AppError {
+	return &AppError{Code: ErrCheckAlreadyExists, Params: []string{checkNo}}
+}
+
+// CheckAmountTooLong: the amount in words does not fit the check's two lines
+func CheckAmountTooLong(text string) *AppError {
+	return &AppError{Code: ErrCheckAmountTooLong, Params: []string{text}}
 }
 
 // JnlNameTooLong: the batch name cannot be incremented within its length

@@ -1786,3 +1786,18 @@ pages:
     caption: "Bokførte innkjøpskreditnotalinjer"
   where_used_list:
     caption: "Brukt i"
+  check_preview:
+    caption: "Sjekkvisning"
+    fields:
+      company_addr_1: "Firma"
+      company_addr_2: "Adresse"
+      company_addr_3: "Adresse"
+      company_addr_4: "Adresse"
+      check_amount: "Beløp"
+      number_text_1: "Beløp med bokstaver"
+      number_text_2: " "
+      pay_to_1: "Betales til"
+      pay_to_2: "Adresse"
+      pay_to_3: "Adresse"
+      pay_to_4: "Adresse"
+      check_status_text: "Status"

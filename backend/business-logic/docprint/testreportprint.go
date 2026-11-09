@@ -1,7 +1,9 @@
 package docprint
 
 import (
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/purchcalcdisc"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salescalcdisc"
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/functions"
@@ -28,6 +30,9 @@ func init() {
 	batch(gtables.InsuranceJournalBatchTableName, functions.For(PrintInsuranceJnlBatch))
 	batch(gtables.BankAccReconciliationTableName, functions.For(PrintBankAccRecon))
 	functions.Register("table", gtables.BankAccountStatementTableName, "PrintRecords", functions.For(PrintBankAccStmt), functions.WithPrint())
+	functions.Register("table", gtables.GenJournalLineTableName, "PrintCheck", functions.For(PrintCheck), functions.WithPrint())
+	functions.Register("table", gtables.SalesHeaderTableName, "TestReport", functions.For(PrintTestSalesHeader), functions.WithPrint())
+	functions.Register("table", gtables.PurchaseHeaderTableName, "TestReport", functions.For(PrintTestPurchHeader), functions.WithPrint())
 }
 
 // testReportRecord is the record a test report runs on
@@ -158,4 +163,45 @@ func PrintBankAccRecon(bankAccRecon *gtables.BankAccReconciliation) (fcodeunits.
 func PrintBankAccStmt(bankAccStmt *gtables.BankAccountStatement) (fcodeunits.Result, error) {
 	bankAccStmt.SetRecFilter()
 	return PrintRecords(bankAccStmt, gtables.ReportSelections_Usage.BStmt, true)
+}
+
+// PrintCheck (Payments › Print Check on the payment journal) prints the journal's checks with the
+// reports of Report Selections usage B.Check (by default 1401 Check), each with its request page
+func PrintCheck(genJnlLine *gtables.GenJournalLine) (fcodeunits.Result, error) {
+	result, err := PrintRecords(genJnlLine, gtables.ReportSelections_Usage.BCheck, true)
+	if err != nil {
+		return fcodeunits.Result{}, err
+	}
+	result.Refresh = true
+	return result, nil
+}
+
+// PrintTestSalesHeader (codeunit 228 PrintSalesHeader): the S.Test reports (202 Sales Document -
+// Test) on the document with their request page — the invoice discount calculated first when
+// Sales & Receivables Setup says so
+func PrintTestSalesHeader(salesHeader *gtables.SalesHeader) (fcodeunits.Result, error) {
+	salesSetup := gtables.GetSalesReceivablesSetup(salesHeader)
+	if salesSetup.Calc_inv_discount {
+		err := salescalcdisc.CalculateInvoiceDiscount(salesHeader)
+		if err != nil {
+			return fcodeunits.Result{}, err
+		}
+		salesHeader.Get(map[string]interface{}{"document_type": int(salesHeader.Document_type), "no": salesHeader.No})
+	}
+	return PrintRecords(salesHeader, gtables.ReportSelections_Usage.STest, true)
+}
+
+// PrintTestPurchHeader (codeunit 228 PrintPurchHeader): the P.Test reports (402 Purchase
+// Document - Test) on the document with their request page — the invoice discount calculated
+// first when Purchases & Payables Setup says so
+func PrintTestPurchHeader(purchHeader *gtables.PurchaseHeader) (fcodeunits.Result, error) {
+	purchSetup := gtables.GetPurchasesPayablesSetup(purchHeader)
+	if purchSetup.Calc_inv_discount {
+		err := purchcalcdisc.CalculateInvoiceDiscount(purchHeader)
+		if err != nil {
+			return fcodeunits.Result{}, err
+		}
+		purchHeader.Get(map[string]interface{}{"document_type": int(purchHeader.Document_type), "no": purchHeader.No})
+	}
+	return PrintRecords(purchHeader, gtables.ReportSelections_Usage.PTest, true)
 }

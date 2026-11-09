@@ -173,6 +173,11 @@ page:
       image: Post
       promoted: true
       items:
+        # what posting would refuse (codeunit 228: Report Selections P.Test)
+        - name: Test Report
+          caption: Test Report
+          image: Print
+          run_object: "table:Purchase_Header.TestReport"
         - name: Post
           caption: Post
           image: Post

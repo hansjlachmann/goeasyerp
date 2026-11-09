@@ -8,6 +8,13 @@ common:
 
   # Common actions
   actions:
+    # Payments and checks
+    payments: "Payments"
+    preview_check: "Preview Check"
+    print_check: "Print Check"
+    suggest_vendor_payments: "Suggest Vendor Payments"
+    void_all_checks: "Void All Checks"
+    void_check: "Void Check"
     # Line lists and their links
     posted_credit_memos: "Posted Credit Memos"
     posted_invoices: "Posted Invoices"
@@ -225,6 +232,7 @@ common:
     edit: "Edit"
     delete: "Delete"
     post: "Post"
+    post_batch: "Post Batch"
     post_and_print: "Post and Print"
     preview_posting: "Preview Posting"
     get_shipment_lines: "Get Shipment Lines"
@@ -289,6 +297,8 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    # Payments and checks
+    check: "Check"
     # Statistics pages
     last_credit_memo: "Last Credit Memo"
     last_finance_charge_memo: "Last Finance Charge Memo"

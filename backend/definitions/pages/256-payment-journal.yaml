@@ -178,6 +178,39 @@ page:
       enabled: true
 
     # The line's account: its card (codeunit 15) and its ledger entries (codeunit 14)
+    # Payments (classic Payments menu): suggest payments of the vendors' open entries (report 393),
+    # preview, print and void computer checks (page 404, report 1401 through Report Selections,
+    # codeunit 367 VoidCheck)
+    - name: Payments
+      caption: Payments
+      image: Document
+      promoted: true
+      items:
+        - name: Suggest Vendor Payments
+          caption: Suggest Vendor Payments
+          image: Calculate
+          run_object: report:393
+        - name: Preview Check
+          caption: Preview Check
+          image: Document
+          run_page: 404
+          run_page_filters:
+            - {field: journal_template_name, value: journal_template_name}
+            - {field: journal_batch_name, value: journal_batch_name}
+            - {field: line_no, value: line_no}
+        - name: Print Check
+          caption: Print Check
+          image: Print
+          run_object: table:Gen_Journal_Line.PrintCheck
+        - name: Void Check
+          caption: Void Check
+          image: Cancel
+          run_object: table:Gen_Journal_Line.VoidCheck
+        - name: Void All Checks
+          caption: Void All Checks
+          image: Cancel
+          run_object: table:Gen_Journal_Line.VoidAllChecks
+
     - name: Account
       caption: Account
       image: Card

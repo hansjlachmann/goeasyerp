@@ -1,0 +1,113 @@
+# Report 202 Sales Document - Test: the printed layout (see business-logic/reports/layout.go)
+report:
+  id: 202
+  name: Sales Document - Test
+  page:
+    size: A4
+    orientation: portrait
+    margins: {top: 12, bottom: 12, left: 15, right: 12}
+  font_size: 8
+  data_items:
+    - name: Sales_Header
+      new_page_per_record: true
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 120, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 120}
+            - {value: today, x: 123, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 123, y: 4, width: 50, align: right}
+            - {page_no: true, x: 173, y: 4, width: 10, align: right}
+            - {value: user_id, x: 123, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 183, wrap: true}
+        - type: body
+          height: 52
+          elements:
+            - {value: document_heading, x: 0, y: 1, width: 120, bold: true, size: 9}
+            - {value: ship_inv_text, x: 0, y: 5.5, width: 120}
+            - {text: PARTY_1, x: 0, y: 11, width: 85, bold: true}
+            - {lines: sell_to_address, x: 0, y: 15, width: 85}
+            - {text: SHIP_TO, x: 98, y: 11, width: 85, bold: true}
+            - {lines: ship_to_address, x: 98, y: 15, width: 85}
+            - {caption: sell_to_customer_no, x: 0, y: 37, width: 40}
+            - {field: sell_to_customer_no, x: 41, y: 37, width: 40}
+            - {caption: bill_to_customer_no, x: 0, y: 41, width: 40}
+            - {field: bill_to_customer_no, x: 41, y: 41, width: 40}
+            - {caption: posting_date, x: 98, y: 37, width: 40}
+            - {field: posting_date, x: 140, y: 37, width: 43}
+            - {caption: document_date, x: 98, y: 41, width: 40}
+            - {field: document_date, x: 140, y: 41, width: 43}
+            - {caption: due_date, x: 98, y: 45, width: 40}
+            - {field: due_date, x: 140, y: 45, width: 43}
+            - {caption: currency_code, x: 0, y: 45, width: 40}
+            - {field: currency_code, x: 41, y: 45, width: 40}
+    - name: Header_Error_Loop
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {text: WARNING, x: 0, y: 0, width: 20, bold: true}
+            - {value: error_text, x: 21, y: 0, width: 162, wrap: true}
+    - name: Sales_Line
+      sections:
+        - type: header
+          height: 10.5
+          elements:
+            - {text: TYPE, x: 0, y: 1, width: 17, bold: true, wrap: true}
+            - {text: NO, x: 18, y: 1, width: 18, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 37, y: 1, width: 48, bold: true, wrap: true}
+            - {text: QUANTITY, x: 86, y: 1, width: 18, bold: true, wrap: true, align: right}
+            - {text: QTY_TO_SHIP, x: 105, y: 1, width: 18, bold: true, wrap: true, align: right}
+            - {text: QTY_TO_INVOICE, x: 124, y: 1, width: 18, bold: true, wrap: true, align: right}
+            - {text: UNIT_PRICE, x: 143, y: 1, width: 18, bold: true, wrap: true, align: right}
+            - {text: AMOUNT, x: 162, y: 1, width: 21, bold: true, wrap: true, align: right}
+            - {line: true, x: 0, y: 9.5}
+        - type: body
+          height: 4.2
+          elements:
+            - {field: type, x: 0, y: 0, width: 17}
+            - {field: no, x: 18, y: 0, width: 18}
+            - {field: description, x: 37, y: 0, width: 48}
+            - {field: quantity, x: 86, y: 0, width: 18, align: right, decimal_places: "0:5", blank_zero: true}
+            - {field: qty_to_ship, x: 105, y: 0, width: 18, align: right, decimal_places: "0:5", blank_zero: true}
+            - {field: qty_to_invoice, x: 124, y: 0, width: 18, align: right, decimal_places: "0:5", blank_zero: true}
+            - {field: unit_price, x: 143, y: 0, width: 18, align: right, decimal_places: "2:5", blank_zero: true}
+            - {field: amount, x: 162, y: 0, width: 21, align: right, decimal_places: "2:2", blank_zero: true}
+        - type: footer
+          height: 17
+          elements:
+            - {line: true, x: 124, y: 1}
+            - {text: INV_DISCOUNT_AMOUNT, x: 86, y: 2.5, width: 70}
+            - {total: inv_discount_amount, x: 162, y: 2.5, width: 21, align: right, decimal_places: "2:2"}
+            - {value: total_text, x: 86, y: 6.5, width: 70}
+            - {total: amount, x: 162, y: 6.5, width: 21, align: right, decimal_places: "2:2"}
+            - {value: total_incl_tax_text, x: 86, y: 10.5, width: 70, bold: true}
+            - {total: amount_including_tax, x: 162, y: 10.5, width: 21, align: right, bold: true, decimal_places: "2:2"}
+    - name: Line_Error_Loop
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {text: WARNING, x: 18, y: 0, width: 20, bold: true}
+            - {value: error_text, x: 39, y: 0, width: 144, wrap: true}
+    - name: Tax_Counter
+      sections:
+        - type: header
+          height: 10
+          elements:
+            - {text: TAX_SPECIFICATION, x: 0, y: 1, width: 80, bold: true}
+            - {text: TAX_PCT, x: 86, y: 5, width: 25, bold: true, align: right}
+            - {text: TAX_BASE, x: 115, y: 5, width: 30, bold: true, align: right}
+            - {text: TAX_AMOUNT, x: 150, y: 5, width: 33, bold: true, align: right}
+        - type: body
+          height: 4.2
+          elements:
+            - {value: tax_pct, x: 86, y: 0, width: 25, align: right, decimal_places: "0:5"}
+            - {value: tax_base, x: 115, y: 0, width: 30, align: right, decimal_places: "2:2"}
+            - {value: tax_amount, x: 150, y: 0, width: 33, align: right, decimal_places: "2:2"}

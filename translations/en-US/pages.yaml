@@ -1786,3 +1786,18 @@ pages:
     caption: "Posted Purchase Cr. Memo Lines"
   where_used_list:
     caption: "Where-Used List"
+  check_preview:
+    caption: "Check Preview"
+    fields:
+      company_addr_1: "Company"
+      company_addr_2: "Address"
+      company_addr_3: "Address"
+      company_addr_4: "Address"
+      check_amount: "Amount"
+      number_text_1: "Amount in Words"
+      number_text_2: " "
+      pay_to_1: "Pay to the Order of"
+      pay_to_2: "Address"
+      pay_to_3: "Address"
+      pay_to_4: "Address"
+      check_status_text: "Status"

@@ -136,6 +136,18 @@ func Customer(cust *gtables.Customer) (AddrArray, error) {
 		cust.City.String(), cust.Post_code, cust.State.String(), cust.Country_code)
 }
 
+// Vendor (Vendor): a vendor's address with its contact
+func Vendor(vend *gtables.Vendor) (AddrArray, error) {
+	return FormatAddr(vend, vend.Name.String(), vend.Name_2.String(), vend.Contact.String(), vend.Address.String(), vend.Address_2.String(),
+		vend.City.String(), vend.Post_code, vend.State.String(), vend.Country_code)
+}
+
+// BankAcc (BankAcc): a bank account's address with its contact
+func BankAcc(bankAcc *gtables.BankAccount) (AddrArray, error) {
+	return FormatAddr(bankAcc, bankAcc.Name.String(), bankAcc.Name_2.String(), bankAcc.Contact.String(), bankAcc.Address.String(), bankAcc.Address_2.String(),
+		bankAcc.City.String(), bankAcc.Post_code, bankAcc.State.String(), bankAcc.Country_code)
+}
+
 // SalesHeaderSellTo (SalesHeaderSellTo): a sales document's sell-to address
 func SalesHeaderSellTo(salesHeader *gtables.SalesHeader) (AddrArray, error) {
 	return FormatAddr(salesHeader, salesHeader.Sell_to_customer_name.String(), salesHeader.Sell_to_customer_name_2.String(), salesHeader.Sell_to_contact.String(),

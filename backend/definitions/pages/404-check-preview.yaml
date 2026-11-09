@@ -1,0 +1,57 @@
+page:
+  id: 404
+  type: Card
+  name: Check Preview
+  source_table: Gen_Journal_Line   # opened from a payment journal line (Payments › Preview Check)
+  caption: Check Preview
+  editable: false
+  # classic form 404: the check a payment journal line gives — its amount, the amount in words,
+  # the payee and the company (business-logic/pages/checkpreview.go)
+
+  layout:
+    sections:
+      - name: Check
+        caption: Check
+        fields:
+          - source: company_addr_1
+            calculated: true
+            type: types.Text
+          - source: company_addr_2
+            calculated: true
+            type: types.Text
+          - source: company_addr_3
+            calculated: true
+            type: types.Text
+          - source: company_addr_4
+            calculated: true
+            type: types.Text
+          - source: document_no
+          - source: posting_date
+          - source: check_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: number_text_1
+            calculated: true
+            type: types.Text
+          - source: number_text_2
+            calculated: true
+            type: types.Text
+          - source: pay_to_1
+            calculated: true
+            type: types.Text
+            style: Strong
+          - source: pay_to_2
+            calculated: true
+            type: types.Text
+          - source: pay_to_3
+            calculated: true
+            type: types.Text
+          - source: pay_to_4
+            calculated: true
+            type: types.Text
+          - source: check_status_text
+            calculated: true
+            type: types.Text
+            style: Strong

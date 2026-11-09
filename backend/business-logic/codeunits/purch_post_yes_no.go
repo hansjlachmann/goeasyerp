@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/purchposting"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
@@ -28,6 +29,10 @@ const (
 
 func init() {
 	Register(PurchPostYesNoID, PurchPostYesNoName, NewPurchPostYesNo)
+	// Batch Post Purchase Orders/Invoices/Credit Memos (reports 496–498) post with codeunit 90
+	reports.PurchPost = func(src ftables.Source, purchHeader *gtables.PurchaseHeader) error {
+		return purchposting.NewPurchPost(src).Run(purchHeader)
+	}
 }
 
 type PurchPostYesNo struct {

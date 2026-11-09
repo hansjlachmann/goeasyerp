@@ -122,6 +122,8 @@ codeunits:
     caption: "Salg - utvid stykkliste"
   "73":
     caption: "Kjøp - utvid stykkliste"
+  "367":
+    caption: "Sjekkbehandling"
   "372":
     caption: "Bankavstemming – bokfør og skriv ut"
   "378":

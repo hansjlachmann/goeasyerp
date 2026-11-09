@@ -122,6 +122,8 @@ codeunits:
     caption: "Salg - udfold stykliste"
   "73":
     caption: "Køb - udfold stykliste"
+  "367":
+    caption: "Checkstyring"
   "372":
     caption: "Bankafstemning – bogfør og udskriv"
   "378":

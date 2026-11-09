@@ -1,0 +1,65 @@
+# Report 1401 Check: the printed layout (see business-logic/reports/layout.go) — a page per check:
+# the stub with the payee, the check no. and the documents paid, then the check itself
+report:
+  id: 1401
+  name: Check
+  page:
+    size: A4
+    orientation: portrait
+    margins: {top: 12, bottom: 12, left: 15, right: 15}
+  font_size: 9
+  data_items:
+    - name: GenJnlLine
+      sections: []
+    - name: CheckPages
+      new_page_per_record: true
+      sections:
+        - type: body
+          height: 14
+          elements:
+            - {value: check_to_addr_1, x: 0, y: 0, width: 110, bold: true}
+            - {text: DATE, x: 115, y: 0, width: 20}
+            - {value: check_date_text, x: 135, y: 0, width: 45}
+            - {text: CHECK_NO, x: 115, y: 5, width: 20}
+            - {value: check_no_text, x: 135, y: 5, width: 45, bold: true}
+            - {line: true, x: 0, y: 12}
+    - name: PrintSettledLoop
+      sections:
+        - type: header
+          height: 7
+          elements:
+            - {text: DOCUMENT_DATE, x: 0, y: 1, width: 25, bold: true}
+            - {text: DOCUMENT_TYPE, x: 26, y: 1, width: 30, bold: true}
+            - {text: DOCUMENT_NO, x: 57, y: 1, width: 35, bold: true}
+            - {text: AMOUNT, x: 93, y: 1, width: 28, bold: true, align: right}
+            - {text: DISCOUNT, x: 122, y: 1, width: 25, bold: true, align: right}
+            - {text: NET_AMOUNT, x: 148, y: 1, width: 32, bold: true, align: right}
+            - {line: true, x: 0, y: 6}
+        - type: body
+          height: 4.5
+          elements:
+            - {value: doc_date, x: 0, y: 0, width: 25}
+            - {value: doc_type, x: 26, y: 0, width: 30}
+            - {value: doc_no, x: 57, y: 0, width: 35}
+            - {value: line_amount, x: 93, y: 0, width: 28, align: right, decimal_places: "2:2"}
+            - {value: line_discount, x: 122, y: 0, width: 25, align: right, decimal_places: "2:2", blank_zero: true}
+            - {value: net_amount, x: 148, y: 0, width: 32, align: right, decimal_places: "2:2"}
+    - name: PrintCheck
+      sections:
+        - type: body
+          height: 95
+          elements:
+            - {line: true, x: 0, y: 4}
+            - {lines: company_addr, x: 0, y: 10, width: 90}
+            - {text: CHECK_NO, x: 115, y: 10, width: 20}
+            - {value: check_no_text, x: 135, y: 10, width: 45, bold: true}
+            - {text: DATE, x: 115, y: 15, width: 20}
+            - {value: check_date_text, x: 135, y: 15, width: 45}
+            - {text: TOTAL, x: 115, y: 22, width: 20}
+            - {value: total_line_amount, x: 135, y: 22, width: 45, align: right, decimal_places: "2:2", bold: true}
+            - {value: description_line_1, x: 0, y: 42, width: 180, bold: true}
+            - {value: description_line_2, x: 0, y: 47, width: 180, bold: true}
+            - {text: PAY_TO_ORDER, x: 0, y: 56, width: 60}
+            - {lines: check_to_addr, x: 0, y: 61, width: 100}
+            - {value: check_amount_text, x: 130, y: 56, width: 50, align: right, bold: true, size: 11}
+            - {value: void_text, x: 115, y: 75, width: 65, align: right, bold: true}
