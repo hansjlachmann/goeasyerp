@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.147](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.146...v0.1.147) (2026-11-09)
+
+
+### Features
+
+* G/L balance and budget views ([fedeae7](https://github.com/hansjlachmann/goeasyerp/commit/fedeae76d2ae140595ae942d8cf7fe53253f6ca4))
+* journal reconcile, batch posting, test reports and line lists ([3aed8f6](https://github.com/hansjlachmann/goeasyerp/commit/3aed8f68bcabfa319de724b9771202e097fbfaf7))
+* links from master data, documents and registers ([ba47479](https://github.com/hansjlachmann/goeasyerp/commit/ba474799e886a43fb82565888fccfd1e770447b3))
+* statistics pages and applied entries ([88a3ad6](https://github.com/hansjlachmann/goeasyerp/commit/88a3ad6fbbad977254294bfba2de9f9fe9e9ae16))
+
 ## [0.1.146](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.145...v0.1.146) (2026-11-09)
 
 
