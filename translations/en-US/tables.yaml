@@ -394,6 +394,7 @@ tables:
       date_format: "Date Format"
       number_format: "Number Format"
       work_date: "Work Date"
+      amount_font: "Amount Font"
 
     # Option field values
     options:
@@ -423,6 +424,9 @@ tables:
       density:
         comfortable: "Comfortable"
         compact: "Compact"
+      amount_font:
+        text_font: "Text Font"
+        monospace: "Monospace"
 
   # Theme (Table 901)
   theme:

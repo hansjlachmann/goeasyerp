@@ -186,6 +186,9 @@ messages:
   APPEARANCE_DENSITY: "List rows"
   APPEARANCE_DENSITY_COMFORTABLE: "Comfortable"
   APPEARANCE_DENSITY_COMPACT: "Compact"
+  APPEARANCE_AMOUNT_FONT: "Amounts"
+  APPEARANCE_AMOUNT_FONT_TEXT: "Text font"
+  APPEARANCE_AMOUNT_FONT_MONOSPACE: "Monospace (IBM Plex Mono)"
 
   # Keyboard Shortcuts help window
   HELP_TITLE: "Keyboard Shortcuts"
@@ -660,3 +663,4 @@ Posting lines #3###### @4@@@@@@@@@@@@@"
   JNL_BATCHES_POSTED: "The journals were successfully posted."
   JNL_BATCHES_NOT_ALL_POSTED: "It was not possible to post all of the journals. These journals were not posted: %1"
   BANK_REC_POST_PRINT_CONFIRM: "Do you want to post and print the reconciliation?"
+

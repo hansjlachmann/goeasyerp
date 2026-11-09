@@ -61,6 +61,7 @@ export interface AppearanceSettings {
 	font: string;
 	font_size: number;
 	density: 'comfortable' | 'compact';
+	amount_font?: 'text' | 'monospace';
 }
 
 export interface Appearance {
@@ -143,7 +144,7 @@ export interface ThemeCache {
 	mode: Mode;
 	light: Record<string, string>;
 	dark: Record<string, string>;
-	/** Classes on <html>: font-*, density-compact (app.css) */
+	/** Classes on <html>: font-*, density-compact, amount-font-mono (app.css) */
 	classes?: string[];
 	/** Font size factor (1 = default) */
 	scale?: number;
@@ -162,12 +163,13 @@ export function layoutOf(settings: AppearanceSettings): { classes: string[]; sca
 		classes.push(`font-${settings.font.replace(/_/g, '-')}`);
 	}
 	if (settings.density === 'compact') classes.push('density-compact');
+	if (settings.amount_font === 'monospace') classes.push('amount-font-mono');
 	const pct = settings.font_size >= 80 && settings.font_size <= 150 ? settings.font_size : 100;
 	return { classes, scale: pct / 100 };
 }
 
 /** Classes on <html> the appearance owns (removed before new ones are added) */
-export const LAYOUT_CLASS = /^(font-[a-z-]+|density-compact)$/;
+export const LAYOUT_CLASS = /^(font-[a-z-]+|density-compact|amount-font-mono)$/;
 
 export function applyLayout(classes: string[], scale: number, el: HTMLElement = document.documentElement) {
 	for (const c of [...el.classList]) if (LAYOUT_CLASS.test(c)) el.classList.remove(c);

@@ -115,6 +115,15 @@ table:
       db_name: work_date
       caption: Work Date
 
+    # The font of amounts (decimals): the text font, or IBM Plex Mono — both with tabular
+    # figures, so columns line up
+    - name: amount_font
+      no: 16
+      type: Option
+      db_name: amount_font
+      caption: Amount Font
+      options: ["Text Font", "Monospace"]
+
   keys:
     - name: Primary
       fields: [user_id]

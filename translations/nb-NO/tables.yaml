@@ -394,6 +394,7 @@ tables:
       date_format: "Datoformat"
       number_format: "Tallformat"
       work_date: "Arbeidsdato"
+      amount_font: "Skrift for beløp"
 
     # Option field values
     options:
@@ -423,6 +424,9 @@ tables:
       density:
         comfortable: "Luftig"
         compact: "Kompakt"
+      amount_font:
+        text_font: "Samme som tekst"
+        monospace: "Fast bredde"
 
   # Tema (Table 901)
   theme:

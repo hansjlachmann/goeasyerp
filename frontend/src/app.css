@@ -224,7 +224,7 @@
    src/lib/stores/theme.ts and, before the first paint, by the inline script in app.html.
    Inter, IBM Plex Sans and IBM Plex Mono are self-hosted (@fontsource, imported in
    +layout.svelte): no request to a font service; a font file is only downloaded when it is
-   used. Amounts use --font-mono (class amount). */
+   used. Amounts (class amount) use the text font, or --font-mono with amount-font-mono. */
 html {
 	font-size: calc(var(--font-scale, 1) * 100%);
 }
@@ -241,11 +241,16 @@ html.font-ibm-plex-sans {
 	--font-sans: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
 }
 
-/* Amounts (decimals as the user's number format shows them): IBM Plex Mono with tabular
-   figures, so columns line up (brand: Plex Mono for amounts and code) */
+/* Amounts (decimals as the user's number format shows them): the text font with tabular
+   figures, so columns line up; Appearance → Amount font "Monospace" (amount-font-mono) shows
+   them in IBM Plex Mono (brand: Plex Mono for amounts and code) */
 .amount {
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
 	font-variant-numeric: tabular-nums;
+}
+
+html.amount-font-mono .amount {
+	font-family: var(--font-mono);
 }
 
 html.font-serif {

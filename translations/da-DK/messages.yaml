@@ -186,6 +186,9 @@ messages:
   APPEARANCE_DENSITY: "Listelinjer"
   APPEARANCE_DENSITY_COMFORTABLE: "Luftig"
   APPEARANCE_DENSITY_COMPACT: "Kompakt"
+  APPEARANCE_AMOUNT_FONT: "Beløb"
+  APPEARANCE_AMOUNT_FONT_TEXT: "Samme som tekst"
+  APPEARANCE_AMOUNT_FONT_MONOSPACE: "Fast bredde (IBM Plex Mono)"
 
   # Keyboard Shortcuts help window
   HELP_TITLE: "Genvejstaster"
@@ -660,3 +663,4 @@ Bogfører linjer #3###### @4@@@@@@@@@@@@@"
   JNL_BATCHES_POSTED: "Kladderne er bogført."
   JNL_BATCHES_NOT_ALL_POSTED: "Ikke alle kladderne kunne bogføres. Disse kladder blev ikke bogført: %1"
   BANK_REC_POST_PRINT_CONFIRM: "Vil du bogføre og udskrive afstemningen?"
+

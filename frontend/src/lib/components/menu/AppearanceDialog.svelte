@@ -255,6 +255,13 @@
 							<option value="compact">{t(APPEARANCE.DENSITY_COMPACT)}</option>
 						</select>
 					</label>
+					<label>
+						<span>{t(APPEARANCE.AMOUNT_FONT)}</span>
+						<select value={settings.amount_font ?? 'text'} onchange={(e) => save({ amount_font: e.currentTarget.value as AppearanceSettings['amount_font'] })} data-appearance-amount-font>
+							<option value="text">{t(APPEARANCE.AMOUNT_FONT_TEXT)}</option>
+							<option value="monospace">{t(APPEARANCE.AMOUNT_FONT_MONOSPACE)}</option>
+						</select>
+					</label>
 				</div>
 			</section>
 		{/if}

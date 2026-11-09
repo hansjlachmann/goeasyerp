@@ -34,9 +34,10 @@ func NewThemesHandler(db *sql.DB, dbType database.DBType) *ThemesHandler {
 
 // Option values of the appearance as the API names them (index = option value)
 var (
-	appearanceModes     = []string{"dark", "light"}
-	appearanceFonts     = []string{"default", "system", "inter", "ibm_plex_sans", "serif", "monospace"}
-	appearanceDensities = []string{"comfortable", "compact"}
+	appearanceModes       = []string{"dark", "light"}
+	appearanceFonts       = []string{"default", "system", "inter", "ibm_plex_sans", "serif", "monospace"}
+	appearanceDensities   = []string{"comfortable", "compact"}
+	appearanceAmountFonts = []string{"text", "monospace"}
 )
 
 // appearanceSettings is the user's appearance as the API sends and receives it. On PUT
@@ -52,6 +53,7 @@ type appearanceSettings struct {
 	Font             *string `json:"font,omitempty"`
 	FontSize         *int    `json:"font_size,omitempty"`
 	Density          *string `json:"density,omitempty"`
+	AmountFont       *string `json:"amount_font,omitempty"`
 }
 
 // appearanceResponse is the user's settings plus the tokens of both theme slots, so the
@@ -300,6 +302,13 @@ func (h *ThemesHandler) SaveAppearance(c *fiber.Ctx) error {
 		}
 		rec.Density = gtables.UserPersonalizationDensity(i)
 	}
+	if in.AmountFont != nil {
+		i := optionIndex(appearanceAmountFonts, *in.AmountFont)
+		if i < 0 {
+			return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.InvalidValue("amount_font", *in.AmountFont).Message(language)))
+		}
+		rec.Amount_font = gtables.UserPersonalizationAmount_font(i)
+	}
 	rec.Updated_at = types.NewDateTimeFromTime(time.Now())
 
 	var ok bool
@@ -356,6 +365,7 @@ func (h *ThemesHandler) appearanceOf(rec *gtables.UserPersonalization, saved boo
 			Font:             str(optionName(appearanceFonts, int(rec.Font))),
 			FontSize:         num(rec.Font_size),
 			Density:          str(optionName(appearanceDensities, int(rec.Density))),
+			AmountFont:       str(optionName(appearanceAmountFonts, int(rec.Amount_font))),
 		},
 		Light: light,
 		Dark:  dark,

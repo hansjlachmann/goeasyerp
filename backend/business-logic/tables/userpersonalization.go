@@ -103,6 +103,9 @@ func checkAppearance(rec *gtables.UserPersonalization) error {
 	if !rec.Density.IsValid() {
 		return apperrors.FieldOutOfRange(table, "density", "0", "1")
 	}
+	if !rec.Amount_font.IsValid() {
+		return apperrors.FieldOutOfRange(table, "amount_font", "0", "1")
+	}
 	return nil
 }
 

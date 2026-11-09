@@ -34,7 +34,7 @@
 				// Font and density classes, font size (app.css)
 				var classes = (cache && cache.classes) || [];
 				for (var i = 0; i < classes.length && i < 4; i++) {
-					if (/^(font-[a-z-]{1,20}|density-compact)$/.test(classes[i])) document.documentElement.classList.add(classes[i]);
+					if (/^(font-[a-z-]{1,20}|density-compact|amount-font-mono)$/.test(classes[i])) document.documentElement.classList.add(classes[i]);
 				}
 				var scale = cache && cache.scale;
 				if (typeof scale === 'number' && scale >= 0.8 && scale <= 1.5 && scale !== 1) {
