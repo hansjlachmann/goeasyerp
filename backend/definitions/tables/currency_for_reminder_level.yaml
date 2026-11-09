@@ -1,0 +1,60 @@
+table:
+  id: 329
+  name: "Currency_for_Reminder_Level"
+  description: "The additional fee of a reminder level in a currency (table 329)"
+  lookup_page_id: 478
+  data_caption_fields: [reminder_terms_code, "no"]
+  fields:
+    - name: reminder_terms_code
+      no: 1
+      type: types.Code
+      db_name: reminder_terms_code
+      length: 10
+      primary_key: true
+      required: true
+      editable: false  # set from the list's filter (opened from the reminder level)
+      table_relation:
+        table: Reminder_Terms
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: description
+            width: 250
+
+    - name: "no"
+      no: 2
+      type: int
+      db_name: "no"
+      primary_key: true
+      editable: false  # set from the list's filter (opened from the reminder level)
+
+    - name: currency_code
+      no: 3
+      type: types.Code
+      db_name: currency_code
+      length: 10
+      primary_key: true
+      required: true
+      table_relation:
+        table: Currency
+        field: code
+        lookup_columns:
+          - source: code
+            width: 80
+          - source: description
+            width: 200
+
+    - name: additional_fee
+      no: 4
+      type: types.Decimal
+      db_name: additional_fee
+      precision: 18
+      scale: 2
+      decimal_places: "2:2"
+      validation: {min: 0}
+
+  keys:
+    - name: Primary
+      fields: [reminder_terms_code, "no", currency_code]
+      clustered: true

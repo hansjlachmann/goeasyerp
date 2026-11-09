@@ -3890,6 +3890,26 @@ tables:
       allow_cust_item_disc: "Tillat kunde-/varerabatt"
       allow_invoice_disc: "Tillat fakturarabatt"
       tax_bus_posting_gr_price: "Mva.-bedriftsbokf.gruppe (pris)"
+  currency_for_fin_charge_terms:
+    caption: "Valuta for rentebetingelser"
+    fields:
+      fin_charge_terms_code: "Rentebetingelseskode"
+      currency_code: "Valutakode"
+      additional_fee: "Gebyr"
+  currency_for_reminder_level:
+    caption: "Valuta for purrenivå"
+    fields:
+      reminder_terms_code: "Purrebetingelseskode"
+      no: "Nr."
+      currency_code: "Valutakode"
+      additional_fee: "Gebyr"
+  item_purch_qty_disc:
+    caption: "Antallsrabatt kjøp"
+    fields:
+      item_no: "Varenr."
+      vendor_no: "Leverandørnr."
+      minimum_quantity: "Minimumsantall"
+      discount_percent: "Rabatt %"
   item_sales_qty_disc:
     caption: "Antallsrabatt salg"
     fields:

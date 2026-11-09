@@ -304,59 +304,18 @@ func InsertReminderLines(rec *gtables.ReminderHeader) error {
 	reminderLevel := gtables.NewReminderLevel(rec)
 	reminderLevel.SetRange("reminder_terms_code", rec.Reminder_terms_code)
 	reminderLevel.SetRange("no", 1, rec.Reminder_level)
-	if reminderLevel.FindLast() && !reminderLevel.Additional_fee_lcy.IsZero() {
-		ins := &reminderLineInserter{rec: rec, lineSpacing: 10000}
-		last := gtables.NewReminderLine(rec)
-		last.SetRange("reminder_no", rec.No)
-		if last.FindLast() {
-			ins.nextLineNo = last.Line_no
+	if reminderLevel.FindLast() {
+		currencyForReminderLevel := gtables.NewCurrencyForReminderLevel(rec)
+		currencyForReminderLevelFound := false
+		if rec.Currency_code != "" {
+			currencyForReminderLevelFound = currencyForReminderLevel.Get(map[string]interface{}{"reminder_terms_code": reminderLevel.Reminder_terms_code, "no": reminderLevel.No, "currency_code": rec.Currency_code})
 		}
-		err = ins.insertBlankLine()
-		if err != nil {
-			return err
-		}
-		ins.nextLineNo += 10000
-		reminderLine := gtables.NewReminderLine(rec)
-		reminderLine.Init()
-		reminderLine.Reminder_no = rec.No
-		reminderLine.Line_no = ins.nextLineNo
-		reminderLine.Type = gtables.ReminderLine_Type.GLAccount
-		err = rec.TestField("customer_posting_group")
-		if err != nil {
-			return err
-		}
-		custPostingGroup := gtables.NewCustomerPostingGroup(rec)
-		err = custPostingGroup.GetOrError(rec.Customer_posting_group)
-		if err == nil {
-			err = custPostingGroup.TestField("additional_fee_account")
-		}
-		if err == nil {
-			err = reminderLine.Validate("no", custPostingGroup.Additional_fee_account)
-		}
-		if err != nil {
-			return err
-		}
-		lang := fcodeunits.CurrentLanguage()
-		fee := reminderLevel.Additional_fee_lcy
-		if rec.Currency_code == "" {
-			reminderLine.Description = types.Text(i18n.GetInstance().FieldCaption(gtables.ReminderLevelTableName, "additional_fee_lcy", lang))
-		} else {
-			currExchRate := ExchangeRates(rec)
-			rate, err := currExchRate.ExchangeRate(rec.Posting_date, rec.Currency_code)
-			if err == nil {
-				fee, err = currExchRate.ExchangeAmtLCYToFCY(rec.Posting_date, rec.Currency_code, reminderLevel.Additional_fee_lcy, rate)
-			}
+		if (!currencyForReminderLevelFound && !reminderLevel.Additional_fee_lcy.IsZero()) ||
+			(currencyForReminderLevelFound && !currencyForReminderLevel.Additional_fee.IsZero()) {
+			err = insertReminderFeeLine(rec, reminderLevel, currencyForReminderLevel, currencyForReminderLevelFound)
 			if err != nil {
 				return err
 			}
-			reminderLine.Description = types.Text(system.StrSubstNo("%1 (%2)", i18n.GetInstance().Message("REMINDER_ADDITIONAL_FEE", lang), rec.Currency_code))
-		}
-		err = reminderLine.Validate("amount", fee)
-		if err == nil {
-			err = reminderLine.InsertOrError(false)
-		}
-		if err != nil {
-			return err
 		}
 	}
 	err = insertReminderEndText(rec)
@@ -517,4 +476,68 @@ func formatTextDate(d types.Date, lang string) string {
 
 func formatTextAmount(d types.Decimal, lang string) string {
 	return format.Decimal(d, "2:2", lang)
+}
+
+// insertReminderFeeLine: the additional fee line of InsertLines — the level's fee in the reminder's
+// currency (Currency for Reminder Level), else its fee in LCY at the posting date's rate
+func insertReminderFeeLine(rec *gtables.ReminderHeader, reminderLevel *gtables.ReminderLevel, currencyForReminderLevel *gtables.CurrencyForReminderLevel, currencyForReminderLevelFound bool) error {
+	ins := &reminderLineInserter{rec: rec, lineSpacing: 10000}
+	last := gtables.NewReminderLine(rec)
+	last.SetRange("reminder_no", rec.No)
+	if last.FindLast() {
+		ins.nextLineNo = last.Line_no
+	}
+	err := ins.insertBlankLine()
+	if err != nil {
+		return err
+	}
+	ins.nextLineNo += 10000
+	reminderLine := gtables.NewReminderLine(rec)
+	reminderLine.Init()
+	reminderLine.Reminder_no = rec.No
+	reminderLine.Line_no = ins.nextLineNo
+	reminderLine.Type = gtables.ReminderLine_Type.GLAccount
+	err = rec.TestField("customer_posting_group")
+	if err != nil {
+		return err
+	}
+	custPostingGroup := gtables.NewCustomerPostingGroup(rec)
+	err = custPostingGroup.GetOrError(rec.Customer_posting_group)
+	if err == nil {
+		err = custPostingGroup.TestField("additional_fee_account")
+	}
+	if err == nil {
+		err = reminderLine.Validate("no", custPostingGroup.Additional_fee_account)
+	}
+	if err != nil {
+		return err
+	}
+	lang := fcodeunits.CurrentLanguage()
+	fee := reminderLevel.Additional_fee_lcy
+	if currencyForReminderLevelFound {
+		fee = currencyForReminderLevel.Additional_fee
+	}
+	if rec.Currency_code == "" {
+		reminderLine.Description = types.Text(i18n.GetInstance().FieldCaption(gtables.ReminderLevelTableName, "additional_fee_lcy", lang))
+	} else {
+		if !currencyForReminderLevelFound {
+			currExchRate := ExchangeRates(rec)
+			rate, err := currExchRate.ExchangeRate(rec.Posting_date, rec.Currency_code)
+			if err == nil {
+				fee, err = currExchRate.ExchangeAmtLCYToFCY(rec.Posting_date, rec.Currency_code, reminderLevel.Additional_fee_lcy, rate)
+			}
+			if err != nil {
+				return err
+			}
+		}
+		reminderLine.Description = types.Text(system.StrSubstNo("%1 (%2)", i18n.GetInstance().Message("REMINDER_ADDITIONAL_FEE", lang), rec.Currency_code))
+	}
+	err = reminderLine.Validate("amount", fee)
+	if err == nil {
+		err = reminderLine.InsertOrError(false)
+	}
+	if err != nil {
+		return err
+	}
+	return nil
 }

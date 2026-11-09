@@ -525,6 +525,9 @@ master_data:
   - table: Finance_Charge_Terms
     records:
       - {code: STD, description: Standard finance charge, interest_rate: 1.5, interest_period_days: 30, minimum_amount_lcy: 50, additional_fee_lcy: 70, grace_period: 5D, due_date_calculation: 14D, line_description: "Interest on overdue invoices"}
+  - table: Currency_for_Fin_Charge_Terms
+    records:
+      - {fin_charge_terms_code: STD, currency_code: EUR, additional_fee: 6}
   - table: Price_Group
     records:
       - {code: RETAIL, allow_invoice_disc: false}
@@ -635,6 +638,10 @@ master_data:
       - {reminder_terms_code: DOMESTIC, no: 3, grace_period: 5D, due_date_calculation: 10D, additional_fee_lcy: 140, calculate_interest: true}
       - {reminder_terms_code: FOREIGN, no: 1, grace_period: 7D, due_date_calculation: 14D, additional_fee_lcy: 0, calculate_interest: false}
       - {reminder_terms_code: FOREIGN, no: 2, grace_period: 7D, due_date_calculation: 14D, additional_fee_lcy: 0, calculate_interest: true}
+  - table: Currency_for_Reminder_Level   # the domestic terms' fees for customers billed in euros
+    records:
+      - {reminder_terms_code: DOMESTIC, no: 2, currency_code: EUR, additional_fee: 6}
+      - {reminder_terms_code: DOMESTIC, no: 3, currency_code: EUR, additional_fee: 12}
   - table: Reminder_Text   # position 0 Beginning, 1 Ending
     records:
       - {reminder_terms_code: DOMESTIC, reminder_level: 1, position: 0, line_no: 10000, text: "Our records show that the following amounts are overdue."}
@@ -973,3 +980,8 @@ vendor_data:
       - {item_no: "1330", vendor_no: V00040, vendor_item_no: "RR-WB120", direct_unit_cost: "640", lead_time_calculation: 7D}
       - {item_no: "1400", vendor_no: V00040, vendor_item_no: "RR-TON-K", direct_unit_cost: "520", lead_time_calculation: 7D}
       - {item_no: "1410", vendor_no: V00040, vendor_item_no: "RR-STP", direct_unit_cost: "48", lead_time_calculation: 7D}
+  - table: Item_Purch_Qty_Disc   # the vendors' quantity discounts on their items
+    records:
+      - {item_no: "1000", vendor_no: V00010, minimum_quantity: 200, discount_percent: 3}
+      - {item_no: "1000", vendor_no: V00010, minimum_quantity: 500, discount_percent: 5}
+      - {item_no: "1200", vendor_no: V00020, minimum_quantity: 500, discount_percent: 4}

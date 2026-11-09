@@ -72,3 +72,13 @@ page:
         - {field: reminder_terms_code, value: reminder_terms_code}
         - {field: reminder_level, value: "no"}
         - {field: position, const: "1"}
+
+    - name: Currencies
+      caption: Currencies
+      image: Calculate
+      promoted: true
+      enabled: true
+      run_page: 478
+      run_page_filters:
+        - {field: reminder_terms_code, value: reminder_terms_code}
+        - {field: "no", value: "no"}

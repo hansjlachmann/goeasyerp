@@ -358,3 +358,5 @@ errors:
   ERR_DROP_SHPT_INVOICE_SALES_FIRST: "Du kan ikke fakturere denne innkjøpsordren før de tilknyttede salgsordrene er fakturert. Fakturer salgsordre %1 før du fakturerer denne innkjøpsordren."
   ERR_DROP_SHPT_ALREADY_ASSOCIATED: "%1 på salgsordre %2 er allerede knyttet til innkjøpsordre %3."
   ERR_DROP_SHPT_RESERVED: "%1 kan ikke fylles ut når et antall er reservert."
+  ERR_CHECK_VOID_DATE_BEFORE_CHECK_DATE: "Annulleringsdato kan ikke være før sjekkens opprinnelige dato %1."
+  ERR_CHECK_REVERSE_NOT_ALLOWED: "Den opprinnelige posten til sjekk %1 kan ikke tilbakeføres fordi en post for sjekken er økonomisk annullert eller står på et kontoutdrag. Velg Bare annuller sjekk."

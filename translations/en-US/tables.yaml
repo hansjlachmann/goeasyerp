@@ -3890,6 +3890,26 @@ tables:
       allow_cust_item_disc: "Allow Cust./Item Disc."
       allow_invoice_disc: "Allow Invoice Disc."
       tax_bus_posting_gr_price: "Tax Bus. Posting Gr. (Price)"
+  currency_for_fin_charge_terms:
+    caption: "Currency for Fin. Charge Terms"
+    fields:
+      fin_charge_terms_code: "Fin. Charge Terms Code"
+      currency_code: "Currency Code"
+      additional_fee: "Additional Fee"
+  currency_for_reminder_level:
+    caption: "Currency for Reminder Level"
+    fields:
+      reminder_terms_code: "Reminder Terms Code"
+      no: "No."
+      currency_code: "Currency Code"
+      additional_fee: "Additional Fee"
+  item_purch_qty_disc:
+    caption: "Item Purch. Qty. Disc."
+    fields:
+      item_no: "Item No."
+      vendor_no: "Vendor No."
+      minimum_quantity: "Minimum Quantity"
+      discount_percent: "Discount %"
   item_sales_qty_disc:
     caption: "Item Sales Qty. Disc."
     fields:

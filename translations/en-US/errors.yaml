@@ -358,3 +358,5 @@ errors:
   ERR_DROP_SHPT_INVOICE_SALES_FIRST: "You cannot invoice this purchase order before the associated sales orders have been invoiced. Please invoice sales order %1 before invoicing this purchase order."
   ERR_DROP_SHPT_ALREADY_ASSOCIATED: "%1 on sales order %2 is already associated with purchase order %3."
   ERR_DROP_SHPT_RESERVED: "%1 must not be filled in when a quantity is reserved."
+  ERR_CHECK_VOID_DATE_BEFORE_CHECK_DATE: "Void Date must not be before the original check date %1."
+  ERR_CHECK_REVERSE_NOT_ALLOWED: "The original entry of check %1 cannot be reversed because an entry of the check is financially voided or on a bank statement. Choose Void check only."

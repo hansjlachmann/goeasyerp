@@ -8,6 +8,9 @@ common:
 
   # Common actions
   actions:
+    discount_overview: "Discount Overview"
+    receivables_payables: "Receivables-Payables"
+    currencies: "Currencies"
     # Payments and checks
     payments: "Payments"
     preview_check: "Preview Check"
@@ -169,6 +172,7 @@ common:
     item: "Item"
     prices: "Prices"
     quantity_discounts: "Quantity Discounts"
+    purchase_quantity_discounts: "Purchase Quantity Discounts"
     item_cust_discounts: "Item/Cust. Discounts"
     cust_item_discounts: "Cust./Item Discounts"
     translations: "Translations"

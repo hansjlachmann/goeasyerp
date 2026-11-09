@@ -320,13 +320,18 @@ func InsertFinChrgMemoLines(rec *gtables.FinanceChargeMemoHeader) error {
 		if rec.Currency_code == "" {
 			finChrgMemoLine.Description = types.Text(i18n.GetInstance().FieldCaption(gtables.FinanceChargeTermsTableName, "additional_fee_lcy", lang))
 		} else {
-			currExchRate := ExchangeRates(rec)
-			rate, err := currExchRate.ExchangeRate(rec.Posting_date, rec.Currency_code)
-			if err == nil {
-				fee, err = currExchRate.ExchangeAmtLCYToFCY(rec.Posting_date, rec.Currency_code, finChrgTerms.Additional_fee_lcy, rate)
-			}
-			if err != nil {
-				return err
+			currForFinChrgTerms := gtables.NewCurrencyForFinChargeTerms(rec)
+			if currForFinChrgTerms.Get(map[string]interface{}{"fin_charge_terms_code": rec.Fin_charge_terms_code, "currency_code": rec.Currency_code}) {
+				fee = currForFinChrgTerms.Additional_fee
+			} else {
+				currExchRate := ExchangeRates(rec)
+				rate, err := currExchRate.ExchangeRate(rec.Posting_date, rec.Currency_code)
+				if err == nil {
+					fee, err = currExchRate.ExchangeAmtLCYToFCY(rec.Posting_date, rec.Currency_code, finChrgTerms.Additional_fee_lcy, rate)
+				}
+				if err != nil {
+					return err
+				}
 			}
 			finChrgMemoLine.Description = types.Text(system.StrSubstNo("%1 (%2)", i18n.GetInstance().Message("REMINDER_ADDITIONAL_FEE", lang), rec.Currency_code))
 		}

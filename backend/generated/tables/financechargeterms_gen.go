@@ -1322,7 +1322,7 @@ func (t *FinanceChargeTerms) renameReferences(field string, oldValue, newValue i
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Customer", false, "fin_charge_terms_code", "", 0}, {"Finance_Charge_Memo_Header", false, "fin_charge_terms_code", "", 0}, {"Finance_Charge_Text", false, "fin_charge_terms_code", "", 0}, {"Issued_Fin_Charge_Memo_Header", false, "fin_charge_terms_code", "", 0}, {"Issued_Reminder_Header", false, "fin_charge_terms_code", "", 0}, {"Reminder_Header", false, "fin_charge_terms_code", "", 0}, {"Vendor", false, "fin_charge_terms_code", "", 0}},
+		"code": {{"Currency_for_Fin_Charge_Terms", false, "fin_charge_terms_code", "", 0}, {"Customer", false, "fin_charge_terms_code", "", 0}, {"Finance_Charge_Memo_Header", false, "fin_charge_terms_code", "", 0}, {"Finance_Charge_Text", false, "fin_charge_terms_code", "", 0}, {"Issued_Fin_Charge_Memo_Header", false, "fin_charge_terms_code", "", 0}, {"Issued_Reminder_Header", false, "fin_charge_terms_code", "", 0}, {"Reminder_Header", false, "fin_charge_terms_code", "", 0}, {"Vendor", false, "fin_charge_terms_code", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
@@ -1355,6 +1355,7 @@ func (t *FinanceChargeTerms) refuseDeleteWhenUsed() error {
 		Table: FinanceChargeTermsTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
+		{Table: "Currency_for_Fin_Charge_Terms", Column: "fin_charge_terms_code"},
 		{Table: "Customer", Column: "fin_charge_terms_code"},
 		{Table: "Finance_Charge_Memo_Header", Column: "fin_charge_terms_code"},
 		{Table: "Finance_Charge_Text", Column: "fin_charge_terms_code"},

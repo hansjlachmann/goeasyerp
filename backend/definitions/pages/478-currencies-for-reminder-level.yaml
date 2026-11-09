@@ -1,0 +1,43 @@
+page:
+  id: 478
+  type: List
+  name: Currencies for Reminder Level
+  source_table: Currency_for_Reminder_Level
+  caption: Currencies for Reminder Level
+  editable: true
+  delayed_insert: true
+  # the additional fee of a reminder level per currency (Reminder Levels › Currencies); a currency without a line
+  # takes the fee in LCY at the posting date's exchange rate
+
+  layout:
+    repeater:
+      fields:
+        - source: reminder_terms_code
+          width: 100
+          visible: false
+        - source: "no"
+          width: 80
+          visible: false
+        - source: currency_code
+          width: 110
+        - source: additional_fee
+          width: 140
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

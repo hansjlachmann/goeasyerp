@@ -3890,6 +3890,26 @@ tables:
       allow_cust_item_disc: "Tillad debitor-/varerabat"
       allow_invoice_disc: "Tillad fakturarabat"
       tax_bus_posting_gr_price: "Momsvirksomhedsbogf.gruppe (pris)"
+  currency_for_fin_charge_terms:
+    caption: "Valuta for rentebetingelser"
+    fields:
+      fin_charge_terms_code: "Rentebetingelseskode"
+      currency_code: "Valutakode"
+      additional_fee: "Gebyr"
+  currency_for_reminder_level:
+    caption: "Valuta for rykkerniveau"
+    fields:
+      reminder_terms_code: "Rykkerbetingelseskode"
+      no: "Nr."
+      currency_code: "Valutakode"
+      additional_fee: "Gebyr"
+  item_purch_qty_disc:
+    caption: "Antalsrabat køb"
+    fields:
+      item_no: "Varenr."
+      vendor_no: "Kreditornr."
+      minimum_quantity: "Minimumsantal"
+      discount_percent: "Rabat %"
   item_sales_qty_disc:
     caption: "Antalsrabat salg"
     fields:

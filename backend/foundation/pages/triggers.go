@@ -387,14 +387,37 @@ func OnMatrixValidate[T any](pageID int, fn func(rec T, value types.Decimal) err
 func HasMatrixValidate(pageID int) bool {
 	triggersMu.RLock()
 	defer triggersMu.RUnlock()
-	return matrixValidate[pageID] != nil
+	return matrixValidate[pageID] != nil || matrixColumnValidate[pageID] != nil
 }
 
-// RunMatrixValidate runs a page's OnMatrixValidate trigger on a matrix row's record
-func RunMatrixValidate(pageID int, rec any, value types.Decimal) error {
+var matrixColumnValidate = map[int]func(rec any, column map[string]string, value types.Decimal) error{}
+
+// OnMatrixColumnValidate registers how a value typed into a cell of a calculated matrix is
+// saved: rec is the row's record, column the cell's column — the MatrixColumn's
+// DrilldownFilters its OnMatrixCalculate gave it (e.g. item_discount_group → PAPER). One per page.
+func OnMatrixColumnValidate[T any](pageID int, fn func(rec T, column map[string]string, value types.Decimal) error) {
+	triggersMu.Lock()
+	defer triggersMu.Unlock()
+	matrixColumnValidate[pageID] = func(rec any, column map[string]string, value types.Decimal) error {
+		r, ok := rec.(T)
+		if !ok {
+			var want T
+			return fmt.Errorf("page %d: OnMatrixColumnValidate takes %T, the matrix row is %T", pageID, want, rec)
+		}
+		return fn(r, column, value)
+	}
+}
+
+// RunMatrixValidate runs a page's OnMatrixValidate trigger on a matrix row's record (or its
+// OnMatrixColumnValidate trigger with the cell's column)
+func RunMatrixValidate(pageID int, rec any, column map[string]string, value types.Decimal) error {
 	triggersMu.RLock()
 	fn := matrixValidate[pageID]
+	columnFn := matrixColumnValidate[pageID]
 	triggersMu.RUnlock()
+	if columnFn != nil {
+		return columnFn(rec, column, value)
+	}
 	if fn == nil {
 		return fmt.Errorf("page %d has no OnMatrixValidate trigger", pageID)
 	}

@@ -1,0 +1,25 @@
+page:
+  id: 514
+  type: List
+  name: Cust./Item Discount Overview
+  source_table: Customer_Discount_Group
+  caption: Cust./Item Discount Overview
+  # classic form 514: the customer discount groups against the item discount groups — a matrix
+  # page whose columns and cells come from its OnMatrixCalculate trigger (a cell: the Cust./Item
+  # Discount's Discount %); a value typed into a cell changes, inserts or (0) deletes it
+
+  layout:
+    matrix:
+      table: Customer_Discount_Group
+      calculated: true
+      no_periods: true   # the columns are the item discount groups
+      date_filter: ""
+      editable: true
+      entry_table: Cust_Item_Discount
+      drilldown: 24
+      drilldown_row_field: customer_disc_group
+      fields:
+        - source: code
+          width: 110
+        - source: description
+          width: 240

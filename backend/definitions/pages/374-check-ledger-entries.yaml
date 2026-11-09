@@ -108,3 +108,9 @@ page:
       run_page_params:
         document_no: document_no
         posting_date: posting_date
+
+    - name: Void Check
+      caption: Void Check
+      image: Cancel
+      promoted: true
+      run_object: table:Check_Ledger_Entry.FinancialVoidCheck

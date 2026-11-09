@@ -295,6 +295,13 @@ page:
           run_page: 114
           run_page_filter_field: item_no
           run_page_filter_value: "no"
+        - name: Purchase Quantity Discounts
+          caption: Quantity Discounts
+          image: Calculate
+          run_page: 911
+          run_page_filters:
+            - {field: item_no, value: "no"}
+            - {field: vendor_no, value: vendor_no}
         - name: Purchase Orders
           caption: Orders
           image: Document

@@ -517,6 +517,14 @@ pages:
   # Item prices and discounts
   item_prices:
     caption: "Varepriser"
+  purchase_qty_discounts:
+    caption: "Antalsrabatter køb"
+  currencies_for_fin_chrg_terms:
+    caption: "Valutaer for rentebetingelser"
+  currencies_for_reminder_level:
+    caption: "Valutaer for rykkerniveau"
+  cust_item_discount_overview:
+    caption: "Debitor-/varerabatoversigt"
   sales_qty_discounts:
     caption: "Antalsrabatter salg"
   cust_item_discounts:
@@ -870,6 +878,10 @@ pages:
     caption: "Finansbudgetposter"
   g_l_budget_names:
     caption: "Finansbudgetnavne"
+  receivables_payables:
+    caption: "Tilgodehavender-gæld"
+    fields:
+      receivables_payables: "Tilgodehavender-gæld"
   g_l_account_balance_budget:
     caption: "Finanskonto saldo/budget"
     fields:

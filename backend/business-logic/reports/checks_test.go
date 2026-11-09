@@ -124,6 +124,69 @@ func TestSuggestVendorPaymentsAndChecks(t *testing.T) {
 	if n := checkEntries(gtables.CheckLedgerEntry_Entry_status.Posted); n != len(reprinted) {
 		t.Errorf("%d posted check entries, want %d", n, len(reprinted))
 	}
+
+	// financial void, Unapply and void: the invoice is open again, the payment closed by the void,
+	// the bank account back to its balance, the check entry Financially Voided
+	posted := gtables.NewCheckLedgerEntry(src)
+	posted.SetRange("bank_account_no", "B010")
+	posted.SetRange("entry_status", gtables.CheckLedgerEntry_Entry_status.Posted)
+	posted.SetFilter("check_no", "CHK*")
+	if !posted.FindFirst() {
+		t.Fatal("no posted check")
+	}
+	if !checkmgt.ReverseAllowed(posted) {
+		t.Fatal("reverse not allowed on a posted check")
+	}
+	invoice := gtables.NewVendorLedgerEntry(src)
+	invoice.SetRange("vendor_no", "V00010")
+	invoice.SetRange("document_type", gtables.VendorLedgerEntry_Document_type.Invoice)
+	invoice.SetRange("document_no", reprinted[0].Applies_to_doc_no)
+	if !invoice.FindFirst() || invoice.Open {
+		t.Fatalf("invoice %s not closed by the payment", reprinted[0].Applies_to_doc_no)
+	}
+	bankAcc.CalcFields("balance")
+	balanceBefore := bankAcc.Balance
+	mustOK(t, checkmgt.New(src).FinancialVoidCheck(posted, posted.Check_date, checkmgt.VoidTypeReverseOriginalEntry))
+	mustOK(t, invoice.GetOrError(invoice.Entry_no))
+	if !invoice.Open {
+		t.Errorf("invoice %s not open after the void", invoice.Document_no)
+	}
+	payment := gtables.NewVendorLedgerEntry(src)
+	payment.SetRange("vendor_no", "V00010")
+	payment.SetRange("document_type", gtables.VendorLedgerEntry_Document_type.Payment)
+	payment.SetRange("document_no", posted.Document_no)
+	if !payment.FindFirst() || payment.Open {
+		t.Errorf("payment %s not closed by the void", posted.Document_no)
+	}
+	mustOK(t, bankAcc.GetOrError(types.Code("B010")))
+	bankAcc.CalcFields("balance")
+	if !bankAcc.Balance.Equal(balanceBefore.Add(posted.Amount)) {
+		t.Errorf("bank balance %s, want %s + %s", bankAcc.Balance, balanceBefore, posted.Amount)
+	}
+	mustOK(t, posted.GetOrError(posted.Entry_no))
+	if posted.Entry_status != gtables.CheckLedgerEntry_Entry_status.FinanciallyVoided ||
+		posted.Original_entry_status != gtables.CheckLedgerEntry_Original_entry_status.Posted {
+		t.Errorf("check entry status %v / original %v", posted.Entry_status, posted.Original_entry_status)
+	}
+	if checkmgt.ReverseAllowed(posted) {
+		t.Error("reverse allowed on a voided check")
+	}
+
+	// Void check only: the bank account back, the invoice stays closed
+	other := gtables.NewCheckLedgerEntry(src)
+	other.SetRange("bank_account_no", "B010")
+	other.SetRange("entry_status", gtables.CheckLedgerEntry_Entry_status.Posted)
+	other.SetFilter("check_no", "CHK*")
+	if other.FindFirst() {
+		mustOK(t, checkmgt.New(src).FinancialVoidCheck(other, other.Check_date, checkmgt.VoidTypeVoidCheckOnly))
+		mustOK(t, other.GetOrError(other.Entry_no))
+		if other.Entry_status != gtables.CheckLedgerEntry_Entry_status.FinanciallyVoided {
+			t.Errorf("check-only void: status %v", other.Entry_status)
+		}
+	}
+	if err := checkmgt.New(src).FinancialVoidCheck(posted, posted.Check_date, checkmgt.VoidTypeVoidCheckOnly); err == nil {
+		t.Error("a financially voided check was voided again")
+	}
 }
 
 // Summarize per Vendor: one payment line per vendor applied by Applies-to ID; its check lists the

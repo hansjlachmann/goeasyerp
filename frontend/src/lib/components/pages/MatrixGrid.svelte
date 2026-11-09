@@ -213,6 +213,7 @@
 					key: row.key,
 					start: column.start ?? '',
 					end: column.end ?? '',
+					column_filters: column.drilldown_filters ?? {},
 					value: text === '' ? '0' : fromDecimalInput(text, locale),
 					rounding_factor: roundingFactor
 				});

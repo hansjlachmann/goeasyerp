@@ -1,0 +1,62 @@
+table:
+  id: 100
+  name: "Item_Purch_Qty_Disc"
+  description: "A vendor's quantity discounts on an item (table 100)"
+  lookup_page_id: 911
+  data_caption_fields: [item_no, vendor_no]
+  fields:
+    - name: item_no
+      no: 1
+      type: types.Code
+      db_name: item_no
+      length: 20
+      primary_key: true
+      required: true
+      table_relation:
+        table: Item
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
+
+    - name: vendor_no
+      no: 2
+      type: types.Code
+      db_name: vendor_no
+      length: 20
+      primary_key: true
+      required: true
+      table_relation:
+        table: Vendor
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: name
+            width: 250
+
+    - name: minimum_quantity
+      no: 3
+      type: types.Decimal
+      db_name: minimum_quantity
+      primary_key: true
+      decimal_places: "0:5"
+      validation: {min: 0}
+      precision: 18
+      scale: 5
+
+    - name: discount_percent
+      no: 4
+      type: types.Decimal
+      db_name: discount_percent
+      decimal_places: "0:5"
+      validation: {min: 0, max: 100}
+      precision: 18
+      scale: 5
+
+  keys:
+    - name: Primary
+      fields: [item_no, vendor_no, minimum_quantity]
+      clustered: true

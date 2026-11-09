@@ -1,0 +1,43 @@
+page:
+  id: 911
+  type: List
+  name: Purchase Qty. Discounts
+  source_table: Item_Purch_Qty_Disc
+  caption: Purchase Qty. Discounts
+  editable: true
+  delayed_insert: true
+  # A vendor's quantity discounts on an item (the classic page 115; 115 is Posting Preview here):
+  # opened from the item (its Vendor No.) and the item/vendor catalogs 114/297
+
+  layout:
+    repeater:
+      fields:
+        - source: item_no
+          width: 110
+          visible: false
+        - source: vendor_no
+          width: 110
+          visible: false
+        - source: minimum_quantity
+          width: 140
+        - source: discount_percent
+          width: 120
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

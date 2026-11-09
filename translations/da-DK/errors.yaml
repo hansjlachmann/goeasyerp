@@ -358,3 +358,5 @@ errors:
   ERR_DROP_SHPT_INVOICE_SALES_FIRST: "Du kan ikke fakturere denne købsordre, før de tilknyttede salgsordrer er faktureret. Fakturer salgsordre %1, før du fakturerer denne købsordre."
   ERR_DROP_SHPT_ALREADY_ASSOCIATED: "%1 på salgsordre %2 er allerede knyttet til købsordre %3."
   ERR_DROP_SHPT_RESERVED: "%1 må ikke udfyldes, når et antal er reserveret."
+  ERR_CHECK_VOID_DATE_BEFORE_CHECK_DATE: "Annulleringsdato må ikke være før checkens oprindelige dato %1."
+  ERR_CHECK_REVERSE_NOT_ALLOWED: "Den oprindelige post for check %1 kan ikke tilbageføres, fordi en post for checken er økonomisk annulleret eller står på et kontoudtog. Vælg Annuller kun check."

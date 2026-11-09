@@ -102,8 +102,8 @@ func (requisitionLineLogic) OnValidate_No(rec *gtables.RequisitionLine) error {
 	return nil
 }
 
-// OnValidate_Quantity: the quantity in the base unit (Item Purch. Qty. Disc. is not migrated:
-// no quantity discount)
+// OnValidate_Quantity: the quantity in the base unit and the vendor's quantity discount on the
+// item (Item Purch. Qty. Disc.)
 func (requisitionLineLogic) OnValidate_Quantity(rec *gtables.RequisitionLine) error {
 	quantityBase, err := calcReqLineBaseQty(rec, rec.Quantity)
 	if err != nil {
@@ -111,6 +111,15 @@ func (requisitionLineLogic) OnValidate_Quantity(rec *gtables.RequisitionLine) er
 	}
 	rec.Quantity_base = quantityBase
 	rec.Quantity_disc_percent = types.Decimal{}
+	if rec.Type == gtables.RequisitionLine_Type.Item {
+		itemPurchQtyDisc := gtables.NewItemPurchQtyDisc(rec)
+		itemPurchQtyDisc.SetRange("item_no", rec.No)
+		itemPurchQtyDisc.SetRange("vendor_no", rec.Vendor_no)
+		itemPurchQtyDisc.SetRange("minimum_quantity", types.Decimal{}, rec.Quantity_base.Abs())
+		if itemPurchQtyDisc.Find("+") {
+			rec.Quantity_disc_percent = itemPurchQtyDisc.Discount_percent
+		}
+	}
 	return checkReservedNotAbove(gtables.RequisitionLineTableName, "reserved_qty_base", rec.Quantity_base, rec.Reserved_qty_base)
 }
 

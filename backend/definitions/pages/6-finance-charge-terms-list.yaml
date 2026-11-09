@@ -80,3 +80,11 @@ page:
       run_page: 445
       run_page_filter_field: fin_charge_terms_code
       run_page_filter_value: code
+
+    - name: Currencies
+      caption: Currencies
+      image: Calculate
+      promoted: true
+      run_page: 477
+      run_page_filter_field: fin_charge_terms_code
+      run_page_filter_value: code

@@ -376,7 +376,7 @@ export const api = {
 	// A value typed into a matrix cell (the row's key, the column's period)
 	async matrixValidate(
 		pageId: number,
-		request: MatrixRequest & { key: string; start: string; end: string; value: string; rounding_factor: number }
+		request: MatrixRequest & { key: string; start: string; end: string; value: string; rounding_factor: number; column_filters?: Record<string, string> }
 	): Promise<void> {
 		const response = await fetch(`${API_BASE}/pages/${pageId}/matrix/validate`, {
 			method: 'POST',

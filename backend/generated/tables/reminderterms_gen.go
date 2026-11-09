@@ -959,7 +959,7 @@ func (t *ReminderTerms) renameReferences(field string, oldValue, newValue interf
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Customer", false, "reminder_terms_code", "", 0}, {"Issued_Reminder_Header", false, "reminder_terms_code", "", 0}, {"Reminder_Header", false, "reminder_terms_code", "", 0}, {"Reminder_Level", false, "reminder_terms_code", "", 0}, {"Reminder_Text", false, "reminder_terms_code", "", 0}},
+		"code": {{"Currency_for_Reminder_Level", false, "reminder_terms_code", "", 0}, {"Customer", false, "reminder_terms_code", "", 0}, {"Issued_Reminder_Header", false, "reminder_terms_code", "", 0}, {"Reminder_Header", false, "reminder_terms_code", "", 0}, {"Reminder_Level", false, "reminder_terms_code", "", 0}, {"Reminder_Text", false, "reminder_terms_code", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
@@ -992,6 +992,7 @@ func (t *ReminderTerms) refuseDeleteWhenUsed() error {
 		Table: ReminderTermsTableName, Global: false, Company: t.company,
 		KeyColumn: "code", Key: t.Code, KeyText: fmt.Sprint(t.Code),
 	}, []tables.Reference{
+		{Table: "Currency_for_Reminder_Level", Column: "reminder_terms_code"},
 		{Table: "Customer", Column: "reminder_terms_code"},
 		{Table: "Issued_Reminder_Header", Column: "reminder_terms_code"},
 		{Table: "Reminder_Header", Column: "reminder_terms_code"},

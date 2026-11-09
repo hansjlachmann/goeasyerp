@@ -329,8 +329,17 @@ func (purchaseLineLogic) OnValidate_Quantity(rec *gtables.PurchaseLine) error {
 		return err
 	}
 	initPurchLineQtyToReceive(rec)
-	// Item Purch. Qty. Disc. is not migrated yet: no quantity discount
+
 	rec.Quantity_disc_percent = types.Decimal{}
+	if rec.Type == gtables.PurchaseLine_Type.Item {
+		itemPurchQtyDisc := gtables.NewItemPurchQtyDisc(rec)
+		itemPurchQtyDisc.SetRange("item_no", rec.No)
+		itemPurchQtyDisc.SetRange("vendor_no", rec.Buy_from_vendor_no)
+		itemPurchQtyDisc.SetRange("minimum_quantity", types.Decimal{}, rec.Quantity_base.Abs())
+		if itemPurchQtyDisc.Find("+") {
+			rec.Quantity_disc_percent = itemPurchQtyDisc.Discount_percent
+		}
+	}
 	return validatePurchLineQuantityDisc(rec)
 }
 

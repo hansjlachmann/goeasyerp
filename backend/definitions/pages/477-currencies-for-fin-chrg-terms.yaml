@@ -1,0 +1,40 @@
+page:
+  id: 477
+  type: List
+  name: Currencies for Fin. Chrg Terms
+  source_table: Currency_for_Fin_Charge_Terms
+  caption: Currencies for Fin. Chrg Terms
+  editable: true
+  delayed_insert: true
+  # the additional fee of finance charge terms per currency (Finance Charge Terms › Currencies); a currency without a line
+  # takes the fee in LCY at the posting date's exchange rate
+
+  layout:
+    repeater:
+      fields:
+        - source: fin_charge_terms_code
+          width: 100
+          visible: false
+        - source: currency_code
+          width: 110
+        - source: additional_fee
+          width: 140
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true

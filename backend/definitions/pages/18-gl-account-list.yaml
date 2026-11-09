@@ -112,6 +112,10 @@ page:
           run_page: 415
           run_page_filter_field: "no"
           run_page_filter_value: "no"
+        - name: Receivables-Payables
+          caption: Receivables-Payables
+          image: Statistics
+          run_page: 159
 
     # The G/L accounts' balance by periods, dimensions and business units (classic Balance menu)
     - name: Balance

@@ -61,6 +61,8 @@ type matrixRequest struct {
 	End            string `json:"end"`
 	Value          string `json:"value"`
 	RoundingFactor int    `json:"rounding_factor"` // 0 None, 1 "1", 2 "1000", 3 "1000000"
+	// ColumnFilters: a calculated matrix's column — its own filters (MatrixColumn.DrilldownFilters)
+	ColumnFilters map[string]string `json:"column_filters"`
 }
 
 // matrixContext is a matrix request checked: the section, the rows' table and a record of it
@@ -331,14 +333,14 @@ func (h *PageTriggersHandler) MatrixValidate(c *fiber.Ctx) error {
 	}
 	src := ftables.DBSource(tx, m.sess.GetCompany(), h.dbType)
 	rec, err := m.rowRecord(src)
-	if err == nil {
+	if err == nil && m.matrix.DateFilter != "" {
 		err = rec.SetFlowFilter(m.matrix.DateFilter, m.dateFilter(m.req.Start, m.req.End))
 	}
 	if err == nil {
 		err = rec.GetOrError(parseRecordKey(m.req.Key, rec))
 	}
 	if err == nil {
-		err = pages.RunMatrixValidate(m.pageID, rec, value)
+		err = pages.RunMatrixValidate(m.pageID, rec, m.req.ColumnFilters, value)
 	}
 	if err != nil {
 		_ = ftables.Rollback(tx)

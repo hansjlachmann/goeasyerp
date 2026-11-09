@@ -517,6 +517,14 @@ pages:
   # Item prices and discounts
   item_prices:
     caption: "Item Prices"
+  purchase_qty_discounts:
+    caption: "Purchase Qty. Discounts"
+  currencies_for_fin_chrg_terms:
+    caption: "Currencies for Fin. Chrg Terms"
+  currencies_for_reminder_level:
+    caption: "Currencies for Reminder Level"
+  cust_item_discount_overview:
+    caption: "Cust./Item Discount Overview"
   sales_qty_discounts:
     caption: "Sales Qty. Discounts"
   cust_item_discounts:
@@ -870,6 +878,10 @@ pages:
     caption: "G/L Budget Entries"
   g_l_budget_names:
     caption: "G/L Budget Names"
+  receivables_payables:
+    caption: "Receivables-Payables"
+    fields:
+      receivables_payables: "Receivables-Payables"
   g_l_account_balance_budget:
     caption: "G/L Account Balance/Budget"
     fields:

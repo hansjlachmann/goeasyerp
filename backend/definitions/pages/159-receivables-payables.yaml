@@ -1,0 +1,38 @@
+page:
+  id: 159
+  type: Card
+  name: Receivables-Payables
+  source_table: General_Ledger_Setup
+  caption: Receivables-Payables
+  editable: false
+  # classic form 159 with its lines (form 355): per period the customers' and vendors' open
+  # balances due (General Ledger Setup Cust./Vendor Balances Due by the Due Date) and their
+  # difference; the amounts drill down to the open entries due in the period
+
+  layout:
+    sections:
+      - name: Periods
+        caption: Periods
+        period_grid:
+          date_filter: date_filter
+          view_by: 2
+          filters:
+            - source: dimension_1_filter
+              drilldown_filter_field: dimension_1_code
+            - source: dimension_2_filter
+              drilldown_filter_field: dimension_2_code
+          columns:
+            - source: cust_balances_due
+              drilldown: 25
+              drilldown_date_field: due_date
+              drilldown_filters:
+                - {field: open, const: "true"}
+            - source: vendor_balances_due
+              drilldown: 29
+              drilldown_date_field: due_date
+              drilldown_filters:
+                - {field: open, const: "true"}
+            - source: receivables_payables
+              calculated: true
+              type: types.Decimal
+              decimal_places: "2:2"
