@@ -2347,3 +2347,103 @@ reports:
       ENTER_DOCUMENT_NO: "Du skal angive bilagsnummeret."
       WINDOW: "Afskriver anlæg               #1##########\nAfskriver ikke anlæg          #2##########\nIndsætter kladdelinjer        #3##########"
       LINES_CREATED: "Der blev oprettet %1 kladdelinjer."
+  "291":
+    caption: "Slet fakturerede rammesalgsordrer"
+    texts:
+      WINDOW: "Behandler salgsordrer #1##########"
+      DELETED: "%1 rammeordrer blev slettet."
+  "299":
+    caption: "Slet fakturerede salgsordrer"
+    texts:
+      WINDOW: "Behandler salgsordrer #1##########"
+      DELETED: "%1 ordrer blev slettet."
+  "491":
+    caption: "Slet fakturerede rammekøbsordrer"
+    texts:
+      WINDOW: "Behandler købsordrer #1##########"
+      DELETED: "%1 rammeordrer blev slettet."
+  "499":
+    caption: "Slet fakturerede købsordrer"
+    texts:
+      WINDOW: "Behandler købsordrer #1##########"
+      DELETED: "%1 ordrer blev slettet."
+  "295":
+    caption: "Samlefakturering"
+    options:
+      posting_date: "Bogføringsdato"
+      document_date: "Bilagsdato"
+      calc_inv_discount: "Beregn fakturarabat"
+      post_invoices: "Bogfør fakturaer"
+    texts:
+      ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
+      ENTER_DOCUMENT_DATE: "Angiv bilagsdatoen."
+      WINDOW: "Samler leverancer...\n\nDebitornr.      #1##########\nOrdrenr.        #2##########\nLeverancenr.    #3##########"
+      SHIPMENT_NO: "Leverancenr. %1:"
+      SHIPMENTS_COMBINED: "Leverancerne er nu samlet."
+      NOT_ALL_POSTED: "Ikke alle fakturaer blev bogført. I alt %1 fakturaer blev ikke bogført."
+      NOTHING_TO_COMBINE: "Der er intet at samle."
+  "5690":
+    caption: "Indekser anlæg"
+    options:
+      depreciation_book: "Afskrivningsprofil"
+      index_figure: "Indekstal"
+      fa_posting_date: "Anlægsbogføringsdato"
+      posting_date: "Bogføringsdato"
+      document_no: "Bilagsnr."
+      posting_description: "Bogføringsbeskrivelse"
+      insert_bal_account: "Indsæt modkonto"
+      acquisition_cost: "Anskaffelse"
+      depreciation: "Afskrivning"
+      write_down: "Nedskrivning"
+      appreciation: "Opskrivning"
+      custom_1: "Bruger 1"
+      custom_2: "Bruger 2"
+      maintenance: "Vedligeholdelse"
+      salvage_value: "Scrapværdi"
+    texts:
+      ENTER_FA_POSTING_DATE: "Du skal angive anlægsbogføringsdatoen."
+      FA_POSTING_DATE_CLOSING: "Anlægsbogføringsdatoen må ikke være en ultimodato."
+      SAME_DATES: "Anlægsbogføringsdatoen og bogføringsdatoen skal være ens: Brug samme anlægs- og finansbogføringsdato er slået til i afskrivningsprofil %1."
+      INDEX_FIGURE_NEGATIVE: "Indekstallet må ikke være negativt."
+      ENTER_DOCUMENT_NO: "Du skal angive bilagsnummeret."
+      WINDOW: "Indekserer anlæg       #1##########"
+  "5691":
+    caption: "Indekser forsikring"
+    options:
+      index_figure: "Indekstal"
+      posting_date: "Bogføringsdato"
+      document_no: "Bilagsnr."
+      posting_description: "Bogføringsbeskrivelse"
+    texts:
+      ENTER_POSTING_DATE: "Du skal angive bogføringsdatoen."
+      POSTING_DATE_CLOSING: "Bogføringsdatoen må ikke være en ultimodato."
+      INDEX_FIGURE_100: "Indekstallet må ikke være 100."
+      INDEX_FIGURE_POSITIVE: "Indekstallet skal være positivt."
+      ENTER_DOCUMENT_NO: "Du skal angive bilagsnummeret."
+      WINDOW: "Indekserer forsikring  #1##########"
+  "804":
+    caption: "Undermontager"
+    texts:
+      TITLE: "Stykliste - undermontager"
+      PAGE: "Side"
+      NO: "Nr."
+      DESCRIPTION: "Beskrivelse"
+      BASE_UNIT_OF_MEASURE: "Basisenhed"
+      INVENTORY: "Lager"
+      REORDER_POINT: "Genbestillingspunkt"
+      LEAD_TIME_CALCULATION: "Leveringstid"
+      ALTERNATIVE_ITEM_NO: "Alternativt varenr."
+      UNIT_COST: "Kostpris"
+      VALUE_ON_HAND: "Lagerværdi"
+  "805":
+    caption: "Hvor-brugt-liste"
+    texts:
+      TITLE: "Hvor-brugt-liste"
+      PAGE: "Side"
+      USED_IN_ITEM_NO: "Brugt i varenr."
+      DESCRIPTION: "Beskrivelse"
+      QUANTITY_PER: "Antal pr."
+      BASE_UNIT_OF_MEASURE: "Basisenhed"
+      INVENTORY: "Lager"
+      QTY_ON_SALES_ORDER: "Antal i salgsordre"
+      QTY_ON_PURCH_ORDER: "Antal i købsordre"

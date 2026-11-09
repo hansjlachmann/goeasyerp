@@ -4511,6 +4511,7 @@ tables:
   sales_header:
     caption: "Sales Header"
     fields:
+      combine_shipments: "Combine Shipments"
       project_no: "Project No."
       transaction_type: "Transaction Type"
       transport_method: "Transport Method"

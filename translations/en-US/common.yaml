@@ -378,6 +378,8 @@ common:
     bom_ledger: "BOM Ledger"
     bom_registers: "BOM Registers"
     bom_reports: "BOM Reports"
+    sub_assemblies: "Sub-Assemblies"
+    where_used_list: "Where-Used List"
     bank_account_ledger: "Bank Account Ledger"
     bank_account_reconciliations: "Bank Account Reconciliations"
     bank_accounts: "Bank Accounts"

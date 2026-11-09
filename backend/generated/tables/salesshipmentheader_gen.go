@@ -1674,6 +1674,12 @@ func (t *SalesShipmentHeader) SyncKeys(db database.Executor, company string, dbT
 		fmt.Sprintf("%s$Sales_Shipment_Header$customer", company), tableName)); err != nil {
 		return fmt.Errorf("failed to create index customer: %w", err)
 	}
+	// Index "company$Table$key"; a global table's indexes are shared by all companies:
+	// "Table$key" (a company prefix created a copy of every index per company)
+	if _, err := db.Exec(fmt.Sprintf(`CREATE INDEX IF NOT EXISTS "%s" ON "%s" (order_no)`,
+		fmt.Sprintf("%s$Sales_Shipment_Header$order", company), tableName)); err != nil {
+		return fmt.Errorf("failed to create index order: %w", err)
+	}
 	var keys []sift.Key
 	for _, spec := range salesShipmentHeaderSIFTSpecs() {
 		keys = append(keys, sift.BuildKey(dbType, siftCompany, SalesShipmentHeaderTableName, tableName, spec))

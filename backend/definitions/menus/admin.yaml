@@ -473,6 +473,11 @@ menu:
           - name: "Serial Number Status/Aging"
             run_object: "report:705"
       - name: "BOM Reports"
+        items:
+          - name: "Sub-Assemblies"
+            run_object: "report:804"
+          - name: "Where-Used List"
+            run_object: "report:805"
       - name: "Item Registers"
         page_id: 117
       - name: "BOM Registers"

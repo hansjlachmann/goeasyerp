@@ -703,3 +703,5 @@ table:
       clustered: true
     - name: customer
       fields: [sell_to_customer_no]
+    - name: order
+      fields: [order_no]

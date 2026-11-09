@@ -4511,6 +4511,7 @@ tables:
   sales_header:
     caption: "Salgshoved"
     fields:
+      combine_shipments: "Samlefaktura"
       project_no: "Projektnr."
       transaction_type: "Transaktionstype"
       transport_method: "Transportmåde"

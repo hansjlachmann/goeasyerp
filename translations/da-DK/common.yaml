@@ -378,6 +378,8 @@ common:
     bom_ledger: "Styklistepost"
     bom_registers: "Styklisteregistre"
     bom_reports: "Styklisterapporter"
+    sub_assemblies: "Undermontager"
+    where_used_list: "Hvor-brugt-liste"
     bank_account_ledger: "Bankkontopost"
     bank_account_reconciliations: "Bankkontoafstemninger"
     bank_accounts: "Bankkonti"

@@ -510,6 +510,11 @@ table:
       db_name: vat_registration_no
       length: 20
 
+    - name: combine_shipments
+      no: 71
+      type: bool
+      db_name: combine_shipments
+
     - name: reason_code
       no: 73
       type: types.Code
@@ -902,3 +907,5 @@ table:
       clustered: true
     - name: customer
       fields: [document_type, sell_to_customer_no]
+    - name: combine_shipments
+      fields: [document_type, combine_shipments, bill_to_customer_no, currency_code]

@@ -203,6 +203,23 @@ func InsuranceJnlName(src ftables.Source, deprBookCode types.Code) (templateName
 	return
 }
 
+// GetInsuranceJnlDocumentNo (GetInsuranceJnlDocumentNo): the next number of the batch's No.
+// Series when the batch has no lines yet (blank otherwise)
+func GetInsuranceJnlDocumentNo(src ftables.Source, templateName, batchName types.Code, postingDate types.Date) (types.Code, error) {
+	insuranceJnlBatch := gtables.NewInsuranceJournalBatch(src)
+	err := insuranceJnlBatch.GetOrError(map[string]interface{}{"journal_template_name": templateName, "name": batchName})
+	if err != nil || insuranceJnlBatch.No_series == "" {
+		return "", err
+	}
+	insuranceJnlLine := gtables.NewInsuranceJournalLine(src)
+	insuranceJnlLine.SetRange("journal_template_name", templateName)
+	insuranceJnlLine.SetRange("journal_batch_name", batchName)
+	if !insuranceJnlLine.IsEmpty() {
+		return "", nil
+	}
+	return noseries.New(src).GetNextNo(insuranceJnlBatch.No_series, postingDate, false)
+}
+
 // GetInsuranceNoSeries (GetInsuranceNoSeries): the batch's Posting No. Series when it differs
 // from its No. Series
 func GetInsuranceNoSeries(src ftables.Source, templateName, batchName types.Code) types.Code {

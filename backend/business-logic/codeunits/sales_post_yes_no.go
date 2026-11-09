@@ -3,6 +3,7 @@ package codeunits
 import (
 	"errors"
 
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salesposting"
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -28,6 +29,10 @@ const (
 
 func init() {
 	Register(SalesPostYesNoID, SalesPostYesNoName, NewSalesPostYesNo)
+	// Combine Shipments (report 295) posts its invoices with codeunit 80
+	reports.SalesPost = func(src ftables.Source, salesHeader *gtables.SalesHeader) error {
+		return salesposting.NewSalesPost(src).Run(salesHeader)
+	}
 }
 
 type SalesPostYesNo struct {

@@ -133,7 +133,14 @@ func TestGetMenuMarksAvailableEntries(t *testing.T) {
 	}
 	fixedAssets := find(modules, "Anleggsmidler og avskrivninger")
 	faActivities := find(fixedAssets["items"].([]interface{}), "Aktiviteter")
-	if indexing := find(faActivities["items"].([]interface{}), "Indeksering"); indexing["enabled"] != false {
-		t.Errorf("a sub-menu without anything built is enabled: %v", indexing)
+	if indexing := find(faActivities["items"].([]interface{}), "Indeksering"); indexing["enabled"] != true {
+		t.Errorf("Activities › Index not enabled: %v", indexing)
+	}
+
+	// An entry whose object is not built, and a sub-menu holding only such entries, are greyed out
+	notBuilt := menuEntries([]pages.MenuItem{{Name: "Index", Items: []pages.MenuItem{{Name: "Fixed Assets", RunObject: "report:99999"}}}},
+		i18n.GetInstance(), "en-US")
+	if notBuilt[0].Enabled || notBuilt[0].Items[0].Enabled {
+		t.Errorf("a sub-menu without anything built is enabled: %+v", notBuilt)
 	}
 }
