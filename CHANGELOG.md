@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.1.146](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.145...v0.1.146) (2026-11-09)
+
+
+### Features
+
+* Combine Shipments, Delete Invoiced orders, Index fixed assets/insurance and the BOM reports ([31108e0](https://github.com/hansjlachmann/goeasyerp/commit/31108e0d13973ef0a4e778a63287def907f00136))
+* Copy Document on sales and purchase documents, and the customer credit limit warning ([ed1a8f0](https://github.com/hansjlachmann/goeasyerp/commit/ed1a8f05c6536c477a0eb44c1a9f72e2802f778a))
+* Explode BOM on sales and purchase lines ([ea188ec](https://github.com/hansjlachmann/goeasyerp/commit/ea188eca5a9c4c936758eabb8030f5f3ff891908))
+* extended texts on documents ([70b3462](https://github.com/hansjlachmann/goeasyerp/commit/70b3462f3b9b09eeafb15526c6e5c8257bdc8d31))
+* item availability warning on sales lines and journals ([f20028b](https://github.com/hansjlachmann/goeasyerp/commit/f20028b614fd23a9600854c62fcf78211b94fb38))
+* statistics of posted shipments, receipts, invoices and credit memos ([3b330a6](https://github.com/hansjlachmann/goeasyerp/commit/3b330a61a72b9fdf4e83dd36ef2de49048f45863))
+
+
+### Bug Fixes
+
+* a line field's function runs on the saved line and the lines show what it changed ([073396f](https://github.com/hansjlachmann/goeasyerp/commit/073396f6e3d38e7a30b2e6a4479063f088252091))
+
+
+### CI/CD
+
+* allow the backend tests 30 minutes ([0820d51](https://github.com/hansjlachmann/goeasyerp/commit/0820d510ac9bd7bae405dee75b5acc3eb5083a6e))
+
 ## [0.1.145](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.144...v0.1.145) (2026-11-08)
 
 
