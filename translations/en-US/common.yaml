@@ -8,6 +8,11 @@ common:
 
   # Common actions
   actions:
+    # Statistics pages
+    customer_sales: "Customer Sales"
+    entry_statistics: "Entry Statistics"
+    statistics_by_currencies: "Statistics by Currencies"
+    vendor_purchases: "Vendor Purchases"
     # Links from master data, documents and registers
     blanket_orders: "Blanket Orders"
     bom_registers: "BOM Registers"
@@ -262,6 +267,23 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    # Statistics pages
+    last_credit_memo: "Last Credit Memo"
+    last_finance_charge_memo: "Last Finance Charge Memo"
+    last_invoice: "Last Invoice"
+    last_payment: "Last Payment"
+    last_receipt: "Last Receipt"
+    last_reminder: "Last Reminder"
+    last_shipment: "Last Shipment"
+    negative_adjustment: "Negative Adjustment"
+    next_receipt: "Next Receipt"
+    next_shipment: "Next Shipment"
+    positive_adjustment: "Positive Adjustment"
+    receipt: "Receipt"
+    remaining_amt_lcy: "Remaining Amt. (LCY)"
+    sale: "Sale"
+    shipment: "Shipment"
+    total: "Total"
     reminders: "Reminders"
     projects: "Projects"
     budgeted: "Budgeted"

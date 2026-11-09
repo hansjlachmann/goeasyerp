@@ -45,6 +45,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -90,15 +91,49 @@ type Currency struct {
 	Description                    types.Text                    `db:"description"`
 	Amount_decimal_places          types.Text                    `db:"amount_decimal_places"`
 	Unit_amount_decimal_places     types.Text                    `db:"unit_amount_decimal_places"`
-	Appln_rounding_precision       types.Decimal                 `db:"appln_rounding_precision"`
-	Emu_currency                   bool                          `db:"emu_currency"`
-	Currency_factor                types.Decimal                 `db:"currency_factor"`
-	Realized_gl_gains_account      types.Code                    `db:"realized_gl_gains_account"`
-	Realized_gl_losses_account     types.Code                    `db:"realized_gl_losses_account"`
-	Residual_gains_account         types.Code                    `db:"residual_gains_account"`
-	Residual_losses_account        types.Code                    `db:"residual_losses_account"`
-	Conv_lcy_rndg_debit_acc        types.Code                    `db:"conv_lcy_rndg_debit_acc"`
-	Conv_lcy_rndg_credit_acc       types.Code                    `db:"conv_lcy_rndg_credit_acc"`
+	// FlowField: Exist(CustomerLedgerEntry.entry_no)
+	Cust_ledg_entries_in_filter bool
+	// FlowField: Sum(CustomerLedgerEntry.amount)
+	Customer_balance types.Decimal
+	// FlowField: Sum(SalesLine.outstanding_amount)
+	Customer_outstanding_orders types.Decimal
+	// FlowField: Sum(SalesLine.shipped_not_invoiced)
+	Customer_shipped_not_invoiced types.Decimal
+	// FlowField: Sum(CustomerLedgerEntry.remaining_amount)
+	Customer_balance_due types.Decimal
+	// FlowField: Exist(VendorLedgerEntry.entry_no)
+	Vendor_ledg_entries_in_filter bool
+	// FlowField: Sum(VendorLedgerEntry.amount)
+	Vendor_balance types.Decimal
+	// FlowField: Sum(PurchaseLine.outstanding_amount)
+	Vendor_outstanding_orders types.Decimal
+	// FlowField: Sum(PurchaseLine.amt_rcd_not_invoiced)
+	Vendor_amt_rcd_not_invoiced types.Decimal
+	// FlowField: Sum(VendorLedgerEntry.remaining_amount)
+	Vendor_balance_due types.Decimal
+	// FlowField: Sum(CustomerLedgerEntry.amount_lcy)
+	Customer_balance_lcy types.Decimal
+	// FlowField: Sum(VendorLedgerEntry.amount_lcy)
+	Vendor_balance_lcy         types.Decimal
+	Appln_rounding_precision   types.Decimal `db:"appln_rounding_precision"`
+	Emu_currency               bool          `db:"emu_currency"`
+	Currency_factor            types.Decimal `db:"currency_factor"`
+	Realized_gl_gains_account  types.Code    `db:"realized_gl_gains_account"`
+	Realized_gl_losses_account types.Code    `db:"realized_gl_losses_account"`
+	Residual_gains_account     types.Code    `db:"residual_gains_account"`
+	Residual_losses_account    types.Code    `db:"residual_losses_account"`
+	Conv_lcy_rndg_debit_acc    types.Code    `db:"conv_lcy_rndg_debit_acc"`
+	Conv_lcy_rndg_credit_acc   types.Code    `db:"conv_lcy_rndg_credit_acc"`
+	// FlowFilter customer_filter (types.Code): the filter expression FlowFields apply — not stored
+	Customer_filter string
+	// FlowFilter vendor_filter (types.Code): the filter expression FlowFields apply — not stored
+	Vendor_filter string
+	// FlowFilter dimension_1_filter (types.Code): the filter expression FlowFields apply — not stored
+	Dimension_1_filter string
+	// FlowFilter dimension_2_filter (types.Code): the filter expression FlowFields apply — not stored
+	Dimension_2_filter string
+	// FlowFilter date_filter (types.Date): the filter expression FlowFields apply — not stored
+	Date_filter string
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -194,6 +229,18 @@ var Currency_FieldNo = struct {
 	Description                    int
 	Amount_decimal_places          int
 	Unit_amount_decimal_places     int
+	Cust_ledg_entries_in_filter    int
+	Customer_balance               int
+	Customer_outstanding_orders    int
+	Customer_shipped_not_invoiced  int
+	Customer_balance_due           int
+	Vendor_ledg_entries_in_filter  int
+	Vendor_balance                 int
+	Vendor_outstanding_orders      int
+	Vendor_amt_rcd_not_invoiced    int
+	Vendor_balance_due             int
+	Customer_balance_lcy           int
+	Vendor_balance_lcy             int
 	Appln_rounding_precision       int
 	Emu_currency                   int
 	Currency_factor                int
@@ -203,6 +250,11 @@ var Currency_FieldNo = struct {
 	Residual_losses_account        int
 	Conv_lcy_rndg_debit_acc        int
 	Conv_lcy_rndg_credit_acc       int
+	Customer_filter                int
+	Vendor_filter                  int
+	Dimension_1_filter             int
+	Dimension_2_filter             int
+	Date_filter                    int
 }{
 	Code:                           1,
 	Last_date_modified:             2,
@@ -218,6 +270,18 @@ var Currency_FieldNo = struct {
 	Description:                    15,
 	Amount_decimal_places:          17,
 	Unit_amount_decimal_places:     18,
+	Cust_ledg_entries_in_filter:    24,
+	Customer_balance:               25,
+	Customer_outstanding_orders:    26,
+	Customer_shipped_not_invoiced:  27,
+	Customer_balance_due:           28,
+	Vendor_ledg_entries_in_filter:  29,
+	Vendor_balance:                 30,
+	Vendor_outstanding_orders:      31,
+	Vendor_amt_rcd_not_invoiced:    32,
+	Vendor_balance_due:             33,
+	Customer_balance_lcy:           34,
+	Vendor_balance_lcy:             35,
 	Appln_rounding_precision:       44,
 	Emu_currency:                   45,
 	Currency_factor:                46,
@@ -227,6 +291,11 @@ var Currency_FieldNo = struct {
 	Residual_losses_account:        48,
 	Conv_lcy_rndg_debit_acc:        50,
 	Conv_lcy_rndg_credit_acc:       51,
+	Customer_filter:                19,
+	Vendor_filter:                  20,
+	Dimension_1_filter:             21,
+	Dimension_2_filter:             22,
+	Date_filter:                    23,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -260,6 +329,30 @@ func (t *Currency) FieldNo(fieldName string) int {
 		return 17
 	case "unit_amount_decimal_places":
 		return 18
+	case "cust_ledg_entries_in_filter":
+		return 24
+	case "customer_balance":
+		return 25
+	case "customer_outstanding_orders":
+		return 26
+	case "customer_shipped_not_invoiced":
+		return 27
+	case "customer_balance_due":
+		return 28
+	case "vendor_ledg_entries_in_filter":
+		return 29
+	case "vendor_balance":
+		return 30
+	case "vendor_outstanding_orders":
+		return 31
+	case "vendor_amt_rcd_not_invoiced":
+		return 32
+	case "vendor_balance_due":
+		return 33
+	case "customer_balance_lcy":
+		return 34
+	case "vendor_balance_lcy":
+		return 35
 	case "appln_rounding_precision":
 		return 44
 	case "emu_currency":
@@ -278,6 +371,16 @@ func (t *Currency) FieldNo(fieldName string) int {
 		return 50
 	case "conv_lcy_rndg_credit_acc":
 		return 51
+	case "customer_filter":
+		return 19
+	case "vendor_filter":
+		return 20
+	case "dimension_1_filter":
+		return 21
+	case "dimension_2_filter":
+		return 22
+	case "date_filter":
+		return 23
 	}
 	return 0
 }
@@ -313,6 +416,30 @@ func (t *Currency) FieldName(fieldNo int) string {
 		return "amount_decimal_places"
 	case 18:
 		return "unit_amount_decimal_places"
+	case 24:
+		return "cust_ledg_entries_in_filter"
+	case 25:
+		return "customer_balance"
+	case 26:
+		return "customer_outstanding_orders"
+	case 27:
+		return "customer_shipped_not_invoiced"
+	case 28:
+		return "customer_balance_due"
+	case 29:
+		return "vendor_ledg_entries_in_filter"
+	case 30:
+		return "vendor_balance"
+	case 31:
+		return "vendor_outstanding_orders"
+	case 32:
+		return "vendor_amt_rcd_not_invoiced"
+	case 33:
+		return "vendor_balance_due"
+	case 34:
+		return "customer_balance_lcy"
+	case 35:
+		return "vendor_balance_lcy"
 	case 44:
 		return "appln_rounding_precision"
 	case 45:
@@ -331,6 +458,16 @@ func (t *Currency) FieldName(fieldNo int) string {
 		return "conv_lcy_rndg_debit_acc"
 	case 51:
 		return "conv_lcy_rndg_credit_acc"
+	case 19:
+		return "customer_filter"
+	case 20:
+		return "vendor_filter"
+	case 21:
+		return "dimension_1_filter"
+	case 22:
+		return "dimension_2_filter"
+	case 23:
+		return "date_filter"
 	}
 	return ""
 }
@@ -697,6 +834,18 @@ func GetCurrencyTableSchema() string {
 		description TEXT(30),
 		amount_decimal_places TEXT(5) NOT NULL DEFAULT '2:2',
 		unit_amount_decimal_places TEXT(5) NOT NULL DEFAULT '2:5',
+		cust_ledg_entries_in_filter INTEGER,
+		customer_balance TEXT,
+		customer_outstanding_orders TEXT,
+		customer_shipped_not_invoiced TEXT,
+		customer_balance_due TEXT,
+		vendor_ledg_entries_in_filter INTEGER,
+		vendor_balance TEXT,
+		vendor_outstanding_orders TEXT,
+		vendor_amt_rcd_not_invoiced TEXT,
+		vendor_balance_due TEXT,
+		customer_balance_lcy TEXT,
+		vendor_balance_lcy TEXT,
 		appln_rounding_precision TEXT,
 		emu_currency INTEGER,
 		currency_factor TEXT,
@@ -726,6 +875,18 @@ func GetCurrencyPostgresTableSchema() string {
 		description VARCHAR(30),
 		amount_decimal_places VARCHAR(5) NOT NULL DEFAULT '2:2',
 		unit_amount_decimal_places VARCHAR(5) NOT NULL DEFAULT '2:5',
+		cust_ledg_entries_in_filter BOOLEAN,
+		customer_balance NUMERIC,
+		customer_outstanding_orders NUMERIC,
+		customer_shipped_not_invoiced NUMERIC,
+		customer_balance_due NUMERIC,
+		vendor_ledg_entries_in_filter BOOLEAN,
+		vendor_balance NUMERIC,
+		vendor_outstanding_orders NUMERIC,
+		vendor_amt_rcd_not_invoiced NUMERIC,
+		vendor_balance_due NUMERIC,
+		customer_balance_lcy NUMERIC,
+		vendor_balance_lcy NUMERIC,
 		appln_rounding_precision NUMERIC,
 		emu_currency BOOLEAN,
 		currency_factor NUMERIC,
@@ -752,6 +913,12 @@ func (t *Currency) GetCaption(language string) string {
 func (t *Currency) GetFieldCaption(fieldName, language string) string {
 	ts := i18n.GetInstance()
 	return ts.FieldCaption("Currency", fieldName, language)
+}
+
+// The fields' caption expressions (CaptionClass): their captions are resolved with them
+func init() {
+	i18n.SetCaptionClass(i18n.FieldKey("Currency", "dimension_1_filter"), "1,3,1")
+	i18n.SetCaptionClass(i18n.FieldKey("Currency", "dimension_2_filter"), "1,3,2")
 }
 
 // GetOptionCaption returns the option field value caption in the specified language
@@ -1732,14 +1899,2023 @@ func (t *Currency) Delete(runTrigger bool) bool {
 	return true
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *Currency) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
+	// If no field names specified, calculate all FlowFields
+	if len(fieldNames) == 0 {
+		t.calcFlowField_cust_ledg_entries_in_filter()
+		t.calcFlowField_customer_balance()
+		t.calcFlowField_customer_outstanding_orders()
+		t.calcFlowField_customer_shipped_not_invoiced()
+		t.calcFlowField_customer_balance_due()
+		t.calcFlowField_vendor_ledg_entries_in_filter()
+		t.calcFlowField_vendor_balance()
+		t.calcFlowField_vendor_outstanding_orders()
+		t.calcFlowField_vendor_amt_rcd_not_invoiced()
+		t.calcFlowField_vendor_balance_due()
+		t.calcFlowField_customer_balance_lcy()
+		t.calcFlowField_vendor_balance_lcy()
+		return
+	}
+
+	// Calculate only specified fields
+	for _, fieldName := range fieldNames {
+		switch fieldName {
+		case "cust_ledg_entries_in_filter":
+			t.calcFlowField_cust_ledg_entries_in_filter()
+		case "customer_balance":
+			t.calcFlowField_customer_balance()
+		case "customer_outstanding_orders":
+			t.calcFlowField_customer_outstanding_orders()
+		case "customer_shipped_not_invoiced":
+			t.calcFlowField_customer_shipped_not_invoiced()
+		case "customer_balance_due":
+			t.calcFlowField_customer_balance_due()
+		case "vendor_ledg_entries_in_filter":
+			t.calcFlowField_vendor_ledg_entries_in_filter()
+		case "vendor_balance":
+			t.calcFlowField_vendor_balance()
+		case "vendor_outstanding_orders":
+			t.calcFlowField_vendor_outstanding_orders()
+		case "vendor_amt_rcd_not_invoiced":
+			t.calcFlowField_vendor_amt_rcd_not_invoiced()
+		case "vendor_balance_due":
+			t.calcFlowField_vendor_balance_due()
+		case "customer_balance_lcy":
+			t.calcFlowField_customer_balance_lcy()
+		case "vendor_balance_lcy":
+			t.calcFlowField_vendor_balance_lcy()
+		}
+	}
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// calcFlowField_cust_ledg_entries_in_filter calculates the cust_ledg_entries_in_filter FlowField
+// CalcFormula: Exist(CustomerLedgerEntry.entry_no)
+func (t *Currency) calcFlowField_cust_ledg_entries_in_filter() {
+	t.Cust_ledg_entries_in_filter = t.calcCount_cust_ledg_entries_in_filter() > 0
+}
+
+// calcFlowField_customer_balance calculates the customer_balance FlowField
+// CalcFormula: Sum(CustomerLedgerEntry.amount)
+func (t *Currency) calcFlowField_customer_balance() {
+	t.Customer_balance = t.calcSum_customer_balance()
+}
+
+// calcFlowField_customer_outstanding_orders calculates the customer_outstanding_orders FlowField
+// CalcFormula: Sum(SalesLine.outstanding_amount)
+func (t *Currency) calcFlowField_customer_outstanding_orders() {
+	t.Customer_outstanding_orders = t.calcSum_customer_outstanding_orders()
+}
+
+// calcFlowField_customer_shipped_not_invoiced calculates the customer_shipped_not_invoiced FlowField
+// CalcFormula: Sum(SalesLine.shipped_not_invoiced)
+func (t *Currency) calcFlowField_customer_shipped_not_invoiced() {
+	t.Customer_shipped_not_invoiced = t.calcSum_customer_shipped_not_invoiced()
+}
+
+// calcFlowField_customer_balance_due calculates the customer_balance_due FlowField
+// CalcFormula: Sum(CustomerLedgerEntry.remaining_amount)
+func (t *Currency) calcFlowField_customer_balance_due() {
+	t.Customer_balance_due = t.calcSum_customer_balance_due()
+}
+
+// calcFlowField_vendor_ledg_entries_in_filter calculates the vendor_ledg_entries_in_filter FlowField
+// CalcFormula: Exist(VendorLedgerEntry.entry_no)
+func (t *Currency) calcFlowField_vendor_ledg_entries_in_filter() {
+	t.Vendor_ledg_entries_in_filter = t.calcCount_vendor_ledg_entries_in_filter() > 0
+}
+
+// calcFlowField_vendor_balance calculates the vendor_balance FlowField
+// CalcFormula: Sum(VendorLedgerEntry.amount)
+func (t *Currency) calcFlowField_vendor_balance() {
+	t.Vendor_balance = t.calcSum_vendor_balance()
+}
+
+// calcFlowField_vendor_outstanding_orders calculates the vendor_outstanding_orders FlowField
+// CalcFormula: Sum(PurchaseLine.outstanding_amount)
+func (t *Currency) calcFlowField_vendor_outstanding_orders() {
+	t.Vendor_outstanding_orders = t.calcSum_vendor_outstanding_orders()
+}
+
+// calcFlowField_vendor_amt_rcd_not_invoiced calculates the vendor_amt_rcd_not_invoiced FlowField
+// CalcFormula: Sum(PurchaseLine.amt_rcd_not_invoiced)
+func (t *Currency) calcFlowField_vendor_amt_rcd_not_invoiced() {
+	t.Vendor_amt_rcd_not_invoiced = t.calcSum_vendor_amt_rcd_not_invoiced()
+}
+
+// calcFlowField_vendor_balance_due calculates the vendor_balance_due FlowField
+// CalcFormula: Sum(VendorLedgerEntry.remaining_amount)
+func (t *Currency) calcFlowField_vendor_balance_due() {
+	t.Vendor_balance_due = t.calcSum_vendor_balance_due()
+}
+
+// calcFlowField_customer_balance_lcy calculates the customer_balance_lcy FlowField
+// CalcFormula: Sum(CustomerLedgerEntry.amount_lcy)
+func (t *Currency) calcFlowField_customer_balance_lcy() {
+	t.Customer_balance_lcy = t.calcSum_customer_balance_lcy()
+}
+
+// calcFlowField_vendor_balance_lcy calculates the vendor_balance_lcy FlowField
+// CalcFormula: Sum(VendorLedgerEntry.amount_lcy)
+func (t *Currency) calcFlowField_vendor_balance_lcy() {
+	t.Vendor_balance_lcy = t.calcSum_vendor_balance_lcy()
+}
+
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *Currency) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
+	if len(records) == 0 {
+		return
+	}
+	if len(fieldNames) == 0 {
+		fieldNames = t.GetFlowFields()
+	}
+	for _, fieldName := range fieldNames {
+		switch fieldName {
+		case "cust_ledg_entries_in_filter":
+			t.calcForRecords_cust_ledg_entries_in_filter(records)
+		case "customer_balance":
+			t.calcForRecords_customer_balance(records)
+		case "customer_outstanding_orders":
+			t.calcForRecords_customer_outstanding_orders(records)
+		case "customer_shipped_not_invoiced":
+			t.calcForRecords_customer_shipped_not_invoiced(records)
+		case "customer_balance_due":
+			t.calcForRecords_customer_balance_due(records)
+		case "vendor_ledg_entries_in_filter":
+			t.calcForRecords_vendor_ledg_entries_in_filter(records)
+		case "vendor_balance":
+			t.calcForRecords_vendor_balance(records)
+		case "vendor_outstanding_orders":
+			t.calcForRecords_vendor_outstanding_orders(records)
+		case "vendor_amt_rcd_not_invoiced":
+			t.calcForRecords_vendor_amt_rcd_not_invoiced(records)
+		case "vendor_balance_due":
+			t.calcForRecords_vendor_balance_due(records)
+		case "customer_balance_lcy":
+			t.calcForRecords_customer_balance_lcy(records)
+		case "vendor_balance_lcy":
+			t.calcForRecords_vendor_balance_lcy(records)
+		}
+	}
+}
+
+// calcForRecords_cust_ledg_entries_in_filter calculates the cust_ledg_entries_in_filter FlowField for a set of records
+// CalcFormula: Exist(CustomerLedgerEntry.entry_no)
+func (t *Currency) calcForRecords_cust_ledg_entries_in_filter(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+	if t.Customer_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+	}
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]int, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		if t.Customer_filter != "" {
+			// FlowFilter customer_filter applied to customer_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if chunk != nil {
+			whereClauses = append(whereClauses, "currency_code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COUNT(*)"
+		if useSIFT {
+			agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
+		}
+		query := fmt.Sprintf(`SELECT currency_code, %s FROM "%s" WHERE %s GROUP BY currency_code`, agg, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate cust_ledg_entries_in_filter: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var count int
+			if err := rows.Scan(&key, &count); err == nil {
+				values[key] = count
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		rec["cust_ledg_entries_in_filter"] = values[fmt.Sprint(rec["code"])] > 0
+	}
+}
+
+// calcForRecords_customer_balance calculates the customer_balance FlowField for a set of records
+// CalcFormula: Sum(CustomerLedgerEntry.amount)
+func (t *Currency) calcForRecords_customer_balance(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+	if t.Customer_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+	}
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		if t.Customer_filter != "" {
+			// FlowFilter customer_filter applied to customer_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if chunk != nil {
+			whereClauses = append(whereClauses, "currency_code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT currency_code, COALESCE(SUM(amount), 0) FROM "%s" WHERE %s GROUP BY currency_code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate customer_balance: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["customer_balance"] = v.String()
+	}
+}
+
+// calcForRecords_customer_outstanding_orders calculates the customer_outstanding_orders FlowField for a set of records
+// CalcFormula: Sum(SalesLine.outstanding_amount)
+func (t *Currency) calcForRecords_customer_outstanding_orders(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+	if t.Customer_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+	}
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "document_type = ?")
+		args = append(args, 1)
+		if t.Customer_filter != "" {
+			// FlowFilter customer_filter applied to bill_to_customer_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("bill_to_customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if chunk != nil {
+			whereClauses = append(whereClauses, "currency_code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT currency_code, COALESCE(SUM(outstanding_amount), 0) FROM "%s" WHERE %s GROUP BY currency_code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate customer_outstanding_orders: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["customer_outstanding_orders"] = v.String()
+	}
+}
+
+// calcForRecords_customer_shipped_not_invoiced calculates the customer_shipped_not_invoiced FlowField for a set of records
+// CalcFormula: Sum(SalesLine.shipped_not_invoiced)
+func (t *Currency) calcForRecords_customer_shipped_not_invoiced(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+	if t.Customer_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+	}
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "document_type = ?")
+		args = append(args, 1)
+		if t.Customer_filter != "" {
+			// FlowFilter customer_filter applied to bill_to_customer_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("bill_to_customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if chunk != nil {
+			whereClauses = append(whereClauses, "currency_code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT currency_code, COALESCE(SUM(shipped_not_invoiced), 0) FROM "%s" WHERE %s GROUP BY currency_code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate customer_shipped_not_invoiced: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["customer_shipped_not_invoiced"] = v.String()
+	}
+}
+
+// calcForRecords_customer_balance_due calculates the customer_balance_due FlowField for a set of records
+// CalcFormula: Sum(CustomerLedgerEntry.remaining_amount)
+func (t *Currency) calcForRecords_customer_balance_due(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+	if t.Customer_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+	}
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "open = ?")
+		args = append(args, true)
+		if t.Customer_filter != "" {
+			// FlowFilter customer_filter applied to customer_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to due_date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("due_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if chunk != nil {
+			whereClauses = append(whereClauses, "currency_code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT currency_code, COALESCE(SUM(remaining_amount), 0) FROM "%s" WHERE %s GROUP BY currency_code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate customer_balance_due: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["customer_balance_due"] = v.String()
+	}
+}
+
+// calcForRecords_vendor_ledg_entries_in_filter calculates the vendor_ledg_entries_in_filter FlowField for a set of records
+// CalcFormula: Exist(VendorLedgerEntry.entry_no)
+func (t *Currency) calcForRecords_vendor_ledg_entries_in_filter(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+	if t.Vendor_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+	}
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]int, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		if t.Vendor_filter != "" {
+			// FlowFilter vendor_filter applied to vendor_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if chunk != nil {
+			whereClauses = append(whereClauses, "currency_code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COUNT(*)"
+		if useSIFT {
+			agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
+		}
+		query := fmt.Sprintf(`SELECT currency_code, %s FROM "%s" WHERE %s GROUP BY currency_code`, agg, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate vendor_ledg_entries_in_filter: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var count int
+			if err := rows.Scan(&key, &count); err == nil {
+				values[key] = count
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		rec["vendor_ledg_entries_in_filter"] = values[fmt.Sprint(rec["code"])] > 0
+	}
+}
+
+// calcForRecords_vendor_balance calculates the vendor_balance FlowField for a set of records
+// CalcFormula: Sum(VendorLedgerEntry.amount)
+func (t *Currency) calcForRecords_vendor_balance(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+	if t.Vendor_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+	}
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		if t.Vendor_filter != "" {
+			// FlowFilter vendor_filter applied to vendor_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if chunk != nil {
+			whereClauses = append(whereClauses, "currency_code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT currency_code, -COALESCE(SUM(amount), 0) FROM "%s" WHERE %s GROUP BY currency_code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate vendor_balance: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["vendor_balance"] = v.String()
+	}
+}
+
+// calcForRecords_vendor_outstanding_orders calculates the vendor_outstanding_orders FlowField for a set of records
+// CalcFormula: Sum(PurchaseLine.outstanding_amount)
+func (t *Currency) calcForRecords_vendor_outstanding_orders(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+	if t.Vendor_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+	}
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "document_type = ?")
+		args = append(args, 1)
+		if t.Vendor_filter != "" {
+			// FlowFilter vendor_filter applied to pay_to_vendor_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("pay_to_vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if chunk != nil {
+			whereClauses = append(whereClauses, "currency_code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT currency_code, COALESCE(SUM(outstanding_amount), 0) FROM "%s" WHERE %s GROUP BY currency_code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate vendor_outstanding_orders: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["vendor_outstanding_orders"] = v.String()
+	}
+}
+
+// calcForRecords_vendor_amt_rcd_not_invoiced calculates the vendor_amt_rcd_not_invoiced FlowField for a set of records
+// CalcFormula: Sum(PurchaseLine.amt_rcd_not_invoiced)
+func (t *Currency) calcForRecords_vendor_amt_rcd_not_invoiced(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+	if t.Vendor_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+	}
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "document_type = ?")
+		args = append(args, 1)
+		if t.Vendor_filter != "" {
+			// FlowFilter vendor_filter applied to pay_to_vendor_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("pay_to_vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if chunk != nil {
+			whereClauses = append(whereClauses, "currency_code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT currency_code, COALESCE(SUM(amt_rcd_not_invoiced), 0) FROM "%s" WHERE %s GROUP BY currency_code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate vendor_amt_rcd_not_invoiced: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["vendor_amt_rcd_not_invoiced"] = v.String()
+	}
+}
+
+// calcForRecords_vendor_balance_due calculates the vendor_balance_due FlowField for a set of records
+// CalcFormula: Sum(VendorLedgerEntry.remaining_amount)
+func (t *Currency) calcForRecords_vendor_balance_due(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+	if t.Vendor_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+	}
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "open = ?")
+		args = append(args, true)
+		if t.Vendor_filter != "" {
+			// FlowFilter vendor_filter applied to vendor_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to due_date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("due_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if chunk != nil {
+			whereClauses = append(whereClauses, "currency_code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT currency_code, -COALESCE(SUM(remaining_amount), 0) FROM "%s" WHERE %s GROUP BY currency_code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate vendor_balance_due: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["vendor_balance_due"] = v.String()
+	}
+}
+
+// calcForRecords_customer_balance_lcy calculates the customer_balance_lcy FlowField for a set of records
+// CalcFormula: Sum(CustomerLedgerEntry.amount_lcy)
+func (t *Currency) calcForRecords_customer_balance_lcy(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+	if t.Customer_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+	}
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		if t.Customer_filter != "" {
+			// FlowFilter customer_filter applied to customer_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if chunk != nil {
+			whereClauses = append(whereClauses, "currency_code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT currency_code, COALESCE(SUM(amount_lcy), 0) FROM "%s" WHERE %s GROUP BY currency_code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate customer_balance_lcy: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["customer_balance_lcy"] = v.String()
+	}
+}
+
+// calcForRecords_vendor_balance_lcy calculates the vendor_balance_lcy FlowField for a set of records
+// CalcFormula: Sum(VendorLedgerEntry.amount_lcy)
+func (t *Currency) calcForRecords_vendor_balance_lcy(records []map[string]interface{}) {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+	if t.Vendor_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+	}
+	_ = useSIFT
+
+	// Distinct key values of the records
+	seen := make(map[string]bool, len(records))
+	var keys []interface{}
+	for _, rec := range records {
+		k := fmt.Sprint(rec["code"])
+		if !seen[k] {
+			seen[k] = true
+			keys = append(keys, rec["code"])
+		}
+	}
+
+	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
+	// list) one grouped query over the whole source table instead: much cheaper than
+	// many IN queries, and it keeps the bind parameters bounded.
+	values := make(map[string]types.Decimal, len(keys))
+	const chunkSize = 500
+	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
+	if len(keys) <= chunkSize {
+		chunks = [][]interface{}{keys}
+	}
+	for _, chunk := range chunks {
+
+		var whereClauses []string
+		var args []interface{}
+		if t.Vendor_filter != "" {
+			// FlowFilter vendor_filter applied to vendor_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if chunk != nil {
+			whereClauses = append(whereClauses, "currency_code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
+			args = append(args, chunk...)
+		}
+		whereClause := "1=1"
+		if len(whereClauses) > 0 {
+			whereClause = strings.Join(whereClauses, " AND ")
+		}
+		query := fmt.Sprintf(`SELECT currency_code, -COALESCE(SUM(amount_lcy), 0) FROM "%s" WHERE %s GROUP BY currency_code`, tableName, whereClause)
+		query = t.convertPlaceholders(query, len(args))
+
+		rows, err := t.db.Query(query, args...)
+		if err != nil {
+			fmt.Printf("Error: Failed to calculate vendor_balance_lcy: %v\n", err)
+			return
+		}
+		for rows.Next() {
+			var key string
+			var sumStr string
+			if err := rows.Scan(&key, &sumStr); err == nil {
+				values[key], _ = types.NewDecimalFromString(sumStr)
+			}
+		}
+		_ = rows.Close()
+	}
+
+	// Records without matching entries get zero
+	for _, rec := range records {
+		v, ok := values[fmt.Sprint(rec["code"])]
+		if !ok {
+			v = types.ZeroDecimal()
+		}
+		rec["vendor_balance_lcy"] = v.String()
+	}
+}
+
+// Helper methods for FlowField calculations
+
+func (t *Currency) calcCount_cust_ledg_entries_in_filter() int {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+	if t.Customer_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+	}
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "currency_code = ?")
+	args = append(args, t.Code)
+	if t.Customer_filter != "" {
+		// FlowFilter customer_filter applied to customer_no (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	agg := "COUNT(*)"
+	if useSIFT {
+		agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
+	}
+	query := fmt.Sprintf(`SELECT %s FROM "%s" WHERE %s`, agg, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var count int
+	err := t.db.QueryRow(query, args...).Scan(&count)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate count for cust_ledg_entries_in_filter: %v\n", err)
+		return 0
+	}
+
+	return count
+}
+
+func (t *Currency) calcSum_customer_balance() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+	if t.Customer_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+	}
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "currency_code = ?")
+	args = append(args, t.Code)
+	if t.Customer_filter != "" {
+		// FlowFilter customer_filter applied to customer_no (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Date_filter != "" {
+		// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for customer_balance: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *Currency) calcSum_customer_outstanding_orders() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+	if t.Customer_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+	}
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "document_type = ?")
+	args = append(args, 1)
+	whereClauses = append(whereClauses, "currency_code = ?")
+	args = append(args, t.Code)
+	if t.Customer_filter != "" {
+		// FlowFilter customer_filter applied to bill_to_customer_no (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("bill_to_customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(outstanding_amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for customer_outstanding_orders: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *Currency) calcSum_customer_shipped_not_invoiced() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+	if t.Customer_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+	}
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "document_type = ?")
+	args = append(args, 1)
+	whereClauses = append(whereClauses, "currency_code = ?")
+	args = append(args, t.Code)
+	if t.Customer_filter != "" {
+		// FlowFilter customer_filter applied to bill_to_customer_no (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("bill_to_customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(shipped_not_invoiced), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for customer_shipped_not_invoiced: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *Currency) calcSum_customer_balance_due() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+	if t.Customer_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+	}
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "open = ?")
+	args = append(args, true)
+	whereClauses = append(whereClauses, "currency_code = ?")
+	args = append(args, t.Code)
+	if t.Customer_filter != "" {
+		// FlowFilter customer_filter applied to customer_no (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Date_filter != "" {
+		// FlowFilter date_filter applied to due_date (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("due_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(remaining_amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for customer_balance_due: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *Currency) calcCount_vendor_ledg_entries_in_filter() int {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+	if t.Vendor_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+	}
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "currency_code = ?")
+	args = append(args, t.Code)
+	if t.Vendor_filter != "" {
+		// FlowFilter vendor_filter applied to vendor_no (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	agg := "COUNT(*)"
+	if useSIFT {
+		agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
+	}
+	query := fmt.Sprintf(`SELECT %s FROM "%s" WHERE %s`, agg, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var count int
+	err := t.db.QueryRow(query, args...).Scan(&count)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate count for vendor_ledg_entries_in_filter: %v\n", err)
+		return 0
+	}
+
+	return count
+}
+
+func (t *Currency) calcSum_vendor_balance() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+	if t.Vendor_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+	}
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "currency_code = ?")
+	args = append(args, t.Code)
+	if t.Vendor_filter != "" {
+		// FlowFilter vendor_filter applied to vendor_no (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Date_filter != "" {
+		// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT -COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for vendor_balance: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *Currency) calcSum_vendor_outstanding_orders() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+	if t.Vendor_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+	}
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "document_type = ?")
+	args = append(args, 1)
+	whereClauses = append(whereClauses, "currency_code = ?")
+	args = append(args, t.Code)
+	if t.Vendor_filter != "" {
+		// FlowFilter vendor_filter applied to pay_to_vendor_no (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("pay_to_vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(outstanding_amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for vendor_outstanding_orders: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *Currency) calcSum_vendor_amt_rcd_not_invoiced() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+	if t.Vendor_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+	}
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "document_type = ?")
+	args = append(args, 1)
+	whereClauses = append(whereClauses, "currency_code = ?")
+	args = append(args, t.Code)
+	if t.Vendor_filter != "" {
+		// FlowFilter vendor_filter applied to pay_to_vendor_no (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("pay_to_vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(amt_rcd_not_invoiced), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for vendor_amt_rcd_not_invoiced: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *Currency) calcSum_vendor_balance_due() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+	if t.Vendor_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+	}
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "open = ?")
+	args = append(args, true)
+	whereClauses = append(whereClauses, "currency_code = ?")
+	args = append(args, t.Code)
+	if t.Vendor_filter != "" {
+		// FlowFilter vendor_filter applied to vendor_no (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Date_filter != "" {
+		// FlowFilter date_filter applied to due_date (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("due_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT -COALESCE(SUM(remaining_amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for vendor_balance_due: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *Currency) calcSum_customer_balance_lcy() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+	if t.Customer_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+	}
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "currency_code = ?")
+	args = append(args, t.Code)
+	if t.Customer_filter != "" {
+		// FlowFilter customer_filter applied to customer_no (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Date_filter != "" {
+		// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount_lcy), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for customer_balance_lcy: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
+}
+
+func (t *Currency) calcSum_vendor_balance_lcy() types.Decimal {
+	// Source: the SIFT totals table of a key covering the filters, else the entries
+	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+	if t.Vendor_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+		// A FlowFilter is set: the key must contain the filtered fields too
+		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+	}
+	_ = useSIFT
+
+	// Build WHERE clause from FlowFilters
+	var whereClauses []string
+	var args []interface{}
+	whereClauses = append(whereClauses, "currency_code = ?")
+	args = append(args, t.Code)
+	if t.Vendor_filter != "" {
+		// FlowFilter vendor_filter applied to vendor_no (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_1_filter != "" {
+		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Dimension_2_filter != "" {
+		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+	if t.Date_filter != "" {
+		// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
+	}
+
+	whereClause := "1=1"
+	if len(whereClauses) > 0 {
+		whereClause = strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf(`SELECT -COALESCE(SUM(amount_lcy), 0) FROM "%s" WHERE %s`, tableName, whereClause)
+
+	// Convert placeholders for PostgreSQL
+	query = t.convertPlaceholders(query, len(args))
+
+	var sumStr string
+	err := t.db.QueryRow(query, args...).Scan(&sumStr)
+	if err != nil {
+		fmt.Printf("Error: Failed to calculate sum for vendor_balance_lcy: %v\n", err)
+		return types.ZeroDecimal()
+	}
+
+	sum, _ := types.NewDecimalFromString(sumStr)
+	return sum
 }
 
 // ========================================
@@ -1755,6 +3931,7 @@ type currencyFilterCondition struct {
 	isExpression bool   // True if using filterExpr instead of min/max
 	invalidField bool   // Filter on an unknown field: matches no rows (fail closed)
 	blankDate    bool   // A date range from the blank date: blank dates (NULL) match too
+	flowField    string // Filter on a FlowField (filterExpr applied to its subquery)
 }
 
 // SetRange sets a range filter on a field
@@ -1830,6 +4007,16 @@ func (t *Currency) SetFilter(fieldName, filterExpr string) {
 	if t.filters == nil {
 		t.filters = make(map[string]*currencyFilterCondition)
 	}
+	if _, ok := t.FlowFieldFilterKind(fieldName); ok {
+		// A FlowField is not a column: the filter applies to its subquery (flowFieldExpr)
+		name := strings.ToLower(fieldName)
+		t.filters["flowfield:"+name] = &currencyFilterCondition{
+			flowField:    name,
+			filterExpr:   filterExpr,
+			isExpression: true,
+		}
+		return
+	}
 	column, ok := t.columnName(fieldName)
 	if !ok {
 		// Unknown field: fail closed (no rows) rather than drop the filter or put
@@ -1845,12 +4032,490 @@ func (t *Currency) SetFilter(fieldName, filterExpr string) {
 	}
 }
 
+// FlowFieldFilterKind reports whether a list can be filtered on FlowField field (Sum and
+// Count FlowFields: SETFILTER on a FlowField) and the kind of its values.
+func (t *Currency) FlowFieldFilterKind(field string) (flowfilter.Kind, bool) {
+	switch strings.ToLower(field) {
+	case "customer_balance":
+		return flowfilter.KindDecimal, true
+	case "customer_outstanding_orders":
+		return flowfilter.KindDecimal, true
+	case "customer_shipped_not_invoiced":
+		return flowfilter.KindDecimal, true
+	case "customer_balance_due":
+		return flowfilter.KindDecimal, true
+	case "vendor_balance":
+		return flowfilter.KindDecimal, true
+	case "vendor_outstanding_orders":
+		return flowfilter.KindDecimal, true
+	case "vendor_amt_rcd_not_invoiced":
+		return flowfilter.KindDecimal, true
+	case "vendor_balance_due":
+		return flowfilter.KindDecimal, true
+	case "customer_balance_lcy":
+		return flowfilter.KindDecimal, true
+	case "vendor_balance_lcy":
+		return flowfilter.KindDecimal, true
+	}
+	return "", false
+}
+
+// flowFieldExpr is the SQL expression computing FlowField field for each row of a query
+// on this table: a correlated subquery reading the source like CalcFieldsForRecords (the
+// SIFT totals of a covering key, else the entries), with the FlowFilters set on t.
+func (t *Currency) flowFieldExpr(field string) (string, []interface{}) {
+	outer := "\"" + fmt.Sprintf("%s$%s", t.company, CurrencyTableName) + "\""
+	_ = outer
+	switch strings.ToLower(field) {
+	case "customer_balance":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+		if t.Customer_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+			// A FlowFilter is set: the key must contain the filtered fields too
+			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+		}
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "currency_code = "+outer+".code")
+		if t.Customer_filter != "" {
+			// FlowFilter customer_filter applied to customer_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(amount), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "customer_outstanding_orders":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+		if t.Customer_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
+			// A FlowFilter is set: the key must contain the filtered fields too
+			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+		}
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "document_type = ?")
+		args = append(args, 1)
+		whereClauses = append(whereClauses, "currency_code = "+outer+".code")
+		if t.Customer_filter != "" {
+			// FlowFilter customer_filter applied to bill_to_customer_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("bill_to_customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(outstanding_amount), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "customer_shipped_not_invoiced":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+		if t.Customer_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
+			// A FlowFilter is set: the key must contain the filtered fields too
+			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
+		}
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "document_type = ?")
+		args = append(args, 1)
+		whereClauses = append(whereClauses, "currency_code = "+outer+".code")
+		if t.Customer_filter != "" {
+			// FlowFilter customer_filter applied to bill_to_customer_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("bill_to_customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(shipped_not_invoiced), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "customer_balance_due":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+		if t.Customer_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+			// A FlowFilter is set: the key must contain the filtered fields too
+			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+		}
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "open = ?")
+		args = append(args, true)
+		whereClauses = append(whereClauses, "currency_code = "+outer+".code")
+		if t.Customer_filter != "" {
+			// FlowFilter customer_filter applied to customer_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to due_date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("due_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(remaining_amount), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "vendor_balance":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+		if t.Vendor_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+			// A FlowFilter is set: the key must contain the filtered fields too
+			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+		}
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "currency_code = "+outer+".code")
+		if t.Vendor_filter != "" {
+			// FlowFilter vendor_filter applied to vendor_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "-COALESCE(SUM(amount), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "vendor_outstanding_orders":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+		if t.Vendor_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
+			// A FlowFilter is set: the key must contain the filtered fields too
+			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+		}
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "document_type = ?")
+		args = append(args, 1)
+		whereClauses = append(whereClauses, "currency_code = "+outer+".code")
+		if t.Vendor_filter != "" {
+			// FlowFilter vendor_filter applied to pay_to_vendor_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("pay_to_vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(outstanding_amount), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "vendor_amt_rcd_not_invoiced":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+		if t.Vendor_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
+			// A FlowFilter is set: the key must contain the filtered fields too
+			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), false
+		}
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "document_type = ?")
+		args = append(args, 1)
+		whereClauses = append(whereClauses, "currency_code = "+outer+".code")
+		if t.Vendor_filter != "" {
+			// FlowFilter vendor_filter applied to pay_to_vendor_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("pay_to_vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(amt_rcd_not_invoiced), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "vendor_balance_due":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+		if t.Vendor_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+			// A FlowFilter is set: the key must contain the filtered fields too
+			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+		}
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "open = ?")
+		args = append(args, true)
+		whereClauses = append(whereClauses, "currency_code = "+outer+".code")
+		if t.Vendor_filter != "" {
+			// FlowFilter vendor_filter applied to vendor_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to due_date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("due_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "-COALESCE(SUM(remaining_amount), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "customer_balance_lcy":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+		if t.Customer_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+			// A FlowFilter is set: the key must contain the filtered fields too
+			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
+		}
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "currency_code = "+outer+".code")
+		if t.Customer_filter != "" {
+			// FlowFilter customer_filter applied to customer_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("customer_no", flowfilter.KindCode, t.Customer_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "COALESCE(SUM(amount_lcy), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	case "vendor_balance_lcy":
+		// Source: the SIFT totals table of a key covering the filters, else the entries
+		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+		if t.Vendor_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
+			// A FlowFilter is set: the key must contain the filtered fields too
+			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
+		}
+		_ = useSIFT
+		var whereClauses []string
+		var args []interface{}
+		whereClauses = append(whereClauses, "currency_code = "+outer+".code")
+		if t.Vendor_filter != "" {
+			// FlowFilter vendor_filter applied to vendor_no (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("vendor_no", flowfilter.KindCode, t.Vendor_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_1_filter != "" {
+			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Dimension_2_filter != "" {
+			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		if t.Date_filter != "" {
+			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
+		where := "1=1"
+		if len(whereClauses) > 0 {
+			where = strings.Join(whereClauses, " AND ")
+		}
+		agg := "-COALESCE(SUM(amount_lcy), 0)"
+		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
+	}
+	return "NULL", nil
+}
+
 // SetCurrentKey sets the sort order for queries
 // Unknown fields are ignored (the primary key order is used if none remain).
 // Example: customer.SetCurrentKey("City", "Name")
 func (t *Currency) SetCurrentKey(fields ...string) {
 	t.orderByFields = nil
 	for _, field := range fields {
+		// A Sum/Count FlowField sorts on its calculated value (flowFieldExpr, see getOrderByClause)
+		if _, ok := t.FlowFieldFilterKind(field); ok {
+			t.orderByFields = append(t.orderByFields, "flowfield:"+strings.ToLower(field))
+			continue
+		}
 		column, ok := t.columnName(field)
 		if !ok {
 			fmt.Printf("Error: SetCurrentKey on unknown field %q of Currency\n", field)
@@ -1988,6 +4653,18 @@ func (t *Currency) buildWhereClause() (string, []interface{}) {
 	for _, filter := range filters {
 		if filter.invalidField {
 			conditions = append(conditions, "1=0")
+		} else if filter.flowField != "" {
+			// filter syntax on the FlowField's value; an invalid expression matches no rows
+			// (the API validates it first and reports it)
+			kind, _ := t.FlowFieldFilterKind(filter.flowField)
+			expr, exprArgs := t.flowFieldExpr(filter.flowField)
+			clause, clauseArgs, err := flowfilter.ClauseFor(expr, exprArgs, kind, filter.filterExpr)
+			if err != nil {
+				conditions = append(conditions, "1=0")
+			} else if clause != "" {
+				conditions = append(conditions, clause)
+				args = append(args, clauseArgs...)
+			}
 		} else if filter.isExpression {
 			// Parse filter expression
 			clause, exprArgs := t.parseFilterExpression(filter.fieldName, filter.filterExpr)
@@ -2260,6 +4937,12 @@ func (t *Currency) getOrderByClause() (string, []interface{}) {
 	var columns []string
 	var args []interface{}
 	for _, column := range t.orderByFields {
+		if name, ok := strings.CutPrefix(column, "flowfield:"); ok {
+			expr, exprArgs := t.flowFieldExpr(name)
+			columns = append(columns, expr)
+			args = append(args, exprArgs...)
+			continue
+		}
 		columns = append(columns, t.cmpColumn(column))
 	}
 	for _, column := range pk {
@@ -2898,6 +5581,18 @@ func (t *Currency) copyFromBuffered(record *Currency) {
 	t.Description = record.Description
 	t.Amount_decimal_places = record.Amount_decimal_places
 	t.Unit_amount_decimal_places = record.Unit_amount_decimal_places
+	t.Cust_ledg_entries_in_filter = record.Cust_ledg_entries_in_filter
+	t.Customer_balance = record.Customer_balance
+	t.Customer_outstanding_orders = record.Customer_outstanding_orders
+	t.Customer_shipped_not_invoiced = record.Customer_shipped_not_invoiced
+	t.Customer_balance_due = record.Customer_balance_due
+	t.Vendor_ledg_entries_in_filter = record.Vendor_ledg_entries_in_filter
+	t.Vendor_balance = record.Vendor_balance
+	t.Vendor_outstanding_orders = record.Vendor_outstanding_orders
+	t.Vendor_amt_rcd_not_invoiced = record.Vendor_amt_rcd_not_invoiced
+	t.Vendor_balance_due = record.Vendor_balance_due
+	t.Customer_balance_lcy = record.Customer_balance_lcy
+	t.Vendor_balance_lcy = record.Vendor_balance_lcy
 	t.Appln_rounding_precision = record.Appln_rounding_precision
 	t.Emu_currency = record.Emu_currency
 	t.Currency_factor = record.Currency_factor
@@ -3654,6 +6349,30 @@ func (t *Currency) FieldValue(no int) (any, bool) {
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *Currency) flowFieldValue(no int) (any, bool) {
 	switch no {
+	case 24:
+		return t.Cust_ledg_entries_in_filter, true
+	case 25:
+		return t.Customer_balance, true
+	case 26:
+		return t.Customer_outstanding_orders, true
+	case 27:
+		return t.Customer_shipped_not_invoiced, true
+	case 28:
+		return t.Customer_balance_due, true
+	case 29:
+		return t.Vendor_ledg_entries_in_filter, true
+	case 30:
+		return t.Vendor_balance, true
+	case 31:
+		return t.Vendor_outstanding_orders, true
+	case 32:
+		return t.Vendor_amt_rcd_not_invoiced, true
+	case 33:
+		return t.Vendor_balance_due, true
+	case 34:
+		return t.Customer_balance_lcy, true
+	case 35:
+		return t.Vendor_balance_lcy, true
 	}
 	return nil, false
 }
@@ -4068,6 +6787,9 @@ func (t *Currency) FilterExpressions() []tables.FieldFilter {
 			continue
 		}
 		field := f.fieldName
+		if f.flowField != "" {
+			field = f.flowField
+		}
 		result = append(result, tables.FieldFilter{Field: field, Expression: expr})
 	}
 	return result
@@ -4476,15 +7198,39 @@ func (t *Currency) ToMap() map[string]interface{} {
 		"description":                    t.Description.String(),
 		"amount_decimal_places":          t.Amount_decimal_places.String(),
 		"unit_amount_decimal_places":     t.Unit_amount_decimal_places.String(),
-		"appln_rounding_precision":       t.Appln_rounding_precision.String(),
-		"emu_currency":                   t.Emu_currency,
-		"currency_factor":                t.Currency_factor.String(),
-		"realized_gl_gains_account":      t.Realized_gl_gains_account.String(),
-		"realized_gl_losses_account":     t.Realized_gl_losses_account.String(),
-		"residual_gains_account":         t.Residual_gains_account.String(),
-		"residual_losses_account":        t.Residual_losses_account.String(),
-		"conv_lcy_rndg_debit_acc":        t.Conv_lcy_rndg_debit_acc.String(),
-		"conv_lcy_rndg_credit_acc":       t.Conv_lcy_rndg_credit_acc.String(),
+		// FlowField: cust_ledg_entries_in_filter
+		"cust_ledg_entries_in_filter": t.Cust_ledg_entries_in_filter,
+		// FlowField: customer_balance
+		"customer_balance": t.Customer_balance.String(),
+		// FlowField: customer_outstanding_orders
+		"customer_outstanding_orders": t.Customer_outstanding_orders.String(),
+		// FlowField: customer_shipped_not_invoiced
+		"customer_shipped_not_invoiced": t.Customer_shipped_not_invoiced.String(),
+		// FlowField: customer_balance_due
+		"customer_balance_due": t.Customer_balance_due.String(),
+		// FlowField: vendor_ledg_entries_in_filter
+		"vendor_ledg_entries_in_filter": t.Vendor_ledg_entries_in_filter,
+		// FlowField: vendor_balance
+		"vendor_balance": t.Vendor_balance.String(),
+		// FlowField: vendor_outstanding_orders
+		"vendor_outstanding_orders": t.Vendor_outstanding_orders.String(),
+		// FlowField: vendor_amt_rcd_not_invoiced
+		"vendor_amt_rcd_not_invoiced": t.Vendor_amt_rcd_not_invoiced.String(),
+		// FlowField: vendor_balance_due
+		"vendor_balance_due": t.Vendor_balance_due.String(),
+		// FlowField: customer_balance_lcy
+		"customer_balance_lcy": t.Customer_balance_lcy.String(),
+		// FlowField: vendor_balance_lcy
+		"vendor_balance_lcy":         t.Vendor_balance_lcy.String(),
+		"appln_rounding_precision":   t.Appln_rounding_precision.String(),
+		"emu_currency":               t.Emu_currency,
+		"currency_factor":            t.Currency_factor.String(),
+		"realized_gl_gains_account":  t.Realized_gl_gains_account.String(),
+		"realized_gl_losses_account": t.Realized_gl_losses_account.String(),
+		"residual_gains_account":     t.Residual_gains_account.String(),
+		"residual_losses_account":    t.Residual_losses_account.String(),
+		"conv_lcy_rndg_debit_acc":    t.Conv_lcy_rndg_debit_acc.String(),
+		"conv_lcy_rndg_credit_acc":   t.Conv_lcy_rndg_credit_acc.String(),
 	}
 }
 
@@ -4818,6 +7564,136 @@ func (t *Currency) GetFields() []tables.FieldInfo {
 			FlowField:  false,
 		},
 		{
+			No:         24,
+			Name:       "cust_ledg_entries_in_filter",
+			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  true,
+		},
+		{
+			No:            25,
+			Name:          "customer_balance",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "2:2",
+		},
+		{
+			No:            26,
+			Name:          "customer_outstanding_orders",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "2:2",
+		},
+		{
+			No:            27,
+			Name:          "customer_shipped_not_invoiced",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "2:2",
+		},
+		{
+			No:            28,
+			Name:          "customer_balance_due",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "2:2",
+		},
+		{
+			No:         29,
+			Name:       "vendor_ledg_entries_in_filter",
+			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  true,
+		},
+		{
+			No:            30,
+			Name:          "vendor_balance",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "2:2",
+		},
+		{
+			No:            31,
+			Name:          "vendor_outstanding_orders",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "2:2",
+		},
+		{
+			No:            32,
+			Name:          "vendor_amt_rcd_not_invoiced",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "2:2",
+		},
+		{
+			No:            33,
+			Name:          "vendor_balance_due",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "2:2",
+		},
+		{
+			No:            34,
+			Name:          "customer_balance_lcy",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "2:2",
+		},
+		{
+			No:            35,
+			Name:          "vendor_balance_lcy",
+			Type:          tables.FieldTypeDecimal,
+			Length:        0,
+			Required:      false,
+			Editable:      true,
+			PrimaryKey:    false,
+			FlowField:     true,
+			DecimalPlaces: "2:2",
+		},
+		{
 			No:         44,
 			Name:       "appln_rounding_precision",
 			Type:       tables.FieldTypeDecimal,
@@ -4915,6 +7791,36 @@ func (t *Currency) GetFields() []tables.FieldInfo {
 // FlowFilter field); FlowFields applying it use it from then on. "" clears it.
 func (t *Currency) SetFlowFilter(field, expr string) error {
 	switch field {
+	case "customer_filter":
+		if err := flowfilter.Validate(flowfilter.KindCode, expr); err != nil {
+			return err
+		}
+		t.Customer_filter = expr
+		return nil
+	case "vendor_filter":
+		if err := flowfilter.Validate(flowfilter.KindCode, expr); err != nil {
+			return err
+		}
+		t.Vendor_filter = expr
+		return nil
+	case "dimension_1_filter":
+		if err := flowfilter.Validate(flowfilter.KindCode, expr); err != nil {
+			return err
+		}
+		t.Dimension_1_filter = expr
+		return nil
+	case "dimension_2_filter":
+		if err := flowfilter.Validate(flowfilter.KindCode, expr); err != nil {
+			return err
+		}
+		t.Dimension_2_filter = expr
+		return nil
+	case "date_filter":
+		if err := flowfilter.Validate(flowfilter.KindDate, expr); err != nil {
+			return err
+		}
+		t.Date_filter = expr
+		return nil
 	}
 	return fmt.Errorf("%q is not a FlowFilter field of Currency", field)
 }
@@ -4923,17 +7829,51 @@ func (t *Currency) SetFlowFilter(field, expr string) error {
 // the record's filters (a page opened with SetTableView shows them)
 func (t *Currency) FlowFilterExpressions() []tables.FieldFilter {
 	var result []tables.FieldFilter
+	if t.Customer_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "customer_filter", Expression: t.Customer_filter})
+	}
+	if t.Vendor_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "vendor_filter", Expression: t.Vendor_filter})
+	}
+	if t.Dimension_1_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "dimension_1_filter", Expression: t.Dimension_1_filter})
+	}
+	if t.Dimension_2_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "dimension_2_filter", Expression: t.Dimension_2_filter})
+	}
+	if t.Date_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "date_filter", Expression: t.Date_filter})
+	}
 	return result
 }
 
 // GetFlowFilterFields returns the FlowFilter fields (name and flowfilter kind)
 func (t *Currency) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
-	return []tables.FlowFilterFieldInfo{}
+	return []tables.FlowFilterFieldInfo{
+		{Name: "customer_filter", Kind: string(flowfilter.KindCode)},
+		{Name: "vendor_filter", Kind: string(flowfilter.KindCode)},
+		{Name: "dimension_1_filter", Kind: string(flowfilter.KindCode)},
+		{Name: "dimension_2_filter", Kind: string(flowfilter.KindCode)},
+		{Name: "date_filter", Kind: string(flowfilter.KindDate)},
+	}
 }
 
 // GetFlowFields returns names of FlowFields that need CalcFields
 func (t *Currency) GetFlowFields() []string {
-	return []string{}
+	return []string{
+		"cust_ledg_entries_in_filter",
+		"customer_balance",
+		"customer_outstanding_orders",
+		"customer_shipped_not_invoiced",
+		"customer_balance_due",
+		"vendor_ledg_entries_in_filter",
+		"vendor_balance",
+		"vendor_outstanding_orders",
+		"vendor_amt_rcd_not_invoiced",
+		"vendor_balance_due",
+		"customer_balance_lcy",
+		"vendor_balance_lcy",
+	}
 }
 
 // GetOptionFields returns Option field names mapped to their option values

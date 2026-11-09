@@ -94,3 +94,12 @@ page:
       run_page_filters:
         - {field: table_name, const: "7"}   # Resource Group
         - {field: "no", value: "no"}
+
+    - name: Statistics
+      caption: Statistics
+      image: Statistics
+      shortcut: F7
+      promoted: true
+      run_page: 230
+      run_page_filter_field: "no"
+      run_page_filter_value: "no"

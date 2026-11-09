@@ -1,0 +1,32 @@
+# Page 482 Vendor Stats. by Currencies (classic form 482 with its lines 487): per currency — the blank
+# one (LCY) and those the vendor has entries in — the balance, outstanding orders, received not
+# invoiced, their total and the balance due, in the currency (business-logic/pages/statsbycurrencies.go)
+page:
+  id: 482
+  type: List
+  name: Vendor Stats. by Currencies
+  source_table: Currency
+  source_table_temporary: true   # the currencies with entries of the vendor (page parameter vendor_no)
+  caption: Vendor Stats. by Currencies
+  editable: false
+
+  layout:
+    repeater:
+      fields:
+        - source: code
+          width: 90
+        - source: description
+          width: 220
+        - source: vendor_balance
+          width: 130
+        - source: vendor_outstanding_orders
+          width: 130
+        - source: vendor_amt_rcd_not_invoiced
+          width: 130
+        - source: total_amount
+          calculated: true
+          type: types.Decimal
+          decimal_places: "2:2"
+          width: 130
+        - source: vendor_balance_due
+          width: 130

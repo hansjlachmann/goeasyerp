@@ -213,6 +213,10 @@
 			if (value === undefined || value === null || value === '') return;
 			filters.push({ field: column.drilldown_filter_field, expression: String(value) });
 		}
+		// the column's constant filters (Balance Due: the open entries)
+		for (const f of column.drilldown_filters ?? []) {
+			if (f.const !== undefined) filters.push({ field: f.field, expression: f.const });
+		}
 		const dateField = column.drilldown_date_field || grid.drilldown_date_field;
 		if (dateField) {
 			const range = viewAs === 1 ? `..${row.period_end}` : `${row.period_start}..${row.period_end}`;

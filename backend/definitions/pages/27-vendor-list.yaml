@@ -130,6 +130,24 @@ page:
           run_page: 152
           run_page_filter_field: "no"
           run_page_filter_value: "no"
+        - name: Statistics by Currencies
+          caption: Statistics by Currencies
+          image: Statistics
+          run_page: 482
+          run_page_params:
+            vendor_no: "no"
+        - name: Entry Statistics
+          caption: Entry Statistics
+          image: Statistics
+          run_page: 303
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        - name: Vendor Purchases
+          caption: Vendor Purchases
+          image: Calendar
+          run_page: 156
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
 
     - name: Purchases
       caption: Purchases

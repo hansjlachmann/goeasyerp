@@ -1,0 +1,237 @@
+page:
+  id: 303
+  type: Card
+  name: Vendor Entry Statistics
+  source_table: Vendor   # opened from the Vendor Card and List on one vendor
+  caption: Vendor Entry Statistics
+  editable: false
+  # classic form 303: the last document of each type, the open entries' remaining amount (LCY) and,
+  # per period, the number of documents and the payment discounts received and missed
+  # (business-logic/pages/entrystatistics.go; captions pages.vendor_entry_statistics.fields.*)
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+          - source: name
+
+      - name: Last Payment
+        caption: Last Payment
+        fields:
+          - source: last_payment_date
+            calculated: true
+            type: types.Date
+          - source: last_payment_document_no
+            calculated: true
+            type: types.Code
+          - source: last_payment_currency_code
+            calculated: true
+            type: types.Code
+          - source: last_payment_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: last_payment_remaining_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: Last Invoice
+        caption: Last Invoice
+        fields:
+          - source: last_invoice_date
+            calculated: true
+            type: types.Date
+          - source: last_invoice_document_no
+            calculated: true
+            type: types.Code
+          - source: last_invoice_currency_code
+            calculated: true
+            type: types.Code
+          - source: last_invoice_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: last_invoice_remaining_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: Last Credit Memo
+        caption: Last Credit Memo
+        fields:
+          - source: last_credit_memo_date
+            calculated: true
+            type: types.Date
+          - source: last_credit_memo_document_no
+            calculated: true
+            type: types.Code
+          - source: last_credit_memo_currency_code
+            calculated: true
+            type: types.Code
+          - source: last_credit_memo_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: last_credit_memo_remaining_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: Last Finance Charge Memo
+        caption: Last Finance Charge Memo
+        fields:
+          - source: last_fin_charge_memo_date
+            calculated: true
+            type: types.Date
+          - source: last_fin_charge_memo_document_no
+            calculated: true
+            type: types.Code
+          - source: last_fin_charge_memo_currency_code
+            calculated: true
+            type: types.Code
+          - source: last_fin_charge_memo_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: last_fin_charge_memo_remaining_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: Last Reminder
+        caption: Last Reminder
+        fields:
+          - source: last_reminder_date
+            calculated: true
+            type: types.Date
+          - source: last_reminder_document_no
+            calculated: true
+            type: types.Code
+          - source: last_reminder_currency_code
+            calculated: true
+            type: types.Code
+          - source: last_reminder_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: last_reminder_remaining_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: Remaining Amt. (LCY)
+        caption: Remaining Amt. (LCY)
+        fields:
+          - source: remaining_amt_lcy_payment
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: remaining_amt_lcy_invoice
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: remaining_amt_lcy_credit_memo
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: remaining_amt_lcy_fin_charge_memo
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: remaining_amt_lcy_reminder
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: This Period
+        caption: This Period
+        fields:
+          - source: this_period_name
+            calculated: true
+            type: types.Text
+          - source: this_period_no_of_payments
+            calculated: true
+            type: int
+          - source: this_period_no_of_invoices
+            calculated: true
+            type: int
+          - source: this_period_no_of_credit_memos
+            calculated: true
+            type: int
+          - source: this_period_no_of_fin_charge_memos
+            calculated: true
+            type: int
+          - source: this_period_no_of_reminders
+            calculated: true
+            type: int
+          - source: this_period_pmt_disc_received_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: this_period_pmt_disc_missed_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: This Year
+        caption: This Year
+        fields:
+          - source: this_year_name
+            calculated: true
+            type: types.Text
+          - source: this_year_no_of_payments
+            calculated: true
+            type: int
+          - source: this_year_no_of_invoices
+            calculated: true
+            type: int
+          - source: this_year_no_of_credit_memos
+            calculated: true
+            type: int
+          - source: this_year_no_of_fin_charge_memos
+            calculated: true
+            type: int
+          - source: this_year_no_of_reminders
+            calculated: true
+            type: int
+          - source: this_year_pmt_disc_received_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: this_year_pmt_disc_missed_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: Last Year
+        caption: Last Year
+        fields:
+          - source: last_year_name
+            calculated: true
+            type: types.Text
+          - source: last_year_no_of_payments
+            calculated: true
+            type: int
+          - source: last_year_no_of_invoices
+            calculated: true
+            type: int
+          - source: last_year_no_of_credit_memos
+            calculated: true
+            type: int
+          - source: last_year_no_of_fin_charge_memos
+            calculated: true
+            type: int
+          - source: last_year_no_of_reminders
+            calculated: true
+            type: int
+          - source: last_year_pmt_disc_received_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: last_year_pmt_disc_missed_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"

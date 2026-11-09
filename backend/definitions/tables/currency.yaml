@@ -145,6 +145,329 @@ table:
       required: true
       default: "2:5"
 
+    # The customers' and vendors' amounts in the currency (classic fields 19–35, the statistics
+    # by currencies of pages 481/482): filtered by Customer/Vendor Filter, the dimensions and
+    # the Date Filter
+    - name: customer_filter
+      no: 19
+      type: types.Code
+      length: 20
+      flow_filter: true
+
+    - name: vendor_filter
+      no: 20
+      type: types.Code
+      length: 20
+      flow_filter: true
+
+    - name: dimension_1_filter
+      caption_class: "1,3,1"
+      no: 21
+      type: types.Code
+      length: 10
+      flow_filter: true
+
+    - name: dimension_2_filter
+      caption_class: "1,3,2"
+      no: 22
+      type: types.Code
+      length: 10
+      flow_filter: true
+
+    - name: date_filter
+      no: 23
+      type: types.Date
+      flow_filter: true
+
+    - name: cust_ledg_entries_in_filter
+      no: 24
+      type: bool
+      flow_field: true
+      calc_formula: Exist
+      source_table: CustomerLedgerEntry
+      source_field: entry_no
+      flow_filters:
+        - field: customer_no
+          type: filter
+          value: customer_filter
+        - field: currency_code
+          type: field
+          value: code
+
+    - name: customer_balance
+      no: 25
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: CustomerLedgerEntry
+      source_field: amount
+      flow_filters:
+        - field: customer_no
+          type: filter
+          value: customer_filter
+        - field: dimension_1_code
+          type: filter
+          value: dimension_1_filter
+        - field: dimension_2_code
+          type: filter
+          value: dimension_2_filter
+        - field: posting_date
+          type: filter
+          value: date_filter
+        - field: currency_code
+          type: field
+          value: code
+
+    - name: customer_outstanding_orders
+      no: 26
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: SalesLine
+      source_field: outstanding_amount
+      flow_filters:
+        - field: document_type
+          type: const
+          value: 1   # Order
+        - field: bill_to_customer_no
+          type: filter
+          value: customer_filter
+        - field: currency_code
+          type: field
+          value: code
+        - field: dimension_1_code
+          type: filter
+          value: dimension_1_filter
+        - field: dimension_2_code
+          type: filter
+          value: dimension_2_filter
+
+    - name: customer_shipped_not_invoiced
+      no: 27
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: SalesLine
+      source_field: shipped_not_invoiced
+      flow_filters:
+        - field: document_type
+          type: const
+          value: 1   # Order
+        - field: bill_to_customer_no
+          type: filter
+          value: customer_filter
+        - field: currency_code
+          type: field
+          value: code
+        - field: dimension_1_code
+          type: filter
+          value: dimension_1_filter
+        - field: dimension_2_code
+          type: filter
+          value: dimension_2_filter
+
+    - name: customer_balance_due
+      no: 28
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: CustomerLedgerEntry
+      source_field: remaining_amount
+      flow_filters:
+        - field: open
+          type: const
+          value: "true"
+        - field: customer_no
+          type: filter
+          value: customer_filter
+        - field: dimension_1_code
+          type: filter
+          value: dimension_1_filter
+        - field: dimension_2_code
+          type: filter
+          value: dimension_2_filter
+        - field: due_date
+          type: filter
+          value: date_filter
+        - field: currency_code
+          type: field
+          value: code
+
+    - name: vendor_ledg_entries_in_filter
+      no: 29
+      type: bool
+      flow_field: true
+      calc_formula: Exist
+      source_table: VendorLedgerEntry
+      source_field: entry_no
+      flow_filters:
+        - field: vendor_no
+          type: filter
+          value: vendor_filter
+        - field: currency_code
+          type: field
+          value: code
+
+    - name: vendor_balance
+      no: 30
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: VendorLedgerEntry
+      source_field: amount
+      reverse_sign: true
+      flow_filters:
+        - field: vendor_no
+          type: filter
+          value: vendor_filter
+        - field: dimension_1_code
+          type: filter
+          value: dimension_1_filter
+        - field: dimension_2_code
+          type: filter
+          value: dimension_2_filter
+        - field: posting_date
+          type: filter
+          value: date_filter
+        - field: currency_code
+          type: field
+          value: code
+
+    - name: vendor_outstanding_orders
+      no: 31
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: PurchaseLine
+      source_field: outstanding_amount
+      flow_filters:
+        - field: document_type
+          type: const
+          value: 1   # Order
+        - field: pay_to_vendor_no
+          type: filter
+          value: vendor_filter
+        - field: currency_code
+          type: field
+          value: code
+        - field: dimension_1_code
+          type: filter
+          value: dimension_1_filter
+        - field: dimension_2_code
+          type: filter
+          value: dimension_2_filter
+
+    - name: vendor_amt_rcd_not_invoiced
+      no: 32
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: PurchaseLine
+      source_field: amt_rcd_not_invoiced
+      flow_filters:
+        - field: document_type
+          type: const
+          value: 1   # Order
+        - field: pay_to_vendor_no
+          type: filter
+          value: vendor_filter
+        - field: currency_code
+          type: field
+          value: code
+        - field: dimension_1_code
+          type: filter
+          value: dimension_1_filter
+        - field: dimension_2_code
+          type: filter
+          value: dimension_2_filter
+
+    - name: vendor_balance_due
+      no: 33
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: VendorLedgerEntry
+      source_field: remaining_amount
+      reverse_sign: true
+      flow_filters:
+        - field: open
+          type: const
+          value: "true"
+        - field: vendor_no
+          type: filter
+          value: vendor_filter
+        - field: dimension_1_code
+          type: filter
+          value: dimension_1_filter
+        - field: dimension_2_code
+          type: filter
+          value: dimension_2_filter
+        - field: due_date
+          type: filter
+          value: date_filter
+        - field: currency_code
+          type: field
+          value: code
+
+    - name: customer_balance_lcy
+      no: 34
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: CustomerLedgerEntry
+      source_field: amount_lcy
+      flow_filters:
+        - field: customer_no
+          type: filter
+          value: customer_filter
+        - field: dimension_1_code
+          type: filter
+          value: dimension_1_filter
+        - field: dimension_2_code
+          type: filter
+          value: dimension_2_filter
+        - field: posting_date
+          type: filter
+          value: date_filter
+        - field: currency_code
+          type: field
+          value: code
+
+    - name: vendor_balance_lcy
+      no: 35
+      type: types.Decimal
+      flow_field: true
+      decimal_places: "2:2"
+      calc_formula: Sum
+      source_table: VendorLedgerEntry
+      source_field: amount_lcy
+      reverse_sign: true
+      flow_filters:
+        - field: vendor_no
+          type: filter
+          value: vendor_filter
+        - field: dimension_1_code
+          type: filter
+          value: dimension_1_filter
+        - field: dimension_2_code
+          type: filter
+          value: dimension_2_filter
+        - field: posting_date
+          type: filter
+          value: date_filter
+        - field: currency_code
+          type: field
+          value: code
+
     - name: appln_rounding_precision
       no: 44
       type: types.Decimal

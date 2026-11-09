@@ -90,6 +90,13 @@ page:
       image: Card
       promoted: true
       items:
+        - name: Statistics
+          caption: Statistics
+          image: Statistics
+          shortcut: F7
+          run_page: 223
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
         - name: Comments
           caption: Comments
           image: Document

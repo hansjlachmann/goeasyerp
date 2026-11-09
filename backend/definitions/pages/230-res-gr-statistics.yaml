@@ -1,0 +1,242 @@
+page:
+  id: 230
+  type: Card
+  name: Res. Gr. Statistics
+  source_table: Resource_Group   # opened from the Resource Groups list (F7) on one record
+  caption: Res. Gr. Statistics
+  editable: false
+
+  # classic form 230: for this accounting period, this fiscal year, last fiscal year and in
+  # total the capacity and what was not used of it, the usage not chargeable and chargeable
+  # (units, price), the share chargeable, what was invoiced and its share of the chargeable usage,
+  # the usage cost and the profit. The calculated fields are filled by the page's
+  # OnAfterGetRecord trigger (business-logic/pages/resourcestatistics.go). The classic tabs
+  # Usage and Sale are one section per period here.
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+          - source: name
+
+      - name: This Period
+        caption: This Period
+        fields:
+          - source: this_period_name
+            calculated: true
+            type: types.Text
+          - source: this_period_capacity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_period_unused_capacity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_period_not_chargeable_units
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_period_not_chargeable_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: this_period_chargeable_units
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_period_chargeable_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: this_period_chargeable_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: this_period_invoiced
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: this_period_invoiced_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: this_period_usage_cost
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: this_period_profit
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: this_period_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+
+      - name: This Year
+        caption: This Year
+        fields:
+          - source: this_year_name
+            calculated: true
+            type: types.Text
+          - source: this_year_capacity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_year_unused_capacity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_year_not_chargeable_units
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_year_not_chargeable_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: this_year_chargeable_units
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_year_chargeable_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: this_year_chargeable_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: this_year_invoiced
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: this_year_invoiced_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: this_year_usage_cost
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: this_year_profit
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: this_year_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+
+      - name: Last Year
+        caption: Last Year
+        fields:
+          - source: last_year_name
+            calculated: true
+            type: types.Text
+          - source: last_year_capacity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: last_year_unused_capacity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: last_year_not_chargeable_units
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: last_year_not_chargeable_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: last_year_chargeable_units
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: last_year_chargeable_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: last_year_chargeable_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: last_year_invoiced
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: last_year_invoiced_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: last_year_usage_cost
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: last_year_profit
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: last_year_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+
+      - name: Total
+        caption: Total
+        fields:
+          - source: total_capacity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: total_unused_capacity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: total_not_chargeable_units
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: total_not_chargeable_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_chargeable_units
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: total_chargeable_price
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_chargeable_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: total_invoiced
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_invoiced_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: total_usage_cost
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_profit
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: total_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"

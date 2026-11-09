@@ -67,6 +67,10 @@ func (s *sumPurch) sumPurchLines2(qtyType QtyType) error {
 		switch qtyType {
 		case General:
 			purchLineQty = purchLine.Quantity
+		case Invoicing:
+			purchLineQty = purchLine.Qty_to_invoice
+		case Receiving:
+			purchLineQty = purchLine.Qty_to_receive
 		}
 		if !purchLineQty.IsZero() {
 			s.divideAmount(&purchLine, purchLineQty)

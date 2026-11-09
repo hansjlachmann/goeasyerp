@@ -104,3 +104,10 @@ page:
       run_page: 444
       run_page_filter_field: customer_entry_no
       run_page_filter_value: entry_no
+
+    # The entry that closed the entry and the entries it closed (forms 61/62)
+    - name: Applied Entries
+      caption: Applied Entries
+      image: Navigate
+      promoted: true
+      run_object: table:Customer_ledger_entry.AppliedEntries

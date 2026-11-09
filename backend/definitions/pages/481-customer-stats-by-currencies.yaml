@@ -1,0 +1,32 @@
+# Page 481 Customer Stats. by Currencies (classic form 481 with its lines 486): per currency — the blank
+# one (LCY) and those the customer has entries in — the balance, outstanding orders, shipped not
+# invoiced, their total and the balance due, in the currency (business-logic/pages/statsbycurrencies.go)
+page:
+  id: 481
+  type: List
+  name: Customer Stats. by Currencies
+  source_table: Currency
+  source_table_temporary: true   # the currencies with entries of the customer (page parameter customer_no)
+  caption: Customer Stats. by Currencies
+  editable: false
+
+  layout:
+    repeater:
+      fields:
+        - source: code
+          width: 90
+        - source: description
+          width: 220
+        - source: customer_balance
+          width: 130
+        - source: customer_outstanding_orders
+          width: 130
+        - source: customer_shipped_not_invoiced
+          width: 130
+        - source: total_amount
+          calculated: true
+          type: types.Decimal
+          decimal_places: "2:2"
+          width: 130
+        - source: customer_balance_due
+          width: 130

@@ -1,0 +1,216 @@
+page:
+  id: 402
+  type: Card
+  name: Sales Order Statistics
+  source_table: Sales_Header   # opened from an order (F9) on the order
+  caption: Sales Order Statistics
+  editable: false
+
+  # classic form 402: the order's totals by the quantity they count (General, Invoicing, Shipping) — the lines'
+  # Quantity (General), what is to be invoiced (Invoicing) and what is to be shipped (Shipping); the calculated
+  # fields are filled by the page's OnAfterGetRecord trigger (business-logic/pages/salesorderstatistics.go,
+  # SumSalesLines). Read-only, as the classic form; the classic tax amount text
+  # (sales tax by jurisdiction) is the Tax Amount
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+          - source: sell_to_customer_name
+          - source: general_line_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: general_inv_discount_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: general_total
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: general_tax_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: general_total_incl_tax
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: general_sales_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: general_cost_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: general_profit_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: general_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: general_quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: general_parcels
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: general_net_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: general_gross_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: general_volume
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+
+      - name: Invoicing
+        caption: Invoicing
+        fields:
+          - source: invoicing_line_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: invoicing_inv_discount_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: invoicing_total
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: invoicing_tax_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: invoicing_total_incl_tax
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: invoicing_sales_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: invoicing_cost_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: invoicing_profit_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: invoicing_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: invoicing_quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: invoicing_parcels
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: invoicing_net_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: invoicing_gross_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: invoicing_volume
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+
+      - name: Shipping
+        caption: Shipping
+        fields:
+          - source: shipping_line_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: shipping_inv_discount_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: shipping_total
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: shipping_tax_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: shipping_total_incl_tax
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: shipping_sales_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: shipping_cost_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: shipping_profit_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: shipping_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: shipping_quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: shipping_parcels
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: shipping_net_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: shipping_gross_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: shipping_volume
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+
+      - name: Customer
+        caption: Customer
+        fields:
+          - source: bill_to_customer_no
+          - source: balance_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: credit_limit_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: credit_limit_expended_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:2"

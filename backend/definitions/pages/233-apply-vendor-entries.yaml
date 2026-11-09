@@ -97,3 +97,10 @@ page:
       run_page_params:
         document_no: document_no
         posting_date: posting_date
+
+    # The entry that closed the entry and the entries it closed (forms 61/62)
+    - name: Applied Entries
+      caption: Applied Entries
+      image: Navigate
+      promoted: true
+      run_object: table:Vendor_ledger_entry.AppliedEntries

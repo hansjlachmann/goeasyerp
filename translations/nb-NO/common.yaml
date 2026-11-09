@@ -8,6 +8,11 @@ common:
 
   # Common actions
   actions:
+    # Statistics pages
+    customer_sales: "Kundesalg"
+    entry_statistics: "Poststatistikk"
+    statistics_by_currencies: "Statistikk etter valuta"
+    vendor_purchases: "Leverandørkjøp"
     # Links from master data, documents and registers
     blanket_orders: "Rammeordrer"
     bom_registers: "Stykklistejournaler"
@@ -262,6 +267,23 @@ common:
 
   # Card page sections (page YAML section name in snake case)
   sections:
+    # Statistics pages
+    last_credit_memo: "Siste kreditnota"
+    last_finance_charge_memo: "Siste rentenota"
+    last_invoice: "Siste faktura"
+    last_payment: "Siste betaling"
+    last_receipt: "Siste mottak"
+    last_reminder: "Siste purring"
+    last_shipment: "Siste leveranse"
+    negative_adjustment: "Nedjustering"
+    next_receipt: "Neste mottak"
+    next_shipment: "Neste leveranse"
+    positive_adjustment: "Oppjustering"
+    receipt: "Mottak"
+    remaining_amt_lcy: "Restbeløp (NOK)"
+    sale: "Salg"
+    shipment: "Leveranse"
+    total: "Totalt"
     reminders: "Purringer"
     projects: "Prosjekter"
     budgeted: "Budsjettert"

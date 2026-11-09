@@ -1,0 +1,45 @@
+page:
+  id: 449
+  type: Card
+  name: Finance Charge Memo Statistics
+  source_table: Finance_Charge_Memo_Header   # opened from the Finance Charge Memo and its list (F7) on one document
+  caption: Finance Charge Memo Statistics
+  editable: false
+
+  # classic form 449: the document's amounts and total, and its customer's balance, credit limit
+  # and the share of the credit limit the balance uses (classic a bar; here a percentage). The
+  # calculated fields are filled by the page's OnAfterGetRecord trigger
+  # (business-logic/pages/reminderstatistics.go).
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+          - source: customer_no
+          - source: name
+          - source: currency_code
+          - source: interest_amount
+          - source: additional_fee
+          - source: tax_amount
+          - source: fin_chrg_memo_total
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+
+      - name: Customer
+        caption: Customer
+        fields:
+          - source: balance_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: credit_limit_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: credit_limit_lcy_expended_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"

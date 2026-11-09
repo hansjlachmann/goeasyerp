@@ -1,0 +1,257 @@
+page:
+  id: 153
+  type: Card
+  name: Item Statistics
+  source_table: Item   # opened from the Item Card and List (Item › Statistics) on one item
+  caption: Item Statistics
+  editable: false
+
+  # classic form 153: the calculated fields are filled by the page's OnAfterGetRecord trigger
+  # (business-logic/pages/itemstatistics.go); their captions are pages.item_statistics.fields.*.
+  # Left out: Scheduled Receipt/Need (Qty.) of production orders, and the Drop Shipment Filter
+  # of the order quantities (the order lines have no drop shipment).
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+          - source: description
+          - source: base_unit_of_measure
+          - source: quantity_on_hand
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: qty_on_purch_order
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: qty_on_sales_order
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: qty_available
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+
+      - name: This Period
+        caption: This Period
+        fields:
+          - source: this_period_name
+            calculated: true
+            type: types.Text
+          - source: this_period_sales_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_period_negative_adjmt_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_period_decreases_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_period_sales_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: this_period_cogs_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: this_period_profit_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: this_period_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: this_period_purchases_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_period_positive_adjmt_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_period_transferred_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_period_increases_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_period_purchases_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: This Year
+        caption: This Year
+        fields:
+          - source: this_year_name
+            calculated: true
+            type: types.Text
+          - source: this_year_sales_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_year_negative_adjmt_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_year_decreases_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_year_sales_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: this_year_cogs_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: this_year_profit_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: this_year_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: this_year_purchases_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_year_positive_adjmt_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_year_transferred_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_year_increases_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: this_year_purchases_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: Last Year
+        caption: Last Year
+        fields:
+          - source: last_year_name
+            calculated: true
+            type: types.Text
+          - source: last_year_sales_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: last_year_negative_adjmt_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: last_year_decreases_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: last_year_sales_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: last_year_cogs_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: last_year_profit_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: last_year_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: last_year_purchases_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: last_year_positive_adjmt_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: last_year_transferred_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: last_year_increases_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: last_year_purchases_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: To Date
+        caption: To Date
+        fields:
+          - source: to_date_name
+            calculated: true
+            type: types.Text
+          - source: to_date_sales_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: to_date_negative_adjmt_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: to_date_decreases_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: to_date_sales_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: to_date_cogs_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: to_date_profit_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: to_date_profit_pct
+            calculated: true
+            type: types.Decimal
+            decimal_places: "1:1"
+          - source: to_date_purchases_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: to_date_positive_adjmt_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: to_date_transferred_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: to_date_increases_qty
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: to_date_purchases_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+

@@ -1,0 +1,69 @@
+# Page 61 Applied Customer Entries: the entries applied to an entry — the one that closed it and those it
+# closed (Applied Entries on the ledger entries and Apply Entries pages)
+page:
+  id: 61
+  type: List
+  name: Applied Customer Entries
+  source_table: Customer_ledger_entry
+  caption: Applied Customer Entries
+  editable: false
+
+  layout:
+    repeater:
+      fields:
+        - source: posting_date
+          width: 100
+        - source: document_type
+          width: 110
+        - source: document_no
+          width: 110
+        - source: description
+          width: 250
+        - source: dimension_1_code
+          width: 110
+          visible: false
+        - source: dimension_2_code
+          width: 110
+          visible: false
+        - source: salesperson_code
+          width: 110
+          visible: false
+        - source: currency_code
+          width: 90
+        - source: amount
+          width: 120
+        - source: closed_by_amount
+          width: 120
+        - source: closed_by_currency_code
+          width: 90
+        - source: closed_by_currency_amount
+          width: 120
+        - source: user_id
+          width: 110
+          visible: false
+        - source: source_code
+          width: 110
+          visible: false
+        - source: reason_code
+          width: 110
+          visible: false
+        - source: entry_no
+          width: 90
+
+  actions:
+    - name: Navigate
+      caption: Navigate
+      image: Navigate
+      shortcut: Ctrl+Alt+Q
+      promoted: true
+      run_page: 344
+      run_page_params:
+        document_no: document_no
+        posting_date: posting_date
+
+    - name: Reminder/Fin. Charge Entries
+      caption: Reminder/Fin. Charge Entries
+      image: Entries
+      run_page: 444
+      run_page_filter_field: customer_entry_no
+      run_page_filter_value: entry_no

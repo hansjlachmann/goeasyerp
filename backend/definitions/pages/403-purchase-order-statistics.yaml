@@ -1,0 +1,172 @@
+page:
+  id: 403
+  type: Card
+  name: Purchase Order Statistics
+  source_table: Purchase_Header   # opened from an order (F9) on the order
+  caption: Purchase Order Statistics
+  editable: false
+
+  # classic form 403: the order's totals by the quantity they count (General, Invoicing, Receiving) — the lines'
+  # Quantity (General), what is to be invoiced (Invoicing) and what is to be received (Receiving); the calculated
+  # fields are filled by the page's OnAfterGetRecord trigger (business-logic/pages/purchaseorderstatistics.go,
+  # SumPurchLines). Read-only, as the classic form; the classic tax amount text
+  # (sales tax by jurisdiction) is the Tax Amount
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+          - source: buy_from_vendor_name
+          - source: general_line_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: general_inv_discount_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: general_total
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: general_tax_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: general_total_incl_tax
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: general_purchase_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: general_quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: general_parcels
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: general_net_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: general_gross_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: general_volume
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+
+      - name: Invoicing
+        caption: Invoicing
+        fields:
+          - source: invoicing_line_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: invoicing_inv_discount_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: invoicing_total
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: invoicing_tax_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: invoicing_total_incl_tax
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: invoicing_purchase_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: invoicing_quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: invoicing_parcels
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: invoicing_net_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: invoicing_gross_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: invoicing_volume
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+
+      - name: Receiving
+        caption: Receiving
+        fields:
+          - source: receiving_line_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: receiving_inv_discount_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: receiving_total
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: receiving_tax_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: receiving_total_incl_tax
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+            style: Strong
+          - source: receiving_purchase_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: receiving_quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: receiving_parcels
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: receiving_net_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: receiving_gross_weight
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: receiving_volume
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+
+      - name: Vendor
+        caption: Vendor
+        fields:
+          - source: pay_to_vendor_no
+          - source: balance_lcy
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"

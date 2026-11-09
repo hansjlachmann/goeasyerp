@@ -76,6 +76,10 @@ func (s *sumSales) sumSalesLines2(qtyType QtyType) error {
 		switch qtyType {
 		case General:
 			salesLineQty = salesLine.Quantity
+		case Invoicing:
+			salesLineQty = salesLine.Qty_to_invoice
+		case Shipping:
+			salesLineQty = salesLine.Qty_to_ship
 		}
 		if !salesLineQty.IsZero() {
 			s.divideAmount(&salesLine, salesLineQty)

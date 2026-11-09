@@ -1,0 +1,42 @@
+page:
+  id: 156
+  type: Card
+  name: Vendor Purchases
+  source_table: Vendor
+  caption: Vendor Purchases
+  editable: false
+  # classic form 156 with its lines (form 352): the vendor's balance due (open entries by due date)
+  # and purchases per period
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+            editable: false
+          - source: name
+            editable: false
+      - name: Periods
+        caption: Periods
+        period_grid:
+          date_filter: date_filter
+          drilldown_date_field: posting_date
+          view_by: 2
+          filters:
+            - source: dimension_1_filter
+              drilldown_filter_field: dimension_1_code
+            - source: dimension_2_filter
+              drilldown_filter_field: dimension_2_code
+          columns:
+            - source: balance_due_lcy
+              drilldown: 29
+              drilldown_filter_field: vendor_no
+              drilldown_filter_value: "no"
+              drilldown_date_field: due_date
+              drilldown_filters:
+                - {field: open, const: "true"}
+            - source: purchases_lcy
+              drilldown: 29
+              drilldown_filter_field: vendor_no
+              drilldown_filter_value: "no"

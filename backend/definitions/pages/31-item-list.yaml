@@ -118,6 +118,19 @@ page:
               run_page: 390
               run_page_filter_field: item_no
               run_page_filter_value: "no"
+        - name: Statistics
+          caption: Statistics
+          image: Statistics
+          shortcut: F7
+          run_page: 153
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        - name: Entry Statistics
+          caption: Entry Statistics
+          image: Statistics
+          run_page: 304
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
         - name: Turnover
           caption: Turnover
           image: Statistics

@@ -163,6 +163,24 @@ page:
           run_page: 151
           run_page_filter_field: "no"
           run_page_filter_value: "no"
+        - name: Statistics by Currencies
+          caption: Statistics by Currencies
+          image: Statistics
+          run_page: 481
+          run_page_params:
+            customer_no: "no"
+        - name: Entry Statistics
+          caption: Entry Statistics
+          image: Statistics
+          run_page: 302
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        - name: Customer Sales
+          caption: Customer Sales
+          image: Calendar
+          run_page: 155
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
 
     - name: Sales
       caption: Sales

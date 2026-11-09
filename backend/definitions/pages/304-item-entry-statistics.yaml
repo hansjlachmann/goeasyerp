@@ -1,0 +1,241 @@
+page:
+  id: 304
+  type: Card
+  name: Item Entry Statistics
+  source_table: Item   # opened from the Item Card and List (Item › Entry Statistics) on one item
+  caption: Item Entry Statistics
+  editable: false
+
+  # classic form 304: the item's most recently posted entries per entry type and its next and
+  # last order lines to be received and shipped, within its Variant, Location and Bin Filters
+  # (OnAfterGetRecord in business-logic/pages/itemstatistics.go; captions
+  # pages.item_entry_statistics.fields.*). The order lines have no drop shipment, so the Drop
+  # Shipment Filter applies to the entries only.
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+          - source: description
+
+      - name: Receipt
+        caption: Receipt
+        fields:
+          - source: receipt_date
+            calculated: true
+            type: types.Date
+          - source: receipt_document_no
+            calculated: true
+            type: types.Code
+          - source: receipt_quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: receipt_unit_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:5"
+          - source: receipt_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: Purchase
+        caption: Purchase
+        fields:
+          - source: purchase_date
+            calculated: true
+            type: types.Date
+          - source: purchase_document_no
+            calculated: true
+            type: types.Code
+          - source: purchase_quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: purchase_unit_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:5"
+          - source: purchase_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: Positive Adjustment
+        caption: Positive Adjustment
+        fields:
+          - source: positive_adjmt_date
+            calculated: true
+            type: types.Date
+          - source: positive_adjmt_document_no
+            calculated: true
+            type: types.Code
+          - source: positive_adjmt_quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: positive_adjmt_unit_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:5"
+          - source: positive_adjmt_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: Shipment
+        caption: Shipment
+        fields:
+          - source: shipment_date
+            calculated: true
+            type: types.Date
+          - source: shipment_document_no
+            calculated: true
+            type: types.Code
+          - source: shipment_quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: shipment_unit_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:5"
+          - source: shipment_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: Sale
+        caption: Sale
+        fields:
+          - source: sale_date
+            calculated: true
+            type: types.Date
+          - source: sale_document_no
+            calculated: true
+            type: types.Code
+          - source: sale_quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: sale_unit_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:5"
+          - source: sale_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: Negative Adjustment
+        caption: Negative Adjustment
+        fields:
+          - source: negative_adjmt_date
+            calculated: true
+            type: types.Date
+          - source: negative_adjmt_document_no
+            calculated: true
+            type: types.Code
+          - source: negative_adjmt_quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: negative_adjmt_unit_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:5"
+          - source: negative_adjmt_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: Next Receipt
+        caption: Next Receipt
+        fields:
+          - source: next_receipt_date
+            calculated: true
+            type: types.Date
+          - source: next_receipt_order_no
+            calculated: true
+            type: types.Code
+          - source: next_receipt_quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: next_receipt_unit_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:5"
+          - source: next_receipt_qty_on_order
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+
+      - name: Last Receipt
+        caption: Last Receipt
+        fields:
+          - source: last_receipt_date
+            calculated: true
+            type: types.Date
+          - source: last_receipt_order_no
+            calculated: true
+            type: types.Code
+          - source: last_receipt_quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: last_receipt_unit_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:5"
+          - source: last_receipt_qty_on_order
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+
+      - name: Next Shipment
+        caption: Next Shipment
+        fields:
+          - source: next_shipment_date
+            calculated: true
+            type: types.Date
+          - source: next_shipment_order_no
+            calculated: true
+            type: types.Code
+          - source: next_shipment_quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: next_shipment_unit_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:5"
+          - source: next_shipment_qty_on_order
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+
+      - name: Last Shipment
+        caption: Last Shipment
+        fields:
+          - source: last_shipment_date
+            calculated: true
+            type: types.Date
+          - source: last_shipment_order_no
+            calculated: true
+            type: types.Code
+          - source: last_shipment_quantity
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+          - source: last_shipment_unit_amount
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:5"
+          - source: last_shipment_qty_on_order
+            calculated: true
+            type: types.Decimal
+            decimal_places: "0:5"
+
