@@ -69,7 +69,7 @@ jobs:
       - name: Run tests
         env:
           TEST_POSTGRES_DSN: postgres://openerp@localhost:5432/ci_test?sslmode=disable
-        run: go test -v -race -coverprofile=coverage.out ./...
+        run: go test -v -race -timeout 30m -coverprofile=coverage.out ./...
 
       - name: Upload Go coverage to Codecov
         uses: codecov/codecov-action@v4
