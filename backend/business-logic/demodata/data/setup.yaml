@@ -863,8 +863,8 @@ master_data:
       - {journal_template_name: RECURRING, name: DEFAULT, description: Default Journal}
   - table: FA_Journal_Template
     records:
-      - {name: ASSETS, description: Fixed Asset Journal, page_id: 5629, source_code: FAJNL}
-      - {name: RECURRING, description: Recurring Fixed Asset Journal, recurring: true, source_code: FAJNL}
+      - {name: ASSETS, description: Fixed Asset Journal, page_id: 5629, source_code: FAJNL, test_report_id: 5602, posting_report_id: 5603}
+      - {name: RECURRING, description: Recurring Fixed Asset Journal, recurring: true, source_code: FAJNL, test_report_id: 5602, posting_report_id: 5603}
   - table: FA_Journal_Batch
     records:
       - {journal_template_name: ASSETS, name: DEFAULT, description: Default Journal}
@@ -877,7 +877,7 @@ master_data:
       - {journal_template_name: RECLASSIFY, name: DEFAULT, description: Default Journal}
   - table: Insurance_Journal_Template
     records:
-      - {name: INSURANCE, description: Insurance Journal, page_id: 5654, source_code: INSJNL}
+      - {name: INSURANCE, description: Insurance Journal, page_id: 5654, source_code: INSJNL, test_report_id: 5622, posting_report_id: 5623}
   - table: Insurance_Journal_Batch
     records:
       - {journal_template_name: INSURANCE, name: DEFAULT, description: Default Journal}

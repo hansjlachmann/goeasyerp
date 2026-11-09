@@ -54,6 +54,8 @@ func (fAJournalTemplateLogic) OnValidate_Source_code(rec *gtables.FAJournalTempl
 // code; recurring journals have no No. Series
 func (fAJournalTemplateLogic) OnValidate_Recurring(rec *gtables.FAJournalTemplate) error {
 	rec.Page_id = faJournalPageID
+	rec.Test_report_id = FAJnlTestReportID
+	rec.Posting_report_id = FARegisterReportID
 	if rec.Recurring {
 		rec.Page_id = RecurringFAJnlPageID
 	}
@@ -88,3 +90,9 @@ func (fAJournalTemplateLogic) OnValidate_Posting_no_series(rec *gtables.FAJourna
 
 // RecurringFAJnlPageID is page 5634 Recurring Fixed Asset Journal, the page of a recurring template
 const RecurringFAJnlPageID = 5634
+
+// The journal's reports: 5602 Fixed Asset Journal - Test, 5603 Fixed Asset Register
+const (
+	FAJnlTestReportID  = 5602
+	FARegisterReportID = 5603
+)

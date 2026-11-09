@@ -3978,7 +3978,7 @@ func (t *PurchaseHeader) renameReferences(field string, oldValue, newValue inter
 		condValue  int
 	}
 	references := map[string][]reference{
-		"no": {{"Purchase_Line", false, "blanket_order_no", "", 0}},
+		"no": {{"Purch_Cr_Memo_Line", false, "blanket_order_no", "", 0}, {"Purch_Inv_Line", false, "blanket_order_no", "", 0}, {"Purch_Rcpt_Line", false, "blanket_order_no", "", 0}, {"Purchase_Line", false, "blanket_order_no", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

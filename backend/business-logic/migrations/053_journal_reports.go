@@ -27,11 +27,14 @@ func (m *Migration053JournalReports) Description() string {
 	return "journal templates get their test report and posting report"
 }
 
-// journalTemplateReports: per template table its test report and posting report
-var journalTemplateReports = []struct {
+// journalTemplateReport: a template table with its test report and posting report
+type journalTemplateReport struct {
 	table         string
 	test, posting int
-}{
+}
+
+// journalTemplateReports: per template table its test report and posting report
+var journalTemplateReports = []journalTemplateReport{
 	{"Gen_Journal_Template", 2, 3},
 	{"Item_Journal_Template", 702, 703},
 	{"Res_Journal_Template", 1102, 1103},
@@ -40,7 +43,13 @@ var journalTemplateReports = []struct {
 }
 
 func (m *Migration053JournalReports) Up(ctx *fmigrations.Context) error {
-	for _, t := range journalTemplateReports {
+	return setJournalTemplateReports(ctx, journalTemplateReports)
+}
+
+// setJournalTemplateReports gives the templates of every company their test and posting report
+// where they have none
+func setJournalTemplateReports(ctx *fmigrations.Context, templates []journalTemplateReport) error {
+	for _, t := range templates {
 		err := ctx.ForEachCompanyTable(t.table, func(table string) error {
 			exists, err := ctx.TableExists(table)
 			if err != nil || !exists {

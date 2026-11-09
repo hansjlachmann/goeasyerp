@@ -92,6 +92,28 @@ codeunits:
     caption: "Ressurskladd – bokfør linje"
   "213":
     caption: "Ressurskladd – bokfør bunke"
+  "228":
+    caption: "Kontrollrapport – utskrift"
+  "233":
+    caption: "Finanskladd – bokfør bunker"
+  "234":
+    caption: "Finanskladd – bokfør og skriv ut bunker"
+  "243":
+    caption: "Varekladd – bokfør bunker"
+  "244":
+    caption: "Varekladd – bokfør og skriv ut bunker"
+  "253":
+    caption: "Stykklistekladd – bokfør bunker"
+  "254":
+    caption: "Stykklistekladd – bokfør og skriv ut bunker"
+  "273":
+    caption: "Ressurskladd – bokfør bunker"
+  "274":
+    caption: "Ressurskladd – bokfør og skriv ut bunker"
+  "283":
+    caption: "Prosjektkladd – bokfør bunker"
+  "284":
+    caption: "Prosjektkladd – bokfør og skriv ut bunker"
   "311":
     caption: "Vare - kontroller disponibel"
   "312":
@@ -100,6 +122,8 @@ codeunits:
     caption: "Salg - utvid stykkliste"
   "73":
     caption: "Kjøp - utvid stykkliste"
+  "372":
+    caption: "Bankavstemming – bokfør og skriv ut"
   "378":
     caption: "Overfør utvidet tekst"
   "379":
@@ -278,6 +302,8 @@ codeunits:
     caption: "Anleggskladd – bokfør bunke"
   "5636":
     caption: "Anleggskladd – bokfør"
+  "5637":
+    caption: "Anleggskladd – bokfør bunker"
   "5638":
     caption: "Anleggskladd – administrasjon"
   "5639":
@@ -306,7 +332,17 @@ codeunits:
     caption: "Forsikringskladd – bokfør bunke"
   "5654":
     caption: "Forsikringskladd – bokfør"
+  "5655":
+    caption: "Forsikringskladd – bokfør bunker"
   "5656":
     caption: "Forsikringskladd – administrasjon"
   "5657":
     caption: "Opprett forsikringsdekningspost"
+  "5670":
+    caption: "Anleggskladd – bokfør og skriv ut"
+  "5671":
+    caption: "Anleggskladd – bokfør og skriv ut bunker"
+  "5672":
+    caption: "Forsikringskladd – bokfør og skriv ut"
+  "5673":
+    caption: "Forsikringskladd – bokfør og skriv ut bunker"

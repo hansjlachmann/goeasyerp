@@ -1,0 +1,97 @@
+# Report 1408 Bank Acc. Recon. - Test: the printed layout (see business-logic/reports/layout.go)
+report:
+  id: 1408
+  name: Bank Acc. Recon. - Test
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Bank_Acc_Reconciliation
+      new_page_per_record: true
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: body
+          height: 22
+          elements:
+            - {text: BANK_ACCOUNT_NO, x: 0, y: 1, width: 45}
+            - {field: bank_account_no, x: 46, y: 1, width: 30}
+            - {text: STATEMENT_NO, x: 0, y: 5, width: 45}
+            - {field: statement_no, x: 46, y: 5, width: 30}
+            - {text: STATEMENT_DATE, x: 0, y: 9, width: 45}
+            - {field: statement_date, x: 46, y: 9, width: 30}
+            - {text: BALANCE_LAST_STATEMENT, x: 0, y: 13, width: 45}
+            - {field: balance_last_statement, x: 46, y: 13, width: 30, align: right, decimal_places: "2:2"}
+            - {text: STATEMENT_ENDING_BALANCE, x: 0, y: 17, width: 45}
+            - {field: statement_ending_balance, x: 46, y: 17, width: 30, align: right, decimal_places: "2:2"}
+    - name: Header_Error_Loop
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {text: WARNING, x: 0, y: 0, width: 20, bold: true}
+            - {value: error_text, x: 21, y: 0, width: 252, wrap: true}
+    - name: Bank_Acc_Reconciliation_Line
+      sections:
+        - type: header
+          height: 10.5
+          elements:
+            - {text: TRANSACTION_DATE, x: 0, y: 1, width: 20, bold: true, wrap: true}
+            - {text: TYPE, x: 21, y: 1, width: 37, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 59, y: 1, width: 22, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 82, y: 1, width: 55, bold: true, wrap: true}
+            - {text: VALUE_DATE, x: 138, y: 1, width: 20, bold: true, wrap: true}
+            - {text: APPLIED_ENTRIES, x: 159, y: 1, width: 18, bold: true, wrap: true, align: right}
+            - {text: STATEMENT_AMOUNT, x: 178, y: 1, width: 30, bold: true, wrap: true, align: right}
+            - {text: APPLIED_AMOUNT, x: 209, y: 1, width: 30, bold: true, wrap: true, align: right}
+            - {text: DIFFERENCE, x: 240, y: 1, width: 33, bold: true, wrap: true, align: right}
+            - {line: true, x: 0, y: 9}
+        - type: body
+          height: 4.2
+          elements:
+            - {field: transaction_date, x: 0, y: 0, width: 20}
+            - {field: type, x: 21, y: 0, width: 37}
+            - {field: document_no, x: 59, y: 0, width: 22}
+            - {field: description, x: 82, y: 0, width: 55}
+            - {field: value_date, x: 138, y: 0, width: 20}
+            - {field: applied_entries, x: 159, y: 0, width: 18, align: right}
+            - {field: statement_amount, x: 178, y: 0, width: 30, align: right, decimal_places: "2:2"}
+            - {field: applied_amount, x: 209, y: 0, width: 30, align: right, decimal_places: "2:2"}
+            - {field: difference, x: 240, y: 0, width: 33, align: right, decimal_places: "2:2"}
+        - type: footer
+          height: 8
+          elements:
+            - {line: true, x: 178, y: 1}
+            - {text: TOTAL, x: 77, y: 2.5, width: 40, bold: true}
+            - {total: statement_amount, x: 178, y: 2.5, width: 30, align: right, bold: true, decimal_places: "2:2"}
+            - {total: applied_amount, x: 209, y: 2.5, width: 30, align: right, bold: true, decimal_places: "2:2"}
+            - {total: difference, x: 240, y: 2.5, width: 33, align: right, bold: true, decimal_places: "2:2"}
+    - name: Line_Error_Loop
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {text: WARNING, x: 21, y: 0, width: 20, bold: true}
+            - {value: error_text, x: 42, y: 0, width: 231, wrap: true}
+    - name: Footer_Error_Loop
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {text: WARNING, x: 0, y: 0, width: 20, bold: true}
+            - {value: error_text, x: 21, y: 0, width: 252, wrap: true}

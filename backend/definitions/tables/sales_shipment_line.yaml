@@ -714,6 +714,25 @@ table:
       type: int
       db_name: attached_to_line_no
 
+    # The blanket order line the order line was made from (classic fields 97/98, copied from the
+    # document line when posted)
+    - name: blanket_order_no
+      no: 97
+      type: types.Code
+      db_name: blanket_order_no
+      length: 20
+      table_relation:
+        table: Sales_Header
+        field: no
+        validate: false
+        filters:
+          document_type: {const: 4}   # Blanket Order
+
+    - name: blanket_order_line_no
+      no: 98
+      type: int
+      db_name: blanket_order_line_no
+
   keys:
     - name: Primary
       fields: [document_no, line_no]

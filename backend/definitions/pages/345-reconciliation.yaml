@@ -1,0 +1,25 @@
+page:
+  id: 345
+  type: List
+  name: Reconciliation
+  source_table: G_L_Account_Net_Change
+  caption: Reconciliation
+  editable: false
+  source_table_temporary: true   # the batch's net change per reconciliation account, found again on every load (OnFindRecords)
+  # classic form 345: Reconcile (Ctrl+F9) on the general journals and the batch list — per G/L
+  # account marked Reconciliation Account and the G/L account of each bank account in the batch,
+  # the net change the batch would post (excluding tax) and the balance after posting
+  # (business-logic/pages/genjnlreconcile.go; page parameters journal_template_name,
+  # journal_batch_name)
+
+  layout:
+    repeater:
+      fields:
+        - source: "no"
+          width: 110
+        - source: name
+          width: 280
+        - source: net_change_in_jnl
+          width: 140
+        - source: balance_after_posting
+          width: 140

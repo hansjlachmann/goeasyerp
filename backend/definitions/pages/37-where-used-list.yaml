@@ -1,0 +1,38 @@
+# Page 37 Where-Used List (classic form 37): the bills of materials an item or resource is a
+# component of (opened from the item filtered on Type = Item and No.)
+page:
+  id: 37
+  type: List
+  name: Where-Used List
+  source_table: BOM_Component
+  caption: Where-Used List
+  editable: false
+
+  layout:
+    repeater:
+      fields:
+        - source: parent_item_no
+          width: 110
+        - source: bom_description
+          width: 260
+        - source: quantity_per
+          width: 100
+        - source: unit_of_measure_code
+          width: 90
+        - source: position
+          width: 90
+        - source: position_2
+          width: 90
+          visible: false
+        - source: position_3
+          width: 90
+          visible: false
+
+  actions:
+    - name: Bill of Materials
+      caption: Bill of Materials
+      image: Rows
+      promoted: true
+      run_page: 36
+      run_page_filter_field: parent_item_no
+      run_page_filter_value: parent_item_no

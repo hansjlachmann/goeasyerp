@@ -38,6 +38,8 @@ func (insuranceJournalTemplateLogic) OnDelete(rec *gtables.InsuranceJournalTempl
 func (insuranceJournalTemplateLogic) OnValidate_Page_id(rec *gtables.InsuranceJournalTemplate) error {
 	if rec.Page_id == 0 {
 		rec.Page_id = insuranceJournalPageID
+		rec.Test_report_id = InsuranceJnlTestReportID
+		rec.Posting_report_id = InsuranceRegisterReportID
 	}
 	sourceCodeSetup := gtables.GetSourceCodeSetup(rec)
 	rec.Source_code = sourceCodeSetup.Insurance_journal
@@ -67,3 +69,9 @@ func (insuranceJournalTemplateLogic) OnValidate_Posting_no_series(rec *gtables.I
 	}
 	return nil
 }
+
+// The journal's reports: 5622 Insurance Journal - Test, 5623 Insurance Register
+const (
+	InsuranceJnlTestReportID  = 5622
+	InsuranceRegisterReportID = 5623
+)

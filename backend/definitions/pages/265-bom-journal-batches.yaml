@@ -41,3 +41,25 @@ page:
       image: Delete
       shortcut: Ctrl+D
       promoted: true
+
+    # The batches: the template's test report on the batch (codeunit 228), every batch in the list
+    # posted, or posted and the posting report printed (codeunits 253/254)
+    - name: Posting
+      caption: Posting
+      image: Post
+      promoted: true
+      items:
+        - name: Test Report
+          caption: Test Report
+          image: Print
+          run_object: table:BOM_Journal_Batch.TestReport
+        - name: Post
+          caption: Post
+          image: Post
+          shortcut: F11
+          run_object: codeunit:253
+        - name: Post and Print
+          caption: Post and Print
+          image: Print
+          shortcut: Shift+F11
+          run_object: codeunit:254

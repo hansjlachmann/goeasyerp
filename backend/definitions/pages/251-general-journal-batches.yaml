@@ -56,3 +56,33 @@ page:
       shortcut: Ctrl+D
       promoted: true
       enabled: true
+
+    # The batches: the template's test report on the batch (codeunit 228), every batch in the list
+    # posted, or posted and the posting report printed (codeunits 233/234)
+    - name: Posting
+      caption: Posting
+      image: Post
+      promoted: true
+      items:
+        - name: Reconcile
+          caption: Reconcile
+          image: Calculate
+          shortcut: Ctrl+F9
+          run_page: 345
+          run_page_params:
+            journal_template_name: journal_template_name
+            journal_batch_name: name
+        - name: Test Report
+          caption: Test Report
+          image: Print
+          run_object: table:Gen_Journal_Batch.TestReport
+        - name: Post
+          caption: Post
+          image: Post
+          shortcut: F11
+          run_object: codeunit:233
+        - name: Post and Print
+          caption: Post and Print
+          image: Print
+          shortcut: Shift+F11
+          run_object: codeunit:234

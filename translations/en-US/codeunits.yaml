@@ -92,6 +92,28 @@ codeunits:
     caption: "Res. Jnl.-Post Line"
   "213":
     caption: "Res. Jnl.-Post Batch"
+  "228":
+    caption: "Test Report-Print"
+  "233":
+    caption: "Gen. Jnl.-B.Post"
+  "234":
+    caption: "Gen. Jnl.-B.Post+Print"
+  "243":
+    caption: "Item Jnl.-B.Post"
+  "244":
+    caption: "Item Jnl.-B.Post+Print"
+  "253":
+    caption: "BOM Jnl.-B.Post"
+  "254":
+    caption: "BOM Jnl.-B.Post+Print"
+  "273":
+    caption: "Res. Jnl.-B.Post"
+  "274":
+    caption: "Res. Jnl.-B.Post+Print"
+  "283":
+    caption: "Project Jnl.-B.Post"
+  "284":
+    caption: "Project Jnl.-B.Post+Print"
   "311":
     caption: "Item-Check Avail."
   "312":
@@ -100,6 +122,8 @@ codeunits:
     caption: "Sales-Explode BOM"
   "73":
     caption: "Purch.-Explode BOM"
+  "372":
+    caption: "Bank Acc. Recon. Post+Print"
   "378":
     caption: "Transfer Extended Text"
   "379":
@@ -278,6 +302,8 @@ codeunits:
     caption: "FA Jnl.-Post Batch"
   "5636":
     caption: "FA. Jnl.-Post"
+  "5637":
+    caption: "FA. Jnl.-B.Post"
   "5638":
     caption: "FAJnlManagement"
   "5639":
@@ -306,7 +332,17 @@ codeunits:
     caption: "Insurance Jnl.-Post Batch"
   "5654":
     caption: "Insurance Jnl.-Post"
+  "5655":
+    caption: "Insurance Jnl.-B.Post"
   "5656":
     caption: "InsuranceJnlManagement"
   "5657":
     caption: "Make Ins. Coverage Ledg. Entry"
+  "5670":
+    caption: "FA. Jnl.-Post+Print"
+  "5671":
+    caption: "FA. Jnl.-B.Post+Print"
+  "5672":
+    caption: "Insurance Jnl.-Post+Print"
+  "5673":
+    caption: "Insurance Jnl.-B.Post+Print"

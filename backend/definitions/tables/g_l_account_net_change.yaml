@@ -1,0 +1,35 @@
+table:
+  id: 269
+  name: "G_L_Account_Net_Change"
+  caption: G/L Account Net Change
+  description: "G/L Account Net Change (table 269): the lines of page 345 Reconciliation — per G/L account the net change a general journal batch would post and the balance after posting (a temporary table)"
+  fields:
+    - name: "no"
+      no: 1
+      type: types.Code
+      db_name: "no"
+      length: 20
+      primary_key: true
+
+    - name: name
+      no: 2
+      type: types.Text
+      db_name: name
+      length: 50
+
+    - name: net_change_in_jnl
+      no: 3
+      type: types.Decimal
+      db_name: net_change_in_jnl
+      decimal_places: "2:2"
+
+    - name: balance_after_posting
+      no: 4
+      type: types.Decimal
+      db_name: balance_after_posting
+      decimal_places: "2:2"
+
+  keys:
+    - name: Primary
+      fields: ["no"]
+      clustered: true

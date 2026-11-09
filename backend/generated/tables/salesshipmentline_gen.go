@@ -78,6 +78,8 @@
 //	OnValidate_Project_applies_to_id(rec *gtables.SalesShipmentLine) error
 //	OnValidate_Apply_and_close_project(rec *gtables.SalesShipmentLine) error
 //	OnValidate_Attached_to_line_no(rec *gtables.SalesShipmentLine) error
+//	OnValidate_Blanket_order_no(rec *gtables.SalesShipmentLine) error
+//	OnValidate_Blanket_order_line_no(rec *gtables.SalesShipmentLine) error
 
 package tables
 
@@ -207,6 +209,8 @@ type SalesShipmentLine struct {
 	Project_applies_to_id    types.Code                            `db:"project_applies_to_id"`
 	Apply_and_close_project  bool                                  `db:"apply_and_close_project"`
 	Attached_to_line_no      int                                   `db:"attached_to_line_no"`
+	Blanket_order_no         types.Code                            `db:"blanket_order_no"`
+	Blanket_order_line_no    int                                   `db:"blanket_order_line_no"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -371,6 +375,8 @@ var SalesShipmentLine_FieldNo = struct {
 	Project_applies_to_id    int
 	Apply_and_close_project  int
 	Attached_to_line_no      int
+	Blanket_order_no         int
+	Blanket_order_line_no    int
 }{
 	Sell_to_customer_no:      2,
 	Document_no:              3,
@@ -440,6 +446,8 @@ var SalesShipmentLine_FieldNo = struct {
 	Project_applies_to_id:    50,
 	Apply_and_close_project:  51,
 	Attached_to_line_no:      80,
+	Blanket_order_no:         97,
+	Blanket_order_line_no:    98,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -581,6 +589,10 @@ func (t *SalesShipmentLine) FieldNo(fieldName string) int {
 		return 51
 	case "attached_to_line_no":
 		return 80
+	case "blanket_order_no":
+		return 97
+	case "blanket_order_line_no":
+		return 98
 	}
 	return 0
 }
@@ -724,6 +736,10 @@ func (t *SalesShipmentLine) FieldName(fieldNo int) string {
 		return "apply_and_close_project"
 	case 80:
 		return "attached_to_line_no"
+	case 97:
+		return "blanket_order_no"
+	case 98:
+		return "blanket_order_line_no"
 	}
 	return ""
 }
@@ -1029,6 +1045,12 @@ type (
 	SalesShipmentLineOnValidate_Attached_to_line_no interface {
 		OnValidate_Attached_to_line_no(rec *SalesShipmentLine) error
 	}
+	SalesShipmentLineOnValidate_Blanket_order_no interface {
+		OnValidate_Blanket_order_no(rec *SalesShipmentLine) error
+	}
+	SalesShipmentLineOnValidate_Blanket_order_line_no interface {
+		OnValidate_Blanket_order_line_no(rec *SalesShipmentLine) error
+	}
 )
 
 // salesShipmentLineLogic is the registered business logic of Sales_Shipment_Line, in
@@ -1194,6 +1216,10 @@ func salesShipmentLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SalesShipmentLineOnValidate_Apply_and_close_project)
 	case "OnValidate_Attached_to_line_no":
 		_, ok = logic.(SalesShipmentLineOnValidate_Attached_to_line_no)
+	case "OnValidate_Blanket_order_no":
+		_, ok = logic.(SalesShipmentLineOnValidate_Blanket_order_no)
+	case "OnValidate_Blanket_order_line_no":
+		_, ok = logic.(SalesShipmentLineOnValidate_Blanket_order_line_no)
 	default:
 		return false, false
 	}
@@ -1367,6 +1393,9 @@ func (t *SalesShipmentLine) CheckFields() error {
 	if err := tables.CheckMaxLength(SalesShipmentLineTableName, "project_applies_to_id", string(t.Project_applies_to_id), 20); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(SalesShipmentLineTableName, "blanket_order_no", string(t.Blanket_order_no), 20); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -1462,6 +1491,8 @@ func GetSalesShipmentLineTableSchema() string {
 		project_applies_to_id TEXT(20),
 		apply_and_close_project INTEGER,
 		attached_to_line_no INTEGER,
+		blanket_order_no TEXT(20),
+		blanket_order_line_no INTEGER,
 		PRIMARY KEY (document_no, line_no)
 	`
 }
@@ -1537,6 +1568,8 @@ func GetSalesShipmentLinePostgresTableSchema() string {
 		project_applies_to_id VARCHAR(20),
 		apply_and_close_project BOOLEAN,
 		attached_to_line_no INTEGER,
+		blanket_order_no VARCHAR(20),
+		blanket_order_line_no INTEGER,
 		PRIMARY KEY (document_no, line_no)
 	`
 }
@@ -1749,6 +1782,8 @@ func (t *SalesShipmentLine) StoreOldValues() {
 	t.oldValues["project_applies_to_id"] = t.Project_applies_to_id
 	t.oldValues["apply_and_close_project"] = t.Apply_and_close_project
 	t.oldValues["attached_to_line_no"] = t.Attached_to_line_no
+	t.oldValues["blanket_order_no"] = t.Blanket_order_no
+	t.oldValues["blanket_order_line_no"] = t.Blanket_order_line_no
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1967,6 +2002,12 @@ func (t *SalesShipmentLine) XRec() *SalesShipmentLine {
 	if v, ok := t.oldValues["attached_to_line_no"].(int); ok {
 		x.Attached_to_line_no = v
 	}
+	if v, ok := t.oldValues["blanket_order_no"].(types.Code); ok {
+		x.Blanket_order_no = v
+	}
+	if v, ok := t.oldValues["blanket_order_line_no"].(int); ok {
+		x.Blanket_order_line_no = v
+	}
 	return x
 }
 
@@ -2105,6 +2146,8 @@ func (t *SalesShipmentLine) GetByPK(document_no types.Code, line_no int) bool {
 	var project_applies_to_idNull sql.NullString
 	var apply_and_close_projectBool sql.NullBool
 	var attached_to_line_noVal int
+	var blanket_order_noNull sql.NullString
+	var blanket_order_line_noVal int
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -2113,7 +2156,7 @@ func (t *SalesShipmentLine) GetByPK(document_no types.Code, line_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project, attached_to_line_no FROM "%s" WHERE 1=1 AND document_no = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project, attached_to_line_no, blanket_order_no, blanket_order_line_no FROM "%s" WHERE 1=1 AND document_no = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2188,6 +2231,8 @@ func (t *SalesShipmentLine) GetByPK(document_no types.Code, line_no int) bool {
 		&project_applies_to_idNull,
 		&apply_and_close_projectBool,
 		&attached_to_line_noVal,
+		&blanket_order_noNull,
+		&blanket_order_line_noVal,
 	)
 
 	if err != nil {
@@ -2269,6 +2314,8 @@ func (t *SalesShipmentLine) GetByPK(document_no types.Code, line_no int) bool {
 	t.Project_applies_to_id = types.NewCode(project_applies_to_idNull.String)
 	t.Apply_and_close_project = apply_and_close_projectBool.Bool
 	t.Attached_to_line_no = attached_to_line_noVal
+	t.Blanket_order_no = types.NewCode(blanket_order_noNull.String)
+	t.Blanket_order_line_no = blanket_order_line_noVal
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2359,11 +2406,13 @@ func (t *SalesShipmentLine) Insert(runTrigger bool) bool {
 		t.Project_applies_to_id,
 		t.Apply_and_close_project,
 		t.Attached_to_line_no,
+		t.Blanket_order_no,
+		t.Blanket_order_line_no,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project, attached_to_line_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_no, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project, attached_to_line_no, blanket_order_no, blanket_order_line_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_no, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2469,10 +2518,12 @@ func (t *SalesShipmentLine) InsertAll(records []*SalesShipmentLine, runTrigger b
 			r.Project_applies_to_id,
 			r.Apply_and_close_project,
 			r.Attached_to_line_no,
+			r.Blanket_order_no,
+			r.Blanket_order_line_no,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, SalesShipmentLineTableName)
-	columns := []string{"sell_to_customer_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "quantity_disc_code", "shipment_date", "description", "description_2", "unit_of_measure", "quantity", "unit_price", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "dimension_1_code", "dimension_2_code", "price_group_code", "allow_quantity_disc", "work_type_code", "cust_item_disc_percent", "qty_shipped_not_invoiced", "quantity_invoiced", "order_no", "order_line_no", "profit_percent", "bill_to_customer_no", "inv_discount_amount", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_area_code", "tax_liable", "tax_group_code", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "tax_base_amount", "unit_cost", "item_shpt_entry_no", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "qty_shpd_not_invd_base", "qty_invoiced_base", "serial_no", "lot_no", "bin_code", "project_no", "appl_to_project_entry", "phase_code", "task_code", "step_code", "project_applies_to_id", "apply_and_close_project", "attached_to_line_no"}
+	columns := []string{"sell_to_customer_no", "document_no", "line_no", "type", "no", "location_code", "posting_group", "quantity_disc_code", "shipment_date", "description", "description_2", "unit_of_measure", "quantity", "unit_price", "unit_cost_lcy", "tax_percent", "quantity_disc_percent", "line_discount_percent", "line_discount_amount", "amount", "amount_including_tax", "allow_invoice_disc", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "dimension_1_code", "dimension_2_code", "price_group_code", "allow_quantity_disc", "work_type_code", "cust_item_disc_percent", "qty_shipped_not_invoiced", "quantity_invoiced", "order_no", "order_line_no", "profit_percent", "bill_to_customer_no", "inv_discount_amount", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_area_code", "tax_liable", "tax_group_code", "tax_bus_posting_group", "tax_prod_posting_group", "currency_code", "tax_base_amount", "unit_cost", "item_shpt_entry_no", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "qty_shpd_not_invd_base", "qty_invoiced_base", "serial_no", "lot_no", "bin_code", "project_no", "appl_to_project_entry", "phase_code", "task_code", "step_code", "project_applies_to_id", "apply_and_close_project", "attached_to_line_no", "blanket_order_no", "blanket_order_line_no"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -2787,6 +2838,14 @@ func (t *SalesShipmentLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "attached_to_line_no = ?")
 			values = append(values, t.Attached_to_line_no)
 		}
+		if t.hasFieldChanged("blanket_order_no") {
+			setClauses = append(setClauses, "blanket_order_no = ?")
+			values = append(values, t.Blanket_order_no)
+		}
+		if t.hasFieldChanged("blanket_order_line_no") {
+			setClauses = append(setClauses, "blanket_order_line_no = ?")
+			values = append(values, t.Blanket_order_line_no)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -2926,6 +2985,10 @@ func (t *SalesShipmentLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Apply_and_close_project)
 		setClauses = append(setClauses, "attached_to_line_no = ?")
 		values = append(values, t.Attached_to_line_no)
+		setClauses = append(setClauses, "blanket_order_no = ?")
+		values = append(values, t.Blanket_order_no)
+		setClauses = append(setClauses, "blanket_order_line_no = ?")
+		values = append(values, t.Blanket_order_line_no)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -3254,6 +3317,15 @@ func (t *SalesShipmentLine) hasFieldChanged(fieldName string) bool {
 	case "attached_to_line_no":
 		if old, ok := oldValue.(int); ok {
 			return t.Attached_to_line_no != old
+		}
+		return true // Type mismatch, assume changed
+	case "blanket_order_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Blanket_order_no.Equal(old)
+		}
+	case "blanket_order_line_no":
+		if old, ok := oldValue.(int); ok {
+			return t.Blanket_order_line_no != old
 		}
 		return true // Type mismatch, assume changed
 	}
@@ -3597,6 +3669,10 @@ func (t *SalesShipmentLine) columnName(fieldName string) (string, bool) {
 		return "apply_and_close_project", true
 	case strings.ToLower("attached_to_line_no"):
 		return "attached_to_line_no", true
+	case strings.ToLower("blanket_order_no"):
+		return "blanket_order_no", true
+	case strings.ToLower("blanket_order_line_no"):
+		return "blanket_order_line_no", true
 	}
 	return "", false
 }
@@ -4012,7 +4088,7 @@ func (t *SalesShipmentLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project, attached_to_line_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project, attached_to_line_no, blanket_order_no, blanket_order_line_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4080,6 +4156,7 @@ func (t *SalesShipmentLine) FindFirst() bool {
 	var step_codeNull sql.NullString
 	var project_applies_to_idNull sql.NullString
 	var apply_and_close_projectBool sql.NullBool
+	var blanket_order_noNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&sell_to_customer_noNull,
@@ -4150,6 +4227,8 @@ func (t *SalesShipmentLine) FindFirst() bool {
 		&project_applies_to_idNull,
 		&apply_and_close_projectBool,
 		&t.Attached_to_line_no,
+		&blanket_order_noNull,
+		&t.Blanket_order_line_no,
 	)
 
 	if err != nil {
@@ -4224,6 +4303,7 @@ func (t *SalesShipmentLine) FindFirst() bool {
 	t.Step_code = types.NewCode(step_codeNull.String)
 	t.Project_applies_to_id = types.NewCode(project_applies_to_idNull.String)
 	t.Apply_and_close_project = apply_and_close_projectBool.Bool
+	t.Blanket_order_no = types.NewCode(blanket_order_noNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -4244,7 +4324,7 @@ func (t *SalesShipmentLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project, attached_to_line_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project, attached_to_line_no, blanket_order_no, blanket_order_line_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4312,6 +4392,7 @@ func (t *SalesShipmentLine) FindLast() bool {
 	var step_codeNull sql.NullString
 	var project_applies_to_idNull sql.NullString
 	var apply_and_close_projectBool sql.NullBool
+	var blanket_order_noNull sql.NullString
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&sell_to_customer_noNull,
@@ -4382,6 +4463,8 @@ func (t *SalesShipmentLine) FindLast() bool {
 		&project_applies_to_idNull,
 		&apply_and_close_projectBool,
 		&t.Attached_to_line_no,
+		&blanket_order_noNull,
+		&t.Blanket_order_line_no,
 	)
 
 	if err != nil {
@@ -4456,6 +4539,7 @@ func (t *SalesShipmentLine) FindLast() bool {
 	t.Step_code = types.NewCode(step_codeNull.String)
 	t.Project_applies_to_id = types.NewCode(project_applies_to_idNull.String)
 	t.Apply_and_close_project = apply_and_close_projectBool.Bool
+	t.Blanket_order_no = types.NewCode(blanket_order_noNull.String)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -4506,7 +4590,7 @@ func (t *SalesShipmentLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project, attached_to_line_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project, attached_to_line_no, blanket_order_no, blanket_order_line_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4638,6 +4722,7 @@ func (t *SalesShipmentLine) Next(steps ...int) bool {
 		var step_codeNull sql.NullString
 		var project_applies_to_idNull sql.NullString
 		var apply_and_close_projectBool sql.NullBool
+		var blanket_order_noNull sql.NullString
 
 		err := t.currentRows.Scan(
 			&sell_to_customer_noNull,
@@ -4708,6 +4793,8 @@ func (t *SalesShipmentLine) Next(steps ...int) bool {
 			&project_applies_to_idNull,
 			&apply_and_close_projectBool,
 			&t.Attached_to_line_no,
+			&blanket_order_noNull,
+			&t.Blanket_order_line_no,
 		)
 
 		if err != nil {
@@ -4781,6 +4868,7 @@ func (t *SalesShipmentLine) Next(steps ...int) bool {
 		t.Step_code = types.NewCode(step_codeNull.String)
 		t.Project_applies_to_id = types.NewCode(project_applies_to_idNull.String)
 		t.Apply_and_close_project = apply_and_close_projectBool.Bool
+		t.Blanket_order_no = types.NewCode(blanket_order_noNull.String)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -4830,7 +4918,7 @@ func (t *SalesShipmentLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project, attached_to_line_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT sell_to_customer_no, document_no, line_no, type, no, location_code, posting_group, quantity_disc_code, shipment_date, description, description_2, unit_of_measure, quantity, unit_price, unit_cost_lcy, tax_percent, quantity_disc_percent, line_discount_percent, line_discount_amount, amount, amount_including_tax, allow_invoice_disc, gross_weight, net_weight, units_per_parcel, unit_volume, dimension_1_code, dimension_2_code, price_group_code, allow_quantity_disc, work_type_code, cust_item_disc_percent, qty_shipped_not_invoiced, quantity_invoiced, order_no, order_line_no, profit_percent, bill_to_customer_no, inv_discount_amount, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_area_code, tax_liable, tax_group_code, tax_bus_posting_group, tax_prod_posting_group, currency_code, tax_base_amount, unit_cost, item_shpt_entry_no, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, qty_shpd_not_invd_base, qty_invoiced_base, serial_no, lot_no, bin_code, project_no, appl_to_project_entry, phase_code, task_code, step_code, project_applies_to_id, apply_and_close_project, attached_to_line_no, blanket_order_no, blanket_order_line_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -4915,6 +5003,7 @@ func (t *SalesShipmentLine) FindSetBuffered() bool {
 		var step_codeNull sql.NullString
 		var project_applies_to_idNull sql.NullString
 		var apply_and_close_projectBool sql.NullBool
+		var blanket_order_noNull sql.NullString
 
 		err := rows.Scan(
 			&sell_to_customer_noNull,
@@ -4985,6 +5074,8 @@ func (t *SalesShipmentLine) FindSetBuffered() bool {
 			&project_applies_to_idNull,
 			&apply_and_close_projectBool,
 			&record.Attached_to_line_no,
+			&blanket_order_noNull,
+			&record.Blanket_order_line_no,
 		)
 
 		if err != nil {
@@ -5056,6 +5147,7 @@ func (t *SalesShipmentLine) FindSetBuffered() bool {
 		record.Step_code = types.NewCode(step_codeNull.String)
 		record.Project_applies_to_id = types.NewCode(project_applies_to_idNull.String)
 		record.Apply_and_close_project = apply_and_close_projectBool.Bool
+		record.Blanket_order_no = types.NewCode(blanket_order_noNull.String)
 
 		// Store old values
 		record.StoreOldValues()
@@ -5152,6 +5244,8 @@ func (t *SalesShipmentLine) copyFromBuffered(record *SalesShipmentLine) {
 	t.Project_applies_to_id = record.Project_applies_to_id
 	t.Apply_and_close_project = record.Apply_and_close_project
 	t.Attached_to_line_no = record.Attached_to_line_no
+	t.Blanket_order_no = record.Blanket_order_no
+	t.Blanket_order_line_no = record.Blanket_order_line_no
 	t.StoreOldValues()
 }
 
@@ -6959,6 +7053,55 @@ func (t *SalesShipmentLine) ValidateField(fieldName string, value interface{}) e
 			}
 		}
 		return nil
+	case "blanket_order_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Blanket_order_no = v
+		} else if v, ok := value.(string); ok {
+			t.Blanket_order_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field blanket_order_no")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "blanket_order_no"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesShipmentLineOnValidate_Blanket_order_no); ok {
+				if err := trg.OnValidate_Blanket_order_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "blanket_order_line_no":
+		// Set field value
+		switch v := value.(type) {
+		case int:
+			t.Blanket_order_line_no = v
+		case float64:
+			t.Blanket_order_line_no = int(v)
+		case string:
+			if v == "" {
+				t.Blanket_order_line_no = 0
+			} else if i, err := strconv.Atoi(v); err == nil {
+				t.Blanket_order_line_no = i
+			} else {
+				return fmt.Errorf("invalid integer value for field blanket_order_line_no: %s", v)
+			}
+		default:
+			return fmt.Errorf("invalid type for field blanket_order_line_no")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(SalesShipmentLineOnValidate_Blanket_order_line_no); ok {
+				if err := trg.OnValidate_Blanket_order_line_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -7107,6 +7250,10 @@ func (t *SalesShipmentLine) FieldValue(no int) (any, bool) {
 		return t.Apply_and_close_project, true
 	case 80:
 		return t.Attached_to_line_no, true
+	case 97:
+		return t.Blanket_order_no, true
+	case 98:
+		return t.Blanket_order_line_no, true
 	}
 	return nil, false
 }
@@ -7590,6 +7737,20 @@ func (t *SalesShipmentLine) SetFieldValue(no int, value any) bool {
 			t.Attached_to_line_no = v
 			return true
 		}
+	case 97:
+		if v, ok := value.(types.Code); ok {
+			t.Blanket_order_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Blanket_order_no = types.NewCode(v)
+			return true
+		}
+	case 98:
+		if v, ok := value.(int); ok {
+			t.Blanket_order_line_no = v
+			return true
+		}
 	}
 	return false
 }
@@ -7721,6 +7882,8 @@ func (t *SalesShipmentLine) CalcSums(fieldNames ...string) error {
 			column = "appl_to_project_entry"
 		case "attached_to_line_no":
 			column = "attached_to_line_no"
+		case "blanket_order_line_no":
+			column = "blanket_order_line_no"
 		default:
 			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Sales_Shipment_Line", name)
 		}
@@ -7904,6 +8067,12 @@ func (t *SalesShipmentLine) CalcSums(fieldNames ...string) error {
 				return fmt.Errorf("CalcSums Sales_Shipment_Line.%s: %w", column, err)
 			}
 			t.Attached_to_line_no = int(f)
+		case "blanket_order_line_no":
+			f, err := strconv.ParseFloat(total, 64)
+			if err != nil {
+				return fmt.Errorf("CalcSums Sales_Shipment_Line.%s: %w", column, err)
+			}
+			t.Blanket_order_line_no = int(f)
 		}
 	}
 	return nil
@@ -8392,6 +8561,10 @@ func (t *SalesShipmentLine) columnValue(column string) (interface{}, bool) {
 		return t.Apply_and_close_project, true
 	case "attached_to_line_no":
 		return t.Attached_to_line_no, true
+	case "blanket_order_no":
+		return t.Blanket_order_no, true
+	case "blanket_order_line_no":
+		return t.Blanket_order_line_no, true
 	}
 	return nil, false
 }
@@ -8516,6 +8689,8 @@ func (t *SalesShipmentLine) Init() {
 	t.Project_applies_to_id = *new(types.Code)
 	t.Apply_and_close_project = *new(bool)
 	t.Attached_to_line_no = *new(int)
+	t.Blanket_order_no = *new(types.Code)
+	t.Blanket_order_line_no = *new(int)
 	t.applyDefaults()
 }
 
@@ -8618,6 +8793,8 @@ func (t *SalesShipmentLine) ToMap() map[string]interface{} {
 		"project_applies_to_id":    t.Project_applies_to_id.String(),
 		"apply_and_close_project":  t.Apply_and_close_project,
 		"attached_to_line_no":      t.Attached_to_line_no,
+		"blanket_order_no":         t.Blanket_order_no.String(),
+		"blanket_order_line_no":    t.Blanket_order_line_no,
 	}
 }
 
@@ -9192,6 +9369,24 @@ func (t *SalesShipmentLine) FromMap(data map[string]interface{}) {
 			// a record key from a URL or a list selection
 			if n, err := strconv.Atoi(val); err == nil {
 				t.Attached_to_line_no = n
+			}
+		}
+	}
+	if v, ok := data["blanket_order_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Blanket_order_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["blanket_order_line_no"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Blanket_order_line_no = int(val)
+		case int:
+			t.Blanket_order_line_no = val
+		case string:
+			// a record key from a URL or a list selection
+			if n, err := strconv.Atoi(val); err == nil {
+				t.Blanket_order_line_no = n
 			}
 		}
 	}
@@ -9942,6 +10137,26 @@ func (t *SalesShipmentLine) GetFields() []tables.FieldInfo {
 			PrimaryKey: false,
 			FlowField:  false,
 		},
+		{
+			No:         97,
+			Name:       "blanket_order_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         98,
+			Name:       "blanket_order_line_no",
+			Type:       tables.FieldTypeInteger,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
 	}
 }
 
@@ -10239,6 +10454,16 @@ func (t *SalesShipmentLine) GetTableRelationFields() map[string]tables.TableRela
 				{Source: "description", Width: 250},
 			},
 			SearchTimeout: 0,
+		},
+		"blanket_order_no": {
+			Table:         "Sales_Header",
+			Field:         "no",
+			DisplayField:  "",
+			SearchTimeout: 0,
+			NoValidate:    true,
+			Filters: []tables.RelationFilterInfo{
+				{Column: "document_type", Field: "", Const: "4"},
+			},
 		},
 	}
 }

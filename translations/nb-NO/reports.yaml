@@ -2121,6 +2121,44 @@ reports:
       RECEIPT: "VAREMOTTAK"
       RECEIPT_NO: "Mottaksnr."
       RECEIPT_DATE: "Mottaksdato"
+  "5602":
+    caption: "Anleggskladd - kontroll"
+    texts:
+      TITLE: "Anleggskladd - kontroll"
+      FA_POSTING_DATE: "Anleggsbokføringsdato"
+      DOCUMENT_TYPE: "Bilagstype"
+      FA_NO: "Anleggsnr."
+      DEPRECIATION_BOOK: "Avskrivningsprofil"
+      FA_POSTING_TYPE: "Anleggsbokføringstype"
+      AMOUNT: "Beløp"
+      NO_OF_DEPR_DAYS: "Antall avskrivningsdager"
+      DEPR_UNTIL_DATE: "Avskriv til anleggsbokføringsdato"
+      NOT_DIFFERENT: "%1 er ikke forskjellig fra %2."
+      GL_INTEGRATION: "Når finansintegrasjon er aktivert, kan %1 ikke angis i anleggskladden."
+      NOT_WITH_ERROR_ENTRY: "%1 kan ikke angis når %2 er angitt."
+      NOT_TOGETHER_WITH: "%1 kan ikke angis sammen med %2 = %3."
+      NO_INSURANCE_INTEGRATION: "Forsikringsintegrasjon er ikke aktivert for %1 %2."
+      MUST_BE_IDENTICAL: "%1 må være lik %2."
+  "5622":
+    caption: "Forsikringskladd - kontroll"
+    texts:
+      TITLE: "Forsikringskladd - kontroll"
+      DOCUMENT_TYPE: "Bilagstype"
+      INSURANCE_NO: "Forsikringsnr."
+      FA_NO: "Anleggsnr."
+      AMOUNT: "Beløp"
+  "5623":
+    caption: "Forsikringsjournal"
+    texts:
+      TITLE: "Forsikringsjournal"
+      DOCUMENT_TYPE: "Bilagstype"
+      INSURANCE_NO: "Forsikringsnr."
+      INSURANCE_DESCRIPTION: "Forsikringsbeskrivelse"
+      FA_NO: "Anleggsnr."
+      FA_DESCRIPTION: "Anleggsbeskrivelse"
+      AMOUNT: "Beløp"
+      ENTRY_NO: "Løpenr."
+      REGISTER_NO: "Journalnr."
   "5603":
     caption: "Anleggsjournal"
     texts:
@@ -2288,6 +2326,34 @@ reports:
     texts:
       OPTIONS: "Alternativer"
       WINDOW: "Oppretter anleggsprofil       #1##########\nOppretter ikke anleggsprofil  #2##########"
+  "1407":
+    caption: "Bankkontoutskrift"
+    texts:
+      TITLE: "Bankkontoutskrift"
+      TRANSACTION_DATE: "Transaksjonsdato"
+      VALUE_DATE: "Valuteringsdato"
+      APPLIED_ENTRIES: "Utlignede poster"
+      APPLIED_AMOUNT: "Utlignet beløp"
+      STATEMENT_AMOUNT: "Kontoutskriftsbeløp"
+      STATEMENT_NO: "Kontoutskriftsnr."
+  "1408":
+    caption: "Bankkontoavstemming - kontroll"
+    texts:
+      TITLE: "Bankkontoutskrift - kontroll"
+      BANK_ACCOUNT_NO: "Bankkontonr."
+      STATEMENT_NO: "Kontoutskriftsnr."
+      STATEMENT_DATE: "Kontoutskriftsdato"
+      BALANCE_LAST_STATEMENT: "Saldo forrige kontoutskrift"
+      STATEMENT_ENDING_BALANCE: "Utgående saldo"
+      TRANSACTION_DATE: "Transaksjonsdato"
+      VALUE_DATE: "Valuteringsdato"
+      APPLIED_ENTRIES: "Utlignede poster"
+      STATEMENT_AMOUNT: "Kontoutskriftsbeløp"
+      APPLIED_AMOUNT: "Utlignet beløp"
+      DIFFERENCE: "Differanse"
+      NOT_EQUAL_TOTAL_BALANCE: "%1 er ikke lik total saldo."
+      APPLICATION_WRONG: "Utligningen er feil."
+      TOTAL_DIFFERENCE: "Den totale differansen er %1. Den må være %2."
   "1496":
     caption: "Foreslå bankavstemmingslinjer"
     options:

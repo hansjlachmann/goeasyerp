@@ -1762,3 +1762,27 @@ pages:
     caption: "G/L Acc. Budget by Dim. 1/2"
   g_l_balance_budget:
     caption: "G/L Balance/Budget"
+  reconciliation:
+    caption: "Reconciliation"
+    fields:
+      "no": "Account"
+
+  # Line lists (classic forms 37, 516–530)
+  sales_lines:
+    caption: "Sales Lines"
+  purchase_lines:
+    caption: "Purchase Lines"
+  posted_sales_shipment_lines:
+    caption: "Posted Sales Shipment Lines"
+  posted_sales_invoice_lines:
+    caption: "Posted Sales Invoice Lines"
+  posted_sales_credit_memo_lines:
+    caption: "Posted Sales Credit Memo Lines"
+  posted_purchase_receipt_lines:
+    caption: "Posted Purchase Receipt Lines"
+  posted_purchase_invoice_lines:
+    caption: "Posted Purchase Invoice Lines"
+  posted_purchase_cr_memo_lines:
+    caption: "Posted Purchase Cr. Memo Lines"
+  where_used_list:
+    caption: "Where-Used List"

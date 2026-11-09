@@ -26,3 +26,10 @@ page:
       image: Edit
       shortcut: Ctrl+E
       promoted: true
+
+    # the statement printed with the reports of Report Selections B.Stmt (report 1407)
+    - name: Print
+      caption: Print
+      image: Print
+      promoted: true
+      run_object: table:Bank_Account_Statement.PrintRecords

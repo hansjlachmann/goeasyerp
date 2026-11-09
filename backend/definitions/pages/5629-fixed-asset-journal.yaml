@@ -127,12 +127,23 @@ page:
       image: Post
       promoted: true
       items:
+        # what posting the batch would refuse, per line (report 5602)
+        - name: Test Report
+          caption: Test Report
+          image: Print
+          run_object: report:5602
         # Posting: the batch (codeunit 5636 FA. Jnl.-Post, after asking; the list's filters say which batch)
         - name: Post
           caption: Post
           image: Post
           shortcut: F11
           run_object: codeunit:5636
+        # Post, then print the posting report on the register (codeunit 5670)
+        - name: Post and Print
+          caption: Post and Print
+          image: Print
+          shortcut: Shift+F11
+          run_object: codeunit:5670
         # what Post would write for the batch, nothing saved (Posting Preview 115)
         - name: Preview Posting
           caption: Preview Posting

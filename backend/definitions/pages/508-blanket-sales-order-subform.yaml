@@ -161,3 +161,49 @@ page:
           caption: Reservation Entries
           image: Entries
           run_object: table:Sales_Line.ShowReservationEntries
+        # the order, invoice and credit memo lines made from the blanket line, unposted and posted
+        - name: Unposted Orders
+          caption: Orders
+          image: Document
+          run_page: 516
+          run_page_filters:
+            - {field: document_type, const: "1"}
+            - {field: blanket_order_no, value: document_no}
+            - {field: blanket_order_line_no, value: line_no}
+        - name: Unposted Invoices
+          caption: Invoices
+          image: Document
+          run_page: 516
+          run_page_filters:
+            - {field: document_type, const: "2"}
+            - {field: blanket_order_no, value: document_no}
+            - {field: blanket_order_line_no, value: line_no}
+        - name: Unposted Credit Memos
+          caption: Credit Memos
+          image: Document
+          run_page: 516
+          run_page_filters:
+            - {field: document_type, const: "3"}
+            - {field: blanket_order_no, value: document_no}
+            - {field: blanket_order_line_no, value: line_no}
+        - name: Posted Shipments
+          caption: Shipments
+          image: History
+          run_page: 525
+          run_page_filters:
+            - {field: blanket_order_no, value: document_no}
+            - {field: blanket_order_line_no, value: line_no}
+        - name: Posted Invoices
+          caption: Invoices
+          image: History
+          run_page: 526
+          run_page_filters:
+            - {field: blanket_order_no, value: document_no}
+            - {field: blanket_order_line_no, value: line_no}
+        - name: Posted Credit Memos
+          caption: Credit Memos
+          image: History
+          run_page: 527
+          run_page_filters:
+            - {field: blanket_order_no, value: document_no}
+            - {field: blanket_order_line_no, value: line_no}

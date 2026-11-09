@@ -1,0 +1,74 @@
+# Page 526 Posted Sales Invoice Lines (classic form 526)
+page:
+  id: 526
+  type: List
+  name: Posted Sales Invoice Lines
+  source_table: Sales_Invoice_Line
+  caption: Posted Sales Invoice Lines
+  editable: false
+
+  layout:
+    repeater:
+      fields:
+        - source: document_no
+          width: 110
+        - source: sell_to_customer_no
+          width: 110
+        - source: type
+          width: 90
+        - source: no
+          width: 90
+        - source: variant_code
+          width: 90
+          visible: false
+        - source: description
+          width: 260
+        - source: dimension_1_code
+          width: 100
+          visible: false
+        - source: dimension_2_code
+          width: 100
+          visible: false
+        - source: location_code
+          width: 90
+        - source: bin_code
+          width: 90
+          visible: false
+        - source: quantity
+          width: 100
+        - source: unit_of_measure_code
+          width: 90
+        - source: amount
+          width: 120
+        - source: amount_including_tax
+          width: 130
+          visible: false
+        - source: serial_no
+          width: 110
+          visible: false
+        - source: lot_no
+          width: 110
+          visible: false
+        - source: project_no
+          width: 100
+          visible: false
+        - source: shipment_date
+          width: 100
+        - source: blanket_order_no
+          width: 110
+          visible: false
+        - source: blanket_order_line_no
+          width: 90
+          visible: false
+
+  actions:
+    - name: Line
+      caption: Line
+      image: Lines
+      promoted: true
+      items:
+        - name: Show Document
+          caption: Show Document
+          image: Document
+          shortcut: Shift+F5
+          run_object: table:Sales_Invoice_Line.ShowDocument

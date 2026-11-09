@@ -45,3 +45,10 @@ page:
       run_page: 370
       run_page_filter_field: "no"
       run_page_filter_value: bank_account_no
+
+    # the statement printed with the reports of Report Selections B.Stmt (report 1407)
+    - name: Print
+      caption: Print
+      image: Print
+      promoted: true
+      run_object: table:Bank_Account_Statement.PrintRecords

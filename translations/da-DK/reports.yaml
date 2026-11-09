@@ -2121,6 +2121,44 @@ reports:
       RECEIPT: "VAREMODTAGELSE"
       RECEIPT_NO: "Modtagelsesnr."
       RECEIPT_DATE: "Modtagelsesdato"
+  "5602":
+    caption: "Anlægskladde - kontrol"
+    texts:
+      TITLE: "Anlægskladde - kontrol"
+      FA_POSTING_DATE: "Anlægsbogføringsdato"
+      DOCUMENT_TYPE: "Bilagstype"
+      FA_NO: "Anlægsnr."
+      DEPRECIATION_BOOK: "Afskrivningsprofil"
+      FA_POSTING_TYPE: "Anlægsbogføringstype"
+      AMOUNT: "Beløb"
+      NO_OF_DEPR_DAYS: "Antal afskrivningsdage"
+      DEPR_UNTIL_DATE: "Afskriv til anlægsbogføringsdato"
+      NOT_DIFFERENT: "%1 er ikke forskellig fra %2."
+      GL_INTEGRATION: "Når finansintegration er aktiveret, må %1 ikke angives i anlægskladden."
+      NOT_WITH_ERROR_ENTRY: "%1 må ikke angives, når %2 er angivet."
+      NOT_TOGETHER_WITH: "%1 må ikke angives sammen med %2 = %3."
+      NO_INSURANCE_INTEGRATION: "Forsikringsintegration er ikke aktiveret for %1 %2."
+      MUST_BE_IDENTICAL: "%1 skal være identisk med %2."
+  "5622":
+    caption: "Forsikringskladde - kontrol"
+    texts:
+      TITLE: "Forsikringskladde - kontrol"
+      DOCUMENT_TYPE: "Bilagstype"
+      INSURANCE_NO: "Forsikringsnr."
+      FA_NO: "Anlægsnr."
+      AMOUNT: "Beløb"
+  "5623":
+    caption: "Forsikringsjournal"
+    texts:
+      TITLE: "Forsikringsjournal"
+      DOCUMENT_TYPE: "Bilagstype"
+      INSURANCE_NO: "Forsikringsnr."
+      INSURANCE_DESCRIPTION: "Forsikringsbeskrivelse"
+      FA_NO: "Anlægsnr."
+      FA_DESCRIPTION: "Anlægsbeskrivelse"
+      AMOUNT: "Beløb"
+      ENTRY_NO: "Løbenr."
+      REGISTER_NO: "Journalnr."
   "5603":
     caption: "Anlægsjournal"
     texts:
@@ -2288,6 +2326,34 @@ reports:
     texts:
       OPTIONS: "Indstillinger"
       WINDOW: "Opretter anlægsprofil       #1##########\nOpretter ikke anlægsprofil  #2##########"
+  "1407":
+    caption: "Bankkontoudtog"
+    texts:
+      TITLE: "Bankkontoudtog"
+      TRANSACTION_DATE: "Transaktionsdato"
+      VALUE_DATE: "Valørdato"
+      APPLIED_ENTRIES: "Udlignede poster"
+      APPLIED_AMOUNT: "Udlignet beløb"
+      STATEMENT_AMOUNT: "Kontoudtogsbeløb"
+      STATEMENT_NO: "Kontoudtogsnr."
+  "1408":
+    caption: "Bankkontoafstemning - kontrol"
+    texts:
+      TITLE: "Bankkontoudtog - kontrol"
+      BANK_ACCOUNT_NO: "Bankkontonr."
+      STATEMENT_NO: "Kontoudtogsnr."
+      STATEMENT_DATE: "Kontoudtogsdato"
+      BALANCE_LAST_STATEMENT: "Saldo sidste kontoudtog"
+      STATEMENT_ENDING_BALANCE: "Ultimosaldo"
+      TRANSACTION_DATE: "Transaktionsdato"
+      VALUE_DATE: "Valørdato"
+      APPLIED_ENTRIES: "Udlignede poster"
+      STATEMENT_AMOUNT: "Kontoudtogsbeløb"
+      APPLIED_AMOUNT: "Udlignet beløb"
+      DIFFERENCE: "Difference"
+      NOT_EQUAL_TOTAL_BALANCE: "%1 er ikke lig med totalsaldo."
+      APPLICATION_WRONG: "Udligningen er forkert."
+      TOTAL_DIFFERENCE: "Den samlede difference er %1. Den skal være %2."
   "1496":
     caption: "Foreslå bankafstemningslinjer"
     options:

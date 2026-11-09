@@ -88,6 +88,21 @@ page:
       promoted: true
       run_object: codeunit:371
 
+    # what posting would refuse (Report Selections B.Recon.Test: report 1408)
+    - name: Test Report
+      caption: Test Report
+      image: Print
+      promoted: true
+      run_object: table:Bank_Acc_Reconciliation.TestReport
+
+    # Post, then print the statement (codeunit 372; Report Selections B.Stmt: report 1407)
+    - name: Post and Print
+      caption: Post and Print
+      image: Print
+      shortcut: Shift+F11
+      promoted: true
+      run_object: codeunit:372
+
     - name: Bank Account Card
       caption: Bank Account Card
       image: Card

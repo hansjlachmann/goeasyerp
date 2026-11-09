@@ -653,3 +653,10 @@ Bokfører linjer #3###### @4@@@@@@@@@@@@@"
   GL_BALANCE_BUDGETED_CREDIT_AMOUNT: "Budsjettert kreditbeløp"
   GL_BALANCE_BUDGETED_AMOUNT: "Budsjettert beløp"
   GL_BALANCE_BUDGET_PCT: "Saldo/budsjett (%)"
+
+  # Journal batch lists: Post, Post and Print; bank reconciliation Post and Print
+  JNL_BATCHES_POST_CONFIRM: "Vil du bokføre kladdene?"
+  JNL_BATCHES_POST_PRINT_CONFIRM: "Vil du bokføre kladdene og skrive ut bokføringsrapporten?"
+  JNL_BATCHES_POSTED: "Kladdene er bokført."
+  JNL_BATCHES_NOT_ALL_POSTED: "Ikke alle kladdene kunne bokføres. Disse kladdene ble ikke bokført: %1"
+  BANK_REC_POST_PRINT_CONFIRM: "Vil du bokføre og skrive ut avstemmingen?"

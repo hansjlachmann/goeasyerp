@@ -2121,6 +2121,44 @@ reports:
       RECEIPT: "RECEIPT"
       RECEIPT_NO: "Receipt No."
       RECEIPT_DATE: "Receipt Date"
+  "5602":
+    caption: "Fixed Asset Journal - Test"
+    texts:
+      TITLE: "Fixed Asset Journal - Test"
+      FA_POSTING_DATE: "FA Posting Date"
+      DOCUMENT_TYPE: "Document Type"
+      FA_NO: "FA No."
+      DEPRECIATION_BOOK: "Depreciation Book"
+      FA_POSTING_TYPE: "FA Posting Type"
+      AMOUNT: "Amount"
+      NO_OF_DEPR_DAYS: "No. of Depreciation Days"
+      DEPR_UNTIL_DATE: "Depr. until FA Posting Date"
+      NOT_DIFFERENT: "%1 is not different than %2."
+      GL_INTEGRATION: "When G/L integration is activated, %1 must not be specified in the FA journal."
+      NOT_WITH_ERROR_ENTRY: "%1 must not be specified when %2 is specified."
+      NOT_TOGETHER_WITH: "%1 must not be specified together with %2 = %3."
+      NO_INSURANCE_INTEGRATION: "Insurance integration is not activated for %1 %2."
+      MUST_BE_IDENTICAL: "%1 must be identical to %2."
+  "5622":
+    caption: "Insurance Journal - Test"
+    texts:
+      TITLE: "Insurance Journal - Test"
+      DOCUMENT_TYPE: "Document Type"
+      INSURANCE_NO: "Insurance No."
+      FA_NO: "FA No."
+      AMOUNT: "Amount"
+  "5623":
+    caption: "Insurance Register"
+    texts:
+      TITLE: "Insurance Register"
+      DOCUMENT_TYPE: "Document Type"
+      INSURANCE_NO: "Insurance No."
+      INSURANCE_DESCRIPTION: "Insurance Description"
+      FA_NO: "FA No."
+      FA_DESCRIPTION: "FA Description"
+      AMOUNT: "Amount"
+      ENTRY_NO: "Entry No."
+      REGISTER_NO: "Register No."
   "5603":
     caption: "Fixed Asset Register"
     texts:
@@ -2288,6 +2326,34 @@ reports:
     texts:
       OPTIONS: "Options"
       WINDOW: "Creating fixed asset book     #1##########\nNot creating fixed asset book #2##########"
+  "1407":
+    caption: "Bank Account Statement"
+    texts:
+      TITLE: "Bank Account Statement"
+      TRANSACTION_DATE: "Transaction Date"
+      VALUE_DATE: "Value Date"
+      APPLIED_ENTRIES: "Applied Entries"
+      APPLIED_AMOUNT: "Applied Amount"
+      STATEMENT_AMOUNT: "Statement Amount"
+      STATEMENT_NO: "Statement No."
+  "1408":
+    caption: "Bank Acc. Recon. - Test"
+    texts:
+      TITLE: "Bank Account Statement - Test"
+      BANK_ACCOUNT_NO: "Bank Account No."
+      STATEMENT_NO: "Statement No."
+      STATEMENT_DATE: "Statement Date"
+      BALANCE_LAST_STATEMENT: "Balance Last Statement"
+      STATEMENT_ENDING_BALANCE: "Statement Ending Balance"
+      TRANSACTION_DATE: "Transaction Date"
+      VALUE_DATE: "Value Date"
+      APPLIED_ENTRIES: "Applied Entries"
+      STATEMENT_AMOUNT: "Statement Amount"
+      APPLIED_AMOUNT: "Applied Amount"
+      DIFFERENCE: "Difference"
+      NOT_EQUAL_TOTAL_BALANCE: "%1 is not equal to Total Balance."
+      APPLICATION_WRONG: "Application is wrong."
+      TOTAL_DIFFERENCE: "The total difference is %1. It must be %2."
   "1496":
     caption: "Suggest Bank Acc. Recon. Lines"
     options:

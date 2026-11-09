@@ -210,6 +210,14 @@ page:
           caption: Calc. Standard Cost
           image: Calculate
           run_object: table:Item.CalcStandardCost
+        - name: Where-Used List
+          caption: Where-Used List
+          image: Rows
+          run_page: 37
+          run_page_filters:
+            - {field: type, const: "1"}   # Item
+            - {field: "no", value: "no"}
+
 
     - name: Sales
       caption: Sales
@@ -234,11 +242,30 @@ page:
           run_page: 33
           run_page_filter_field: item_no
           run_page_filter_value: "no"
+        - name: Sales Orders
+          caption: Orders
+          image: Document
+          run_page: 48
+          run_page_filters:
+            - {field: type, const: "2"}   # Item
+            - {field: "no", value: "no"}
 
-    - name: Vendors
-      caption: Vendors
-      image: Navigate
-      run_page: 114
-      run_page_filter_field: item_no
-      run_page_filter_value: "no"
+
+    - name: Purchases
+      caption: Purchases
+      image: Document
       promoted: true
+      items:
+        - name: Vendors
+          caption: Vendors
+          image: Customer
+          run_page: 114
+          run_page_filter_field: item_no
+          run_page_filter_value: "no"
+        - name: Purchase Orders
+          caption: Orders
+          image: Document
+          run_page: 56
+          run_page_filters:
+            - {field: type, const: "2"}   # Item
+            - {field: "no", value: "no"}

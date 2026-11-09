@@ -959,6 +959,13 @@ tables:
     fields:
       name: "Navn"
       description: "Beskrivelse"
+  g_l_account_net_change:
+    caption: "Finanskonto – bevægelse"
+    fields:
+      no: "Nr."
+      name: "Navn"
+      net_change_in_jnl: "Bevægelse i kladde"
+      balance_after_posting: "Saldo efter bogføring"
   g_l_budget_entry:
     caption: "Finansbudgetpost"
     fields:

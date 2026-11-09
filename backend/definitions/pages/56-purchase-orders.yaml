@@ -1,0 +1,54 @@
+# Page 56 Purchase Orders (classic form 56): the purchase order lines (OnOpenPage: Document Type = Order) — the item's Purchases › Orders
+page:
+  id: 56
+  type: List
+  name: Purchase Orders
+  source_table: Purchase_Line
+  caption: Purchase Orders
+  editable: false
+
+  layout:
+    repeater:
+      fields:
+        - source: type
+          width: 90
+        - source: no
+          width: 90
+        - source: description
+          width: 240
+        - source: expected_receipt_date
+          width: 100
+        - source: buy_from_vendor_no
+          width: 110
+        - source: document_no
+          width: 110
+        - source: currency_code
+          width: 80
+        - source: quantity
+          width: 100
+        - source: outstanding_quantity
+          width: 110
+        - source: unit_of_measure_code
+          width: 90
+        - source: amount
+          width: 120
+        - source: direct_unit_cost
+          width: 110
+        - source: line_discount_percent
+          width: 90
+
+  actions:
+    - name: Line
+      caption: Line
+      image: Lines
+      promoted: true
+      items:
+        - name: Show Document
+          caption: Show Document
+          image: Document
+          shortcut: Shift+F5
+          run_object: table:Purchase_Line.ShowDocument
+        - name: Reservation Entries
+          caption: Reservation Entries
+          image: Entries
+          run_object: table:Purchase_Line.ShowReservationEntries

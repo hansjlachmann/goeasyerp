@@ -1,0 +1,91 @@
+# Page 518 Purchase Lines (classic form 518): purchase document lines — opened filtered from a blanket order's line and other pages
+page:
+  id: 518
+  type: List
+  name: Purchase Lines
+  source_table: Purchase_Line
+  caption: Purchase Lines
+  editable: false
+
+  layout:
+    repeater:
+      fields:
+        - source: document_type
+          width: 110
+        - source: document_no
+          width: 110
+        - source: buy_from_vendor_no
+          width: 110
+        - source: line_no
+          width: 80
+          visible: false
+        - source: type
+          width: 90
+        - source: no
+          width: 90
+        - source: variant_code
+          width: 90
+          visible: false
+        - source: description
+          width: 260
+        - source: dimension_1_code
+          width: 100
+          visible: false
+        - source: dimension_2_code
+          width: 100
+          visible: false
+        - source: location_code
+          width: 90
+        - source: bin_code
+          width: 90
+          visible: false
+        - source: reserve
+          width: 90
+          visible: false
+        - source: quantity
+          width: 100
+        - source: reserved_qty_base
+          width: 110
+          visible: false
+        - source: unit_of_measure_code
+          width: 90
+        - source: amount
+          width: 120
+        - source: amount_including_tax
+          width: 130
+          visible: false
+        - source: serial_no
+          width: 110
+          visible: false
+        - source: lot_no
+          width: 110
+          visible: false
+        - source: project_no
+          width: 100
+          visible: false
+        - source: expected_receipt_date
+          width: 100
+        - source: outstanding_quantity
+          width: 110
+        - source: blanket_order_no
+          width: 110
+          visible: false
+        - source: blanket_order_line_no
+          width: 90
+          visible: false
+
+  actions:
+    - name: Line
+      caption: Line
+      image: Lines
+      promoted: true
+      items:
+        - name: Show Document
+          caption: Show Document
+          image: Document
+          shortcut: Shift+F5
+          run_object: table:Purchase_Line.ShowDocument
+        - name: Reservation Entries
+          caption: Reservation Entries
+          image: Entries
+          run_object: table:Purchase_Line.ShowReservationEntries

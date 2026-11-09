@@ -1,0 +1,74 @@
+# Report 1407 Bank Account Statement: the printed layout (see business-logic/reports/layout.go)
+report:
+  id: 1407
+  name: Bank Account Statement
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Bank_Account_Statement
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 10.5
+          elements:
+            - {text: TRANSACTION_DATE, x: 0, y: 1, width: 20, bold: true, wrap: true}
+            - {text: TYPE, x: 21, y: 1, width: 37, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 59, y: 1, width: 22, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 82, y: 1, width: 65, bold: true, wrap: true}
+            - {text: VALUE_DATE, x: 148, y: 1, width: 20, bold: true, wrap: true}
+            - {text: APPLIED_ENTRIES, x: 169, y: 1, width: 20, bold: true, wrap: true, align: right}
+            - {text: APPLIED_AMOUNT, x: 190, y: 1, width: 40, bold: true, wrap: true, align: right}
+            - {text: STATEMENT_AMOUNT, x: 231, y: 1, width: 42, bold: true, wrap: true, align: right}
+            - {line: true, x: 0, y: 9}
+        - type: body
+          height: 8
+          elements:
+            - {text: STATEMENT_NO, x: 0, y: 2, width: 30, bold: true}
+            - {field: bank_account_no, x: 31, y: 2, width: 25, bold: true}
+            - {field: statement_no, x: 57, y: 2, width: 25, bold: true}
+            - {field: statement_date, x: 83, y: 2, width: 25}
+        - type: footer
+          height: 8
+          elements:
+            - {line: true, x: 190, y: 1}
+            - {text: TOTAL, x: 77, y: 2.5, width: 40, bold: true}
+            - {total: Bank_Account_Statement_Line.applied_amount, x: 190, y: 2.5, width: 40, align: right, bold: true, decimal_places: "2:2"}
+            - {total: Bank_Account_Statement_Line.statement_amount, x: 231, y: 2.5, width: 42, align: right, bold: true, decimal_places: "2:2"}
+    - name: Bank_Account_Statement_Line
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {field: transaction_date, x: 0, y: 0, width: 20}
+            - {field: type, x: 21, y: 0, width: 37}
+            - {field: document_no, x: 59, y: 0, width: 22}
+            - {field: description, x: 82, y: 0, width: 65}
+            - {field: value_date, x: 148, y: 0, width: 20}
+            - {field: applied_entries, x: 169, y: 0, width: 20, align: right}
+            - {field: applied_amount, x: 190, y: 0, width: 40, align: right, decimal_places: "2:2"}
+            - {field: statement_amount, x: 231, y: 0, width: 42, align: right, decimal_places: "2:2"}
+        - type: footer
+          height: 7
+          elements:
+            - {line: true, x: 190, y: 0.5}
+            - {text: TOTAL, x: 77, y: 1.5, width: 40, bold: true}
+            - {total: applied_amount, x: 190, y: 1.5, width: 40, align: right, bold: true, decimal_places: "2:2"}
+            - {total: statement_amount, x: 231, y: 1.5, width: 42, align: right, bold: true, decimal_places: "2:2"}

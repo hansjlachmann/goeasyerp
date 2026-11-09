@@ -6,5 +6,6 @@ import "github.com/hansjlachmann/goeasyerp/backend/foundation/objects"
 // every business-logic package declares its objects — they appear in the Object table and on
 // page 908 Objects)
 func init() {
+	objects.Codeunit(228, "Test Report-Print")
 	objects.Codeunit(229, "Document-Print")
 }

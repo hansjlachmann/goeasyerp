@@ -8,6 +8,17 @@ common:
 
   # Common actions
   actions:
+    # Line lists and their links
+    posted_credit_memos: "Posted Credit Memos"
+    posted_invoices: "Posted Invoices"
+    posted_receipts: "Posted Receipts"
+    posted_shipments: "Posted Shipments"
+    purchase_orders: "Purchase Orders"
+    sales_orders: "Sales Orders"
+    unposted_credit_memos: "Credit Memos"
+    unposted_invoices: "Invoices"
+    unposted_orders: "Orders"
+    where_used_list: "Where-Used List"
     # G/L balance and budget views
     account_balance: "Account Balance"
     balance: "Balance"

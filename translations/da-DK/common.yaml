@@ -8,6 +8,17 @@ common:
 
   # Common actions
   actions:
+    # Line lists and their links
+    posted_credit_memos: "Bogførte kreditnotaer"
+    posted_invoices: "Bogførte fakturaer"
+    posted_receipts: "Bogførte modtagelser"
+    posted_shipments: "Bogførte leverancer"
+    purchase_orders: "Købsordrer"
+    sales_orders: "Salgsordrer"
+    unposted_credit_memos: "Kreditnotaer"
+    unposted_invoices: "Fakturaer"
+    unposted_orders: "Ordrer"
+    where_used_list: "Indgår i"
     # G/L balance and budget views
     account_balance: "Kontosaldo"
     balance: "Saldo"

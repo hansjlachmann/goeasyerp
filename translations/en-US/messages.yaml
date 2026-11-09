@@ -653,3 +653,10 @@ Posting lines #3###### @4@@@@@@@@@@@@@"
   GL_BALANCE_BUDGETED_CREDIT_AMOUNT: "Budgeted Credit Amount"
   GL_BALANCE_BUDGETED_AMOUNT: "Budgeted Amount"
   GL_BALANCE_BUDGET_PCT: "Balance/Budget (%)"
+
+  # Journal batch lists: Post, Post and Print; bank reconciliation Post and Print
+  JNL_BATCHES_POST_CONFIRM: "Do you want to post the journals?"
+  JNL_BATCHES_POST_PRINT_CONFIRM: "Do you want to post the journals and print the posting report?"
+  JNL_BATCHES_POSTED: "The journals were successfully posted."
+  JNL_BATCHES_NOT_ALL_POSTED: "It was not possible to post all of the journals. These journals were not posted: %1"
+  BANK_REC_POST_PRINT_CONFIRM: "Do you want to post and print the reconciliation?"

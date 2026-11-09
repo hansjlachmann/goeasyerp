@@ -194,6 +194,15 @@ page:
       image: Post
       promoted: true
       items:
+        # the batch's net change per reconciliation account and the balance after posting (page 345)
+        - name: Reconcile
+          caption: Reconcile
+          image: Calculate
+          shortcut: Ctrl+F9
+          run_page: 345
+          run_page_params:
+            journal_template_name: journal_template_name
+            journal_batch_name: journal_batch_name
         # what posting the batch would refuse, per line (report 2 General Journal - Test)
         - name: Test Report
           caption: Test Report

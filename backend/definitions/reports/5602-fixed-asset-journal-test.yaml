@@ -1,0 +1,75 @@
+# Report 5602 Fixed Asset Journal - Test: the printed layout (see business-logic/reports/layout.go)
+report:
+  id: 5602
+  name: Fixed Asset Journal - Test
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: FA_Journal_Batch
+      new_page_per_record: true
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 22
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 5, width: 140}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+            - {text: JOURNAL_TEMPLATE, x: 0, y: 12, width: 40}
+            - {field: journal_template_name, x: 41, y: 12, width: 30}
+            - {text: JOURNAL_BATCH, x: 0, y: 16, width: 40}
+            - {field: name, x: 41, y: 16, width: 30}
+        - type: header
+          print_on_every_page: true
+          height: 10.5
+          elements:
+            - {text: FA_POSTING_DATE, x: 0, y: 1, width: 32, bold: true, wrap: true}
+            - {text: DOCUMENT_TYPE, x: 33, y: 1, width: 14, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 48, y: 1, width: 20, bold: true, wrap: true}
+            - {text: FA_NO, x: 69, y: 1, width: 16, bold: true, wrap: true}
+            - {text: DEPRECIATION_BOOK, x: 86, y: 1, width: 22, bold: true, wrap: true}
+            - {text: FA_POSTING_TYPE, x: 109, y: 1, width: 31, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 141, y: 1, width: 37, bold: true, wrap: true}
+            - {text: AMOUNT, x: 179, y: 1, width: 26, bold: true, wrap: true, align: right}
+            - {text: NO_OF_DEPR_DAYS, x: 206, y: 1, width: 29, bold: true, wrap: true, align: right}
+            - {text: DEPR_UNTIL_DATE, x: 236, y: 1, width: 33, bold: true, wrap: true}
+            - {line: true, x: 0, y: 9}
+    - name: FA_Journal_Line
+      sections:
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: body
+          height: 4.2
+          elements:
+            - {field: fa_posting_date, x: 0, y: 0, width: 32}
+            - {field: document_type, x: 33, y: 0, width: 14}
+            - {field: document_no, x: 48, y: 0, width: 20}
+            - {field: fa_no, x: 69, y: 0, width: 16}
+            - {field: depreciation_book_code, x: 86, y: 0, width: 22}
+            - {field: fa_posting_type, x: 109, y: 0, width: 31}
+            - {field: description, x: 141, y: 0, width: 37}
+            - {field: amount, x: 179, y: 0, width: 26, align: right, decimal_places: "2:2"}
+            - {field: no_of_depreciation_days, x: 206, y: 0, width: 29, align: right}
+            - {field: depr_until_fa_posting_date, x: 236, y: 0, width: 33}
+        - type: footer
+          height: 8
+          elements:
+            - {line: true, x: 179, y: 1}
+            - {text: TOTAL, x: 141, y: 2.5, width: 37, bold: true}
+            - {total: amount, x: 179, y: 2.5, width: 26, align: right, bold: true, decimal_places: "2:2"}
+    - name: Error_Loop
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {text: WARNING, x: 19, y: 0, width: 20, bold: true}
+            - {value: error_text, x: 40, y: 0, width: 233, wrap: true}

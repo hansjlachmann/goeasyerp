@@ -959,6 +959,13 @@ tables:
     fields:
       name: "Name"
       description: "Description"
+  g_l_account_net_change:
+    caption: "G/L Account Net Change"
+    fields:
+      no: "No."
+      name: "Name"
+      net_change_in_jnl: "Net Change in Jnl."
+      balance_after_posting: "Balance after Posting"
   g_l_budget_entry:
     caption: "G/L Budget Entry"
     fields:
