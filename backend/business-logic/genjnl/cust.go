@@ -139,6 +139,7 @@ func (p *GenJnlPostLine) applyCustLedgEntry(newCustLedgEntry *gtables.CustomerLe
 		return nil
 	}
 	applnCurrencyCode := newCustLedgEntry.Currency_code
+	applnPostingDate := newCustLedgEntry.Posting_date
 	applnRoundingPrecision, err := p.applnRoundingPrecision(newCustLedgEntry.Currency_code)
 	if err != nil {
 		return err
@@ -159,7 +160,7 @@ func (p *GenJnlPostLine) applyCustLedgEntry(newCustLedgEntry *gtables.CustomerLe
 		if err != nil {
 			return err
 		}
-		err = CheckCurrency(newCustLedgEntry.Currency_code, oldCustLedgEntry.Currency_code)
+		_, err = CheckCurrency(p.src, newCustLedgEntry.Currency_code, oldCustLedgEntry.Currency_code, gtables.GenJournalLine_Account_type.Customer, true)
 		if err != nil {
 			return err
 		}
@@ -174,18 +175,45 @@ func (p *GenJnlPostLine) applyCustLedgEntry(newCustLedgEntry *gtables.CustomerLe
 		oldCustLedgEntry.SetRange("open", true)
 		oldCustLedgEntry.SetFilter("entry_no", "<>"+itoa(newCustLedgEntry.Entry_no))
 		oldCustLedgEntry.SetRange("applies_to_id", newCustLedgEntry.Applies_to_id)
-		// Application between currencies is not supported yet: the entries of the currency
-		oldCustLedgEntry.SetRange("currency_code", newCustLedgEntry.Currency_code)
+		// Management of posting in multiple currencies: the entries of the currency, or of the
+		// currencies the setup lets the entry be applied to
+		salesSetup := gtables.GetSalesReceivablesSetup(p.src)
+		if salesSetup.Appln_between_currencies == gtables.SalesReceivablesSetup_Appln_between_currencies.None {
+			oldCustLedgEntry.SetRange("currency_code", newCustLedgEntry.Currency_code)
+		} else {
+			oldCustLedgEntry.ClearMarks()
+			for found := oldCustLedgEntry.FindSetBuffered(); found; found = oldCustLedgEntry.Next() {
+				ok, err := CheckCurrency(p.src, newCustLedgEntry.Currency_code, oldCustLedgEntry.Currency_code, gtables.GenJournalLine_Account_type.Customer, false)
+				if err != nil {
+					return err
+				}
+				if ok {
+					oldCustLedgEntry.Mark(true)
+				}
+			}
+			oldCustLedgEntry.MarkedOnly(true)
+		}
 		oldCustLedgEntry.SetRange("positive", newCustLedgEntry.Remaining_amount.IsPositive())
 		if oldCustLedgEntry.FindFirst() {
 			tempAmount := newCustLedgEntry.Remaining_amount
 			oldCustLedgEntry.SetRange("positive")
 			for found := oldCustLedgEntry.FindSet(); found; found = oldCustLedgEntry.Next() {
 				remaining := oldCustLedgEntry.Remaining_amount
+				pmtDiscPossible := oldCustLedgEntry.Pmt_disc_possible
+				if newCustLedgEntry.Currency_code != oldCustLedgEntry.Currency_code {
+					remaining, err = ExchAmount(p.src, remaining, oldCustLedgEntry.Currency_code, applnCurrencyCode, applnPostingDate)
+					if err != nil {
+						return err
+					}
+					pmtDiscPossible, err = ExchAmount(p.src, pmtDiscPossible, oldCustLedgEntry.Currency_code, applnCurrencyCode, applnPostingDate)
+					if err != nil {
+						return err
+					}
+				}
 				if newCustLedgEntry.Document_type == gtables.CustomerLedgerEntry_Document_type.Payment &&
 					oldCustLedgEntry.Document_type == gtables.CustomerLedgerEntry_Document_type.Invoice &&
 					!oldCustLedgEntry.Pmt_discount_date.Before(newCustLedgEntry.Posting_date) {
-					remaining = remaining.Sub(oldCustLedgEntry.Pmt_disc_possible)
+					remaining = remaining.Sub(pmtDiscPossible)
 				}
 				tempAmount = tempAmount.Add(remaining)
 			}
@@ -207,6 +235,18 @@ func (p *GenJnlPostLine) applyCustLedgEntry(newCustLedgEntry *gtables.CustomerLe
 		// the application register: the entries as they were before the application
 		p.recordCustEntry(newCustLedgEntry, true)
 		p.recordCustEntry(oldCustLedgEntry2, false)
+		// Management of posting in multiple currencies: the old entry's amounts in the
+		// application's currency
+		if applnCurrencyCode != oldCustLedgEntry2.Currency_code {
+			oldCustLedgEntry2.Remaining_amount, err = ExchAmount(p.src, oldCustLedgEntry2.Remaining_amount, oldCustLedgEntry2.Currency_code, applnCurrencyCode, applnPostingDate)
+			if err != nil {
+				return err
+			}
+			oldCustLedgEntry2.Pmt_disc_possible, err = ExchAmount(p.src, oldCustLedgEntry2.Pmt_disc_possible, oldCustLedgEntry2.Currency_code, applnCurrencyCode, applnPostingDate)
+			if err != nil {
+				return err
+			}
+		}
 
 		// Calculate payment discount
 		if newCustLedgEntry.Document_type == gtables.CustomerLedgerEntry_Document_type.Payment &&
@@ -256,9 +296,14 @@ func (p *GenJnlPostLine) applyCustLedgEntry(newCustLedgEntry *gtables.CustomerLe
 				appliedAmount = oldCustLedgEntry2.Remaining_amount.Neg()
 			}
 		}
-		oldAppliedAmount := appliedAmount
+		var oldAppliedAmount types.Decimal
 		if appliedAmount.Equal(oldCustLedgEntry2.Remaining_amount.Neg()) {
 			oldAppliedAmount = oldCustLedgEntry.Remaining_amount.Neg()
+		} else {
+			oldAppliedAmount, err = ExchAmount(p.src, appliedAmount, applnCurrencyCode, oldCustLedgEntry2.Currency_code, applnPostingDate)
+			if err != nil {
+				return err
+			}
 		}
 		var appliedAmountLCY types.Decimal
 		if applnCurrencyCode != "" {

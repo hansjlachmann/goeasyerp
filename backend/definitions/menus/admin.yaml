@@ -256,6 +256,8 @@ menu:
             run_object: "report:116"
           - name: "Sales Reservation Avail."
             run_object: "report:209"
+          - name: "Drop Shipment Status"
+            run_object: "report:211"
       - name: "Documents"
         items:
           - name: "Sales - Quote"

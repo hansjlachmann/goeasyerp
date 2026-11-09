@@ -8,6 +8,7 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
@@ -51,21 +52,21 @@ func init() {
 			custLedgEntry.SetRange("open", true)
 			custLedgEntry.SetRange("applies_to_id", directApplID())
 			custLedgEntry.SetFilter("entry_no", "<>"+itoa(rec.Entry_no))
-			setDirectApplnTotals(page, rec.Remaining_amount, rec.Document_type == gtables.CustomerLedgerEntry_Document_type.Payment, rec.Posting_date,
-				func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date)) {
+			setDirectApplnTotals(rec, page, rec.Remaining_amount, rec.Currency_code, rec.Document_type == gtables.CustomerLedgerEntry_Document_type.Payment, rec.Posting_date,
+				func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date, currencyCode types.Code)) {
 					for found := custLedgEntry.FindSet(); found; found = custLedgEntry.Next() {
 						add(custLedgEntry.Remaining_amount, custLedgEntry.Pmt_disc_possible,
-							custLedgEntry.Document_type == gtables.CustomerLedgerEntry_Document_type.Invoice, custLedgEntry.Pmt_discount_date)
+							custLedgEntry.Document_type == gtables.CustomerLedgerEntry_Document_type.Invoice, custLedgEntry.Pmt_discount_date, custLedgEntry.Currency_code)
 					}
 				})
 			return
 		}
-		setApplnTotals(page, func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date)) {
+		setApplnTotals(rec, page, func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date, currencyCode types.Code)) {
 			custLedgEntry.SetRange("open", true)
 			custLedgEntry.SetRange("applies_to_id", system.PageParam("applies_to_id"))
 			for found := custLedgEntry.FindSet(); found; found = custLedgEntry.Next() {
 				add(custLedgEntry.Remaining_amount, custLedgEntry.Pmt_disc_possible,
-					custLedgEntry.Document_type == gtables.CustomerLedgerEntry_Document_type.Invoice, custLedgEntry.Pmt_discount_date)
+					custLedgEntry.Document_type == gtables.CustomerLedgerEntry_Document_type.Invoice, custLedgEntry.Pmt_discount_date, custLedgEntry.Currency_code)
 			}
 		})
 	})
@@ -76,21 +77,21 @@ func init() {
 			vendLedgEntry.SetRange("open", true)
 			vendLedgEntry.SetRange("applies_to_id", directApplID())
 			vendLedgEntry.SetFilter("entry_no", "<>"+itoa(rec.Entry_no))
-			setDirectApplnTotals(page, rec.Remaining_amount, rec.Document_type == gtables.VendorLedgerEntry_Document_type.Payment, rec.Posting_date,
-				func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date)) {
+			setDirectApplnTotals(rec, page, rec.Remaining_amount, rec.Currency_code, rec.Document_type == gtables.VendorLedgerEntry_Document_type.Payment, rec.Posting_date,
+				func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date, currencyCode types.Code)) {
 					for found := vendLedgEntry.FindSet(); found; found = vendLedgEntry.Next() {
 						add(vendLedgEntry.Remaining_amount, vendLedgEntry.Pmt_disc_possible,
-							vendLedgEntry.Document_type == gtables.VendorLedgerEntry_Document_type.Invoice, vendLedgEntry.Pmt_discount_date)
+							vendLedgEntry.Document_type == gtables.VendorLedgerEntry_Document_type.Invoice, vendLedgEntry.Pmt_discount_date, vendLedgEntry.Currency_code)
 					}
 				})
 			return
 		}
-		setApplnTotals(page, func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date)) {
+		setApplnTotals(rec, page, func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date, currencyCode types.Code)) {
 			vendLedgEntry.SetRange("open", true)
 			vendLedgEntry.SetRange("applies_to_id", system.PageParam("applies_to_id"))
 			for found := vendLedgEntry.FindSet(); found; found = vendLedgEntry.Next() {
 				add(vendLedgEntry.Remaining_amount, vendLedgEntry.Pmt_disc_possible,
-					vendLedgEntry.Document_type == gtables.VendorLedgerEntry_Document_type.Invoice, vendLedgEntry.Pmt_discount_date)
+					vendLedgEntry.Document_type == gtables.VendorLedgerEntry_Document_type.Invoice, vendLedgEntry.Pmt_discount_date, vendLedgEntry.Currency_code)
 			}
 		})
 	})
@@ -99,13 +100,15 @@ func init() {
 // setApplnTotals fills the Apply Entries footer: the journal line's amount, the amount of the
 // entries marked with its Applies-to ID (a payment takes the discount still possible), and the
 // balance of both
-func setApplnTotals(page *pages.Control, entries func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date))) {
+func setApplnTotals(src ftables.Source, page *pages.Control, entries func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date, currencyCode types.Code))) {
 	applyingAmount, _ := types.NewDecimalFromString(system.PageParam("amount"))
 	postingDate, _ := types.NewDateFromString(system.PageParam("posting_date"))
+	applnCurrencyCode := types.Code(system.PageParam("currency_code"))
 	payment := system.PageParam("document_type") == "1"
 	var appliedAmount types.Decimal
 	if system.PageParam("applies_to_id") != "" {
-		entries(func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date) {
+		entries(func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date, currencyCode types.Code) {
+			remaining, pmtDiscPossible = exchApplnAmounts(src, remaining, pmtDiscPossible, currencyCode, applnCurrencyCode, postingDate)
 			if payment && invoice && !pmtDiscountDate.Before(postingDate) {
 				remaining = remaining.Sub(pmtDiscPossible)
 			}
@@ -120,9 +123,10 @@ func setApplnTotals(page *pages.Control, entries func(add func(remaining, pmtDis
 // setDirectApplnTotals fills the footer opened from the ledger entries: the remaining amount of
 // the entry under the cursor (the applying entry), the amount of the other entries marked with
 // the user's Applies-to ID (a payment takes the discount still possible), and the balance
-func setDirectApplnTotals(page *pages.Control, applyingAmount types.Decimal, payment bool, postingDate types.Date, entries func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date))) {
+func setDirectApplnTotals(src ftables.Source, page *pages.Control, applyingAmount types.Decimal, applnCurrencyCode types.Code, payment bool, postingDate types.Date, entries func(add func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date, currencyCode types.Code))) {
 	var appliedAmount types.Decimal
-	entries(func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date) {
+	entries(func(remaining, pmtDiscPossible types.Decimal, invoice bool, pmtDiscountDate types.Date, currencyCode types.Code) {
+		remaining, pmtDiscPossible = exchApplnAmounts(src, remaining, pmtDiscPossible, currencyCode, applnCurrencyCode, postingDate)
 		if payment && invoice && !pmtDiscountDate.Before(postingDate) {
 			remaining = remaining.Sub(pmtDiscPossible)
 		}
@@ -131,6 +135,23 @@ func setDirectApplnTotals(page *pages.Control, applyingAmount types.Decimal, pay
 	page.SetValue("appln_amount", applyingAmount)
 	page.SetValue("applied_amount", appliedAmount)
 	page.SetValue("appln_balance", appliedAmount.Add(applyingAmount))
+}
+
+// exchApplnAmounts: an entry's remaining amount and possible discount in the applying currency
+// (application between currencies; an amount that cannot be exchanged is shown as it is)
+func exchApplnAmounts(src ftables.Source, remaining, pmtDiscPossible types.Decimal, currencyCode, applnCurrencyCode types.Code, postingDate types.Date) (types.Decimal, types.Decimal) {
+	if currencyCode == applnCurrencyCode {
+		return remaining, pmtDiscPossible
+	}
+	exchRemaining, err := ExchAmount(src, remaining, currencyCode, applnCurrencyCode, postingDate)
+	if err != nil {
+		return remaining, pmtDiscPossible
+	}
+	exchPmtDisc, err := ExchAmount(src, pmtDiscPossible, currencyCode, applnCurrencyCode, postingDate)
+	if err != nil {
+		return remaining, pmtDiscPossible
+	}
+	return exchRemaining, exchPmtDisc
 }
 
 // directApplID is the Applies-to ID Set Applies-to ID gives opened from the ledger entries: the
@@ -259,7 +280,7 @@ func GenJnlApply(rec *gtables.GenJournalLine) (fcodeunits.Result, error) {
 	if len(entries) > 0 {
 		currencyCode2 := entries[0].currencyCode
 		for _, entry := range entries {
-			err = CheckCurrency(currencyCode2, entry.currencyCode)
+			_, err = CheckCurrency(genJnlLine, currencyCode2, entry.currencyCode, accType, true)
 			if err != nil {
 				return fcodeunits.Result{}, err
 			}
@@ -275,10 +296,19 @@ func GenJnlApply(rec *gtables.GenJournalLine) (fcodeunits.Result, error) {
 					return fcodeunits.Result{}, err
 				}
 			}
+			// what the entries still owe, in the line's currency on its posting date
 			amount := genJnlLine.Amount
 			for _, entry := range entries {
-				remaining := system.Round(entry.remaining, currency.Amount_rounding_precision)
-				pmtDiscPossible := system.Round(entry.pmtDiscPossible, currency.Amount_rounding_precision)
+				remaining, err := ExchAmount(genJnlLine, entry.remaining, entry.currencyCode, genJnlLine.Currency_code, genJnlLine.Posting_date)
+				if err != nil {
+					return fcodeunits.Result{}, err
+				}
+				remaining = system.Round(remaining, currency.Amount_rounding_precision)
+				pmtDiscPossible, err := ExchAmount(genJnlLine, entry.pmtDiscPossible, entry.currencyCode, genJnlLine.Currency_code, genJnlLine.Posting_date)
+				if err != nil {
+					return fcodeunits.Result{}, err
+				}
+				pmtDiscPossible = system.Round(pmtDiscPossible, currency.Amount_rounding_precision)
 				if genJnlLine.Document_type == gtables.GenJournalLine_Document_type.Payment &&
 					entry.docType == gtables.GenJournalLine_Applies_to_doc_type.Invoice &&
 					!entry.pmtDiscountDate.Before(genJnlLine.Posting_date) {
@@ -296,7 +326,7 @@ func GenJnlApply(rec *gtables.GenJournalLine) (fcodeunits.Result, error) {
 				return fcodeunits.Result{}, err
 			}
 		} else {
-			err = CheckCurrency(genJnlLine.Currency_code, currencyCode2)
+			_, err = CheckCurrency(genJnlLine, genJnlLine.Currency_code, currencyCode2, accType, true)
 			if err != nil {
 				return fcodeunits.Result{}, err
 			}
@@ -327,6 +357,7 @@ func applyPage(pageID int, genJnlLine *gtables.GenJournalLine) *system.Page {
 	page.SetParam("amount", genJnlLine.Amount.String())
 	page.SetParam("posting_date", genJnlLine.Posting_date.String())
 	page.SetParam("document_type", itoa(int(genJnlLine.Document_type)))
+	page.SetParam("currency_code", genJnlLine.Currency_code.String())
 	return page
 }
 

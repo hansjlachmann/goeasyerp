@@ -147,6 +147,7 @@ func (p *GenJnlPostLine) applyVendLedgEntry(newVendLedgEntry *gtables.VendorLedg
 		return nil
 	}
 	applnCurrencyCode := newVendLedgEntry.Currency_code
+	applnPostingDate := newVendLedgEntry.Posting_date
 	applnRoundingPrecision, err := p.applnRoundingPrecision(newVendLedgEntry.Currency_code)
 	if err != nil {
 		return err
@@ -167,7 +168,7 @@ func (p *GenJnlPostLine) applyVendLedgEntry(newVendLedgEntry *gtables.VendorLedg
 		if err != nil {
 			return err
 		}
-		err = CheckCurrency(newVendLedgEntry.Currency_code, oldVendLedgEntry.Currency_code)
+		_, err = CheckCurrency(p.src, newVendLedgEntry.Currency_code, oldVendLedgEntry.Currency_code, gtables.GenJournalLine_Account_type.Vendor, true)
 		if err != nil {
 			return err
 		}
@@ -182,18 +183,45 @@ func (p *GenJnlPostLine) applyVendLedgEntry(newVendLedgEntry *gtables.VendorLedg
 		oldVendLedgEntry.SetRange("open", true)
 		oldVendLedgEntry.SetFilter("entry_no", "<>"+itoa(newVendLedgEntry.Entry_no))
 		oldVendLedgEntry.SetRange("applies_to_id", newVendLedgEntry.Applies_to_id)
-		// Application between currencies is not supported yet: the entries of the currency
-		oldVendLedgEntry.SetRange("currency_code", newVendLedgEntry.Currency_code)
+		// Management of posting in multiple currencies: the entries of the currency, or of the
+		// currencies the setup lets the entry be applied to
+		purchSetup := gtables.GetPurchasesPayablesSetup(p.src)
+		if purchSetup.Appln_between_currencies == gtables.PurchasesPayablesSetup_Appln_between_currencies.None {
+			oldVendLedgEntry.SetRange("currency_code", newVendLedgEntry.Currency_code)
+		} else {
+			oldVendLedgEntry.ClearMarks()
+			for found := oldVendLedgEntry.FindSetBuffered(); found; found = oldVendLedgEntry.Next() {
+				ok, err := CheckCurrency(p.src, newVendLedgEntry.Currency_code, oldVendLedgEntry.Currency_code, gtables.GenJournalLine_Account_type.Vendor, false)
+				if err != nil {
+					return err
+				}
+				if ok {
+					oldVendLedgEntry.Mark(true)
+				}
+			}
+			oldVendLedgEntry.MarkedOnly(true)
+		}
 		oldVendLedgEntry.SetRange("positive", newVendLedgEntry.Remaining_amount.IsPositive())
 		if oldVendLedgEntry.FindFirst() {
 			tempAmount := newVendLedgEntry.Remaining_amount
 			oldVendLedgEntry.SetRange("positive")
 			for found := oldVendLedgEntry.FindSet(); found; found = oldVendLedgEntry.Next() {
 				remaining := oldVendLedgEntry.Remaining_amount
+				pmtDiscPossible := oldVendLedgEntry.Pmt_disc_possible
+				if newVendLedgEntry.Currency_code != oldVendLedgEntry.Currency_code {
+					remaining, err = ExchAmount(p.src, remaining, oldVendLedgEntry.Currency_code, applnCurrencyCode, applnPostingDate)
+					if err != nil {
+						return err
+					}
+					pmtDiscPossible, err = ExchAmount(p.src, pmtDiscPossible, oldVendLedgEntry.Currency_code, applnCurrencyCode, applnPostingDate)
+					if err != nil {
+						return err
+					}
+				}
 				if newVendLedgEntry.Document_type == gtables.VendorLedgerEntry_Document_type.Payment &&
 					oldVendLedgEntry.Document_type == gtables.VendorLedgerEntry_Document_type.Invoice &&
 					!oldVendLedgEntry.Pmt_discount_date.Before(newVendLedgEntry.Posting_date) {
-					remaining = remaining.Sub(oldVendLedgEntry.Pmt_disc_possible)
+					remaining = remaining.Sub(pmtDiscPossible)
 				}
 				tempAmount = tempAmount.Add(remaining)
 			}
@@ -215,6 +243,18 @@ func (p *GenJnlPostLine) applyVendLedgEntry(newVendLedgEntry *gtables.VendorLedg
 		// the application register: the entries as they were before the application
 		p.recordVendEntry(newVendLedgEntry, true)
 		p.recordVendEntry(oldVendLedgEntry2, false)
+		// Management of posting in multiple currencies: the old entry's amounts in the
+		// application's currency
+		if applnCurrencyCode != oldVendLedgEntry2.Currency_code {
+			oldVendLedgEntry2.Remaining_amount, err = ExchAmount(p.src, oldVendLedgEntry2.Remaining_amount, oldVendLedgEntry2.Currency_code, applnCurrencyCode, applnPostingDate)
+			if err != nil {
+				return err
+			}
+			oldVendLedgEntry2.Pmt_disc_possible, err = ExchAmount(p.src, oldVendLedgEntry2.Pmt_disc_possible, oldVendLedgEntry2.Currency_code, applnCurrencyCode, applnPostingDate)
+			if err != nil {
+				return err
+			}
+		}
 
 		// Calculate payment discount
 		if newVendLedgEntry.Document_type == gtables.VendorLedgerEntry_Document_type.Payment &&
@@ -264,9 +304,14 @@ func (p *GenJnlPostLine) applyVendLedgEntry(newVendLedgEntry *gtables.VendorLedg
 				appliedAmount = oldVendLedgEntry2.Remaining_amount.Neg()
 			}
 		}
-		oldAppliedAmount := appliedAmount
+		var oldAppliedAmount types.Decimal
 		if appliedAmount.Equal(oldVendLedgEntry2.Remaining_amount.Neg()) {
 			oldAppliedAmount = oldVendLedgEntry.Remaining_amount.Neg()
+		} else {
+			oldAppliedAmount, err = ExchAmount(p.src, appliedAmount, applnCurrencyCode, oldVendLedgEntry2.Currency_code, applnPostingDate)
+			if err != nil {
+				return err
+			}
 		}
 		var appliedAmountLCY types.Decimal
 		if applnCurrencyCode != "" {

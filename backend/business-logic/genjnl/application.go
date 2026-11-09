@@ -3,6 +3,10 @@ package genjnl
 import (
 	"strconv"
 
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
@@ -223,13 +227,73 @@ func (p *GenJnlPostLine) applnRoundingPrecision(currencyCode types.Code) (types.
 	return currency3.Appln_rounding_precision, nil
 }
 
-// CheckCurrency: the entries of one application are in one currency (application between
-// currencies is not supported yet)
-func CheckCurrency(applnCurrencyCode, compareCurrencyCode types.Code) error {
+// CheckCurrency (codeunit 225 CheckCurrency): may an entry in compareCurrencyCode be applied in
+// applnCurrencyCode — the same currency always; others as the setup's Appln. between Currencies
+// allows (Sales & Receivables Setup for customers, Purchases & Payables Setup for vendors): None
+// no, EMU between EMU currencies (the local currency counts as one when the General Ledger Setup
+// says it is an EMU currency), All any. With message the refusal is an error, else false.
+func CheckCurrency(src ftables.Source, applnCurrencyCode, compareCurrencyCode types.Code, accType gtables.GenJournalLineAccount_type, message bool) (bool, error) {
 	if applnCurrencyCode == compareCurrencyCode {
-		return nil
+		return true, nil
 	}
-	return apperrors.JnlApplnSameCurrency()
+	var currencyAppln int
+	switch accType {
+	case gtables.GenJournalLine_Account_type.Customer:
+		salesSetup := gtables.GetSalesReceivablesSetup(src)
+		currencyAppln = int(salesSetup.Appln_between_currencies)
+	case gtables.GenJournalLine_Account_type.Vendor:
+		purchSetup := gtables.GetPurchasesPayablesSetup(src)
+		currencyAppln = int(purchSetup.Appln_between_currencies)
+	default:
+		return true, nil
+	}
+	switch currencyAppln {
+	case int(gtables.SalesReceivablesSetup_Appln_between_currencies.None):
+		if message {
+			return false, apperrors.JnlApplnSameCurrency()
+		}
+		return false, nil
+	case int(gtables.SalesReceivablesSetup_Appln_between_currencies.EMU):
+		glSetup := gtables.GetGeneralLedgerSetup(src)
+		currency := gtables.NewCurrency(src)
+		currencyEMU := glSetup.Emu_currency
+		if currency.Get(applnCurrencyCode) {
+			currencyEMU = currency.Emu_currency
+		}
+		currency2 := gtables.NewCurrency(src)
+		currency2EMU := glSetup.Emu_currency
+		if currency2.Get(compareCurrencyCode) {
+			currency2EMU = currency2.Emu_currency
+		}
+		if !currencyEMU || !currency2EMU {
+			if message {
+				return false, apperrors.JnlApplnSameCurrencyOrEMU()
+			}
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+// ExchAmount (ExchAmount): an amount in one currency converted to another on a date, rounded to
+// the currency's precision (blank: the local currency)
+func ExchAmount(src ftables.Source, amount types.Decimal, fromCurrencyCode, toCurrencyCode types.Code, usePostingDate types.Date) (types.Decimal, error) {
+	if fromCurrencyCode == toCurrencyCode || amount.IsZero() {
+		return amount, nil
+	}
+	amount, err := tables.ExchangeRates(src).ExchangeAmtFCYToFCY(usePostingDate, fromCurrencyCode, toCurrencyCode, amount)
+	if err != nil {
+		return types.Decimal{}, err
+	}
+	if toCurrencyCode != "" {
+		toCurrency := gtables.NewCurrency(src)
+		err = toCurrency.GetOrError(toCurrencyCode)
+		if err != nil {
+			return types.Decimal{}, err
+		}
+		return system.Round(amount, toCurrency.Amount_rounding_precision), nil
+	}
+	return system.Round(amount), nil
 }
 
 func itoa(n int) string { return strconv.Itoa(n) }

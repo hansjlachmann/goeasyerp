@@ -44,6 +44,7 @@ type lineSpec struct {
 	appliesID      string
 	pmtDiscPercent string
 	pmtDiscDay     int
+	currency       string // the line's currency other than the account's ("LCY": the local currency)
 }
 
 func addLine(t *testing.T, src ftables.Source, template, batch string, l lineSpec) *gtables.GenJournalLine {
@@ -63,6 +64,13 @@ func addLine(t *testing.T, src ftables.Source, template, batch string, l lineSpe
 	must(t, line.Validate("account_no", l.accNo))
 	must(t, line.Validate("bal_account_type", l.balType))
 	must(t, line.Validate("bal_account_no", l.balNo))
+	if l.currency != "" {
+		currency := l.currency
+		if currency == "LCY" {
+			currency = ""
+		}
+		must(t, line.Validate("currency_code", types.Code(currency)))
+	}
 	must(t, line.Validate("amount", dec(l.amount)))
 	if l.bankPmt != 0 {
 		must(t, line.Validate("bank_payment_type", l.bankPmt))

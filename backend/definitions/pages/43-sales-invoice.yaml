@@ -163,6 +163,11 @@ page:
           caption: Calculate Invoice Discount
           image: Calculate
           run_object: codeunit:61
+        # the tax per group of lines calculated on their total (classic Recalculate Sales Tax)
+        - name: Recalculate Sales Tax
+          caption: Recalculate Sales Tax
+          image: Calculate
+          run_object: "table:Sales_Header.RecalculateSalesTax"
         - name: Get Shipment Lines
           caption: Get Shipment Lines
           image: Lines

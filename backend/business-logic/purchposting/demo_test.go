@@ -35,7 +35,7 @@ func TestDemoPurchases(t *testing.T) {
 	})
 	must(t, err)
 	if counts.PostedPurchInvoices < 9 || counts.PostedPurchReceipts < 9 || counts.PostedPurchCrMemos != 1 ||
-		counts.PurchaseQuotes != 2 || counts.PurchaseOrders != 3 || counts.PurchaseInvoices != 1 {
+		counts.PurchaseQuotes != 2 || counts.PurchaseOrders != 5 || counts.PurchaseInvoices != 1 || counts.SalesOrders != 2 {
 		t.Errorf("counts %+v", counts)
 	}
 	for i, pct := range percents {

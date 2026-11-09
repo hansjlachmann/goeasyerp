@@ -3,6 +3,7 @@ package demodata
 import (
 	"fmt"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/blanketorder"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/purchgetdropshpt"
 	"math/rand"
 	"sort"
 	"time"
@@ -310,7 +311,106 @@ func postDemoPurchases(src ftables.Source, open func(src ftables.Source) PurchPo
 	if err != nil {
 		return err
 	}
+	err = postDemoDropShipments(src, today, post, vendors, vendorItems, counts)
+	if err != nil {
+		return err
+	}
 	return postDemoForeignPurchase(src, today, post)
+}
+
+// postDemoDropShipments: two sales orders of a domestic customer with a drop shipment line of a
+// vendor's item, each with a purchase order to the customer made by Get Sales Order (codeunit
+// 76) — the first open, the second received (which ships the sales order)
+func postDemoDropShipments(src ftables.Source, today time.Time, post func(*gtables.PurchaseHeader, bool, bool, time.Time) error,
+	vendors []types.Code, vendorItems map[types.Code][]types.Code, counts *Counts) error {
+	var vendor, itemNo types.Code
+	for _, v := range vendors {
+		if len(vendorItems[v]) > 0 {
+			vendor = v
+			itemNo = vendorItems[v][0]
+			break
+		}
+	}
+	cust := gtables.NewCustomer(src)
+	cust.SetRange("currency_code", "")
+	cust.SetRange("blocked", false)
+	if vendor == "" || !cust.FindFirst() {
+		return nil
+	}
+	day := types.NewDateFromTime(today)
+	for i := 0; i < 2; i++ {
+		salesHeader := gtables.NewSalesHeader(src)
+		salesHeader.Document_type = gtables.SalesHeader_Document_type.Order
+		err := salesHeader.InsertOrError(true)
+		if err == nil {
+			err = salesHeader.Validate("sell_to_customer_no", cust.No)
+		}
+		if err == nil {
+			err = salesHeader.Validate("posting_date", day)
+		}
+		if err == nil {
+			err = salesHeader.ModifyOrError(true)
+		}
+		if err != nil {
+			return err
+		}
+		salesLine := gtables.NewSalesLine(src)
+		salesLine.Document_type = gtables.SalesLine_Document_type.Order
+		salesLine.Document_no = salesHeader.No
+		salesLine.Line_no = 10000
+		err = salesLine.Validate("type", gtables.SalesLine_Type.Item)
+		if err == nil {
+			err = salesLine.Validate("no", itemNo)
+		}
+		if err == nil {
+			err = salesLine.Validate("quantity", types.NewDecimalFromInt(int64(2+i)))
+		}
+		if err == nil {
+			err = salesLine.Validate("drop_shipment", true)
+		}
+		if err != nil {
+			return err
+		}
+		salesLine.Shipment_date = day
+		err = salesLine.InsertOrError(true)
+		if err != nil {
+			return err
+		}
+		counts.SalesOrders++
+
+		purchHeader := gtables.NewPurchaseHeader(src)
+		purchHeader.Document_type = gtables.PurchaseHeader_Document_type.Order
+		err = purchHeader.InsertOrError(true)
+		if err == nil {
+			err = purchHeader.Validate("buy_from_vendor_no", vendor)
+		}
+		if err == nil {
+			err = purchHeader.Validate("posting_date", day)
+		}
+		if err == nil {
+			err = purchHeader.Validate("sell_to_customer_no", cust.No)
+		}
+		if err == nil && salesHeader.Ship_to_code != "" {
+			err = purchHeader.Validate("ship_to_code", salesHeader.Ship_to_code)
+		}
+		if err == nil {
+			err = purchHeader.ModifyOrError(true)
+		}
+		if err == nil {
+			err = purchgetdropshpt.Code(purchHeader, salesHeader.No)
+		}
+		if err != nil {
+			return err
+		}
+		counts.PurchaseOrders++
+		if i == 1 {
+			err = post(purchHeader, true, false, today)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // postDemoForeignPurchase: an order received and invoiced from a vendor in Denmark (an EU

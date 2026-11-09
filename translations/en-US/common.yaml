@@ -216,6 +216,7 @@ common:
     sales_order: "Sales Order"
     get_sales_order: "Get Sales Order"
     get_sales_orders: "Get Sales Orders"
+    recalculate_sales_tax: "Recalculate Sales Tax"
     functions: "Functions"
     indent_chart_of_accounts: "Indent Chart of Accounts"
     table: "Table"
@@ -393,6 +394,7 @@ common:
 
   # Menu items
   menu:
+    drop_shipment_status: "Drop Shipment Status"
     project_list: "Project List"
     project_register: "Project Register"
     completed_projects: "Completed Projects"

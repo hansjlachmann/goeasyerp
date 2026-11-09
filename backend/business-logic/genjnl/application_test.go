@@ -1,10 +1,12 @@
 package genjnl
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
@@ -174,6 +176,48 @@ func TestApplyExchangeRateGain(t *testing.T) {
 	}
 	if !gain.Equal(dec("-50")) {
 		t.Errorf("realized gain %s, want -50 (100 EUR at 11.50 paid at 12.00)", gain)
+	}
+}
+
+// Application between currencies: a EUR invoice paid in the local currency by Applies-to Doc.
+// No. is refused while Appln. between Currencies is None; with All the payment (1150 at 11.50)
+// closes the invoice (100 EUR)
+func TestApplyBetweenCurrencies(t *testing.T) {
+	src := demoCompany(t)
+	testCustomer(t, src, "TC6", "FOREIGN", "EUR", false)
+	addLine(t, src, "SALES", "DEFAULT", lineSpec{lineNo: 10000, docNo: "INV6", docType: invoice, accType: custType, accNo: "TC6", amount: "100", balNo: "1210"})
+	_, err := postBatch(t, src, "SALES", "DEFAULT")
+	must(t, err)
+	inv := custEntry(t, src, "TC6", "INV6")
+	payLine := lineSpec{lineNo: 10000, docNo: "PAY6", docType: payment, accType: custType, accNo: "TC6", amount: "-" + inv.Amount_lcy.String(), currency: "LCY",
+		balNo: "1210", appliesDocType: gtables.GenJournalLine_Applies_to_doc_type.Invoice, appliesDocNo: "INV6"}
+
+	addLine(t, src, "GENERAL", "DEFAULT", payLine)
+	_, err = postBatch(t, src, "GENERAL", "DEFAULT")
+	var appErr *apperrors.AppError
+	if !errors.As(err, &appErr) || appErr.Code != apperrors.ErrJnlApplnSameCurrency {
+		t.Fatalf("a payment in another currency with Appln. between Currencies None: %v", err)
+	}
+	line := newJnlLine(src, "GENERAL", "DEFAULT", 10000)
+	if line.Get(map[string]interface{}{"journal_template_name": "GENERAL", "journal_batch_name": "DEFAULT", "line_no": 10000}) {
+		must(t, line.DeleteOrError(false))
+	}
+
+	salesSetup := gtables.GetSalesReceivablesSetup(src)
+	salesSetup.Appln_between_currencies = gtables.SalesReceivablesSetup_Appln_between_currencies.All
+	must(t, salesSetup.ModifyOrError(false))
+	addLine(t, src, "GENERAL", "DEFAULT", payLine)
+	_, err = postBatch(t, src, "GENERAL", "DEFAULT")
+	must(t, err)
+	inv = custEntry(t, src, "TC6", "INV6")
+	pay := custEntry(t, src, "TC6", "PAY6")
+	if inv.Open || pay.Open || !inv.Remaining_amount.IsZero() || !pay.Remaining_amount.IsZero() {
+		t.Errorf("invoice open %v remaining %s, payment open %v remaining %s", inv.Open, inv.Remaining_amount, pay.Open, pay.Remaining_amount)
+	}
+	// the invoice was closed by 100 EUR, paid in the local currency
+	if inv.Closed_by_entry_no != pay.Entry_no || !inv.Closed_by_amount.Equal(dec("100")) || inv.Closed_by_currency_code != "" ||
+		!inv.Closed_by_currency_amount.Equal(inv.Amount_lcy) {
+		t.Errorf("invoice closed by %d: amount %s, currency %q amount %s", inv.Closed_by_entry_no, inv.Closed_by_amount, inv.Closed_by_currency_code, inv.Closed_by_currency_amount)
 	}
 }
 

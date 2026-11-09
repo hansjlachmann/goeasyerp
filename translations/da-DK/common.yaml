@@ -216,6 +216,7 @@ common:
     sales_order: "Salgsordre"
     get_sales_order: "Hent salgsordre"
     get_sales_orders: "Hent salgsordrer"
+    recalculate_sales_tax: "Genberegn afgift"
     functions: "Funktioner"
     indent_chart_of_accounts: "Indryk kontoplan"
     table: "Tabel"
@@ -393,6 +394,7 @@ common:
 
   # Menu items
   menu:
+    drop_shipment_status: "Status for direkte leveringer"
     project_list: "Projektliste"
     project_register: "Projektjournal"
     completed_projects: "Afsluttede projekter"

@@ -262,6 +262,15 @@ func JnlApplnSameCurrency() *AppError {
 	return &AppError{Code: ErrJnlApplnSameCurrency}
 }
 
+// ErrJnlApplnSameCurrencyOrEMU: Appln. between Currencies EMU — the entries are in one currency or
+// in EMU currencies
+const ErrJnlApplnSameCurrencyOrEMU ErrorCode = "ERR_JNL_APPLN_SAME_CURRENCY_OR_EMU"
+
+// JnlApplnSameCurrencyOrEMU: the entries of one application are in one currency or in EMU currencies
+func JnlApplnSameCurrencyOrEMU() *AppError {
+	return &AppError{Code: ErrJnlApplnSameCurrencyOrEMU}
+}
+
 // JnlCustPurchaseType / JnlVendSalesType: a customer line cannot post a purchase, a vendor
 // line not a sale
 func JnlCustPurchaseType() *AppError { return &AppError{Code: ErrJnlCustPurchaseType} }
