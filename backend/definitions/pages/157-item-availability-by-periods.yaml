@@ -28,8 +28,42 @@ page:
               drilldown_filter_field: location_code   # the ledger field a drilldown filters
             - source: variant_filter
               drilldown_filter_field: variant_code
+            - source: bin_filter
+              drilldown_filter_field: bin_code
           columns:
             - source: net_change
               drilldown: 38
               drilldown_filter_field: item_no
               drilldown_filter_value: "no"
+
+  actions:
+    # The item's availability by the other views (classic Item › Item Availability by)
+    - name: Item
+      caption: Item
+      image: Card
+      promoted: true
+      items:
+        - name: Item Availability by
+          caption: Item Availability by
+          image: Calendar
+          items:
+            - name: Period
+              caption: Period
+              run_page: 157
+              run_page_filter_field: "no"
+              run_page_filter_value: "no"
+            - name: Variant
+              caption: Variant
+              run_page: 5414
+              run_page_filter_field: "no"
+              run_page_filter_value: "no"
+            - name: Location
+              caption: Location
+              run_page: 492
+              run_page_filter_field: "no"
+              run_page_filter_value: "no"
+            - name: Bin
+              caption: Bin
+              run_page: 5412
+              run_page_filter_field: "no"
+              run_page_filter_value: "no"

@@ -16226,6 +16226,34 @@ func (t *Item) SetFlowFilter(field, expr string) error {
 	return fmt.Errorf("%q is not a FlowFilter field of Item", field)
 }
 
+// FlowFilterExpressions returns the FlowFilters set (SetFlowFilter), so they can go along with
+// the record's filters (a page opened with SetTableView shows them)
+func (t *Item) FlowFilterExpressions() []tables.FieldFilter {
+	var result []tables.FieldFilter
+	if t.Date_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "date_filter", Expression: t.Date_filter})
+	}
+	if t.Dimension_1_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "dimension_1_filter", Expression: t.Dimension_1_filter})
+	}
+	if t.Dimension_2_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "dimension_2_filter", Expression: t.Dimension_2_filter})
+	}
+	if t.Location_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "location_filter", Expression: t.Location_filter})
+	}
+	if t.Drop_shipment_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "drop_shipment_filter", Expression: t.Drop_shipment_filter})
+	}
+	if t.Variant_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "variant_filter", Expression: t.Variant_filter})
+	}
+	if t.Bin_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "bin_filter", Expression: t.Bin_filter})
+	}
+	return result
+}
+
 // GetFlowFilterFields returns the FlowFilter fields (name and flowfilter kind)
 func (t *Item) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 	return []tables.FlowFilterFieldInfo{

@@ -3981,6 +3981,13 @@ func (t *DateComprRegister) SetFlowFilter(field, expr string) error {
 	return fmt.Errorf("%q is not a FlowFilter field of Date_Compr_Register", field)
 }
 
+// FlowFilterExpressions returns the FlowFilters set (SetFlowFilter), so they can go along with
+// the record's filters (a page opened with SetTableView shows them)
+func (t *DateComprRegister) FlowFilterExpressions() []tables.FieldFilter {
+	var result []tables.FieldFilter
+	return result
+}
+
 // GetFlowFilterFields returns the FlowFilter fields (name and flowfilter kind)
 func (t *DateComprRegister) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 	return []tables.FlowFilterFieldInfo{}

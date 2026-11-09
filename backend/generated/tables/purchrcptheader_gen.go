@@ -9522,6 +9522,13 @@ func (t *PurchRcptHeader) SetFlowFilter(field, expr string) error {
 	return fmt.Errorf("%q is not a FlowFilter field of Purch_Rcpt_Header", field)
 }
 
+// FlowFilterExpressions returns the FlowFilters set (SetFlowFilter), so they can go along with
+// the record's filters (a page opened with SetTableView shows them)
+func (t *PurchRcptHeader) FlowFilterExpressions() []tables.FieldFilter {
+	var result []tables.FieldFilter
+	return result
+}
+
 // GetFlowFilterFields returns the FlowFilter fields (name and flowfilter kind)
 func (t *PurchRcptHeader) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 	return []tables.FlowFilterFieldInfo{}

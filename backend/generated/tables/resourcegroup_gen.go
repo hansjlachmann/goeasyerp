@@ -4632,6 +4632,22 @@ func (t *ResourceGroup) SetFlowFilter(field, expr string) error {
 	return fmt.Errorf("%q is not a FlowFilter field of Resource_Group", field)
 }
 
+// FlowFilterExpressions returns the FlowFilters set (SetFlowFilter), so they can go along with
+// the record's filters (a page opened with SetTableView shows them)
+func (t *ResourceGroup) FlowFilterExpressions() []tables.FieldFilter {
+	var result []tables.FieldFilter
+	if t.Date_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "date_filter", Expression: t.Date_filter})
+	}
+	if t.Unit_of_measure_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "unit_of_measure_filter", Expression: t.Unit_of_measure_filter})
+	}
+	if t.Chargeable_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "chargeable_filter", Expression: t.Chargeable_filter})
+	}
+	return result
+}
+
 // GetFlowFilterFields returns the FlowFilter fields (name and flowfilter kind)
 func (t *ResourceGroup) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 	return []tables.FlowFilterFieldInfo{

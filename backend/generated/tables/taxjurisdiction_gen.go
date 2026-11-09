@@ -3716,6 +3716,19 @@ func (t *TaxJurisdiction) SetFlowFilter(field, expr string) error {
 	return fmt.Errorf("%q is not a FlowFilter field of Tax_Jurisdiction", field)
 }
 
+// FlowFilterExpressions returns the FlowFilters set (SetFlowFilter), so they can go along with
+// the record's filters (a page opened with SetTableView shows them)
+func (t *TaxJurisdiction) FlowFilterExpressions() []tables.FieldFilter {
+	var result []tables.FieldFilter
+	if t.Date_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "date_filter", Expression: t.Date_filter})
+	}
+	if t.Tax_group_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "tax_group_filter", Expression: t.Tax_group_filter})
+	}
+	return result
+}
+
 // GetFlowFilterFields returns the FlowFilter fields (name and flowfilter kind)
 func (t *TaxJurisdiction) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 	return []tables.FlowFilterFieldInfo{

@@ -3405,6 +3405,13 @@ func (t *JobQueueEntry) SetFlowFilter(field, expr string) error {
 	return fmt.Errorf("%q is not a FlowFilter field of Job_Queue_Entry", field)
 }
 
+// FlowFilterExpressions returns the FlowFilters set (SetFlowFilter), so they can go along with
+// the record's filters (a page opened with SetTableView shows them)
+func (t *JobQueueEntry) FlowFilterExpressions() []tables.FieldFilter {
+	var result []tables.FieldFilter
+	return result
+}
+
 // GetFlowFilterFields returns the FlowFilter fields (name and flowfilter kind)
 func (t *JobQueueEntry) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 	return []tables.FlowFilterFieldInfo{}

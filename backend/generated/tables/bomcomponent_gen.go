@@ -3936,6 +3936,13 @@ func (t *BOMComponent) SetFlowFilter(field, expr string) error {
 	return fmt.Errorf("%q is not a FlowFilter field of BOM_Component", field)
 }
 
+// FlowFilterExpressions returns the FlowFilters set (SetFlowFilter), so they can go along with
+// the record's filters (a page opened with SetTableView shows them)
+func (t *BOMComponent) FlowFilterExpressions() []tables.FieldFilter {
+	var result []tables.FieldFilter
+	return result
+}
+
 // GetFlowFilterFields returns the FlowFilter fields (name and flowfilter kind)
 func (t *BOMComponent) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 	return []tables.FlowFilterFieldInfo{}

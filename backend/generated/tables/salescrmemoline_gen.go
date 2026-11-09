@@ -9143,6 +9143,13 @@ func (t *SalesCrMemoLine) SetFlowFilter(field, expr string) error {
 	return fmt.Errorf("%q is not a FlowFilter field of Sales_Cr_Memo_Line", field)
 }
 
+// FlowFilterExpressions returns the FlowFilters set (SetFlowFilter), so they can go along with
+// the record's filters (a page opened with SetTableView shows them)
+func (t *SalesCrMemoLine) FlowFilterExpressions() []tables.FieldFilter {
+	var result []tables.FieldFilter
+	return result
+}
+
 // GetFlowFilterFields returns the FlowFilter fields (name and flowfilter kind)
 func (t *SalesCrMemoLine) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 	return []tables.FlowFilterFieldInfo{}

@@ -157,8 +157,31 @@ page:
       image: Lines
       promoted: true
       run_object: table:Purchase_Line.ShowReservation
-    - name: Reservation Entries
-      caption: Reservation Entries
-      image: Entries
+    # The line's item (classic Line menu): its availability and its reservation entries
+    - name: Line
+      caption: Line
+      image: Lines
       promoted: true
-      run_object: table:Purchase_Line.ShowReservationEntries
+      items:
+        # the item at the line's place up to its date (classic Item Availability by): a pick changes
+        # the line's date, variant, location or bin after a question
+        - name: Item Availability by
+          caption: Item Availability by
+          image: Calendar
+          items:
+            - name: Period
+              caption: Period
+              run_object: table:Purchase_Line.ItemAvailability(0)
+            - name: Variant
+              caption: Variant
+              run_object: table:Purchase_Line.ItemAvailability(1)
+            - name: Location
+              caption: Location
+              run_object: table:Purchase_Line.ItemAvailability(2)
+            - name: Bin
+              caption: Bin
+              run_object: table:Purchase_Line.ItemAvailability(3)
+        - name: Reservation Entries
+          caption: Reservation Entries
+          image: Entries
+          run_object: table:Purchase_Line.ShowReservationEntries

@@ -7725,6 +7725,34 @@ func (t *Project) SetFlowFilter(field, expr string) error {
 	return fmt.Errorf("%q is not a FlowFilter field of Project", field)
 }
 
+// FlowFilterExpressions returns the FlowFilters set (SetFlowFilter), so they can go along with
+// the record's filters (a page opened with SetTableView shows them)
+func (t *Project) FlowFilterExpressions() []tables.FieldFilter {
+	var result []tables.FieldFilter
+	if t.Type_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "type_filter", Expression: t.Type_filter})
+	}
+	if t.Resource_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "resource_filter", Expression: t.Resource_filter})
+	}
+	if t.Date_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "date_filter", Expression: t.Date_filter})
+	}
+	if t.Phase_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "phase_filter", Expression: t.Phase_filter})
+	}
+	if t.Task_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "task_filter", Expression: t.Task_filter})
+	}
+	if t.Step_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "step_filter", Expression: t.Step_filter})
+	}
+	if t.Resource_gr_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "resource_gr_filter", Expression: t.Resource_gr_filter})
+	}
+	return result
+}
+
 // GetFlowFilterFields returns the FlowFilter fields (name and flowfilter kind)
 func (t *Project) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 	return []tables.FlowFilterFieldInfo{

@@ -50,11 +50,15 @@
 		// lookup mode Enter / double-click picks a record ('LookupOK'), Esc cancels
 		embedded?: boolean;
 		initialFilters?: import('$lib/types/api').TableFilter[];
+		// the record's FlowFilters (ISO; SetTableView): a card's period grid starts with them
+		initialFlowFilters?: import('$lib/types/api').TableFilter[];
 		lookupMode?: boolean;
 		// Embedded but editable: a page's own lookup (a journal's template or batch list), where
 		// the user may also add and change records, as on the page itself
 		editableLookup?: boolean;
-		onclose?: (action: 'OK' | 'LookupOK' | 'Cancel', key?: string, record?: Record<string, any>) => void; // key: the picked record's id
+		// key: the picked record's id; row: a card's picked period grid row (a period's start date
+		// or the row's key — classic GetLastDate / GetLastLocation …)
+		onclose?: (action: 'OK' | 'LookupOK' | 'Cancel', key?: string, record?: Record<string, any>, row?: string) => void;
 		// A subpage in a card: a list page tied to the card's record — fixed filters (the link),
 		// new records get the link values; Esc in navigation mode goes back to the card (onexit);
 		// onlineschange after a line was saved or deleted (the card's totals)
@@ -88,6 +92,7 @@
 		navigationQuery,
 		embedded = false,
 		initialFilters,
+		initialFlowFilters = [],
 		lookupMode = false,
 		editableLookup = false,
 		onclose,
@@ -356,6 +361,8 @@
 
 	// RunModal lookup: the record the list's cursor is on (OK picks it)
 	let lookupCurrent = $state<Record<string, any> | undefined>(undefined);
+	// a card in lookup mode: its period grid's current row (a period's start date or a row key)
+	let lookupRow = $state<string | undefined>(undefined);
 
 	// Filters for list pages - parse initialFilter if provided (format: "field=expression")
 	// svelte-ignore state_referenced_locally - the initial filters only set the starting state
@@ -1007,7 +1014,45 @@
 		</div>
 	</div>
 {:else if page}
-	{#if page.page.type === 'Card'}
+	{#if page.page.type === 'Card' && embedded && lookupMode}
+		<!-- Lookup mode (RunModal) on a card: OK picks the card's record and the period grid's
+		     current row (Enter / double-click on a row too), Cancel or Esc closes without one -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			class="lookup-page"
+			onkeydown={(e) => {
+				if (e.key === 'Escape' && !e.defaultPrevented) {
+					e.preventDefault();
+					onclose?.('Cancel');
+				}
+			}}
+		>
+			<div class="lookup-list">
+				<CardPage
+					{page}
+					existing={isExistingRecord}
+					bind:record
+					{captions}
+					{fieldTypes}
+					{options}
+					{lookups}
+					flowFilters={initialFlowFilters}
+					onaction={handleCardAction}
+					onclose={() => onclose?.('Cancel')}
+					ongridrow={(row) => (lookupRow = row)}
+					ongridpick={(row) => onclose?.('LookupOK', currentRecordId ?? '', record, row)}
+				/>
+			</div>
+			<div class="lookup-buttons">
+				<Button variant="secondary" onclick={() => onclose?.('Cancel')}>{t(BTN.CANCEL)}</Button>
+				<Button
+					variant="primary"
+					disabled={lookupRow === undefined}
+					onclick={() => onclose?.('LookupOK', currentRecordId ?? '', record, lookupRow)}
+				>{t(BTN.OK)}</Button>
+			</div>
+		</div>
+	{:else if page.page.type === 'Card'}
 		<CardPage
 			{page}
 			existing={isExistingRecord}

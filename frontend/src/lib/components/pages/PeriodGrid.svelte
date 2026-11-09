@@ -20,9 +20,30 @@
 		captions: Record<string, string>;
 		// opens a drilldown page over the card with these filters
 		ondrilldown?: (pageId: number, filters: TableFilter[]) => void;
+		// FlowFilters to start with (ISO; a page opened with SetTableView): the grid's filter
+		// fields take theirs, the Date Filter's end is the period the grid starts around
+		initialFilters?: TableFilter[];
+		// A grid to pick from (a card in lookup mode): the current row (a period's start date or
+		// the row's key) and the row picked with Enter or a double-click
+		oncurrent?: (row: string) => void;
+		onpick?: (row: string) => void;
 	}
 
-	let { pageId, section, grid, record, captions, ondrilldown }: Props = $props();
+	let { pageId, section, grid, record, captions, ondrilldown, initialFilters = [], oncurrent, onpick }: Props = $props();
+
+	const selectable = $derived(!!oncurrent || !!onpick);
+	let current = $state(-1); // the current row (a grid to pick from)
+	let tableWrap = $state<HTMLDivElement | null>(null);
+
+	// The starting filters: the grid's filter fields, and the date the periods start around
+	// (the Date Filter's end: "..2026-11-20", "2026-11-01..2026-11-20" or one date)
+	// svelte-ignore state_referenced_locally - the filters only start the grid
+	const startDate = (() => {
+		const f = initialFilters.find((x) => x.field === grid.date_filter);
+		const expr = (f?.expression ?? '').trim();
+		const end = expr.includes('..') ? expr.split('..')[1] : expr;
+		return /^\d{4}-\d{2}-\d{2}$/.test(end) ? end : '';
+	})();
 
 	const locale = $derived($currentLanguage || 'en-US');
 	const periodRows = 12; // periods shown at once
@@ -30,7 +51,14 @@
 	let viewBy = $state(0);
 	let viewAs = $state(0); // 0 Net Change, 1 Balance at Date
 	let date = $state(''); // the first period's start (blank: the work date)
-	let filterValues = $state<Record<string, string>>({});
+	// svelte-ignore state_referenced_locally - the filters only start the grid
+	let filterValues = $state<Record<string, string>>(
+		Object.fromEntries(
+			initialFilters
+				.filter((f) => (grid.filters ?? []).some((g) => g.source === f.field))
+				.map((f) => [f.field, f.expression])
+		)
+	);
 	let rows = $state<PeriodGridRow[]>([]);
 	let loading = $state(false);
 	let error = $state('');
@@ -68,6 +96,7 @@
 			});
 			rows = result.rows;
 			date = result.date;
+			if (selectable) setCurrent(initialRow());
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -92,9 +121,55 @@
 		});
 	});
 
+	// A grid to pick from starts on the period holding the start date (else the first row)
+	function initialRow(): number {
+		if (!grid.rows && startDate) {
+			const i = rows.findIndex((r) => r.period_start <= startDate && startDate <= r.period_end);
+			if (i >= 0) return i;
+		}
+		return rows.length > 0 ? 0 : -1;
+	}
+
+	function rowValue(row: PeriodGridRow): string {
+		return grid.rows ? (row.key ?? '') : row.period_start;
+	}
+
+	function setCurrent(i: number) {
+		current = i;
+		if (i >= 0 && rows[i]) oncurrent?.(rowValue(rows[i]));
+	}
+
+	function pick(i: number) {
+		if (i >= 0 && rows[i]) onpick?.(rowValue(rows[i]));
+	}
+
+	// Keys of a grid to pick from: ↑/↓ move the current row, PageUp/PageDown the periods,
+	// Enter picks
+	function handleGridKeydown(e: KeyboardEvent) {
+		if (!selectable) return;
+		if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+			e.preventDefault();
+			const next = current + (e.key === 'ArrowDown' ? 1 : -1);
+			if (next >= 0 && next < rows.length) setCurrent(next);
+		} else if (e.key === 'PageDown' || e.key === 'PageUp') {
+			e.preventDefault();
+			move(e.key === 'PageDown' ? 1 : -1);
+		} else if (e.key === 'Enter') {
+			e.preventDefault();
+			pick(current);
+		}
+	}
+
+	// A grid to pick from takes the focus, so the keys work at once
+	$effect(() => {
+		if (selectable && tableWrap && rows.length > 0 && !tableWrap.contains(document.activeElement)) {
+			untrack(() => tableWrap?.focus({ preventScroll: true }));
+		}
+	});
+
 	// The work date's period in the middle of the set (rows from a table: the work date's period)
 	function loadCentered() {
-		date = '';
+		date = startDate;
 		load(grid.rows ? 0 : -Math.floor(periodRows / 2));
 	}
 
@@ -212,7 +287,17 @@
 		<p class="grid-error">{error}</p>
 	{/if}
 
-	<div class="grid-table-wrap" class:loading>
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+	<div
+		class="grid-table-wrap"
+		class:loading
+		class:selectable
+		bind:this={tableWrap}
+		role={selectable ? 'grid' : undefined}
+		aria-label={section}
+		tabindex={selectable ? 0 : undefined}
+		onkeydown={handleGridKeydown}
+	>
 		<table class="grid-table">
 			<thead>
 				<tr>
@@ -229,8 +314,12 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each rows as row (row.key ?? row.period_start)}
-					<tr>
+				{#each rows as row, i (row.key ?? row.period_start)}
+					<tr
+						class:current={selectable && i === current}
+						onclick={selectable ? () => setCurrent(i) : undefined}
+						ondblclick={selectable ? () => pick(i) : undefined}
+					>
 						{#if grid.rows}
 							<td>{row.key}</td>
 							<td>{row.caption}</td>
@@ -354,6 +443,22 @@
 
 	.grid-table-wrap.loading {
 		opacity: 0.6;
+	}
+
+	.grid-table-wrap.selectable {
+		outline: none;
+	}
+
+	.grid-table-wrap.selectable tbody tr {
+		cursor: pointer;
+	}
+
+	.grid-table-wrap.selectable tbody tr.current td {
+		background-color: rgb(var(--row-selected));
+	}
+
+	.grid-table-wrap.selectable:focus-visible {
+		box-shadow: 0 0 0 2px rgb(var(--accent-500));
 	}
 
 	.grid-table {

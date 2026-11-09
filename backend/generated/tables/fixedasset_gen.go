@@ -5317,6 +5317,16 @@ func (t *FixedAsset) SetFlowFilter(field, expr string) error {
 	return fmt.Errorf("%q is not a FlowFilter field of Fixed_Asset", field)
 }
 
+// FlowFilterExpressions returns the FlowFilters set (SetFlowFilter), so they can go along with
+// the record's filters (a page opened with SetTableView shows them)
+func (t *FixedAsset) FlowFilterExpressions() []tables.FieldFilter {
+	var result []tables.FieldFilter
+	if t.Fa_posting_date_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "fa_posting_date_filter", Expression: t.Fa_posting_date_filter})
+	}
+	return result
+}
+
 // GetFlowFilterFields returns the FlowFilter fields (name and flowfilter kind)
 func (t *FixedAsset) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 	return []tables.FlowFilterFieldInfo{

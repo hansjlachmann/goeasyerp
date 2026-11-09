@@ -244,6 +244,7 @@
 		filters: import('$lib/types/api').TableFilter[];
 		select?: string;
 		lookupMode: boolean;
+		flowFilters?: import('$lib/types/api').TableFilter[]; // the record's FlowFilters (SetTableView)
 		params?: Record<string, string>; // the page's parameters (Page.SetParam)
 		respond: (values: Record<string, string> | null) => void;
 	} | null>(null);
@@ -766,6 +767,7 @@
 						filters: (data.filters as import('$lib/types/api').TableFilter[]) ?? [],
 						select: (data.select as string) || undefined,
 						lookupMode: data.lookup_mode === true,
+						flowFilters: (data.flow_filters as import('$lib/types/api').TableFilter[]) ?? [],
 						params: (data.params as Record<string, string>) ?? undefined,
 						respond
 					};
@@ -4196,11 +4198,12 @@
 					initialFilters={request.filters}
 					initialSelect={request.select}
 					lookupMode={request.lookupMode}
+					initialFlowFilters={request.flowFilters}
 					openParams={request.params}
-					onclose={(action, key) => {
+					onclose={(action, key, _record, row) => {
 						// respond first: {@const request} follows runPage, which is cleared next
 						const respond = request.respond;
-						respond(action === 'Cancel' ? null : { action, key: key ?? '' });
+						respond(action === 'Cancel' ? null : { action, key: key ?? '', row: row ?? '' });
 						runPage = null;
 					}}
 				/>

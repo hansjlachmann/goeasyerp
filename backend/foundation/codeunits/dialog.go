@@ -453,7 +453,7 @@ func (d *Dialog) requestInput(title string, fields []InputField, dataItems []Req
 // RunPage asks the frontend to open a page (a list, filtered, with a record selected) and
 // waits until the user closes it; in lookup mode the answer holds the key of the record the
 // user picked: {"action": "LookupOK", "key": "C01"}. nil on cancel/timeout.
-func (d *Dialog) RunPage(pageID int, filters interface{}, selectKey string, lookupMode bool, params map[string]string) map[string]string {
+func (d *Dialog) RunPage(pageID int, filters, flowFilters interface{}, selectKey string, lookupMode bool, params map[string]string) map[string]string {
 	d.mu.Lock()
 	if d.closed {
 		d.mu.Unlock()
@@ -482,11 +482,12 @@ func (d *Dialog) RunPage(pageID int, filters interface{}, selectKey string, look
 		ConfirmID: confirmID,
 		Timestamp: time.Now().UnixMilli(),
 		Data: map[string]interface{}{
-			"page_id":     pageID,
-			"filters":     filters,
-			"select":      selectKey,
-			"lookup_mode": lookupMode,
-			"params":      params,
+			"page_id":      pageID,
+			"filters":      filters,
+			"flow_filters": flowFilters,
+			"select":       selectKey,
+			"lookup_mode":  lookupMode,
+			"params":       params,
 		},
 	}:
 	case <-d.ctx.Done():

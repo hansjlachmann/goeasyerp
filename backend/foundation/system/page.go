@@ -38,13 +38,20 @@ type PageRecord interface {
 //
 // The variable keeps its state after RunModal (it is not cleared); NewPage gives a fresh one.
 type Page struct {
-	id         int
-	filters    []tables.FieldFilter
-	selectKey  string
-	lookupMode bool
-	pickedKey  string
-	picked     bool
-	params     map[string]string
+	id          int
+	filters     []tables.FieldFilter
+	flowFilters []tables.FieldFilter
+	selectKey   string
+	lookupMode  bool
+	pickedKey   string
+	pickedRow   string
+	picked      bool
+	params      map[string]string
+}
+
+// flowFilterRecord is a record with FlowFilters (generated): SetTableView passes them on
+type flowFilterRecord interface {
+	FlowFilterExpressions() []tables.FieldFilter
 }
 
 // NewPage returns a page variable for a page (by its number)
@@ -52,9 +59,16 @@ func NewPage(pageID int) *Page {
 	return &Page{id: pageID}
 }
 
-// SetTableView applies a record's filters (all filter groups) to the page (SetTableView)
+// SetTableView applies a record's filters (all filter groups) and FlowFilters to the page
+// (SetTableView): a card page's period grid starts with the FlowFilters (Location Filter,
+// Variant Filter, Bin Filter; the Date Filter's end is the period it starts on)
 func (p *Page) SetTableView(rec PageRecord) {
 	p.filters = rec.FilterExpressions()
+	p.flowFilters = nil
+	ff, ok := rec.(flowFilterRecord)
+	if ok {
+		p.flowFilters = ff.FlowFilterExpressions()
+	}
 }
 
 // SetRecord makes the page open on a record (SetRecord)
@@ -88,11 +102,11 @@ func (p *Page) LookupMode(on bool) {
 // page has no Cancel button: closing it returns ActionOK. Without a dialog (a scheduled run,
 // a codeunit run from a card) it returns ActionLookupCancel / ActionCancel.
 func (p *Page) RunModal() Action {
-	p.picked, p.pickedKey = false, ""
-	answer := codeunits.RunPage(p.id, p.filters, p.selectKey, p.lookupMode, p.params)
+	p.picked, p.pickedKey, p.pickedRow = false, "", ""
+	answer := codeunits.RunPage(p.id, p.filters, p.flowFilters, p.selectKey, p.lookupMode, p.params)
 	switch {
 	case p.lookupMode && answer["action"] == "LookupOK":
-		p.picked, p.pickedKey = true, answer["key"]
+		p.picked, p.pickedKey, p.pickedRow = true, answer["key"], answer["row"]
 		return ActionLookupOK
 	case p.lookupMode:
 		return ActionLookupCancel
@@ -106,6 +120,16 @@ func (p *Page) RunModal() Action {
 // into rec (GetRecord); false when no record was picked or it no longer exists
 func (p *Page) GetRecord(rec PageRecord) bool {
 	return p.picked && getByKeyText(rec, p.pickedKey)
+}
+
+// GetLastRow returns the row the user picked in a card page's period grid when it was closed
+// with OK in lookup mode: a period's start date (ISO, classic GetLastDate) or the row's record
+// key — a location, variant or bin (GetLastLocation, GetLastVariant, GetLastBin); "" when none
+func (p *Page) GetLastRow() string {
+	if !p.picked {
+		return ""
+	}
+	return p.pickedRow
 }
 
 // RunModal opens a page with a record in one call (Page.RunModal(number, rec)): the record's

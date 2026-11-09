@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -183,5 +184,104 @@ func TestItemAvailabilityWarningBOMJnlLine(t *testing.T) {
 	mustOK(t, err)
 	if len(notes) != 0 {
 		t.Errorf("quantity 0 warned: %v", notes)
+	}
+}
+
+// pageAnswers answers the pages a function opens (RunModal) with the given answers in turn and
+// every question with yes; it returns the run_page events it got
+func pageAnswers(t *testing.T, answers ...map[string]string) *[]fcodeunits.ProgressEvent {
+	t.Helper()
+	d := fcodeunits.OpenDialogWithID("", "item-availability-test-"+t.Name())
+	fcodeunits.SetCurrentDialog(d)
+	t.Cleanup(fcodeunits.ClearCurrentDialog)
+	var pages []fcodeunits.ProgressEvent
+	next := 0
+	go func() {
+		for ev := range d.Events() {
+			switch ev.EventType {
+			case "confirm":
+				for !d.RespondToConfirm(ev.ConfirmID, true) {
+					time.Sleep(time.Millisecond)
+				}
+			case "run_page":
+				pages = append(pages, ev)
+				answer := map[string]string{}
+				if next < len(answers) {
+					answer = answers[next]
+				}
+				next++
+				for !d.RespondToInput(ev.ConfirmID, answer) {
+					time.Sleep(time.Millisecond)
+				}
+			}
+		}
+	}()
+	return &pages
+}
+
+// Item Availability by on a sales line: the page of the type opens on the item with the line's
+// other places and its date as FlowFilters; the location or period picked becomes the line's
+// after the question; Cancel changes nothing
+func TestSalesLineItemAvailability(t *testing.T) {
+	src := documentsCompany(t)
+	order := gtables.NewSalesHeader(src)
+	order.Document_type = gtables.SalesHeader_Document_type.Order
+	mustOK(t, order.InsertOrError(true))
+	mustOK(t, order.Validate("sell_to_customer_no", types.Code("C00010")))
+	mustOK(t, order.ModifyOrError(true))
+	line := gtables.NewSalesLine(src)
+	line.Document_type = gtables.SalesLine_Document_type.Order
+	line.Document_no = order.No
+	line.Line_no = 10000
+	mustOK(t, line.Validate("type", gtables.SalesLine_Type.Item))
+	mustOK(t, line.Validate("no", types.Code("1000")))
+	mustOK(t, line.Validate("location_code", types.Code("MAIN")))
+	mustOK(t, line.Validate("quantity", types.NewDecimalFromInt(1)))
+	mustOK(t, line.InsertOrError(true))
+	key := map[string]interface{}{"document_type": int(line.Document_type), "document_no": line.Document_no, "line_no": line.Line_no}
+
+	// by location: OSLO picked
+	pages := pageAnswers(t, map[string]string{"action": "LookupOK", "key": "1000", "row": "OSLO"})
+	result, err := tables.SalesLineItemAvailability(line, tables.ItemAvailabilityByLocation)
+	mustOK(t, err)
+	if !result.Refresh {
+		t.Errorf("the lines are not reloaded: %+v", result)
+	}
+	stored := gtables.NewSalesLine(src)
+	mustOK(t, stored.GetOrError(key))
+	if stored.Location_code != "OSLO" {
+		t.Errorf("location %q, want OSLO", stored.Location_code)
+	}
+	if len(*pages) != 1 {
+		t.Fatalf("pages opened: %d", len(*pages))
+	}
+	ev := (*pages)[0]
+	flowFilters, _ := ev.Data["flow_filters"].([]ftables.FieldFilter)
+	got := map[string]string{}
+	for _, f := range flowFilters {
+		got[f.Field] = f.Expression
+	}
+	if ev.Data["page_id"] != tables.ItemAvailByLocationPageID || ev.Data["lookup_mode"] != true ||
+		got["variant_filter"] != "''" || got["bin_filter"] != "''" || got["location_filter"] != "" ||
+		got["date_filter"] != ".."+line.Shipment_date.String() {
+		t.Errorf("page %v lookup %v flow filters %v", ev.Data["page_id"], ev.Data["lookup_mode"], got)
+	}
+
+	// by period: the period's start becomes the shipment date
+	_ = pageAnswers(t, map[string]string{"action": "LookupOK", "key": "1000", "row": "2027-01-01"})
+	_, err = tables.SalesLineItemAvailability(stored, tables.ItemAvailabilityByDate)
+	mustOK(t, err)
+	mustOK(t, stored.GetOrError(key))
+	if stored.Shipment_date.String() != "2027-01-01" {
+		t.Errorf("shipment date %s, want 2027-01-01", stored.Shipment_date)
+	}
+
+	// Cancel: nothing changes
+	_ = pageAnswers(t)
+	_, err = tables.SalesLineItemAvailability(stored, tables.ItemAvailabilityByLocation)
+	mustOK(t, err)
+	mustOK(t, stored.GetOrError(key))
+	if stored.Location_code != "OSLO" {
+		t.Errorf("cancel changed the location to %q", stored.Location_code)
 	}
 }

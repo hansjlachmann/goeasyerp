@@ -6092,6 +6092,18 @@ func (t *{{ .StructName }}) SetFlowFilter(field, expr string) error {
 	return fmt.Errorf("%q is not a FlowFilter field of {{ .Table.Name }}", field)
 }
 
+// FlowFilterExpressions returns the FlowFilters set (SetFlowFilter), so they can go along with
+// the record's filters (a page opened with SetTableView shows them)
+func (t *{{ .StructName }}) FlowFilterExpressions() []tables.FieldFilter {
+	var result []tables.FieldFilter
+{{- range .FlowFilterFields }}
+	if t.{{ upperFirst .Name }} != "" {
+		result = append(result, tables.FieldFilter{Field: "{{ .DBName }}", Expression: t.{{ upperFirst .Name }}})
+	}
+{{- end }}
+	return result
+}
+
 // GetFlowFilterFields returns the FlowFilter fields (name and flowfilter kind)
 func (t *{{ .StructName }}) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 	return []tables.FlowFilterFieldInfo{

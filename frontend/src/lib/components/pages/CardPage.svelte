@@ -67,6 +67,10 @@
 		onNavigateLast?: () => void;
 		// A subpage's lines changed: the card refreshes its FlowFields (totals)
 		onrefresh?: () => void;
+		// A card opened in lookup mode (RunModal): its period grid's current row and a picked row
+		// (Enter / double-click) — a period's start date or the row's key
+		ongridrow?: (row: string) => void;
+		ongridpick?: (row: string) => void;
 	}
 
 	let {
@@ -95,6 +99,8 @@
 		onNavigateNext,
 		onNavigateLast,
 		onrefresh,
+		ongridrow,
+		ongridpick,
 		existing = undefined
 	}: Props = $props();
 
@@ -211,6 +217,9 @@
 					}
 				}
 			}, 250);
+		} else if (!initialFocusDone && cardPageElement && (ongridrow || ongridpick)) {
+			// A card to pick a period grid row from (lookup mode): the grid takes the focus
+			initialFocusDone = true;
 		} else if (!initialFocusDone && cardPageElement) {
 			// Otherwise (view mode, or edit mode without a focus field) focus the card page
 			// element so keyboard shortcuts (Esc, Ctrl+E …) work
@@ -898,6 +907,9 @@
 								grid={section.period_grid}
 								{record}
 								{captions}
+								initialFilters={flowFilters}
+								oncurrent={ongridrow}
+								onpick={ongridpick}
 								ondrilldown={(pageId, filters) => { drilldown = { pageId, filters }; }}
 							/>
 						{:else}

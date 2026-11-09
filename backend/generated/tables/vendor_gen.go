@@ -14280,6 +14280,25 @@ func (t *Vendor) SetFlowFilter(field, expr string) error {
 	return fmt.Errorf("%q is not a FlowFilter field of Vendor", field)
 }
 
+// FlowFilterExpressions returns the FlowFilters set (SetFlowFilter), so they can go along with
+// the record's filters (a page opened with SetTableView shows them)
+func (t *Vendor) FlowFilterExpressions() []tables.FieldFilter {
+	var result []tables.FieldFilter
+	if t.Date_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "date_filter", Expression: t.Date_filter})
+	}
+	if t.Dimension_1_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "dimension_1_filter", Expression: t.Dimension_1_filter})
+	}
+	if t.Dimension_2_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "dimension_2_filter", Expression: t.Dimension_2_filter})
+	}
+	if t.Currency_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "currency_filter", Expression: t.Currency_filter})
+	}
+	return result
+}
+
 // GetFlowFilterFields returns the FlowFilter fields (name and flowfilter kind)
 func (t *Vendor) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 	return []tables.FlowFilterFieldInfo{

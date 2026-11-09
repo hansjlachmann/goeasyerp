@@ -8947,6 +8947,19 @@ func (t *FADepreciationBook) SetFlowFilter(field, expr string) error {
 	return fmt.Errorf("%q is not a FlowFilter field of FA_Depreciation_Book", field)
 }
 
+// FlowFilterExpressions returns the FlowFilters set (SetFlowFilter), so they can go along with
+// the record's filters (a page opened with SetTableView shows them)
+func (t *FADepreciationBook) FlowFilterExpressions() []tables.FieldFilter {
+	var result []tables.FieldFilter
+	if t.Maintenance_code_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "maintenance_code_filter", Expression: t.Maintenance_code_filter})
+	}
+	if t.Fa_posting_date_filter != "" {
+		result = append(result, tables.FieldFilter{Field: "fa_posting_date_filter", Expression: t.Fa_posting_date_filter})
+	}
+	return result
+}
+
 // GetFlowFilterFields returns the FlowFilter fields (name and flowfilter kind)
 func (t *FADepreciationBook) GetFlowFilterFields() []tables.FlowFilterFieldInfo {
 	return []tables.FlowFilterFieldInfo{

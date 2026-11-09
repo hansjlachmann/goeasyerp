@@ -145,6 +145,24 @@ page:
           run_page: 30
           run_page_filter_field: "no"
           run_page_filter_value: "no"
+        # the item at the line's place up to its date (classic Item Availability by): a pick changes
+        # the line's date, variant, location or bin after a question
+        - name: Item Availability by
+          caption: Item Availability by
+          image: Calendar
+          items:
+            - name: Period
+              caption: Period
+              run_object: table:Requisition_Line.ItemAvailability(0)
+            - name: Variant
+              caption: Variant
+              run_object: table:Requisition_Line.ItemAvailability(1)
+            - name: Location
+              caption: Location
+              run_object: table:Requisition_Line.ItemAvailability(2)
+            - name: Bin
+              caption: Bin
+              run_object: table:Requisition_Line.ItemAvailability(3)
         - name: Reservation Entries
           caption: Reservation Entries
           image: Entries
