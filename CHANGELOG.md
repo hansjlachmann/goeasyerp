@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.150](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.149...v0.1.150) (2026-11-10)
+
+
+### Features
+
+* actions on the selected matrix row ([cd40a67](https://github.com/hansjlachmann/goeasyerp/commit/cd40a671f8bb36730c178e697d852723d8aedb6f))
+* apply entries on credit memos, applies-to ID, make orders on worksheet names, create reminders on the cards ([d77d217](https://github.com/hansjlachmann/goeasyerp/commit/d77d21721a805be37958050a29f84eecd5c3a1d1))
+* bank account balance, posting setup cards and copy, print on account schedules and tax statements ([de5c328](https://github.com/hansjlachmann/goeasyerp/commit/de5c328f2083c7b5f228da46ad9523c78085d1b2))
+* credit limit check on blanket order to order, item availability order columns ([7517fb0](https://github.com/hansjlachmann/goeasyerp/commit/7517fb06c0f8945b38037a779330ea317ef4dfcf))
+* fixed asset overviews: main asset statistics, error ledger entries, picture, value insured, posting types ([295e6bd](https://github.com/hansjlachmann/goeasyerp/commit/295e6bd43ac4b5486e4a0436646ee7edef8490c0))
+* inventory application and reservation links, line lists, items by location ([846c808](https://github.com/hansjlachmann/goeasyerp/commit/846c808134a99e4b6cf07c92a04ae905f5f01b3a))
+* item/customer discount overview and dimension checks in the document test reports ([ee13491](https://github.com/hansjlachmann/goeasyerp/commit/ee134916e26d6ad3cab7b3628112f02e49187eb1))
+
+
+### Bug Fixes
+
+* drilldown values without underline ([d20fb32](https://github.com/hansjlachmann/goeasyerp/commit/d20fb3264875fe845633ff2596e0c82a5940fe22))
+
 ## [0.1.149](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.148...v0.1.149) (2026-11-10)
 
 
