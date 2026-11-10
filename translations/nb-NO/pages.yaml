@@ -945,6 +945,32 @@ pages:
     caption: "Stykklistekladdelinjer"
   items_by_location:
     caption: "Varer per lokasjon"
+  main_asset_statistics:
+    caption: "Hovedanleggsstatistikk"
+    fields:
+      first_acquisition_date: "Anskaffelsesdato"
+      first_g_l_acquisition_date: "Anskaffelsesdato (finans)"
+      first_disposal_date: "Avhendingsdato"
+      total_acquisition_cost: "Anskaffelseskost"
+      total_depreciation: "Avskrivning"
+      total_write_down: "Nedskrivning"
+      total_appreciation: "Oppskrivning"
+      total_custom_1: "Egendefinert 1"
+      total_custom_2: "Egendefinert 2"
+      total_book_value: "Bokført verdi"
+      total_depreciable_basis: "Avskrivningsgrunnlag"
+      total_salvage_value: "Restverdi"
+      total_maintenance: "Vedlikehold"
+      total_proceeds_on_disposal: "Avhendingsbeløp"
+      total_gain_loss: "Gevinst/tap"
+  fa_error_ledger_entries:
+    caption: "Feilposter for anlegg"
+  fixed_asset_picture:
+    caption: "Anleggsbilde"
+  total_value_insured_per_fa:
+    caption: "Samlet forsikret verdi per anlegg"
+  fa_posting_types_overview:
+    caption: "Oversikt over anleggsbokføringstyper"
   item_availability_by_periods:
     caption: "Varetilgjengelighet per periode"
     fields:

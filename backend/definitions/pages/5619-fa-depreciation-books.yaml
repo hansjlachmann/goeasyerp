@@ -136,3 +136,27 @@ page:
       run_page_filters:
         - {field: fa_no, value: fa_no}
         - {field: depreciation_book_code, value: depreciation_book_code}
+
+    - name: Error Ledger Entries
+      caption: Error Ledger Entries
+      image: Entries
+      promoted: true
+      run_page: 5605
+      run_page_filters:
+        - {field: canceled_from_fa_no, value: fa_no}
+        - {field: depreciation_book_code, value: depreciation_book_code}
+
+    - name: Main Asset Statistics
+      caption: Main Asset Statistics
+      image: Statistics
+      promoted: true
+      run_page: 5603
+      run_page_filters:
+        - {field: fa_no, value: fa_no}
+        - {field: depreciation_book_code, value: depreciation_book_code}
+
+    - name: FA Posting Types Overview
+      caption: FA Posting Types Overview
+      image: Statistics
+      promoted: true
+      run_page: 5662

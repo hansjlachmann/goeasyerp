@@ -945,6 +945,32 @@ pages:
     caption: "BOM Journal Lines"
   items_by_location:
     caption: "Items by Location"
+  main_asset_statistics:
+    caption: "Main Asset Statistics"
+    fields:
+      first_acquisition_date: "Acquisition Date"
+      first_g_l_acquisition_date: "G/L Acquisition Date"
+      first_disposal_date: "Disposal Date"
+      total_acquisition_cost: "Acquisition Cost"
+      total_depreciation: "Depreciation"
+      total_write_down: "Write-Down"
+      total_appreciation: "Appreciation"
+      total_custom_1: "Custom 1"
+      total_custom_2: "Custom 2"
+      total_book_value: "Book Value"
+      total_depreciable_basis: "Depreciable Basis"
+      total_salvage_value: "Salvage Value"
+      total_maintenance: "Maintenance"
+      total_proceeds_on_disposal: "Proceeds on Disposal"
+      total_gain_loss: "Gain/Loss"
+  fa_error_ledger_entries:
+    caption: "FA Error Ledger Entries"
+  fixed_asset_picture:
+    caption: "Fixed Asset Picture"
+  total_value_insured_per_fa:
+    caption: "Total Value Insured per FA"
+  fa_posting_types_overview:
+    caption: "FA Posting Types Overview"
   item_availability_by_periods:
     caption: "Item Availability by Periods"
     fields:

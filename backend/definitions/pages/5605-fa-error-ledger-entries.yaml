@@ -1,0 +1,82 @@
+page:
+  id: 5605
+  type: List
+  name: FA Error Ledger Entries
+  source_table: FA_Ledger_Entry
+  caption: FA Error Ledger Entries
+  editable: false
+  # classic form 5605 (FA Depreciation Books › Depr. Book › Error Ledger Entries): the FA ledger
+  # entries canceled from the asset (Canceled from FA No.) in the book
+
+  layout:
+    repeater:
+      fields:
+        - source: fa_posting_date
+          width: 110
+        - source: document_type
+          width: 110
+          visible: false
+        - source: document_no
+          width: 110
+        - source: canceled_from_fa_no
+          width: 120
+        - source: depreciation_book_code
+          width: 120
+        - source: fa_posting_category
+          width: 120
+          visible: false
+        - source: fa_posting_type
+          width: 150
+        - source: description
+          width: 220
+        - source: dimension_1_code
+          width: 120
+          visible: false
+        - source: dimension_2_code
+          width: 120
+          visible: false
+        - source: amount
+          width: 120
+        - source: reclassification_entry
+          width: 100
+          visible: false
+        - source: index_entry
+          width: 90
+          visible: false
+        - source: no_of_depreciation_days
+          width: 100
+          visible: false
+        - source: bal_account_type
+          width: 120
+          visible: false
+        - source: bal_account_no
+          width: 120
+          visible: false
+        - source: user_id
+          width: 100
+          visible: false
+        - source: source_code
+          width: 100
+          visible: false
+        - source: reason_code
+          width: 100
+          visible: false
+        - source: posting_date
+          width: 100
+          visible: false
+        - source: g_l_entry_no
+          width: 100
+          visible: false
+        - source: entry_no
+          width: 80
+
+  actions:
+    - name: Navigate
+      caption: Navigate
+      image: Navigate
+      shortcut: Ctrl+Alt+Q
+      promoted: true
+      run_page: 344
+      run_page_params:
+        document_no: document_no
+        posting_date: posting_date

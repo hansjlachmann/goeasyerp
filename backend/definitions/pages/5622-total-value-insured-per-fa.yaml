@@ -1,0 +1,25 @@
+page:
+  id: 5622
+  type: List
+  name: Total Value Insured per FA
+  source_table: Fixed_Asset
+  caption: Total Value Insured per FA
+  # classic form 5622 (Insurance › Total Value Insured per FA): the fixed assets against the
+  # insurances, a cell the asset's coverage by the insurance in the period — a matrix page whose
+  # columns and cells come from its OnMatrixCalculate trigger (faoverviews.go)
+
+  layout:
+    matrix:
+      table: Fixed_Asset
+      calculated: true
+      view_as: true
+      date_filter: fa_posting_date_filter
+      view_by: 4
+      drilldown: 5647
+      drilldown_row_field: fa_no
+      drilldown_date_field: posting_date
+      fields:
+        - source: "no"
+          width: 90
+        - source: description
+          width: 260

@@ -95,6 +95,12 @@ page:
       run_page_filter_field: "no"
       run_page_filter_value: "no"
 
+    - name: Total Value Insured per FA
+      caption: Total Value Insured per FA
+      image: Statistics
+      promoted: true
+      run_page: 5622
+
     - name: Comments
       caption: Comments
       image: Document

@@ -945,6 +945,32 @@ pages:
     caption: "Styklistekladdelinjer"
   items_by_location:
     caption: "Varer pr. lokation"
+  main_asset_statistics:
+    caption: "Hovedanlægsstatistik"
+    fields:
+      first_acquisition_date: "Anskaffelsesdato"
+      first_g_l_acquisition_date: "Anskaffelsesdato (finans)"
+      first_disposal_date: "Salgsdato"
+      total_acquisition_cost: "Anskaffelsespris"
+      total_depreciation: "Afskrivning"
+      total_write_down: "Nedskrivning"
+      total_appreciation: "Opskrivning"
+      total_custom_1: "Bruger 1"
+      total_custom_2: "Bruger 2"
+      total_book_value: "Bogført værdi"
+      total_depreciable_basis: "Afskrivningsgrundlag"
+      total_salvage_value: "Scrapværdi"
+      total_maintenance: "Vedligeholdelse"
+      total_proceeds_on_disposal: "Salgspris"
+      total_gain_loss: "Gevinst/tab"
+  fa_error_ledger_entries:
+    caption: "Fejlposter for anlæg"
+  fixed_asset_picture:
+    caption: "Anlægsbillede"
+  total_value_insured_per_fa:
+    caption: "Samlet forsikret værdi pr. anlæg"
+  fa_posting_types_overview:
+    caption: "Oversigt over anlægsbogføringstyper"
   item_availability_by_periods:
     caption: "Varedisponering pr. periode"
     fields:

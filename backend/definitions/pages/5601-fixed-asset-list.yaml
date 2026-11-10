@@ -128,6 +128,12 @@ page:
           run_page: 5602
           run_page_filter_field: fa_no
           run_page_filter_value: "no"
+        - name: Picture
+          caption: Picture
+          image: Attach
+          run_page: 5620
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
         - name: Main Asset Components
           caption: Main Asset Components
           image: Rows

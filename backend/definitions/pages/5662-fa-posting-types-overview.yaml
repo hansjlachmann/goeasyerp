@@ -1,0 +1,25 @@
+page:
+  id: 5662
+  type: List
+  name: FA Posting Types Overview
+  source_table: FA_Depreciation_Book
+  caption: FA Posting Types Overview
+  # classic form 5662 (FA Depreciation Books › Depr. Book › FA Posting Types Overview): the
+  # depreciation books of the assets against the posting types, a cell the book's amount of the
+  # type in the period — a matrix page whose columns and cells come from its OnMatrixCalculate
+  # trigger (faoverviews.go)
+
+  layout:
+    matrix:
+      table: FA_Depreciation_Book
+      calculated: true
+      view_as: true
+      date_filter: fa_posting_date_filter
+      view_by: 4
+      fields:
+        - source: fa_no
+          width: 90
+        - source: depreciation_book_code
+          width: 110
+        - source: description
+          width: 240

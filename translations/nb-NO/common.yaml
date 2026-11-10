@@ -8,6 +8,10 @@ common:
 
   # Common actions
   actions:
+    error_ledger_entries: "Feilposter"
+    fa_posting_types_overview: "Oversikt over anleggsbokføringstyper"
+    main_asset_statistics: "Hovedanleggsstatistikk"
+    total_value_insured_per_fa: "Samlet forsikret verdi per anlegg"
     application: "Utligning"
     entry: "Post"
     hide_history: "Skjul historikk"

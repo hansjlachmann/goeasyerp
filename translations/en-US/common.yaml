@@ -8,6 +8,10 @@ common:
 
   # Common actions
   actions:
+    error_ledger_entries: "Error Ledger Entries"
+    fa_posting_types_overview: "FA Posting Types Overview"
+    main_asset_statistics: "Main Asset Statistics"
+    total_value_insured_per_fa: "Total Value Insured per FA"
     application: "Application"
     entry: "Entry"
     hide_history: "Hide History"

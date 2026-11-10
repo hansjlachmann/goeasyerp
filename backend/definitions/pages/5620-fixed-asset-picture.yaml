@@ -1,0 +1,20 @@
+page:
+  id: 5620
+  type: Card
+  name: Fixed Asset Picture
+  source_table: Fixed_Asset
+  caption: Fixed Asset Picture
+  editable: true
+  # classic form 5620: the fixed asset's picture with Import / Export / Delete (the picture
+  # field's buttons; the image goes through /api/tables/Fixed_Asset/blob/picture/<no>)
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+            editable: false
+          - source: description
+            editable: false
+          - source: picture

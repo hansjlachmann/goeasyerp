@@ -1,0 +1,108 @@
+page:
+  id: 5603
+  type: Card
+  name: Main Asset Statistics
+  source_table: FA_Depreciation_Book
+  caption: Main Asset Statistics
+  editable: false
+  # classic form 5603 (FA Depreciation Books › Depr. Book › Main Asset Statistics): a main asset's
+  # depreciation book with the totals of its components in the book — calculated by the page's
+  # OnAfterGetRecord (faoverviews.go)
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: fa_no
+          - source: depreciation_book_code
+          - source: description
+          - source: first_acquisition_date
+            calculated: true
+            type: types.Date
+          - source: first_g_l_acquisition_date
+            calculated: true
+            type: types.Date
+          - source: first_disposal_date
+            calculated: true
+            type: types.Date
+
+      - name: Amounts
+        caption: Amounts
+        fields:
+          - source: total_acquisition_cost
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_depreciation
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_write_down
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_appreciation
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_custom_1
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_custom_2
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_book_value
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_depreciable_basis
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_salvage_value
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_maintenance
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_proceeds_on_disposal
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+          - source: total_gain_loss
+            calculated: true
+            type: types.Decimal
+            decimal_places: "2:2"
+
+      - name: Last FA Posting Date
+        caption: Last FA Posting Date
+        fields:
+          - source: last_acquisition_cost_date
+            calculated: true
+            type: types.Date
+          - source: last_depreciation_date
+            calculated: true
+            type: types.Date
+          - source: last_write_down_date
+            calculated: true
+            type: types.Date
+          - source: last_appreciation_date
+            calculated: true
+            type: types.Date
+          - source: last_custom_1_date
+            calculated: true
+            type: types.Date
+          - source: last_custom_2_date
+            calculated: true
+            type: types.Date
+          - source: last_salvage_value_date
+            calculated: true
+            type: types.Date
+          - source: last_maintenance_date
+            calculated: true
+            type: types.Date
