@@ -358,8 +358,7 @@
 	/* DrillDown: the value opens the entries behind it */
 	.drilldown-link {
 		color: rgb(var(--accent-600));
-		text-decoration: underline;
-		text-underline-offset: 2px;
+		text-decoration: none;
 	}
 	:global(.dark) .drilldown-link {
 		color: rgb(var(--accent-400));

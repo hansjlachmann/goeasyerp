@@ -500,7 +500,7 @@
 		padding: 0;
 		color: rgb(var(--accent-600));
 		cursor: pointer;
-		text-decoration: underline;
+		text-decoration: none;
 		font: inherit;
 	}
 

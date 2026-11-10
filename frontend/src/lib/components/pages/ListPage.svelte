@@ -4057,7 +4057,7 @@
 										{:else if hasDrilldown(field, record)}
 											<button
 												type="button"
-												class="primary-key-link"
+												class="primary-key-link drilldown-link"
 												onclick={(e) => {
 													e.stopPropagation();
 													openDrilldown(field, record);
@@ -4817,6 +4817,11 @@
 
 	.primary-key-link:hover {
 		color: rgb(var(--accent-700));
+	}
+
+	/* A drilldown (FlowField, amount): the link color without the underline */
+	.primary-key-link.drilldown-link {
+		text-decoration: none;
 	}
 
 	:global(.dark) .primary-key-link {
