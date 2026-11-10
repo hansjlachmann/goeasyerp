@@ -978,6 +978,7 @@ func (p *SalesPost) postCustomerEntry() error {
 	genJnlLine.Payment_discount_percent = salesHeader.Payment_discount_percent
 	genJnlLine.Applies_to_doc_type = gtables.GenJournalLineApplies_to_doc_type(salesHeader.Applies_to_doc_type)
 	genJnlLine.Applies_to_doc_no = salesHeader.Applies_to_doc_no
+	genJnlLine.Applies_to_id = salesHeader.Applies_to_id
 	if onCustomerEntry != nil {
 		onCustomerEntry(genJnlLine)
 	}

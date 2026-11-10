@@ -134,6 +134,10 @@ page:
       image: Calculate
       promoted: true
       items:
+        - name: Create Reminders
+          caption: Create Reminders
+          image: New
+          run_object: report:188
         - name: Suggest Reminder Lines
           caption: Suggest Reminder Lines
           run_object: report:189

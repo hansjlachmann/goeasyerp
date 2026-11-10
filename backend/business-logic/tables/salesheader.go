@@ -745,3 +745,24 @@ func updateSalesLines(rec *gtables.SalesHeader, changedField string) error {
 	}
 	return nil
 }
+
+// OnValidate_Applies_to_id (field 118): a changed Applies-to ID takes the old one off the bill-to
+// customer's open entries marked with it (CustEntrySetApplID.SetApplId with a blank ID)
+func (salesHeaderLogic) OnValidate_Applies_to_id(rec *gtables.SalesHeader) error {
+	xRec := rec.XRec()
+	if rec.Applies_to_id != xRec.Applies_to_id && xRec.Applies_to_id != "" {
+		custLedgEntry := gtables.NewCustomerLedgerEntry(rec)
+		custLedgEntry.SetCurrentKey("customer_no", "open", "positive")
+		custLedgEntry.SetRange("customer_no", rec.Bill_to_customer_no)
+		custLedgEntry.SetRange("open", true)
+		custLedgEntry.SetRange("applies_to_id", xRec.Applies_to_id)
+		for found := custLedgEntry.FindSetBuffered(); found; found = custLedgEntry.Next() {
+			custLedgEntry.Applies_to_id = ""
+			err := custLedgEntry.ModifyOrError(false)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}

@@ -214,6 +214,10 @@ codeunits:
     caption: "Formater adresse"
   "366":
     caption: "Bytt konto i finanskladdlinje"
+  "401":
+    caption: "Utligning salgshode"
+  "402":
+    caption: "Utligning kjøpshode"
   "370":
     caption: "Bankkontoavstemming – bokfør"
   "371":

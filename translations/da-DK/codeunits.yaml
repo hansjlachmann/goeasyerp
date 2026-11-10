@@ -214,6 +214,10 @@ codeunits:
     caption: "Formatér adresse"
   "366":
     caption: "Ombyt konto i finanskladdelinje"
+  "401":
+    caption: "Udligning salgshoved"
+  "402":
+    caption: "Udligning købshoved"
   "370":
     caption: "Bankkontoafstemning – bogfør"
   "371":

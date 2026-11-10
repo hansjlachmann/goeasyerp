@@ -1011,6 +1011,7 @@ func (p *PurchPost) postVendorEntry() error {
 	genJnlLine.Payment_discount_percent = purchHeader.Payment_discount_percent
 	genJnlLine.Applies_to_doc_type = gtables.GenJournalLineApplies_to_doc_type(purchHeader.Applies_to_doc_type)
 	genJnlLine.Applies_to_doc_no = purchHeader.Applies_to_doc_no
+	genJnlLine.Applies_to_id = purchHeader.Applies_to_id
 	if onVendorEntry != nil {
 		onVendorEntry(genJnlLine)
 	}

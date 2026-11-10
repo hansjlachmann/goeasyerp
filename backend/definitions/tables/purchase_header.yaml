@@ -412,6 +412,14 @@ table:
           - source: remaining_amount
             width: 130
 
+    # Applies-to ID (classic field 118): the open entries marked with it are what posting applies the
+    # document to (Apply Entries, codeunit 402); a changed ID takes the old marks off
+    - name: applies_to_id
+      no: 118
+      type: types.Code
+      db_name: applies_to_id
+      length: 20
+
     - name: receive
       no: 57
       type: bool

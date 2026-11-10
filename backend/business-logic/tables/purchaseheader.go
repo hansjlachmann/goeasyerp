@@ -744,3 +744,24 @@ func updatePurchLines(rec *gtables.PurchaseHeader, changedField string) error {
 	}
 	return nil
 }
+
+// OnValidate_Applies_to_id (field 118): a changed Applies-to ID takes the old one off the pay-to
+// vendor's open entries marked with it (VendEntrySetApplID.SetApplId with a blank ID)
+func (purchaseHeaderLogic) OnValidate_Applies_to_id(rec *gtables.PurchaseHeader) error {
+	xRec := rec.XRec()
+	if rec.Applies_to_id != xRec.Applies_to_id && xRec.Applies_to_id != "" {
+		vendLedgEntry := gtables.NewVendorLedgerEntry(rec)
+		vendLedgEntry.SetCurrentKey("vendor_no", "open", "positive")
+		vendLedgEntry.SetRange("vendor_no", rec.Pay_to_vendor_no)
+		vendLedgEntry.SetRange("open", true)
+		vendLedgEntry.SetRange("applies_to_id", xRec.Applies_to_id)
+		for found := vendLedgEntry.FindSetBuffered(); found; found = vendLedgEntry.Next() {
+			vendLedgEntry.Applies_to_id = ""
+			err := vendLedgEntry.ModifyOrError(false)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}

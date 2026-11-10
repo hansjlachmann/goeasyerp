@@ -59,6 +59,7 @@ page:
           - source: payment_method_code
           - source: applies_to_doc_type
           - source: applies_to_doc_no
+          - source: applies_to_id
           - source: dimension_1_code
           - source: dimension_2_code
           - source: project_no
@@ -186,6 +187,12 @@ page:
       image: Calculate
       promoted: true
       items:
+        # Apply Entries (codeunit 401): mark the open entries the credit memo applies to
+        - name: Apply Entries
+          caption: Apply Entries
+          image: Navigate
+          shortcut: Shift+F9
+          run_object: table:Sales_Header.ApplyEntries
         - name: Calculate Invoice Discount
           caption: Calculate Invoice Discount
           image: Calculate

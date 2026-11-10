@@ -214,6 +214,10 @@ codeunits:
     caption: "Format Address"
   "366":
     caption: "Exchange Acc. G/L Journal Line"
+  "401":
+    caption: "Sales Header Apply"
+  "402":
+    caption: "Purchase Header Apply"
   "370":
     caption: "Bank Acc. Reconciliation Post"
   "371":

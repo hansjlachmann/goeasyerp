@@ -16,4 +16,6 @@ func init() {
 	objects.Codeunit(225, "Gen. Jnl.-Apply")
 	objects.Codeunit(230, "GenJnlManagement")
 	objects.Codeunit(366, "Exchange Acc. G/L Journal Line")
+	objects.Codeunit(401, "Sales Header Apply")
+	objects.Codeunit(402, "Purchase Header Apply")
 }

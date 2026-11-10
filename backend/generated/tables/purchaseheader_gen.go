@@ -48,6 +48,7 @@
 //	OnValidate_No_printed(rec *gtables.PurchaseHeader) error
 //	OnValidate_Applies_to_doc_type(rec *gtables.PurchaseHeader) error
 //	OnValidate_Applies_to_doc_no(rec *gtables.PurchaseHeader) error
+//	OnValidate_Applies_to_id(rec *gtables.PurchaseHeader) error
 //	OnValidate_Receive(rec *gtables.PurchaseHeader) error
 //	OnValidate_Invoice(rec *gtables.PurchaseHeader) error
 //	OnValidate_Receiving_no(rec *gtables.PurchaseHeader) error
@@ -218,6 +219,7 @@ type PurchaseHeader struct {
 	Amount_including_tax      types.Decimal
 	Applies_to_doc_type       PurchaseHeaderApplies_to_doc_type `db:"applies_to_doc_type"`
 	Applies_to_doc_no         types.Code                        `db:"applies_to_doc_no"`
+	Applies_to_id             types.Code                        `db:"applies_to_id"`
 	Receive                   bool                              `db:"receive"`
 	Invoice                   bool                              `db:"invoice"`
 	Receiving_no              types.Code                        `db:"receiving_no"`
@@ -419,6 +421,7 @@ var PurchaseHeader_FieldNo = struct {
 	Amount_including_tax      int
 	Applies_to_doc_type       int
 	Applies_to_doc_no         int
+	Applies_to_id             int
 	Receive                   int
 	Invoice                   int
 	Receiving_no              int
@@ -508,6 +511,7 @@ var PurchaseHeader_FieldNo = struct {
 	Amount_including_tax:      61,
 	Applies_to_doc_type:       52,
 	Applies_to_doc_no:         53,
+	Applies_to_id:             118,
 	Receive:                   57,
 	Invoice:                   58,
 	Receiving_no:              62,
@@ -642,6 +646,8 @@ func (t *PurchaseHeader) FieldNo(fieldName string) int {
 		return 52
 	case "applies_to_doc_no":
 		return 53
+	case "applies_to_id":
+		return 118
 	case "receive":
 		return 57
 	case "invoice":
@@ -825,6 +831,8 @@ func (t *PurchaseHeader) FieldName(fieldNo int) string {
 		return "applies_to_doc_type"
 	case 53:
 		return "applies_to_doc_no"
+	case 118:
+		return "applies_to_id"
 	case 57:
 		return "receive"
 	case 58:
@@ -1134,6 +1142,9 @@ type (
 	PurchaseHeaderOnValidate_Applies_to_doc_no interface {
 		OnValidate_Applies_to_doc_no(rec *PurchaseHeader) error
 	}
+	PurchaseHeaderOnValidate_Applies_to_id interface {
+		OnValidate_Applies_to_id(rec *PurchaseHeader) error
+	}
 	PurchaseHeaderOnValidate_Receive interface {
 		OnValidate_Receive(rec *PurchaseHeader) error
 	}
@@ -1380,6 +1391,8 @@ func purchaseHeaderTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PurchaseHeaderOnValidate_Applies_to_doc_type)
 	case "OnValidate_Applies_to_doc_no":
 		_, ok = logic.(PurchaseHeaderOnValidate_Applies_to_doc_no)
+	case "OnValidate_Applies_to_id":
+		_, ok = logic.(PurchaseHeaderOnValidate_Applies_to_id)
 	case "OnValidate_Receive":
 		_, ok = logic.(PurchaseHeaderOnValidate_Receive)
 	case "OnValidate_Invoice":
@@ -1635,6 +1648,9 @@ func (t *PurchaseHeader) CheckFields() error {
 	if err := tables.CheckMaxLength(PurchaseHeaderTableName, "applies_to_doc_no", string(t.Applies_to_doc_no), 20); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(PurchaseHeaderTableName, "applies_to_id", string(t.Applies_to_id), 20); err != nil {
+		return err
+	}
 	if err := tables.CheckMaxLength(PurchaseHeaderTableName, "receiving_no", string(t.Receiving_no), 20); err != nil {
 		return err
 	}
@@ -1829,6 +1845,7 @@ func GetPurchaseHeaderTableSchema() string {
 		amount_including_tax TEXT,
 		applies_to_doc_type INTEGER CHECK (applies_to_doc_type >= 0 AND applies_to_doc_type <= 5),
 		applies_to_doc_no TEXT(20),
+		applies_to_id TEXT(20),
 		receive INTEGER,
 		invoice INTEGER,
 		receiving_no TEXT(20),
@@ -1924,6 +1941,7 @@ func GetPurchaseHeaderPostgresTableSchema() string {
 		amount_including_tax NUMERIC,
 		applies_to_doc_type INTEGER CHECK (applies_to_doc_type >= 0 AND applies_to_doc_type <= 5),
 		applies_to_doc_no VARCHAR(20),
+		applies_to_id VARCHAR(20),
 		receive BOOLEAN,
 		invoice BOOLEAN,
 		receiving_no VARCHAR(20),
@@ -2150,6 +2168,7 @@ func (t *PurchaseHeader) StoreOldValues() {
 	t.oldValues["no_printed"] = t.No_printed
 	t.oldValues["applies_to_doc_type"] = t.Applies_to_doc_type
 	t.oldValues["applies_to_doc_no"] = t.Applies_to_doc_no
+	t.oldValues["applies_to_id"] = t.Applies_to_id
 	t.oldValues["receive"] = t.Receive
 	t.oldValues["invoice"] = t.Invoice
 	t.oldValues["receiving_no"] = t.Receiving_no
@@ -2324,6 +2343,9 @@ func (t *PurchaseHeader) XRec() *PurchaseHeader {
 	}
 	if v, ok := t.oldValues["applies_to_doc_no"].(types.Code); ok {
 		x.Applies_to_doc_no = v
+	}
+	if v, ok := t.oldValues["applies_to_id"].(types.Code); ok {
+		x.Applies_to_id = v
 	}
 	if v, ok := t.oldValues["receive"].(bool); ok {
 		x.Receive = v
@@ -2575,6 +2597,7 @@ func (t *PurchaseHeader) GetByPK(document_type PurchaseHeaderDocument_type, no t
 	var no_printedVal int
 	var applies_to_doc_typeInt int
 	var applies_to_doc_noNull sql.NullString
+	var applies_to_idNull sql.NullString
 	var receiveBool sql.NullBool
 	var invoiceBool sql.NullBool
 	var receiving_noNull sql.NullString
@@ -2630,7 +2653,7 @@ func (t *PurchaseHeader) GetByPK(document_type PurchaseHeaderDocument_type, no t
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve, project_no, ship_to_code, sell_to_customer_no FROM "%s" WHERE 1=1 AND document_type = ? AND no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, applies_to_id, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve, project_no, ship_to_code, sell_to_customer_no FROM "%s" WHERE 1=1 AND document_type = ? AND no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -2675,6 +2698,7 @@ func (t *PurchaseHeader) GetByPK(document_type PurchaseHeaderDocument_type, no t
 		&no_printedVal,
 		&applies_to_doc_typeInt,
 		&applies_to_doc_noNull,
+		&applies_to_idNull,
 		&receiveBool,
 		&invoiceBool,
 		&receiving_noNull,
@@ -2773,6 +2797,7 @@ func (t *PurchaseHeader) GetByPK(document_type PurchaseHeaderDocument_type, no t
 	t.No_printed = no_printedVal
 	t.Applies_to_doc_type = PurchaseHeaderApplies_to_doc_type(applies_to_doc_typeInt)
 	t.Applies_to_doc_no = types.NewCode(applies_to_doc_noNull.String)
+	t.Applies_to_id = types.NewCode(applies_to_idNull.String)
 	t.Receive = receiveBool.Bool
 	t.Invoice = invoiceBool.Bool
 	t.Receiving_no = types.NewCode(receiving_noNull.String)
@@ -2880,6 +2905,7 @@ func (t *PurchaseHeader) Insert(runTrigger bool) bool {
 		t.No_printed,
 		t.Applies_to_doc_type,
 		t.Applies_to_doc_no,
+		t.Applies_to_id,
 		t.Receive,
 		t.Invoice,
 		t.Receiving_no,
@@ -2931,7 +2957,7 @@ func (t *PurchaseHeader) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve, project_no, ship_to_code, sell_to_customer_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_type, no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, applies_to_id, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve, project_no, ship_to_code, sell_to_customer_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (document_type, no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -3007,6 +3033,7 @@ func (t *PurchaseHeader) InsertAll(records []*PurchaseHeader, runTrigger bool) e
 			r.No_printed,
 			r.Applies_to_doc_type,
 			r.Applies_to_doc_no,
+			r.Applies_to_id,
 			r.Receive,
 			r.Invoice,
 			r.Receiving_no,
@@ -3057,7 +3084,7 @@ func (t *PurchaseHeader) InsertAll(records []*PurchaseHeader, runTrigger bool) e
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, PurchaseHeaderTableName)
-	columns := []string{"document_type", "buy_from_vendor_no", "no", "pay_to_vendor_no", "pay_to_name", "pay_to_name_2", "pay_to_address", "pay_to_address_2", "pay_to_city", "pay_to_contact", "your_reference", "ship_to_name", "ship_to_name_2", "ship_to_address", "ship_to_address_2", "ship_to_city", "ship_to_contact", "order_date", "posting_date", "expected_receipt_date", "posting_description", "payment_terms_code", "due_date", "payment_discount_percent", "pmt_discount_date", "shipment_method_code", "location_code", "dimension_1_code", "dimension_2_code", "vendor_posting_group", "currency_code", "currency_factor", "invoice_disc_code", "language_code", "purchaser_code", "no_printed", "applies_to_doc_type", "applies_to_doc_no", "receive", "invoice", "receiving_no", "posting_no", "last_receiving_no", "last_posting_no", "vendor_order_no", "vendor_shipment_no", "vendor_invoice_no", "vendor_cr_memo_no", "vat_registration_no", "reason_code", "gen_bus_posting_group", "transaction_type", "transport_method", "vat_country_code", "buy_from_vendor_name", "buy_from_vendor_name_2", "buy_from_address", "buy_from_address_2", "buy_from_city", "buy_from_contact", "pay_to_post_code", "pay_to_state", "pay_to_country_code", "buy_from_post_code", "buy_from_state", "buy_from_country_code", "ship_to_post_code", "ship_to_state", "ship_to_country_code", "order_address_code", "entry_point", "document_date", "area", "transaction_specification", "payment_method_code", "no_series", "posting_no_series", "receiving_no_series", "tax_area_code", "tax_liable", "tax_bus_posting_group", "reserve", "project_no", "ship_to_code", "sell_to_customer_no"}
+	columns := []string{"document_type", "buy_from_vendor_no", "no", "pay_to_vendor_no", "pay_to_name", "pay_to_name_2", "pay_to_address", "pay_to_address_2", "pay_to_city", "pay_to_contact", "your_reference", "ship_to_name", "ship_to_name_2", "ship_to_address", "ship_to_address_2", "ship_to_city", "ship_to_contact", "order_date", "posting_date", "expected_receipt_date", "posting_description", "payment_terms_code", "due_date", "payment_discount_percent", "pmt_discount_date", "shipment_method_code", "location_code", "dimension_1_code", "dimension_2_code", "vendor_posting_group", "currency_code", "currency_factor", "invoice_disc_code", "language_code", "purchaser_code", "no_printed", "applies_to_doc_type", "applies_to_doc_no", "applies_to_id", "receive", "invoice", "receiving_no", "posting_no", "last_receiving_no", "last_posting_no", "vendor_order_no", "vendor_shipment_no", "vendor_invoice_no", "vendor_cr_memo_no", "vat_registration_no", "reason_code", "gen_bus_posting_group", "transaction_type", "transport_method", "vat_country_code", "buy_from_vendor_name", "buy_from_vendor_name_2", "buy_from_address", "buy_from_address_2", "buy_from_city", "buy_from_contact", "pay_to_post_code", "pay_to_state", "pay_to_country_code", "buy_from_post_code", "buy_from_state", "buy_from_country_code", "ship_to_post_code", "ship_to_state", "ship_to_country_code", "order_address_code", "entry_point", "document_date", "area", "transaction_specification", "payment_method_code", "no_series", "posting_no_series", "receiving_no_series", "tax_area_code", "tax_liable", "tax_bus_posting_group", "reserve", "project_no", "ship_to_code", "sell_to_customer_no"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -3251,6 +3278,10 @@ func (t *PurchaseHeader) Modify(runTrigger bool) bool {
 		if t.hasFieldChanged("applies_to_doc_no") {
 			setClauses = append(setClauses, "applies_to_doc_no = ?")
 			values = append(values, t.Applies_to_doc_no)
+		}
+		if t.hasFieldChanged("applies_to_id") {
+			setClauses = append(setClauses, "applies_to_id = ?")
+			values = append(values, t.Applies_to_id)
 		}
 		if t.hasFieldChanged("receive") {
 			setClauses = append(setClauses, "receive = ?")
@@ -3519,6 +3550,8 @@ func (t *PurchaseHeader) Modify(runTrigger bool) bool {
 		values = append(values, t.Applies_to_doc_type)
 		setClauses = append(setClauses, "applies_to_doc_no = ?")
 		values = append(values, t.Applies_to_doc_no)
+		setClauses = append(setClauses, "applies_to_id = ?")
+		values = append(values, t.Applies_to_id)
 		setClauses = append(setClauses, "receive = ?")
 		values = append(values, t.Receive)
 		setClauses = append(setClauses, "invoice = ?")
@@ -3836,6 +3869,10 @@ func (t *PurchaseHeader) hasFieldChanged(fieldName string) bool {
 	case "applies_to_doc_no":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Applies_to_doc_no.Equal(old)
+		}
+	case "applies_to_id":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Applies_to_id.Equal(old)
 		}
 	case "receive":
 		if old, ok := oldValue.(bool); ok {
@@ -4621,6 +4658,8 @@ func (t *PurchaseHeader) columnName(fieldName string) (string, bool) {
 		return "applies_to_doc_type", true
 	case strings.ToLower("applies_to_doc_no"):
 		return "applies_to_doc_no", true
+	case strings.ToLower("applies_to_id"):
+		return "applies_to_id", true
 	case strings.ToLower("receive"):
 		return "receive", true
 	case strings.ToLower("invoice"):
@@ -5112,7 +5151,7 @@ func (t *PurchaseHeader) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve, project_no, ship_to_code, sell_to_customer_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, applies_to_id, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve, project_no, ship_to_code, sell_to_customer_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5154,6 +5193,7 @@ func (t *PurchaseHeader) FindFirst() bool {
 	var purchaser_codeNull sql.NullString
 	var applies_to_doc_typeInt int
 	var applies_to_doc_noNull sql.NullString
+	var applies_to_idNull sql.NullString
 	var receiveBool sql.NullBool
 	var invoiceBool sql.NullBool
 	var receiving_noNull sql.NullString
@@ -5241,6 +5281,7 @@ func (t *PurchaseHeader) FindFirst() bool {
 		&t.No_printed,
 		&applies_to_doc_typeInt,
 		&applies_to_doc_noNull,
+		&applies_to_idNull,
 		&receiveBool,
 		&invoiceBool,
 		&receiving_noNull,
@@ -5336,6 +5377,7 @@ func (t *PurchaseHeader) FindFirst() bool {
 	t.Purchaser_code = types.NewCode(purchaser_codeNull.String)
 	t.Applies_to_doc_type = PurchaseHeaderApplies_to_doc_type(applies_to_doc_typeInt)
 	t.Applies_to_doc_no = types.NewCode(applies_to_doc_noNull.String)
+	t.Applies_to_id = types.NewCode(applies_to_idNull.String)
 	t.Receive = receiveBool.Bool
 	t.Invoice = invoiceBool.Bool
 	t.Receiving_no = types.NewCode(receiving_noNull.String)
@@ -5403,7 +5445,7 @@ func (t *PurchaseHeader) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve, project_no, ship_to_code, sell_to_customer_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, applies_to_id, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve, project_no, ship_to_code, sell_to_customer_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5445,6 +5487,7 @@ func (t *PurchaseHeader) FindLast() bool {
 	var purchaser_codeNull sql.NullString
 	var applies_to_doc_typeInt int
 	var applies_to_doc_noNull sql.NullString
+	var applies_to_idNull sql.NullString
 	var receiveBool sql.NullBool
 	var invoiceBool sql.NullBool
 	var receiving_noNull sql.NullString
@@ -5532,6 +5575,7 @@ func (t *PurchaseHeader) FindLast() bool {
 		&t.No_printed,
 		&applies_to_doc_typeInt,
 		&applies_to_doc_noNull,
+		&applies_to_idNull,
 		&receiveBool,
 		&invoiceBool,
 		&receiving_noNull,
@@ -5627,6 +5671,7 @@ func (t *PurchaseHeader) FindLast() bool {
 	t.Purchaser_code = types.NewCode(purchaser_codeNull.String)
 	t.Applies_to_doc_type = PurchaseHeaderApplies_to_doc_type(applies_to_doc_typeInt)
 	t.Applies_to_doc_no = types.NewCode(applies_to_doc_noNull.String)
+	t.Applies_to_id = types.NewCode(applies_to_idNull.String)
 	t.Receive = receiveBool.Bool
 	t.Invoice = invoiceBool.Bool
 	t.Receiving_no = types.NewCode(receiving_noNull.String)
@@ -5724,7 +5769,7 @@ func (t *PurchaseHeader) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve, project_no, ship_to_code, sell_to_customer_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, applies_to_id, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve, project_no, ship_to_code, sell_to_customer_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -5830,6 +5875,7 @@ func (t *PurchaseHeader) Next(steps ...int) bool {
 		var purchaser_codeNull sql.NullString
 		var applies_to_doc_typeInt int
 		var applies_to_doc_noNull sql.NullString
+		var applies_to_idNull sql.NullString
 		var receiveBool sql.NullBool
 		var invoiceBool sql.NullBool
 		var receiving_noNull sql.NullString
@@ -5917,6 +5963,7 @@ func (t *PurchaseHeader) Next(steps ...int) bool {
 			&t.No_printed,
 			&applies_to_doc_typeInt,
 			&applies_to_doc_noNull,
+			&applies_to_idNull,
 			&receiveBool,
 			&invoiceBool,
 			&receiving_noNull,
@@ -6011,6 +6058,7 @@ func (t *PurchaseHeader) Next(steps ...int) bool {
 		t.Purchaser_code = types.NewCode(purchaser_codeNull.String)
 		t.Applies_to_doc_type = PurchaseHeaderApplies_to_doc_type(applies_to_doc_typeInt)
 		t.Applies_to_doc_no = types.NewCode(applies_to_doc_noNull.String)
+		t.Applies_to_id = types.NewCode(applies_to_idNull.String)
 		t.Receive = receiveBool.Bool
 		t.Invoice = invoiceBool.Bool
 		t.Receiving_no = types.NewCode(receiving_noNull.String)
@@ -6107,7 +6155,7 @@ func (t *PurchaseHeader) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve, project_no, ship_to_code, sell_to_customer_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT document_type, buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, no_printed, applies_to_doc_type, applies_to_doc_no, applies_to_id, receive, invoice, receiving_no, posting_no, last_receiving_no, last_posting_no, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, transaction_type, transport_method, vat_country_code, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, entry_point, document_date, area, transaction_specification, payment_method_code, no_series, posting_no_series, receiving_no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve, project_no, ship_to_code, sell_to_customer_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -6166,6 +6214,7 @@ func (t *PurchaseHeader) FindSetBuffered() bool {
 		var purchaser_codeNull sql.NullString
 		var applies_to_doc_typeInt int
 		var applies_to_doc_noNull sql.NullString
+		var applies_to_idNull sql.NullString
 		var receiveBool sql.NullBool
 		var invoiceBool sql.NullBool
 		var receiving_noNull sql.NullString
@@ -6253,6 +6302,7 @@ func (t *PurchaseHeader) FindSetBuffered() bool {
 			&record.No_printed,
 			&applies_to_doc_typeInt,
 			&applies_to_doc_noNull,
+			&applies_to_idNull,
 			&receiveBool,
 			&invoiceBool,
 			&receiving_noNull,
@@ -6345,6 +6395,7 @@ func (t *PurchaseHeader) FindSetBuffered() bool {
 		record.Purchaser_code = types.NewCode(purchaser_codeNull.String)
 		record.Applies_to_doc_type = PurchaseHeaderApplies_to_doc_type(applies_to_doc_typeInt)
 		record.Applies_to_doc_no = types.NewCode(applies_to_doc_noNull.String)
+		record.Applies_to_id = types.NewCode(applies_to_idNull.String)
 		record.Receive = receiveBool.Bool
 		record.Invoice = invoiceBool.Bool
 		record.Receiving_no = types.NewCode(receiving_noNull.String)
@@ -6461,6 +6512,7 @@ func (t *PurchaseHeader) copyFromBuffered(record *PurchaseHeader) {
 	t.Amount_including_tax = record.Amount_including_tax
 	t.Applies_to_doc_type = record.Applies_to_doc_type
 	t.Applies_to_doc_no = record.Applies_to_doc_no
+	t.Applies_to_id = record.Applies_to_id
 	t.Receive = record.Receive
 	t.Invoice = record.Invoice
 	t.Receiving_no = record.Receiving_no
@@ -7494,6 +7546,24 @@ func (t *PurchaseHeader) ValidateField(fieldName string, value interface{}) erro
 		for _, l := range t.registeredLogic() {
 			if trg, ok := l.(PurchaseHeaderOnValidate_Applies_to_doc_no); ok {
 				if err := trg.OnValidate_Applies_to_doc_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	case "applies_to_id":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Applies_to_id = v
+		} else if v, ok := value.(string); ok {
+			t.Applies_to_id = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field applies_to_id")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(PurchaseHeaderOnValidate_Applies_to_id); ok {
+				if err := trg.OnValidate_Applies_to_id(t); err != nil {
 					return err
 				}
 			}
@@ -8573,6 +8643,8 @@ func (t *PurchaseHeader) FieldValue(no int) (any, bool) {
 		return t.Applies_to_doc_type, true
 	case 53:
 		return t.Applies_to_doc_no, true
+	case 118:
+		return t.Applies_to_id, true
 	case 57:
 		return t.Receive, true
 	case 58:
@@ -8988,6 +9060,15 @@ func (t *PurchaseHeader) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.Applies_to_doc_no = types.NewCode(v)
+			return true
+		}
+	case 118:
+		if v, ok := value.(types.Code); ok {
+			t.Applies_to_id = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Applies_to_id = types.NewCode(v)
 			return true
 		}
 	case 57:
@@ -9930,6 +10011,8 @@ func (t *PurchaseHeader) columnValue(column string) (interface{}, bool) {
 		return int(t.Applies_to_doc_type), true
 	case "applies_to_doc_no":
 		return t.Applies_to_doc_no, true
+	case "applies_to_id":
+		return t.Applies_to_id, true
 	case "receive":
 		return t.Receive, true
 	case "invoice":
@@ -10118,6 +10201,7 @@ func (t *PurchaseHeader) Init() {
 	t.No_printed = *new(int)
 	t.Applies_to_doc_type = 0
 	t.Applies_to_doc_no = *new(types.Code)
+	t.Applies_to_id = *new(types.Code)
 	t.Receive = *new(bool)
 	t.Invoice = *new(bool)
 	t.Receiving_no = *new(types.Code)
@@ -10243,6 +10327,7 @@ func (t *PurchaseHeader) ToMap() map[string]interface{} {
 		"amount_including_tax":      t.Amount_including_tax.String(),
 		"applies_to_doc_type":       int(t.Applies_to_doc_type),
 		"applies_to_doc_no":         t.Applies_to_doc_no.String(),
+		"applies_to_id":             t.Applies_to_id.String(),
 		"receive":                   t.Receive,
 		"invoice":                   t.Invoice,
 		"receiving_no":              t.Receiving_no.String(),
@@ -10529,6 +10614,11 @@ func (t *PurchaseHeader) FromMap(data map[string]interface{}) {
 	if v, ok := data["applies_to_doc_no"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Applies_to_doc_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["applies_to_id"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Applies_to_id = types.NewCode(s)
 		}
 	}
 	if v, ok := data["receive"]; ok && v != nil {
@@ -11209,6 +11299,16 @@ func (t *PurchaseHeader) GetFields() []tables.FieldInfo {
 		{
 			No:         53,
 			Name:       "applies_to_doc_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         118,
+			Name:       "applies_to_id",
 			Type:       tables.FieldTypeCode,
 			Length:     20,
 			Required:   false,

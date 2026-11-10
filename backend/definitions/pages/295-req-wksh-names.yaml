@@ -16,3 +16,11 @@ page:
           width: 110
         - source: description
           width: 250
+
+  actions:
+    # Make Orders (report 493) on the worksheet of the line: its lines become purchase orders
+    - name: Make Orders
+      caption: Make Orders
+      image: Post
+      promoted: true
+      run_object: table:Requisition_Wksh_Name.MakeOrders
