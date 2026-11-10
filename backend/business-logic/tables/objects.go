@@ -7,6 +7,9 @@ import "github.com/hansjlachmann/goeasyerp/backend/foundation/objects"
 // by their YAML)
 func init() {
 	objects.Codeunit(7, "GLBudget-Open")
+	objects.Codeunit(65, "Sales-Get Phase/Task/Step")
+	objects.Codeunit(75, "Purch.-Get Phase/Task/Step")
+	objects.Codeunit(215, "Project Jnl.-Get Phase/Task/Step")
 	objects.Codeunit(216, "Project Entry-Set Appl. ID")
 	objects.Codeunit(311, "Item-Check Avail.")
 	objects.Codeunit(312, "Cust-Check Cr. Limit")

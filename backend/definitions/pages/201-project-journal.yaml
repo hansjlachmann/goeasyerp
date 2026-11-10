@@ -178,6 +178,13 @@ page:
           run_page_filter_field: project_no
           run_page_filter_value: project_no
 
+    # the line's phase, task and step from the budget lines of its project (page 216 in lookup mode)
+    - name: Get Phase/Task/Step
+      caption: Get Phase/Task/Step
+      image: Lines
+      promoted: true
+      run_object: table:Project_Journal_Line.GetPhaseTaskStep
+
     - name: Posting
       caption: Posting
       image: Post

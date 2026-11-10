@@ -143,6 +143,13 @@ page:
       image: Lines
       promoted: true
       run_object: table:Purchase_Line.ExplodeBOM
+    # the line's phase, task and step from the budget lines of its project (page 216 in lookup mode)
+    - name: Get Phase/Task/Step
+      caption: Get Phase/Task/Step
+      image: Lines
+      promoted: true
+      run_object: table:Purchase_Line.GetPhaseTaskStep
+
     - name: Reserve
       caption: Reserve
       image: Lines

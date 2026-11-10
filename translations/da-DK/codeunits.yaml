@@ -1,5 +1,11 @@
 # Codeunit captions (the Object table's Object Caption, Object Translation 377): codeunits.<number>.caption
 codeunits:
+  "65":
+    caption: "Salg - hent fase/opgave/trin"
+  "75":
+    caption: "Køb - hent fase/opgave/trin"
+  "215":
+    caption: "Projektkladde - hent fase/opgave/trin"
   "3":
     caption: "Finanskonto – indryk"
   "6":

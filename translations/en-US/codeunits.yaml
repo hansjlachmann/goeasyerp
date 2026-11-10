@@ -1,5 +1,11 @@
 # Codeunit captions (the Object table's Object Caption, Object Translation 377): codeunits.<number>.caption
 codeunits:
+  "65":
+    caption: "Sales-Get Phase/Task/Step"
+  "75":
+    caption: "Purch.-Get Phase/Task/Step"
+  "215":
+    caption: "Project Jnl.-Get Phase/Task/Step"
   "3":
     caption: "G/L Account-Indent"
   "6":

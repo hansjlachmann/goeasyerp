@@ -8,6 +8,7 @@ common:
 
   # Common actions
   actions:
+    get_phase_task_step: "Hent fase/opgave/trin"
     res_group: "Ressourcegruppe"
     error_ledger_entries: "Fejlposter"
     fa_posting_types_overview: "Oversigt over anlægsbogføringstyper"

@@ -8,6 +8,7 @@ common:
 
   # Common actions
   actions:
+    get_phase_task_step: "Get Phase/Task/Step"
     res_group: "Res. Group"
     error_ledger_entries: "Error Ledger Entries"
     fa_posting_types_overview: "FA Posting Types Overview"
