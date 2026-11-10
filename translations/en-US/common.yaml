@@ -8,6 +8,9 @@ common:
 
   # Common actions
   actions:
+    amount_by_period: "Amount by Period"
+    from_history: "From History"
+    import_or_export_budget: "Import or Export Budget"
     get_phase_task_step: "Get Phase/Task/Step"
     res_group: "Res. Group"
     error_ledger_entries: "Error Ledger Entries"

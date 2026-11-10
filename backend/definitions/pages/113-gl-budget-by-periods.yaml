@@ -113,11 +113,29 @@ page:
       run_page_filter_field: budget_name
       run_page_filter_value: name
 
-    - name: Copy Budget
-      caption: Copy Budget
-      image: Copy
+    # The budget functions (classic Functions menu): an amount spread over periods, a budget from
+    # history, the budget as a file and back (reports 81/82/83), and Copy Budget (report 96)
+    - name: Functions
+      caption: Functions
+      image: Calculate
       promoted: true
-      run_object: report:96
+      items:
+        - name: Amount by Period
+          caption: Amount by Period
+          image: Calculate
+          run_object: report:81
+        - name: From History
+          caption: From History
+          image: History
+          run_object: report:82
+        - name: Import or Export Budget
+          caption: Import or Export Budget
+          image: Import
+          run_object: report:83
+        - name: Copy Budget
+          caption: Copy Budget
+          image: Copy
+          run_object: report:96
 
     - name: Trial Balance/Budget
       caption: Trial Balance/Budget

@@ -8,6 +8,9 @@ common:
 
   # Common actions
   actions:
+    amount_by_period: "Beløb pr. periode"
+    from_history: "Fra historik"
+    import_or_export_budget: "Importér eller eksportér budget"
     get_phase_task_step: "Hent fase/opgave/trin"
     res_group: "Ressourcegruppe"
     error_ledger_entries: "Fejlposter"

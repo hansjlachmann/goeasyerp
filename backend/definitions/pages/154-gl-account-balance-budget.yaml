@@ -88,6 +88,10 @@ page:
         - name: Copy Budget
           caption: Copy Budget
           run_object: report:96
+        - name: Import or Export Budget
+          caption: Import or Export Budget
+          image: Import
+          run_object: report:83
 
     # The G/L accounts' budget by dimensions, and balance against budget (classic Budget menu)
     - name: Budget
