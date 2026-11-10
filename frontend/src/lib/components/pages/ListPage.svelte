@@ -792,6 +792,7 @@
 					progressModalOpen = false;
 					// The function asked the page to reload (e.g. it changed the lines)
 					if (syncResult.refresh) onaction?.('Refresh');
+					markRecords(syncResult.data?.mark);
 					if (syncResult.success) {
 						// the page the result opens (a line's Reservation page), after its message box
 						pendingOpen = openPagePath(syncResult.data?.open_page);
@@ -830,6 +831,7 @@
 				if (!dialogOpen) openPending();
 				// Refresh list data to reflect changes (e.g. new entries, status updates)
 				onaction?.('Refresh');
+				markRecords((result as { data?: Record<string, unknown> }).data?.mark);
 			}
 		} catch (err) {
 			// an error with details (the G/L entries of a posting that does not balance) stays in
@@ -3173,6 +3175,13 @@
 			},
 			{ confirmText: t(BTN.PASTE), variant: 'info' }
 		);
+	}
+
+	// The records a codeunit marked (classic MARK: the journal batches that could not be
+	// posted) become the list's selection
+	function markRecords(mark: unknown) {
+		if (!Array.isArray(mark) || mark.length === 0) return;
+		selection = { keys: new Set(mark.map(String)), all: false, anchor: null };
 	}
 
 	// A new filter, search or sort starts a new selection

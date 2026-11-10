@@ -662,7 +662,7 @@ Bogfører linjer #3###### @4@@@@@@@@@@@@@"
   JNL_BATCHES_POST_CONFIRM: "Vil du bogføre kladderne?"
   JNL_BATCHES_POST_PRINT_CONFIRM: "Vil du bogføre kladderne og udskrive bogføringsrapporten?"
   JNL_BATCHES_POSTED: "Kladderne er bogført."
-  JNL_BATCHES_NOT_ALL_POSTED: "Ikke alle kladderne kunne bogføres. Disse kladder blev ikke bogført: %1"
+  JNL_BATCHES_NOT_ALL_POSTED: "Ikke alle kladderne kunne bogføres. Kladderne, der ikke blev bogført, er nu markeret (valgt): %1"
   BANK_REC_POST_PRINT_CONFIRM: "Vil du bogføre og udskrive afstemningen?"
 
   # Checks: the amount in words (comma-separated: ones 1–19, tens 1–9 with 1 blank, thousand/million/billion)

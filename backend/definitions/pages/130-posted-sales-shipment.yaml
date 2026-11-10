@@ -72,6 +72,7 @@ page:
           - source: location_code
           - source: shipment_method_code
           - source: shipping_agent_code
+          - source: package_tracking_no
           - source: shipment_date
 
       - name: Foreign Trade
@@ -104,6 +105,12 @@ page:
       run_page: 396
       run_page_filter_field: "no"
       run_page_filter_value: "no"
+
+    - name: Track Package
+      caption: Track Package
+      image: Navigate
+      promoted: true
+      run_object: table:Sales_Shipment_Header.StartTrackingSite
 
     - name: Navigate
       caption: Navigate

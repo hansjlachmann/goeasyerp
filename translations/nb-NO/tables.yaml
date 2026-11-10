@@ -977,6 +977,7 @@ tables:
       budget_name: "Budsjettnavn"
       gl_account_no: "Finanskontonr."
       date: "Dato"
+      business_unit_code: "Konsernenhetskode"
       dimension_1_code: "Dimensjon 1-kode"
       dimension_2_code: "Dimensjon 2-kode"
       amount: "Beløp"
@@ -4602,6 +4603,7 @@ tables:
   sales_header:
     caption: "Salgshode"
     fields:
+      package_tracking_no: "Pakkesporingsnr."
       combine_shipments: "Samlefaktura"
       project_no: "Prosjektnr."
       transaction_type: "Transaksjonstype"
@@ -4830,6 +4832,7 @@ tables:
   sales_shipment_header:
     caption: "Salgsleveringshode"
     fields:
+      package_tracking_no: "Pakkesporingsnr."
       project_no: "Prosjektnr."
       sell_to_customer_no: "Salg til-kundenr."
       no: "Nr."
@@ -4987,6 +4990,7 @@ tables:
   sales_invoice_header:
     caption: "Salgsfakturahode"
     fields:
+      package_tracking_no: "Pakkesporingsnr."
       project_no: "Prosjektnr."
       sell_to_customer_no: "Salg til-kundenr."
       no: "Nr."

@@ -40,8 +40,8 @@ func GLBudgetOpen(rec *gtables.GLAccount) error {
 
 // SetGLAccBudgetedAmount enters the account's Budgeted Amount in its FlowFilters (classic: a
 // value typed into the FlowField): a G/L Budget Entry with the difference to the amount budgeted
-// now, for the budget, dimension 1 and dimension 2 of the filters and the first date of the Date
-// Filter. Each filter used must be one value (a blank dimension 1 or 2 filter: none).
+// now, for the budget, business unit, dimension 1 and dimension 2 of the filters and the first date of the Date
+// Filter. Each filter used must be one value (a blank business unit, dimension 1 or 2 filter: none).
 func SetGLAccBudgetedAmount(rec *gtables.GLAccount, budgetedAmount types.Decimal) error {
 	err := CheckGLAcc(rec)
 	if err != nil {
@@ -50,6 +50,10 @@ func SetGLAccBudgetedAmount(rec *gtables.GLAccount, budgetedAmount types.Decimal
 	budgetName, ok := oneFilterValue(rec.Budget_filter)
 	if !ok {
 		return apperrors.BudgetNotOneValue(gtables.GLAccountTableName, "budget_filter")
+	}
+	businessUnitCode, ok := oneFilterValue(rec.Business_unit_filter)
+	if !ok {
+		return apperrors.BudgetNotOneValue(gtables.GLAccountTableName, "business_unit_filter")
 	}
 	dimension1Code, ok := oneFilterValue(rec.Dimension_1_filter)
 	if !ok {
@@ -78,6 +82,7 @@ func SetGLAccBudgetedAmount(rec *gtables.GLAccount, budgetedAmount types.Decimal
 	glBudgetEntry.Budget_name = types.Code(budgetName)
 	glBudgetEntry.Gl_account_no = rec.No
 	glBudgetEntry.Date = date
+	glBudgetEntry.Business_unit_code = types.Code(businessUnitCode)
 	glBudgetEntry.Dimension_1_code = types.Code(dimension1Code)
 	glBudgetEntry.Dimension_2_code = types.Code(dimension2Code)
 	glBudgetEntry.Amount = budgetedAmount.Sub(rec.Budgeted_amount)

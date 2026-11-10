@@ -84,6 +84,7 @@ page:
           - source: location_code
           - source: shipment_method_code
           - source: shipping_agent_code
+          - source: package_tracking_no
           - source: shipment_date
 
       - name: Foreign Trade

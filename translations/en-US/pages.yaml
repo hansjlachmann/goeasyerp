@@ -1834,6 +1834,8 @@ pages:
     caption: "G/L Budget by Dimension 1"
   g_l_budget_by_dimension_2:
     caption: "G/L Budget by Dimension 2"
+  g_l_budget_by_business_units:
+    caption: "G/L Budget by Business Units"
   g_l_acc_budget_by_dim_1_2:
     caption: "G/L Acc. Budget by Dim. 1/2"
   g_l_balance_budget:

@@ -61,7 +61,7 @@ func budgetGLAccountItem(onPreDataItem, onAfterGetRecord func(*gtables.GLAccount
 		Table:               gtables.GLAccountTableName,
 		Key:                 []string{"no"},
 		TableView:           []ftables.FieldFilter{{Field: "account_type", Expression: "0"}},
-		RequestFilterFields: []string{"no", "dimension_1_filter", "dimension_2_filter"},
+		RequestFilterFields: []string{"no", "business_unit_filter", "dimension_1_filter", "dimension_2_filter"},
 		OnPreDataItem:       Trigger(onPreDataItem),
 		OnAfterGetRecord:    Trigger(onAfterGetRecord),
 	}
@@ -123,12 +123,13 @@ func (w *glBudgetEntryWriter) init(run *Run) {
 	}
 }
 
-func (w *glBudgetEntryWriter) insert(run *Run, budgetName, glAccNo types.Code, date types.Date, dimension1Code, dimension2Code types.Code, amount types.Decimal, description types.Text) error {
+func (w *glBudgetEntryWriter) insert(run *Run, budgetName, glAccNo types.Code, date types.Date, businessUnitCode, dimension1Code, dimension2Code types.Code, amount types.Decimal, description types.Text) error {
 	glBudgetEntry := gtables.NewGLBudgetEntry(run)
 	glBudgetEntry.Entry_no = w.nextEntryNo
 	glBudgetEntry.Budget_name = budgetName
 	glBudgetEntry.Gl_account_no = glAccNo
 	glBudgetEntry.Date = date
+	glBudgetEntry.Business_unit_code = businessUnitCode
 	glBudgetEntry.Dimension_1_code = dimension1Code
 	glBudgetEntry.Dimension_2_code = dimension2Code
 	glBudgetEntry.Amount = amount
@@ -248,7 +249,7 @@ func (r *budgetAmountByPeriod) onAfterGetRecord(glAcc *gtables.GLAccount, run *R
 				return err
 			}
 		}
-		err := r.insert(run, r.budgetName, glAcc.No, budgetDate, singleFilterValue(glAcc.Dimension_1_filter), singleFilterValue(glAcc.Dimension_2_filter),
+		err := r.insert(run, r.budgetName, glAcc.No, budgetDate, singleFilterValue(glAcc.Business_unit_filter), singleFilterValue(glAcc.Dimension_1_filter), singleFilterValue(glAcc.Dimension_2_filter),
 			system.Round(baseAmount, r.precision), "")
 		if err != nil {
 			return err
@@ -337,7 +338,7 @@ func (r *budgetFromHistory) onAfterGetRecord(glAcc *gtables.GLAccount, run *Run)
 		}
 		glAcc.CalcFields("net_change")
 		runHistoryDate = nextHistoryDate
-		err = r.insert(run, r.budgetName, glAcc.No, runBudgetDate, singleFilterValue(glAcc.Dimension_1_filter), singleFilterValue(glAcc.Dimension_2_filter),
+		err = r.insert(run, r.budgetName, glAcc.No, runBudgetDate, singleFilterValue(glAcc.Business_unit_filter), singleFilterValue(glAcc.Dimension_1_filter), singleFilterValue(glAcc.Dimension_2_filter),
 			system.Round(glAcc.Net_change.Mul(r.percentChg), r.precision), "")
 		if err != nil {
 			return err
@@ -367,7 +368,8 @@ type importExportGLBudget struct {
 	exported   int
 }
 
-var glBudgetFileColumns = []string{"gl_account_no", "date", "dimension_1_code", "dimension_2_code", "amount", "description"}
+// the file's columns; business_unit_code came last, so files without it are read too
+var glBudgetFileColumns = []string{"gl_account_no", "date", "dimension_1_code", "dimension_2_code", "amount", "description", "business_unit_code"}
 
 func (r *importExportGLBudget) Definition() *Definition {
 	return &Definition{
@@ -385,7 +387,7 @@ func (r *importExportGLBudget) Definition() *Definition {
 			Name:                "GLBudgetEntry",
 			Table:               gtables.GLBudgetEntryTableName,
 			Key:                 []string{"entry_no"},
-			RequestFilterFields: []string{"gl_account_no", "date", "dimension_1_code", "dimension_2_code"},
+			RequestFilterFields: []string{"gl_account_no", "date", "business_unit_code", "dimension_1_code", "dimension_2_code"},
 			OnPreDataItem:       Trigger(r.onPreDataItem),
 			OnAfterGetRecord:    Trigger(r.onAfterGetRecord),
 		}},
@@ -423,7 +425,7 @@ func (r *importExportGLBudget) onAfterGetRecord(glBudgetEntry *gtables.GLBudgetE
 	r.exported++
 	return r.csvWriter.Write([]string{glBudgetEntry.Gl_account_no.String(), glBudgetEntry.Date.String(),
 		glBudgetEntry.Dimension_1_code.String(), glBudgetEntry.Dimension_2_code.String(),
-		glBudgetEntry.Amount.String(), glBudgetEntry.Description.String()})
+		glBudgetEntry.Amount.String(), glBudgetEntry.Description.String(), glBudgetEntry.Business_unit_code.String()})
 }
 
 func (r *importExportGLBudget) onPostReport(run *Run) error {
@@ -472,6 +474,9 @@ func (r *importExportGLBudget) importFile(run *Run) error {
 		glBudgetEntry := gtables.NewGLBudgetEntry(run)
 		err = glBudgetEntry.Validate("gl_account_no", types.Code(system.UpperCase(strings.TrimSpace(line[0]))))
 		if err == nil {
+			err = glBudgetEntry.Validate("business_unit_code", types.Code(system.UpperCase(strings.TrimSpace(line[6]))))
+		}
+		if err == nil {
 			err = glBudgetEntry.Validate("dimension_1_code", types.Code(system.UpperCase(strings.TrimSpace(line[2]))))
 		}
 		if err == nil {
@@ -480,7 +485,7 @@ func (r *importExportGLBudget) importFile(run *Run) error {
 		if err != nil {
 			return system.Error(run.Text("FILE_LINE_ERROR", lineNo, err.Error()))
 		}
-		err = r.insert(run, r.budgetName, glBudgetEntry.Gl_account_no, date, glBudgetEntry.Dimension_1_code, glBudgetEntry.Dimension_2_code,
+		err = r.insert(run, r.budgetName, glBudgetEntry.Gl_account_no, date, glBudgetEntry.Business_unit_code, glBudgetEntry.Dimension_1_code, glBudgetEntry.Dimension_2_code,
 			amount, types.Text(strings.TrimSpace(line[5])))
 		if err != nil {
 			return err

@@ -1067,6 +1067,7 @@ reports:
     options:
       budget_name: "Budget Name"
       gl_account_no: "G/L Account No."
+      business_unit_code: "Business Unit Code"
       dimension_1_code: "Dimension 1 Code"
       dimension_2_code: "Dimension 2 Code"
       date_change_formula: "Date Change Formula"

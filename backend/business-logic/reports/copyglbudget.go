@@ -31,6 +31,7 @@ func (r *copyGLBudget) Definition() *Definition {
 		Options: []Option{
 			{Name: "budget_name", Type: "text", Relation: &OptionRelation{Table: gtables.GLBudgetNameTableName, Columns: []string{"name", "description"}}},
 			{Name: "gl_account_no", Type: "text", Relation: &OptionRelation{Table: gtables.GLAccountTableName, Columns: []string{"no", "name"}}},
+			{Name: "business_unit_code", Type: "text", Relation: &OptionRelation{Table: gtables.BusinessUnitTableName, Columns: []string{"code", "name"}}},
 			{Name: "dimension_1_code", Type: "text", Relation: &OptionRelation{Table: gtables.Dimension1TableName, Columns: []string{"code", "name"}}},
 			{Name: "dimension_2_code", Type: "text", Relation: &OptionRelation{Table: gtables.Dimension2TableName, Columns: []string{"code", "name"}}},
 			{Name: "date_change_formula", Type: "text"},
@@ -44,7 +45,7 @@ func (r *copyGLBudget) Definition() *Definition {
 			Name:                "GLBudgetEntry",
 			Table:               gtables.GLBudgetEntryTableName,
 			Key:                 []string{"entry_no"},
-			RequestFilterFields: []string{"budget_name", "gl_account_no", "dimension_1_code", "dimension_2_code", "date"},
+			RequestFilterFields: []string{"budget_name", "gl_account_no", "business_unit_code", "dimension_1_code", "dimension_2_code", "date"},
 			OnPreDataItem:       Trigger(r.onPreDataItem),
 			OnAfterGetRecord:    Trigger(r.onAfterGetRecord),
 			OnPostDataItem: Trigger(func(rec *gtables.GLBudgetEntry, run *Run) error {
@@ -68,6 +69,7 @@ func (r *copyGLBudget) onPreReport(run *Run) error {
 	r.toGLBudgetEntry = gtables.NewGLBudgetEntry(run)
 	r.toGLBudgetEntry.Budget_name = types.Code(system.UpperCase(run.Option("budget_name")))
 	r.toGLBudgetEntry.Gl_account_no = types.Code(system.UpperCase(run.Option("gl_account_no")))
+	r.toGLBudgetEntry.Business_unit_code = types.Code(system.UpperCase(run.Option("business_unit_code")))
 	r.toGLBudgetEntry.Dimension_1_code = types.Code(system.UpperCase(run.Option("dimension_1_code")))
 	r.toGLBudgetEntry.Dimension_2_code = types.Code(system.UpperCase(run.Option("dimension_2_code")))
 	r.changeDateExpression = system.UpperCase(run.Option("date_change_formula"))
@@ -118,6 +120,9 @@ func (r *copyGLBudget) onAfterGetRecord(rec *gtables.GLBudgetEntry, run *Run) er
 	}
 	if r.toGLBudgetEntry.Gl_account_no != "" {
 		glBudgetEntry2.Gl_account_no = r.toGLBudgetEntry.Gl_account_no
+	}
+	if r.toGLBudgetEntry.Business_unit_code != "" {
+		glBudgetEntry2.Business_unit_code = r.toGLBudgetEntry.Business_unit_code
 	}
 	if r.toGLBudgetEntry.Dimension_1_code != "" {
 		glBudgetEntry2.Dimension_1_code = r.toGLBudgetEntry.Dimension_1_code

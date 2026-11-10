@@ -1834,6 +1834,8 @@ pages:
     caption: "Finansbudget pr. Dimension 1"
   g_l_budget_by_dimension_2:
     caption: "Finansbudget pr. Dimension 2"
+  g_l_budget_by_business_units:
+    caption: "Finansbudget pr. koncernenhed"
   g_l_acc_budget_by_dim_1_2:
     caption: "Finanskontobudget pr. dim. 1/2"
   g_l_balance_budget:

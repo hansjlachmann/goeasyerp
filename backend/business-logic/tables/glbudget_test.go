@@ -101,6 +101,39 @@ func TestSetGLAccBudgetedAmount(t *testing.T) {
 		t.Error("a total account took a budgeted amount")
 	}
 
+	// a business unit's budget (form 419): the entry takes the Business Unit Filter, the
+	// FlowFields filter on it
+	businessUnit := gtables.NewBusinessUnit(src)
+	businessUnit.Code = "BU1"
+	mustNoErr(t, businessUnit.InsertOrError(false))
+	accBU := budgetAcc(t, src, "6100", "DEFAULT", jan)
+	mustNoErr(t, accBU.SetFlowFilter("business_unit_filter", "BU1"))
+	mustNoErr(t, SetGLAccBudgetedAmount(accBU, types.NewDecimalFromInt(300)))
+	entry = gtables.NewGLBudgetEntry(src)
+	entry.SetRange("business_unit_code", types.Code("BU1"))
+	if n := entry.Count(); n != 1 {
+		t.Fatalf("%d business unit budget entries, want 1", n)
+	}
+	accBU = budgetAcc(t, src, "6100", "DEFAULT", jan)
+	mustNoErr(t, accBU.SetFlowFilter("business_unit_filter", "BU1"))
+	accBU.CalcFields("budgeted_amount")
+	if !accBU.Budgeted_amount.Equal(types.NewDecimalFromInt(300)) {
+		t.Errorf("BU1 budgeted %s, want 300", accBU.Budgeted_amount)
+	}
+	accBU = budgetAcc(t, src, "6100", "DEFAULT", jan)
+	accBU.CalcFields("budgeted_amount")
+	if !accBU.Budgeted_amount.Equal(types.NewDecimalFromInt(1800)) {
+		t.Errorf("all business units budgeted %s, want 1800", accBU.Budgeted_amount)
+	}
+	accBU = budgetAcc(t, src, "6100", "DEFAULT", jan)
+	mustNoErr(t, accBU.SetFlowFilter("business_unit_filter", "BU1|BU2"))
+	err := SetGLAccBudgetedAmount(accBU, types.NewDecimalFromInt(1))
+	var buErr *apperrors.AppError
+	if !errors.As(err, &buErr) || buErr.Field != "business_unit_filter" {
+		t.Errorf("two business units: %v", err)
+	}
+	entry.DeleteAll()
+
 	// the filters must be one value: no budget, a range of budgets, no period start
 	var appErr *apperrors.AppError
 	for _, c := range []struct{ budget, date, field string }{
@@ -119,7 +152,7 @@ func TestSetGLAccBudgetedAmount(t *testing.T) {
 	// a posting account in a budget stays a posting account
 	acc = gtables.NewGLAccount(src)
 	acc.Get(types.Code("6100"))
-	err := acc.Validate("account_type", gtables.GLAccount_Account_type.Heading)
+	err = acc.Validate("account_type", gtables.GLAccount_Account_type.Heading)
 	if !errors.As(err, &appErr) || appErr.Code != apperrors.ErrGLAccHasBudgetEntries {
 		t.Errorf("account type of a budgeted account: %v", err)
 	}

@@ -8,8 +8,8 @@ import (
 )
 
 // Report 97 Date Compr. G/L Budget Entries: the budget entries between the Starting and Ending
-// Date become one entry per budget, account, period and sign — and per the retained Dimension 1
-// and Dimension 2 Code (Business Unit is not migrated); budgets need no closed fiscal year and
+// Date become one entry per budget, account, period and sign — and per the retained Business
+// Unit, Dimension 1 and Dimension 2 Code; budgets need no closed fiscal year and
 // write no register.
 const DateComprGLBudgetEntriesID = 97
 
@@ -26,7 +26,7 @@ type dateComprGLBudgetEntries struct {
 
 func (r *dateComprGLBudgetEntries) Definition() *Definition {
 	r.tableID = gtables.GLBudgetEntryTableID
-	r.fields = []retainField{{name: "dimension_1_code"}, {name: "dimension_2_code"}}
+	r.fields = []retainField{{name: "business_unit_code"}, {name: "dimension_1_code"}, {name: "dimension_2_code"}}
 	return &Definition{
 		OptionsCaption: "OPTIONS",
 		Options:        dateComprOptions(true, r.fields),
@@ -104,6 +104,10 @@ func (r *dateComprGLBudgetEntries) onAfterGetRecord(glBudgetEntry *gtables.GLBud
 	r.newRecord()
 	r.window.Update(4, r.dateComprReg.No_of_new_records)
 
+	if r.retainNo("business_unit_code") {
+		glBudgetEntry2.SetRange("business_unit_code", glBudgetEntry2.Business_unit_code)
+		newGLBudgetEntry.Business_unit_code = glBudgetEntry2.Business_unit_code
+	}
 	if r.retainNo("dimension_1_code") {
 		glBudgetEntry2.SetRange("dimension_1_code", glBudgetEntry2.Dimension_1_code)
 		newGLBudgetEntry.Dimension_1_code = glBudgetEntry2.Dimension_1_code

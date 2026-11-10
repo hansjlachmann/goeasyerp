@@ -17,6 +17,9 @@ page:
           width: 120
         - source: description
           width: 240
+        - source: business_unit_code
+          width: 120
+          visible: false
         - source: dimension_1_code
           width: 120
         - source: dimension_2_code

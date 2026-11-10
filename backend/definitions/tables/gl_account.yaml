@@ -246,6 +246,9 @@ table:
         - field: gl_account_no
           type: field_filter   # a total account sums the accounts of its Totaling
           value: totaling
+        - field: business_unit_code
+          type: filter
+          value: business_unit_filter
         - field: dimension_1_code
           type: filter
           value: dimension_1_filter
@@ -288,6 +291,9 @@ table:
         - field: gl_account_no
           type: field_filter   # a total account sums the accounts of its Totaling
           value: totaling
+        - field: business_unit_code
+          type: filter
+          value: business_unit_filter
         - field: dimension_1_code
           type: filter
           value: dimension_1_filter

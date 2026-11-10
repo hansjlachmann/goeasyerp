@@ -815,6 +815,13 @@ table:
           - source: name
             width: 250
 
+    # the shipping agent's number of the package: Track Package opens the agent's Internet Address with it
+    - name: package_tracking_no
+      no: 106
+      type: types.Text
+      db_name: package_tracking_no
+      length: 30
+
     - name: no_series
       no: 107
       type: types.Code

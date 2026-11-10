@@ -2,9 +2,8 @@ table:
   id: 96
   name: "G_L_Budget_Entry"
   caption: G/L Budget Entry
-  description: "The budgeted amounts of the G/L accounts (table 96): per budget, account, date, department and project"
+  description: "The budgeted amounts of the G/L accounts (table 96): per budget, account, date, business unit, dimension 1 and dimension 2"
   lookup_page_id: 120   # G/L Budget Entries
-  # Not migrated: 10 Business Unit Code (no business units)
   fields:
     - name: entry_no
       no: 1
@@ -89,6 +88,20 @@ table:
       db_name: description
       length: 50
 
+    - name: business_unit_code
+      no: 10
+      type: types.Code
+      db_name: business_unit_code
+      length: 10
+      table_relation:
+        table: Business_Unit
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
     - name: user_id
       no: 11
       type: types.Code
@@ -113,7 +126,7 @@ table:
       sum_index_fields:
         - amount
     - name: budget_account_dimensions
-      fields: [budget_name, gl_account_no, dimension_1_code, dimension_2_code, date]
+      fields: [budget_name, gl_account_no, business_unit_code, dimension_1_code, dimension_2_code, date]
       sum_index_fields:
         - amount
     - name: account_date

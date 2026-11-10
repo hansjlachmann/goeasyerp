@@ -302,6 +302,7 @@ common:
     test_line_2: "Test Line 2"
     job_queue: "Job Queue"
     find: "Find"
+    track_package: "Track Package"
     navigate: "Navigate"
     show: "Show"
     invoice_discounts: "Invoice Discounts"

@@ -458,13 +458,19 @@ func runPermissionError(sess *session.Session, codeunitID, reportID int, functio
 	return nil
 }
 
-// withOpenPage puts the page a result opens afterwards into its data (open_page)
+// withOpenPage puts the page a result opens afterwards into its data (open_page), and the
+// records it marked (mark)
 func withOpenPage(result *fcodeunits.Result) {
-	if result.OpenPage == nil {
+	if result.OpenPage == nil && len(result.Mark) == 0 {
 		return
 	}
 	if result.Data == nil {
 		result.Data = map[string]interface{}{}
 	}
-	result.Data["open_page"] = result.OpenPage
+	if result.OpenPage != nil {
+		result.Data["open_page"] = result.OpenPage
+	}
+	if len(result.Mark) > 0 {
+		result.Data["mark"] = result.Mark
+	}
 }

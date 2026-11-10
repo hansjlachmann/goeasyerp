@@ -14,9 +14,9 @@ import (
 // The G/L balance and budget views (classic forms 408–422). 408 G/L Balance by Periods and 415
 // G/L Account Balance are a period matrix and a period grid (no code); the others are
 // calculated matrices whose columns come from here:
-//   - 409/410/411 G/L Balance by Dimension 1 / Dimension 2 / Business Units and 417/418 the
-//     budget by the dimensions (budget entries have no business unit here, so form 419 G/L
-//     Budget by Business Units is left out): the G/L accounts against the dimension values or business units, a cell
+//   - 409/410/411 G/L Balance by Dimension 1 / Dimension 2 / Business Units and 417/418/419 the
+//     budget by the dimensions and business units: the G/L accounts against the dimension values
+//     or business units, a cell
 //     the account's Net Change (Balance at Date) or Budgeted Amount with the column's value in
 //     the account's FlowFilter;
 //   - 412/420 G/L Acc. Balance/Budget by Dim. 1/2: one account, the Dimension 1 values against
@@ -31,6 +31,7 @@ const (
 	glBalancePageID              = 414
 	glBudgetByDim1PageID         = 417
 	glBudgetByDim2PageID         = 418
+	glBudgetByBusUnitsPageID     = 419
 	glAccBudgetByDim12PageID     = 420
 	glBalanceBudgetPageID        = 422
 	glAccountsFlowFieldNetChange = "net_change"
@@ -56,6 +57,7 @@ func init() {
 	byCodes(glBalanceByBusUnitsPageID, glAccountsFlowFieldNetChange, businessUnitColumns("business_unit_code"))
 	byCodes(glBudgetByDim1PageID, glAccountsFlowFieldBudget, dimension1Columns("dimension_1_code"))
 	byCodes(glBudgetByDim2PageID, glAccountsFlowFieldBudget, dimension2Columns("dimension_2_code"))
+	byCodes(glBudgetByBusUnitsPageID, glAccountsFlowFieldBudget, businessUnitColumns("business_unit_code"))
 
 	byDim12 := func(pageID int, value string) {
 		pages.OnMatrixCalculate(pageID, func(card *gtables.GLAccount, dimension1 *gtables.Dimension1) ([]pages.MatrixColumn, map[string][]string, error) {

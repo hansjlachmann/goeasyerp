@@ -1834,6 +1834,8 @@ pages:
     caption: "Finansbudsjett etter Dimensjon 1"
   g_l_budget_by_dimension_2:
     caption: "Finansbudsjett etter Dimensjon 2"
+  g_l_budget_by_business_units:
+    caption: "Finansbudsjett etter konsernenheter"
   g_l_acc_budget_by_dim_1_2:
     caption: "Finanskontobudsjett etter dim. 1/2"
   g_l_balance_budget:

@@ -1,6 +1,10 @@
 package tables
 
 import (
+	"strings"
+
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
@@ -30,4 +34,16 @@ func (shippingAgentLogic) OnDelete(rec *gtables.ShippingAgent) error {
 // OnRename runs before a primary key field is changed (rec.OldValue has the old value)
 func (shippingAgentLogic) OnRename(rec *gtables.ShippingAgent) error {
 	return nil
+}
+
+// GetTrackingInternetAddr is the Shipping Agent's GetTrackingInternetAddr: the Internet Address
+// with the package tracking number in place of %1, with "https://" in front unless it has a
+// scheme (classic: "http://" unless it starts with it)
+func GetTrackingInternetAddr(shippingAgent *gtables.ShippingAgent, packageTrackingNo types.Text) string {
+	httpStr := "https://"
+	internetAddress := strings.TrimSpace(shippingAgent.Internet_address.String())
+	if strings.HasPrefix(strings.ToLower(internetAddress), "http://") || strings.HasPrefix(strings.ToLower(internetAddress), "https://") {
+		httpStr = ""
+	}
+	return httpStr + system.StrSubstNo(internetAddress, packageTrackingNo.String())
 }

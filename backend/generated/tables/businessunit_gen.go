@@ -1259,7 +1259,7 @@ func (t *BusinessUnit) renameReferences(field string, oldValue, newValue interfa
 		condValue  int
 	}
 	references := map[string][]reference{
-		"code": {{"Gen_Journal_Line", false, "business_unit_code", "", 0}, {"G_L_Entry", false, "business_unit_code", "", 0}},
+		"code": {{"G_L_Budget_Entry", false, "business_unit_code", "", 0}, {"Gen_Journal_Line", false, "business_unit_code", "", 0}, {"G_L_Entry", false, "business_unit_code", "", 0}},
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {

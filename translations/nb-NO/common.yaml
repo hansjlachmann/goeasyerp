@@ -302,6 +302,7 @@ common:
     test_line_2: "Test linje 2"
     job_queue: "Jobbkø"
     find: "Finn"
+    track_package: "Spor pakke"
     navigate: "Naviger"
     show: "Vis"
     invoice_discounts: "Fakturarabatter"

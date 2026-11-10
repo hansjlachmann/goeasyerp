@@ -2943,7 +2943,7 @@ func (t *GLAccount) calcForRecords_budgeted_amount(records []map[string]interfac
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLBudgetEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLBudgetEntryTableName, "budget_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Budget_filter != "" {
+	if t.Business_unit_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Budget_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLBudgetEntryTableName, "budget_account_dimensions"), true
 	}
@@ -2973,6 +2973,13 @@ func (t *GLAccount) calcForRecords_budgeted_amount(records []map[string]interfac
 
 		var whereClauses []string
 		var args []interface{}
+		if t.Business_unit_filter != "" {
+			// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
 		if t.Dimension_1_filter != "" {
 			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
 			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
@@ -3065,7 +3072,7 @@ func (t *GLAccount) calcForRecords_budget_at_date(records []map[string]interface
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLBudgetEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLBudgetEntryTableName, "budget_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Budget_filter != "" {
+	if t.Business_unit_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Budget_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLBudgetEntryTableName, "budget_account_dimensions"), true
 	}
@@ -3095,6 +3102,13 @@ func (t *GLAccount) calcForRecords_budget_at_date(records []map[string]interface
 
 		var whereClauses []string
 		var args []interface{}
+		if t.Business_unit_filter != "" {
+			// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+			if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
+				whereClauses = append(whereClauses, clause)
+				args = append(args, filterArgs...)
+			}
+		}
 		if t.Dimension_1_filter != "" {
 			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
 			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
@@ -4346,7 +4360,7 @@ func (t *GLAccount) calcSum_budgeted_amount() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLBudgetEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLBudgetEntryTableName, "budget_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Budget_filter != "" {
+	if t.Business_unit_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Budget_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLBudgetEntryTableName, "budget_account_dimensions"), true
 	}
@@ -4366,6 +4380,13 @@ func (t *GLAccount) calcSum_budgeted_amount() types.Decimal {
 	} else {
 		whereClauses = append(whereClauses, "gl_account_no = ?")
 		args = append(args, t.No)
+	}
+	if t.Business_unit_filter != "" {
+		// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
 	}
 	if t.Dimension_1_filter != "" {
 		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
@@ -4421,7 +4442,7 @@ func (t *GLAccount) calcSum_budget_at_date() types.Decimal {
 	// Source: the SIFT totals table of a key covering the filters, else the entries
 	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GLBudgetEntryTableName), false
 	tableName, useSIFT = sift.TableName(t.company, GLBudgetEntryTableName, "budget_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Budget_filter != "" {
+	if t.Business_unit_filter != "" || t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" || t.Budget_filter != "" {
 		// A FlowFilter is set: the key must contain the filtered fields too
 		tableName, useSIFT = sift.TableName(t.company, GLBudgetEntryTableName, "budget_account_dimensions"), true
 	}
@@ -4441,6 +4462,13 @@ func (t *GLAccount) calcSum_budget_at_date() types.Decimal {
 	} else {
 		whereClauses = append(whereClauses, "gl_account_no = ?")
 		args = append(args, t.No)
+	}
+	if t.Business_unit_filter != "" {
+		// FlowFilter business_unit_filter applied to business_unit_code (validated by SetFlowFilter)
+		if clause, filterArgs, _ := flowfilter.Clause("business_unit_code", flowfilter.KindCode, t.Business_unit_filter); clause != "" {
+			whereClauses = append(whereClauses, clause)
+			args = append(args, filterArgs...)
+		}
 	}
 	if t.Dimension_1_filter != "" {
 		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)

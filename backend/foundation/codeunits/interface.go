@@ -35,6 +35,9 @@ type Result struct {
 	// OpenPage: the page opens a page afterwards (after the message box) — a card on a record
 	// the codeunit made, e.g. the order a quote became (classic PAGE.RUN after the codeunit)
 	OpenPage *PageLink `json:"open_page,omitempty"`
+	// Mark: the keys of records of the list the codeunit ran from that it marked (classic
+	// MARK(TRUE) — the journal batches that could not be posted); the list selects them
+	Mark []string `json:"mark,omitempty"`
 }
 
 // PageLink is a page on a record: its number and the record's key (comma-joined for a

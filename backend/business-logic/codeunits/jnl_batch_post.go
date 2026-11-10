@@ -26,8 +26,8 @@ import (
 // 5655/5673 Insurance Jnl.): after asking, every batch in the list (the page's filters: the
 // template's batches) is posted in a transaction of its own, as the journal's Post does; Post
 // and Print then prints the template's posting report on the register the batch's posting
-// wrote. A batch that cannot be posted is left as it is (classic: marked) and named in the
-// message. Post needs a template without Force Posting Report, Post and Print one with a
+// wrote. A batch that cannot be posted is left as it is, marked (the list selects it) and named
+// in the message. Post needs a template without Force Posting Report, Post and Print one with a
 // Posting Report ID.
 
 // jnlBatchKind is one journal's part of the batch codeunits
@@ -112,11 +112,14 @@ func (c *JnlBatchPost) Run(record interface{}) (fcodeunits.Result, error) {
 	ts := i18n.GetInstance()
 	lang := fcodeunits.CurrentLanguage()
 
-	type batchKey struct{ templateName, name types.Code }
+	type batchKey struct {
+		templateName, name types.Code
+		key                string // the record's key in the list
+	}
 	var batches []batchKey
 	for found := jnlBatchRec.FindSet(); found; found = jnlBatchRec.Next() {
 		data := jnlBatchRec.ToMap()
-		batches = append(batches, batchKey{types.Code(stringOf(data["journal_template_name"])), types.Code(stringOf(data["name"]))})
+		batches = append(batches, batchKey{types.Code(stringOf(data["journal_template_name"])), types.Code(stringOf(data["name"])), ftables.KeyString(jnlBatchRec)})
 	}
 	if len(batches) == 0 {
 		return system.Message(ts.Message("GEN_JNL_NOTHING_TO_POST", lang)), nil
@@ -135,11 +138,13 @@ func (c *JnlBatchPost) Run(record interface{}) (fcodeunits.Result, error) {
 	}
 
 	var jnlWithErrors []string
+	var marked []string
 	var printouts []reports.Result
 	for _, batch := range batches {
 		registerNo, ok := c.postBatch(batch.templateName, batch.name)
 		if !ok {
 			jnlWithErrors = append(jnlWithErrors, batch.name.String())
+			marked = append(marked, batch.key)
 			continue
 		}
 		if c.print && registerNo != 0 {
@@ -161,6 +166,7 @@ func (c *JnlBatchPost) Run(record interface{}) (fcodeunits.Result, error) {
 		result = system.Message(ts.Message("JNL_BATCHES_NOT_ALL_POSTED", lang), strings.Join(jnlWithErrors, ", "))
 	}
 	result.Refresh = true
+	result.Mark = marked
 	return reports.WithPrintouts(result, printouts), nil
 }
 

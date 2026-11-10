@@ -1067,6 +1067,7 @@ reports:
     options:
       budget_name: "Budgetnavn"
       gl_account_no: "Finanskontonr."
+      business_unit_code: "Koncernenhedskode"
       dimension_1_code: "Dimension 1-kode"
       dimension_2_code: "Dimension 2-kode"
       date_change_formula: "Datoændringsformel"

@@ -157,6 +157,10 @@ page:
           caption: By Dimension 2
           image: Statistics
           run_page: 418
+        - name: By Business Units
+          caption: By Business Units
+          image: Statistics
+          run_page: 419
         - name: G/L Balance/Budget
           caption: G/L Balance/Budget
           image: Statistics
