@@ -336,7 +336,8 @@
 		{:else}
 			<div class={cn('field-value', fieldStyle, isDecimalField && 'amount', isNumberField && 'numeric')}>
 				{#if ondrilldown}
-					<button type="button" class="drilldown-link" {tabindex} onclick={() => ondrilldown()}>
+					<button type="button" class="drilldown-link" {tabindex} onclick={() => ondrilldown()}
+						onkeydown={(e) => { if (e.key === 'ArrowDown' && e.altKey) { e.preventDefault(); ondrilldown(); } }}>
 						{formatDecimal(value, field.decimal_places)}
 					</button>
 				{:else if isOptionField}

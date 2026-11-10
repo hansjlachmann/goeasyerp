@@ -334,7 +334,8 @@
 						{#each grid.columns as column (column.source)}
 							<td class="num">
 								{#if column.drilldown && ondrilldown}
-									<button type="button" class="drilldown" onclick={() => drilldown(column, row)}>
+									<button type="button" class="drilldown" onclick={() => drilldown(column, row)}
+										onkeydown={(e) => { if (e.key === 'ArrowDown' && e.altKey) { e.preventDefault(); e.stopPropagation(); drilldown(column, row); } }}>
 										{cellText(column, row.values[column.source]) || '0'}
 									</button>
 								{:else}

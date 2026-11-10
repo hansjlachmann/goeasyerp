@@ -1706,6 +1706,13 @@
 			return;
 		}
 
+		// Alt+ArrowDown on a cell with a drilldown (a FlowField, not editable): its entries
+		if (event.key === 'ArrowDown' && event.altKey && !hasLookup && !hasOptions && hasDrilldown(field, record)) {
+			event.preventDefault();
+			openDrilldown(field, record);
+			return;
+		}
+
 		// Alt+ArrowDown opens the lookup/option dropdown
 		if (event.key === 'ArrowDown' && event.altKey && (hasLookup || hasOptions)) {
 			event.preventDefault();
@@ -2793,6 +2800,10 @@
 				if (multiSelected) handleBulkDelete();
 				else if (selectedRecord) handleDelete();
 			};
+			// Alt+↓ on a cell with a drilldown (a FlowField): the entries behind it
+			map['Alt+ArrowDown'] = (() => {
+				if (!drilldownAtCursor()) return false;
+			}) as () => void;
 			// The row menu from the keyboard
 			map['Shift+F10'] = openRowMenuAtCursor;
 			map['ContextMenu'] = openRowMenuAtCursor;
@@ -3405,6 +3416,38 @@
 		}
 	}
 
+	// A cell with a drilldown: a saved row's field that drills down (a FlowField also when 0)
+	function hasDrilldown(field: import('$lib/types/pages').Field, record: Record<string, any> | undefined): boolean {
+		if (!record || record._isNew || !(field.drilldown || field.drilldown_page_field)) return false;
+		const value = record[field.source];
+		return !!value || value === 0 || !!page.page.flow_fields?.includes(field.source);
+	}
+
+	// DrillDown (a click on the cell, or Alt+↓ on it): the entries behind the value
+	function openDrilldown(field: import('$lib/types/pages').Field, record: Record<string, any>) {
+		if (field.drilldown_flow_filters) {
+			void openFlowFieldDrilldown(field, record);
+			return;
+		}
+		// The page in the row's field with the drilldown's filters (Navigate's No. of Records)
+		const url = field.drilldown_page_field
+			? runPagePath({ run_page_field: field.drilldown_page_field, run_page_filters: field.drilldown_filters }, record)
+			: `/pages/${field.drilldown}?filter=${encodeURIComponent(`${field.drilldown_filter_field}=${record[field.drilldown_filter_value || ''] ?? ''}`)}`;
+		if (!url) return;
+		// Back to this list, on this record, with Esc or the close button
+		pageNav.open(withReturn(url, getRecordId(record, primaryKeyField, primaryKeyFieldsList)));
+	}
+
+	// Alt+↓ on the cell cursor's field: its drilldown; false when the cell has none
+	function drilldownAtCursor(): boolean {
+		if (multiSelected || cursorColumn() === ROW_SELECTOR || selectedIndex < 0) return false;
+		const field = visibleColumns()[cursorColumn()];
+		const record = displayRecords[selectedIndex];
+		if (!field || !hasDrilldown(field, record)) return false;
+		openDrilldown(field, record);
+		return true;
+	}
+
 	function handleApplyFilters(filters: TableFilter[], flowFilters: TableFilter[]) {
 		onfilter?.(filters, flowFilters);
 	}
@@ -4011,23 +4054,13 @@
 											>
 												{formatCellValue(record[field.source], field.source)}
 											</button>
-										{:else if (field.drilldown || field.drilldown_page_field) && !record._isNew && (record[field.source] || record[field.source] === 0 || page.page.flow_fields?.includes(field.source))}
+										{:else if hasDrilldown(field, record)}
 											<button
 												type="button"
 												class="primary-key-link"
 												onclick={(e) => {
 													e.stopPropagation();
-													if (field.drilldown_flow_filters) {
-														openFlowFieldDrilldown(field, record);
-														return;
-													}
-													// The page in the row's field with the drilldown's filters (Navigate's No. of Records)
-													const url = field.drilldown_page_field
-														? runPagePath({ run_page_field: field.drilldown_page_field, run_page_filters: field.drilldown_filters }, record)
-														: `/pages/${field.drilldown}?filter=${encodeURIComponent(`${field.drilldown_filter_field}=${record[field.drilldown_filter_value || ''] ?? ''}`)}`;
-													if (!url) return;
-													// Back to this list, on this record, with Esc or the close button
-													pageNav.open(withReturn(url, getRecordId(record, primaryKeyField, primaryKeyFieldsList)));
+													openDrilldown(field, record);
 												}}
 											>
 												{formatCellValue(record[field.source], field.source)}

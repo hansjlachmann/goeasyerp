@@ -259,6 +259,7 @@ messages:
   HELP_LOOKUP_NEW: "New: a new record in the related list (when the list offers New)"
   HELP_LOOKUP_PICK: "Pick the highlighted value"
   HELP_LOOKUP_ESCAPE: "Close the list without picking"
+  HELP_LOOKUP_DRILLDOWN: "On an amount that drills down (a FlowField, a period or matrix cell): open the entries behind it"
 
   # Card Page
   CARD_NO_RECORD: "No record loaded"

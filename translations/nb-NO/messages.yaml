@@ -259,6 +259,7 @@ messages:
   HELP_LOOKUP_NEW: "Ny: en ny post i den tilknyttede listen (når listen har Ny)"
   HELP_LOOKUP_PICK: "Velg markert verdi"
   HELP_LOOKUP_ESCAPE: "Lukk listen uten å velge"
+  HELP_LOOKUP_DRILLDOWN: "På et beløp med drilldown (et flytfelt, en periode- eller matrisecelle): åpne postene bak det"
 
   # Card Page
   CARD_NO_RECORD: "Ingen post lastet"

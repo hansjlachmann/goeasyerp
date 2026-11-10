@@ -234,6 +234,11 @@
 				select(selRow - 1, selCol);
 				break;
 			case 'ArrowDown':
+				// Alt+↓: Show Entries of the cell (its drilldown)
+				if (e.altKey) {
+					drilldown();
+					break;
+				}
 				select(selRow + 1, selCol);
 				break;
 			case 'ArrowLeft':

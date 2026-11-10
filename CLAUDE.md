@@ -441,6 +441,7 @@ The list page uses a spreadsheet-style 3-state cell model (like Excel/LibreOffic
 | Ctrl+C | The cursor cell's value as shown; with the row selector or several rows selected the rows (see below) |
 | Ctrl+V | Paste the copied records — on lists with `copy_paste_allowed: true` only (see below) |
 | Escape | With several rows selected: back to the cursor row; otherwise navigate to home (`/`) |
+| Alt+↓ | On a cell with a drilldown (a FlowField's entries, the cell cursor's column): open it as a click on the value does (`drilldownAtCursor`); also in cell-selected mode on a cell without lookup, on a card's drilldown field (FieldRenderer), a period grid cell and a matrix cell (Show Entries) |
 | Right-click / Shift+F10 / context menu key | The row menu (see below) |
 
 ### Row menu and Actions menu
