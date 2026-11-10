@@ -44,3 +44,9 @@ page:
       image: Cancel
       promoted: true
       run_object: table:Sales_Line.CancelAvailableReservation
+
+    - name: Show Document
+      caption: Show Document
+      image: Document
+      promoted: true
+      run_object: table:Sales_Line.ShowDocument

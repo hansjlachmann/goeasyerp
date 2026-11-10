@@ -145,6 +145,14 @@ page:
             - name: Bin
               caption: Bin
               run_object: table:Item_Journal_Line.ItemAvailability(3)
+        - name: Reserved For Reservation Entries
+          caption: Reserved For Reservation Entries
+          image: Entries
+          run_object: table:Item_Journal_Line.ShowNegativeReservEntries
+        - name: Reserved From Reservation Entries
+          caption: Reserved From Reservation Entries
+          image: Entries
+          run_object: table:Item_Journal_Line.ShowPositiveReservEntries
 
     - name: Posting
       caption: Posting
@@ -181,3 +189,9 @@ page:
       image: Calculate
       run_object: report:790
       promoted: true
+
+    - name: Reserve
+      caption: Reserve
+      image: Lines
+      promoted: true
+      run_object: table:Item_Journal_Line.ShowReservation

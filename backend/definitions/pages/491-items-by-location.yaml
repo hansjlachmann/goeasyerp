@@ -1,0 +1,29 @@
+page:
+  id: 491
+  type: List
+  name: Items by Location
+  source_table: Item
+  caption: Items by Location
+  # classic form 491: the items against the locations of the Location Filter — a matrix page whose
+  # columns and cells come from its OnMatrixCalculate trigger (a cell: the item's quantity on hand
+  # at the location, drilling down to its entries there)
+
+  layout:
+    matrix:
+      table: Item
+      calculated: true
+      no_periods: true   # the columns are the locations
+      date_filter: date_filter
+      view_by: 0
+      drilldown: 38
+      drilldown_row_field: item_no
+      filters:
+        - source: location_filter
+        - source: variant_filter
+      fields:
+        - source: "no"
+          width: 90
+        - source: description
+          width: 240
+        - source: quantity_on_hand
+          width: 110

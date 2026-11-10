@@ -8,6 +8,23 @@ common:
 
   # Common actions
   actions:
+    application: "Udligning"
+    entry: "Post"
+    hide_history: "Skjul historik"
+    insert_requisition_line: "Indsæt indkøbskladdelinje"
+    invoicing_entries: "Fakturerede poster"
+    items_by: "Varer pr."
+    items_by_bin: "Placering"
+    items_by_location: "Lokation"
+    reserved_for: "Reserveret til"
+    reserved_for_reservation_entries: "Reservationsposter reserveret til"
+    reserved_from: "Reserveret fra"
+    reserved_from_reservation_entries: "Reservationsposter reserveret fra"
+    show_batch: "Vis kladde"
+    show_entire_batch: "Vis hele kladden"
+    show_entire_worksheet: "Vis hele kladden"
+    show_history: "Vis historik"
+    show_worksheet: "Vis kladde"
     copy: "Kopiér"
     discount_overview: "Rabatoversigt"
     receivables_payables: "Tilgodehavender-gæld"

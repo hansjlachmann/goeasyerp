@@ -44,3 +44,9 @@ page:
       image: Cancel
       promoted: true
       run_object: table:Requisition_Line.CancelAvailableReservation
+
+    - name: Show Entire Worksheet
+      caption: Show Entire Worksheet
+      image: Document
+      promoted: true
+      run_object: table:Requisition_Line.ShowEntireWorksheet

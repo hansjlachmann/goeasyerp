@@ -1,0 +1,92 @@
+page:
+  id: 519
+  type: List
+  name: Item Journal Lines
+  source_table: Item_Journal_Line
+  caption: Item Journal Lines
+  editable: false
+  # classic form 519: item journal lines — the Reservation Entries' Reserved For / From
+
+  layout:
+    repeater:
+      fields:
+        - source: journal_template_name
+          width: 110
+        - source: journal_batch_name
+          width: 110
+        - source: line_no
+          width: 80
+          visible: false
+        - source: posting_date
+          width: 100
+        - source: document_date
+          width: 100
+          visible: false
+        - source: entry_type
+          width: 120
+        - source: document_no
+          width: 110
+        - source: item_no
+          width: 90
+        - source: variant_code
+          width: 90
+          visible: false
+        - source: description
+          width: 240
+        - source: dimension_1_code
+          width: 100
+          visible: false
+        - source: dimension_2_code
+          width: 100
+          visible: false
+        - source: location_code
+          width: 90
+        - source: bin_code
+          width: 90
+          visible: false
+        - source: salespers_purch_code
+          width: 110
+          visible: false
+        - source: gen_bus_posting_group
+          width: 110
+          visible: false
+        - source: gen_prod_posting_group
+          width: 110
+          visible: false
+        - source: reserve
+          width: 90
+          visible: false
+        - source: quantity
+          width: 100
+        - source: positive_reserved_qty_base
+          width: 120
+          visible: false
+        - source: negative_reserved_qty_base
+          width: 120
+          visible: false
+        - source: unit_of_measure_code
+          width: 90
+        - source: unit_amount
+          width: 110
+        - source: amount
+          width: 120
+
+  actions:
+    - name: Line
+      caption: Line
+      image: Lines
+      promoted: true
+      items:
+        - name: Show Batch
+          caption: Show Batch
+          image: Document
+          shortcut: Shift+F5
+          run_object: table:Item_Journal_Line.ShowEntireBatch
+        - name: Reserved For Reservation Entries
+          caption: Reserved For Reservation Entries
+          image: Entries
+          run_object: table:Item_Journal_Line.ShowNegativeReservEntries
+        - name: Reserved From Reservation Entries
+          caption: Reserved From Reservation Entries
+          image: Entries
+          run_object: table:Item_Journal_Line.ShowPositiveReservEntries

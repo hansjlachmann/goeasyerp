@@ -1,0 +1,72 @@
+page:
+  id: 520
+  type: List
+  name: BOM Journal Lines
+  source_table: BOM_Journal_Line
+  caption: BOM Journal Lines
+  editable: false
+  # classic form 520: BOM journal lines — the Reservation Entries' Reserved For / From
+
+  layout:
+    repeater:
+      fields:
+        - source: journal_template_name
+          width: 110
+        - source: journal_batch_name
+          width: 110
+        - source: line_no
+          width: 80
+          visible: false
+        - source: posting_date
+          width: 100
+        - source: document_date
+          width: 100
+          visible: false
+        - source: item_no
+          width: 90
+        - source: variant_code
+          width: 90
+          visible: false
+        - source: description
+          width: 240
+        - source: dimension_1_code
+          width: 100
+          visible: false
+        - source: dimension_2_code
+          width: 100
+          visible: false
+        - source: location_code
+          width: 90
+        - source: bin_code
+          width: 90
+          visible: false
+        - source: reserve
+          width: 90
+          visible: false
+        - source: quantity
+          width: 100
+        - source: reserved_qty_base
+          width: 120
+          visible: false
+        - source: unit_of_measure_code
+          width: 90
+        - source: unit_cost
+          width: 110
+        - source: total_cost
+          width: 120
+
+  actions:
+    - name: Line
+      caption: Line
+      image: Lines
+      promoted: true
+      items:
+        - name: Show Batch
+          caption: Show Batch
+          image: Document
+          shortcut: Shift+F5
+          run_object: table:BOM_Journal_Line.ShowEntireBatch
+        - name: Reservation Entries
+          caption: Reservation Entries
+          image: Entries
+          run_object: table:BOM_Journal_Line.ShowReservationEntries

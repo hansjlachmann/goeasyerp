@@ -8,6 +8,23 @@ common:
 
   # Common actions
   actions:
+    application: "Utligning"
+    entry: "Post"
+    hide_history: "Skjul historikk"
+    insert_requisition_line: "Sett inn innkjøpsforslagslinje"
+    invoicing_entries: "Fakturerte poster"
+    items_by: "Varer per"
+    items_by_bin: "Hylle"
+    items_by_location: "Lokasjon"
+    reserved_for: "Reservert for"
+    reserved_for_reservation_entries: "Reservasjonsposter reservert for"
+    reserved_from: "Reservert fra"
+    reserved_from_reservation_entries: "Reservasjonsposter reservert fra"
+    show_batch: "Vis bunt"
+    show_entire_batch: "Vis hele bunten"
+    show_entire_worksheet: "Vis hele kladden"
+    show_history: "Vis historikk"
+    show_worksheet: "Vis kladd"
     copy: "Kopier"
     discount_overview: "Rabattoversikt"
     receivables_payables: "Fordringer-gjeld"

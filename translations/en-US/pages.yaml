@@ -933,6 +933,18 @@ pages:
     fields:
       statistical_value_to_line: "Statistical Value"
       total_statistical_value: "Total Stat. Value"
+  applied_invoicing_item_entries:
+    caption: "Applied Invoicing Item Entries"
+  closing_item_appln_entries:
+    caption: "Closing Item Appln. Entries"
+  requisition_lines:
+    caption: "Requisition Lines"
+  item_journal_lines:
+    caption: "Item Journal Lines"
+  bom_journal_lines:
+    caption: "BOM Journal Lines"
+  items_by_location:
+    caption: "Items by Location"
   item_availability_by_periods:
     caption: "Item Availability by Periods"
     fields:

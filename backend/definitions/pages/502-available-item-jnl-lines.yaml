@@ -44,3 +44,9 @@ page:
       image: Cancel
       promoted: true
       run_object: table:Item_Journal_Line.CancelAvailableReservation
+
+    - name: Show Entire Batch
+      caption: Show Entire Batch
+      image: Document
+      promoted: true
+      run_object: table:Item_Journal_Line.ShowEntireBatch

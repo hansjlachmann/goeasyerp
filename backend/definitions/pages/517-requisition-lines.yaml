@@ -1,0 +1,80 @@
+page:
+  id: 517
+  type: List
+  name: Requisition Lines
+  source_table: Requisition_Line
+  caption: Requisition Lines
+  editable: false
+  # classic form 517: requisition worksheet lines — the Reservation Entries' Reserved For / From
+
+  layout:
+    repeater:
+      fields:
+        - source: worksheet_template_name
+          width: 110
+        - source: journal_batch_name
+          width: 110
+        - source: line_no
+          width: 80
+          visible: false
+        - source: type
+          width: 90
+        - source: "no"
+          width: 90
+        - source: variant_code
+          width: 90
+          visible: false
+        - source: description
+          width: 240
+        - source: dimension_1_code
+          width: 100
+          visible: false
+        - source: dimension_2_code
+          width: 100
+          visible: false
+        - source: location_code
+          width: 90
+        - source: bin_code
+          width: 90
+          visible: false
+        - source: reserve
+          width: 90
+          visible: false
+        - source: quantity
+          width: 100
+        - source: reserved_quantity
+          width: 110
+        - source: unit_of_measure_code
+          width: 90
+        - source: vendor_no
+          width: 100
+        - source: sell_to_customer_no
+          width: 110
+          visible: false
+        - source: serial_no
+          width: 110
+          visible: false
+        - source: lot_no
+          width: 110
+          visible: false
+        - source: order_date
+          width: 100
+          visible: false
+        - source: expected_receipt_date
+          width: 110
+
+  actions:
+    - name: Line
+      caption: Line
+      image: Lines
+      promoted: true
+      items:
+        - name: Show Worksheet
+          caption: Show Worksheet
+          image: Document
+          shortcut: Shift+F5
+          run_object: table:Requisition_Line.ShowEntireWorksheet
+        - name: Reservation Entries
+          caption: Reservation Entries
+          image: Entries
+          run_object: table:Requisition_Line.ShowReservationEntries

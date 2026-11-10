@@ -58,7 +58,12 @@ func init() {
 
 	// 497 Reservation Entries: a line's open entries — as the demand (For) or, for a supply, the
 	// entries reserved from it (From); opened from the menu all entries
+	// (Show History: the closed entries too, Hide History: the open ones only)
 	pages.OnOpenPage(reservmgt.ReservationEntriesPageID, func(rec *gtables.ReservationEntry, page *pages.Open) error {
+		history := page.Param(reservmgt.ParamHistory)
+		if history == "0" {
+			page.SetFilter("reservation_status", int(gtables.ReservationEntry_Reservation_status.Open))
+		}
 		if page.Param(reservmgt.ParamForType) == "" {
 			return nil
 		}
@@ -67,7 +72,9 @@ func init() {
 		if page.Param(reservmgt.ParamSupply) == "1" {
 			prefix = "from_"
 		}
-		page.SetFilter("reservation_status", int(gtables.ReservationEntry_Reservation_status.Open))
+		if history == "" {
+			page.SetFilter("reservation_status", int(gtables.ReservationEntry_Reservation_status.Open))
+		}
 		page.SetFilter(prefix+"type", s.Type)
 		page.SetFilter(prefix+"subtype", s.Subtype)
 		page.SetFilter(prefix+"id", s.ID)

@@ -77,6 +77,10 @@ page:
         - name: Hide Optional Lines
           caption: Hide Optional Lines
           run_object: table:Entry_Summary.HideOptionalLines
+        - name: Insert Requisition Line
+          caption: Insert Requisition Line
+          image: New
+          run_object: table:Entry_Summary.InsertReqLine
     - name: Available to Reserve
       caption: Available to Reserve
       image: Lines

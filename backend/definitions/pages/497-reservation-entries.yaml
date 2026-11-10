@@ -92,3 +92,33 @@ page:
       image: Cancel
       promoted: true
       run_object: table:Reservation_Entry.CancelReservation
+
+    # The line an entry is reserved for / from, on its line list (classic LookupReservedFor /
+    # LookupReservedFrom), and the closed entries shown or hidden
+    - name: Entry
+      caption: Entry
+      image: Entries
+      promoted: true
+      items:
+        - name: Reserved For
+          caption: Reserved For
+          image: Lines
+          run_object: table:Reservation_Entry.LookupReservedFor
+        - name: Reserved From
+          caption: Reserved From
+          image: Lines
+          run_object: table:Reservation_Entry.LookupReservedFrom
+
+    - name: Functions
+      caption: Functions
+      image: Calculate
+      promoted: true
+      items:
+        - name: Show History
+          caption: Show History
+          image: History
+          run_object: table:Reservation_Entry.ShowHistory
+        - name: Hide History
+          caption: Hide History
+          image: History
+          run_object: table:Reservation_Entry.HideHistory

@@ -8,6 +8,23 @@ common:
 
   # Common actions
   actions:
+    application: "Application"
+    entry: "Entry"
+    hide_history: "Hide History"
+    insert_requisition_line: "Insert Requisition Line"
+    invoicing_entries: "Invoicing Entries"
+    items_by: "Items by"
+    items_by_bin: "Bin"
+    items_by_location: "Location"
+    reserved_for: "Reserved For"
+    reserved_for_reservation_entries: "Reserved-for Reservation Entries"
+    reserved_from: "Reserved From"
+    reserved_from_reservation_entries: "Reserved-from Reservation Entries"
+    show_batch: "Show Batch"
+    show_entire_batch: "Show Entire Batch"
+    show_entire_worksheet: "Show Entire Worksheet"
+    show_history: "Show History"
+    show_worksheet: "Show Worksheet"
     copy: "Copy"
     discount_overview: "Discount Overview"
     receivables_payables: "Receivables-Payables"

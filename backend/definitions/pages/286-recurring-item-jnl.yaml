@@ -163,10 +163,14 @@ page:
             - name: Bin
               caption: Bin
               run_object: table:Item_Journal_Line.ItemAvailability(3)
-        - name: Reservation Entries
-          caption: Reservation Entries
+        - name: Reserved For Reservation Entries
+          caption: Reserved For Reservation Entries
           image: Entries
-          run_object: table:Item_Journal_Line.ShowReservationEntries
+          run_object: table:Item_Journal_Line.ShowNegativeReservEntries
+        - name: Reserved From Reservation Entries
+          caption: Reserved From Reservation Entries
+          image: Entries
+          run_object: table:Item_Journal_Line.ShowPositiveReservEntries
 
     - name: Functions
       caption: Functions

@@ -1,0 +1,45 @@
+page:
+  id: 523
+  type: List
+  name: Closing Item Appln. Entries
+  source_table: Item_Application_Entry
+  caption: Closing Item Appln. Entries
+  editable: false
+  # classic form 523 (Item Ledger Entries › Application › Applied Entries): the applications of an
+  # entry — of an inbound entry those applied to it, of an outbound entry its own — opened
+  # filtered by table:Item_Ledger_Entry.ShowAppliedEntries
+
+  layout:
+    repeater:
+      fields:
+        - source: posting_date
+          width: 100
+        - source: document_no
+          width: 110
+        - source: item_ledger_entry_no
+          width: 110
+        - source: applied_to_entry_no
+          width: 110
+        - source: applied_from_entry_no
+          width: 110
+        - source: transfered_from_entry_no
+          width: 110
+          visible: false
+        - source: creation_date
+          width: 110
+          visible: false
+        - source: quantity
+          width: 100
+        - source: entry_no
+          width: 90
+
+  actions:
+    - name: Navigate
+      caption: Navigate
+      image: Navigate
+      shortcut: Ctrl+Alt+Q
+      promoted: true
+      run_page: 344
+      run_page_params:
+        document_no: document_no
+        posting_date: posting_date

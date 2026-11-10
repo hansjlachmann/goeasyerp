@@ -114,13 +114,27 @@ page:
 
   actions:
 
-    - name: Application Entries
-      caption: Application Entries
+    # Application: the entry's application entries, the entries it closed (Invoicing Entries, page
+    # 63) and its applications as the closing side (Applied Entries, page 523)
+    - name: Application
+      caption: Application
       image: Navigate
       promoted: true
-      run_page: 506
-      run_page_filter_field: item_ledger_entry_no
-      run_page_filter_value: entry_no
+      items:
+        - name: Application Entries
+          caption: Application Entries
+          image: Navigate
+          run_page: 506
+          run_page_filter_field: item_ledger_entry_no
+          run_page_filter_value: entry_no
+        - name: Invoicing Entries
+          caption: Invoicing Entries
+          image: Entries
+          run_object: table:Item_Ledger_Entry.ShowInvoicingEntries
+        - name: Applied Entries
+          caption: Applied Entries
+          image: Entries
+          run_object: table:Item_Ledger_Entry.ShowAppliedEntries
     - name: Navigate
       caption: Navigate
       image: Navigate

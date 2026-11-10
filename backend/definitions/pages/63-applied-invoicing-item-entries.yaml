@@ -1,0 +1,69 @@
+page:
+  id: 63
+  type: List
+  name: Applied Invoicing Item Entries
+  source_table: Item_Ledger_Entry
+  caption: Applied Invoicing Item Entries
+  editable: false
+  # classic form 63 (Item Ledger Entries › Application › Invoicing Entries): the entries an entry
+  # closed (Closed by Entry No.), opened filtered by table:Item_Ledger_Entry.ShowInvoicingEntries
+
+  layout:
+    repeater:
+      fields:
+        - source: posting_date
+          width: 100
+        - source: entry_type
+          width: 130
+        - source: document_no
+          width: 110
+        - source: item_no
+          width: 100
+        - source: variant_code
+          width: 90
+          visible: false
+        - source: description
+          width: 220
+          visible: false
+        - source: external_document_no
+          width: 120
+          visible: false
+        - source: dimension_1_code
+          width: 100
+          visible: false
+        - source: dimension_2_code
+          width: 100
+          visible: false
+        - source: location_code
+          width: 90
+        - source: bin_code
+          width: 90
+          visible: false
+        - source: quantity
+          width: 100
+        - source: invoiced_quantity
+          width: 110
+        - source: closed_by_quantity
+          width: 110
+        - source: drop_shipment
+          width: 90
+          visible: false
+        - source: source_code
+          width: 100
+          visible: false
+        - source: reason_code
+          width: 100
+          visible: false
+        - source: entry_no
+          width: 90
+
+  actions:
+    - name: Navigate
+      caption: Navigate
+      image: Navigate
+      shortcut: Ctrl+Alt+Q
+      promoted: true
+      run_page: 344
+      run_page_params:
+        document_no: document_no
+        posting_date: posting_date

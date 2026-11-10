@@ -194,6 +194,17 @@ page:
               run_page: 5412
               run_page_filter_field: "no"
               run_page_filter_value: "no"
+        # The items against the locations (page 491) or bins (page 5411)
+        - name: Items by
+          caption: Items by
+          image: Rows
+          items:
+            - name: Items by Location
+              caption: Location
+              run_page: 491
+            - name: Items by Bin
+              caption: Bin
+              run_page: 5411
         - name: Comments
           caption: Comments
           image: Document

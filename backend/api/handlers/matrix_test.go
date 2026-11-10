@@ -314,3 +314,71 @@ func TestItemsByBin(t *testing.T) {
 		t.Errorf("cells %v, want I1 [3 4], I2 blank", values)
 	}
 }
+
+// Items by Location (491): a column per location of the Location Filter, a cell the item's
+// quantity on hand at the location
+func TestItemsByLocation(t *testing.T) {
+	if err := pages.GetRegistry().LoadPages(); err != nil {
+		t.Skipf("pages: %v", err)
+	}
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db.SetMaxOpenConns(1)
+	t.Cleanup(func() { _ = db.Close() })
+	if err := tables.CreateCompanyTables(db, "TEST", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	src := ftables.DBSource(db, "TEST", database.DBTypeSQLite)
+	must := func(err error) {
+		t.Helper()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, no := range []string{"I1", "I2"} {
+		item := gtables.NewItem(src)
+		item.No = types.Code(no)
+		must(item.InsertOrError(false))
+	}
+	for _, code := range []string{"MAIN", "OSLO", "WEST"} {
+		location := gtables.NewLocation(src)
+		location.Code = types.Code(code)
+		must(location.InsertOrError(false))
+	}
+	for i, e := range []struct {
+		item, location string
+		qty            int64
+	}{{"I1", "MAIN", 5}, {"I1", "MAIN", -2}, {"I1", "OSLO", 4}, {"I2", "WEST", 7}, {"I2", "", 9}} {
+		entry := gtables.NewItemLedgerEntry(src)
+		entry.Entry_no, entry.Item_no, entry.Location_code = i+1, types.Code(e.item), types.Code(e.location)
+		entry.Quantity = types.NewDecimalFromInt(e.qty)
+		must(entry.InsertOrError(false))
+	}
+
+	app := fiber.New()
+	app.Use(func(c *fiber.Ctx) error {
+		c.Locals("session", &session.Session{Company: "TEST", Language: "en-US"})
+		return c.Next()
+	})
+	app.Post("/api/pages/:id/matrix", NewPageTriggersHandler(db, database.DBTypeSQLite).Matrix)
+	status, out := sendJSON(t, app, "POST", "/api/pages/491/matrix",
+		`{"section": "", "record": {}, "filters": [{"field": "location_filter", "expression": "MAIN|OSLO"}], "view_by": 0}`)
+	if status != 200 {
+		t.Fatalf("items by location: %d %v", status, out)
+	}
+	data := out["data"].(map[string]interface{})
+	columns := data["columns"].([]interface{})
+	if len(columns) != 2 || columns[0].(map[string]interface{})["name"] != "MAIN" || columns[1].(map[string]interface{})["name"] != "OSLO" {
+		t.Fatalf("columns %v", columns)
+	}
+	values := map[string]string{}
+	for _, r := range data["rows"].([]interface{}) {
+		row := r.(map[string]interface{})
+		values[fmt.Sprint(row["key"])] = fmt.Sprint(row["values"])
+	}
+	if values["I1"] != "[3 4]" || values["I2"] != "[ ]" {
+		t.Errorf("cells %v, want I1 [3 4], I2 blank", values)
+	}
+}
