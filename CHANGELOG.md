@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.151](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.150...v0.1.151) (2026-11-10)
+
+
+### Features
+
+* G/L budget amount by period, budget from history, import/export budget ([b194dd5](https://github.com/hansjlachmann/goeasyerp/commit/b194dd56fd0f00a54ce8656d189b56c1cfaa633d))
+
 ## [0.1.150](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.149...v0.1.150) (2026-11-10)
 
 
