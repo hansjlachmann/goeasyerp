@@ -288,6 +288,8 @@ pages:
     caption: "Bank Account Posting Groups"
   check_ledger_entries:
     caption: "Check Ledger Entries"
+  bank_account_balance:
+    caption: "Bank Account Balance"
   bank_account_statistics:
     caption: "Bank Account Statistics"
     fields:  # the calculated fields (OnAfterGetRecord)
@@ -477,6 +479,8 @@ pages:
       appln_balance: "Balance"
 
   # Sales tax
+  general_posting_setup_card:
+    caption: "General Posting Setup Card"
   general_posting_setup:
     caption: "General Posting Setup"
   tax_entries:
@@ -487,6 +491,8 @@ pages:
     caption: "Tax Jurisdictions"
   tax_details:
     caption: "Tax Details"
+  tax_posting_setup_card:
+    caption: "Tax Posting Setup Card"
   tax_posting_setup:
     caption: "Tax Posting Setup"
 

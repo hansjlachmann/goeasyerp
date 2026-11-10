@@ -1,0 +1,79 @@
+page:
+  id: 395
+  type: Card
+  name: General Posting Setup Card
+  source_table: General_Posting_Setup
+  caption: General Posting Setup Card
+  list_page_id: 314
+  editable: true
+  # classic form 395: one combination of business and product posting group with its accounts
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: gen_bus_posting_group
+            editable: true
+          - source: gen_prod_posting_group
+            editable: true
+      - name: Sales
+        caption: Sales
+        fields:
+          - source: sales_account
+            editable: true
+          - source: sales_credit_memo_account
+            editable: true
+          - source: sales_line_disc_account
+            editable: true
+          - source: sales_inv_disc_account
+            editable: true
+          - source: sales_payment_disc_account
+            editable: true
+      - name: Purchases
+        caption: Purchases
+        fields:
+          - source: purch_account
+            editable: true
+          - source: purch_credit_memo_account
+            editable: true
+          - source: purch_line_disc_account
+            editable: true
+          - source: purch_inv_disc_account
+            editable: true
+          - source: purch_payment_disc_account
+            editable: true
+      - name: Inventory
+        caption: Inventory
+        fields:
+          - source: cogs_account
+            editable: true
+          - source: inventory_adjmt_account
+            editable: true
+      - name: Projects
+        caption: Projects
+        fields:
+          - source: project_sales_adjmt_account
+            editable: true
+          - source: project_cost_adjmt_account
+            editable: true
+
+  actions:
+    - name: Back to List
+      caption: Back to List
+      image: Back
+      shortcut: Esc
+      promoted: true
+      run_page: 314
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+
+    - name: Copy
+      caption: Copy
+      image: Copy
+      promoted: true
+      run_object: report:87

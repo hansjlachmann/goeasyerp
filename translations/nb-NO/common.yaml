@@ -8,6 +8,7 @@ common:
 
   # Common actions
   actions:
+    copy: "Kopier"
     discount_overview: "Rabattoversikt"
     receivables_payables: "Fordringer-gjeld"
     currencies: "Valutaer"

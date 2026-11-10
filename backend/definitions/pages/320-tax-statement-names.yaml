@@ -36,3 +36,8 @@ page:
       shortcut: Ctrl+D
       promoted: true
 
+    - name: Print
+      caption: Print
+      image: Print
+      promoted: true
+      run_object: table:Tax_Statement_Name.PrintStatement

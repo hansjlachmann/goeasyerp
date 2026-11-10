@@ -1,0 +1,41 @@
+page:
+  id: 377
+  type: Card
+  name: Bank Account Balance
+  source_table: Bank_Account
+  caption: Bank Account Balance
+  editable: false
+  # classic form 377 with its lines (form 378): one bank account's net change per period, in the
+  # account's currency and in LCY
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: "no"
+            editable: false
+          - source: name
+            editable: false
+          - source: currency_code
+            editable: false
+      - name: Periods
+        caption: Periods
+        period_grid:
+          date_filter: date_filter
+          drilldown_date_field: posting_date
+          view_by: 2
+          filters:
+            - source: dimension_1_filter
+              drilldown_filter_field: dimension_1_code
+            - source: dimension_2_filter
+              drilldown_filter_field: dimension_2_code
+          columns:
+            - source: net_change
+              drilldown: 372
+              drilldown_filter_field: bank_account_no
+              drilldown_filter_value: "no"
+            - source: net_change_lcy
+              drilldown: 372
+              drilldown_filter_field: bank_account_no
+              drilldown_filter_value: "no"

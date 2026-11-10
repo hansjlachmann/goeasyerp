@@ -288,6 +288,8 @@ pages:
     caption: "Bankkontobogføringsgrupper"
   check_ledger_entries:
     caption: "Checkposter"
+  bank_account_balance:
+    caption: "Bankkontosaldo"
   bank_account_statistics:
     caption: "Bankkontostatistik"
     fields:  # the calculated fields (OnAfterGetRecord)
@@ -477,6 +479,8 @@ pages:
       appln_balance: "Saldo"
 
   # Sales tax
+  general_posting_setup_card:
+    caption: "Bogføringsopsætningskort"
   general_posting_setup:
     caption: "Bogføringsopsætning"
   tax_entries:
@@ -487,6 +491,8 @@ pages:
     caption: "Momsjurisdiktioner"
   tax_details:
     caption: "Momsdetaljer"
+  tax_posting_setup_card:
+    caption: "Afgiftsbogføringsopsætningskort"
   tax_posting_setup:
     caption: "Momsbogføringsopsætning"
 

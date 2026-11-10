@@ -8,6 +8,7 @@ common:
 
   # Common actions
   actions:
+    copy: "Copy"
     discount_overview: "Discount Overview"
     receivables_payables: "Receivables-Payables"
     currencies: "Currencies"

@@ -1109,6 +1109,18 @@ reports:
     texts:
       FILE_NAME: "Intrastat %1.txt"
       DONE: "Intrastat-oppgaven med %1 poster ble laget; bunken er rapportert."
+  "87":
+    caption: "Kopier - bokføringsoppsett"
+    options:
+      gen_bus_posting_group: "Bokføringsgruppe - forretning"
+      gen_prod_posting_group: "Bokføringsgruppe - produkt"
+      sales: "Salgskontoer"
+      purch: "Kjøpskontoer"
+      invt: "Lagerkontoer"
+      projects: "Prosjektkontoer"
+    texts:
+      COPY_FROM: "Kopier fra"
+      CONFIRM: "Vil du kopiere bokføringsoppsettet?"
   "88":
     caption: "Mva - VIES-oppgave (fil)"
     options:
@@ -1559,6 +1571,17 @@ reports:
       DONE: "Avslutningspostene er i finanskladden %1 %2. Bokfør dem der."
       CONFIRM_POST_DIRECTLY: "Med en ekstra rapporteringsvaluta bokfører denne kjørselen avslutningspostene direkte i finans. Avslutningspostene overføres ikke til en finanskladd før de bokføres.\n\nVil du fortsette?"
       POSTED: "Avslutningspostene ble bokført i finans."
+  "85":
+    caption: "Kopier - avgiftsbokføringsoppsett"
+    options:
+      tax_bus_posting_group: "Avgiftsbokføringsgruppe - forretning"
+      tax_prod_posting_group: "Avgiftsbokføringsgruppe - produkt"
+      tax_setup: "Avgifts-% osv."
+      sales: "Salgskontoer"
+      purch: "Kjøpskontoer"
+    texts:
+      COPY_FROM: "Kopier fra"
+      CONFIRM: "Vil du kopiere avgiftsbokføringsoppsettet?"
   "86":
     caption: "Juster tilleggsrapporteringsvaluta"
     options:

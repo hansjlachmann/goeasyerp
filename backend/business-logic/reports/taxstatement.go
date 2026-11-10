@@ -53,8 +53,15 @@ func (r *taxStatementReport) Definition() *Definition {
 	}
 }
 
-// The statement of the Tax Statement page it runs from
+// The statement of the Tax Statement page it runs from, or of the Tax Statement Names line it
+// is printed from (Print on page 320)
 func (r *taxStatementReport) onInitReport(run *Run) error {
+	taxStmtName, ok := run.Context().(*gtables.TaxStatementName)
+	if ok {
+		run.SetRequestFilter("TaxStatementName", "statement_template_name", taxStmtName.Statement_template_name.String())
+		run.SetRequestFilter("TaxStatementName", "name", taxStmtName.Name.String())
+		return nil
+	}
 	line, ok := run.Context().(*gtables.TaxStatementLine)
 	if !ok {
 		return nil

@@ -84,3 +84,9 @@ page:
       run_page: 490
       run_page_filter_field: name
       run_page_filter_value: schedule_name
+
+    - name: Print
+      caption: Print
+      image: Print
+      promoted: true
+      run_object: table:Acc_Schedule_Line.PrintSchedule

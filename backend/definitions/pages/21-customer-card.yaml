@@ -191,6 +191,12 @@ page:
           run_page: 23
           run_page_filter_field: code
           run_page_filter_value: invoice_disc_code
+        - name: Cust./Item Discounts
+          caption: Cust./Item Discounts
+          image: Calculate
+          run_page: 24
+          run_page_filter_field: customer_disc_group
+          run_page_filter_value: cust_item_disc_gr
         - name: Quotes
           caption: Quotes
           image: Document

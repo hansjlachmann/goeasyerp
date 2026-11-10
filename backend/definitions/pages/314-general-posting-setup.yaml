@@ -81,3 +81,19 @@ page:
       shortcut: Ctrl+D
       promoted: true
       enabled: true
+
+    - name: Card
+      caption: Card
+      image: Card
+      shortcut: Shift+F5
+      promoted: true
+      run_page: 395
+      run_page_filters:
+        - {field: gen_bus_posting_group, value: gen_bus_posting_group}
+        - {field: gen_prod_posting_group, value: gen_prod_posting_group}
+
+    - name: Copy
+      caption: Copy
+      image: Copy
+      promoted: true
+      run_object: report:87

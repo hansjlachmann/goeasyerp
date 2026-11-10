@@ -1109,6 +1109,18 @@ reports:
     texts:
       FILE_NAME: "Intrastat %1.txt"
       DONE: "Intrastat-angivelsen med %1 poster blev lavet; kladden er indberettet."
+  "87":
+    caption: "Kopiér - bogføringsopsætning"
+    options:
+      gen_bus_posting_group: "Virksomhedsbogføringsgruppe"
+      gen_prod_posting_group: "Produktbogføringsgruppe"
+      sales: "Salgskonti"
+      purch: "Købskonti"
+      invt: "Lagerkonti"
+      projects: "Projektkonti"
+    texts:
+      COPY_FROM: "Kopiér fra"
+      CONFIRM: "Vil du kopiere bogføringsopsætningen?"
   "88":
     caption: "Moms - VIES-angivelse (fil)"
     options:
@@ -1559,6 +1571,17 @@ reports:
       DONE: "Lukkeposterne er i finanskladden %1 %2. Bogfør dem der."
       CONFIRM_POST_DIRECTLY: "Med en ekstra rapporteringsvaluta bogfører denne kørsel lukkeposterne direkte i finans. Lukkeposterne overføres ikke til en finanskladde, før de bogføres.\n\nVil du fortsætte?"
       POSTED: "Lukkeposterne blev bogført i finans."
+  "85":
+    caption: "Kopiér - afgiftsbogføringsopsætning"
+    options:
+      tax_bus_posting_group: "Afgiftsvirksomhedsbogføringsgruppe"
+      tax_prod_posting_group: "Afgiftsproduktbogføringsgruppe"
+      tax_setup: "Afgifts-% osv."
+      sales: "Salgskonti"
+      purch: "Købskonti"
+    texts:
+      COPY_FROM: "Kopiér fra"
+      CONFIRM: "Vil du kopiere afgiftsbogføringsopsætningen?"
   "86":
     caption: "Reguler ekstra rapporteringsvaluta"
     options:

@@ -1109,6 +1109,18 @@ reports:
     texts:
       FILE_NAME: "Intrastat %1.txt"
       DONE: "The Intrastat declaration with %1 records was made; the batch is reported."
+  "87":
+    caption: "Copy - General Posting Setup"
+    options:
+      gen_bus_posting_group: "Gen. Bus. Posting Group"
+      gen_prod_posting_group: "Gen. Prod. Posting Group"
+      sales: "Sales Accounts"
+      purch: "Purchase Accounts"
+      invt: "Inventory Accounts"
+      projects: "Project Accounts"
+    texts:
+      COPY_FROM: "Copy from"
+      CONFIRM: "Copy General Posting Setup?"
   "88":
     caption: "VAT- VIES Declaration Disk"
     options:
@@ -1559,6 +1571,17 @@ reports:
       DONE: "The closing entries are in the general journal %1 %2. Post them there."
       CONFIRM_POST_DIRECTLY: "With the use of an additional reporting currency, this batch job will post closing entries directly to the general ledger. These closing entries will not be transferred to a general journal before the program posts them to the general ledger.\n\nDo you wish to continue?"
       POSTED: "The closing entries were posted to the general ledger."
+  "85":
+    caption: "Copy - Tax Posting Setup"
+    options:
+      tax_bus_posting_group: "Tax Bus. Posting Group"
+      tax_prod_posting_group: "Tax Prod. Posting Group"
+      tax_setup: "Tax % etc."
+      sales: "Sales Accounts"
+      purch: "Purchase Accounts"
+    texts:
+      COPY_FROM: "Copy from"
+      CONFIRM: "Copy Tax Posting Setup?"
   "86":
     caption: "Adjust Add. Reporting Currency"
     options:
