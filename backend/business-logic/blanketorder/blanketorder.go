@@ -19,13 +19,16 @@ import (
 // (GetSalesOrderHeader). Each blanket line's Qty. to Ship (Base) plus what orders not yet posted
 // take from it cannot be more than its outstanding quantity; the blanket line's reservations go
 // with the quantity to the order line; with a dialog an order line that takes more of an item than
-// is available asks first (codeunit 311). Not migrated: the credit limit check (codeunit 312).
+// is available asks first (codeunit 311); the order's amount — the blanket item lines' Amount
+// Including Tax at their Qty. to Ship — is checked against the customer's credit limit first
+// (codeunit 312 SalesHeaderCheck: with a dialog it asks, in an API request a note).
 func SalesToOrder(rec *gtables.SalesHeader) (*gtables.SalesHeader, error) {
 	return SalesToOrderHideValidationDialog(rec, false)
 }
 
 // SalesToOrderHideValidationDialog (SetHideValidationDialog + OnRun): hideValidationDialog
-// leaves out the availability question (code that makes orders without asking: demo data)
+// leaves out the availability question and the credit limit check (code that makes orders without
+// asking: demo data)
 func SalesToOrderHideValidationDialog(rec *gtables.SalesHeader, hideValidationDialog bool) (*gtables.SalesHeader, error) {
 	err := rec.TestField("document_type", gtables.SalesHeader_Document_type.BlanketOrder)
 	if err != nil {
@@ -34,9 +37,37 @@ func SalesToOrderHideValidationDialog(rec *gtables.SalesHeader, hideValidationDi
 	salesSetup := gtables.GetSalesReceivablesSetup(rec)
 	blanketType := gtables.SalesLineDocument_type(rec.Document_type)
 
+	// the order's amount: the blanket item lines at their quantity to ship
+	amountIncludingTax := types.Decimal{}
+	salesBlanketOrderLine := gtables.NewSalesLine(rec)
+	salesBlanketOrderLine.SetRange("document_type", blanketType)
+	salesBlanketOrderLine.SetRange("document_no", rec.No)
+	salesBlanketOrderLine.SetRange("type", gtables.SalesLine_Type.Item)
+	salesBlanketOrderLine.SetFilter("no", "<>''")
+	for found := salesBlanketOrderLine.FindSetBuffered(); found; found = salesBlanketOrderLine.Next() {
+		if salesBlanketOrderLine.Qty_to_ship.IsPositive() {
+			salesLine := gtables.NewSalesLine(rec)
+			salesLine.TransferFields(salesBlanketOrderLine)
+			resetSalesQuantityFields(salesLine)
+			salesLine.Line_no = 0
+			err = salesLine.Validate("quantity", salesBlanketOrderLine.Qty_to_ship)
+			if err != nil {
+				return nil, err
+			}
+			amountIncludingTax = amountIncludingTax.Add(salesLine.Amount_including_tax)
+		}
+	}
+
 	salesOrderHeader := gtables.NewSalesHeader(rec)
 	salesOrderHeader.TransferFields(rec)
 	salesOrderHeader.Document_type = gtables.SalesHeader_Document_type.Order
+	if !hideValidationDialog {
+		salesOrderHeader.Amount_including_tax = amountIncludingTax
+		err = tables.CustCheckCrLimitSalesHeader(salesOrderHeader)
+		if err != nil {
+			return nil, err
+		}
+	}
 	salesOrderHeader.No_printed = 0
 	salesOrderHeader.No = ""
 	salesOrderLine := gtables.NewSalesLine(rec)
@@ -54,7 +85,7 @@ func SalesToOrderHideValidationDialog(rec *gtables.SalesHeader, hideValidationDi
 		return nil, err
 	}
 
-	salesBlanketOrderLine := gtables.NewSalesLine(rec)
+	salesBlanketOrderLine = gtables.NewSalesLine(rec)
 	salesBlanketOrderLine.SetRange("document_type", blanketType)
 	salesBlanketOrderLine.SetRange("document_no", rec.No)
 	linesCreated := false

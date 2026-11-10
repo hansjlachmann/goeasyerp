@@ -38,6 +38,30 @@ page:
               drilldown: 38
               drilldown_filter_field: item_no
               drilldown_filter_value: "no"
+            - source: qty_on_purch_order
+              drilldown: 518
+              drilldown_filter_field: "no"
+              drilldown_filter_value: "no"
+              drilldown_date_field: expected_receipt_date
+              drilldown_filters:
+                - {field: document_type, const: "1"}
+                - {field: type, const: "2"}
+            - source: qty_on_sales_order
+              drilldown: 516
+              drilldown_filter_field: "no"
+              drilldown_filter_value: "no"
+              drilldown_date_field: shipment_date
+              drilldown_filters:
+                - {field: document_type, const: "1"}
+                - {field: type, const: "2"}
+            - source: expected_inventory
+              calculated: true
+              type: types.Decimal
+              decimal_places: "0:5"
+            - source: available_inventory
+              calculated: true
+              type: types.Decimal
+              decimal_places: "0:5"
 
   actions:
     # The item's availability by the other views (classic Item › Item Availability by)

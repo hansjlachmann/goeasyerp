@@ -931,14 +931,20 @@ pages:
     caption: "Varedisponering pr. periode"
     fields:
       net_change: "Lager"
+      expected_inventory: "Forventet lager"
+      available_inventory: "Disponibel lagerbeholdning"
   item_availability_by_location:
     caption: "Varedisponering pr. lokation"
     fields:
       net_change: "Lager"
+      expected_inventory: "Forventet lager"
+      available_inventory: "Disponibel lagerbeholdning"
   item_availability_by_variant:
     caption: "Varedisponering pr. variant"
     fields:
       net_change: "Lager"
+      expected_inventory: "Forventet lager"
+      available_inventory: "Disponibel lagerbeholdning"
   item_turnover:
     caption: "Vareomsætning"
   resource_availability:
@@ -1169,6 +1175,10 @@ pages:
     caption: "Placeringer"
   item_availability_by_bin:
     caption: "Varedisponering pr. placering"
+    fields:
+      net_change: "Lager"
+      expected_inventory: "Forventet lager"
+      available_inventory: "Disponibel lagerbeholdning"
   items_by_bin:
     caption: "Varer pr. placering"
 

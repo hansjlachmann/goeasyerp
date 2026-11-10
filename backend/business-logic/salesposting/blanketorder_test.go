@@ -2,9 +2,11 @@ package salesposting_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/blanketorder"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
@@ -73,5 +75,45 @@ func TestBlanketSalesOrder(t *testing.T) {
 	_, err = blanketorder.SalesToOrder(blanket)
 	if !errors.As(err, &appErr) || appErr.Code != apperrors.ErrBlanketOrderNoLines {
 		t.Errorf("Make Order with nothing to ship: %v", err)
+	}
+}
+
+// Make Order checks the order against the customer's credit limit (codeunit 312) before making
+// it: the blanket item lines at their Qty. to Ship; without a dialog the warning is a note and
+// the order is made, hiding the validation dialog leaves the check out
+func TestBlanketSalesOrderCreditLimit(t *testing.T) {
+	src := demoCompany(t)
+	salesSetup := gtables.GetSalesReceivablesSetup(src)
+	salesSetup.Credit_warnings = gtables.SalesReceivablesSetup_Credit_warnings.CreditLimit
+	must(t, salesSetup.ModifyOrError(false))
+	cust := gtables.NewCustomer(src)
+	must(t, cust.GetOrError(types.Code("C00010")))
+	cust.Credit_limit_lcy = types.NewDecimalFromInt(1)
+	must(t, cust.ModifyOrError(false))
+
+	blanket := newDocument(t, src, gtables.SalesHeader_Document_type.BlanketOrder, "C00010")
+	addLine(t, blanket, 10000, gtables.SalesLine_Type.Item, "1000", "10")
+	line := getLine(t, blanket, 10000)
+	must(t, line.Validate("qty_to_ship", dec("4")))
+	must(t, line.ModifyOrError(true))
+
+	fcodeunits.StartNotes()
+	order, err := blanketorder.SalesToOrder(blanket)
+	notes := fcodeunits.TakeNotes()
+	must(t, err)
+	if len(notes) != 1 || !strings.Contains(notes[0], "credit limit has been exceeded") || !strings.Contains(notes[0], "C00010") {
+		t.Errorf("credit limit warning of Make Order: %v", notes)
+	}
+	wantDec(t, "order line quantity", getLine(t, order, 10000).Quantity, dec("4"))
+
+	line = getLine(t, blanket, 10000)
+	must(t, line.Validate("qty_to_ship", dec("2")))
+	must(t, line.ModifyOrError(true))
+	fcodeunits.StartNotes()
+	_, err = blanketorder.SalesToOrderHideValidationDialog(blanket, true)
+	notes = fcodeunits.TakeNotes()
+	must(t, err)
+	if len(notes) != 0 {
+		t.Errorf("Make Order with the validation dialog hidden warned: %v", notes)
 	}
 }

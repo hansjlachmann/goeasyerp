@@ -931,14 +931,20 @@ pages:
     caption: "Item Availability by Periods"
     fields:
       net_change: "Inventory"
+      expected_inventory: "Expected Inventory"
+      available_inventory: "Available Inventory"
   item_availability_by_location:
     caption: "Item Availability by Location"
     fields:
       net_change: "Inventory"
+      expected_inventory: "Expected Inventory"
+      available_inventory: "Available Inventory"
   item_availability_by_variant:
     caption: "Item Availability by Variant"
     fields:
       net_change: "Inventory"
+      expected_inventory: "Expected Inventory"
+      available_inventory: "Available Inventory"
   item_turnover:
     caption: "Item Turnover"
   resource_availability:
@@ -1169,6 +1175,10 @@ pages:
     caption: "Bins"
   item_availability_by_bin:
     caption: "Item Availability by Bin"
+    fields:
+      net_change: "Inventory"
+      expected_inventory: "Expected Inventory"
+      available_inventory: "Available Inventory"
   items_by_bin:
     caption: "Items by Bin"
 

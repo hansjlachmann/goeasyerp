@@ -931,14 +931,20 @@ pages:
     caption: "Varetilgjengelighet per periode"
     fields:
       net_change: "Lager"
+      expected_inventory: "Forventet lager"
+      available_inventory: "Disponibelt lager"
   item_availability_by_location:
     caption: "Varetilgjengelighet per lokasjon"
     fields:
       net_change: "Lager"
+      expected_inventory: "Forventet lager"
+      available_inventory: "Disponibelt lager"
   item_availability_by_variant:
     caption: "Varetilgjengelighet per variant"
     fields:
       net_change: "Lager"
+      expected_inventory: "Forventet lager"
+      available_inventory: "Disponibelt lager"
   item_turnover:
     caption: "Vareomsetning"
   resource_availability:
@@ -1169,6 +1175,10 @@ pages:
     caption: "Hyller"
   item_availability_by_bin:
     caption: "Varetilgjengelighet per hylle"
+    fields:
+      net_change: "Lager"
+      expected_inventory: "Forventet lager"
+      available_inventory: "Disponibelt lager"
   items_by_bin:
     caption: "Varer per hylle"
 
