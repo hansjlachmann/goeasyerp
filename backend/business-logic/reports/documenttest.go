@@ -17,7 +17,8 @@ import (
 //     customers, the posting and document dates, Ship/Invoice and whether there is anything to
 //     post, the due date, the shipping and posting no. series, the external document no. — and
 //     its lines with theirs: type and no., quantities to ship and invoice, the shipment lines an
-//     invoice takes, the posting setups, the account, item or resource (blocked, direct posting,
+//     invoice takes, the posting setups and the G/L accounts' Dimension 1/2 Posting rules (also the
+//     header's receivables/payables account), the account, item or resource (blocked, direct posting,
 //     specific costing, Reserve Always, serial nos.) — with the totals and the tax per rate;
 //   - 402 Purchase Document - Test: the same for purchases (receive instead of ship, the
 //     vendor's invoice or credit memo no. — mandatory and not used before —, fixed assets).
@@ -132,6 +133,25 @@ func (t *documentTest) checkPostingDate(run *Run, postingDate types.Date, captio
 	}
 	if postingDate.Before(t.allowPostingFrom) || t.allowPostingTo.Before(postingDate) {
 		t.headerErrors = append(t.headerErrors, run.Text("DATE_NOT_ALLOWED", caption))
+	}
+}
+
+// checkDimPosting: the Dimension 1 and 2 Posting rules of the G/L account the posting gives the
+// codes — a header's receivables/payables account, a line's sales/purchase account or its own
+// G/L account (codeunit 12 refuses what breaks them)
+func (t *documentTest) checkDimPosting(run *Run, errs *[]string, glAccNo, dimension1Code, dimension2Code types.Code, caption func(string) string) {
+	if glAccNo != "" {
+		glAcc := gtables.NewGLAccount(run)
+		if glAcc.Get(glAccNo) {
+			text := dimensionPostingError(run, glAcc, int(glAcc.Dimension_1_posting), glAcc.Dimension_1_code, dimension1Code, caption("dimension_1_code"))
+			if text != "" {
+				*errs = append(*errs, text)
+			}
+			text = dimensionPostingError(run, glAcc, int(glAcc.Dimension_2_posting), glAcc.Dimension_2_code, dimension2Code, caption("dimension_2_code"))
+			if text != "" {
+				*errs = append(*errs, text)
+			}
+		}
 	}
 }
 
@@ -334,6 +354,12 @@ func (r *salesDocumentTest) headerOnAfterGetRecord(salesHeader *gtables.SalesHea
 	if salesHeader.Document_type == gtables.SalesHeader_Document_type.Order && salesSetup.Ext_doc_no_mandatory && salesHeader.External_document_no == "" {
 		r.headerErrors = append(r.headerErrors, run.Text("MUST_BE_SPECIFIED", caption("external_document_no")))
 	}
+	if r.invoice {
+		custPostingGr := gtables.NewCustomerPostingGroup(run)
+		if custPostingGr.Get(salesHeader.Customer_posting_group) {
+			r.checkDimPosting(run, &r.headerErrors, custPostingGr.Receivables_account, salesHeader.Dimension_1_code, salesHeader.Dimension_2_code, caption)
+		}
+	}
 	return nil
 }
 
@@ -416,6 +442,14 @@ func (r *salesDocumentTest) lineOnAfterGetRecord(salesLine *gtables.SalesLine, r
 		if !genPostingSetup.Get(map[string]interface{}{"gen_bus_posting_group": salesLine.Gen_bus_posting_group, "gen_prod_posting_group": salesLine.Gen_prod_posting_group}) {
 			r.lineErrors = append(r.lineErrors, run.Text("SETUP_NOT_EXIST", genPostingSetup.TableCaption(r.language), salesLine.Gen_bus_posting_group, salesLine.Gen_prod_posting_group))
 		}
+		glAccNo := salesLine.No
+		if salesLine.Type != gtables.SalesLine_Type.GLAccount {
+			glAccNo = genPostingSetup.Sales_account
+			if salesHeader.Document_type == gtables.SalesHeader_Document_type.CreditMemo {
+				glAccNo = genPostingSetup.Sales_credit_memo_account
+			}
+		}
+		r.checkDimPosting(run, &r.lineErrors, glAccNo, salesLine.Dimension_1_code, salesLine.Dimension_2_code, caption)
 	}
 
 	switch salesLine.Type {
@@ -786,6 +820,12 @@ func (r *purchDocumentTest) headerOnAfterGetRecord(purchHeader *gtables.Purchase
 				optionCaption(gtables.PurchaseHeaderTableName, "document_type", purchHeader.Document_type.String(), r.language), purchHeader.Vendor_invoice_no))
 		}
 	}
+	if r.invoice {
+		vendPostingGr := gtables.NewVendorPostingGroup(run)
+		if vendPostingGr.Get(purchHeader.Vendor_posting_group) {
+			r.checkDimPosting(run, &r.headerErrors, vendPostingGr.Payables_account, purchHeader.Dimension_1_code, purchHeader.Dimension_2_code, caption)
+		}
+	}
 	return nil
 }
 
@@ -857,6 +897,16 @@ func (r *purchDocumentTest) lineOnAfterGetRecord(purchLine *gtables.PurchaseLine
 		genPostingSetup := gtables.NewGeneralPostingSetup(run)
 		if !genPostingSetup.Get(map[string]interface{}{"gen_bus_posting_group": purchLine.Gen_bus_posting_group, "gen_prod_posting_group": purchLine.Gen_prod_posting_group}) {
 			r.lineErrors = append(r.lineErrors, run.Text("SETUP_NOT_EXIST", genPostingSetup.TableCaption(r.language), purchLine.Gen_bus_posting_group, purchLine.Gen_prod_posting_group))
+		}
+		switch purchLine.Type {
+		case gtables.PurchaseLine_Type.GLAccount:
+			r.checkDimPosting(run, &r.lineErrors, purchLine.No, purchLine.Dimension_1_code, purchLine.Dimension_2_code, caption)
+		case gtables.PurchaseLine_Type.Item:
+			glAccNo := genPostingSetup.Purch_account
+			if purchHeader.Document_type == gtables.PurchaseHeader_Document_type.CreditMemo {
+				glAccNo = genPostingSetup.Purch_credit_memo_account
+			}
+			r.checkDimPosting(run, &r.lineErrors, glAccNo, purchLine.Dimension_1_code, purchLine.Dimension_2_code, caption)
 		}
 	}
 

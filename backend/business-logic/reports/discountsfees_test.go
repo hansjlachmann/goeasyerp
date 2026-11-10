@@ -111,3 +111,42 @@ func TestCustItemDiscountOverview(t *testing.T) {
 		t.Errorf("WHOLESALE × PAPER: columns %v, values %v", columns, values["WHOLESALE"])
 	}
 }
+
+// Page 522: the overview turned around — the item discount groups as rows, the customer discount
+// groups as columns; a cell is the same Cust./Item Discount
+func TestItemCustDiscountOverview(t *testing.T) {
+	src := listCompany(t)
+	itemGroup := gtables.NewItemDiscountGroup(src)
+	mustOK(t, itemGroup.GetOrError(types.Code("FOOD")))
+	disc := func() (types.Decimal, bool) {
+		custItemDisc := gtables.NewCustItemDiscount(src)
+		ok := custItemDisc.Get(map[string]interface{}{"customer_disc_group": "WHOLESALE", "item_discount_group": "FOOD"})
+		return custItemDisc.Discount_percent, ok
+	}
+	column := map[string]string{"customer_disc_group": "WHOLESALE"}
+	mustOK(t, pages.RunMatrixValidate(522, itemGroup, column, types.NewDecimalFromInt(3)))
+	if v, ok := disc(); !ok || !v.Equal(types.NewDecimalFromInt(3)) {
+		t.Errorf("after 3: %s %v", v, ok)
+	}
+	mustOK(t, pages.RunMatrixValidate(522, itemGroup, column, types.NewDecimalFromInt(6)))
+	if v, _ := disc(); !v.Equal(types.NewDecimalFromInt(6)) {
+		t.Errorf("after 6: %s", v)
+	}
+	mustOK(t, pages.RunMatrixValidate(522, itemGroup, column, types.Decimal{}))
+	if _, ok := disc(); ok {
+		t.Error("discount not deleted by 0")
+	}
+
+	all := gtables.NewItemDiscountGroup(src)
+	columns, values, err := pages.RunMatrixCalculate(522, all, all)
+	mustOK(t, err)
+	wholesale := -1
+	for i, c := range columns {
+		if c.Name == "WHOLESALE" {
+			wholesale = i
+		}
+	}
+	if wholesale < 0 || values["PAPER"][wholesale] != "10" {
+		t.Errorf("PAPER × WHOLESALE: columns %v, values %v", columns, values["PAPER"])
+	}
+}

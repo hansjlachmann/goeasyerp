@@ -523,6 +523,8 @@ pages:
     caption: "Valutaer for rentebetingelser"
   currencies_for_reminder_level:
     caption: "Valutaer for rykkerniveau"
+  item_cust_discount_overview:
+    caption: "Vare-/debitorrabatoversigt"
   cust_item_discount_overview:
     caption: "Debitor-/varerabatoversigt"
   sales_qty_discounts:

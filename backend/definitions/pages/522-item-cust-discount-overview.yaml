@@ -1,0 +1,25 @@
+page:
+  id: 522
+  type: List
+  name: Item/Cust. Discount Overview
+  source_table: Item_Discount_Group
+  caption: Item/Cust. Discount Overview
+  # classic form 522: the item discount groups against the customer discount groups — page 514
+  # turned around; a cell is the Cust./Item Discount's Discount %, a value typed into a cell
+  # changes, inserts or (0) deletes it
+
+  layout:
+    matrix:
+      table: Item_Discount_Group
+      calculated: true
+      no_periods: true   # the columns are the customer discount groups
+      date_filter: ""
+      editable: true
+      entry_table: Cust_Item_Discount
+      drilldown: 32
+      drilldown_row_field: item_discount_group
+      fields:
+        - source: code
+          width: 110
+        - source: description
+          width: 240

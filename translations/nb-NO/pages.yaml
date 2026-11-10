@@ -523,6 +523,8 @@ pages:
     caption: "Valutaer for rentebetingelser"
   currencies_for_reminder_level:
     caption: "Valutaer for purrenivå"
+  item_cust_discount_overview:
+    caption: "Vare-/kunderabattoversikt"
   cust_item_discount_overview:
     caption: "Kunde-/varerabattoversikt"
   sales_qty_discounts:

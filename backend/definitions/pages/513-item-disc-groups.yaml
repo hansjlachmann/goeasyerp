@@ -41,3 +41,9 @@ page:
       run_page: 32
       run_page_filter_field: item_discount_group
       run_page_filter_value: code
+
+    - name: Discount Overview
+      caption: Discount Overview
+      image: Statistics
+      promoted: true
+      run_page: 522

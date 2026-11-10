@@ -680,21 +680,31 @@ func (r *genJnlTest) checkGLAcc(run *Run, line *gtables.GenJournalLine) string {
 // checkDimensionPosting: the G/L account's rule for a dimension — Code Mandatory, Same Code, No
 // Code (the classic Department/Project Posting)
 func (r *genJnlTest) checkDimensionPosting(run *Run, glAcc *gtables.GLAccount, posting int, glAccCode, lineCode types.Code, fieldCaption string) {
+	text := dimensionPostingError(run, glAcc, posting, glAccCode, lineCode, fieldCaption)
+	if text != "" {
+		r.addError(text)
+	}
+}
+
+// dimensionPostingError: the error a posting of lineCode to the G/L account would give by its
+// rule for a dimension (codeunit 12's checkPostingCode), "" when it is allowed
+func dimensionPostingError(run *Run, glAcc *gtables.GLAccount, posting int, glAccCode, lineCode types.Code, fieldCaption string) string {
 	language := fcodeunits.CurrentLanguage()
 	switch posting {
 	case int(gtables.GLAccount_Dimension_1_posting.CodeMandatory):
 		if lineCode == "" {
-			r.addError(run.Text("MANDATORY_WHEN_POSTING", fieldCaption, glAcc.TableCaption(language), glAcc.No))
+			return run.Text("MANDATORY_WHEN_POSTING", fieldCaption, glAcc.TableCaption(language), glAcc.No)
 		}
 	case int(gtables.GLAccount_Dimension_1_posting.SameCode):
 		if lineCode != glAccCode {
-			r.addError(run.Text("MUST_BE_WHEN_POSTING", fieldCaption, glAccCode, glAcc.TableCaption(language), glAcc.No))
+			return run.Text("MUST_BE_WHEN_POSTING", fieldCaption, glAccCode, glAcc.TableCaption(language), glAcc.No)
 		}
 	case int(gtables.GLAccount_Dimension_1_posting.NoCode):
 		if lineCode != "" {
-			r.addError(run.Text("MUST_BE_BLANK_WHEN_POSTING", fieldCaption, glAcc.TableCaption(language), glAcc.No))
+			return run.Text("MUST_BE_BLANK_WHEN_POSTING", fieldCaption, glAcc.TableCaption(language), glAcc.No)
 		}
 	}
+	return ""
 }
 
 // checkCurrency: a currency code the Currency table has

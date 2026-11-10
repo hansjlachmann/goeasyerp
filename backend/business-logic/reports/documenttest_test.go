@@ -63,6 +63,55 @@ func TestDocumentTestReports(t *testing.T) {
 	if !strings.Contains(texts, purchHeader.No.String()) {
 		t.Errorf("purchase invoice %s:\n%s", purchHeader.No, texts)
 	}
+
+	// the G/L accounts' Dimension 1/2 Posting rules: the receivables/payables account a header
+	// posts to, the sales/purchase account a line posts to
+	dimensionRule := func(glAccNo types.Code, rule1, rule2 int) {
+		glAcc := gtables.NewGLAccount(src)
+		mustOK(t, glAcc.GetOrError(glAccNo))
+		glAcc.Dimension_1_posting = gtables.GLAccountDimension_1_posting(rule1)
+		glAcc.Dimension_2_posting = gtables.GLAccountDimension_2_posting(rule2)
+		mustOK(t, glAcc.ModifyOrError(false))
+	}
+	codeMandatory := int(gtables.GLAccount_Dimension_1_posting.CodeMandatory)
+	noCode := int(gtables.GLAccount_Dimension_1_posting.NoCode)
+	salesLine.Delete(false)
+	mustOK(t, salesHeader.GetOrError(map[string]interface{}{"document_type": salesHeader.Document_type, "no": salesHeader.No}))
+	custPostingGr := gtables.NewCustomerPostingGroup(src)
+	mustOK(t, custPostingGr.GetOrError(salesHeader.Customer_posting_group))
+	salesHeader.Dimension_1_code = ""
+	mustOK(t, salesHeader.ModifyOrError(false))
+	dimensionRule(custPostingGr.Receivables_account, codeMandatory, 0)
+	result, err = reports.Execute(reports.SalesDocumentTestID, src.GetDB(), src.GetCompany(), src.GetDBType(), reports.RunOptions{
+		Output: reports.OutputPDF, Context: salesHeader,
+		Options: map[string]string{"ship": "true", "invoice": "true"},
+	})
+	mustOK(t, err)
+	texts = printedTexts(result, 0)
+	if !strings.Contains(texts, "is mandatory when posting to") || !strings.Contains(texts, custPostingGr.Receivables_account.String()) {
+		t.Errorf("order to a receivables account with Code Mandatory:\n%s", texts)
+	}
+
+	purchLine := gtables.NewPurchaseLine(src)
+	purchLine.SetRange("document_type", purchHeader.Document_type)
+	purchLine.SetRange("document_no", purchHeader.No)
+	purchLine.SetRange("type", gtables.PurchaseLine_Type.Item)
+	if !purchLine.FindFirst() {
+		t.Fatal("no item line on the purchase invoice")
+	}
+	genPostingSetup := gtables.NewGeneralPostingSetup(src)
+	mustOK(t, genPostingSetup.GetOrError(map[string]interface{}{"gen_bus_posting_group": purchLine.Gen_bus_posting_group, "gen_prod_posting_group": purchLine.Gen_prod_posting_group}))
+	purchLine.Dimension_2_code = "X"
+	mustOK(t, purchLine.ModifyOrError(false))
+	dimensionRule(genPostingSetup.Purch_account, 0, noCode)
+	result, err = reports.Execute(reports.PurchDocumentTestID, src.GetDB(), src.GetCompany(), src.GetDBType(), reports.RunOptions{
+		Output: reports.OutputPDF, Context: purchHeader,
+	})
+	mustOK(t, err)
+	texts = printedTexts(result, 0)
+	if !strings.Contains(texts, "must be blank when posting to") || !strings.Contains(texts, genPostingSetup.Purch_account.String()) {
+		t.Errorf("invoice line to a purchase account with No Code:\n%s", texts)
+	}
 }
 
 // Batch Post Sales Invoices / Purch. Invoices post every open invoice, each in its own

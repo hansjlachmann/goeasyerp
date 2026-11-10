@@ -523,6 +523,8 @@ pages:
     caption: "Currencies for Fin. Chrg Terms"
   currencies_for_reminder_level:
     caption: "Currencies for Reminder Level"
+  item_cust_discount_overview:
+    caption: "Item/Cust. Discount Overview"
   cust_item_discount_overview:
     caption: "Cust./Item Discount Overview"
   sales_qty_discounts:
