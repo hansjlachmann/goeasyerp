@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.149](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.148...v0.1.149) (2026-11-10)
+
+
+### Features
+
+* purchase quantity discounts, fees per currency, financial void of checks, receivables-payables and discount overview ([c46779d](https://github.com/hansjlachmann/goeasyerp/commit/c46779dc4e2f627040707fa8d972526978eb14b3))
+
 ## [0.1.148](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.147...v0.1.148) (2026-11-09)
 
 
