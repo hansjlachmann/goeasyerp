@@ -884,6 +884,24 @@ reports:
       ADJ_GEN_SETUP: "Adj. of gen. posting setup %1,%2"
       COGS_GEN_SETUP: "COGS of gen. posting setup %1,%2"
       POSTED: "The inventory cost was posted to the G/L: COGS %1, inventory adjustments %2."
+      TITLE: "Post Inventory Cost to G/L"
+      POSTED_PER: "Posted %1"
+      PAGE: "Page"
+      POSTING_DATE: "Posting Date"
+      DOCUMENT_NO: "Document No."
+      ENTRY_NO: "Entry No."
+      ENTRY_TYPE: "Entry Type"
+      SOURCE_NO: "Source No."
+      INVENTORY_POSTING_GROUP: "Inventory Posting Group"
+      COGS: "COGS"
+      ADJUSTMENT: "Adjustment"
+      INVENTORY: "Inventory"
+      ITEM_NOT_EXISTS: "The item no. no longer exists."
+      INVENTORY_COST_POSTED: "Inventory Cost Posted to G/L"
+      TOTAL: "Total"
+      DIMENSION_1_CODE: "Dimension 1 Code"
+      DIMENSION_2_CODE: "Dimension 2 Code"
+      GENERAL_POSTING_SETUP: "General Posting Setup"
   "188":
     caption: "Create Reminders"
     options:
@@ -1082,6 +1100,28 @@ reports:
       cost_regulation_percent: "Cost Regulation %"
     texts:
       LINES_CREATED: "%1 lines were created."
+  "501":
+    caption: "Intrastat - Form"
+    texts:
+      TYPE_ONE: "must be either Receipt or Shipment"
+      AMOUNTS_IN: "All amounts are in %1"
+      TITLE: "Intrastat - Form"
+      PAGE: "Page"
+      STATISTICS_PERIOD: "Statistics Period: %1"
+      VAT_REG_NO: "VAT Reg. No."
+      TARIFF_NO: "Tariff No."
+      ITEM_DESCRIPTION: "Item Description"
+      COUNTRY_CODE: "Country Code"
+      NAME: "Name"
+      TRANSACTION_TYPE: "Transaction Type"
+      TRANSPORT_METHOD: "Transport Method"
+      TOTAL_WEIGHT: "Total Weight"
+      QUANTITY: "Quantity"
+      STATISTICAL_VALUE: "Statistical Value"
+      TOTAL: "Total"
+      NO_OF_ENTRIES: "No. of Entries"
+      RECEIPT: "Receipt"
+      SHIPMENT: "Shipment"
   "502":
     caption: "Intrastat - Checklist"
     texts:
@@ -1121,6 +1161,49 @@ reports:
     texts:
       COPY_FROM: "Copy from"
       CONFIRM: "Copy General Posting Setup?"
+  "19":
+    caption: "VAT- VIES Declaration Tax Auth"
+    options:
+      show_amounts_in_add_currency: "Show Amounts in Add. Reporting Currency"
+    texts:
+      AMOUNTS_IN: "All amounts are in %1"
+      CUSTOMS: "CUSTOMS"
+      TAX: "TAX"
+      TITLE: "VIES DECLARATION"
+      PAGE: "Page"
+      NAME_AND_ADDRESS: "Name and Address:"
+      PERIOD: "Period"
+      SELLERS_VAT_REG_NO: "Seller's VAT Registration No."
+      TOTAL_SALES: "Total Sales to EU in the Period (in thousands)"
+      CUSTOMERS_COUNTRY_CODE: "Customer's Country Code"
+      CUSTOMERS_VAT_REG_NO: "Customer's VAT Registration No."
+      SALES_TO_CUSTOMER: "Sales to Customer"
+      CODE: "Code"
+      CODE_0: "0"
+      EU_3_PARTY_TRADE_AMOUNT: "EU 3-Party Trade Amount"
+      WARNING: "Warning!"
+      NOT_FILLED_IN: "%1 is not filled in for all Tax entries where %2 = %3"
+      SALE: "Sale"
+      DATE: "Date"
+      SIGNATURE: "Signature"
+  "35":
+    caption: "Document Entries"
+    options:
+      document_no: "Document No."
+      posting_date: "Posting Date"
+      show_entries: "Show Entries"
+    texts:
+      TITLE: "Document Entries"
+      PAGE: "Page"
+      DOCUMENT_NO: "Document No."
+      POSTING_DATE: "Posting Date"
+      TABLE_ID: "Table ID"
+      TABLE_NAME: "Table Name"
+      NO_OF_RECORDS: "No. of Records"
+      ENTRY_NO: "Entry No."
+      ACCOUNT: "Account"
+      DESCRIPTION: "Description"
+      AMOUNT: "Amount"
   "88":
     caption: "VAT- VIES Declaration Disk"
     options:
@@ -1130,7 +1213,14 @@ reports:
       DONE: "The VIES declaration with %1 customers was made."
   "6":
     caption: "Trial Balance"
+    options:
+      round_to: "Round To"
     texts:
+      ROUND_EXACT: "Exact Amounts"
+      ROUND_WHOLE: "Whole Amounts"
+      ROUND_THOUSANDS: "Thousands"
+      AMOUNTS_WHOLE: "Amounts are in whole amounts"
+      AMOUNTS_THOUSANDS: "Amounts are in whole 1000s"
       TITLE: "Trial Balance"
       BALANCE_CREDIT: "Balance Credit"
       BALANCE_DEBIT: "Balance Debit"

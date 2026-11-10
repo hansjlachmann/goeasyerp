@@ -1,0 +1,67 @@
+# Report 19 VAT- VIES Declaration Tax Auth: the printed layout (sections per data item,
+# positions in mm from the section's top left corner inside the margins; see
+# business-logic/reports/layout.go)
+report:
+  id: 19
+  name: VAT- VIES Declaration Tax Auth
+  page:
+    size: A4
+    orientation: portrait
+    margins: {top: 15, bottom: 15, left: 15, right: 15}
+  font_size: 9
+  data_items:
+    - name: TaxEntry
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 60
+          elements:
+            - {text: CUSTOMS, x: 0, y: 0, width: 40, bold: true}
+            - {text: TAX, x: 0, y: 4.5, width: 40, bold: true}
+            - {text: TITLE, x: 90, y: 0, width: 90, align: right, bold: true, size: 12}
+            - {value: today, x: 120, y: 6, width: 60, align: right}
+            - {text: PAGE, x: 120, y: 10, width: 50, align: right}
+            - {page_no: true, x: 170, y: 10, width: 10, align: right}
+            - {text: NAME_AND_ADDRESS, x: 0, y: 11, width: 80}
+            - {lines: company_address, x: 0, y: 15.5, width: 90}
+            - {text: PERIOD, x: 0, y: 42, width: 75}
+            - {value: period, x: 77, y: 42, width: 40}
+            - {text: SELLERS_VAT_REG_NO, x: 0, y: 46.5, width: 75}
+            - {value: vat_registration_no, x: 77, y: 46.5, width: 60}
+            - {text: TOTAL_SALES, x: 0, y: 51, width: 75}
+            - {value: total_sales_thousands, x: 77, y: 51, width: 40, decimal_places: "0:0"}
+            - {value: amounts_in, x: 0, y: 55.5, width: 120}
+        - type: header
+          print_on_every_page: true
+          height: 11
+          elements:
+            - {text: CUSTOMERS_COUNTRY_CODE, x: 0, y: 1, width: 26, bold: true, wrap: true}
+            - {text: CUSTOMERS_VAT_REG_NO, x: 28, y: 1, width: 50, bold: true, wrap: true}
+            - {text: SALES_TO_CUSTOMER, x: 80, y: 1, width: 35, align: right, bold: true, wrap: true}
+            - {text: CODE, x: 118, y: 1, width: 15, align: right, bold: true}
+            - {text: EU_3_PARTY_TRADE_AMOUNT, x: 135, y: 1, width: 45, align: right, bold: true, wrap: true}
+            - {line: true, x: 0, y: 9.5}
+        - type: group_footer
+          group: sell_to_buy_from_no
+          print_unless: warning_text
+          height: 4.5
+          elements:
+            - {value: eu_country_code, x: 0, y: 0, width: 26}
+            - {value: cust_vat_registration_no, x: 28, y: 0, width: 50}
+            - {total_value: sales_to_cust, x: 80, y: 0, width: 35, align: right}
+            - {text: CODE_0, x: 118, y: 0, width: 15, align: right}
+            - {total_value: eu_3_party_trade_amt, x: 135, y: 0, width: 45, align: right}
+        - type: group_footer
+          group: sell_to_buy_from_no
+          print_if: warning_text
+          height: 4.5
+          elements:
+            - {text: WARNING, x: 0, y: 0, width: 26, bold: true}
+            - {value: warning_text, x: 28, y: 0, width: 152, wrap: true}
+        - type: footer
+          height: 22
+          elements:
+            - {text: DATE, x: 40, y: 8, width: 40}
+            - {text: SIGNATURE, x: 95, y: 8, width: 60}
+            - {line: true, x: 40, y: 18, width: 45}
+            - {line: true, x: 95, y: 18, width: 70}

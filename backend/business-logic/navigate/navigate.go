@@ -1,10 +1,15 @@
 // Package navigate is page 344 Navigate's FindRecords: the tables with entries of a document
 // (its Document No. and Posting Date filters) and how many, as Document Entry lines (table
-// 265, temporary). Show opens a line's entries page with the same filters.
+// 265, temporary). Show opens a line's entries page with the same filters. FindExtRecords finds
+// them by an external document no. and business contact (vendor or customer).
 package navigate
 
 import (
+	"slices"
+	"strings"
+
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
@@ -224,4 +229,66 @@ func insertIntoDocEntry(docEntry *gtables.DocumentEntry, docTableID, docPageID i
 	docEntry.No_filter = types.Text(noFilter)
 	docEntry.Posting_date_filter = types.Text(postingDateFilter)
 	return docEntry.InsertOrError(false)
+}
+
+// The business contact types of the external search (page 344's Business Contact Type)
+const (
+	ContactTypeVendor   = "0"
+	ContactTypeCustomer = "1"
+)
+
+// maxExtDocuments: the most documents an external search may find (classic: the filters must
+// fit their fields — TooLongFilter)
+const maxExtDocuments = 50
+
+// FindExtRecords (FindExtRecords): the vendor's — or customer's — ledger entries with the
+// external document no. filter (and the business contact no. filter) give the document nos. and
+// posting dates FindRecords searches with; found is false when no entry has it. Too many
+// documents is an error (TooLongFilter).
+func FindExtRecords(docEntry *gtables.DocumentEntry, contactType, contactNo, extDocNo string) (bool, error) {
+	var docNos, dates []string
+	makeExtFilter := func(postingDate types.Date, documentNo types.Code) {
+		date := postingDate.String()
+		if !slices.Contains(dates, date) {
+			dates = append(dates, date)
+		}
+		if !slices.Contains(docNos, documentNo.String()) {
+			docNos = append(docNos, documentNo.String())
+		}
+	}
+	switch contactType {
+	case ContactTypeCustomer:
+		custLedgEntry := gtables.NewCustomerLedgerEntry(docEntry)
+		if extDocNo != "" {
+			custLedgEntry.SetFilter("external_document_no", extDocNo)
+		}
+		if contactNo != "" {
+			custLedgEntry.SetFilter("customer_no", contactNo)
+		}
+		for found := custLedgEntry.FindSet(); found; found = custLedgEntry.Next() {
+			makeExtFilter(custLedgEntry.Posting_date, custLedgEntry.Document_no)
+		}
+	default:
+		vendLedgEntry := gtables.NewVendorLedgerEntry(docEntry)
+		if extDocNo != "" {
+			vendLedgEntry.SetFilter("external_document_no", extDocNo)
+		}
+		if contactNo != "" {
+			vendLedgEntry.SetFilter("vendor_no", contactNo)
+		}
+		for found := vendLedgEntry.FindSet(); found; found = vendLedgEntry.Next() {
+			makeExtFilter(vendLedgEntry.Posting_date, vendLedgEntry.Document_no)
+		}
+	}
+	if len(docNos) == 0 {
+		docEntry.DeleteAll()
+		return false, nil
+	}
+	if len(docNos) > maxExtDocuments {
+		if contactNo == "" {
+			return false, system.Error(i18n.GetInstance().Message("NAVIGATE_TOO_MANY_EXT_DOCS_CONTACT", fcodeunits.CurrentLanguage()))
+		}
+		return false, system.Error(i18n.GetInstance().Message("NAVIGATE_TOO_MANY_EXT_DOCS", fcodeunits.CurrentLanguage()))
+	}
+	return true, FindRecords(docEntry, strings.Join(docNos, "|"), strings.Join(dates, "|"))
 }

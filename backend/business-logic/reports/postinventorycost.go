@@ -20,8 +20,9 @@ import (
 // The additional-currency costs go with them (Add.-Curr. Cost Posted to G/L; a line of the
 // additional-currency amount only where the LCY amount is 0).
 //
-// Not migrated yet: the printout (the posted amounts per item and per posting setup; the
-// report's message gives the totals).
+// The printout lists the entries posted per item (COGS, adjustment and inventory amounts), the
+// amounts per general posting setup and dimensions posted per posting group, and the totals; the
+// message gives the totals too.
 const PostInventoryCostToGLID = 1002
 
 func init() {
@@ -79,6 +80,7 @@ type postInventoryCostToGL struct {
 	totalUsage      types.Decimal
 	totalAdjAmount  types.Decimal
 	window          *system.Window
+	bufLines        []invtPostBufKey // the printed buffer lines (InvtPostingBufferLoop)
 }
 
 func (r *postInventoryCostToGL) Definition() *Definition {
@@ -96,9 +98,15 @@ func (r *postInventoryCostToGL) Definition() *Definition {
 		DataItems: []*DataItem{{
 			Name: "Item_Ledger_Entry", Table: "Item_Ledger_Entry", Key: []string{"item_no"},
 			RequestFilterFields: []string{"posting_date"},
+			GroupFields:         []string{"item_no"},
 			OnPreDataItem:       Trigger(r.itemLedgEntryOnPreDataItem),
 			OnAfterGetRecord:    Trigger(r.itemLedgEntryOnAfterGetRecord),
 			OnPostDataItem:      Trigger(r.itemLedgEntryOnPostDataItem),
+		}, {
+			// the posting group buffer's general posting setup side, before it is posted
+			Name: "InvtPostingBufferLoop", Table: IntegerTable,
+			OnPreDataItem:    Trigger(r.bufferLoopOnPreDataItem),
+			OnAfterGetRecord: Trigger(r.bufferLoopOnAfterGetRecord),
 		}},
 	}
 }
@@ -120,6 +128,17 @@ func (r *postInventoryCostToGL) onPreReport(run *Run) error {
 
 	language := fcodeunits.CurrentLanguage()
 	documentNoCaption := i18n.GetInstance().FieldCaption(gtables.GenJournalLineTableName, "document_no", language)
+	setReportHeadValues(run)
+	run.SetValue("posting_date", r.postingDate)
+	run.SetValue("posting_doc_no", r.postingDocNo.String())
+	if r.postLevel == postLevelPerEntry {
+		run.SetValue("posted_text", run.Text("POSTED_PER", run.Text("PER_ENTRY")))
+	} else {
+		run.SetValue("posted_text", run.Text("POSTED_PER", run.Text("PER_POSTING_GROUP")))
+	}
+	run.SetValue("total_cogs", types.Decimal{})
+	run.SetValue("total_adjustment", types.Decimal{})
+	run.SetValue("total_inventory", types.Decimal{})
 	switch r.postLevel {
 	case postLevelPerPostingGroup:
 		if r.postingDocNo == "" {
@@ -136,6 +155,7 @@ func (r *postInventoryCostToGL) onPreReport(run *Run) error {
 func (r *postInventoryCostToGL) itemLedgEntryOnPreDataItem(itemLedgEntry *gtables.ItemLedgerEntry, run *Run) error {
 	itemLedgEntry.LockTable()
 	r.window = system.OpenWindow(run.Text("WINDOW"))
+	setFilterText(run, itemLedgEntry)
 	return nil
 }
 
@@ -157,11 +177,15 @@ func (r *postInventoryCostToGL) itemLedgEntryOnAfterGetRecord(itemLedgEntry *gta
 		invtPostBuf1.entryType = bufEntrySale
 		invtPostBuf2.entryType = bufEntryCOGS
 	}
+	var cogsAmount, adjustmentAmount types.Decimal
 	if invtPostBuf2.entryType == bufEntryCOGS {
+		cogsAmount = adjAmount
 		r.totalUsage = r.totalUsage.Add(adjAmount)
 	} else {
+		adjustmentAmount = adjAmount
 		r.totalAdjAmount = r.totalAdjAmount.Add(adjAmount)
 	}
+	r.setItemValues(run, itemLedgEntry, cogsAmount, adjustmentAmount)
 	r.invtPostBuf[invtPostBuf1] = r.invtPostBuf[invtPostBuf1].add(adjAmount, adjAmountAddCurr)
 	r.invtPostBuf[invtPostBuf2] = r.invtPostBuf[invtPostBuf2].add(adjAmount.Neg(), adjAmountAddCurr.Neg())
 	itemLedgEntry.Cost_posted_to_gl = itemLedgEntry.Adjusted_cost_invoiced_qty
@@ -176,6 +200,59 @@ func (r *postInventoryCostToGL) itemLedgEntryOnAfterGetRecord(itemLedgEntry *gta
 		description := run.Text("ENTRY_DESCRIPTION", entryType, itemLedgEntry.Source_no, itemLedgEntry.Posting_date)
 		return r.postInvtPostingBuffer(run, itemLedgEntry.Document_no, description)
 	}
+	return nil
+}
+
+// setItemValues: the entry's printed amounts (the cost posted with the opposite sign of the
+// inventory), the item's description for its group header, the totals so far
+func (r *postInventoryCostToGL) setItemValues(run *Run, itemLedgEntry *gtables.ItemLedgerEntry, cogsAmount, adjustmentAmount types.Decimal) {
+	item := gtables.NewItem(run)
+	if item.Get(itemLedgEntry.Item_no) {
+		run.SetValue("item_description", item.Description.String())
+	} else {
+		run.SetValue("item_description", run.Text("ITEM_NOT_EXISTS"))
+	}
+	run.SetValue("cogs_amount", cogsAmount.Neg())
+	run.SetValue("adjustment_amount", adjustmentAmount.Neg())
+	run.SetValue("inventory_amount", cogsAmount.Add(adjustmentAmount))
+	run.SetValue("total_cogs", r.totalUsage.Neg())
+	run.SetValue("total_adjustment", r.totalAdjAmount.Neg())
+	run.SetValue("total_inventory", r.totalUsage.Add(r.totalAdjAmount))
+}
+
+// bufferLoopOnPreDataItem: the buffer's COGS and adjustment lines with an amount, in the
+// buffer's order
+func (r *postInventoryCostToGL) bufferLoopOnPreDataItem(rec *Integer, run *Run) error {
+	r.bufLines = nil
+	for key, buf := range r.invtPostBuf {
+		if key.postingGroupType == bufTypeMatrix && !buf.amount.IsZero() {
+			r.bufLines = append(r.bufLines, key)
+		}
+	}
+	sort.Slice(r.bufLines, func(i, j int) bool { return invtPostBufLess(r.bufLines[i], r.bufLines[j]) })
+	rec.SetRange("number", 1, len(r.bufLines))
+	return nil
+}
+
+// bufferLoopOnAfterGetRecord: a buffer line — its entry type, dimensions, general posting setup
+// and amount as COGS or adjustment
+func (r *postInventoryCostToGL) bufferLoopOnAfterGetRecord(rec *Integer, run *Run) error {
+	key := r.bufLines[rec.Number-1]
+	amount := r.invtPostBuf[key].amount
+	var cogsAmount, adjustmentAmount types.Decimal
+	if key.entryType == bufEntryCOGS {
+		cogsAmount = amount
+		run.SetValue("buf_entry_type", run.Text("COGS"))
+	} else {
+		adjustmentAmount = amount
+		run.SetValue("buf_entry_type", run.Text("ADJUSTMENT"))
+	}
+	run.SetValue("buf_dimension_1_code", key.dimension1Code.String())
+	run.SetValue("buf_dimension_2_code", key.dimension2Code.String())
+	run.SetValue("buf_gen_posting_setup", system.StrSubstNo("%1,%2", key.genBusPostingGroup, key.genProdPostingGroup))
+	run.SetValue("buf_cogs_amount", cogsAmount)
+	run.SetValue("buf_adjustment_amount", adjustmentAmount)
+	run.SetValue("buf_inventory_amount", cogsAmount.Neg().Sub(adjustmentAmount))
 	return nil
 }
 

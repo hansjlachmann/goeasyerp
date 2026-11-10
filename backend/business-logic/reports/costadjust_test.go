@@ -128,7 +128,7 @@ func TestAdjustCostAndPostInventoryCost(t *testing.T) {
 		t1Entries := gtables.NewItemLedgerEntry(src)
 		t1Entries.SetRange("item_no", types.Code("T1"))
 		result, err := reports.Execute(reports.PostInventoryCostToGLID, src.GetDB(), src.GetCompany(), src.GetDBType(), reports.RunOptions{
-			Record: t1Entries, Options: map[string]string{"post_level": "2", "posting_date": "2026-10-06"}})
+			Record: t1Entries, Output: reports.OutputPDF, Options: map[string]string{"post_level": "2", "posting_date": "2026-10-06"}})
 		mustOK(t, err)
 		return result
 	}
@@ -137,6 +137,11 @@ func TestAdjustCostAndPostInventoryCost(t *testing.T) {
 	// the texts keep their values: the message's amounts, the entries' descriptions
 	if !strings.Contains(result.Message, "COGS -40, inventory adjustments 0.") {
 		t.Errorf("message %q without the posted amounts", result.Message)
+	}
+	// the printout: the item's entry with its COGS and the totals
+	if texts := printedTexts(result, 0); !strings.Contains(texts, "Posted per Item Ledger Entry") || !strings.Contains(texts, "|T1|") ||
+		!strings.Contains(texts, "Inventory Cost Posted to G/L|-40.00|") {
+		t.Errorf("printout of 1002: %s", texts)
 	}
 	posted := gtables.NewGLEntry(src)
 	posted.SetFilter("entry_no", strconv.Itoa(firstGLEntry)+"..")

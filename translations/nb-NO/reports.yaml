@@ -884,6 +884,24 @@ reports:
       ADJ_GEN_SETUP: "Justering av bokf.oppsett %1,%2"
       COGS_GEN_SETUP: "Vareforbruk for bokf.oppsett %1,%2"
       POSTED: "Lagerkosten er bokført i finans: vareforbruk %1, lagerjusteringer %2."
+      TITLE: "Bokfør lagerkost i finans"
+      POSTED_PER: "Bokført %1"
+      PAGE: "Side"
+      POSTING_DATE: "Bokføringsdato"
+      DOCUMENT_NO: "Bilagsnr."
+      ENTRY_NO: "Løpenr."
+      ENTRY_TYPE: "Posttype"
+      SOURCE_NO: "Kildenr."
+      INVENTORY_POSTING_GROUP: "Lagerbokføringsgruppe"
+      COGS: "Vareforbruk"
+      ADJUSTMENT: "Justering"
+      INVENTORY: "Lager"
+      ITEM_NOT_EXISTS: "Varenummeret finnes ikke lenger."
+      INVENTORY_COST_POSTED: "Lagerkost bokført i finans"
+      TOTAL: "Totalt"
+      DIMENSION_1_CODE: "Dimensjon 1-kode"
+      DIMENSION_2_CODE: "Dimensjon 2-kode"
+      GENERAL_POSTING_SETUP: "Bokføringsoppsett"
   "188":
     caption: "Opprett purringer"
     options:
@@ -1082,6 +1100,28 @@ reports:
       cost_regulation_percent: "Kostnadsregulering %"
     texts:
       LINES_CREATED: "%1 linjer ble opprettet."
+  "501":
+    caption: "Intrastat - skjema"
+    texts:
+      TYPE_ONE: "må være enten Mottak eller Levering"
+      AMOUNTS_IN: "Alle beløp er i %1"
+      TITLE: "Intrastat - skjema"
+      PAGE: "Side"
+      STATISTICS_PERIOD: "Statistikkperiode: %1"
+      VAT_REG_NO: "Org.nr."
+      TARIFF_NO: "Varenr. (tolltariff)"
+      ITEM_DESCRIPTION: "Varebeskrivelse"
+      COUNTRY_CODE: "Landkode"
+      NAME: "Navn"
+      TRANSACTION_TYPE: "Transaksjonstype"
+      TRANSPORT_METHOD: "Transportmåte"
+      TOTAL_WEIGHT: "Totalvekt"
+      QUANTITY: "Antall"
+      STATISTICAL_VALUE: "Statistisk verdi"
+      TOTAL: "Totalt"
+      NO_OF_ENTRIES: "Antall poster"
+      RECEIPT: "Mottak"
+      SHIPMENT: "Levering"
   "502":
     caption: "Intrastat - kontrolliste"
     texts:
@@ -1121,6 +1161,49 @@ reports:
     texts:
       COPY_FROM: "Kopier fra"
       CONFIRM: "Vil du kopiere bokføringsoppsettet?"
+  "19":
+    caption: "MVA - VIES-oppgave til myndighet"
+    options:
+      show_amounts_in_add_currency: "Vis beløp i tilleggsrapporteringsvaluta"
+    texts:
+      AMOUNTS_IN: "Alle beløp er i %1"
+      CUSTOMS: "TOLL"
+      TAX: "AVGIFT"
+      TITLE: "VIES-OPPGAVE"
+      PAGE: "Side"
+      NAME_AND_ADDRESS: "Navn og adresse:"
+      PERIOD: "Periode"
+      SELLERS_VAT_REG_NO: "Selgers org.nr."
+      TOTAL_SALES: "Totalt salg til EU i perioden (i tusen)"
+      CUSTOMERS_COUNTRY_CODE: "Kundens landkode"
+      CUSTOMERS_VAT_REG_NO: "Kundens org.nr."
+      SALES_TO_CUSTOMER: "Salg til kunde"
+      CODE: "Kode"
+      CODE_0: "0"
+      EU_3_PARTY_TRADE_AMOUNT: "Beløp trekantshandel i EU"
+      WARNING: "Advarsel!"
+      NOT_FILLED_IN: "%1 er ikke fylt ut for alle avgiftsposter der %2 = %3"
+      SALE: "Salg"
+      DATE: "Dato"
+      SIGNATURE: "Underskrift"
+  "35":
+    caption: "Bilagsposter"
+    options:
+      document_no: "Bilagsnr."
+      posting_date: "Bokføringsdato"
+      show_entries: "Vis poster"
+    texts:
+      TITLE: "Bilagsposter"
+      PAGE: "Side"
+      DOCUMENT_NO: "Bilagsnr."
+      POSTING_DATE: "Bokføringsdato"
+      TABLE_ID: "Tabell-ID"
+      TABLE_NAME: "Tabellnavn"
+      NO_OF_RECORDS: "Antall poster"
+      ENTRY_NO: "Løpenr."
+      ACCOUNT: "Konto"
+      DESCRIPTION: "Beskrivelse"
+      AMOUNT: "Beløp"
   "88":
     caption: "Mva - VIES-oppgave (fil)"
     options:
@@ -1130,7 +1213,14 @@ reports:
       DONE: "VIES-oppgaven med %1 kunder ble laget."
   "6":
     caption: "Saldobalanse"
+    options:
+      round_to: "Avrund til"
     texts:
+      ROUND_EXACT: "Eksakte beløp"
+      ROUND_WHOLE: "Hele beløp"
+      ROUND_THOUSANDS: "Tusen"
+      AMOUNTS_WHOLE: "Beløpene er i hele beløp"
+      AMOUNTS_THOUSANDS: "Beløpene er i hele 1000"
       TITLE: "Saldobalanse"
       BALANCE_CREDIT: "Saldo kredit"
       BALANCE_DEBIT: "Saldo debet"

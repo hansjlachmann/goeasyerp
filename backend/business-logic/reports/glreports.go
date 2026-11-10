@@ -3,6 +3,7 @@ package reports
 import (
 	"strings"
 
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
@@ -107,10 +108,33 @@ func (r *chartOfAccounts) Definition() *Definition {
 // Report 6 Trial Balance: each G/L account's net change in the period and its balance at the
 // period's end, as debit and credit columns (heading and total accounts in bold); the totals
 // of the posting accounts; with Use Additional Reporting Currency the amounts in that currency
-// (the option of the classic local trial balance)
+// (the option of the classic local trial balance); Round To (the classic local trial balance's
+// RoundTo): the amounts exact, in whole amounts or in whole thousands — each account's amounts
+// rounded, the totals adding up what is printed
 type trialBalance struct {
 	totals        [4]types.Decimal
 	useAddRptCurr bool
+	roundTo       int
+}
+
+// The Round To option of the trial balance
+const (
+	roundToExact = iota + 1
+	roundToWhole
+	roundToThousands
+)
+
+// roundTrialBalanceAmount (classic RoundTo): an amount as printed — to the cent, to a whole
+// amount, or in whole thousands
+func roundTrialBalanceAmount(amount types.Decimal, roundTo int) types.Decimal {
+	one := types.NewDecimalFromInt(1)
+	switch roundTo {
+	case roundToWhole:
+		return system.Round(amount, one, "=")
+	case roundToThousands:
+		return system.Round(amount.Div(types.NewDecimalFromInt(1000)), one, "=")
+	}
+	return system.Round(amount, types.MustDecimal("0.01"), "=")
 }
 
 // netChangeAndBalance: a G/L account's Net Change and Balance at Date, or their
@@ -142,9 +166,23 @@ func useAddRptCurrOption(run *Run) (bool, error) {
 
 func (r *trialBalance) Definition() *Definition {
 	return &Definition{
-		Options: []Option{{Name: "use_add_rpt_curr", Type: "bool", Default: "false"}},
+		Options: []Option{
+			{Name: "use_add_rpt_curr", Type: "bool", Default: "false"},
+			{Name: "round_to", Type: "option", Default: "1", Options: []string{"ROUND_EXACT", "ROUND_WHOLE", "ROUND_THOUSANDS"}},
+		},
 		OnPreReport: func(run *Run) error {
 			setReportHeadValues(run)
+			r.roundTo = run.OptionInt("round_to")
+			run.SetValue("amount_places", "")
+			run.SetValue("round_text", "")
+			switch r.roundTo {
+			case roundToWhole:
+				run.SetValue("amount_places", "0:0")
+				run.SetValue("round_text", run.Text("AMOUNTS_WHOLE"))
+			case roundToThousands:
+				run.SetValue("amount_places", "0:0")
+				run.SetValue("round_text", run.Text("AMOUNTS_THOUSANDS"))
+			}
 			var err error
 			r.useAddRptCurr, err = useAddRptCurrOption(run)
 			return err
@@ -166,6 +204,8 @@ func (r *trialBalance) Definition() *Definition {
 
 func (r *trialBalance) glAccOnAfterGetRecord(rec *gtables.GLAccount, run *Run) error {
 	netChange, balanceAtDate := netChangeAndBalance(rec, r.useAddRptCurr)
+	netChange = roundTrialBalanceAmount(netChange, r.roundTo)
+	balanceAtDate = roundTrialBalanceAmount(balanceAtDate, r.roundTo)
 	netDebit, netCredit := debitCredit(netChange)
 	balDebit, balCredit := debitCredit(balanceAtDate)
 	run.SetValue("name", indentedName(rec))

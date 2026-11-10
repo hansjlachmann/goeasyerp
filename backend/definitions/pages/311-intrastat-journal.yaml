@@ -138,6 +138,13 @@ page:
       promoted: true
       run_object: report:502
 
+    # the declaration of one type as a printed form (report 501)
+    - name: Form
+      caption: Form
+      image: Print
+      promoted: true
+      run_object: report:501
+
     # the declaration as a file (report 593); the batch is then Reported
     - name: Make Diskette
       caption: Make Diskette

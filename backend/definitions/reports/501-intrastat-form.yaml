@@ -1,0 +1,76 @@
+# Report 501 Intrastat - Form: the printed layout (sections per data item, positions in mm from
+# the section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 501
+  name: Intrastat - Form
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: IntrastatJnlBatch
+      new_page_per_record: true
+      sections: []
+    - name: IntrastatJnlLine
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 24
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: statistics_period, x: 0, y: 5, width: 140}
+            - {value: company_name, x: 0, y: 9, width: 140}
+            - {value: type_text, x: 0, y: 14, width: 60, bold: true}
+            - {text: VAT_REG_NO, x: 0, y: 18.5, width: 30}
+            - {value: vat_registration_no, x: 31, y: 18.5, width: 60}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          height: 5
+          elements:
+            - {value: amounts_in, x: 0, y: 0, width: 140}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 10
+          elements:
+            - {text: TARIFF_NO, x: 0, y: 0, width: 25, bold: true, wrap: true}
+            - {text: ITEM_DESCRIPTION, x: 28, y: 0, width: 75, bold: true, wrap: true}
+            - {text: COUNTRY_CODE, x: 106, y: 0, width: 14, bold: true, wrap: true}
+            - {text: NAME, x: 122, y: 0, width: 40, bold: true, wrap: true}
+            - {text: TRANSACTION_TYPE, x: 164, y: 0, width: 20, bold: true, wrap: true}
+            - {text: TRANSPORT_METHOD, x: 186, y: 0, width: 20, bold: true, wrap: true}
+            - {text: TOTAL_WEIGHT, x: 208, y: 0, width: 20, align: right, bold: true, wrap: true}
+            - {text: QUANTITY, x: 230, y: 0, width: 18, align: right, bold: true, wrap: true}
+            - {text: STATISTICAL_VALUE, x: 250, y: 0, width: 23, align: right, bold: true, wrap: true}
+            - {line: true, x: 0, y: 8.5}
+        - type: group_footer
+          group: transport_method
+          height: 4.2
+          elements:
+            - {field: tariff_no, x: 0, y: 0, width: 25}
+            - {field: item_description, x: 28, y: 0, width: 75}
+            - {value: country_intrastat_code, x: 106, y: 0, width: 14}
+            - {value: country_name, x: 122, y: 0, width: 40}
+            - {field: transaction_type, x: 164, y: 0, width: 20}
+            - {field: transport_method, x: 186, y: 0, width: 20}
+            - {total: total_weight, x: 208, y: 0, width: 20, align: right, decimal_places: "0:0"}
+            - {total: quantity, x: 230, y: 0, width: 18, align: right, decimal_places: "0:0"}
+            - {total: statistical_value, x: 250, y: 0, width: 23, align: right, decimal_places: "0:0"}
+        - type: footer
+          height: 12
+          elements:
+            - {line: true, x: 208, y: 0.5}
+            - {text: TOTAL, x: 164, y: 2, width: 40, bold: true}
+            - {total: total_weight, x: 208, y: 2, width: 20, align: right, decimal_places: "0:0", bold: true}
+            - {total: quantity, x: 230, y: 2, width: 18, align: right, decimal_places: "0:0", bold: true}
+            - {total: statistical_value, x: 250, y: 2, width: 23, align: right, decimal_places: "0:0", bold: true}
+            - {text: NO_OF_ENTRIES, x: 164, y: 7, width: 40}
+            - {value: no_of_entries, x: 208, y: 7, width: 20, align: right, decimal_places: "0:0"}

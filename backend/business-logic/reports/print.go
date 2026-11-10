@@ -633,13 +633,13 @@ func (p *printer) text(f *frame, totals *sums, e *Element) string {
 		if e.BlankZero && isZero(value) {
 			return ""
 		}
-		return formatValue(value, e.DecimalPlaces, p.language)
+		return formatValue(value, p.decimalPlaces(e), p.language)
 	case "total":
 		total := totals.fields[e.Total]
 		if e.BlankZero && total.IsZero() {
 			return ""
 		}
-		places := e.DecimalPlaces
+		places := p.decimalPlaces(e)
 		if places == "" {
 			_, info := fieldValue(f.rec, e.Total)
 			if info != nil && info.DecimalPlaces != "" {
@@ -654,13 +654,25 @@ func (p *printer) text(f *frame, totals *sums, e *Element) string {
 		if e.BlankZero && total.IsZero() {
 			return ""
 		}
-		places := e.DecimalPlaces
+		places := p.decimalPlaces(e)
 		if places == "" {
 			places = "2:2"
 		}
 		return formatDecimal(total, places, p.language)
 	}
 	return ""
+}
+
+// decimalPlaces: an element's decimal places — the report value its decimal_places_value names
+// when it is set, else its decimal_places
+func (p *printer) decimalPlaces(e *Element) string {
+	if e.DecimalPlacesValue != "" {
+		places, ok := p.run.values[e.DecimalPlacesValue].(string)
+		if ok && places != "" {
+			return places
+		}
+	}
+	return e.DecimalPlaces
 }
 
 // reference: the record and field an element names — <field> of the section's data item, or

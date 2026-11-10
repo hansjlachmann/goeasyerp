@@ -101,6 +101,16 @@ func TestListReports(t *testing.T) {
 	if n := strings.Count(texts, amountText(debit)); n < 4 {
 		t.Errorf("trial balance: total %s printed %d times, want 4 (net change and balance, debit and credit)", amountText(debit), n)
 	}
+	// in whole 1000s: the head says so, the amounts have no decimals, the total adds up the
+	// rounded amounts and is about the exact total / 1000
+	texts = runList(t, src, reports.TrialBalanceID, map[string]string{"round_to": "3"})
+	if !strings.Contains(texts, "|Amounts are in whole 1000s|") || strings.Contains(texts, amountText(debit)) {
+		t.Errorf("trial balance in 1000s: %.400s", texts)
+	}
+	thousands := format.Decimal(debit.Div(types.NewDecimalFromInt(1000)).Round(0), "0:0", "en-US")
+	if !strings.Contains(texts, "|"+thousands+"|") {
+		t.Logf("trial balance in 1000s: the rounded total differs from %s (rounding per account)", thousands)
+	}
 
 	// Aged Accounts Receivable: the total is the open entries' remaining amount (LCY)
 	cle := gtables.NewCustomerLedgerEntry(src)

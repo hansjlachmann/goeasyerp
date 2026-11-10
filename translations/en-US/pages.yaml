@@ -599,6 +599,14 @@ pages:
     caption: "Resource Price Changes"
   navigate:
     caption: "Navigate"
+    fields:
+      ext_document_no: "External Document No."
+      contact_type: "Business Contact Type"
+      contact_no: "Business Contact No."
+    options:
+      contact_type:
+        vendor: "Vendor"
+        customer: "Customer"
   posting_preview:
     caption: "Posting Preview"
   sales_quotes:

@@ -448,6 +448,39 @@ func TestPurchaseHistory(t *testing.T) {
 	if found[gtables.PurchInvHeaderTableID] != purchPost.InvoiceNo.String()+"/" || found[gtables.VendorLedgerEntryTableID] != "/"+purchPost.InvoiceNo.String() {
 		t.Errorf("navigate: %v", found)
 	}
+
+	// by the vendor's invoice no. (external document no.): the same documents
+	extDocEntry := gtables.NewDocumentEntry(src)
+	must(t, extDocEntry.InitTemporary(src.GetDB(), src.GetCompany(), src.GetDBType()))
+	ok, err := navigate.FindExtRecords(extDocEntry, navigate.ContactTypeVendor, "V00010", "V-GR-1")
+	must(t, err)
+	extFound := map[int]bool{}
+	for found := extDocEntry.FindSet(); found; found = extDocEntry.Next() {
+		extFound[extDocEntry.Table_id] = true
+	}
+	if !ok || !extFound[gtables.PurchInvHeaderTableID] || !extFound[gtables.VendorLedgerEntryTableID] {
+		t.Errorf("navigate by external document no.: %v %v", ok, extFound)
+	}
+	ok, err = navigate.FindExtRecords(extDocEntry, navigate.ContactTypeVendor, "", "NO-SUCH-DOC")
+	must(t, err)
+	if ok || extDocEntry.Count() != 0 {
+		t.Errorf("an unknown external document no. found %d lines", extDocEntry.Count())
+	}
+
+	// Navigate's printout (report 35): the tables and their entries
+	result, err := reports.Execute(reports.DocumentEntriesID, src.GetDB(), src.GetCompany(), src.GetDBType(), reports.RunOptions{Output: reports.OutputPDF,
+		Options: map[string]string{"document_no": purchPost.InvoiceNo.String()}})
+	must(t, err)
+	var texts []string
+	for _, text := range result.Texts {
+		texts = append(texts, text.Text)
+	}
+	joined = "|" + strings.Join(texts, "|") + "|"
+	for _, want := range []string{"|Document Entries|", "|Vendor Ledger Entry|", "|G/L Entry|", "|V00010|", "|" + purchPost.InvoiceNo.String() + "|"} {
+		if !strings.Contains(joined, want) {
+			t.Errorf("document entries do not print %q: %s", want, joined)
+		}
+	}
 }
 
 // The quote and the posted credit memo print with their number and vendor

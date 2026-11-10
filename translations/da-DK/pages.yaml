@@ -599,6 +599,14 @@ pages:
     caption: "Ressourceprisændringer"
   navigate:
     caption: "Naviger"
+    fields:
+      ext_document_no: "Eksternt bilagsnr."
+      contact_type: "Forretningsforbindelsestype"
+      contact_no: "Forretningsforbindelsesnr."
+    options:
+      contact_type:
+        vendor: "Kreditor"
+        customer: "Debitor"
   posting_preview:
     caption: "Vis bogføring"
   sales_quotes:

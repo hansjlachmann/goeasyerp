@@ -133,10 +133,14 @@ type Element struct {
 	// DecimalPlaces of a decimal ("2:2": at least 2, at most 2 digits after the separator);
 	// default: the field's, else 2:2 for values and totals
 	DecimalPlaces string `yaml:"decimal_places"`
-	BlankZero     bool   `yaml:"blank_zero"` // a zero prints nothing
-	Wrap          bool   `yaml:"wrap"`       // a long text goes on in lines below (the section grows)
-	PrintIf       string `yaml:"print_if"`
-	PrintUnless   string `yaml:"print_unless"`
+	// DecimalPlacesValue: a report value holding the decimal places when the report decides
+	// them at run time (amounts rounded to whole numbers or thousands: "0:0"); when it is set it
+	// takes the place of decimal_places
+	DecimalPlacesValue string `yaml:"decimal_places_value"`
+	BlankZero          bool   `yaml:"blank_zero"` // a zero prints nothing
+	Wrap               bool   `yaml:"wrap"`       // a long text goes on in lines below (the section grows)
+	PrintIf            string `yaml:"print_if"`
+	PrintUnless        string `yaml:"print_unless"`
 }
 
 // kind is which of the element's sources is set ("" when none)

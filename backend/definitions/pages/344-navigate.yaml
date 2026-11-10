@@ -7,12 +7,24 @@ page:
   editable: false
   source_table_temporary: true   # the lines are found again on every load (OnFindRecords)
 
-  # The document to find: filters on Document No. and Posting Date (blank: any)
+  # The document to find: filters on Document No. and Posting Date (blank: any), or the
+  # external document no. and business contact
   header_fields:
     - param: document_no
       source: document_no
     - param: posting_date
       source: posting_date
+    # or by an external document no. (Document No. and Posting Date blank): the vendor's or
+    # customer's ledger entries with it give the documents
+    - param: ext_document_no
+      source: ext_document_no
+    - param: contact_type
+      source: contact_type
+      options:
+        - {value: "0", caption: "Vendor"}
+        - {value: "1", caption: "Customer"}
+    - param: contact_no
+      source: contact_no
 
   layout:
     repeater:
@@ -58,3 +70,10 @@ page:
         - field: posting_date
           value: posting_date_filter
           optional: true
+
+    # the tables found and their entries (report 35 Document Entries)
+    - name: Print
+      caption: Print
+      image: Print
+      promoted: true
+      run_object: report:35

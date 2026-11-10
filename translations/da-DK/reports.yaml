@@ -884,6 +884,24 @@ reports:
       ADJ_GEN_SETUP: "Regulering af bogf.opsætning %1,%2"
       COGS_GEN_SETUP: "Vareforbrug for bogf.opsætning %1,%2"
       POSTED: "Lagerværdien er bogført i Finans: vareforbrug %1, lagerreguleringer %2."
+      TITLE: "Bogfør lagerværdi i Finans"
+      POSTED_PER: "Bogført %1"
+      PAGE: "Side"
+      POSTING_DATE: "Bogføringsdato"
+      DOCUMENT_NO: "Bilagsnr."
+      ENTRY_NO: "Løbenr."
+      ENTRY_TYPE: "Posttype"
+      SOURCE_NO: "Kildenr."
+      INVENTORY_POSTING_GROUP: "Varebogføringsgruppe"
+      COGS: "Vareforbrug"
+      ADJUSTMENT: "Regulering"
+      INVENTORY: "Lager"
+      ITEM_NOT_EXISTS: "Varenummeret findes ikke længere."
+      INVENTORY_COST_POSTED: "Lagerværdi bogført i Finans"
+      TOTAL: "I alt"
+      DIMENSION_1_CODE: "Dimension 1-kode"
+      DIMENSION_2_CODE: "Dimension 2-kode"
+      GENERAL_POSTING_SETUP: "Bogføringsopsætning"
   "188":
     caption: "Opret rykkere"
     options:
@@ -1082,6 +1100,28 @@ reports:
       cost_regulation_percent: "Omkostningsregulering %"
     texts:
       LINES_CREATED: "%1 linjer blev oprettet."
+  "501":
+    caption: "Intrastat - formular"
+    texts:
+      TYPE_ONE: "skal være enten Modtagelse eller Levering"
+      AMOUNTS_IN: "Alle beløb er i %1"
+      TITLE: "Intrastat - formular"
+      PAGE: "Side"
+      STATISTICS_PERIOD: "Statistikperiode: %1"
+      VAT_REG_NO: "SE/CVR-nr."
+      TARIFF_NO: "Varekode"
+      ITEM_DESCRIPTION: "Varebeskrivelse"
+      COUNTRY_CODE: "Landekode"
+      NAME: "Navn"
+      TRANSACTION_TYPE: "Transaktionstype"
+      TRANSPORT_METHOD: "Transportmåde"
+      TOTAL_WEIGHT: "Totalvægt"
+      QUANTITY: "Antal"
+      STATISTICAL_VALUE: "Statistisk værdi"
+      TOTAL: "I alt"
+      NO_OF_ENTRIES: "Antal poster"
+      RECEIPT: "Modtagelse"
+      SHIPMENT: "Levering"
   "502":
     caption: "Intrastat - kontrolliste"
     texts:
@@ -1121,6 +1161,49 @@ reports:
     texts:
       COPY_FROM: "Kopiér fra"
       CONFIRM: "Vil du kopiere bogføringsopsætningen?"
+  "19":
+    caption: "Moms - VIES-angivelse til myndighed"
+    options:
+      show_amounts_in_add_currency: "Vis beløb i ekstra rapporteringsvaluta"
+    texts:
+      AMOUNTS_IN: "Alle beløb er i %1"
+      CUSTOMS: "TOLD"
+      TAX: "SKAT"
+      TITLE: "VIES-ANGIVELSE"
+      PAGE: "Side"
+      NAME_AND_ADDRESS: "Navn og adresse:"
+      PERIOD: "Periode"
+      SELLERS_VAT_REG_NO: "Sælgers SE/CVR-nr."
+      TOTAL_SALES: "Samlet salg til EU i perioden (i tusinder)"
+      CUSTOMERS_COUNTRY_CODE: "Kundens landekode"
+      CUSTOMERS_VAT_REG_NO: "Kundens momsnr."
+      SALES_TO_CUSTOMER: "Salg til kunde"
+      CODE: "Kode"
+      CODE_0: "0"
+      EU_3_PARTY_TRADE_AMOUNT: "Beløb trekantshandel i EU"
+      WARNING: "Advarsel!"
+      NOT_FILLED_IN: "%1 er ikke udfyldt for alle momsposter, hvor %2 = %3"
+      SALE: "Salg"
+      DATE: "Dato"
+      SIGNATURE: "Underskrift"
+  "35":
+    caption: "Bilagsposter"
+    options:
+      document_no: "Bilagsnr."
+      posting_date: "Bogføringsdato"
+      show_entries: "Vis poster"
+    texts:
+      TITLE: "Bilagsposter"
+      PAGE: "Side"
+      DOCUMENT_NO: "Bilagsnr."
+      POSTING_DATE: "Bogføringsdato"
+      TABLE_ID: "Tabel-id"
+      TABLE_NAME: "Tabelnavn"
+      NO_OF_RECORDS: "Antal poster"
+      ENTRY_NO: "Løbenr."
+      ACCOUNT: "Konto"
+      DESCRIPTION: "Beskrivelse"
+      AMOUNT: "Beløb"
   "88":
     caption: "Moms - VIES-angivelse (fil)"
     options:
@@ -1130,7 +1213,14 @@ reports:
       DONE: "VIES-angivelsen med %1 kunder blev lavet."
   "6":
     caption: "Saldobalance"
+    options:
+      round_to: "Afrund til"
     texts:
+      ROUND_EXACT: "Nøjagtige beløb"
+      ROUND_WHOLE: "Hele beløb"
+      ROUND_THOUSANDS: "Tusinder"
+      AMOUNTS_WHOLE: "Beløbene er i hele beløb"
+      AMOUNTS_THOUSANDS: "Beløbene er i hele 1000"
       TITLE: "Saldobalance"
       BALANCE_CREDIT: "Saldo kredit"
       BALANCE_DEBIT: "Saldo debet"

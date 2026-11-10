@@ -172,6 +172,8 @@ menu:
                 page_id: 317
               - name: "VIES Declaration Disk"
                 run_object: "report:88"
+              - name: "VIES Declaration Tax Auth"
+                run_object: "report:19"
           - name: "Intrastat Journals"
             page_id: 311
           - name: "Currency"

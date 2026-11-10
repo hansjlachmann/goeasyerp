@@ -1,0 +1,103 @@
+# Report 1002 Post Inventory Cost to G/L: the printed layout (sections per data item, positions
+# in mm from the section's top left corner inside the margins; see
+# business-logic/reports/layout.go)
+report:
+  id: 1002
+  name: Post Inventory Cost to G/L
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Item_Ledger_Entry
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 19
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 140, bold: true, size: 10}
+            - {value: posted_text, x: 0, y: 5, width: 140}
+            - {value: company_name, x: 0, y: 9, width: 140}
+            - {text: POSTING_DATE, x: 0, y: 14, width: 35}
+            - {value: posting_date, x: 36, y: 14, width: 30}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_on_every_page: true
+          print_if: posting_doc_no
+          height: 5
+          elements:
+            - {text: DOCUMENT_NO, x: 0, y: 0, width: 35}
+            - {value: posting_doc_no, x: 36, y: 0, width: 40}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 10
+          elements:
+            - {text: ENTRY_NO, x: 0, y: 1, width: 20, bold: true, wrap: true}
+            - {text: ENTRY_TYPE, x: 23, y: 1, width: 25, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 51, y: 1, width: 25, bold: true, wrap: true}
+            - {text: SOURCE_NO, x: 79, y: 1, width: 25, bold: true, wrap: true}
+            - {text: INVENTORY_POSTING_GROUP, x: 107, y: 1, width: 25, bold: true, wrap: true}
+            - {text: POSTING_DATE, x: 135, y: 1, width: 20, bold: true, wrap: true}
+            - {text: COGS, x: 158, y: 1, width: 35, align: right, bold: true}
+            - {text: ADJUSTMENT, x: 196, y: 1, width: 35, align: right, bold: true}
+            - {text: INVENTORY, x: 234, y: 1, width: 35, align: right, bold: true}
+            - {line: true, x: 0, y: 8.5}
+        - type: group_header
+          group: item_no
+          height: 5
+          elements:
+            - {field: item_no, x: 0, y: 0.5, width: 25, bold: true}
+            - {value: item_description, x: 28, y: 0.5, width: 120, bold: true}
+        - type: body
+          height: 4.2
+          elements:
+            - {field: entry_no, x: 0, y: 0, width: 20}
+            - {field: entry_type, x: 23, y: 0, width: 25}
+            - {field: document_no, x: 51, y: 0, width: 25}
+            - {field: source_no, x: 79, y: 0, width: 25}
+            - {field: inventory_posting_group, x: 107, y: 0, width: 25}
+            - {field: posting_date, x: 135, y: 0, width: 20}
+            - {value: cogs_amount, x: 158, y: 0, width: 35, align: right, blank_zero: true}
+            - {value: adjustment_amount, x: 196, y: 0, width: 35, align: right, blank_zero: true}
+            - {value: inventory_amount, x: 234, y: 0, width: 35, align: right}
+        - type: footer
+          height: 8
+          elements:
+            - {line: true, x: 158, y: 0.5}
+            - {text: INVENTORY_COST_POSTED, x: 0, y: 2, width: 120, bold: true}
+            - {value: total_cogs, x: 158, y: 2, width: 35, align: right, bold: true}
+            - {value: total_adjustment, x: 196, y: 2, width: 35, align: right, bold: true}
+            - {value: total_inventory, x: 234, y: 2, width: 35, align: right, bold: true}
+    - name: InvtPostingBufferLoop
+      sections:
+        - type: header
+          height: 14
+          elements:
+            - {text: TOTAL, x: 0, y: 2, width: 40, bold: true}
+            - {text: ENTRY_TYPE, x: 4, y: 7, width: 30, bold: true}
+            - {text: DIMENSION_1_CODE, x: 37, y: 7, width: 25, bold: true, wrap: true}
+            - {text: DIMENSION_2_CODE, x: 65, y: 7, width: 25, bold: true, wrap: true}
+            - {text: GENERAL_POSTING_SETUP, x: 93, y: 7, width: 50, bold: true}
+            - {text: COGS, x: 158, y: 7, width: 35, align: right, bold: true}
+            - {text: ADJUSTMENT, x: 196, y: 7, width: 35, align: right, bold: true}
+            - {text: INVENTORY, x: 234, y: 7, width: 35, align: right, bold: true}
+            - {line: true, x: 0, y: 12.5}
+        - type: body
+          height: 4.2
+          elements:
+            - {value: buf_entry_type, x: 4, y: 0, width: 30}
+            - {value: buf_dimension_1_code, x: 37, y: 0, width: 25}
+            - {value: buf_dimension_2_code, x: 65, y: 0, width: 25}
+            - {value: buf_gen_posting_setup, x: 93, y: 0, width: 60}
+            - {value: buf_cogs_amount, x: 158, y: 0, width: 35, align: right, blank_zero: true}
+            - {value: buf_adjustment_amount, x: 196, y: 0, width: 35, align: right, blank_zero: true}
+            - {value: buf_inventory_amount, x: 234, y: 0, width: 35, align: right}

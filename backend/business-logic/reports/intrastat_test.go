@@ -69,6 +69,21 @@ func TestIntrastat(t *testing.T) {
 			t.Errorf("checklist does not print %q", want)
 		}
 	}
+	// the form of the shipments (the Type filter it starts with is Receipt): one line per group
+	result, err = reports.Execute(reports.IntrastatFormID, db, "demo", database.DBTypeSQLite, reports.RunOptions{Output: reports.OutputPDF, Context: context,
+		Filters: map[string][]ftables.FieldFilter{"IntrastatJnlLine": {{Field: "type", Expression: "1"}}}})
+	mustOK(t, err)
+	texts = printedTexts(result, 0)
+	for _, want := range []string{"Intrastat - Form", "Shipment", "94013100", "Denmark", "No. of Entries|2"} {
+		if !strings.Contains(texts, want) {
+			t.Errorf("form does not print %q:\n%s", want, texts)
+		}
+	}
+	_, err = reports.Execute(reports.IntrastatFormID, db, "demo", database.DBTypeSQLite, reports.RunOptions{Output: reports.OutputPDF, Context: context,
+		Filters: map[string][]ftables.FieldFilter{"IntrastatJnlLine": {{Field: "type", Expression: "0|1"}}}})
+	if err == nil {
+		t.Error("the form of both types was printed")
+	}
 	result, err = reports.Execute(reports.IntrastatMakeDiskID, db, "demo", database.DBTypeSQLite, reports.RunOptions{Context: context})
 	mustOK(t, err)
 	file := string(result.File)
@@ -93,6 +108,46 @@ func TestIntrastat(t *testing.T) {
 	if !strings.Contains(string(result.File), "LIST") || !strings.Contains(string(result.File), "\r\n10") {
 		t.Errorf("VIES file:\n%s", result.File)
 	}
+
+	// VIES printed (19): two sales to a Danish customer and one without a customer
+	dkCust := gtables.NewCustomer(src)
+	dkCust.SetRange("country_code", types.Code("DK"))
+	if !dkCust.FindFirst() {
+		t.Fatal("no Danish customer")
+	}
+	dkCust.Vat_registration_no = "DK12345678"
+	mustOK(t, dkCust.ModifyOrError(false))
+	lastEntry := gtables.NewTaxEntry(src)
+	lastEntry.FindLast()
+	for i, e := range []struct {
+		cust types.Code
+		base string
+		eu3  bool
+	}{{dkCust.No, "-10000", false}, {dkCust.No, "-2500", true}, {"", "-700", false}} {
+		taxEntry := gtables.NewTaxEntry(src)
+		taxEntry.Entry_no = lastEntry.Entry_no + i + 1
+		taxEntry.Type = gtables.TaxEntry_Type.Sale
+		taxEntry.Posting_date = types.NewDate(2026, 10, 5)
+		taxEntry.Country_code = "DK"
+		taxEntry.Sell_to_buy_from_no = e.cust
+		taxEntry.Base = types.MustDecimal(e.base)
+		taxEntry.Eu_3_party_trade = e.eu3
+		mustOK(t, taxEntry.InsertOrError(false))
+	}
+	result, err = reports.Execute(reports.VIESDeclarationTaxAuthID, db, "demo", database.DBTypeSQLite, reports.RunOptions{Output: reports.OutputPDF,
+		Filters: map[string][]ftables.FieldFilter{"TaxEntry": {{Field: "posting_date", Expression: "2026-10-01..2026-10-31"}}}})
+	mustOK(t, err)
+	texts = printedTexts(result, 0)
+	for _, want := range []string{"VIES DECLARATION", "DK12345678", "12,500.00", "2,500.00", "|13|", "Warning!", "Signature"} {
+		if !strings.Contains(texts, want) {
+			t.Errorf("VIES declaration does not print %q:\n%s", want, texts)
+		}
+	}
+	// (report 88 refuses a sale without a customer)
+	noCust := gtables.NewTaxEntry(src)
+	noCust.SetRange("sell_to_buy_from_no", types.Code(""))
+	noCust.SetRange("country_code", types.Code("DK"))
+	noCust.DeleteAll()
 
 	// in euro as the additional reporting currency: Get Entries in a batch with Amounts in Add.
 	// Currency takes the amounts in euro (11.50 a euro, rounded to whole euro), the checklist

@@ -81,6 +81,7 @@ var layoutFitOptions = map[int]map[string]string{
 	17:   {"starting_date": "2026-01-01", "ending_date": "2026-12-31"},
 	18:   {"starting_date": "2026-01-01", "ending_date": "2026-12-31"},
 	20:   {"starting_date": "2026-07-01", "ending_date": "2026-09-30", "posting_date": "2026-10-06", "document_no": "SETTLE-TEST", "settlement_account": "2330", "show_tax_entries": "true"},
+	1002: {"post_level": "1", "posting_date": "2026-10-06", "document_no": "INVT-FIT"},
 	1401: {"bank_account": "B010", "last_check_no": "FIT1000", "test_print": "true"},
 	5605: {"depreciation_book": "COMPANY", "starting_date": "2026-01-01", "ending_date": "2026-10-06"},
 	5606: {"depreciation_book": "COMPANY", "starting_date": "2026-01-01", "ending_date": "2026-10-06"},

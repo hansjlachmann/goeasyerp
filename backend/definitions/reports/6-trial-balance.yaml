@@ -27,6 +27,11 @@ report:
           elements:
             - {value: period_text, x: 0, y: 0, width: 273}
         - type: header
+          print_if: round_text
+          height: 5
+          elements:
+            - {value: round_text, x: 0, y: 0, width: 273}
+        - type: header
           print_if: add_curr_text
           height: 5
           elements:
@@ -53,26 +58,26 @@ report:
           elements:
             - {field: "no", x: 0, y: 0, width: 20, bold: true}
             - {value: name, x: 21, y: 0, width: 100, bold: true}
-            - {value: net_change_debit, x: 130, y: 0, width: 34, align: right, bold: true, blank_zero: true}
-            - {value: net_change_credit, x: 166, y: 0, width: 34, align: right, bold: true, blank_zero: true}
-            - {value: balance_debit, x: 202, y: 0, width: 34, align: right, bold: true, blank_zero: true}
-            - {value: balance_credit, x: 238, y: 0, width: 34, align: right, bold: true, blank_zero: true}
+            - {value: net_change_debit, x: 130, y: 0, width: 34, align: right, bold: true, blank_zero: true, decimal_places_value: amount_places}
+            - {value: net_change_credit, x: 166, y: 0, width: 34, align: right, bold: true, blank_zero: true, decimal_places_value: amount_places}
+            - {value: balance_debit, x: 202, y: 0, width: 34, align: right, bold: true, blank_zero: true, decimal_places_value: amount_places}
+            - {value: balance_credit, x: 238, y: 0, width: 34, align: right, bold: true, blank_zero: true, decimal_places_value: amount_places}
         - type: body
           print_unless: is_total
           height: 4.2
           elements:
             - {field: "no", x: 0, y: 0, width: 20}
             - {value: name, x: 21, y: 0, width: 100}
-            - {value: net_change_debit, x: 130, y: 0, width: 34, align: right, blank_zero: true}
-            - {value: net_change_credit, x: 166, y: 0, width: 34, align: right, blank_zero: true}
-            - {value: balance_debit, x: 202, y: 0, width: 34, align: right, blank_zero: true}
-            - {value: balance_credit, x: 238, y: 0, width: 34, align: right, blank_zero: true}
+            - {value: net_change_debit, x: 130, y: 0, width: 34, align: right, blank_zero: true, decimal_places_value: amount_places}
+            - {value: net_change_credit, x: 166, y: 0, width: 34, align: right, blank_zero: true, decimal_places_value: amount_places}
+            - {value: balance_debit, x: 202, y: 0, width: 34, align: right, blank_zero: true, decimal_places_value: amount_places}
+            - {value: balance_credit, x: 238, y: 0, width: 34, align: right, blank_zero: true, decimal_places_value: amount_places}
         - type: footer
           height: 7
           elements:
             - {line: true, x: 130, y: 0.5}
             - {text: TOTAL, x: 21, y: 1.5, width: 100, bold: true}
-            - {value: total_net_change_debit, x: 130, y: 1.5, width: 34, align: right, bold: true}
-            - {value: total_net_change_credit, x: 166, y: 1.5, width: 34, align: right, bold: true}
-            - {value: total_balance_debit, x: 202, y: 1.5, width: 34, align: right, bold: true}
-            - {value: total_balance_credit, x: 238, y: 1.5, width: 34, align: right, bold: true}
+            - {value: total_net_change_debit, x: 130, y: 1.5, width: 34, align: right, bold: true, decimal_places_value: amount_places}
+            - {value: total_net_change_credit, x: 166, y: 1.5, width: 34, align: right, bold: true, decimal_places_value: amount_places}
+            - {value: total_balance_debit, x: 202, y: 1.5, width: 34, align: right, bold: true, decimal_places_value: amount_places}
+            - {value: total_balance_credit, x: 238, y: 1.5, width: 34, align: right, bold: true, decimal_places_value: amount_places}
