@@ -8,6 +8,7 @@ common:
 
   # Common actions
   actions:
+    res_group: "Res. Group"
     error_ledger_entries: "Error Ledger Entries"
     fa_posting_types_overview: "FA Posting Types Overview"
     main_asset_statistics: "Main Asset Statistics"

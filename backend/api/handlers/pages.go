@@ -279,6 +279,9 @@ func (h *PagesHandler) GetPage(c *fiber.Ctx) error {
 	for i := range pageDef.Page.Layout.Sections {
 		sec := &pageDef.Page.Layout.Sections[i]
 		sec.Caption = commonCaption(ts, "sections", sec.Name, sec.Caption, lang)
+		if sec.Matrix != nil {
+			translateActions(ts, sec.Matrix.Actions, lang)
+		}
 	}
 
 	// Build navigation translations for breadcrumbs

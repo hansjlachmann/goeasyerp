@@ -922,6 +922,7 @@
 								pageId={page.page.id}
 								section={section.name}
 								matrix={section.matrix}
+								actions={section.matrix.actions}
 								{record}
 								ondrilldown={(pageId, filters) => { drilldown = { pageId, filters }; }}
 							/>

@@ -23,6 +23,51 @@ page:
       - name: Budget
         caption: Budget
         matrix:
+          # the actions of the selected row (its G/L account)
+          actions:
+            - name: Account
+              caption: Account
+              image: Card
+              promoted: true
+              items:
+                - name: Card
+                  caption: Card
+                  image: Card
+                  run_page: 17
+                  run_page_filter_field: "no"
+                  run_page_filter_value: "no"
+                - name: Ledger Entries
+                  caption: Ledger Entries
+                  image: Entries
+                  run_page: 20
+                  run_page_filter_field: gl_account_no
+                  run_page_filter_value: "no"
+                - name: Comments
+                  caption: Comments
+                  image: Document
+                  run_page: 124
+                  run_page_filters:
+                    - {field: table_name, const: "0"}   # G/L Account
+                    - {field: "no", value: "no"}
+                - name: Extended Texts
+                  caption: Extended Texts
+                  image: Document
+                  run_page: 391
+                  run_page_filters:
+                    - {field: table_name, const: "1"}   # G/L Account
+                    - {field: "no", value: "no"}
+                - name: Budget by Dim. 1/2
+                  caption: Budget by Dim. 1/2
+                  image: Statistics
+                  run_page: 420
+                  run_page_filter_field: "no"
+                  run_page_filter_value: "no"
+                - name: Balance/Budget
+                  caption: Balance/Budget
+                  image: Statistics
+                  run_page: 154
+                  run_page_filter_field: "no"
+                  run_page_filter_value: "no"
           table: G_L_Account
           value: budgeted_amount
           entry_table: G_L_Budget_Entry
@@ -79,3 +124,22 @@ page:
       image: Print
       promoted: true
       run_object: report:9
+
+    # the budget views of all accounts (classic Budget menu)
+    - name: Budget
+      caption: Budget
+      image: Statistics
+      promoted: true
+      items:
+        - name: By Dimension 1
+          caption: By Dimension 1
+          image: Statistics
+          run_page: 417
+        - name: By Dimension 2
+          caption: By Dimension 2
+          image: Statistics
+          run_page: 418
+        - name: G/L Balance/Budget
+          caption: G/L Balance/Budget
+          image: Statistics
+          run_page: 422

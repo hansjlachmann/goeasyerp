@@ -22,6 +22,45 @@ page:
       - name: Projects
         caption: Projects
         matrix:
+          # the actions of the selected row (its project)
+          actions:
+            - name: Project
+              caption: Project
+              image: Card
+              promoted: true
+              items:
+                - name: Card
+                  caption: Card
+                  image: Card
+                  run_page: 88
+                  run_page_filter_field: "no"
+                  run_page_filter_value: "no"
+                - name: Statistics
+                  caption: Statistics
+                  image: Statistics
+                  shortcut: F7
+                  run_page: 222
+                  run_page_filter_field: "no"
+                  run_page_filter_value: "no"
+                - name: Comments
+                  caption: Comments
+                  image: Document
+                  run_page: 124
+                  run_page_filters:
+                    - {field: table_name, const: "5"}   # Project
+                    - {field: "no", value: "no"}
+                - name: Ledger Entries
+                  caption: Ledger Entries
+                  image: Entries
+                  run_page: 92
+                  run_page_filter_field: project_no
+                  run_page_filter_value: "no"
+                - name: Project Budget
+                  caption: Project Budget
+                  image: Calculate
+                  run_page: 212
+                  run_page_params:
+                    project: "no"
           table: Project
           value: budgeted_res_qty
           date_filter: date_filter
@@ -35,3 +74,22 @@ page:
               width: 250
             - source: status
               width: 100
+
+  # the card's resource: its availability and prices
+  actions:
+    - name: Resource Availability
+      caption: Resource Availability
+      image: Calendar
+      promoted: true
+      run_page: 225
+      run_page_filter_field: "no"
+      run_page_filter_value: "no"
+
+    - name: Prices
+      caption: Prices
+      image: Calculate
+      promoted: true
+      run_page: 204
+      run_page_filters:
+        - {field: type, const: "0"}   # Resource
+        - {field: code, value: "no"}

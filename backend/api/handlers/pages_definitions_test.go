@@ -31,6 +31,30 @@ func checkMatrix(t *testing.T, id int, mx *pages.Matrix, cardFields map[string]b
 	for _, f := range rec.GetFlowFilterFields() {
 		flowFilters[f.Name] = true
 	}
+	// A section's matrix actions work on the row: what they open exists, their filters and
+	// parameters are fields of the rows' table
+	var checkActions func(actions []pages.Action)
+	checkActions = func(actions []pages.Action) {
+		for _, a := range actions {
+			if a.RunPage != 0 && !exists(a.RunPage) {
+				t.Errorf("page %d: matrix action %s opens page %d, which does not exist", id, a.Name, a.RunPage)
+			}
+			for _, f := range append([]string{a.RunPageFilterValue}, mapValues(a.RunPageParams)...) {
+				if f != "" && !fields[f] {
+					t.Errorf("page %d: matrix action %s takes %q, not a field of %s", id, a.Name, f, mx.Table)
+				}
+			}
+			for _, f := range a.RunPageFilters {
+				for _, field := range []string{f.Value, f.From, f.To} {
+					if field != "" && !fields[field] {
+						t.Errorf("page %d: matrix action %s takes %q, not a field of %s", id, a.Name, field, mx.Table)
+					}
+				}
+			}
+			checkActions(a.Items)
+		}
+	}
+	checkActions(mx.Actions)
 	if mx.Calculated {
 		if !pages.HasMatrixCalculate(id) {
 			t.Errorf("page %d: a calculated matrix without an OnMatrixCalculate trigger", id)
@@ -164,4 +188,12 @@ func TestPageDefinitions(t *testing.T) {
 		}
 		check(p.Page.Actions)
 	}
+}
+
+func mapValues(m map[string]string) []string {
+	var out []string
+	for _, v := range m {
+		out = append(out, v)
+	}
+	return out
 }

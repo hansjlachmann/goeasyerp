@@ -46,6 +46,12 @@ func TestPageFunctionsAreRegistered(t *testing.T) {
 	}
 	for id, p := range pages.GetRegistry().GetAllPages() {
 		check(id, p.Page.SourceTable, p.Page.Actions)
+		// a card section's matrix: its actions run on the row's record
+		for _, s := range p.Page.Layout.Sections {
+			if s.Matrix != nil {
+				check(id, s.Matrix.Table, s.Matrix.Actions)
+			}
+		}
 		// A field's OnAfterValidate: a function of the page's table
 		fields := []pages.Field{}
 		if p.Page.Layout.Repeater != nil {

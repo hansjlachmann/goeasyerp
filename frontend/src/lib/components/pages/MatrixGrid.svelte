@@ -8,13 +8,21 @@
 	// Esc cancels; Show Entries opens the cell's entries.
 	import { untrack, tick } from 'svelte';
 	import { api } from '$lib/services/api';
-	import { t, PERIOD } from '$lib/services/i18n.svelte';
+	import { t, PERIOD, ERR } from '$lib/services/i18n.svelte';
 	import { currentLanguage } from '$lib/stores/session';
 	import { cellStyle, formatDate, formatDecimal } from '$lib/utils/fieldHelpers';
 	import { fromDecimalInput, toDecimalInput } from '$lib/utils/regional';
 	import { matrixCellValue, roundingFactors } from '$lib/utils/matrix';
-	import type { Matrix, MatrixColumn, MatrixRow } from '$lib/types/pages';
+	import type { Action, Matrix, MatrixColumn, MatrixRow } from '$lib/types/pages';
 	import type { TableFilter } from '$lib/types/api';
+	import { toast } from '$lib/stores/toast';
+	import { runPagePath } from '$lib/utils/runPage';
+	import { withReturn } from '$lib/utils/returnUrl';
+	import { pageNavigator } from '$lib/utils/pageNavigator';
+	import { getShortcutKey, normalizeShortcut } from '$lib/utils/shortcuts';
+	import ActionButton from '../ActionButton.svelte';
+	import ActionMenu from '../ActionMenu.svelte';
+	import ObjectRunner from '../ObjectRunner.svelte';
 
 	interface Props {
 		pageId: number;
@@ -23,9 +31,50 @@
 		record: Record<string, any>;
 		// opens a drilldown page over the card with these filters
 		ondrilldown?: (pageId: number, filters: TableFilter[]) => void;
+		// actions run on the selected row (a matrix page's actions, a section's matrix actions):
+		// run_page filtered by the row's record, a function on it
+		actions?: Action[];
 	}
 
-	let { pageId, section, matrix, record, ondrilldown }: Props = $props();
+	let { pageId, section, matrix, record, ondrilldown, actions }: Props = $props();
+
+	const pageNav = pageNavigator();
+	let runner = $state<ObjectRunner | undefined>(undefined);
+	const rowActions = $derived((actions ?? []).filter((a) => a.promoted));
+
+	// The selected row's record as its actions need it (its key and the fields they take)
+	function selectedRecord(): Record<string, any> | null {
+		if (selRow < 0 || selRow >= rows.length) return null;
+		return rows[selRow].record ?? null;
+	}
+
+	// An action on the selected row: its page filtered by the row, or its function on the row's
+	// record (a page action without filters opens without a row)
+	function runRowAction(action: Action) {
+		if (action.items) return;
+		const rowRecord = selectedRecord();
+		if (action.run_page) {
+			const url = runPagePath(action, rowRecord);
+			if (!url && (action.run_page_filter_field || (action.run_page_filters ?? []).length > 0)) {
+				toast.error(t(ERR.NO_RECORD_SELECTED));
+				return;
+			}
+			pageNav.open(withReturn(url ?? `/pages/${action.run_page}`));
+		} else if (action.run_object) {
+			if (!rowRecord) {
+				toast.error(t(ERR.NO_RECORD_SELECTED));
+				return;
+			}
+			runner?.run(action.run_object, rowRecord);
+		}
+	}
+
+	// The actions' shortcuts, also inside the menu buttons
+	function actionByShortcut(e: KeyboardEvent): Action | undefined {
+		const key = normalizeShortcut(getShortcutKey(e));
+		const flat = (list: Action[]): Action[] => list.flatMap((a) => [a, ...flat(a.items ?? [])]);
+		return flat(actions ?? []).find((a) => a.shortcut && !a.items && normalizeShortcut(a.shortcut) === key);
+	}
 
 	const locale = $derived($currentLanguage || 'en-US');
 	const columnCount = 12; // periods shown at once
@@ -229,6 +278,13 @@
 
 	function handleGridKey(e: KeyboardEvent) {
 		if (editing || selRow < 0) return;
+		const action = actionByShortcut(e);
+		if (action) {
+			e.preventDefault();
+			e.stopPropagation();
+			runRowAction(action);
+			return;
+		}
 		switch (e.key) {
 			case 'ArrowUp':
 				select(selRow - 1, selCol);
@@ -342,6 +398,25 @@
 </script>
 
 <div class="matrix" data-own-keys>
+	{#if rowActions.length > 0}
+		<!-- The row's actions: they work on the selected row -->
+		<div class="row-actions">
+			{#each rowActions as action (action.name)}
+				{#if action.items}
+					<ActionMenu {action} itemDisabled={(item) => selRow < 0 && (!!item.run_object || !!item.run_page_filter_field || (item.run_page_filters ?? []).length > 0)} onselect={runRowAction} />
+				{:else}
+					<ActionButton
+						caption={action.caption}
+						image={action.image}
+						shortcut={action.shortcut}
+						tabindex={-1}
+						onclick={() => runRowAction(action)}
+						disabled={action.enabled === false || (selRow < 0 && (!!action.run_object || !!action.run_page_filter_field || (action.run_page_filters ?? []).length > 0))}
+					/>
+				{/if}
+			{/each}
+		</div>
+	{/if}
 	<div class="grid-controls">
 		{#if !matrix.no_periods}
 		<div class="control-group" role="radiogroup" aria-label={t(PERIOD.VIEW_BY)}>
@@ -449,7 +524,16 @@
 					<tr>
 						{#each matrix.fields as field (field.source)}
 							{@const cs = cellStyle(field, row.fields)}
-							<td class="row-field {cs.classes}" style={cs.style}>{rowField(row, field.source)}</td>
+							<!-- a click on the row's fields selects the row (its actions work on it) -->
+							<td
+								class="row-field {cs.classes}"
+								class:selected-row={r === selRow}
+								style={cs.style}
+								onmousedown={(e) => {
+									e.preventDefault();
+									select(r, selCol < 0 ? 0 : selCol);
+								}}
+							>{rowField(row, field.source)}</td>
 						{/each}
 						{#each columns as column, c (c)}
 							{@const strong = cellStyle(matrix.fields[0], row.fields).classes}
@@ -495,6 +579,8 @@
 		</table>
 	</div>
 </div>
+
+<ObjectRunner bind:this={runner} ondone={(refresh) => { if (refresh) load(); }} />
 
 <style>
 	.matrix {
@@ -644,6 +730,22 @@
 
 	.cell {
 		cursor: cell;
+	}
+
+	/* the actions of the selected row */
+	.row-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.row-field {
+		cursor: pointer;
+	}
+
+	.row-field.selected-row {
+		background: rgb(var(--row-selected));
 	}
 
 	.cell.selected {

@@ -178,6 +178,10 @@ type Matrix struct {
 	DrilldownRowValue      string            `yaml:"drilldown_row_value,omitempty" json:"drilldown_row_value,omitempty"`
 	DrilldownDateField     string            `yaml:"drilldown_date_field,omitempty" json:"drilldown_date_field,omitempty"`
 	DrilldownRecordFilters map[string]string `yaml:"drilldown_record_filters,omitempty" json:"drilldown_record_filters,omitempty"`
+	// Actions: the actions of a card section's matrix, run on the selected matrix row (a run_page
+	// filtered by the row's fields, a function on the row's record) — a matrix page's own
+	// actions work on its selected row the same way
+	Actions []Action `yaml:"actions,omitempty" json:"actions,omitempty"`
 }
 
 // PeriodGrid is a card section listing periods (days … years, accounting periods) — or, with
@@ -416,6 +420,7 @@ func (p *PageDefinition) Clone() *PageDefinition {
 			mx := *s.Matrix
 			mx.Filters = append([]Field{}, mx.Filters...)
 			mx.Fields = append([]Field{}, mx.Fields...)
+			mx.Actions = cloneActions(mx.Actions)
 			s.Matrix = &mx
 		}
 		m.Layout.Sections[i] = s
@@ -424,6 +429,7 @@ func (p *PageDefinition) Clone() *PageDefinition {
 		mx := *p.Page.Layout.Matrix
 		mx.Filters = append([]Field{}, mx.Filters...)
 		mx.Fields = append([]Field{}, mx.Fields...)
+		mx.Actions = cloneActions(mx.Actions)
 		m.Layout.Matrix = &mx
 	}
 	if p.Page.Layout.Repeater != nil {

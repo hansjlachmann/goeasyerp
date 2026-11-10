@@ -24,12 +24,78 @@ page:
       drilldown_row_field: resource_no
       drilldown_date_field: date
 
+  # the actions work on the selected row (its resource)
   actions:
-    # the projects' budgets of the resource per period (page 221)
-    - name: Resource Allocated per Project
-      caption: Resource Allocated per Project
+    - name: Resource
+      caption: Resource
+      image: Card
+      promoted: true
+      items:
+        - name: Card
+          caption: Card
+          image: Card
+          run_page: 76
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        - name: Statistics
+          caption: Statistics
+          image: Statistics
+          shortcut: F7
+          run_page: 223
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        - name: Comments
+          caption: Comments
+          image: Document
+          run_page: 124
+          run_page_filters:
+            - {field: table_name, const: "4"}   # Resource
+            - {field: "no", value: "no"}
+        - name: Ledger Entries
+          caption: Ledger Entries
+          image: Entries
+          run_page: 202
+          run_page_filter_field: resource_no
+          run_page_filter_value: "no"
+
+    - name: Costs and Prices
+      caption: Costs and Prices
+      image: Calculate
+      promoted: true
+      items:
+        - name: Costs
+          caption: Costs
+          image: Calculate
+          run_page: 203
+          run_page_filters:
+            - {field: type, const: "0"}   # Resource
+            - {field: code, value: "no"}
+        - name: Prices
+          caption: Prices
+          image: Calculate
+          run_page: 204
+          run_page_filters:
+            - {field: type, const: "0"}   # Resource
+            - {field: code, value: "no"}
+
+    - name: Planning
+      caption: Planning
       image: Calendar
       promoted: true
-      run_page: 221
-      run_page_filter_field: "no"
-      run_page_filter_value: "no"
+      items:
+        - name: Resource Availability
+          caption: Resource Availability
+          image: Calendar
+          run_page: 225
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        - name: Resource Allocated per Project
+          caption: Resource Allocated per Project
+          image: Calendar
+          run_page: 221
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        - name: Project Budget
+          caption: Project Budget
+          image: Calendar
+          run_page: 212

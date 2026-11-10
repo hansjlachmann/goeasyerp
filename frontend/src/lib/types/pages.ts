@@ -92,6 +92,7 @@ export interface Matrix {
 	view_as?: boolean; // a calculated matrix offers View as Net Change / Balance at Date
 	no_periods?: boolean; // a calculated matrix without periods (Items by Bin): no View by, no previous/next
 	row_filters?: Record<string, string>; // row field → card record field
+	actions?: Action[]; // a card section's matrix: actions on the selected row
 }
 
 /** A period (column) of a matrix */
@@ -110,6 +111,7 @@ export interface MatrixRow {
 	fields: Record<string, any>;
 	drilldown?: string;
 	values: string[];
+	record?: Record<string, any>; // what the row's actions need: its key and the fields they take
 }
 
 /** A card section of periods (or of a table's records) with the record's FlowFields per row */

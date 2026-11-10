@@ -32,3 +32,77 @@ page:
           width: 260
           indent_field: indentation
           style_expr: {field: account_type, not_equal: 0, style: Strong}
+
+  # the actions work on the selected row (its G/L account)
+  actions:
+    - name: Account
+      caption: Account
+      image: Card
+      promoted: true
+      items:
+        - name: Card
+          caption: Card
+          image: Card
+          run_page: 17
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        - name: Ledger Entries
+          caption: Ledger Entries
+          image: Entries
+          run_page: 20
+          run_page_filter_field: gl_account_no
+          run_page_filter_value: "no"
+        - name: Comments
+          caption: Comments
+          image: Document
+          run_page: 124
+          run_page_filters:
+            - {field: table_name, const: "0"}   # G/L Account
+            - {field: "no", value: "no"}
+        - name: Extended Texts
+          caption: Extended Texts
+          image: Document
+          run_page: 391
+          run_page_filters:
+            - {field: table_name, const: "1"}   # G/L Account
+            - {field: "no", value: "no"}
+        - name: Balance/Budget
+          caption: Balance/Budget
+          image: Statistics
+          run_page: 154
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        - name: Balance by Dim. 1/2
+          caption: Balance by Dim. 1/2
+          image: Statistics
+          run_page: 412
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+        - name: Account Balance
+          caption: Account Balance
+          image: Statistics
+          run_page: 415
+          run_page_filter_field: "no"
+          run_page_filter_value: "no"
+
+    - name: Balance
+      caption: Balance
+      image: Statistics
+      promoted: true
+      items:
+        - name: By Periods
+          caption: By Periods
+          image: Statistics
+          run_page: 408
+        - name: By Dimension 1
+          caption: By Dimension 1
+          image: Statistics
+          run_page: 409
+        - name: By Business Units
+          caption: By Business Units
+          image: Statistics
+          run_page: 411
+        - name: G/L Balance
+          caption: G/L Balance
+          image: Statistics
+          run_page: 414

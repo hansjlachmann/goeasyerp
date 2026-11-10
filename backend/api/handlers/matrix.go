@@ -39,6 +39,9 @@ type matrixRow struct {
 	Fields    map[string]interface{} `json:"fields"`
 	Drilldown string                 `json:"drilldown,omitempty"`
 	Values    []string               `json:"values"`
+	// Record: what the row's actions need of its record (as stored, not as shown) — its primary
+	// key and the fields their filters and page parameters take; only with row actions
+	Record map[string]interface{} `json:"record,omitempty"`
 }
 
 // matrixRequest is what both matrix endpoints take: the card section, the card's record, the
@@ -232,9 +235,12 @@ func (h *PageTriggersHandler) Matrix(c *fiber.Ctx) error {
 	}
 	var records []map[string]interface{}
 	var keys []string
+	var actionRecords []map[string]interface{}
+	actionFields := m.rowActionFields(rec)
 	for found := rec.FindSet(); found && len(records) < matrixMaxRows; found = rec.Next() {
 		records = append(records, rec.ToMap())
 		keys = append(keys, ftables.KeyString(rec)) // all key fields: rows of a composite key differ
+		actionRecords = append(actionRecords, pickFields(rec, actionFields))
 	}
 	// option fields are shown by their caption in the user's language
 	options := optionCaptions(m.matrix.Table, rec, m.language)
@@ -268,7 +274,7 @@ func (h *PageTriggersHandler) Matrix(c *fiber.Ctx) error {
 		if drilldown == "" {
 			drilldown = keys[i]
 		}
-		rows[i] = matrixRow{Key: keys[i], Fields: fields, Drilldown: drilldown, Values: make([]string, len(columns))}
+		rows[i] = matrixRow{Key: keys[i], Fields: fields, Drilldown: drilldown, Values: make([]string, len(columns)), Record: actionRecords[i]}
 	}
 	// the cells: per column one calculation over all rows
 	for j, column := range columns {
@@ -396,6 +402,7 @@ func (m *matrixContext) calculated(c *fiber.Ctx) error {
 	}
 
 	rows := []matrixRow{}
+	actionFields := m.rowActionFields(rec)
 	for found := rec.FindSet(); found && len(rows) < matrixMaxRows; found = rec.Next() {
 		data := rec.ToMap()
 		fields := map[string]interface{}{}
@@ -415,7 +422,7 @@ func (m *matrixContext) calculated(c *fiber.Ctx) error {
 		if drilldown == "" {
 			drilldown = ftables.KeyString(rec)
 		}
-		rows = append(rows, matrixRow{Key: ftables.KeyString(rec), Fields: fields, Drilldown: drilldown})
+		rows = append(rows, matrixRow{Key: ftables.KeyString(rec), Fields: fields, Drilldown: drilldown, Record: pickFields(rec, actionFields)})
 	}
 	columns, values, err := pages.RunMatrixCalculate(m.pageID, card, rec)
 	if err != nil {
@@ -431,4 +438,69 @@ func (m *matrixContext) calculated(c *fiber.Ctx) error {
 		"columns": columns, "rows": rows, "date": period.Start.String(),
 		"period": matrixColumn{Start: period.Start.String(), End: period.End.String(), Name: period.Name},
 	}))
+}
+
+// rowActions: the actions that work on the selected matrix row — a card section's matrix
+// actions, a matrix page's own actions
+func (m *matrixContext) rowActions() []pages.Action {
+	if m.req.Section == "" {
+		return m.page.Page.Actions
+	}
+	return m.matrix.Actions
+}
+
+// rowActionFields: the fields of a row its actions need — none without actions; else the primary
+// key (a function reads the record by it) and what their run_page filters and parameters take
+func (m *matrixContext) rowActionFields(rec ftables.Table) []string {
+	actions := m.rowActions()
+	if len(actions) == 0 {
+		return nil
+	}
+	var names []string
+	seen := map[string]bool{}
+	add := func(name string) {
+		if name != "" && !seen[name] {
+			seen[name] = true
+			names = append(names, name)
+		}
+	}
+	for _, f := range rec.GetFields() {
+		if f.PrimaryKey {
+			add(f.Name)
+		}
+	}
+	var walk func(actions []pages.Action)
+	walk = func(actions []pages.Action) {
+		for _, a := range actions {
+			add(a.RunPageFilterValue)
+			add(a.RunPageField)
+			for _, f := range a.RunPageFilters {
+				add(f.Value)
+				add(f.From)
+				add(f.To)
+			}
+			for _, field := range a.RunPageParams {
+				add(field)
+			}
+			walk(a.Items)
+		}
+	}
+	walk(actions)
+	return names
+}
+
+// pickFields: these fields of the record as the table API sends them (nil without fields)
+func pickFields(rec ftables.Table, names []string) map[string]interface{} {
+	if len(names) == 0 {
+		return nil
+	}
+	public := ftables.PublicMap(rec)
+	out := make(map[string]interface{}, len(names))
+	for _, name := range names {
+		value, ok := public[name]
+		if ok {
+			out[name] = value
+		}
+	}
+	return out
 }

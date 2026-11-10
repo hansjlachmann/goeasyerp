@@ -313,6 +313,14 @@ func TestItemsByBin(t *testing.T) {
 	if values["I1"] != "[3 4]" || values["I2"] != "[ ]" {
 		t.Errorf("cells %v, want I1 [3 4], I2 blank", values)
 	}
+	// the page's actions work on the selected row: each row carries its key for them
+	for _, r := range data["rows"].([]interface{}) {
+		row := r.(map[string]interface{})
+		record, _ := row["record"].(map[string]interface{})
+		if fmt.Sprint(record["no"]) != fmt.Sprint(row["key"]) {
+			t.Errorf("row %v: record %v", row["key"], row["record"])
+		}
+	}
 }
 
 // Items by Location (491): a column per location of the Location Filter, a cell the item's

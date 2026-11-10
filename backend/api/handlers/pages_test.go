@@ -44,6 +44,11 @@ func TestPageCaptionsTranslated(t *testing.T) {
 				}
 			}
 			check(page.Page.Actions)
+			for _, sec := range page.Page.Layout.Sections {
+				if sec.Matrix != nil {
+					check(sec.Matrix.Actions) // a card section's matrix actions
+				}
+			}
 			for _, s := range page.Page.Layout.Sections {
 				key := "sections." + captionKey(s.Name)
 				if ts.CommonTranslation(key, lang) == "common."+key {

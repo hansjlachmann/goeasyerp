@@ -24,6 +24,39 @@ page:
       - name: Quantity
         caption: Quantity
         matrix:
+          # the actions of the selected row (its budget line)
+          actions:
+            - name: Change Budget Dates
+              caption: Change Budget Dates
+              image: Calendar
+              promoted: true
+              run_object: table:Project_Budget_Line.ChangeDates
+
+            - name: Planning
+              caption: Planning
+              image: Calendar
+              promoted: true
+              items:
+                - name: Resource Availability
+                  caption: Resource Availability
+                  image: Calendar
+                  run_object: table:Project_Budget_Line.ResourceAvailability
+                - name: Res. Group Availability
+                  caption: Res. Group Availability
+                  image: Calendar
+                  run_object: table:Project_Budget_Line.ResGrAvailability
+                - name: Resource Allocated per Project
+                  caption: Resource Allocated per Project
+                  image: Calendar
+                  run_page: 221
+                  run_page_filter_field: "no"
+                  run_page_filter_value: "no"
+                - name: Res. Gr. Allocated per Project
+                  caption: Res. Gr. Allocated per Project
+                  image: Calendar
+                  run_page: 228
+                  run_page_filter_field: "no"
+                  run_page_filter_value: "no"
           table: Project_Budget_Line
           value: quantity
           entry_table: Project_Budget_Entry
@@ -53,3 +86,9 @@ page:
       shortcut: Esc
       promoted: true
       run_page: 89
+
+    - name: Copy Budget
+      caption: Copy Budget
+      image: Copy
+      promoted: true
+      run_object: report:1296

@@ -8,6 +8,7 @@ common:
 
   # Common actions
   actions:
+    res_group: "Ressursgruppe"
     error_ledger_entries: "Feilposter"
     fa_posting_types_overview: "Oversikt over anleggsbokføringstyper"
     main_asset_statistics: "Hovedanleggsstatistikk"

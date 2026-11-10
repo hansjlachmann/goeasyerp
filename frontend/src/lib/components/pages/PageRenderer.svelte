@@ -1085,6 +1085,7 @@
 				pageId={page.page.id}
 				section=""
 				matrix={page.page.layout.matrix}
+				actions={page.page.actions}
 				record={{}}
 				ondrilldown={(pageId, filters) => pageNav.open(withReturn(`/pages/${pageId}?` + filters.map((f) => 'filter=' + encodeURIComponent(`${f.field}=${f.expression}`)).join('&')))}
 			/>
