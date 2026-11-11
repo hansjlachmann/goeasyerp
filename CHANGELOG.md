@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.152](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.151...v0.1.152) (2026-11-11)
+
+
+### Features
+
+* G/L budget by business units, Track Package on posted shipments, mark failed journal batches ([5dca769](https://github.com/hansjlachmann/goeasyerp/commit/5dca769c4b917ce30f039d221574058c928fa7c4))
+* Intrastat form, printed VIES declaration, 1002 printout, Navigate print and external search, trial balance rounding ([cdfe0a1](https://github.com/hansjlachmann/goeasyerp/commit/cdfe0a1352f19735be1a7d22667a6445904da5b7))
+* VAT demo company (demo data parameter VAT) ([09d8f4c](https://github.com/hansjlachmann/goeasyerp/commit/09d8f4c18f6de5a2dff3fd55163beaf6fcfbf6a5))
+* VAT posting — Normal, Reverse Charge and Full VAT ([a2c6678](https://github.com/hansjlachmann/goeasyerp/commit/a2c667833d776817414e52c644fed171a9d1cb1a))
+
 ## [0.1.151](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.150...v0.1.151) (2026-11-10)
 
 
