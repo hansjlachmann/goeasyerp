@@ -155,6 +155,28 @@ func (j *demoJournals) generalJournals() error {
 		return err
 	}
 
+	// A VAT company (Options.VAT): the import VAT of a customs declaration, Full VAT on the
+	// purchase VAT account
+	fullVAT := gtables.NewTaxPostingSetup(j.src)
+	if fullVAT.Get(map[string]interface{}{"tax_bus_posting_group": "DOMESTIC", "tax_prod_posting_group": "FULL"}) {
+		l, err = j.genJnlLine("GENERAL", 20000, l)
+		if err != nil {
+			return err
+		}
+		err = set(l, "account_type", gtables.GenJournalLine_Account_type.GLAccount, "account_no", types.Code("1440"),
+			"gen_posting_type", gtables.GenJournalLine_Gen_posting_type.Purchase, "tax_bus_posting_group", types.Code("DOMESTIC"),
+			"tax_prod_posting_group", types.Code("FULL"), "amount", types.NewDecimalFromInt(2500),
+			"bal_account_type", gtables.GenJournalLine_Bal_account_type.GLAccount, "bal_account_no", types.Code("1510"))
+		if err != nil {
+			return err
+		}
+		l.Description = "Import VAT, customs declaration"
+		err = j.insertGenJnlLine(l)
+		if err != nil {
+			return err
+		}
+	}
+
 	// Sales: a service invoice to the first domestic customer
 	cust := gtables.NewCustomer(j.src)
 	cust.SetRange("customer_posting_group", types.Code("DOMESTIC"))

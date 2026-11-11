@@ -985,3 +985,34 @@ vendor_data:
       - {item_no: "1000", vendor_no: V00010, minimum_quantity: 200, discount_percent: 3}
       - {item_no: "1000", vendor_no: V00010, minimum_quantity: 500, discount_percent: 5}
       - {item_no: "1200", vendor_no: V00020, minimum_quantity: 500, discount_percent: 4}
+# The VAT company (codeunit 901 parameter VAT): records added to the setup above, whose tax
+# posting setups then calculate VAT (vat.go) — domestic Normal VAT, abroad Reverse Charge VAT,
+# product group FULL Full VAT on the purchase VAT account; the tax statement is the VAT return
+vat_data:
+  - table: Tax_Product_Posting_Group
+    records:
+      - {code: FULL, description: Full VAT (import VAT)}
+  - table: G_L_Account
+    records:
+      - {no: "2345", name: "Reverse Charge VAT", account_type: 0, income_balance: 1}
+  - table: Tax_Posting_Setup
+    records:
+      - {tax_bus_posting_group: "", tax_prod_posting_group: "FULL", tax_calculation_type: 2, sales_vat_account: "2330", purchase_vat_account: "1440", reverse_chrg_vat_acc: "2345"}
+      - {tax_bus_posting_group: "DOMESTIC", tax_prod_posting_group: "FULL", tax_calculation_type: 2, sales_vat_account: "2330", purchase_vat_account: "1440", reverse_chrg_vat_acc: "2345"}
+      - {tax_bus_posting_group: "EXPORT", tax_prod_posting_group: "FULL", tax_calculation_type: 2, sales_vat_account: "2330", purchase_vat_account: "1440", reverse_chrg_vat_acc: "2345"}
+  - table: Tax_Statement_Line   # the VAT return (sales printed with the opposite sign)
+    records:
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 10000, row_no: "1", description: "Sales", type: 3}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 20000, row_no: "10", description: "Sales, standard rate", type: 1, gen_posting_type: 2, tax_bus_posting_group: DOMESTIC, tax_prod_posting_group: STANDARD, amount_type: 2, print_with: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 30000, row_no: "11", description: "Output VAT, standard rate (25 %)", type: 1, gen_posting_type: 2, tax_bus_posting_group: DOMESTIC, tax_prod_posting_group: STANDARD, amount_type: 1, print_with: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 40000, row_no: "12", description: "Sales, reduced rate", type: 1, gen_posting_type: 2, tax_bus_posting_group: DOMESTIC, tax_prod_posting_group: REDUCED, amount_type: 2, print_with: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 50000, row_no: "13", description: "Output VAT, reduced rate (15 %)", type: 1, gen_posting_type: 2, tax_bus_posting_group: DOMESTIC, tax_prod_posting_group: REDUCED, amount_type: 1, print_with: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 60000, row_no: "14", description: "Exempt sales", type: 1, gen_posting_type: 2, tax_bus_posting_group: DOMESTIC, tax_prod_posting_group: EXEMPT, amount_type: 2, print_with: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 70000, row_no: "15", description: "Sales abroad, reverse charge", type: 1, gen_posting_type: 2, tax_bus_posting_group: EXPORT, tax_prod_posting_group: STANDARD, amount_type: 2, print_with: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 80000, row_no: "2", description: "Purchases", type: 3}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 90000, row_no: "21", description: "Input VAT, standard rate", type: 1, gen_posting_type: 1, tax_bus_posting_group: DOMESTIC, tax_prod_posting_group: STANDARD, amount_type: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 100000, row_no: "22", description: "Input VAT, reduced rate", type: 1, gen_posting_type: 1, tax_bus_posting_group: DOMESTIC, tax_prod_posting_group: REDUCED, amount_type: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 110000, row_no: "23", description: "Purchases abroad, reverse charge VAT", type: 1, gen_posting_type: 1, tax_bus_posting_group: EXPORT, tax_prod_posting_group: STANDARD, amount_type: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 120000, row_no: "24", description: "Full VAT (import VAT)", type: 1, gen_posting_type: 1, tax_bus_posting_group: DOMESTIC, tax_prod_posting_group: FULL, amount_type: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 130000, row_no: "30", description: "VAT payable", type: 2, row_totaling: "11|13|21|22|24", print_with: 1}
+      - {statement_template_name: TAX, statement_name: DEFAULT, line_no: 140000, row_no: "40", description: "VAT accounts (1440, 2330, 2345)", type: 0, account_totaling: "1440|2330|2345", print_with: 1}

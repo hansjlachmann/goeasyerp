@@ -376,7 +376,7 @@ messages:
   UNAPPLY_CONFIRM: "Vil du annullere udligning %1 bogført %2 (den seneste udligning af post %3)? Posterne får deres restbeløb tilbage, og udligningens finansposteringer tilbageføres."
   UNAPPLY_DONE: "Udligning %1 er annulleret."
   DEMO_DATA_REPLACE_CONFIRM: "Virksomheden \"%1\" har allerede data. Oprettelse af demodata sletter det hele (undtagen jobkøen og brugeropsætningen) og opretter demoen igen. Vil du fortsætte?"
-  DEMO_DATA_BAD_SIZE: "Ukendt størrelse på demodata \"%1\". Sæt opgavens parameter til SMALL, LARGE eller HEAVY."
+  DEMO_DATA_BAD_SIZE: "Ukendt størrelse på demodata \"%1\". Sæt opgavens parameter til SMALL, LARGE eller HEAVY, med VAT for et momsregnskab (f.eks. \"SMALL VAT\")."
   DEMO_DATA_INSERT_FAILED: "Kunne ikke oprette %1 %2: %3. Der blev ikke oprettet demodata."
   DEMO_DATA_SETUP: "Opretter lande og betalingsbetingelser..."
   DEMO_DATA_CUSTOMERS: "Opretter debitorer..."

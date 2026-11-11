@@ -376,7 +376,7 @@ messages:
   UNAPPLY_CONFIRM: "Do you want to unapply application %1 posted on %2 (the latest application of entry %3)? The entries get back their remaining amounts and the application's G/L postings are reversed."
   UNAPPLY_DONE: "Application %1 was unapplied."
   DEMO_DATA_REPLACE_CONFIRM: "Company \"%1\" already has data. Creating the demo data deletes all of it (except the job queue and user setup) and creates the demo again. Do you want to continue?"
-  DEMO_DATA_BAD_SIZE: "Unknown demo data size \"%1\". Set the job parameter to SMALL, LARGE or HEAVY."
+  DEMO_DATA_BAD_SIZE: "Unknown demo data size \"%1\". Set the job parameter to SMALL, LARGE or HEAVY, with VAT for a VAT company (e.g. \"SMALL VAT\")."
   DEMO_DATA_INSERT_FAILED: "Could not create %1 %2: %3. No demo data was created."
   DEMO_DATA_SETUP: "Creating countries and payment terms..."
   DEMO_DATA_CUSTOMERS: "Creating customers..."

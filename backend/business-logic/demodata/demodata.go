@@ -71,6 +71,29 @@ func ParseSize(parameter string) (Size, error) {
 	return "", &SizeError{Parameter: parameter}
 }
 
+// ParseParameter parses a Job Queue parameter: a size (blank means SMALL) and the word VAT for a
+// VAT company, separated by spaces or commas ("VAT", "LARGE VAT")
+func ParseParameter(parameter string) (Size, bool, error) {
+	vat := false
+	sizeText := ""
+	words := strings.FieldsFunc(strings.ToUpper(parameter), func(r rune) bool { return r == ' ' || r == ',' || r == ';' })
+	for _, word := range words {
+		if word == "VAT" {
+			vat = true
+			continue
+		}
+		if sizeText != "" {
+			return "", false, &SizeError{Parameter: parameter}
+		}
+		sizeText = word
+	}
+	size, err := ParseSize(sizeText)
+	if err != nil {
+		return "", false, &SizeError{Parameter: parameter}
+	}
+	return size, vat, nil
+}
+
 // Phase identifies the step reported to Progress.
 type Phase string
 
@@ -92,6 +115,10 @@ const (
 // Options control a Create run.
 type Options struct {
 	Size Size
+	// VAT makes the demo a VAT company instead of a sales tax one (vat.go): the tax posting
+	// setups calculate Normal VAT at home, Reverse Charge VAT abroad and Full VAT for product
+	// group FULL, before anything is posted; the tax statement is the VAT return
+	VAT bool
 	// Progress (optional) is called when the overall percentage changes.
 	Progress func(percent int, phase Phase)
 	// Today (optional) anchors the generated dates; zero means the current date.
@@ -250,6 +277,8 @@ type setupData struct {
 	CustomerData []tableRecords `yaml:"customer_data"`
 	// VendorData: the vendors' comments, order addresses and bank accounts, inserted after them
 	VendorData []tableRecords `yaml:"vendor_data"`
+	// VATData: the records the VAT company adds (Options.VAT, vat.go)
+	VATData []tableRecords `yaml:"vat_data"`
 }
 
 // lastRecordNo is the highest No. of a table's records in the setup data (its series continues
@@ -426,6 +455,13 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 	if err != nil {
 		rollback()
 		return Counts{}, err
+	}
+	if opts.VAT {
+		err = applyVATSetup(exec, company, dbType, setup.VATData, &counts, p)
+		if err != nil {
+			rollback()
+			return Counts{}, err
+		}
 	}
 	err = insertCustomers(exec, company, dbType, customers, entries, today, &counts, p)
 	if err != nil {

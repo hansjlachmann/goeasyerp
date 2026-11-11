@@ -25,7 +25,8 @@ import (
 // DemoDataCreate - Codeunit 901: Create Demo Data
 //
 // Run from the Job Queue (Run action or the scheduler) in the company to fill. The
-// job's parameter selects the size: SMALL (default), LARGE or HEAVY. A company that already
+// job's parameter selects the size: SMALL (default), LARGE or HEAVY, and VAT makes it a VAT
+// company instead of a sales tax one ("VAT", "LARGE VAT"). A company that already
 // has customers is emptied and filled again (but its job queue and user setup) — run from
 // the page, after a question; nothing changes if any part fails. Every run is logged as a
 // Job Queue Entry.
@@ -99,7 +100,7 @@ func (c *DemoDataCreate) Run(record interface{}) (fcodeunits.Result, error) {
 }
 
 func (c *DemoDataCreate) create(jobQueue *gtables.JobQueue, ts *i18n.TranslationService, lang string) (demodata.Counts, error) {
-	size, err := demodata.ParseSize(jobQueue.Parameter.String())
+	size, vat, err := demodata.ParseParameter(jobQueue.Parameter.String())
 	if err != nil {
 		return demodata.Counts{}, err
 	}
@@ -124,7 +125,7 @@ func (c *DemoDataCreate) create(jobQueue *gtables.JobQueue, ts *i18n.Translation
 		}
 	}
 
-	return demodata.Create(c.db, c.company, c.dbType, demodata.Options{Size: size, Progress: progress, ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost, GenJnlPostLine: openGenJnlPostLine, ProjectJnlPostLine: openProjectJnlPostLine, Journals: true,
+	return demodata.Create(c.db, c.company, c.dbType, demodata.Options{Size: size, VAT: vat, Progress: progress, ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost, GenJnlPostLine: openGenJnlPostLine, ProjectJnlPostLine: openProjectJnlPostLine, Journals: true,
 		ReminderIssue: openReminderIssue, FinChrgMemoIssue: openFinChrgMemoIssue, AdjustExchRates: adjustExchRates})
 }
 
