@@ -6,7 +6,7 @@ application:
   name: GoEasyERP Base Application
   publisher: Hans J. Lachmann
   contact: https://github.com/hansjlachmann/goeasyerp
-  version: 0.1.152 # x-release-please-version
+  version: 0.1.153 # x-release-please-version
   number_series:
     # Tables, pages, codeunits and reports; a number is unique per object type
     objects:

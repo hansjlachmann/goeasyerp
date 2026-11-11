@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.153](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.152...v0.1.153) (2026-11-11)
+
+
+### Features
+
+* an EU 3-Party Trade demo sale, EU 3-Party Trade on Tax Entries ([3884768](https://github.com/hansjlachmann/goeasyerp/commit/388476858697c5f2dd9d0ba880ab6cbc67811d2b))
+* budget views take amounts, Closing Entries on the balance views ([e2ae644](https://github.com/hansjlachmann/goeasyerp/commit/e2ae64468aa5efe7bb983675a4cc7f46322ce53d))
+* list widths follow the font size, a line's pages open over its card ([f51f3d1](https://github.com/hansjlachmann/goeasyerp/commit/f51f3d1409092687af36da685bdd033422f9f9a7))
+* questions from table triggers, drilldowns that run a function ([3b582ee](https://github.com/hansjlachmann/goeasyerp/commit/3b582eeae6824ecd3dc281a79315e7c30e57fc5f))
+* show every column on the Tax Posting Setup list ([c35ef90](https://github.com/hansjlachmann/goeasyerp/commit/c35ef9058e8c763873bac0a746bf98cfdcd47138))
+* unrealized VAT and the payment discount VAT adjustment ([6c60ae9](https://github.com/hansjlachmann/goeasyerp/commit/6c60ae9116738027f848548383bf3259a1195128))
+
 ## [0.1.152](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.151...v0.1.152) (2026-11-11)
 
 
