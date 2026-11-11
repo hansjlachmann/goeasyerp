@@ -938,20 +938,24 @@
 					{:else if section.subpage}
 						{@const sub = section.subpage}
 						<!-- A subpage: the list page with the lines of this record (its own keys) -->
+						<!-- the pages a line opens (its order, its reservation entries) open over the
+						     card, which stays; closing them reloads the lines and the card's totals -->
 						<div class="subpage-part" data-subpage-part data-subpage-name={section.name} data-own-keys>
 							{#if canShowLines(sub)}
 								{#key JSON.stringify(linkValues(sub))}
-									<PageRenderer
-										bind:this={subpageRenderers[section.name]}
-										pageid={sub.page_id}
-										subpage={true}
-										parentEditMode={editMode}
-										fixedFilters={linkFilters(sub)}
-										newRecordDefaults={linkValues(sub)}
-										onexit={() => focusPart(0)}
-										onlineschange={onrefresh}
-										refreshToken={linesRefresh}
-									/>
+									<PageFrames onclosed={() => { linesRefresh++; onrefresh?.(); }}>
+										<PageRenderer
+											bind:this={subpageRenderers[section.name]}
+											pageid={sub.page_id}
+											subpage={true}
+											parentEditMode={editMode}
+											fixedFilters={linkFilters(sub)}
+											newRecordDefaults={linkValues(sub)}
+											onexit={() => focusPart(0)}
+											onlineschange={onrefresh}
+											refreshToken={linesRefresh}
+										/>
+									</PageFrames>
 								{/key}
 							{:else}
 								<p class="subpage-empty">{t(CARD.SAVE_FIRST)}</p>

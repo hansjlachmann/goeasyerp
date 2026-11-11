@@ -6,12 +6,16 @@
 	// the page under it. Around the modal's own page:
 	//
 	//	<PageFrames><PageRenderer embedded … /></PageFrames>
+	//
+	// A card's subpages are inside page frames too: the pages a line opens (its order, its
+	// reservation entries) open over the card, which stays as it is; onclosed tells when the
+	// last of them is closed (the lines may have changed)
 	import type { Snippet } from 'svelte';
 	import Modal from '../Modal.svelte';
 	import PageFrame from './PageFrame.svelte';
 	import { pageNavigator, setPageNavigator, type PageNavigator } from '$lib/utils/pageNavigator';
 
-	let { children }: { children: Snippet } = $props();
+	let { children, onclosed }: { children: Snippet; onclosed?: () => void } = $props();
 
 	interface Frame {
 		id: number;
@@ -36,7 +40,9 @@
 			},
 			close: () => {
 				const i = frames.findIndex((f) => f.id === id);
-				if (i >= 0) frames.splice(i);
+				if (i < 0) return;
+				frames.splice(i);
+				if (frames.length === 0) onclosed?.();
 			},
 			replaceState: () => {},
 			location: () => new URL(frames.find((f) => f.id === id)?.url ?? '/', window.location.origin)

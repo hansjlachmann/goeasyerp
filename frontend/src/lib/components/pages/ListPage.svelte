@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { rootFontScale, scaledWidth, watchRootLayout } from '$lib/utils/fontScale';
 	import type { PageDefinition, Field } from '$lib/types/pages';
 	import { navigationQuery, type NavigationQuery } from '$lib/utils/recordNavigation';
 	import type { TableFilter, LookupData, DialogResult, ListOptions } from '$lib/types/api';
@@ -3362,6 +3363,16 @@
 	// words and never inside one (a width the user dragged stays as it is)
 	let headerMeasure = $state<{ font: string; room: number } | null>(null);
 	let measureContext: CanvasRenderingContext2D | null | undefined;
+	// The widths of the page definition are for 100 %: at a larger font size (Appearance) they
+	// grow with it, so captions do not wrap; measured again when the appearance changes
+	let fontScale = $state(rootFontScale());
+	$effect(() =>
+		watchRootLayout(() => {
+			const scale = rootFontScale();
+			if (scale !== fontScale) fontScale = scale;
+			headerMeasure = null;
+		})
+	);
 	$effect(() => {
 		const label = listPageElement?.querySelector<HTMLElement>('.th-label, .th-sort span');
 		const th = label?.closest('th');
@@ -3381,7 +3392,7 @@
 	}
 
 	function getColumnWidth(field: Field): number {
-		return columnWidths[field.source] ?? Math.max(field.width ?? 150, captionMinWidth(field));
+		return columnWidths[field.source] ?? Math.max(scaledWidth(field.width ?? 150, fontScale), captionMinWidth(field));
 	}
 
 	// Open customize modal
