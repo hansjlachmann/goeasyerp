@@ -7,7 +7,6 @@ page:
   editable: true
   copy_paste_allowed: true
   delayed_insert: true
-  # Posting: only Sales Tax lines are posted so far (VAT calculation types are refused)
 
   layout:
     repeater:
@@ -26,35 +25,27 @@ page:
 
         - source: unrealized_tax_type
           width: 130
-          visible: false
 
         - source: adjust_for_payment_discount
           width: 90
-          visible: false
 
         - source: sales_vat_account
           width: 110
-          visible: false
 
         - source: sales_vat_unreal_account
           width: 110
-          visible: false
 
         - source: purchase_vat_account
           width: 110
-          visible: false
 
         - source: purch_vat_unreal_account
           width: 110
-          visible: false
 
         - source: reverse_chrg_vat_acc
           width: 110
-          visible: false
 
         - source: reverse_chrg_vat_unreal_acc
           width: 110
-          visible: false
 
   actions:
     - name: New
