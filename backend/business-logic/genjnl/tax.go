@@ -2,7 +2,6 @@ package genjnl
 
 import (
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salestax"
-	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
@@ -22,9 +21,10 @@ import (
 // line (Manual VAT Entry, posting type Settlement; sales tax: the jurisdiction in Tax Area Code)
 // writes one closed tax entry of its amount.
 //
-// Not migrated yet: unrealized tax (realized when the entries are applied) and the VAT
-// adjustment of a payment discount (Adjust for Payment Disc.) — both refused, never posted
-// without them.
+// Unrealized tax (the setup's or jurisdiction's Unrealized Tax Type, General Ledger Setup
+// Unrealized Tax): an invoice's tax goes onto the unrealized accounts and into the tax entry's
+// Unrealized Amount/Base; it is realized as the document is paid (unrealizedtax.go). A payment
+// discount reduces the VAT with Adjust for Payment Disc. (pmtdisctax.go, CashDiscPost).
 
 // initTaxRegister: the first line takes the next tax entry number (Tax Entry locked); the
 // register starts at it
@@ -364,34 +364,42 @@ func (p *GenJnlPostLine) insertTax(genJnlLine *gtables.GenJournalLine, taxDetail
 		srcCurrGLEntryBaseAmt = system.Round(addCurrencyFactor.Mul(glEntryBaseAmount), precision)
 	}
 
-	unrealizedTaxType := false
-	if isVAT(gtables.GenJournalLineTax_calculation_type(p.taxPostingSetup.Tax_calculation_type)) {
-		unrealizedTaxType = p.taxPostingSetup.Unrealized_tax_type > 0
-	} else if taxJurisdiction != nil {
-		unrealizedTaxType = taxJurisdiction.Unrealized_tax_type > 0
-	}
-	unrealizedTax := unrealizedTaxType &&
-		(genJnlLine.Document_type == gtables.GenJournalLine_Document_type.Invoice ||
-			genJnlLine.Document_type == gtables.GenJournalLine_Document_type.CreditMemo ||
-			genJnlLine.Document_type == gtables.GenJournalLine_Document_type.FinanceChargeMemo ||
-			genJnlLine.Document_type == gtables.GenJournalLine_Document_type.Reminder)
-	if unrealizedTax {
-		return apperrors.JnlUnrealizedTaxNotYet()
-	}
+	unrealizedTax := p.isUnrealizedTax(genJnlLine, taxJurisdiction)
 
-	taxEntry.Amount = glEntryTaxAmount
+	// Tax for Tax entry
+	taxAmount := glEntryTaxAmount
 	srcCurrTaxAmount := srcCurrGLEntryTaxAmt
 	if settlement {
 		// the settled amount is the G/L entry's
-		taxEntry.Amount = glEntryAmount
+		taxAmount = glEntryAmount
 		srcCurrTaxAmount = srcCurrGLEntryAmt
 		taxEntry.Closed = true
 	}
-	taxEntry.Base = glEntryBaseAmount
-	if p.acyCode() != "" {
-		taxEntry.Additional_currency_amount = srcCurrTaxAmount
-		taxEntry.Additional_currency_base = srcCurrGLEntryBaseAmt
+	taxBase := glEntryBaseAmount
+	srcCurrTaxBase := srcCurrGLEntryBaseAmt
+	if unrealizedTax {
+		// realized when the customer or vendor entry is paid (custUnrealizedTax/vendUnrealizedTax)
+		taxEntry.Amount = types.Decimal{}
+		taxEntry.Base = types.Decimal{}
+		taxEntry.Unrealized_amount = taxAmount
+		taxEntry.Unrealized_base = taxBase
+		taxEntry.Remaining_unrealized_amount = taxEntry.Unrealized_amount
+		taxEntry.Remaining_unrealized_base = taxEntry.Unrealized_base
+	} else {
+		taxEntry.Amount = taxAmount
+		taxEntry.Base = taxBase
 	}
+	if p.acyCode() != "" {
+		if unrealizedTax {
+			taxEntry.Add_currency_unrealized_base = srcCurrTaxBase
+			taxEntry.Add_currency_unrealized_amt = srcCurrTaxAmount
+		} else {
+			taxEntry.Additional_currency_base = srcCurrTaxBase
+			taxEntry.Additional_currency_amount = srcCurrTaxAmount
+		}
+	}
+	taxEntry.Add_curr_rem_unreal_amount = taxEntry.Add_currency_unrealized_amt
+	taxEntry.Add_curr_rem_unreal_base = taxEntry.Add_currency_unrealized_base
 	err := taxEntry.InsertOrError(false)
 	if err != nil {
 		return err
@@ -403,35 +411,75 @@ func (p *GenJnlPostLine) insertTax(genJnlLine *gtables.GenJournalLine, taxDetail
 		return nil
 	}
 	if isVAT(genJnlLine.Tax_calculation_type) {
-		return p.postVATGLEntries(genJnlLine, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
+		return p.postVATGLEntries(genJnlLine, glEntryTaxAmount, srcCurrGLEntryTaxAmt, unrealizedTax)
 	}
 	switch genJnlLine.Gen_posting_type {
 	case gtables.GenJournalLine_Gen_posting_type.Purchase:
 		if genJnlLine.Use_tax {
+			if unrealizedTax {
+				err = p.postTaxGLEntry(taxJurisdiction, "unreal_tax_acc_purchases", taxJurisdiction.Unreal_tax_acc_purchases, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
+				if err != nil {
+					return err
+				}
+				return p.postTaxGLEntry(taxJurisdiction, "unreal_rev_charge_purch", taxJurisdiction.Unreal_rev_charge_purch, glEntryTaxAmount.Neg(), srcCurrGLEntryTaxAmt.Neg())
+			}
 			err = p.postTaxGLEntry(taxJurisdiction, "tax_account_purchases", taxJurisdiction.Tax_account_purchases, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
 			if err != nil {
 				return err
 			}
 			return p.postTaxGLEntry(taxJurisdiction, "reverse_charge_purchases", taxJurisdiction.Reverse_charge_purchases, glEntryTaxAmount.Neg(), srcCurrGLEntryTaxAmt.Neg())
 		}
+		if unrealizedTax {
+			return p.postTaxGLEntry(taxJurisdiction, "unreal_tax_acc_purchases", taxJurisdiction.Unreal_tax_acc_purchases, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
+		}
 		return p.postTaxGLEntry(taxJurisdiction, "tax_account_purchases", taxJurisdiction.Tax_account_purchases, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
 	case gtables.GenJournalLine_Gen_posting_type.Sale:
+		if unrealizedTax {
+			return p.postTaxGLEntry(taxJurisdiction, "unreal_tax_acc_sales", taxJurisdiction.Unreal_tax_acc_sales, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
+		}
 		return p.postTaxGLEntry(taxJurisdiction, "tax_account_sales", taxJurisdiction.Tax_account_sales, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
 	}
 	return nil
 }
 
+// isUnrealizedTax: the tax of an invoice, credit memo, finance charge memo or reminder whose Tax
+// Posting Setup (VAT) or tax jurisdiction (sales tax) has an Unrealized Tax Type is unrealized —
+// posted on the unrealized accounts and realized when the document is paid
+func (p *GenJnlPostLine) isUnrealizedTax(genJnlLine *gtables.GenJournalLine, taxJurisdiction *gtables.TaxJurisdiction) bool {
+	unrealizedTaxType := false
+	if isVAT(gtables.GenJournalLineTax_calculation_type(p.taxPostingSetup.Tax_calculation_type)) {
+		unrealizedTaxType = p.taxPostingSetup.Unrealized_tax_type > 0
+	} else if taxJurisdiction != nil && p.taxPostingSetup.Tax_calculation_type == gtables.TaxPostingSetup_Tax_calculation_type.SalesTax {
+		unrealizedTaxType = taxJurisdiction.Unrealized_tax_type > 0
+	}
+	return unrealizedTaxType &&
+		(genJnlLine.Document_type == gtables.GenJournalLine_Document_type.Invoice ||
+			genJnlLine.Document_type == gtables.GenJournalLine_Document_type.CreditMemo ||
+			genJnlLine.Document_type == gtables.GenJournalLine_Document_type.FinanceChargeMemo ||
+			genJnlLine.Document_type == gtables.GenJournalLine_Document_type.Reminder)
+}
+
 // postVATGLEntries posts the VAT of a line on the Tax Posting Setup's accounts: a purchase on
 // the Purchase VAT Account (reverse charge: and back on the Reverse Chrg. VAT Acc.), a sale on
-// the Sales VAT Account (reverse charge: none)
-func (p *GenJnlPostLine) postVATGLEntries(genJnlLine *gtables.GenJournalLine, glEntryTaxAmount, srcCurrGLEntryTaxAmt types.Decimal) error {
+// the Sales VAT Account (reverse charge: none) — unrealized VAT on their unrealized accounts
+func (p *GenJnlPostLine) postVATGLEntries(genJnlLine *gtables.GenJournalLine, glEntryTaxAmount, srcCurrGLEntryTaxAmt types.Decimal, unrealizedTax bool) error {
 	taxPostingSetup := p.taxPostingSetup
 	switch genJnlLine.Gen_posting_type {
 	case gtables.GenJournalLine_Gen_posting_type.Purchase:
 		switch taxPostingSetup.Tax_calculation_type {
 		case gtables.TaxPostingSetup_Tax_calculation_type.NormalVAT, gtables.TaxPostingSetup_Tax_calculation_type.FullVAT:
+			if unrealizedTax {
+				return p.postVATGLEntry("purch_vat_unreal_account", taxPostingSetup.Purch_vat_unreal_account, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
+			}
 			return p.postVATGLEntry("purchase_vat_account", taxPostingSetup.Purchase_vat_account, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
 		case gtables.TaxPostingSetup_Tax_calculation_type.ReverseChargeVAT:
+			if unrealizedTax {
+				err := p.postVATGLEntry("purch_vat_unreal_account", taxPostingSetup.Purch_vat_unreal_account, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
+				if err != nil {
+					return err
+				}
+				return p.postVATGLEntry("reverse_chrg_vat_unreal_acc", taxPostingSetup.Reverse_chrg_vat_unreal_acc, glEntryTaxAmount.Neg(), srcCurrGLEntryTaxAmt.Neg())
+			}
 			err := p.postVATGLEntry("purchase_vat_account", taxPostingSetup.Purchase_vat_account, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
 			if err != nil {
 				return err
@@ -441,6 +489,9 @@ func (p *GenJnlPostLine) postVATGLEntries(genJnlLine *gtables.GenJournalLine, gl
 	case gtables.GenJournalLine_Gen_posting_type.Sale:
 		switch taxPostingSetup.Tax_calculation_type {
 		case gtables.TaxPostingSetup_Tax_calculation_type.NormalVAT, gtables.TaxPostingSetup_Tax_calculation_type.FullVAT:
+			if unrealizedTax {
+				return p.postVATGLEntry("sales_vat_unreal_account", taxPostingSetup.Sales_vat_unreal_account, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
+			}
 			return p.postVATGLEntry("sales_vat_account", taxPostingSetup.Sales_vat_account, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
 		}
 	}
@@ -506,28 +557,5 @@ func (p *GenJnlPostLine) insertSummarizedTax() error {
 		p.glEntryTmpTax = nil
 	}
 	p.nextConnectionNo = p.nextConnectionNo + 1
-	return nil
-}
-
-// checkPmtDiscTaxAdjustment: the VAT adjustment of a payment discount (classic CashDiscPost: the
-// General Ledger Setup's Adjust for Payment Disc. with the Tax Posting Setup's Adjust for Payment
-// Discount) is not migrated yet — a payment discount on a document whose VAT asks for it is
-// refused rather than posted without the adjustment
-func (p *GenJnlPostLine) checkPmtDiscTaxAdjustment(transactionNo int, documentNo types.Code) error {
-	if p.glSetup.Pmt_disc_excl_tax || !p.glSetup.Adjust_for_payment_disc {
-		return nil
-	}
-	taxEntry := gtables.NewTaxEntry(p.src)
-	taxEntry.SetRange("transaction_no", transactionNo)
-	for found := taxEntry.FindSet(); found; found = taxEntry.Next() {
-		if !isVAT(gtables.GenJournalLineTax_calculation_type(taxEntry.Tax_calculation_type)) {
-			continue
-		}
-		taxPostingSetup := gtables.NewTaxPostingSetup(p.src)
-		if taxPostingSetup.Get(map[string]interface{}{"tax_bus_posting_group": taxEntry.Tax_bus_posting_group, "tax_prod_posting_group": taxEntry.Tax_prod_posting_group}) &&
-			taxPostingSetup.Adjust_for_payment_discount {
-			return apperrors.JnlPmtDiscTaxAdjNotYet(documentNo.String())
-		}
-	}
 	return nil
 }

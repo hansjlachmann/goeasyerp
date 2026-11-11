@@ -61,6 +61,8 @@ type GenJnlPostLine struct {
 	totalPmtDiscLCY           types.Decimal
 	totalApplnRoundingLCY     types.Decimal
 	totalPmtDiscAddCurr       types.Decimal
+	totalRevPmtDiscLCY        types.Decimal // the payment discount split over the tax (CashDiscPost)
+	totalRevPmtDiscAddCurr    types.Decimal
 	totalApplnRoundingAddCurr types.Decimal
 	realExchRateGains         types.Decimal
 	realExchRateLosses        types.Decimal

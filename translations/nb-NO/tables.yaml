@@ -6179,6 +6179,7 @@ tables:
       amount: "Beløp"
       additional_currency_amount: "Beløp i tilleggsvaluta"
       use_add_curr_amount: "Bruk beløp i tilleggsvaluta"
+      tax_entry_no: "Mva.-postnr."
   object_translation:
     caption: "Objektoversettelse"
     fields:

@@ -21,6 +21,8 @@ type gainsLosses struct {
 // resetApplicationTotals: a customer or vendor line starts its application totals
 func (p *GenJnlPostLine) resetApplicationTotals() {
 	p.totalPmtDiscLCY = types.Decimal{}
+	p.totalRevPmtDiscLCY = types.Decimal{}
+	p.totalRevPmtDiscAddCurr = types.Decimal{}
 	p.totalApplnRoundingLCY = types.Decimal{}
 	p.totalPmtDiscAddCurr = types.Decimal{}
 	p.totalApplnRoundingAddCurr = types.Decimal{}
@@ -31,10 +33,11 @@ func (p *GenJnlPostLine) resetApplicationTotals() {
 }
 
 // applicationLCY is what the line's application posts elsewhere than on the receivables or
-// payables account: exchange-rate gains and losses, payment discount, application rounding
+// payables account: exchange-rate gains and losses, payment discount (also the part split over
+// the tax, TotalRevPmtDisc), application rounding
 func (p *GenJnlPostLine) applicationLCY() types.Decimal {
 	return p.realExchRateGains.Add(p.realExchRateLosses).Add(p.unrealExchRateGains).Add(p.unrealExchRateLosses).
-		Add(p.totalPmtDiscLCY).Add(p.totalApplnRoundingLCY)
+		Add(p.totalPmtDiscLCY).Add(p.totalRevPmtDiscLCY).Add(p.totalApplnRoundingLCY)
 }
 
 // applicationAddCurr is applicationLCY in the additional currency (the exchange-rate gains and
@@ -44,7 +47,7 @@ func (p *GenJnlPostLine) applicationAddCurr() (types.Decimal, error) {
 	if err != nil {
 		return types.Decimal{}, err
 	}
-	return gainsLosses.Add(p.totalPmtDiscAddCurr).Add(p.totalApplnRoundingAddCurr), nil
+	return gainsLosses.Add(p.totalPmtDiscAddCurr).Add(p.totalRevPmtDiscAddCurr).Add(p.totalApplnRoundingAddCurr), nil
 }
 
 // postApplicationGLEntries (PostCust/PostVend after the ledger entry) posts the line's G/L

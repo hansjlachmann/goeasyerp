@@ -222,7 +222,7 @@ func (p *GenJnlPostLine) postApplicationOnly(postingGroup interface {
 // UnapplyEntries undoes the latest application of a customer or vendor ledger entry (Unapply
 // Entries, codeunits 226/227): every entry of that application gets its application fields back
 // as they were before it, and the G/L postings of the application are posted again with the
-// opposite amounts, on the application's posting date. An entry applied again later must have
+// opposite amounts, on the application's posting date — the tax entries it wrote too. An entry applied again later must have
 // that application unapplied first. newLine gives the journal line of the G/L postings for the
 // application's applying entry (its document); the application number is returned.
 func UnapplyEntries(src ftables.Source, accountType gtables.EntryApplicationAccount_type, ledgerEntryNo int, newLine func(applyingEntryNo int) (*gtables.GenJournalLine, error)) (int, error) {
@@ -390,6 +390,13 @@ func (p *GenJnlPostLine) postUnapply(genJnlLinePost *gtables.GenJournalLine, glL
 		return err
 	}
 	for found := glLine.FindSet(); found; found = glLine.Next() {
+		if glLine.Tax_entry_no != 0 {
+			err = p.reverseApplicationTaxEntry(glLine.Tax_entry_no)
+			if err != nil {
+				return err
+			}
+			continue
+		}
 		_, err = p.initGLEntry(glLine.Gl_account_no, glLine.Amount.Neg(), glLine.Additional_currency_amount.Neg(), glLine.Use_add_curr_amount, true)
 		if err != nil {
 			return err
@@ -400,6 +407,55 @@ func (p *GenJnlPostLine) postUnapply(genJnlLinePost *gtables.GenJournalLine, glL
 		}
 	}
 	return p.finishCodeunit()
+}
+
+// reverseApplicationTaxEntry: a tax entry an application wrote — realized unrealized tax or the
+// tax of a payment discount — gets a tax entry of the opposite amounts (the unapplication's
+// document and transaction); realized tax becomes unrealized again on its unrealized entry. Its
+// G/L postings are among the application's G/L lines.
+func (p *GenJnlPostLine) reverseApplicationTaxEntry(taxEntryNo int) error {
+	taxEntry2 := gtables.NewTaxEntry(p.src)
+	err := taxEntry2.GetOrError(taxEntryNo)
+	if err != nil {
+		return err
+	}
+	genJnlLine := p.genJnlLine
+	taxEntry := gtables.NewTaxEntry(p.src)
+	taxEntry.LockTable()
+	taxEntry.TransferFields(taxEntry2)
+	taxEntry.Entry_no = p.nextTaxEntryNo
+	taxEntry.Posting_date = genJnlLine.Posting_date
+	taxEntry.Document_no = genJnlLine.Document_no
+	taxEntry.Document_type = gtables.TaxEntryDocument_type(genJnlLine.Document_type)
+	taxEntry.Source_code = genJnlLine.Source_code
+	taxEntry.Transaction_no = p.nextTransactionNo
+	taxEntry.Sales_tax_connection_no = p.nextConnectionNo
+	taxEntry.Amount = taxEntry2.Amount.Neg()
+	taxEntry.Base = taxEntry2.Base.Neg()
+	taxEntry.Additional_currency_amount = taxEntry2.Additional_currency_amount.Neg()
+	taxEntry.Additional_currency_base = taxEntry2.Additional_currency_base.Neg()
+	taxEntry.Closed = false
+	taxEntry.Closed_by_entry_no = 0
+	taxEntry.User_id = types.Code(system.UserId())
+	err = taxEntry.InsertOrError(false)
+	if err != nil {
+		return err
+	}
+	p.nextTaxEntryNo = p.nextTaxEntryNo + 1
+	p.nextConnectionNo = p.nextConnectionNo + 1
+	if taxEntry2.Unrealized_tax_entry_no == 0 {
+		return nil
+	}
+	unrealizedTaxEntry := gtables.NewTaxEntry(p.src)
+	err = unrealizedTaxEntry.GetOrError(taxEntry2.Unrealized_tax_entry_no)
+	if err != nil {
+		return err
+	}
+	unrealizedTaxEntry.Remaining_unrealized_amount = unrealizedTaxEntry.Remaining_unrealized_amount.Add(taxEntry2.Amount)
+	unrealizedTaxEntry.Remaining_unrealized_base = unrealizedTaxEntry.Remaining_unrealized_base.Add(taxEntry2.Base)
+	unrealizedTaxEntry.Add_curr_rem_unreal_amount = unrealizedTaxEntry.Add_curr_rem_unreal_amount.Add(taxEntry2.Additional_currency_amount)
+	unrealizedTaxEntry.Add_curr_rem_unreal_base = unrealizedTaxEntry.Add_curr_rem_unreal_base.Add(taxEntry2.Additional_currency_base)
+	return unrealizedTaxEntry.ModifyOrError(false)
 }
 
 // PostCustApplication is codeunit 226 CustEntry-Apply Posted Entries without its question: the

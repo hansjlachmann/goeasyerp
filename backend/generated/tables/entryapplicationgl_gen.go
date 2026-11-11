@@ -16,6 +16,7 @@
 //	OnValidate_Amount(rec *gtables.EntryApplicationGL) error
 //	OnValidate_Additional_currency_amount(rec *gtables.EntryApplicationGL) error
 //	OnValidate_Use_add_curr_amount(rec *gtables.EntryApplicationGL) error
+//	OnValidate_Tax_entry_no(rec *gtables.EntryApplicationGL) error
 
 package tables
 
@@ -44,6 +45,7 @@ type EntryApplicationGL struct {
 	Amount                     types.Decimal `db:"amount"`
 	Additional_currency_amount types.Decimal `db:"additional_currency_amount"`
 	Use_add_curr_amount        bool          `db:"use_add_curr_amount"`
+	Tax_entry_no               int           `db:"tax_entry_no"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -116,6 +118,7 @@ var EntryApplicationGL_FieldNo = struct {
 	Amount                     int
 	Additional_currency_amount int
 	Use_add_curr_amount        int
+	Tax_entry_no               int
 }{
 	Application_no:             1,
 	Line_no:                    2,
@@ -123,6 +126,7 @@ var EntryApplicationGL_FieldNo = struct {
 	Amount:                     4,
 	Additional_currency_amount: 5,
 	Use_add_curr_amount:        6,
+	Tax_entry_no:               7,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -140,6 +144,8 @@ func (t *EntryApplicationGL) FieldNo(fieldName string) int {
 		return 5
 	case "use_add_curr_amount":
 		return 6
+	case "tax_entry_no":
+		return 7
 	}
 	return 0
 }
@@ -159,6 +165,8 @@ func (t *EntryApplicationGL) FieldName(fieldNo int) string {
 		return "additional_currency_amount"
 	case 6:
 		return "use_add_curr_amount"
+	case 7:
+		return "tax_entry_no"
 	}
 	return ""
 }
@@ -278,6 +286,9 @@ type (
 	EntryApplicationGLOnValidate_Use_add_curr_amount interface {
 		OnValidate_Use_add_curr_amount(rec *EntryApplicationGL) error
 	}
+	EntryApplicationGLOnValidate_Tax_entry_no interface {
+		OnValidate_Tax_entry_no(rec *EntryApplicationGL) error
+	}
 )
 
 // entryApplicationGLLogic is the registered business logic of Entry_Application_GL, in
@@ -319,6 +330,8 @@ func entryApplicationGLTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(EntryApplicationGLOnValidate_Additional_currency_amount)
 	case "OnValidate_Use_add_curr_amount":
 		_, ok = logic.(EntryApplicationGLOnValidate_Use_add_curr_amount)
+	case "OnValidate_Tax_entry_no":
+		_, ok = logic.(EntryApplicationGLOnValidate_Tax_entry_no)
 	default:
 		return false, false
 	}
@@ -429,6 +442,7 @@ func GetEntryApplicationGLTableSchema() string {
 		amount TEXT,
 		additional_currency_amount TEXT,
 		use_add_curr_amount INTEGER,
+		tax_entry_no INTEGER,
 		PRIMARY KEY (application_no, line_no)
 	`
 }
@@ -442,6 +456,7 @@ func GetEntryApplicationGLPostgresTableSchema() string {
 		amount NUMERIC,
 		additional_currency_amount NUMERIC,
 		use_add_curr_amount BOOLEAN,
+		tax_entry_no INTEGER,
 		PRIMARY KEY (application_no, line_no)
 	`
 }
@@ -571,6 +586,7 @@ func (t *EntryApplicationGL) StoreOldValues() {
 	t.oldValues["amount"] = t.Amount
 	t.oldValues["additional_currency_amount"] = t.Additional_currency_amount
 	t.oldValues["use_add_curr_amount"] = t.Use_add_curr_amount
+	t.oldValues["tax_entry_no"] = t.Tax_entry_no
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -602,6 +618,9 @@ func (t *EntryApplicationGL) XRec() *EntryApplicationGL {
 	}
 	if v, ok := t.oldValues["use_add_curr_amount"].(bool); ok {
 		x.Use_add_curr_amount = v
+	}
+	if v, ok := t.oldValues["tax_entry_no"].(int); ok {
+		x.Tax_entry_no = v
 	}
 	return x
 }
@@ -684,6 +703,7 @@ func (t *EntryApplicationGL) GetByPK(application_no int, line_no int) bool {
 	var amountNull sql.NullString
 	var additional_currency_amountNull sql.NullString
 	var use_add_curr_amountBool sql.NullBool
+	var tax_entry_noVal int
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -692,7 +712,7 @@ func (t *EntryApplicationGL) GetByPK(application_no int, line_no int) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT application_no, line_no, gl_account_no, amount, additional_currency_amount, use_add_curr_amount FROM "%s" WHERE 1=1 AND application_no = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT application_no, line_no, gl_account_no, amount, additional_currency_amount, use_add_curr_amount, tax_entry_no FROM "%s" WHERE 1=1 AND application_no = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -705,6 +725,7 @@ func (t *EntryApplicationGL) GetByPK(application_no int, line_no int) bool {
 		&amountNull,
 		&additional_currency_amountNull,
 		&use_add_curr_amountBool,
+		&tax_entry_noVal,
 	)
 
 	if err != nil {
@@ -724,6 +745,7 @@ func (t *EntryApplicationGL) GetByPK(application_no int, line_no int) bool {
 	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
 	t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
 	t.Use_add_curr_amount = use_add_curr_amountBool.Bool
+	t.Tax_entry_no = tax_entry_noVal
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -752,11 +774,12 @@ func (t *EntryApplicationGL) Insert(runTrigger bool) bool {
 		t.Amount,
 		t.Additional_currency_amount,
 		t.Use_add_curr_amount,
+		t.Tax_entry_no,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (application_no, line_no, gl_account_no, amount, additional_currency_amount, use_add_curr_amount) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (application_no, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (application_no, line_no, gl_account_no, amount, additional_currency_amount, use_add_curr_amount, tax_entry_no) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (application_no, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -800,10 +823,11 @@ func (t *EntryApplicationGL) InsertAll(records []*EntryApplicationGL, runTrigger
 			r.Amount,
 			r.Additional_currency_amount,
 			r.Use_add_curr_amount,
+			r.Tax_entry_no,
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, EntryApplicationGLTableName)
-	columns := []string{"application_no", "line_no", "gl_account_no", "amount", "additional_currency_amount", "use_add_curr_amount"}
+	columns := []string{"application_no", "line_no", "gl_account_no", "amount", "additional_currency_amount", "use_add_curr_amount", "tax_entry_no"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -870,6 +894,10 @@ func (t *EntryApplicationGL) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "use_add_curr_amount = ?")
 			values = append(values, t.Use_add_curr_amount)
 		}
+		if t.hasFieldChanged("tax_entry_no") {
+			setClauses = append(setClauses, "tax_entry_no = ?")
+			values = append(values, t.Tax_entry_no)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -885,6 +913,8 @@ func (t *EntryApplicationGL) Modify(runTrigger bool) bool {
 		values = append(values, t.Additional_currency_amount)
 		setClauses = append(setClauses, "use_add_curr_amount = ?")
 		values = append(values, t.Use_add_curr_amount)
+		setClauses = append(setClauses, "tax_entry_no = ?")
+		values = append(values, t.Tax_entry_no)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -959,6 +989,11 @@ func (t *EntryApplicationGL) hasFieldChanged(fieldName string) bool {
 	case "use_add_curr_amount":
 		if old, ok := oldValue.(bool); ok {
 			return t.Use_add_curr_amount != old
+		}
+		return true // Type mismatch, assume changed
+	case "tax_entry_no":
+		if old, ok := oldValue.(int); ok {
+			return t.Tax_entry_no != old
 		}
 		return true // Type mismatch, assume changed
 	}
@@ -1178,6 +1213,8 @@ func (t *EntryApplicationGL) columnName(fieldName string) (string, bool) {
 		return "additional_currency_amount", true
 	case strings.ToLower("use_add_curr_amount"):
 		return "use_add_curr_amount", true
+	case strings.ToLower("tax_entry_no"):
+		return "tax_entry_no", true
 	}
 	return "", false
 }
@@ -1541,7 +1578,7 @@ func (t *EntryApplicationGL) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT application_no, line_no, gl_account_no, amount, additional_currency_amount, use_add_curr_amount FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT application_no, line_no, gl_account_no, amount, additional_currency_amount, use_add_curr_amount, tax_entry_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1558,6 +1595,7 @@ func (t *EntryApplicationGL) FindFirst() bool {
 		&amountNull,
 		&additional_currency_amountNull,
 		&use_add_curr_amountBool,
+		&t.Tax_entry_no,
 	)
 
 	if err != nil {
@@ -1593,7 +1631,7 @@ func (t *EntryApplicationGL) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT application_no, line_no, gl_account_no, amount, additional_currency_amount, use_add_curr_amount FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT application_no, line_no, gl_account_no, amount, additional_currency_amount, use_add_curr_amount, tax_entry_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1610,6 +1648,7 @@ func (t *EntryApplicationGL) FindLast() bool {
 		&amountNull,
 		&additional_currency_amountNull,
 		&use_add_curr_amountBool,
+		&t.Tax_entry_no,
 	)
 
 	if err != nil {
@@ -1675,7 +1714,7 @@ func (t *EntryApplicationGL) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT application_no, line_no, gl_account_no, amount, additional_currency_amount, use_add_curr_amount FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT application_no, line_no, gl_account_no, amount, additional_currency_amount, use_add_curr_amount, tax_entry_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1756,6 +1795,7 @@ func (t *EntryApplicationGL) Next(steps ...int) bool {
 			&amountNull,
 			&additional_currency_amountNull,
 			&use_add_curr_amountBool,
+			&t.Tax_entry_no,
 		)
 
 		if err != nil {
@@ -1819,7 +1859,7 @@ func (t *EntryApplicationGL) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT application_no, line_no, gl_account_no, amount, additional_currency_amount, use_add_curr_amount FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT application_no, line_no, gl_account_no, amount, additional_currency_amount, use_add_curr_amount, tax_entry_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1853,6 +1893,7 @@ func (t *EntryApplicationGL) FindSetBuffered() bool {
 			&amountNull,
 			&additional_currency_amountNull,
 			&use_add_curr_amountBool,
+			&record.Tax_entry_no,
 		)
 
 		if err != nil {
@@ -1899,6 +1940,7 @@ func (t *EntryApplicationGL) copyFromBuffered(record *EntryApplicationGL) {
 	t.Amount = record.Amount
 	t.Additional_currency_amount = record.Additional_currency_amount
 	t.Use_add_curr_amount = record.Use_add_curr_amount
+	t.Tax_entry_no = record.Tax_entry_no
 	t.StoreOldValues()
 }
 
@@ -2180,6 +2222,33 @@ func (t *EntryApplicationGL) ValidateField(fieldName string, value interface{}) 
 			}
 		}
 		return nil
+	case "tax_entry_no":
+		// Set field value
+		switch v := value.(type) {
+		case int:
+			t.Tax_entry_no = v
+		case float64:
+			t.Tax_entry_no = int(v)
+		case string:
+			if v == "" {
+				t.Tax_entry_no = 0
+			} else if i, err := strconv.Atoi(v); err == nil {
+				t.Tax_entry_no = i
+			} else {
+				return fmt.Errorf("invalid integer value for field tax_entry_no: %s", v)
+			}
+		default:
+			return fmt.Errorf("invalid type for field tax_entry_no")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(EntryApplicationGLOnValidate_Tax_entry_no); ok {
+				if err := trg.OnValidate_Tax_entry_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -2204,6 +2273,8 @@ func (t *EntryApplicationGL) FieldValue(no int) (any, bool) {
 		return t.Additional_currency_amount, true
 	case 6:
 		return t.Use_add_curr_amount, true
+	case 7:
+		return t.Tax_entry_no, true
 	}
 	return nil, false
 }
@@ -2251,6 +2322,11 @@ func (t *EntryApplicationGL) SetFieldValue(no int, value any) bool {
 	case 6:
 		if v, ok := value.(bool); ok {
 			t.Use_add_curr_amount = v
+			return true
+		}
+	case 7:
+		if v, ok := value.(int); ok {
+			t.Tax_entry_no = v
 			return true
 		}
 	}
@@ -2334,6 +2410,8 @@ func (t *EntryApplicationGL) CalcSums(fieldNames ...string) error {
 			column = "amount"
 		case "additional_currency_amount":
 			column = "additional_currency_amount"
+		case "tax_entry_no":
+			column = "tax_entry_no"
 		default:
 			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Entry_Application_GL", name)
 		}
@@ -2367,6 +2445,12 @@ func (t *EntryApplicationGL) CalcSums(fieldNames ...string) error {
 				return fmt.Errorf("CalcSums Entry_Application_GL.%s: %w", column, err)
 			}
 			t.Additional_currency_amount = d
+		case "tax_entry_no":
+			f, err := strconv.ParseFloat(total, 64)
+			if err != nil {
+				return fmt.Errorf("CalcSums Entry_Application_GL.%s: %w", column, err)
+			}
+			t.Tax_entry_no = int(f)
 		}
 	}
 	return nil
@@ -2731,6 +2815,8 @@ func (t *EntryApplicationGL) columnValue(column string) (interface{}, bool) {
 		return t.Additional_currency_amount, true
 	case "use_add_curr_amount":
 		return t.Use_add_curr_amount, true
+	case "tax_entry_no":
+		return t.Tax_entry_no, true
 	}
 	return nil, false
 }
@@ -2793,6 +2879,7 @@ func (t *EntryApplicationGL) Init() {
 	t.Amount = *new(types.Decimal)
 	t.Additional_currency_amount = *new(types.Decimal)
 	t.Use_add_curr_amount = *new(bool)
+	t.Tax_entry_no = *new(int)
 	t.applyDefaults()
 }
 
@@ -2833,6 +2920,7 @@ func (t *EntryApplicationGL) ToMap() map[string]interface{} {
 		"amount":                     t.Amount.String(),
 		"additional_currency_amount": t.Additional_currency_amount.String(),
 		"use_add_curr_amount":        t.Use_add_curr_amount,
+		"tax_entry_no":               t.Tax_entry_no,
 	}
 }
 
@@ -2896,6 +2984,19 @@ func (t *EntryApplicationGL) FromMap(data map[string]interface{}) {
 	if v, ok := data["use_add_curr_amount"]; ok && v != nil {
 		if b, ok := v.(bool); ok {
 			t.Use_add_curr_amount = b
+		}
+	}
+	if v, ok := data["tax_entry_no"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Tax_entry_no = int(val)
+		case int:
+			t.Tax_entry_no = val
+		case string:
+			// a record key from a URL or a list selection
+			if n, err := strconv.Atoi(val); err == nil {
+				t.Tax_entry_no = n
+			}
 		}
 	}
 }
@@ -2975,6 +3076,16 @@ func (t *EntryApplicationGL) GetFields() []tables.FieldInfo {
 			No:         6,
 			Name:       "use_add_curr_amount",
 			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
+			No:         7,
+			Name:       "tax_entry_no",
+			Type:       tables.FieldTypeInteger,
 			Length:     0,
 			Required:   false,
 			Editable:   true,

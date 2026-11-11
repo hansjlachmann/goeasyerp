@@ -19,6 +19,7 @@ type entryApplication struct {
 	entries     []*gtables.EntryApplication // the entries' fields before, in the order they were applied
 	recorded    map[int]bool
 	glLines     []entryApplicationGL
+	taxEntries  []int // the tax entries it wrote: realized unrealized tax, payment discount tax
 }
 
 // entryApplicationGL is one G/L posting of an application
@@ -127,6 +128,15 @@ func (p *GenJnlPostLine) recordApplicationGL(glAccNo types.Code, amount, amountA
 	appl.glLines = append(appl.glLines, entryApplicationGL{glAccNo, amount, amountAddCurr, useAddCurr})
 }
 
+// recordApplicationTaxEntry keeps a tax entry the application wrote (Unapply Entries reverses it)
+func (p *GenJnlPostLine) recordApplicationTaxEntry(taxEntryNo int) {
+	appl := p.entryAppl
+	if appl == nil || len(appl.entries) == 0 {
+		return
+	}
+	appl.taxEntries = append(appl.taxEntries, taxEntryNo)
+}
+
 // writeEntryApplications writes the line's applications into the register (FinishCodeunit): the
 // entries with the amount applied (their remaining amount before less now) and the G/L
 // postings, under the line's transaction
@@ -174,6 +184,17 @@ func (p *GenJnlPostLine) writeEntryApplications() error {
 			glLine.Amount = line.amount
 			glLine.Additional_currency_amount = line.amountAddCurr
 			glLine.Use_add_curr_amount = line.useAddCurr
+			err := glLine.InsertOrError(false)
+			if err != nil {
+				return err
+			}
+		}
+		for i, taxEntryNo := range appl.taxEntries {
+			glLine := gtables.NewEntryApplicationGL(p.src)
+			glLine.Init()
+			glLine.Application_no = applicationNo
+			glLine.Line_no = (len(appl.glLines) + i + 1) * 10000
+			glLine.Tax_entry_no = taxEntryNo
 			err := glLine.InsertOrError(false)
 			if err != nil {
 				return err

@@ -288,8 +288,8 @@ const (
 	ErrSalesTaxCalculationOrder ErrorCode = "ERR_SALES_TAX_CALCULATION_ORDER"
 	ErrSalesTaxAmountIncorrect  ErrorCode = "ERR_SALES_TAX_AMOUNT_INCORRECT"
 	ErrTaxNotForSalesTax        ErrorCode = "ERR_TAX_NOT_FOR_SALES_TAX"
-	ErrJnlUnrealizedTaxNotYet   ErrorCode = "ERR_JNL_UNREALIZED_TAX_NOT_YET"
-	ErrJnlPmtDiscTaxAdjNotYet   ErrorCode = "ERR_JNL_PMT_DISC_TAX_ADJ_NOT_YET"
+	ErrTaxSetupHasValue         ErrorCode = "ERR_TAX_SETUP_HAS_VALUE"
+	ErrTaxSetupUses             ErrorCode = "ERR_TAX_SETUP_USES"
 )
 
 // SalesTaxCalculationOrder: the jurisdictions of a tax area with tax on tax need unique
@@ -308,13 +308,18 @@ func TaxNotForSalesTax(table, field string, value any) *AppError {
 	return &AppError{Code: ErrTaxNotForSalesTax, Table: table, Field: "tax_calculation_type", Field2: field, Value: value}
 }
 
-// JnlUnrealizedTaxNotYet: unrealized tax cannot be posted yet
-func JnlUnrealizedTaxNotYet() *AppError { return &AppError{Code: ErrJnlUnrealizedTaxNotYet} }
+// TaxSetupHasValue: a tax posting setup or jurisdiction (its key) has a value in a field the
+// General Ledger Setup cannot be changed without ("Tax Posting Setup DOMESTIC STANDARD has
+// Unrealized Tax Type Percentage")
+func TaxSetupHasValue(table, field, key string, value any) *AppError {
+	return &AppError{Code: ErrTaxSetupHasValue, Table: table, Field: field, WithTableCaption: true, Params: []string{key}, Value: value}
+}
 
-// JnlPmtDiscTaxAdjNotYet: a payment discount whose VAT is to be adjusted (Adjust for Payment
-// Discount) cannot be posted yet; the document named
-func JnlPmtDiscTaxAdjNotYet(documentNo string) *AppError {
-	return &AppError{Code: ErrJnlPmtDiscTaxAdjNotYet, Params: []string{documentNo}}
+// TaxSetupUses: a tax posting setup or jurisdiction (its key) uses a field the General Ledger
+// Setup cannot be changed without ("Tax Posting Setup DOMESTIC STANDARD uses Adjust for Payment
+// Discount")
+func TaxSetupUses(table, field, key string) *AppError {
+	return &AppError{Code: ErrTaxSetupUses, Table: table, Field: field, WithTableCaption: true, Params: []string{key}}
 }
 
 // JnlTaxBaseFullVAT: a tax base cannot be entered with Full VAT

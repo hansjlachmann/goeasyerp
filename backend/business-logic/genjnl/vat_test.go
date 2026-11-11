@@ -1,10 +1,8 @@
 package genjnl
 
 import (
-	"errors"
 	"testing"
 
-	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
@@ -218,36 +216,6 @@ func TestPostManualVAT(t *testing.T) {
 	}
 }
 
-// Unrealized VAT (realized by the payment) is not posted yet: an invoice of a setup with an
-// Unrealized Tax Type is refused and writes nothing
-func TestPostUnrealizedVATRefused(t *testing.T) {
-	src := vatCompany(t)
-	setup := gtables.NewTaxPostingSetup(src)
-	must(t, setup.GetOrError(map[string]interface{}{"tax_bus_posting_group": "DOMESTIC", "tax_prod_posting_group": "STANDARD"}))
-	setup.Unrealized_tax_type = gtables.TaxPostingSetup_Unrealized_tax_type.Percentage
-	must(t, setup.ModifyOrError(false))
-	gl0, _, _, _ := countEntries(src)
-	addLine(t, src, "GENERAL", "DEFAULT", lineSpec{lineNo: 10000, docNo: "U00001", docType: invoice, accNo: "3110", amount: "-1250", balNo: "1210"})
-	_, err := postBatch(t, src, "GENERAL", "DEFAULT")
-	var appErr *apperrors.AppError
-	if !errors.As(err, &appErr) || appErr.Code != apperrors.ErrJnlUnrealizedTaxNotYet {
-		t.Fatalf("unrealized VAT: %v", err)
-	}
-	if gl1, _, _, _ := countEntries(src); gl1 != gl0 {
-		t.Errorf("%d G/L entries written by the refused posting", gl1-gl0)
-	}
-	// a line that is not an invoice (no document type) is realized at once
-	line := newJnlLine(src, "GENERAL", "DEFAULT", 10000)
-	must(t, line.GetOrError(map[string]interface{}{"journal_template_name": "GENERAL", "journal_batch_name": "DEFAULT", "line_no": 10000}))
-	must(t, line.Validate("document_type", gtables.GenJournalLine_Document_type.Blank))
-	must(t, line.ModifyOrError(true))
-	_, err = postBatch(t, src, "GENERAL", "DEFAULT")
-	must(t, err)
-	if !glAmount(src, "2330", "U00001").Equal(dec("-250")) {
-		t.Errorf("VAT of the line without document type: %s", glAmount(src, "2330", "U00001"))
-	}
-}
-
 // VAT with the additional reporting currency (EUR at 11.50): an LCY line's VAT and base are
 // exchanged at the G/L entry's factor; a line in euro keeps its own euro amounts (125 including
 // 25 % VAT: 100 and 25); a reverse charge purchase owes the VAT of the euro amount; every
@@ -300,48 +268,4 @@ func TestPostVATAddCurrency(t *testing.T) {
 		t.Errorf("reverse charge in euro: 1440 %s, 2340 %s", glAddCurr(src, "1440", "A00003"), glAddCurr(src, "2340", "A00003"))
 	}
 	docAddCurrBalanced(t, src, "A00003")
-}
-
-// A payment discount on a VAT invoice: posted as before while the VAT is not to be adjusted; with
-// the General Ledger Setup's Adjust for Payment Disc. and the setup's Adjust for Payment Discount
-// (not migrated yet) it is refused and nothing is posted
-func TestPaymentDiscountVATAdjustmentRefused(t *testing.T) {
-	src := vatCompany(t)
-	testCustomer(t, src, "TC9", "DOMESTIC", "", false)
-	for i, docNo := range []string{"INV9", "INV10"} {
-		addLine(t, src, "SALES", "DEFAULT", lineSpec{lineNo: 10000 * (i + 1), docNo: docNo, docType: invoice, accType: custType, accNo: "TC9", amount: "1250", balNo: "3110",
-			pmtDiscPercent: "2", pmtDiscDay: 25})
-	}
-	_, err := postBatch(t, src, "SALES", "DEFAULT")
-	must(t, err)
-	if !glAmount(src, "2330", "INV9").Equal(dec("-250")) {
-		t.Fatalf("invoice VAT %s", glAmount(src, "2330", "INV9"))
-	}
-	pay := func(docNo, appliesTo string) error {
-		addLine(t, src, "CASHRCPT", "DEFAULT", lineSpec{lineNo: 10000, docNo: docNo, docType: payment, accType: custType, accNo: "TC9", amount: "-1225", postingDay: 20,
-			balType: gtables.GenJournalLine_Bal_account_type.BankAccount, balNo: "B010", appliesDocType: gtables.GenJournalLine_Applies_to_doc_type.Invoice, appliesDocNo: appliesTo})
-		_, err := postBatch(t, src, "CASHRCPT", "DEFAULT")
-		return err
-	}
-	must(t, pay("PAY9", "INV9"))
-	if !glAmount(src, "3150", "PAY9").Equal(dec("25")) {
-		t.Errorf("discount without adjustment %s", glAmount(src, "3150", "PAY9"))
-	}
-
-	glSetup := gtables.GetGeneralLedgerSetup(src)
-	glSetup.Adjust_for_payment_disc = true
-	must(t, glSetup.ModifyOrError(false))
-	setup := gtables.NewTaxPostingSetup(src)
-	must(t, setup.GetOrError(map[string]interface{}{"tax_bus_posting_group": "DOMESTIC", "tax_prod_posting_group": "STANDARD"}))
-	setup.Adjust_for_payment_discount = true
-	must(t, setup.ModifyOrError(false))
-	gl0, _, _, _ := countEntries(src)
-	err = pay("PAY10", "INV10")
-	var appErr *apperrors.AppError
-	if !errors.As(err, &appErr) || appErr.Code != apperrors.ErrJnlPmtDiscTaxAdjNotYet {
-		t.Fatalf("payment discount with VAT adjustment: %v", err)
-	}
-	if gl1, _, _, _ := countEntries(src); gl1 != gl0 {
-		t.Errorf("%d G/L entries written by the refused payment", gl1-gl0)
-	}
 }

@@ -257,31 +257,41 @@ func (p *GenJnlPostLine) applyCustLedgEntry(newCustLedgEntry *gtables.CustomerLe
 					oldCustLedgEntry2.Remaining_amount.Sub(oldCustLedgEntry2.Pmt_disc_possible).Abs().Decimal)) {
 			postUnrealAmount := newCustLedgEntry.Remaining_amt_lcy.Add(custLedgApplAmtLCY(newCustLedgEntry.Remaining_amount.Neg(), newCustLedgEntry))
 			pmtDisc := oldCustLedgEntry2.Pmt_disc_possible.Neg()
-			if !pmtDisc.IsZero() {
-				err = p.checkPmtDiscTaxAdjustment(oldCustLedgEntry.Transaction_no, oldCustLedgEntry.Document_no)
-				if err != nil {
-					return err
-				}
-			}
 			pmtDiscLCY := custLedgApplAmtLCY(pmtDisc, newCustLedgEntry)
+			pmtDiscAddCurr, err := p.pmtDiscAddCurr(applnCurrencyCode, pmtDisc, pmtDiscLCY)
+			if err != nil {
+				return err
+			}
 			newCustLedgEntry.Amount = newCustLedgEntry.Amount.Add(pmtDisc)
 			newCustLedgEntry.Original_amount_lcy = newCustLedgEntry.Original_amount_lcy.Add(pmtDiscLCY)
 			newCustLedgEntry.Remaining_amount = newCustLedgEntry.Remaining_amount.Add(pmtDisc)
 			newCustLedgEntry.Remaining_amt_lcy = newCustLedgEntry.Remaining_amt_lcy.Add(pmtDiscLCY)
 			deltaUnrealAmount := postUnrealAmount.Sub(newCustLedgEntry.Remaining_amt_lcy.Add(custLedgApplAmtLCY(newCustLedgEntry.Remaining_amount.Neg(), newCustLedgEntry)))
-			newCustLedgEntry.Original_amount_lcy = newCustLedgEntry.Original_amount_lcy.Sub(deltaUnrealAmount)
-			newCustLedgEntry.Remaining_amt_lcy = newCustLedgEntry.Remaining_amt_lcy.Sub(deltaUnrealAmount)
-			newCustLedgEntry.Amount_lcy = newCustLedgEntry.Amount_lcy.Add(pmtDiscLCY).Sub(deltaUnrealAmount)
-			oldCustLedgEntry.Pmt_disc_given_lcy = pmtDiscLCY.Sub(deltaUnrealAmount).Neg()
-			p.totalPmtDiscLCY = p.totalPmtDiscLCY.Sub(pmtDiscLCY.Sub(deltaUnrealAmount))
-			pmtDiscAddCurr, err := p.pmtDiscAddCurr(applnCurrencyCode, pmtDisc, pmtDiscLCY)
-			if err != nil {
-				return err
-			}
 			deltaUnrealAmountAddCurr, err := p.calcLCYToAddCurr(deltaUnrealAmount)
 			if err != nil {
 				return err
 			}
+			newCustLedgEntry.Original_amount_lcy = newCustLedgEntry.Original_amount_lcy.Sub(deltaUnrealAmount)
+			newCustLedgEntry.Remaining_amt_lcy = newCustLedgEntry.Remaining_amt_lcy.Sub(deltaUnrealAmount)
+			newCustLedgEntry.Amount_lcy = newCustLedgEntry.Amount_lcy.Add(pmtDiscLCY).Sub(deltaUnrealAmount)
+			oldCustLedgEntry.Pmt_disc_given_lcy = pmtDiscLCY.Sub(deltaUnrealAmount).Neg()
+			if !p.glSetup.Pmt_disc_excl_tax && p.glSetup.Adjust_for_payment_disc && !pmtDiscLCY.Sub(deltaUnrealAmount).IsZero() {
+				// the discount's tax adjustment (CashDiscPost): the part split over the
+				// document's tax is posted there, the rest stays a payment discount
+				orgPmtDiscLCY := pmtDiscLCY
+				orgPmtDiscAddCurr := pmtDiscAddCurr
+				deltaPmtDiscAddCurr := pmtDiscAddCurr.Sub(deltaUnrealAmountAddCurr)
+				pmtDiscLCY, err = p.cashDiscPost(oldCustLedgEntry.Original_amount_lcy, oldCustLedgEntry.Amount, oldCustLedgEntry.Currency_code,
+					oldCustLedgEntry.Transaction_no, false, pmtDiscLCY.Sub(deltaUnrealAmount), &deltaPmtDiscAddCurr)
+				if err != nil {
+					return err
+				}
+				pmtDiscLCY = pmtDiscLCY.Add(deltaUnrealAmount)
+				pmtDiscAddCurr = deltaPmtDiscAddCurr
+				p.totalRevPmtDiscLCY = p.totalRevPmtDiscLCY.Sub(orgPmtDiscLCY.Sub(pmtDiscLCY))
+				p.totalRevPmtDiscAddCurr = p.totalRevPmtDiscAddCurr.Sub(orgPmtDiscAddCurr.Sub(pmtDiscAddCurr))
+			}
+			p.totalPmtDiscLCY = p.totalPmtDiscLCY.Sub(pmtDiscLCY.Sub(deltaUnrealAmount))
 			p.totalPmtDiscAddCurr = p.totalPmtDiscAddCurr.Sub(pmtDiscAddCurr.Sub(deltaUnrealAmountAddCurr))
 		}
 
@@ -356,6 +366,17 @@ func (p *GenJnlPostLine) applyCustLedgEntry(newCustLedgEntry *gtables.CustomerLe
 			newCustLedgEntry.Applies_to_id = ""
 		}
 
+		if p.glSetup.Unrealized_tax && isTaxDocumentCust(oldCustLedgEntry.Document_type) {
+			settledAmount, err := ExchAmount(p.src, appliedAmount, applnCurrencyCode, oldCustLedgEntry.Currency_code, applnPostingDate)
+			if err != nil {
+				return err
+			}
+			err = p.custUnrealizedTax(oldCustLedgEntry, settledAmount)
+			if err != nil {
+				return err
+			}
+		}
+
 		// Find the next old entry for application of the new entry
 		completed := false
 		if newCustLedgEntry.Applies_to_doc_no != "" {
@@ -383,7 +404,22 @@ func (p *GenJnlPostLine) applyCustLedgEntry(newCustLedgEntry *gtables.CustomerLe
 		newCustLedgEntry.Applies_to_id = ""
 		p.updateCalcInterest(newCustLedgEntry)
 	}
+
+	// the new entry's unrealized tax for what it was applied
+	if p.glSetup.Unrealized_tax && isTaxDocumentCust(newCustLedgEntry.Document_type) &&
+		!newCustLedgEntry.Amount_lcy.Sub(newCustLedgEntry.Remaining_amt_lcy).IsZero() {
+		return p.custUnrealizedTax(newCustLedgEntry, newCustLedgEntry.Amount_lcy.Sub(newCustLedgEntry.Remaining_amt_lcy).Neg())
+	}
 	return nil
+}
+
+// isTaxDocumentCust: an invoice, credit memo, finance charge memo or reminder (the documents with
+// unrealized tax)
+func isTaxDocumentCust(documentType gtables.CustomerLedgerEntryDocument_type) bool {
+	return documentType == gtables.CustomerLedgerEntry_Document_type.Invoice ||
+		documentType == gtables.CustomerLedgerEntry_Document_type.CreditMemo ||
+		documentType == gtables.CustomerLedgerEntry_Document_type.FinanceChargeMemo ||
+		documentType == gtables.CustomerLedgerEntry_Document_type.Reminder
 }
 
 // updateCalcInterest (UpdateCalcInterest): a closed entry earns interest when it was closed after

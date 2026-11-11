@@ -265,31 +265,41 @@ func (p *GenJnlPostLine) applyVendLedgEntry(newVendLedgEntry *gtables.VendorLedg
 					oldVendLedgEntry2.Remaining_amount.Sub(oldVendLedgEntry2.Pmt_disc_possible).Abs().Decimal)) {
 			postUnrealAmount := newVendLedgEntry.Remaining_amt_lcy.Add(vendLedgApplAmtLCY(newVendLedgEntry.Remaining_amount.Neg(), newVendLedgEntry))
 			pmtDisc := oldVendLedgEntry2.Pmt_disc_possible.Neg()
-			if !pmtDisc.IsZero() {
-				err = p.checkPmtDiscTaxAdjustment(oldVendLedgEntry.Transaction_no, oldVendLedgEntry.Document_no)
-				if err != nil {
-					return err
-				}
-			}
 			pmtDiscLCY := vendLedgApplAmtLCY(pmtDisc, newVendLedgEntry)
+			pmtDiscAddCurr, err := p.pmtDiscAddCurr(applnCurrencyCode, pmtDisc, pmtDiscLCY)
+			if err != nil {
+				return err
+			}
 			newVendLedgEntry.Amount = newVendLedgEntry.Amount.Add(pmtDisc)
 			newVendLedgEntry.Original_amount_lcy = newVendLedgEntry.Original_amount_lcy.Add(pmtDiscLCY)
 			newVendLedgEntry.Remaining_amount = newVendLedgEntry.Remaining_amount.Add(pmtDisc)
 			newVendLedgEntry.Remaining_amt_lcy = newVendLedgEntry.Remaining_amt_lcy.Add(pmtDiscLCY)
 			deltaUnrealAmount := postUnrealAmount.Sub(newVendLedgEntry.Remaining_amt_lcy.Add(vendLedgApplAmtLCY(newVendLedgEntry.Remaining_amount.Neg(), newVendLedgEntry)))
-			newVendLedgEntry.Original_amount_lcy = newVendLedgEntry.Original_amount_lcy.Sub(deltaUnrealAmount)
-			newVendLedgEntry.Remaining_amt_lcy = newVendLedgEntry.Remaining_amt_lcy.Sub(deltaUnrealAmount)
-			newVendLedgEntry.Amount_lcy = newVendLedgEntry.Amount_lcy.Add(pmtDiscLCY).Sub(deltaUnrealAmount)
-			oldVendLedgEntry.Pmt_disc_rcd_lcy = pmtDiscLCY.Sub(deltaUnrealAmount).Neg()
-			p.totalPmtDiscLCY = p.totalPmtDiscLCY.Sub(pmtDiscLCY.Sub(deltaUnrealAmount))
-			pmtDiscAddCurr, err := p.pmtDiscAddCurr(applnCurrencyCode, pmtDisc, pmtDiscLCY)
-			if err != nil {
-				return err
-			}
 			deltaUnrealAmountAddCurr, err := p.calcLCYToAddCurr(deltaUnrealAmount)
 			if err != nil {
 				return err
 			}
+			newVendLedgEntry.Original_amount_lcy = newVendLedgEntry.Original_amount_lcy.Sub(deltaUnrealAmount)
+			newVendLedgEntry.Remaining_amt_lcy = newVendLedgEntry.Remaining_amt_lcy.Sub(deltaUnrealAmount)
+			newVendLedgEntry.Amount_lcy = newVendLedgEntry.Amount_lcy.Add(pmtDiscLCY).Sub(deltaUnrealAmount)
+			oldVendLedgEntry.Pmt_disc_rcd_lcy = pmtDiscLCY.Sub(deltaUnrealAmount).Neg()
+			if !p.glSetup.Pmt_disc_excl_tax && p.glSetup.Adjust_for_payment_disc && !pmtDiscLCY.Sub(deltaUnrealAmount).IsZero() {
+				// the discount's tax adjustment (CashDiscPost): the part split over the
+				// document's tax is posted there, the rest stays a payment discount
+				orgPmtDiscLCY := pmtDiscLCY
+				orgPmtDiscAddCurr := pmtDiscAddCurr
+				deltaPmtDiscAddCurr := pmtDiscAddCurr.Sub(deltaUnrealAmountAddCurr)
+				pmtDiscLCY, err = p.cashDiscPost(oldVendLedgEntry.Original_amount_lcy, oldVendLedgEntry.Amount, oldVendLedgEntry.Currency_code,
+					oldVendLedgEntry.Transaction_no, true, pmtDiscLCY.Sub(deltaUnrealAmount), &deltaPmtDiscAddCurr)
+				if err != nil {
+					return err
+				}
+				pmtDiscLCY = pmtDiscLCY.Add(deltaUnrealAmount)
+				pmtDiscAddCurr = deltaPmtDiscAddCurr
+				p.totalRevPmtDiscLCY = p.totalRevPmtDiscLCY.Sub(orgPmtDiscLCY.Sub(pmtDiscLCY))
+				p.totalRevPmtDiscAddCurr = p.totalRevPmtDiscAddCurr.Sub(orgPmtDiscAddCurr.Sub(pmtDiscAddCurr))
+			}
+			p.totalPmtDiscLCY = p.totalPmtDiscLCY.Sub(pmtDiscLCY.Sub(deltaUnrealAmount))
 			p.totalPmtDiscAddCurr = p.totalPmtDiscAddCurr.Sub(pmtDiscAddCurr.Sub(deltaUnrealAmountAddCurr))
 		}
 
@@ -362,6 +372,17 @@ func (p *GenJnlPostLine) applyVendLedgEntry(newVendLedgEntry *gtables.VendorLedg
 			newVendLedgEntry.Applies_to_id = ""
 		}
 
+		if p.glSetup.Unrealized_tax && isTaxDocumentVend(oldVendLedgEntry.Document_type) {
+			settledAmount, err := ExchAmount(p.src, appliedAmount, applnCurrencyCode, oldVendLedgEntry.Currency_code, applnPostingDate)
+			if err != nil {
+				return err
+			}
+			err = p.vendUnrealizedTax(oldVendLedgEntry, settledAmount)
+			if err != nil {
+				return err
+			}
+		}
+
 		// Find the next old entry for application of the new entry
 		completed := false
 		if newVendLedgEntry.Applies_to_doc_no != "" {
@@ -388,7 +409,22 @@ func (p *GenJnlPostLine) applyVendLedgEntry(newVendLedgEntry *gtables.VendorLedg
 	if !newVendLedgEntry.Open {
 		newVendLedgEntry.Applies_to_id = ""
 	}
+
+	// the new entry's unrealized tax for what it was applied
+	if p.glSetup.Unrealized_tax && isTaxDocumentVend(newVendLedgEntry.Document_type) &&
+		!newVendLedgEntry.Amount_lcy.Sub(newVendLedgEntry.Remaining_amt_lcy).IsZero() {
+		return p.vendUnrealizedTax(newVendLedgEntry, newVendLedgEntry.Amount_lcy.Sub(newVendLedgEntry.Remaining_amt_lcy).Neg())
+	}
 	return nil
+}
+
+// isTaxDocumentVend: an invoice, credit memo, finance charge memo or reminder (the documents with
+// unrealized tax)
+func isTaxDocumentVend(documentType gtables.VendorLedgerEntryDocument_type) bool {
+	return documentType == gtables.VendorLedgerEntry_Document_type.Invoice ||
+		documentType == gtables.VendorLedgerEntry_Document_type.CreditMemo ||
+		documentType == gtables.VendorLedgerEntry_Document_type.FinanceChargeMemo ||
+		documentType == gtables.VendorLedgerEntry_Document_type.Reminder
 }
 
 // applVendLedgEntryAmt applies an amount to a vendor ledger entry: its remaining amounts and

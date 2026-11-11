@@ -3,7 +3,7 @@ table:
   name: "Entry_Application_GL"
   caption: Entry Application G/L
   posted: true   # written with the Entry Application rows of an application
-  description: "Entry Application G/L (table 906): the G/L postings of an application of customer or vendor entries — receivables or payables account, payment discount, application rounding, exchange-rate gains and losses — posted with the opposite amounts when it is unapplied"
+  description: "Entry Application G/L (table 906): the G/L postings of an application of customer or vendor entries — receivables or payables account, payment discount, application rounding, exchange-rate gains and losses, tax — posted with the opposite amounts when it is unapplied"
   fields:
     - name: application_no
       no: 1
@@ -41,6 +41,13 @@ table:
       db_name: use_add_curr_amount
       caption: Use Add.-Curr. Amount
       # the amount in the additional currency is given (else exchanged at posting)
+    - name: tax_entry_no
+      no: 7
+      type: int
+      db_name: tax_entry_no
+      caption: Tax Entry No.
+      # a tax entry the application wrote (realized unrealized tax, payment discount tax),
+      # reversed when it is unapplied; the line has no G/L account then
 
   keys:
     - name: Primary

@@ -6179,6 +6179,7 @@ tables:
       amount: "Amount"
       additional_currency_amount: "Additional-Currency Amount"
       use_add_curr_amount: "Use Add.-Curr. Amount"
+      tax_entry_no: "Tax Entry No."
   object_translation:
     caption: "Object Translation"
     fields:

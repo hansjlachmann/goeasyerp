@@ -6179,6 +6179,7 @@ tables:
       amount: "Beløb"
       additional_currency_amount: "Beløb i ekstra rapporteringsvaluta"
       use_add_curr_amount: "Brug beløb i ekstra rapporteringsvaluta"
+      tax_entry_no: "Momspostnr."
   object_translation:
     caption: "Objektoversættelse"
     fields:

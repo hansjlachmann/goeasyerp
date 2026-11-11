@@ -16,9 +16,8 @@ import (
 // top of generated/tables/generalledgersetup_gen.go. The field rules of the definition
 // (required, length, range) are checked after OnInsert and OnModify.
 //
-// Not migrated yet (their tables come later): the tax setup checks of Unrealized Tax and
-// Adjust for Payment Disc., Additional Reporting Currency's confirmation and recalculation
-// report, the posted-entries check of the rounding precisions (RoundingErrorCheck).
+// Not migrated yet: Additional Reporting Currency's confirmation and recalculation report, the
+// posted-entries check of the rounding precisions (RoundingErrorCheck).
 type generalLedgerSetupLogic struct{}
 
 func init() { gtables.RegisterGeneralLedgerSetupLogic(generalLedgerSetupLogic{}) }
@@ -56,14 +55,46 @@ func (generalLedgerSetupLogic) OnValidate_Pmt_disc_excl_tax(rec *gtables.General
 
 // OnValidate_Adjust_for_payment_disc: not with Pmt. Disc. Excl. Tax or a VAT tolerance
 func (generalLedgerSetupLogic) OnValidate_Adjust_for_payment_disc(rec *gtables.GeneralLedgerSetup) error {
-	if !rec.Adjust_for_payment_disc {
-		return nil // the check of the tax setup comes with its tables
+	if rec.Adjust_for_payment_disc {
+		err := rec.TestField("pmt_disc_excl_tax", false)
+		if err != nil {
+			return err
+		}
+		return rec.TestField("vat_tolerance_percent", types.ZeroDecimal())
+	} else {
+		// not while a tax posting setup or jurisdiction adjusts for the payment discount
+		taxPostingSetup := gtables.NewTaxPostingSetup(rec)
+		taxPostingSetup.SetRange("adjust_for_payment_discount", true)
+		if taxPostingSetup.FindFirst() {
+			return apperrors.TaxSetupUses(gtables.TaxPostingSetupTableName, "adjust_for_payment_discount",
+				string(taxPostingSetup.Tax_bus_posting_group)+" "+string(taxPostingSetup.Tax_prod_posting_group))
+		}
+		taxJurisdiction := gtables.NewTaxJurisdiction(rec)
+		taxJurisdiction.SetRange("adjust_for_payment_discount", true)
+		if taxJurisdiction.FindFirst() {
+			return apperrors.TaxSetupUses(gtables.TaxJurisdictionTableName, "adjust_for_payment_discount", string(taxJurisdiction.Code))
+		}
 	}
-	err := rec.TestField("pmt_disc_excl_tax", false)
-	if err != nil {
-		return err
+	return nil
+}
+
+// OnValidate_Unrealized_tax: not turned off while a tax posting setup or jurisdiction has an
+// Unrealized Tax Type
+func (generalLedgerSetupLogic) OnValidate_Unrealized_tax(rec *gtables.GeneralLedgerSetup) error {
+	if !rec.Unrealized_tax {
+		taxPostingSetup := gtables.NewTaxPostingSetup(rec)
+		taxPostingSetup.SetFilter("unrealized_tax_type", ">="+strconv.Itoa(int(gtables.TaxPostingSetup_Unrealized_tax_type.Percentage)))
+		if taxPostingSetup.FindFirst() {
+			return apperrors.TaxSetupHasValue(gtables.TaxPostingSetupTableName, "unrealized_tax_type",
+				string(taxPostingSetup.Tax_bus_posting_group)+" "+string(taxPostingSetup.Tax_prod_posting_group), taxPostingSetup.Unrealized_tax_type)
+		}
+		taxJurisdiction := gtables.NewTaxJurisdiction(rec)
+		taxJurisdiction.SetFilter("unrealized_tax_type", ">="+strconv.Itoa(int(gtables.TaxJurisdiction_Unrealized_tax_type.Percentage)))
+		if taxJurisdiction.FindFirst() {
+			return apperrors.TaxSetupHasValue(gtables.TaxJurisdictionTableName, "unrealized_tax_type", string(taxJurisdiction.Code), taxJurisdiction.Unrealized_tax_type)
+		}
 	}
-	return rec.TestField("vat_tolerance_percent", types.ZeroDecimal())
+	return nil
 }
 
 // OnValidate_Vat_tolerance_percent: a tolerance needs Pmt. Disc. Excl. Tax and no adjustment
