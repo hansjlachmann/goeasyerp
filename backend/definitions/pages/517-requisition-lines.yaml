@@ -43,6 +43,7 @@ page:
         - source: quantity
           width: 100
         - source: reserved_quantity
+          on_drilldown: table:Requisition_Line.ShowReservationEntries
           width: 110
         - source: unit_of_measure_code
           width: 90

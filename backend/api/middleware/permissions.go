@@ -102,10 +102,45 @@ func UserContext() fiber.Handler {
 		fcodeunits.SetCurrentAccess(sess)
 		defer fcodeunits.ClearCurrentContext()
 		fcodeunits.StartNotes()
+		fcodeunits.StartQuestions(parseAnswers(c.Get(AnswersHeader)))
 		err := c.Next()
+		question := fcodeunits.TakeQuestion()
 		setNotesHeader(c, fcodeunits.TakeNotes())
+		if question != "" {
+			// nothing was saved (ftables.Commit refused): the browser asks the user and sends the
+			// request again with the answers
+			c.Set(QuestionHeader, url.QueryEscape(question))
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"success": false, "error": question, "question": question})
+		}
 		return err
 	}
+}
+
+// QuestionHeader carries the question a request's code asked (classic CONFIRM in a table
+// trigger, fcodeunits.Confirm), URL-encoded, with status 409: nothing was saved, the browser
+// asks the user and sends the request again with AnswersHeader
+const QuestionHeader = "X-App-Question"
+
+// AnswersHeader carries the user's answers to the questions a request asked so far, in the
+// order they were asked: "1" Yes, "0" No, separated by commas
+const AnswersHeader = "X-App-Answers"
+
+// maxAnswers: a request asks at most this many questions (the browser stops sending it again)
+const maxAnswers = 20
+
+func parseAnswers(header string) []bool {
+	var answers []bool
+	for _, a := range strings.Split(header, ",") {
+		a = strings.TrimSpace(a)
+		if a == "" {
+			continue
+		}
+		if len(answers) == maxAnswers {
+			break
+		}
+		answers = append(answers, a == "1")
+	}
+	return answers
 }
 
 // NotesHeader carries the notes of a request (fcodeunits.Notify, e.g. a number series reaching

@@ -15,13 +15,16 @@ import type { Appearance, AppearanceSettings, ThemeInstallResult, ThemeList } fr
 import { handleApiResponse, handleApiResponseVoid, handleApiResponseFull, handleApiResponseWithCaptions, type DataWithCaptions } from '$lib/utils/apiHelpers';
 import type { CompanyInfo } from '$lib/utils/company';
 import { showNotes } from '$lib/utils/notes';
+import { fetchAnswering } from '$lib/utils/questions';
+import { ask } from '$lib/stores/question';
 
 const API_BASE = '/api';
 
-// Every API call of this client: the answer's notes (a number series reaching its Warning
-// No. …) are shown to the user
+// Every API call of this client: a question the server's code asks (a table trigger's
+// Confirm) is put to the user and the request sent again with the answers; the answer's notes
+// (a number series reaching its Warning No. …) are shown to the user
 async function fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-	const response = await globalThis.fetch(input, init);
+	const response = await fetchAnswering(globalThis.fetch, ask, input, init);
 	showNotes(response);
 	return response;
 }

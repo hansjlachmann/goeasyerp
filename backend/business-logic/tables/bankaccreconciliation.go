@@ -80,14 +80,14 @@ func (bankAccReconciliationLogic) OnValidate_Bank_account_no(rec *gtables.BankAc
 }
 
 // OnValidate_Balance_last_statement: a balance other than the bank account's is kept only when
-// the user confirms it (asked in a dialog)
+// the user confirms it (asked when the user can be asked — system.CanConfirm)
 func (bankAccReconciliationLogic) OnValidate_Balance_last_statement(rec *gtables.BankAccReconciliation) error {
 	bankAcc := gtables.NewBankAccount(rec)
 	err := bankAcc.GetOrError(rec.Bank_account_no)
 	if err != nil {
 		return err
 	}
-	if !rec.Balance_last_statement.Equal(bankAcc.Balance_last_statement) && system.GuiAllowed() {
+	if !rec.Balance_last_statement.Equal(bankAcc.Balance_last_statement) && system.CanConfirm() {
 		language := fcodeunits.CurrentLanguage()
 		ts := i18n.GetInstance()
 		if !system.Confirm(ts.Message("BANK_REC_BALANCE_LAST_STATEMENT", language),

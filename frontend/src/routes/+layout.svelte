@@ -20,6 +20,7 @@
 	import { breadcrumb } from '$lib/stores/breadcrumb';
 	import ToastContainer from '$lib/components/ToastContainer.svelte';
 	import PrintPreview from '$lib/components/PrintPreview.svelte';
+	import QuestionDialog from '$lib/components/QuestionDialog.svelte';
 	import { regionalVersion } from '$lib/stores/regional';
 	import type { Snippet } from 'svelte';
 
@@ -88,3 +89,6 @@
 
 <!-- A printed report's preview -->
 <PrintPreview />
+
+<!-- The server's Yes/No questions during a request (a table trigger's Confirm) -->
+<QuestionDialog />

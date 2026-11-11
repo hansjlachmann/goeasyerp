@@ -52,13 +52,14 @@ func (bankAccReconciliationLineLogic) OnValidate_Applied_amount(rec *gtables.Ban
 	return nil
 }
 
-// OnValidate_Type: a line with applied entries loses its application (asked in a dialog)
+// OnValidate_Type: a line with applied entries loses its application (asked when the user can be
+// asked — system.CanConfirm)
 func (bankAccReconciliationLineLogic) OnValidate_Type(rec *gtables.BankAccReconciliationLine) error {
 	xRec := rec.XRec()
 	if rec.Type == xRec.Type || rec.Applied_entries == 0 {
 		return nil
 	}
-	if system.GuiAllowed() && !system.Confirm(i18n.GetInstance().Message("BANK_REC_DELETE_APPLICATION", fcodeunits.CurrentLanguage())) {
+	if system.CanConfirm() && !system.Confirm(i18n.GetInstance().Message("BANK_REC_DELETE_APPLICATION", fcodeunits.CurrentLanguage())) {
 		return apperrors.BankRecUpdateCanceled()
 	}
 	err := removeApplication(rec, xRec.Type)

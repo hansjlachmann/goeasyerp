@@ -237,8 +237,17 @@ func (itemLogic) OnValidate_Costing_method(rec *gtables.Item) error {
 	return updateItemUnitCost(rec)
 }
 
-// OnValidate_Standard_cost: the unit cost of a standard cost item follows
+// OnValidate_Standard_cost: a standard cost item's Standard Cost changed by the user is kept only
+// when the user confirms it (orders and open entries may be affected; default No); the unit cost
+// follows
 func (itemLogic) OnValidate_Standard_cost(rec *gtables.Item) error {
+	if rec.Costing_method == gtables.Item_Costing_method.Standard && fcodeunits.CurrFieldNo() != 0 {
+		if !system.Confirm(i18n.GetInstance().Message("ITEM_CHANGE_STANDARD_COST", fcodeunits.CurrentLanguage()),
+			rec.FieldCaption("standard_cost")) {
+			rec.Standard_cost = rec.XRec().Standard_cost
+			return nil
+		}
+	}
 	return updateItemUnitCost(rec)
 }
 
@@ -258,7 +267,7 @@ func (itemLogic) OnValidate_Add_curr_average_cost(rec *gtables.Item) error {
 
 // updateAddCurAverageCost (UpdateAddCurAverageCost): a changed average cost, with an additional
 // reporting currency, gives the Add.-Curr. Average Cost at the work date's rate (the classic asks
-// first, default Yes; asked only with a dialog). Postings set the additional-currency average
+// first, default Yes; asked when the user can be asked — system.CanConfirm). Postings set the additional-currency average
 // cost before they validate the average cost (the classic: CurrFieldNo = 0), so a record whose
 // additional-currency average cost changed already keeps it and nothing is asked.
 func updateAddCurAverageCost(rec *gtables.Item) error {
@@ -266,7 +275,7 @@ func updateAddCurAverageCost(rec *gtables.Item) error {
 	glSetup := gtables.GetGeneralLedgerSetup(rec)
 	if !rec.Average_cost.Equal(xRec.Average_cost) && glSetup.Additional_reporting_currency != "" &&
 		rec.Add_curr_average_cost.Equal(xRec.Add_curr_average_cost) {
-		if system.GuiAllowed() && !system.Confirm(i18n.GetInstance().Message("ITEM_UPDATE_ADD_CURR_AVERAGE_COST", fcodeunits.CurrentLanguage()),
+		if system.CanConfirm() && !system.Confirm(i18n.GetInstance().Message("ITEM_UPDATE_ADD_CURR_AVERAGE_COST", fcodeunits.CurrentLanguage()),
 			rec.FieldCaption("add_curr_average_cost")) {
 			return nil
 		}

@@ -44,6 +44,7 @@ page:
           visible: false
           on_after_validate: table:Purchase_Line.ReserveAlways
         - source: reserved_quantity
+          on_drilldown: table:Purchase_Line.ShowReservationEntries
           width: 120
           visible: false
         - source: unit_of_measure_code

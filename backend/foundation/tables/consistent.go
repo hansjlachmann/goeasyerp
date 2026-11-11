@@ -80,8 +80,18 @@ func SetConsistent(exec database.Executor, table string, ok bool) {
 
 // Commit commits a transaction unless a table was left inconsistent in it (Consistent(false)):
 // then it rolls the transaction back, reports the refusal (OnRefusedCommit) and returns an
-// error naming the tables
+// error naming the tables. While the commit guard refuses (a request's question not answered
+// yet) it rolls back and returns the guard's error, without reporting a refusal.
 func Commit(tx *sql.Tx) error {
+	guard := commitGuard
+	if guard != nil {
+		err := guard()
+		if err != nil {
+			clearConsistency(tx)
+			_ = tx.Rollback()
+			return err
+		}
+	}
 	tables, explain := clearConsistency(tx)
 	if len(tables) > 0 {
 		err := inconsistencyError(tables, explain)
@@ -90,6 +100,16 @@ func Commit(tx *sql.Tx) error {
 		return err
 	}
 	return tx.Commit()
+}
+
+// commitGuard refuses every commit while it returns an error: an API request with a question the
+// user has not answered yet (foundation/codeunits, questions.go) — its work is done again with
+// the answer, so nothing of this round may be saved
+var commitGuard func() error
+
+// SetCommitGuard sets the commit guard (foundation/codeunits registers it)
+func SetCommitGuard(guard func() error) {
+	commitGuard = guard
 }
 
 var (

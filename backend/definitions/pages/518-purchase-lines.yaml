@@ -45,6 +45,7 @@ page:
         - source: quantity
           width: 100
         - source: reserved_qty_base
+          on_drilldown: table:Purchase_Line.ShowReservationEntries
           width: 110
           visible: false
         - source: unit_of_measure_code

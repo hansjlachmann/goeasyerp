@@ -302,6 +302,10 @@ type Field struct {
 	// page takes it and saves ("table:Sales_Line.SelectItemEntry"); Alt+↓ / F4 or ▼ in a list
 	// cell, the "…" on a card
 	OnLookup string `yaml:"on_lookup,omitempty" json:"on_lookup,omitempty"`
+	// OnDrilldown: the field's drilldown is this registered function (classic OnDrillDown with
+	// code): a click on the value, or Alt+↓, runs it with the saved record, quietly — the page it
+	// opens and errors show ("table:Sales_Line.ShowReservationEntries")
+	OnDrilldown string `yaml:"on_drilldown,omitempty" json:"on_drilldown,omitempty"`
 	Type     string `yaml:"type,omitempty" json:"-"`
 	// CheckBox: a Yes/No FlowFilter above a matrix shown as a check box (checked: the filter
 	// Yes, else none) — a page variable switching the matrix, such as Use Add. Reporting Currency

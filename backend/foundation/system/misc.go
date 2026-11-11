@@ -104,6 +104,14 @@ func Hyperlink(link string) error {
 	return nil
 }
 
+// CanConfirm reports whether Confirm can ask the user: in a codeunit's dialog, or in an API
+// request — a table trigger run by the user's change, its question answered in rounds (the
+// request is sent again with the answer). A question in a request is no place for RunModal,
+// StrMenu or RequestInput: check GuiAllowed for those.
+func CanConfirm() bool {
+	return GuiAllowed() || codeunits.CanAskQuestions()
+}
+
 // GuiAllowed reports whether the code runs with a user to ask (a codeunit's dialog), not in a
 // scheduled run: ask with Confirm, StrMenu or RunModal only then
 func GuiAllowed() bool {

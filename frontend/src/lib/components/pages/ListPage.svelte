@@ -3425,15 +3425,23 @@
 		}
 	}
 
-	// A cell with a drilldown: a saved row's field that drills down (a FlowField also when 0)
+	// A cell with a drilldown: a saved row's field that drills down (a FlowField also when 0; a
+	// drilldown function, on_drilldown, also when blank)
 	function hasDrilldown(field: import('$lib/types/pages').Field, record: Record<string, any> | undefined): boolean {
-		if (!record || record._isNew || !(field.drilldown || field.drilldown_page_field)) return false;
+		if (!record || record._isNew || !(field.drilldown || field.drilldown_page_field || field.on_drilldown)) return false;
+		if (field.on_drilldown) return true;
 		const value = record[field.source];
 		return !!value || value === 0 || !!page.page.flow_fields?.includes(field.source);
 	}
 
 	// DrillDown (a click on the cell, or Alt+↓ on it): the entries behind the value
 	function openDrilldown(field: import('$lib/types/pages').Field, record: Record<string, any>) {
+		// a drilldown function (classic OnDrillDown code): run with the saved row, quietly — the
+		// page it opens shows; the list reloads when it changed something
+		if (field.on_drilldown) {
+			void fieldRunner?.run(field.on_drilldown, stripInternalFields($state.snapshot(record)), { quiet: true });
+			return;
+		}
 		if (field.drilldown_flow_filters) {
 			void openFlowFieldDrilldown(field, record);
 			return;

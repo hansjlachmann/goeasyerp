@@ -171,6 +171,7 @@ export interface Field {
 	style_expr?: StyleExpr; // lists: a style when the record's field (does not) equal a value
 	assist_edit?: string; // AssistEdit: run_object of the field's "…" function (table:Customer.AssistEdit)
 	on_lookup?: string; // OnLookup: run_object of the field's own lookup function, giving the record back (table:Sales_Line.SelectItemEntry)
+	on_drilldown?: string; // OnDrillDown: run_object of the field's drilldown function, run with the saved record (table:Sales_Line.ShowReservationEntries)
 	on_after_validate?: string; // OnAfterValidate: run_object of a function run after the field is saved (table:Sales_Line.ReserveAlways)
 	calculated?: boolean; // not a table field: the page's triggers fill it per record (read-only)
 }

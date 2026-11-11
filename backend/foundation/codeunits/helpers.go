@@ -253,9 +253,14 @@ func Error(text string) Result {
 // Returns true if user clicks Yes, false if No
 // Like Confirm('Are you sure?')
 // Note: This only works in async codeunits (UsesProgress() = true)
+// In an API request (a table trigger) the question is answered in rounds (questions.go).
 func Confirm(message string) bool {
 	dialog := GetCurrentDialog()
 	if dialog == nil {
+		answer, asked := requestConfirm(message)
+		if asked {
+			return answer
+		}
 		// No dialog context - can't show confirm
 		// Return false as safe default
 		return false

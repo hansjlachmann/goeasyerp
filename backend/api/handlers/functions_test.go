@@ -70,6 +70,15 @@ func TestPageFunctionsAreRegistered(t *testing.T) {
 					t.Errorf("page %d field %s: %s takes a %s record", id, f.Source, f.OnLookup, fn.Table)
 				}
 			}
+			if f.OnDrilldown != "" {
+				found++
+				fn, _, err := functions.Resolve(f.OnDrilldown)
+				if err != nil {
+					t.Errorf("page %d field %s: %v", id, f.Source, err)
+				} else if factory, ok := gtables.GetTableFactory(fn.Table); !ok || factory().GetTableName() != tableName(p.Page.SourceTable) {
+					t.Errorf("page %d field %s: %s takes a %s record", id, f.Source, f.OnDrilldown, fn.Table)
+				}
+			}
 			if f.OnAfterValidate == "" {
 				continue
 			}

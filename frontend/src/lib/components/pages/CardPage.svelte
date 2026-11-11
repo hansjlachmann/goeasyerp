@@ -377,6 +377,12 @@
 	// drilldown_filter_value); Esc or the close button returns to the card
 	let drilldown = $state<{ pageId: number; filters: import('$lib/types/api').TableFilter[] } | null>(null);
 	async function openDrilldown(field: import('$lib/types/pages').Field) {
+		// a drilldown function (classic OnDrillDown code, on_drilldown): run with the card's
+		// saved record, quietly — the page it opens shows
+		if (field.on_drilldown) {
+			if (record) await runner?.run(field.on_drilldown, stripInternalFields($state.snapshot(record)), { quiet: true });
+			return;
+		}
 		// a FlowField without filters of its own: the server gives the FlowField's filters, with
 		// the FlowFilters the card was read with (a modal card: its list's)
 		if (field.drilldown_flow_filters && record) {
@@ -966,7 +972,7 @@
 									fieldType={fieldTypes[field.source]}
 									fieldCaptions={captions}
 									tabindex={fieldTabIndex}
-									ondrilldown={field.drilldown && !checkIsNewRecord() ? () => openDrilldown(field) : undefined}
+									ondrilldown={(field.drilldown || field.on_drilldown) && !checkIsNewRecord() ? () => openDrilldown(field) : undefined}
 								/>
 							{:else if isBlobType(fieldTypes[field.source])}
 								<!-- A picture (BLOB): its own endpoint; a new record must be saved first -->
@@ -994,7 +1000,7 @@
 								tabindex={fieldTabIndex}
 								onblur={(e) => handleFieldBlur(field, e)}
 								onassistedit={(field.assist_edit || field.on_lookup) && fieldEditable ? () => handleAssistEdit((field.assist_edit || field.on_lookup)!) : undefined}
-								ondrilldown={field.drilldown && !fieldEditable && !checkIsNewRecord() ? () => openDrilldown(field) : undefined}
+								ondrilldown={(field.drilldown || field.on_drilldown) && !fieldEditable && !checkIsNewRecord() ? () => openDrilldown(field) : undefined}
 							/>
 							{/if}
 						{/each}

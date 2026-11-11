@@ -73,6 +73,7 @@ page:
           width: 100
           visible: false
         - source: reserved_quantity
+          on_drilldown: table:Requisition_Line.ShowReservationEntries
           width: 120
           visible: false
         - source: unit_of_measure_code
