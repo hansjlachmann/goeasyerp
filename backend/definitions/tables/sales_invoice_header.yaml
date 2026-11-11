@@ -748,6 +748,12 @@ table:
           - source: description
             width: 250
 
+    # the sale is an EU triangular trade (EU 3-Party Trade): it goes onto its tax entries (VIES)
+    - name: eu_3_party_trade
+      no: 75
+      type: bool
+      db_name: eu_3_party_trade
+
   keys:
     - name: Primary
       fields: ["no"]

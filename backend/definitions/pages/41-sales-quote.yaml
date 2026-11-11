@@ -92,6 +92,7 @@ page:
           - source: currency_factor
           - source: language_code
           - source: vat_registration_no
+          - source: eu_3_party_trade
 
   actions:
     - name: Back to List

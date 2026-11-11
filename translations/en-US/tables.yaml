@@ -3237,6 +3237,7 @@ tables:
   gen_journal_line:
     caption: "Gen. Journal Line"
     fields:
+      eu_3_party_trade: "EU 3-Party Trade"
       project_no: "Project No."
       fa_add_currency_factor: "FA Add.-Currency Factor"
       additional_currency_posting: "Additional-Currency Posting"
@@ -4603,6 +4604,7 @@ tables:
   sales_header:
     caption: "Sales Header"
     fields:
+      eu_3_party_trade: "EU 3-Party Trade"
       package_tracking_no: "Package Tracking No."
       combine_shipments: "Combine Shipments"
       project_no: "Project No."
@@ -4832,6 +4834,7 @@ tables:
   sales_shipment_header:
     caption: "Sales Shipment Header"
     fields:
+      eu_3_party_trade: "EU 3-Party Trade"
       package_tracking_no: "Package Tracking No."
       project_no: "Project No."
       sell_to_customer_no: "Sell-to Customer No."
@@ -4990,6 +4993,7 @@ tables:
   sales_invoice_header:
     caption: "Sales Invoice Header"
     fields:
+      eu_3_party_trade: "EU 3-Party Trade"
       package_tracking_no: "Package Tracking No."
       project_no: "Project No."
       sell_to_customer_no: "Sell-to Customer No."
@@ -5155,6 +5159,7 @@ tables:
   sales_cr_memo_header:
     caption: "Sales Cr.Memo Header"
     fields:
+      eu_3_party_trade: "EU 3-Party Trade"
       project_no: "Project No."
       sell_to_customer_no: "Sell-to Customer No."
       no: "No."

@@ -735,6 +735,18 @@ func (p *PurchPost) fillInvPostingBuffer(purchLine, lineFCY, lineLCY *gtables.Pu
 	}
 	taxAmount := lineLCY.Amount_including_tax.Sub(lineLCY.Amount)
 	taxAmountFCY := lineFCY.Amount_including_tax.Sub(lineFCY.Amount)
+	if purchLine.Tax_calculation_type == gtables.PurchaseLine_Tax_calculation_type.ReverseChargeVAT {
+		// reverse charge: the vendor charges no VAT (the line's VAT % is 0); the VAT owed on the
+		// purchase is the setup's VAT % of the amount
+		taxPostingSetup := gtables.NewTaxPostingSetup(purchLine)
+		err := taxPostingSetup.GetOrError(map[string]interface{}{"tax_bus_posting_group": purchLine.Tax_bus_posting_group, "tax_prod_posting_group": purchLine.Tax_prod_posting_group})
+		if err != nil {
+			return err
+		}
+		hundred := types.NewDecimalFromInt(100)
+		taxAmount = system.Round(lineLCY.Amount.Mul(taxPostingSetup.Vat_percent).Div(hundred))
+		taxAmountFCY = system.Round(lineFCY.Amount.Mul(taxPostingSetup.Vat_percent).Div(hundred), p.amountRoundingPrecision(gtables.GetGeneralLedgerSetup(purchLine)))
+	}
 	if purchLine.Tax_calculation_type == gtables.PurchaseLine_Tax_calculation_type.SalesTax && purchLine.Use_tax {
 		// use tax: owed on the purchase, not charged by the vendor
 		salesTaxCalculate := salestax.New(purchLine)

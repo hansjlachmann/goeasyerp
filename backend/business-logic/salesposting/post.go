@@ -913,6 +913,7 @@ func (p *SalesPost) postInvPostingBuffer() error {
 			genJnlLine.Tax_liable = b.taxLiable
 			genJnlLine.Tax_group_code = b.taxGroupCode
 			genJnlLine.Vat_posting = gtables.GenJournalLine_Vat_posting.ManualVATEntry
+			genJnlLine.Eu_3_party_trade = salesHeader.Eu_3_party_trade
 			genJnlLine.Tax_amount = b.taxAmountFCY.Mul(p.sign).Neg()
 			genJnlLine.Tax_amount_lcy = b.taxAmount.Mul(p.sign).Neg()
 			genJnlLine.Tax_base_amount = b.taxBaseAmountFCY.Mul(p.sign).Neg()

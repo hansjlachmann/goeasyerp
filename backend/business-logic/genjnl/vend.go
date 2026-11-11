@@ -265,6 +265,12 @@ func (p *GenJnlPostLine) applyVendLedgEntry(newVendLedgEntry *gtables.VendorLedg
 					oldVendLedgEntry2.Remaining_amount.Sub(oldVendLedgEntry2.Pmt_disc_possible).Abs().Decimal)) {
 			postUnrealAmount := newVendLedgEntry.Remaining_amt_lcy.Add(vendLedgApplAmtLCY(newVendLedgEntry.Remaining_amount.Neg(), newVendLedgEntry))
 			pmtDisc := oldVendLedgEntry2.Pmt_disc_possible.Neg()
+			if !pmtDisc.IsZero() {
+				err = p.checkPmtDiscTaxAdjustment(oldVendLedgEntry.Transaction_no, oldVendLedgEntry.Document_no)
+				if err != nil {
+					return err
+				}
+			}
 			pmtDiscLCY := vendLedgApplAmtLCY(pmtDisc, newVendLedgEntry)
 			newVendLedgEntry.Amount = newVendLedgEntry.Amount.Add(pmtDisc)
 			newVendLedgEntry.Original_amount_lcy = newVendLedgEntry.Original_amount_lcy.Add(pmtDiscLCY)

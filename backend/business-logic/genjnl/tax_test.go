@@ -76,29 +76,13 @@ func TestPostUseTax(t *testing.T) {
 	}
 }
 
-// A line without tax (export, not liable) writes a zero tax entry and no tax G/L entry; a line
-// of a VAT tax posting setup is refused
-func TestPostTaxNotLiableAndVAT(t *testing.T) {
+// A line without tax (export, not liable) writes a zero tax entry and no tax G/L entry
+func TestPostTaxNotLiable(t *testing.T) {
 	src := demoCompany(t)
 	addLine(t, src, "GENERAL", "DEFAULT", lineSpec{lineNo: 10000, docNo: "G00001", accNo: "3120", amount: "-500", balNo: "1210"})
 	_, err := postBatch(t, src, "GENERAL", "DEFAULT")
 	must(t, err)
 	if !glAmount(src, "3120", "G00001").Equal(dec("-500")) || !glAmount(src, "2330", "G00001").IsZero() {
 		t.Errorf("G/L: 3120 %s, 2330 %s", glAmount(src, "3120", "G00001"), glAmount(src, "2330", "G00001"))
-	}
-
-	taxPostingSetup := gtables.NewTaxPostingSetup(src)
-	must(t, taxPostingSetup.GetOrError(map[string]interface{}{"tax_bus_posting_group": "DOMESTIC", "tax_prod_posting_group": "STANDARD"}))
-	taxPostingSetup.Tax_calculation_type = gtables.TaxPostingSetup_Tax_calculation_type.NormalVAT
-	must(t, taxPostingSetup.ModifyOrError(false))
-	gl0, _, _, _ := countEntries(src)
-	addLine(t, src, "GENERAL", "DEFAULT", lineSpec{lineNo: 10000, docNo: "G00002", accNo: "3110", amount: "-1250", balNo: "1210"})
-	_, err = postBatch(t, src, "GENERAL", "DEFAULT")
-	if err == nil {
-		t.Fatal("a VAT line was posted")
-	}
-	gl1, _, _, _ := countEntries(src)
-	if gl1 != gl0 {
-		t.Errorf("%d G/L entries written by the refused posting", gl1-gl0)
 	}
 }

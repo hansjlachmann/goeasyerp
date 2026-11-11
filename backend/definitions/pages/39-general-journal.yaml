@@ -135,6 +135,10 @@ page:
         - source: bal_account_no
           width: 110
 
+        - source: eu_3_party_trade
+          width: 80
+          visible: false
+
         - source: bal_gen_posting_type
           width: 130
           visible: false

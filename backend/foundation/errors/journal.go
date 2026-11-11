@@ -11,7 +11,6 @@ const (
 	ErrJnlWithoutField        ErrorCode = "ERR_JNL_WITHOUT_FIELD"
 	ErrJnlRecurringOnlyField  ErrorCode = "ERR_JNL_RECURRING_ONLY_FIELD"
 	ErrJnlMustNotBe           ErrorCode = "ERR_JNL_MUST_NOT_BE"
-	ErrJnlTaxNotYet           ErrorCode = "ERR_JNL_TAX_NOT_YET"
 	ErrJnlTemplateTypeNoPage  ErrorCode = "ERR_JNL_TEMPLATE_TYPE_NO_PAGE"
 )
 
@@ -51,11 +50,6 @@ func JnlRecurringOnlyField(table, field string) *AppError {
 // JnlMustNotBe: a field must not have a value (Posting No. Series equal to No. Series)
 func JnlMustNotBe(table, field, value string) *AppError {
 	return &AppError{Code: ErrJnlMustNotBe, Table: table, Field: field, Params: []string{value}}
-}
-
-// JnlTaxNotYet: a tax calculation type that cannot be posted (only Sales Tax)
-func JnlTaxNotYet(table, field string, value any) *AppError {
-	return &AppError{Code: ErrJnlTaxNotYet, Table: table, Field: field, Value: value}
 }
 
 // JnlTemplateTypeNoPage: a journal template type without a journal page yet (Assets, Payroll
@@ -295,6 +289,7 @@ const (
 	ErrSalesTaxAmountIncorrect  ErrorCode = "ERR_SALES_TAX_AMOUNT_INCORRECT"
 	ErrTaxNotForSalesTax        ErrorCode = "ERR_TAX_NOT_FOR_SALES_TAX"
 	ErrJnlUnrealizedTaxNotYet   ErrorCode = "ERR_JNL_UNREALIZED_TAX_NOT_YET"
+	ErrJnlPmtDiscTaxAdjNotYet   ErrorCode = "ERR_JNL_PMT_DISC_TAX_ADJ_NOT_YET"
 )
 
 // SalesTaxCalculationOrder: the jurisdictions of a tax area with tax on tax need unique
@@ -315,6 +310,12 @@ func TaxNotForSalesTax(table, field string, value any) *AppError {
 
 // JnlUnrealizedTaxNotYet: unrealized tax cannot be posted yet
 func JnlUnrealizedTaxNotYet() *AppError { return &AppError{Code: ErrJnlUnrealizedTaxNotYet} }
+
+// JnlPmtDiscTaxAdjNotYet: a payment discount whose VAT is to be adjusted (Adjust for Payment
+// Discount) cannot be posted yet; the document named
+func JnlPmtDiscTaxAdjNotYet(documentNo string) *AppError {
+	return &AppError{Code: ErrJnlPmtDiscTaxAdjNotYet, Params: []string{documentNo}}
+}
 
 // JnlTaxBaseFullVAT: a tax base cannot be entered with Full VAT
 func JnlTaxBaseFullVAT(table, field string, value any) *AppError {

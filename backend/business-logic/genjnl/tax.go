@@ -8,14 +8,23 @@ import (
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
-// Sales tax of the journal lines (codeunit 12 InitTax, PostTax, InsertTax): a G/L line with a
-// general posting type takes the tax out of its amount (a sale includes it; a purchase with
-// use tax pays it on top), writes a tax entry per jurisdiction and posts the tax to the
-// jurisdiction's accounts. A settlement line (Manual VAT Entry, posting type Settlement, the
-// jurisdiction in Tax Area Code) writes one closed tax entry of its amount.
+// Tax of the journal lines (codeunit 12 InitTax, PostTax, InsertTax): a G/L line with a general
+// posting type takes the tax out of its amount and writes tax entries, by the Tax Posting
+// Setup's Tax Calculation Type:
+//   - Normal VAT: the amount includes the VAT at the setup's VAT %; one tax entry, the VAT on the
+//     setup's Sales / Purchase VAT Account;
+//   - Reverse Charge VAT: a purchase owes the VAT on top of its amount (on the Purchase VAT
+//     Account and back on the Reverse Chrg. VAT Acc.); a sale has none (a tax entry of its base);
+//   - Full VAT: the whole amount is VAT, posted on the setup's VAT account (the line's account);
+//   - Sales Tax: a sale includes it, a purchase with use tax pays it on top; a tax entry per
+//     jurisdiction, the tax on the jurisdiction's accounts.
+// Documents post with Manual VAT Entry (the tax amount the document calculated). A settlement
+// line (Manual VAT Entry, posting type Settlement; sales tax: the jurisdiction in Tax Area Code)
+// writes one closed tax entry of its amount.
 //
-// Not migrated yet: the VAT calculation types (Normal, Reverse Charge, Full VAT), unrealized tax
-// (realized when the entries are applied), the additional reporting currency.
+// Not migrated yet: unrealized tax (realized when the entries are applied) and the VAT
+// adjustment of a payment discount (Adjust for Payment Disc.) — both refused, never posted
+// without them.
 
 // initTaxRegister: the first line takes the next tax entry number (Tax Entry locked); the
 // register starts at it
@@ -72,32 +81,87 @@ func (p *GenJnlPostLine) initTax(genJnlLine *gtables.GenJournalLine) error {
 	if err != nil {
 		return err
 	}
-	if genJnlLine.Tax_calculation_type != gtables.GenJournalLine_Tax_calculation_type.SalesTax {
-		return apperrors.JnlTaxNotYet(jnlLine, "tax_calculation_type", genJnlLine.Tax_calculation_type)
-	}
 	switch genJnlLine.Vat_posting {
 	case gtables.GenJournalLine_Vat_posting.AutomaticVATEntry:
 		p.setGLEntryTaxFields(genJnlLine)
-		if genJnlLine.Gen_posting_type == gtables.GenJournalLine_Gen_posting_type.Purchase && genJnlLine.Use_tax {
-			p.glEntry.Tax_amount, err = p.salesTaxCalculate.CalculateTax(genJnlLine.Tax_area_code, genJnlLine.Tax_group_code, genJnlLine.Tax_liable,
-				genJnlLine.Posting_date, genJnlLine.Amount_lcy, genJnlLine.Quantity, types.Decimal{})
-			if err != nil {
-				return err
-			}
-			p.glEntry.Amount = genJnlLine.Amount_lcy
-		} else {
-			p.glEntry.Amount, err = p.salesTaxCalculate.ReverseCalculateTax(genJnlLine.Tax_area_code, genJnlLine.Tax_group_code, genJnlLine.Tax_liable,
-				genJnlLine.Posting_date, genJnlLine.Amount_lcy, genJnlLine.Quantity, types.Decimal{})
-			if err != nil {
-				return err
-			}
+		switch genJnlLine.Tax_calculation_type {
+		case gtables.GenJournalLine_Tax_calculation_type.NormalVAT:
+			vatFactor := hundredPercent(p.taxPostingSetup.Vat_percent)
+			p.glEntry.Amount = system.Round(genJnlLine.Amount_lcy.Div(vatFactor))
 			p.glEntry.Tax_amount = genJnlLine.Amount_lcy.Sub(p.glEntry.Amount)
+			p.glEntry.Additional_currency_amount = system.Round(genJnlLine.Source_currency_amount.Div(vatFactor), p.addCurrRoundingPrecision())
+			if p.lineInAddCurr(genJnlLine) {
+				p.addCurrGLEntryTaxAmt = genJnlLine.Source_currency_amount.Sub(p.glEntry.Additional_currency_amount)
+			} else {
+				p.addCurrGLEntryTaxAmt, err = p.calcLCYToAddCurr(p.glEntry.Tax_amount)
+				if err != nil {
+					return err
+				}
+			}
+		case gtables.GenJournalLine_Tax_calculation_type.ReverseChargeVAT:
+			switch genJnlLine.Gen_posting_type {
+			case gtables.GenJournalLine_Gen_posting_type.Purchase:
+				p.glEntry.Tax_amount = system.Round(p.glEntry.Amount.Mul(p.taxPostingSetup.Vat_percent).Div(types.NewDecimalFromInt(100)))
+				p.addCurrGLEntryTaxAmt = system.Round(p.glEntry.Additional_currency_amount.Mul(p.taxPostingSetup.Vat_percent).Div(types.NewDecimalFromInt(100)),
+					p.addCurrRoundingPrecision())
+			case gtables.GenJournalLine_Gen_posting_type.Sale:
+				p.glEntry.Tax_amount = types.Decimal{}
+				p.addCurrGLEntryTaxAmt = types.Decimal{}
+			}
+		case gtables.GenJournalLine_Tax_calculation_type.FullVAT:
+			switch genJnlLine.Gen_posting_type {
+			case gtables.GenJournalLine_Gen_posting_type.Sale:
+				err = p.taxPostingSetup.TestField("sales_vat_account")
+				if err != nil {
+					return err
+				}
+				err = genJnlLine.TestField("account_no", p.taxPostingSetup.Sales_vat_account)
+				if err != nil {
+					return err
+				}
+			case gtables.GenJournalLine_Gen_posting_type.Purchase:
+				err = p.taxPostingSetup.TestField("purchase_vat_account")
+				if err != nil {
+					return err
+				}
+				err = genJnlLine.TestField("account_no", p.taxPostingSetup.Purchase_vat_account)
+				if err != nil {
+					return err
+				}
+			}
+			p.glEntry.Amount = types.Decimal{}
+			p.glEntry.Additional_currency_amount = types.Decimal{}
+			p.glEntry.Tax_amount = genJnlLine.Amount_lcy
+			if p.lineInAddCurr(genJnlLine) {
+				p.addCurrGLEntryTaxAmt = genJnlLine.Source_currency_amount
+			} else {
+				p.addCurrGLEntryTaxAmt, err = p.calcLCYToAddCurr(genJnlLine.Amount_lcy)
+				if err != nil {
+					return err
+				}
+			}
+		case gtables.GenJournalLine_Tax_calculation_type.SalesTax:
+			if genJnlLine.Gen_posting_type == gtables.GenJournalLine_Gen_posting_type.Purchase && genJnlLine.Use_tax {
+				p.glEntry.Tax_amount, err = p.salesTaxCalculate.CalculateTax(genJnlLine.Tax_area_code, genJnlLine.Tax_group_code, genJnlLine.Tax_liable,
+					genJnlLine.Posting_date, genJnlLine.Amount_lcy, genJnlLine.Quantity, types.Decimal{})
+				if err != nil {
+					return err
+				}
+				p.glEntry.Amount = genJnlLine.Amount_lcy
+			} else {
+				p.glEntry.Amount, err = p.salesTaxCalculate.ReverseCalculateTax(genJnlLine.Tax_area_code, genJnlLine.Tax_group_code, genJnlLine.Tax_liable,
+					genJnlLine.Posting_date, genJnlLine.Amount_lcy, genJnlLine.Quantity, types.Decimal{})
+				if err != nil {
+					return err
+				}
+				p.glEntry.Tax_amount = genJnlLine.Amount_lcy.Sub(p.glEntry.Amount)
+			}
 		}
 	case gtables.GenJournalLine_Vat_posting.ManualVATEntry:
 		if genJnlLine.Gen_posting_type != gtables.GenJournalLine_Gen_posting_type.Settlement {
 			p.setGLEntryTaxFields(genJnlLine)
 			p.glEntry.Tax_amount = genJnlLine.Tax_amount_lcy
-			if genJnlLine.Source_currency_code == p.acyCode() {
+			if p.lineInAddCurr(genJnlLine) {
 				p.addCurrGLEntryTaxAmt = genJnlLine.Source_curr_tax_amount
 			} else {
 				p.addCurrGLEntryTaxAmt, err = p.calcLCYToAddCurr(genJnlLine.Tax_amount_lcy)
@@ -108,6 +172,33 @@ func (p *GenJnlPostLine) initTax(genJnlLine *gtables.GenJournalLine) error {
 		}
 	}
 	return p.glCalcAddCurrency(p.glEntry.Additional_currency_amount, true)
+}
+
+// hundredPercent: 1 + percent/100 (an amount including the percentage over the amount)
+func hundredPercent(percent types.Decimal) types.Decimal {
+	return types.NewDecimalFromInt(1).Add(percent.Div(types.NewDecimalFromInt(100)))
+}
+
+// lineInAddCurr: the line is in the additional reporting currency (classic "Source Currency
+// Code" = GLSetup."Additional Reporting Currency", only when there is one)
+func (p *GenJnlPostLine) lineInAddCurr(genJnlLine *gtables.GenJournalLine) bool {
+	return p.acyCode() != "" && genJnlLine.Source_currency_code == p.acyCode()
+}
+
+// addCurrRoundingPrecision: the additional currency's Amount Rounding Precision (Currency2;
+// without one the amounts in it are not used)
+func (p *GenJnlPostLine) addCurrRoundingPrecision() types.Decimal {
+	if p.acyCode() == "" || p.addCurr.currency == nil {
+		return types.MustDecimal("0.01")
+	}
+	return p.addCurr.currency.Amount_rounding_precision
+}
+
+// isVAT: a VAT calculation type (Normal VAT, Reverse Charge VAT, Full VAT), not sales tax
+func isVAT(taxCalculationType gtables.GenJournalLineTax_calculation_type) bool {
+	return taxCalculationType == gtables.GenJournalLine_Tax_calculation_type.NormalVAT ||
+		taxCalculationType == gtables.GenJournalLine_Tax_calculation_type.ReverseChargeVAT ||
+		taxCalculationType == gtables.GenJournalLine_Tax_calculation_type.FullVAT
 }
 
 // setGLEntryTaxFields: the G/L entry keeps the line's posting groups and tax
@@ -122,15 +213,38 @@ func (p *GenJnlPostLine) setGLEntryTaxFields(genJnlLine *gtables.GenJournalLine)
 	p.glEntry.Use_tax = genJnlLine.Use_tax
 }
 
-// postTax writes the line's tax entries — one per jurisdiction of its tax area — and their G/L
-// entries
+// postTax writes the line's tax entries — VAT: one; sales tax: one per jurisdiction of its tax
+// area — and their G/L entries
 func (p *GenJnlPostLine) postTax(genJnlLine *gtables.GenJournalLine) error {
-	if genJnlLine.Gen_posting_type == gtables.GenJournalLine_Gen_posting_type.Blank ||
-		genJnlLine.Tax_calculation_type != gtables.GenJournalLine_Tax_calculation_type.SalesTax {
+	if genJnlLine.Gen_posting_type == gtables.GenJournalLine_Gen_posting_type.Blank {
 		return nil
 	}
 	glEntryAmount := p.glEntry.Amount
 	glEntryTaxAmount := p.glEntry.Tax_amount
+	glEntryAddCurrAmount := p.glEntry.Additional_currency_amount
+	if isVAT(genJnlLine.Tax_calculation_type) {
+		srcCurrTaxBaseAmount := genJnlLine.Source_curr_tax_base_amount
+		if genJnlLine.Vat_posting == gtables.GenJournalLine_Vat_posting.AutomaticVATEntry {
+			genJnlLine.Tax_base_amount_lcy = glEntryAmount
+			// the base in the additional currency is the G/L entry's amount in it, as the LCY
+			// base is the G/L entry's amount
+			srcCurrTaxBaseAmount = glEntryAddCurrAmount
+		}
+		addCurrencyFactor, err := p.calcAddCurrFactor(glEntryAddCurrAmount.Add(p.addCurrGLEntryTaxAmt), glEntryAmount.Add(glEntryTaxAmount))
+		if err != nil {
+			return err
+		}
+		err = p.insertTax(genJnlLine, nil, glEntryAmount, glEntryTaxAmount, genJnlLine.Tax_base_amount_lcy, addCurrencyFactor,
+			genJnlLine.Source_currency_code, glEntryAddCurrAmount, p.addCurrGLEntryTaxAmt, srcCurrTaxBaseAmount)
+		if err != nil {
+			return err
+		}
+		p.nextConnectionNo = p.nextConnectionNo + 1
+		return nil
+	}
+	if genJnlLine.Tax_calculation_type != gtables.GenJournalLine_Tax_calculation_type.SalesTax {
+		return nil
+	}
 	var salesTaxBaseAmount types.Decimal
 	switch genJnlLine.Vat_posting {
 	case gtables.GenJournalLine_Vat_posting.AutomaticVATEntry:
@@ -145,13 +259,14 @@ func (p *GenJnlPostLine) postTax(genJnlLine *gtables.GenJournalLine) error {
 		taxDetail := gtables.NewTaxDetail(p.src)
 		taxDetail.Tax_jurisdiction_code = genJnlLine.Tax_area_code
 		genJnlLine.Tax_area_code = ""
-		addCurrencyFactor, err := p.calcAddCurrFactor(p.glEntry.Additional_currency_amount, p.glEntry.Amount)
+		addCurrencyFactor, err := p.calcAddCurrFactor(glEntryAddCurrAmount, glEntryAmount)
 		if err != nil {
 			return err
 		}
-		return p.insertTax(genJnlLine, taxDetail, glEntryAmount, glEntryTaxAmount, genJnlLine.Tax_base_amount_lcy, addCurrencyFactor)
+		return p.insertTax(genJnlLine, taxDetail, glEntryAmount, glEntryTaxAmount, genJnlLine.Tax_base_amount_lcy, addCurrencyFactor,
+			"", types.Decimal{}, types.Decimal{}, types.Decimal{})
 	}
-	addCurrencyFactor, err := p.calcAddCurrFactor(p.glEntry.Additional_currency_amount, p.glEntry.Amount)
+	addCurrencyFactor, err := p.calcAddCurrFactor(glEntryAddCurrAmount, glEntryAmount)
 	if err != nil {
 		return err
 	}
@@ -166,7 +281,8 @@ func (p *GenJnlPostLine) postTax(genJnlLine *gtables.GenJournalLine) error {
 		if !ok {
 			break
 		}
-		err = p.insertTax(genJnlLine, taxDetail, salesTaxBaseAmount, taxAmount, taxBase, addCurrencyFactor)
+		err = p.insertTax(genJnlLine, taxDetail, salesTaxBaseAmount, taxAmount, taxBase, addCurrencyFactor,
+			"", types.Decimal{}, types.Decimal{}, types.Decimal{})
 		if err != nil {
 			return err
 		}
@@ -174,9 +290,13 @@ func (p *GenJnlPostLine) postTax(genJnlLine *gtables.GenJournalLine) error {
 	return p.insertSummarizedTax()
 }
 
-// insertTax writes the tax entry of one jurisdiction and posts its tax to the jurisdiction's
-// accounts (use tax: the purchase tax account and the reverse charge account)
-func (p *GenJnlPostLine) insertTax(genJnlLine *gtables.GenJournalLine, taxDetail *gtables.TaxDetail, glEntryAmount, glEntryTaxAmount, glEntryBaseAmount, addCurrencyFactor types.Decimal) error {
+// insertTax writes the tax entry (VAT: the line's; sales tax: one jurisdiction's — taxDetail)
+// and posts its tax: VAT on the Tax Posting Setup's accounts, sales tax on the jurisdiction's
+// (use tax: the purchase tax account and the reverse charge account). The additional-currency
+// amounts are given when the line is in that currency (srcCurrCode), else exchanged at the
+// factor.
+func (p *GenJnlPostLine) insertTax(genJnlLine *gtables.GenJournalLine, taxDetail *gtables.TaxDetail, glEntryAmount, glEntryTaxAmount, glEntryBaseAmount, addCurrencyFactor types.Decimal,
+	srcCurrCode types.Code, srcCurrGLEntryAmt, srcCurrGLEntryTaxAmt, srcCurrGLEntryBaseAmt types.Decimal) error {
 	taxEntry := gtables.NewTaxEntry(p.src)
 	taxEntry.Init()
 	taxEntry.Entry_no = p.nextTaxEntryNo
@@ -197,6 +317,7 @@ func (p *GenJnlPostLine) insertTax(genJnlLine *gtables.GenJournalLine, taxDetail
 	taxEntry.Source_code = genJnlLine.Source_code
 	taxEntry.Reason_code = genJnlLine.Reason_code
 	taxEntry.Sell_to_buy_from_no = genJnlLine.Sell_to_buy_from_no
+	taxEntry.Eu_3_party_trade = genJnlLine.Eu_3_party_trade
 	taxEntry.Transaction_no = p.nextTransactionNo
 	taxEntry.Sales_tax_connection_no = p.nextConnectionNo
 	taxEntry.User_id = types.Code(system.UserId())
@@ -219,19 +340,37 @@ func (p *GenJnlPostLine) insertTax(genJnlLine *gtables.GenJournalLine, taxDetail
 			taxEntry.Country_code = cust.Country_code
 		}
 	}
-	taxJurisdiction := gtables.NewTaxJurisdiction(p.src)
-	err := taxJurisdiction.GetOrError(taxDetail.Tax_jurisdiction_code)
-	if err != nil {
-		return err
-	}
 	settlement := genJnlLine.Gen_posting_type == gtables.GenJournalLine_Gen_posting_type.Settlement
-	if !settlement {
-		taxEntry.Tax_group_used = taxDetail.Tax_group_code
-		taxEntry.Tax_type = gtables.TaxEntryTax_type(taxDetail.Tax_type)
-		taxEntry.Tax_on_tax = taxDetail.Calculate_tax_on_tax
+	var taxJurisdiction *gtables.TaxJurisdiction
+	if genJnlLine.Tax_calculation_type == gtables.GenJournalLine_Tax_calculation_type.SalesTax {
+		taxJurisdiction = gtables.NewTaxJurisdiction(p.src)
+		err := taxJurisdiction.GetOrError(taxDetail.Tax_jurisdiction_code)
+		if err != nil {
+			return err
+		}
+		if !settlement {
+			taxEntry.Tax_group_used = taxDetail.Tax_group_code
+			taxEntry.Tax_type = gtables.TaxEntryTax_type(taxDetail.Tax_type)
+			taxEntry.Tax_on_tax = taxDetail.Calculate_tax_on_tax
+		}
+		taxEntry.Tax_jurisdiction_code = taxDetail.Tax_jurisdiction_code
 	}
-	taxEntry.Tax_jurisdiction_code = taxDetail.Tax_jurisdiction_code
-	unrealizedTax := taxJurisdiction.Unrealized_tax_type > 0 &&
+
+	// the amounts in the additional currency: at the G/L entry's factor, unless the line is in it
+	if p.acyCode() != "" && p.acyCode() != srcCurrCode {
+		precision := p.addCurrRoundingPrecision()
+		srcCurrGLEntryAmt = system.Round(addCurrencyFactor.Mul(glEntryAmount), precision)
+		srcCurrGLEntryTaxAmt = system.Round(addCurrencyFactor.Mul(glEntryTaxAmount), precision)
+		srcCurrGLEntryBaseAmt = system.Round(addCurrencyFactor.Mul(glEntryBaseAmount), precision)
+	}
+
+	unrealizedTaxType := false
+	if isVAT(gtables.GenJournalLineTax_calculation_type(p.taxPostingSetup.Tax_calculation_type)) {
+		unrealizedTaxType = p.taxPostingSetup.Unrealized_tax_type > 0
+	} else if taxJurisdiction != nil {
+		unrealizedTaxType = taxJurisdiction.Unrealized_tax_type > 0
+	}
+	unrealizedTax := unrealizedTaxType &&
 		(genJnlLine.Document_type == gtables.GenJournalLine_Document_type.Invoice ||
 			genJnlLine.Document_type == gtables.GenJournalLine_Document_type.CreditMemo ||
 			genJnlLine.Document_type == gtables.GenJournalLine_Document_type.FinanceChargeMemo ||
@@ -239,14 +378,7 @@ func (p *GenJnlPostLine) insertTax(genJnlLine *gtables.GenJournalLine, taxDetail
 	if unrealizedTax {
 		return apperrors.JnlUnrealizedTaxNotYet()
 	}
-	// the amounts in the additional currency: at the G/L entry's factor
-	var srcCurrGLEntryAmt, srcCurrGLEntryTaxAmt, srcCurrGLEntryBaseAmt types.Decimal
-	if p.acyCode() != "" {
-		precision := p.addCurr.currency.Amount_rounding_precision
-		srcCurrGLEntryAmt = system.Round(addCurrencyFactor.Mul(glEntryAmount), precision)
-		srcCurrGLEntryTaxAmt = system.Round(addCurrencyFactor.Mul(glEntryTaxAmount), precision)
-		srcCurrGLEntryBaseAmt = system.Round(addCurrencyFactor.Mul(glEntryBaseAmount), precision)
-	}
+
 	taxEntry.Amount = glEntryTaxAmount
 	srcCurrTaxAmount := srcCurrGLEntryTaxAmt
 	if settlement {
@@ -260,15 +392,18 @@ func (p *GenJnlPostLine) insertTax(genJnlLine *gtables.GenJournalLine, taxDetail
 		taxEntry.Additional_currency_amount = srcCurrTaxAmount
 		taxEntry.Additional_currency_base = srcCurrGLEntryBaseAmt
 	}
-	err = taxEntry.InsertOrError(false)
+	err := taxEntry.InsertOrError(false)
 	if err != nil {
 		return err
 	}
 	p.nextTaxEntryNo = p.nextTaxEntryNo + 1
 
 	// Tax for G/L entry/entries
-	if glEntryTaxAmount.IsZero() {
+	if glEntryTaxAmount.IsZero() && (srcCurrGLEntryTaxAmt.IsZero() || p.acyCode() == "" || srcCurrCode != p.acyCode()) {
 		return nil
+	}
+	if isVAT(genJnlLine.Tax_calculation_type) {
+		return p.postVATGLEntries(genJnlLine, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
 	}
 	switch genJnlLine.Gen_posting_type {
 	case gtables.GenJournalLine_Gen_posting_type.Purchase:
@@ -284,6 +419,45 @@ func (p *GenJnlPostLine) insertTax(genJnlLine *gtables.GenJournalLine, taxDetail
 		return p.postTaxGLEntry(taxJurisdiction, "tax_account_sales", taxJurisdiction.Tax_account_sales, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
 	}
 	return nil
+}
+
+// postVATGLEntries posts the VAT of a line on the Tax Posting Setup's accounts: a purchase on
+// the Purchase VAT Account (reverse charge: and back on the Reverse Chrg. VAT Acc.), a sale on
+// the Sales VAT Account (reverse charge: none)
+func (p *GenJnlPostLine) postVATGLEntries(genJnlLine *gtables.GenJournalLine, glEntryTaxAmount, srcCurrGLEntryTaxAmt types.Decimal) error {
+	taxPostingSetup := p.taxPostingSetup
+	switch genJnlLine.Gen_posting_type {
+	case gtables.GenJournalLine_Gen_posting_type.Purchase:
+		switch taxPostingSetup.Tax_calculation_type {
+		case gtables.TaxPostingSetup_Tax_calculation_type.NormalVAT, gtables.TaxPostingSetup_Tax_calculation_type.FullVAT:
+			return p.postVATGLEntry("purchase_vat_account", taxPostingSetup.Purchase_vat_account, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
+		case gtables.TaxPostingSetup_Tax_calculation_type.ReverseChargeVAT:
+			err := p.postVATGLEntry("purchase_vat_account", taxPostingSetup.Purchase_vat_account, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
+			if err != nil {
+				return err
+			}
+			return p.postVATGLEntry("reverse_chrg_vat_acc", taxPostingSetup.Reverse_chrg_vat_acc, glEntryTaxAmount.Neg(), srcCurrGLEntryTaxAmt.Neg())
+		}
+	case gtables.GenJournalLine_Gen_posting_type.Sale:
+		switch taxPostingSetup.Tax_calculation_type {
+		case gtables.TaxPostingSetup_Tax_calculation_type.NormalVAT, gtables.TaxPostingSetup_Tax_calculation_type.FullVAT:
+			return p.postVATGLEntry("sales_vat_account", taxPostingSetup.Sales_vat_account, glEntryTaxAmount, srcCurrGLEntryTaxAmt)
+		}
+	}
+	return nil
+}
+
+// postVATGLEntry posts VAT on one of the Tax Posting Setup's accounts (it must have one)
+func (p *GenJnlPostLine) postVATGLEntry(field string, account types.Code, amount, amountAddCurr types.Decimal) error {
+	err := p.taxPostingSetup.TestField(field)
+	if err != nil {
+		return err
+	}
+	_, err = p.initGLEntry(account, amount, amountAddCurr, true, true)
+	if err != nil {
+		return err
+	}
+	return p.insertGLEntry(true)
 }
 
 // postTaxGLEntry posts tax on a jurisdiction's account (summarized when the General Ledger
@@ -332,5 +506,28 @@ func (p *GenJnlPostLine) insertSummarizedTax() error {
 		p.glEntryTmpTax = nil
 	}
 	p.nextConnectionNo = p.nextConnectionNo + 1
+	return nil
+}
+
+// checkPmtDiscTaxAdjustment: the VAT adjustment of a payment discount (classic CashDiscPost: the
+// General Ledger Setup's Adjust for Payment Disc. with the Tax Posting Setup's Adjust for Payment
+// Discount) is not migrated yet — a payment discount on a document whose VAT asks for it is
+// refused rather than posted without the adjustment
+func (p *GenJnlPostLine) checkPmtDiscTaxAdjustment(transactionNo int, documentNo types.Code) error {
+	if p.glSetup.Pmt_disc_excl_tax || !p.glSetup.Adjust_for_payment_disc {
+		return nil
+	}
+	taxEntry := gtables.NewTaxEntry(p.src)
+	taxEntry.SetRange("transaction_no", transactionNo)
+	for found := taxEntry.FindSet(); found; found = taxEntry.Next() {
+		if !isVAT(gtables.GenJournalLineTax_calculation_type(taxEntry.Tax_calculation_type)) {
+			continue
+		}
+		taxPostingSetup := gtables.NewTaxPostingSetup(p.src)
+		if taxPostingSetup.Get(map[string]interface{}{"tax_bus_posting_group": taxEntry.Tax_bus_posting_group, "tax_prod_posting_group": taxEntry.Tax_prod_posting_group}) &&
+			taxPostingSetup.Adjust_for_payment_discount {
+			return apperrors.JnlPmtDiscTaxAdjNotYet(documentNo.String())
+		}
+	}
 	return nil
 }

@@ -3237,6 +3237,7 @@ tables:
   gen_journal_line:
     caption: "Finanskladdelinje"
     fields:
+      eu_3_party_trade: "EU-trekantshandel"
       project_no: "Projektnr."
       fa_add_currency_factor: "Anlægsfaktor for ekstra valuta"
       additional_currency_posting: "Bogføring i ekstra valuta"
@@ -4603,6 +4604,7 @@ tables:
   sales_header:
     caption: "Salgshoved"
     fields:
+      eu_3_party_trade: "EU-trekantshandel"
       package_tracking_no: "Pakkesporingsnr."
       combine_shipments: "Samlefaktura"
       project_no: "Projektnr."
@@ -4832,6 +4834,7 @@ tables:
   sales_shipment_header:
     caption: "Salgsleverancehoved"
     fields:
+      eu_3_party_trade: "EU-trekantshandel"
       package_tracking_no: "Pakkesporingsnr."
       project_no: "Projektnr."
       sell_to_customer_no: "Kundenr."
@@ -4990,6 +4993,7 @@ tables:
   sales_invoice_header:
     caption: "Salgsfakturahoved"
     fields:
+      eu_3_party_trade: "EU-trekantshandel"
       package_tracking_no: "Pakkesporingsnr."
       project_no: "Projektnr."
       sell_to_customer_no: "Kundenr."
@@ -5155,6 +5159,7 @@ tables:
   sales_cr_memo_header:
     caption: "Salgskreditnotahoved"
     fields:
+      eu_3_party_trade: "EU-trekantshandel"
       project_no: "Projektnr."
       sell_to_customer_no: "Kundenr."
       no: "Nr."
