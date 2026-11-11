@@ -319,10 +319,26 @@ func postDemoSales(src ftables.Source, open func(src ftables.Source) SalesPoster
 	return postDemoForeignTrade(src, today, post)
 }
 
-// postDemoForeignTrade: an order shipped and invoiced to a customer in Denmark (an EU country
+// postDemoForeignTrade: two orders shipped and invoiced to a customer in Denmark (an EU country
 // with an Intrastat Code), with the foreign trade statistics fields — the Intrastat journal's
-// demo shipment
+// demo shipments; the second is an EU triangular trade (EU 3-Party Trade on its tax entries,
+// the VIES reports' 3-party amount)
 func postDemoForeignTrade(src ftables.Source, today time.Time, post func(*gtables.SalesHeader, bool, bool, time.Time) error) error {
+	err := postDemoForeignTradeOrder(src, today, post, false, []foreignTradeLine{{"1300", 4}, {"1310", 2}})
+	if err != nil {
+		return err
+	}
+	return postDemoForeignTradeOrder(src, today, post, true, []foreignTradeLine{{"1310", 1}})
+}
+
+// foreignTradeLine: an item line of a demo foreign trade order
+type foreignTradeLine struct {
+	item string
+	qty  int64
+}
+
+// postDemoForeignTradeOrder: one order of postDemoForeignTrade
+func postDemoForeignTradeOrder(src ftables.Source, today time.Time, post func(*gtables.SalesHeader, bool, bool, time.Time) error, eu3PartyTrade bool, lines []foreignTradeLine) error {
 	salesHeader := gtables.NewSalesHeader(src)
 	salesHeader.Document_type = gtables.SalesHeader_Document_type.Order
 	err := salesHeader.InsertOrError(true)
@@ -343,6 +359,7 @@ func postDemoForeignTrade(src ftables.Source, today time.Time, post func(*gtable
 		{"exit_point", types.Code("SVINESUND")},
 		{"area", types.Code("03")},
 		{"transaction_specification", types.Code("10")},
+		{"eu_3_party_trade", eu3PartyTrade},
 	} {
 		err = salesHeader.Validate(step.field, step.value)
 		if err != nil {
@@ -353,10 +370,7 @@ func postDemoForeignTrade(src ftables.Source, today time.Time, post func(*gtable
 	if err != nil {
 		return err
 	}
-	for i, l := range []struct {
-		item string
-		qty  int64
-	}{{"1300", 4}, {"1310", 2}} {
+	for i, l := range lines {
 		salesLine := gtables.NewSalesLine(src)
 		salesLine.Document_type = gtables.SalesLine_Document_type.Order
 		salesLine.Document_no = salesHeader.No

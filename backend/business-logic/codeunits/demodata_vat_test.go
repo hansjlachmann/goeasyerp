@@ -86,6 +86,20 @@ func TestDemoDataVATCompany(t *testing.T) {
 	if n, amount := count(gtables.TaxEntry_Tax_calculation_type.ReverseChargeVAT, gtables.TaxEntry_Type.Sale); n == 0 || !amount.IsZero() {
 		t.Errorf("reverse charge sales: %d entries, VAT %s", n, amount)
 	}
+	// the Danish sales: the second is an EU triangular trade, its tax entries carry EU 3-Party
+	// Trade (VIES)
+	dkEntry := gtables.NewTaxEntry(src)
+	dkEntry.SetRange("type", gtables.TaxEntry_Type.Sale)
+	dkEntry.SetRange("country_code", types.Code("DK"))
+	dkEntry.SetRange("sell_to_buy_from_no", types.Code("C00080"))
+	dkEntry.SetRange("eu_3_party_trade", true)
+	if dkEntry.Count() == 0 {
+		t.Error("no Danish tax entry with EU 3-Party Trade")
+	}
+	dkEntry.SetRange("eu_3_party_trade", false)
+	if dkEntry.Count() == 0 {
+		t.Error("no Danish tax entry without EU 3-Party Trade")
+	}
 	// the reverse charge account holds the purchases' reverse charge VAT
 	glAcc := gtables.NewGLAccount(src)
 	if err := glAcc.GetOrError(types.Code("2345")); err != nil {

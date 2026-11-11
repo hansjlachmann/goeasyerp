@@ -37,8 +37,16 @@ func TestIntrastat(t *testing.T) {
 	})
 	mustOK(t, err)
 	src := ftables.DBSource(db, "demo", database.DBTypeSQLite)
-	if counts.IntrastatJnlLines != 4 {
-		t.Fatalf("%d Intrastat lines, want 4 (2 shipped, 2 received)", counts.IntrastatJnlLines)
+	if counts.IntrastatJnlLines != 5 {
+		t.Fatalf("%d Intrastat lines, want 5 (3 shipped, 2 received)", counts.IntrastatJnlLines)
+	}
+	// the demo's second Danish sale is an EU triangular trade (EU 3-Party Trade on the posted
+	// invoice; its tax entries in the VAT demo, TestDemoDataVATCompany)
+	invoice := gtables.NewSalesInvoiceHeader(src)
+	invoice.SetRange("sell_to_customer_no", types.Code("C00080"))
+	invoice.SetRange("eu_3_party_trade", true)
+	if invoice.Count() != 1 {
+		t.Errorf("%d Danish invoices with EU 3-Party Trade, want 1", invoice.Count())
 	}
 	line := gtables.NewIntrastatJnlLine(src)
 	line.SetRange("item_no", types.Code("1300"))
@@ -165,8 +173,8 @@ func TestIntrastat(t *testing.T) {
 	mustOK(t, batch.ModifyOrError(false))
 	n, err := intrastatjnl.GetEntries(batch, types.NewDate(2026, 10, 1), types.NewDate(2026, 10, 31), types.Decimal{})
 	mustOK(t, err)
-	if n != 4 {
-		t.Fatalf("%d lines in euro, want 4", n)
+	if n != 5 {
+		t.Fatalf("%d lines in euro, want 5", n)
 	}
 	euroLine := gtables.NewIntrastatJnlLine(src)
 	euroLine.SetRange("item_no", types.Code("1300"))

@@ -4,9 +4,8 @@ table:
   description: "Sales Header (table 36): quotes, orders, invoices, credit memos and blanket orders"
   data_caption_fields: [no, sell_to_customer_name]
   auto_key: true   # OnInsert gives a document without No. the next number of its type's series
-  # Left out until their steps: 118 Applies-to ID, 55/94 Bal. Account, 56 Job, 71 Combine Shipments, 75 EU 3-Party Trade,
-  # 98 Correction, 117 Reserve, 119 VAT Base Discount %, 45 Order Class, 51 On Hold,
-  # 106 Package Tracking No., 10005 Ship-to UPS Zone, 10009 Outstanding Amount (LCY)
+  # Left out until their steps: 55/94 Bal. Account, 98 Correction, 119 VAT Base Discount %, 45 Order Class, 51 On Hold,
+  # 10005 Ship-to UPS Zone, 10009 Outstanding Amount (LCY)
   fields:
     - name: document_type
       no: 1

@@ -80,6 +80,14 @@ page:
           width: 90
           visible: false
 
+        - source: eu_3_party_trade
+          width: 90
+          visible: false
+
+        - source: internal_ref_no
+          width: 110
+          visible: false
+
         - source: external_document_no
           width: 130
           visible: false
