@@ -80,6 +80,13 @@ func checkMatrix(t *testing.T, id int, mx *pages.Matrix, cardFields map[string]b
 		}
 	}
 	for _, f := range mx.Filters {
+		if mx.CardDateFilter != "" {
+			// the card's FlowFilters
+			if !cardFields[f.Source] {
+				t.Errorf("page %d: matrix filter %q is not a field of the card", id, f.Source)
+			}
+			continue
+		}
 		if !flowFilters[f.Source] {
 			t.Errorf("page %d: matrix filter %q is not a FlowFilter of %s", id, f.Source, mx.Table)
 		}

@@ -6,7 +6,7 @@ page:
   caption: G/L Account Balance/Budget
   editable: false
   # classic form 154 with its lines (form 350): the account's net change against its budget per
-  # period. The debit/credit columns and Closing Entries are left out
+  # period. The debit/credit columns are left out
 
   layout:
     sections:
@@ -20,6 +20,7 @@ page:
       - name: Periods
         caption: Periods
         period_grid:
+          closing_entries: true   # Closing Entries Include/Exclude
           date_filter: date_filter
           view_by: 2
           filters:
@@ -99,6 +100,10 @@ page:
       image: Statistics
       promoted: true
       items:
+        - name: By Periods
+          caption: By Periods
+          image: Statistics
+          run_page: 113   # G/L Budget by Periods (the budget's card: the first budget, then navigate)
         - name: By Dimension 1
           caption: By Dimension 1
           image: Statistics

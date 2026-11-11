@@ -33,6 +33,7 @@ export interface MatrixRequest {
 	filters: { field: string; expression: string }[];
 	view_by: number;
 	view_as: number;
+	closing_entries?: number; // 0 Include, 1 Exclude
 	date: string;
 	step: number;
 	columns: number;
@@ -346,6 +347,7 @@ export const api = {
 			filters: { field: string; expression: string }[];
 			view_by: number;
 			view_as: number;
+			closing_entries?: number; // 0 Include, 1 Exclude
 			date: string;
 			step: number;
 			rows: number;

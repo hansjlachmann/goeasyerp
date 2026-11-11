@@ -85,15 +85,15 @@ func TestCustItemDiscountOverview(t *testing.T) {
 		return custItemDisc.Discount_percent, ok
 	}
 	column := map[string]string{"item_discount_group": "FOOD"}
-	mustOK(t, pages.RunMatrixValidate(514, group, column, types.NewDecimalFromInt(4)))
+	mustOK(t, pages.RunMatrixValidate(514, nil, group, column, types.NewDecimalFromInt(4)))
 	if v, ok := disc(); !ok || !v.Equal(types.NewDecimalFromInt(4)) {
 		t.Errorf("after 4: %s %v", v, ok)
 	}
-	mustOK(t, pages.RunMatrixValidate(514, group, column, types.NewDecimalFromInt(7)))
+	mustOK(t, pages.RunMatrixValidate(514, nil, group, column, types.NewDecimalFromInt(7)))
 	if v, _ := disc(); !v.Equal(types.NewDecimalFromInt(7)) {
 		t.Errorf("after 7: %s", v)
 	}
-	mustOK(t, pages.RunMatrixValidate(514, group, column, types.Decimal{}))
+	mustOK(t, pages.RunMatrixValidate(514, nil, group, column, types.Decimal{}))
 	if _, ok := disc(); ok {
 		t.Error("discount not deleted by 0")
 	}
@@ -124,15 +124,15 @@ func TestItemCustDiscountOverview(t *testing.T) {
 		return custItemDisc.Discount_percent, ok
 	}
 	column := map[string]string{"customer_disc_group": "WHOLESALE"}
-	mustOK(t, pages.RunMatrixValidate(522, itemGroup, column, types.NewDecimalFromInt(3)))
+	mustOK(t, pages.RunMatrixValidate(522, nil, itemGroup, column, types.NewDecimalFromInt(3)))
 	if v, ok := disc(); !ok || !v.Equal(types.NewDecimalFromInt(3)) {
 		t.Errorf("after 3: %s %v", v, ok)
 	}
-	mustOK(t, pages.RunMatrixValidate(522, itemGroup, column, types.NewDecimalFromInt(6)))
+	mustOK(t, pages.RunMatrixValidate(522, nil, itemGroup, column, types.NewDecimalFromInt(6)))
 	if v, _ := disc(); !v.Equal(types.NewDecimalFromInt(6)) {
 		t.Errorf("after 6: %s", v)
 	}
-	mustOK(t, pages.RunMatrixValidate(522, itemGroup, column, types.Decimal{}))
+	mustOK(t, pages.RunMatrixValidate(522, nil, itemGroup, column, types.Decimal{}))
 	if _, ok := disc(); ok {
 		t.Error("discount not deleted by 0")
 	}

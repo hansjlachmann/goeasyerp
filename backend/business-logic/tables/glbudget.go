@@ -94,10 +94,13 @@ func SetGLAccBudgetedAmount(rec *gtables.GLAccount, budgetedAmount types.Decimal
 	return nil
 }
 
-// oneFilterValue: the value of a filter on one value (blank: no filter); false for a range,
-// alternatives or wildcards
+// oneFilterValue: the value of a filter on one value (blank: no filter, or '' — the blank
+// value); false for a range, alternatives or wildcards
 func oneFilterValue(filter string) (string, bool) {
 	filter = strings.TrimSpace(filter)
+	if filter == "''" {
+		return "", true // the blank value
+	}
 	if strings.ContainsAny(filter, "|*<>&") || strings.Contains(filter, "..") {
 		return "", false
 	}

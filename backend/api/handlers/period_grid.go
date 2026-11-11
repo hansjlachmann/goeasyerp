@@ -60,6 +60,8 @@ func (h *PageTriggersHandler) PeriodGrid(c *fiber.Ctx) error {
 		Date    string                 `json:"date"`
 		Step    int                    `json:"step"`
 		Rows    int                    `json:"rows"`
+		// ClosingEntries: 0 Include, 1 Exclude (a grid with closing_entries)
+		ClosingEntries int `json:"closing_entries"`
 	}
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(apitypes.NewErrorResponse(apperrors.InvalidRequestBody().Message(language)))
@@ -144,6 +146,9 @@ func (h *PageTriggersHandler) PeriodGrid(c *fiber.Ctx) error {
 		return values, nil
 	}
 	dateFilter := func(p periods.Period) string {
+		if grid.ClosingEntries {
+			return periods.ClosingEntriesDateFilter(src, p, req.ViewAs == 1, periods.ClosingEntries(req.ClosingEntries))
+		}
 		if req.ViewAs == 1 { // Balance at Date
 			return ".." + p.End.String()
 		}

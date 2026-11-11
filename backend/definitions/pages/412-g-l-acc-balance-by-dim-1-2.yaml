@@ -20,6 +20,7 @@ page:
       - name: Dimensions
         caption: Dimensions
         matrix:
+          closing_entries: true   # Closing Entries Include/Exclude
           table: Dimension_1
           value: net_change
           calculated: true

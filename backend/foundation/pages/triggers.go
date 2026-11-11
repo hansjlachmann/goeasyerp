@@ -387,7 +387,7 @@ func OnMatrixValidate[T any](pageID int, fn func(rec T, value types.Decimal) err
 func HasMatrixValidate(pageID int) bool {
 	triggersMu.RLock()
 	defer triggersMu.RUnlock()
-	return matrixValidate[pageID] != nil || matrixColumnValidate[pageID] != nil
+	return matrixValidate[pageID] != nil || matrixColumnValidate[pageID] != nil || matrixCardColumnValidate[pageID] != nil
 }
 
 var matrixColumnValidate = map[int]func(rec any, column map[string]string, value types.Decimal) error{}
@@ -408,13 +408,42 @@ func OnMatrixColumnValidate[T any](pageID int, fn func(rec T, column map[string]
 	}
 }
 
+var matrixCardColumnValidate = map[int]func(card, rec any, column map[string]string, value types.Decimal) error{}
+
+// OnMatrixCardColumnValidate is OnMatrixColumnValidate for a calculated matrix on a card whose
+// rows are not the card's records (G/L Acc. Budget by Dim. 1/2: the account's Dimension 1 values
+// against the Dimension 2 values): card is the card's record with its FlowFilters (the matrix's
+// period in its card_date_filter, the matrix's filters), rec the row's record. One per page.
+func OnMatrixCardColumnValidate[C any, T any](pageID int, fn func(card C, rec T, column map[string]string, value types.Decimal) error) {
+	triggersMu.Lock()
+	defer triggersMu.Unlock()
+	matrixCardColumnValidate[pageID] = func(card, rec any, column map[string]string, value types.Decimal) error {
+		c, ok := card.(C)
+		if !ok {
+			var want C
+			return fmt.Errorf("page %d: OnMatrixCardColumnValidate takes %T, the card is %T", pageID, want, card)
+		}
+		r, ok := rec.(T)
+		if !ok {
+			var want T
+			return fmt.Errorf("page %d: OnMatrixCardColumnValidate takes %T, the matrix row is %T", pageID, want, rec)
+		}
+		return fn(c, r, column, value)
+	}
+}
+
 // RunMatrixValidate runs a page's OnMatrixValidate trigger on a matrix row's record (or its
-// OnMatrixColumnValidate trigger with the cell's column)
-func RunMatrixValidate(pageID int, rec any, column map[string]string, value types.Decimal) error {
+// OnMatrixColumnValidate trigger with the cell's column, or OnMatrixCardColumnValidate with the
+// card's record too)
+func RunMatrixValidate(pageID int, card, rec any, column map[string]string, value types.Decimal) error {
 	triggersMu.RLock()
 	fn := matrixValidate[pageID]
 	columnFn := matrixColumnValidate[pageID]
+	cardColumnFn := matrixCardColumnValidate[pageID]
 	triggersMu.RUnlock()
+	if cardColumnFn != nil {
+		return cardColumnFn(card, rec, column, value)
+	}
 	if columnFn != nil {
 		return columnFn(rec, column, value)
 	}

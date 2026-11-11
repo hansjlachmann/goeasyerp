@@ -8,6 +8,7 @@ page:
 
   layout:
     matrix:
+      closing_entries: true   # Closing Entries Include/Exclude
       table: G_L_Account
       value: net_change
       date_filter: date_filter

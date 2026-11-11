@@ -81,6 +81,7 @@
 
 	let viewBy = $state(2);
 	let viewAs = $state(0); // 0 Net Change, 1 Balance at Date
+	let closingEntries = $state(0); // 0 Include, 1 Exclude (matrices with closing_entries)
 	let roundingFactor = $state(0);
 	let date = $state(''); // the first column's start (blank: the work date)
 	let filterValues = $state<Record<string, string>>({});
@@ -129,6 +130,7 @@
 			filters: userFilters(),
 			view_by: viewBy,
 			view_as: viewAs,
+			closing_entries: closingEntries,
 			date,
 			step,
 			columns: columnCount
@@ -159,6 +161,7 @@
 	$effect(() => {
 		void recordKey;
 		void viewAs;
+		void closingEntries;
 		untrack(() => load());
 	});
 
@@ -257,11 +260,12 @@
 			saving = true;
 			error = '';
 			try {
+				// a calculated matrix: its one period (the columns are not periods)
 				await api.matrixValidate(pageId, {
 					...request(),
 					key: row.key,
-					start: column.start ?? '',
-					end: column.end ?? '',
+					start: (matrix.calculated ? period?.start : column.start) ?? '',
+					end: (matrix.calculated ? period?.end : column.end) ?? '',
 					column_filters: column.drilldown_filters ?? {},
 					value: text === '' ? '0' : fromDecimalInput(text, locale),
 					rounding_factor: roundingFactor
@@ -379,7 +383,9 @@
 		const start = matrix.calculated ? period?.start : column.start;
 		const end = matrix.calculated ? period?.end : column.end;
 		if (matrix.drilldown_date_field && end) {
-			const range = viewAs === 1 ? `..${end}` : `${start}..${end}`;
+			// Closing Entries Include: the period ends at its closing date
+			const last = matrix.closing_entries && closingEntries === 0 ? `C${end}` : end;
+			const range = viewAs === 1 ? `..${last}` : `${start}..${last}`;
 			filters.push({ field: matrix.drilldown_date_field, expression: range });
 		}
 		for (const [field, value] of Object.entries(column.drilldown_filters ?? {})) {
@@ -444,6 +450,17 @@
 					{factor === 0 ? t(PERIOD.ROUNDING_NONE) : ['', '1', '1000', '1000000'][factor]}
 				</button>
 			{/each}
+		</div>
+		{/if}
+		{#if matrix.closing_entries}
+		<div class="control-group" role="radiogroup" aria-label={t(PERIOD.CLOSING_ENTRIES)}>
+			<span class="control-label">{t(PERIOD.CLOSING_ENTRIES)}</span>
+			<button type="button" class="choice" class:active={closingEntries === 0} aria-pressed={closingEntries === 0} onclick={() => (closingEntries = 0)}>
+				{t(PERIOD.INCLUDE)}
+			</button>
+			<button type="button" class="choice" class:active={closingEntries === 1} aria-pressed={closingEntries === 1} onclick={() => (closingEntries = 1)}>
+				{t(PERIOD.EXCLUDE)}
+			</button>
 		</div>
 		{/if}
 		<div class="control-group">

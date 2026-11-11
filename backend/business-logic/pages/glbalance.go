@@ -3,6 +3,7 @@ package pages
 import (
 	"fmt"
 
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
@@ -16,11 +17,11 @@ import (
 // calculated matrices whose columns come from here:
 //   - 409/410/411 G/L Balance by Dimension 1 / Dimension 2 / Business Units and 417/418/419 the
 //     budget by the dimensions and business units: the G/L accounts against the dimension values
-//     or business units, a cell
-//     the account's Net Change (Balance at Date) or Budgeted Amount with the column's value in
-//     the account's FlowFilter;
+//     or business units, a cell the account's Net Change (Balance at Date) or Budgeted Amount
+//     with the column's value in the account's FlowFilter — on the budget views a value typed
+//     into a cell enters the budget;
 //   - 412/420 G/L Acc. Balance/Budget by Dim. 1/2: one account, the Dimension 1 values against
-//     the Dimension 2 values;
+//     the Dimension 2 values (420: in the card's Budget Filter, and amounts can be entered);
 //   - 414 G/L Balance and 422 G/L Balance/Budget: the accounts in one period with their debit,
 //     credit and net change (and the budget).
 const (
@@ -37,6 +38,14 @@ const (
 	glAccountsFlowFieldNetChange = "net_change"
 	glAccountsFlowFieldBudget    = "budgeted_amount"
 )
+
+// glBudgetColumnFlowFilters: the budget entry field of a budget view's column → the account's
+// FlowFilter it sets
+var glBudgetColumnFlowFilters = map[string]string{
+	"dimension_1_code":   "dimension_1_filter",
+	"dimension_2_code":   "dimension_2_filter",
+	"business_unit_code": "business_unit_filter",
+}
 
 // glBalanceColumn is one column of a matrix against codes: the code, the FlowFilter it goes into
 // and the G/L entry (or budget entry) field it filters on drilldown
@@ -66,6 +75,39 @@ func init() {
 	}
 	byDim12(glAccBalanceByDim12PageID, glAccountsFlowFieldNetChange)
 	byDim12(glAccBudgetByDim12PageID, glAccountsFlowFieldBudget)
+
+	// the budget views take amounts: a value typed into a cell is the account's Budgeted Amount
+	// with the column's dimension value or business unit (classic: entered into the FlowField of
+	// the matrix, the column's code in the account's filter)
+	for _, pageID := range []int{glBudgetByDim1PageID, glBudgetByDim2PageID, glBudgetByBusUnitsPageID} {
+		pages.OnMatrixColumnValidate(pageID, func(glAcc *gtables.GLAccount, column map[string]string, value types.Decimal) error {
+			for entryFilter, flowFilter := range glBudgetColumnFlowFilters {
+				code, ok := column[entryFilter]
+				if ok {
+					err := glAcc.SetFlowFilter(flowFilter, code)
+					if err != nil {
+						return err
+					}
+				}
+			}
+			return tables.SetGLAccBudgetedAmount(glAcc, value)
+		})
+	}
+	pages.OnMatrixCardColumnValidate(glAccBudgetByDim12PageID, func(card *gtables.GLAccount, dimension1 *gtables.Dimension1, column map[string]string, value types.Decimal) error {
+		glAcc, err := glAccountOfCard(card)
+		if err != nil {
+			return err
+		}
+		err = glAcc.SetFlowFilter("dimension_1_filter", exactCode(dimension1.Code))
+		if err != nil {
+			return err
+		}
+		err = glAcc.SetFlowFilter("dimension_2_filter", column["dimension_2_code"])
+		if err != nil {
+			return err
+		}
+		return tables.SetGLAccBudgetedAmount(glAcc, value)
+	})
 
 	pages.OnMatrixCalculate(glBalancePageID, func(card *gtables.GLAccount, glAcc *gtables.GLAccount) ([]pages.MatrixColumn, map[string][]string, error) {
 		return glBalance(glAcc, false)
@@ -177,12 +219,7 @@ func glAccountByDim12(card *gtables.GLAccount, dimension1 *gtables.Dimension1, v
 		columns[j] = pages.MatrixColumn{Name: code.String(), DecimalPlaces: "2:2",
 			DrilldownFilters: map[string]string{"dimension_2_code": exactCode(code)}}
 	}
-	glAcc := gtables.NewGLAccount(card)
-	err := glAcc.GetOrError(card.No)
-	if err != nil {
-		return nil, nil, err
-	}
-	err = glAcc.SetFlowFilter("date_filter", card.Date_filter)
+	glAcc, err := glAccountOfCard(card)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -208,6 +245,25 @@ func glAccountByDim12(card *gtables.GLAccount, dimension1 *gtables.Dimension1, v
 		values[ftables.KeyString(dimension1)] = cells
 	}
 	return columns, values, nil
+}
+
+// glAccountOfCard: the card's account with the card's Date Filter (the matrix's period) and
+// Budget Filter
+func glAccountOfCard(card *gtables.GLAccount) (*gtables.GLAccount, error) {
+	glAcc := gtables.NewGLAccount(card)
+	err := glAcc.GetOrError(card.No)
+	if err != nil {
+		return nil, err
+	}
+	err = glAcc.SetFlowFilter("date_filter", card.Date_filter)
+	if err != nil {
+		return nil, err
+	}
+	err = glAcc.SetFlowFilter("budget_filter", card.Budget_filter)
+	if err != nil {
+		return nil, err
+	}
+	return glAcc, nil
 }
 
 // glBalance (forms 414/422): the accounts' Debit Amount and Credit Amount (the Net Change on the

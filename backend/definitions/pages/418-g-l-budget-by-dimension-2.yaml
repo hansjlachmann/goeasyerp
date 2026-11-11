@@ -5,13 +5,15 @@ page:
   source_table: G_L_Account
   caption: G/L Budget by Dimension 2
   # classic form 418: the G/L accounts' budgeted amount against the Dimension 2 values in one period
-  # (read-only here: amounts are entered in G/L Budget by Periods 113; glbalance.go)
+  # (a value typed into a cell enters the budget: one Budget Filter, Net Change; glbalance.go)
 
   layout:
     matrix:
       table: G_L_Account
       value: budgeted_amount
       calculated: true
+      editable: true
+      entry_table: G_L_Budget_Entry
       view_as: true
       date_filter: date_filter
       view_by: 2

@@ -147,7 +147,9 @@ type Matrix struct {
 	DateFilter    string            `yaml:"date_filter" json:"date_filter"`
 	RecordFilters map[string]string `yaml:"record_filters,omitempty" json:"record_filters,omitempty"`
 	// Filters: FlowFilter fields of the rows the user filters the matrix by (Dimension 1 Filter);
-	// drilldown_filter_field: the field of the drilldown page they filter
+	// drilldown_filter_field: the field of the drilldown page they filter. A matrix with a
+	// CardDateFilter filters the card record instead (its FlowFilters: the account's Budget
+	// Filter)
 	Filters []Field `yaml:"filters,omitempty" json:"filters,omitempty"`
 	// Fields: the row's fields before the cells (indent_field / style_expr as on lists)
 	Fields []Field `yaml:"fields" json:"fields"`
@@ -166,6 +168,9 @@ type Matrix struct {
 	// ViewAs: a calculated matrix offers View as Net Change / Balance at Date (the period, or up
 	// to its end, in the rows' date filter)
 	ViewAs bool `yaml:"view_as,omitempty" json:"view_as,omitempty"`
+	// ClosingEntries: the matrix offers Closing Entries Include/Exclude (the G/L balance views):
+	// a period ends at its closing date, Exclude leaves out the fiscal years' closing dates
+	ClosingEntries bool `yaml:"closing_entries,omitempty" json:"closing_entries,omitempty"`
 	// CardDateFilter: a calculated matrix whose rows have no date filter (the dimension values
 	// of one G/L account) puts its period into this FlowFilter of the card record instead
 	CardDateFilter string `yaml:"card_date_filter,omitempty" json:"card_date_filter,omitempty"`
@@ -202,6 +207,9 @@ type PeriodGrid struct {
 	ViewBy int `yaml:"view_by" json:"view_by"`
 	// Rows: the rows are the records of a table instead of periods
 	Rows *PeriodGridRows `yaml:"rows,omitempty" json:"rows,omitempty"`
+	// ClosingEntries: the grid offers Closing Entries Include/Exclude — a period ends at its
+	// closing date, Exclude leaves out the fiscal years' closing dates (the G/L balance views)
+	ClosingEntries bool `yaml:"closing_entries,omitempty" json:"closing_entries,omitempty"`
 }
 
 // PeriodGridRows are the records a period grid lists (locations, variants): Table's records —

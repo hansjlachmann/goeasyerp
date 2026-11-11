@@ -50,6 +50,7 @@
 
 	let viewBy = $state(0);
 	let viewAs = $state(0); // 0 Net Change, 1 Balance at Date
+	let closingEntries = $state(0); // 0 Include, 1 Exclude (grids with closing_entries)
 	let date = $state(''); // the first period's start (blank: the work date)
 	// svelte-ignore state_referenced_locally - the filters only start the grid
 	let filterValues = $state<Record<string, string>>(
@@ -90,6 +91,7 @@
 				filters,
 				view_by: viewBy,
 				view_as: viewAs,
+				closing_entries: closingEntries,
 				date,
 				step,
 				rows: grid.rows ? 100 : periodRows
@@ -111,6 +113,7 @@
 	$effect(() => {
 		void JSON.stringify(record ?? {});
 		void viewAs;
+		void closingEntries;
 		untrack(() => {
 			if (firstLoad) {
 				firstLoad = false;
@@ -219,7 +222,9 @@
 		}
 		const dateField = column.drilldown_date_field || grid.drilldown_date_field;
 		if (dateField) {
-			const range = viewAs === 1 ? `..${row.period_end}` : `${row.period_start}..${row.period_end}`;
+			// Closing Entries Include: the period ends at its closing date
+			const end = grid.closing_entries && closingEntries === 0 ? `C${row.period_end}` : row.period_end;
+			const range = viewAs === 1 ? `..${end}` : `${row.period_start}..${end}`;
 			filters.push({ field: dateField, expression: range });
 		}
 		for (const f of grid.filters ?? []) {
@@ -259,6 +264,17 @@
 				{t(PERIOD.BALANCE_AT_DATE)}
 			</button>
 		</div>
+		{#if grid.closing_entries}
+		<div class="control-group" role="radiogroup" aria-label={t(PERIOD.CLOSING_ENTRIES)}>
+			<span class="control-label">{t(PERIOD.CLOSING_ENTRIES)}</span>
+			<button type="button" class="choice" class:active={closingEntries === 0} aria-pressed={closingEntries === 0} onclick={() => (closingEntries = 0)}>
+				{t(PERIOD.INCLUDE)}
+			</button>
+			<button type="button" class="choice" class:active={closingEntries === 1} aria-pressed={closingEntries === 1} onclick={() => (closingEntries = 1)}>
+				{t(PERIOD.EXCLUDE)}
+			</button>
+		</div>
+		{/if}
 		<div class="control-group">
 			<button type="button" class="choice" title={t(PERIOD.PREVIOUS)} aria-label={t(PERIOD.PREVIOUS)} onclick={() => move(-1)}>‹</button>
 			{#if grid.rows && rows.length > 0}

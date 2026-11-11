@@ -6,7 +6,8 @@ page:
   caption: G/L Acc. Budget by Dim. 1/2
   editable: false
   # classic form 420 with its lines (form 421): one G/L account's budgeted amount in one period, the
-  # Dimension 1 values against the Dimension 2 values (read-only here; glbalance.go)
+  # Dimension 1 values against the Dimension 2 values in the card's Budget Filter; a value typed into a
+  # cell enters the budget (glbalance.go)
 
   layout:
     sections:
@@ -26,6 +27,12 @@ page:
           view_as: true
           date_filter: ""
           card_date_filter: date_filter
+          editable: true
+          entry_table: G_L_Budget_Entry
+          # the card's Budget Filter (the account's FlowFilter)
+          filters:
+            - source: budget_filter
+              drilldown_filter_field: budget_name
           view_by: 2
           fields:
             - source: code

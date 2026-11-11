@@ -90,6 +90,7 @@ export interface Matrix {
 	drilldown_record_filters?: Record<string, string>; // drilldown page field → card record field
 	calculated?: boolean; // columns and cells from the page's trigger, for one period
 	view_as?: boolean; // a calculated matrix offers View as Net Change / Balance at Date
+	closing_entries?: boolean; // offers Closing Entries Include / Exclude (the G/L balance views)
 	no_periods?: boolean; // a calculated matrix without periods (Items by Bin): no View by, no previous/next
 	row_filters?: Record<string, string>; // row field → card record field
 	actions?: Action[]; // a card section's matrix: actions on the selected row
@@ -122,6 +123,7 @@ export interface PeriodGrid {
 	drilldown_date_field?: string; // the date field a column's drilldown filters on
 	view_by: number; // 0 Day … 4 Year, 5 Accounting Period
 	rows?: { table: string; field: string; caption_field: string; filter: string; filters?: Record<string, string>; drilldown_filter_field?: string };
+	closing_entries?: boolean; // offers Closing Entries Include / Exclude (the G/L balance views)
 }
 
 /** A row of a period grid: its period (or record) and the columns' values */

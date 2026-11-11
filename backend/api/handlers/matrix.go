@@ -66,6 +66,8 @@ type matrixRequest struct {
 	RoundingFactor int    `json:"rounding_factor"` // 0 None, 1 "1", 2 "1000", 3 "1000000"
 	// ColumnFilters: a calculated matrix's column — its own filters (MatrixColumn.DrilldownFilters)
 	ColumnFilters map[string]string `json:"column_filters"`
+	// ClosingEntries: 0 Include, 1 Exclude (a matrix with closing_entries)
+	ClosingEntries int `json:"closing_entries"`
 }
 
 // matrixContext is a matrix request checked: the section, the rows' table and a record of it
@@ -141,6 +143,17 @@ func (m *matrixContext) rowRecord(db ftables.Source) (ftables.Table, error) {
 			return nil, err
 		}
 	}
+	if m.matrix.CardDateFilter == "" {
+		if err := m.setUserFilters(rec); err != nil {
+			return nil, err
+		}
+	}
+	return rec, nil
+}
+
+// setUserFilters puts the filters the user set above the matrix (those the matrix offers) into
+// the record's FlowFilters
+func (m *matrixContext) setUserFilters(rec ftables.Table) error {
 	allowed := map[string]bool{}
 	for _, f := range m.matrix.Filters {
 		allowed[f.Source] = true
@@ -150,15 +163,38 @@ func (m *matrixContext) rowRecord(db ftables.Source) (ftables.Table, error) {
 			continue
 		}
 		if err := rec.SetFlowFilter(f.Field, f.Expression); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// cardRecord is the card's record as the page sent it; a matrix with a CardDateFilter puts the
+// period (dateFilter) and the user's filters into its FlowFilters
+func (m *matrixContext) cardRecord(src ftables.Source, dateFilter string) (ftables.Table, error) {
+	factory, _ := gtables.GetTableFactory(m.page.Page.SourceTable)
+	card := factory()
+	card.InitWithDBType(src.GetDB(), src.GetCompany(), src.GetDBType())
+	card.FromMap(m.req.Record)
+	if m.matrix.CardDateFilter != "" {
+		err := card.SetFlowFilter(m.matrix.CardDateFilter, dateFilter)
+		if err != nil {
+			return nil, err
+		}
+		err = m.setUserFilters(card)
+		if err != nil {
 			return nil, err
 		}
 	}
-	return rec, nil
+	return card, nil
 }
 
 // calculatedDateFilter: a calculated matrix's period as its date filter — Net Change the period,
 // Balance at Date (a matrix with view_as) up to its end
 func (m *matrixContext) calculatedDateFilter(period periods.Period) string {
+	if m.matrix.ClosingEntries {
+		return periods.ClosingEntriesDateFilter(m.src, period, m.matrix.ViewAs && m.req.ViewAs == 1, periods.ClosingEntries(m.req.ClosingEntries))
+	}
 	if m.matrix.ViewAs {
 		return m.dateFilter(period.Start.String(), period.End.String())
 	}
@@ -167,6 +203,11 @@ func (m *matrixContext) calculatedDateFilter(period periods.Period) string {
 
 // dateFilter: a column's period as the date filter of the view (Balance at Date: up to its end)
 func (m *matrixContext) dateFilter(start, end string) string {
+	if m.matrix.ClosingEntries {
+		startDate, _ := types.NewDateFromString(start)
+		endDate, _ := types.NewDateFromString(end)
+		return periods.ClosingEntriesDateFilter(m.src, periods.Period{Start: startDate, End: endDate}, m.req.ViewAs == 1, periods.ClosingEntries(m.req.ClosingEntries))
+	}
 	if m.req.ViewAs == 1 {
 		return ".." + end
 	}
@@ -345,8 +386,12 @@ func (h *PageTriggersHandler) MatrixValidate(c *fiber.Ctx) error {
 	if err == nil {
 		err = rec.GetOrError(parseRecordKey(m.req.Key, rec))
 	}
+	var card ftables.Table
 	if err == nil {
-		err = pages.RunMatrixValidate(m.pageID, rec, m.req.ColumnFilters, value)
+		card, err = m.cardRecord(src, m.dateFilter(m.req.Start, m.req.End))
+	}
+	if err == nil {
+		err = pages.RunMatrixValidate(m.pageID, card, rec, m.req.ColumnFilters, value)
 	}
 	if err != nil {
 		_ = ftables.Rollback(tx)
@@ -390,15 +435,9 @@ func (m *matrixContext) calculated(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(apitypes.NewErrorResponse(errorMessage(err, m.language)))
 	}
-	factory, _ := gtables.GetTableFactory(m.page.Page.SourceTable)
-	card := factory()
-	card.InitWithDBType(m.src.GetDB(), m.src.GetCompany(), m.src.GetDBType())
-	card.FromMap(m.req.Record)
-	if m.matrix.CardDateFilter != "" {
-		err = card.SetFlowFilter(m.matrix.CardDateFilter, m.calculatedDateFilter(period))
-		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(apitypes.NewErrorResponse(errorMessage(err, m.language)))
-		}
+	card, err := m.cardRecord(m.src, m.calculatedDateFilter(period))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(apitypes.NewErrorResponse(errorMessage(err, m.language)))
 	}
 
 	rows := []matrixRow{}

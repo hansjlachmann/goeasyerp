@@ -140,12 +140,17 @@ func (h *PagesHandler) GetPage(c *fiber.Ctx) error {
 	if pageDef.Page.SourceTable != "" {
 		// A matrix's row fields and filters: captions of the rows' table; its cells can be
 		// entered only with the page's OnMatrixValidate trigger
+		// (filters of a matrix with a card date filter: the card's table)
 		matrixCaptions := func(mx *pages.Matrix) {
-			for _, fields := range [][]pages.Field{mx.Filters, mx.Fields} {
+			for i, fields := range [][]pages.Field{mx.Filters, mx.Fields} {
+				table := mx.Table
+				if i == 0 && mx.CardDateFilter != "" {
+					table = pageDef.Page.SourceTable
+				}
 				for j := range fields {
 					field := &fields[j]
 					if field.Caption == "" {
-						field.Caption = pageFieldCaption(ts, pageDef.Page.Name, mx.Table, field, lang)
+						field.Caption = pageFieldCaption(ts, pageDef.Page.Name, table, field, lang)
 					}
 				}
 			}
