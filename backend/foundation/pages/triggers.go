@@ -15,7 +15,8 @@ import (
 //	})
 //
 // The API returns the field states with the record (POST /api/pages/:id/field-states) and the
-// card applies them; the page definition says whether a page has such a trigger.
+// card applies them; a list gets them with each row (the list API with page_id) and applies
+// them per cell. The page definition says whether a page has such a trigger.
 
 // FieldState is what a page trigger set for a field (nil: as in the page definition)
 type FieldState struct {

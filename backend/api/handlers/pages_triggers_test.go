@@ -112,3 +112,50 @@ func TestInsertTakesReadOnlyFieldsFromNewRecord(t *testing.T) {
 		t.Errorf("insert without a page: %d %v", status, out)
 	}
 }
+
+// A list's rows carry the fields the page's OnAfterGetRecord switched for each row
+// (RowFieldStatesKey, always — also empty), and a row saved from the page leaves a field the
+// trigger made read-only for the stored record unchanged
+func TestListRowFieldStates(t *testing.T) {
+	if err := pages.GetRegistry().LoadPages(); err != nil {
+		t.Skipf("pages: %v", err)
+	}
+	pages.OnAfterGetRecord(21, func(rec *gtables.Customer, page *pages.Control) {
+		page.SetEditable("name", !rec.Blocked)
+	})
+	rows := []map[string]interface{}{{"no": "C1", "blocked": false}, {"no": "C2", "blocked": true}}
+	err := calculatedValues(21, "Customer", rows, func() ftables.Table { return &gtables.Customer{} })
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i, want := range []bool{true, false} {
+		states, ok := rows[i][RowFieldStatesKey].(map[string]pages.FieldState)
+		if !ok || states["name"].Editable == nil || *states["name"].Editable != want {
+			t.Errorf("row %d: %v", i, rows[i][RowFieldStatesKey])
+		}
+	}
+	// another table's page: nothing added
+	other := []map[string]interface{}{{"no": "V1"}}
+	if err := calculatedValues(21, "Vendor", other, func() ftables.Table { return &gtables.Vendor{} }); err != nil || other[0][RowFieldStatesKey] != nil {
+		t.Errorf("another table: %v %v", other[0], err)
+	}
+
+	blocked := &gtables.Customer{No: "C2", Blocked: true}
+	data := map[string]interface{}{"name": "New", "city": "Oslo"}
+	if err := dropRowReadOnlyFields(21, "Customer", blocked, data); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := data["name"]; ok || data["city"] != "Oslo" {
+		t.Errorf("blocked customer's changes: %v", data)
+	}
+	open := &gtables.Customer{No: "C1"}
+	data = map[string]interface{}{"name": "New"}
+	if err := dropRowReadOnlyFields(21, "Customer", open, data); err != nil || data["name"] != "New" {
+		t.Errorf("open customer's changes: %v %v", data, err)
+	}
+	// no page: as before
+	data = map[string]interface{}{"name": "New"}
+	if err := dropRowReadOnlyFields(0, "Customer", blocked, data); err != nil || data["name"] != "New" {
+		t.Errorf("without a page: %v %v", data, err)
+	}
+}

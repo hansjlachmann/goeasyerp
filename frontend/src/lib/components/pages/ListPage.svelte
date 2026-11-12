@@ -62,7 +62,7 @@
 		type ListSelection
 	} from '$lib/utils/selection';
 	import { needsShift, windowOffsetFor, windowSize, type ListWindowRequest } from '$lib/utils/listWindow';
-	import { getRecordId, getRecordKey, getPrimaryKeyField, getPrimaryKeyFields, recordKeyText, deepCopy, hasRecordChanged, canInsertNewRecord, hasUserEdits, sameFieldValue, shouldInsertNewRecord, stripInternalFields, findSelectedRecord, applyServerValues, newRecordContext } from '$lib/utils/recordHelpers';
+	import { getRecordId, getRecordKey, getPrimaryKeyField, getPrimaryKeyFields, recordKeyText, deepCopy, hasRecordChanged, canInsertNewRecord, hasUserEdits, sameFieldValue, shouldInsertNewRecord, stripInternalFields, findSelectedRecord, applyServerValues, newRecordContext, rowFieldEditable, rowFieldVisible } from '$lib/utils/recordHelpers';
 
 	interface Props {
 		page: PageDefinition;
@@ -1186,9 +1186,10 @@
 	}
 
 	// A repeater field with editable: false, or a FlowField (computed), can be selected and
-	// copied, never changed
-	function isCellEditable(field: Field | undefined): boolean {
-		return !!field && field.editable !== false && !(page.page.flow_fields ?? []).includes(field.source);
+	// copied, never changed; nor can a field the page's OnAfterGetRecord trigger made read-only
+	// for the row (`_field_states`, sent with each row of a page with record triggers)
+	function isCellEditable(field: Field | undefined, record?: Record<string, any>): boolean {
+		return !!field && field.editable !== false && !(page.page.flow_fields ?? []).includes(field.source) && rowFieldEditable(record, field.source);
 	}
 
 	// Enter cell-editing state from cell-selected
@@ -1201,7 +1202,7 @@
 		const cols = visibleColumns();
 		const field = cols[currentCellCol];
 		const record = displayRecords[currentCellRow];
-		if (!field || !record || !isCellEditable(field)) return;
+		if (!field || !record || !isCellEditable(field, record)) return;
 
 		// Snapshot current value for Escape revert
 		cellEditSnapshot = record[field.source];
@@ -1378,7 +1379,7 @@
 	// A field's own lookup (on_lookup, classic OnLookup): its function works on the row as it is
 	// (it may open a page); the row takes the record it gives back and saves the field
 	async function runFieldLookup(record: Record<string, any>, field: Field) {
-		if (!field.on_lookup || !isCellEditable(field)) return;
+		if (!field.on_lookup || !isCellEditable(field, record)) return;
 		const data = await fieldRunner?.run(field.on_lookup, stripInternalFields($state.snapshot(record)), { quiet: true });
 		const changed = data?.record as Record<string, unknown> | undefined;
 		if (!changed) return;
@@ -1743,7 +1744,7 @@
 		// Ctrl+V: Paste from clipboard into cell
 		if (event.key === 'v' && event.ctrlKey && !event.shiftKey && !event.altKey) {
 			event.preventDefault();
-			if (field.editable === false) return;
+			if (!isCellEditable(field, record)) return;
 			if (isBoolean) return;
 			navigator.clipboard.readText().then((text) => {
 				record[field.source] = text;
@@ -1820,7 +1821,7 @@
 					void pickFromCell(rowIndex, colIndex);
 					break;
 				}
-				if (isBoolean && isCellEditable(field)) {
+				if (isBoolean && isCellEditable(field, record)) {
 					// Toggle checkbox + move down
 					record[field.source] = !record[field.source];
 					editableRecords = [...editableRecords];
@@ -1841,7 +1842,7 @@
 				break;
 			case 'Delete':
 				event.preventDefault();
-				if (!isBoolean && isCellEditable(field)) {
+				if (!isBoolean && isCellEditable(field, record)) {
 					record[field.source] = '';
 					editableRecords = [...editableRecords];
 				}
@@ -1856,7 +1857,7 @@
 				// Space on boolean: toggle checkbox
 				if (isBoolean) {
 					event.preventDefault();
-					if (!isCellEditable(field)) break;
+					if (!isCellEditable(field, record)) break;
 					record[field.source] = !record[field.source];
 					editableRecords = [...editableRecords];
 					handleCellBlur(record, rowIndex, field.source);
@@ -1865,7 +1866,7 @@
 			case 'F8':
 				// Copy from cell above, then edit it with the cursor at the end
 				event.preventDefault();
-				if (rowIndex > 0 && field.editable !== false) {
+				if (rowIndex > 0 && isCellEditable(field, record)) {
 					const aboveRecord = displayRecords[rowIndex - 1];
 					const valueBefore = record[field.source];
 					record[field.source] = aboveRecord[field.source];
@@ -2044,7 +2045,7 @@
 				{
 					event.preventDefault();
 					const field = cols[colIndex];
-					if (rowIndex > 0 && field && field.editable !== false) {
+					if (rowIndex > 0 && field && isCellEditable(field, displayRecords[rowIndex])) {
 						const aboveRecord = displayRecords[rowIndex - 1];
 						const currentRecord = displayRecords[rowIndex];
 						const valueToCopy = aboveRecord[field.source];
@@ -3934,7 +3935,7 @@
 											onkeydown={(e) => handleCellSelectedKeyDown(e, index, colIndex)}
 										>
 											<input type="checkbox" checked={record[field.source]}
-												disabled={!isCellEditable(field)}
+												disabled={!isCellEditable(field, record)}
 												onclick={() => {
 													record[field.source] = !record[field.source];
 													handleCellBlur(record, index);
@@ -3952,7 +3953,7 @@
 											onkeydown={(e) => handleCellSelectedKeyDown(e, index, colIndex)}
 										>
 											<span class="cell-selected-lookup-value"><span class="cell-selected-text">{#if lookupFor(lookups, field.source, record)?.rows?.length}{formatLookupValue(record[field.source], lookupFor(lookups, field.source, record))}{:else}{formatCellValue(record[field.source], field.source)}{/if}</span></span>
-											{#if isCellEditable(field)}
+											{#if isCellEditable(field, record)}
 												<!-- svelte-ignore a11y_click_events_have_key_events -->
 												<span
 													class="cell-selected-lookup-arrow"
@@ -3978,7 +3979,7 @@
 											onkeydown={(e) => handleCellSelectedKeyDown(e, index, colIndex)}
 										>
 											<span class="cell-selected-lookup-value"><span class="cell-selected-text">{formatOptionValue(record[field.source], options[field.source])}</span></span>
-											{#if isCellEditable(field)}
+											{#if isCellEditable(field, record)}
 												<!-- svelte-ignore a11y_click_events_have_key_events -->
 												<span
 													class="cell-selected-lookup-arrow"
@@ -4004,7 +4005,7 @@
 											onkeydown={(e) => handleCellSelectedKeyDown(e, index, colIndex)}
 										>
 											<span class="cell-selected-lookup-value"><span class="cell-selected-text">{formatCellValue(record[field.source], field.source)}</span></span>
-											{#if isCellEditable(field)}
+											{#if isCellEditable(field, record)}
 												<!-- svelte-ignore a11y_click_events_have_key_events -->
 												<span
 													class="cell-selected-lookup-arrow"
@@ -4044,8 +4045,10 @@
 											if (isNavigation && (e.shiftKey || e.ctrlKey || e.metaKey)) e.preventDefault();
 										}}
 									>
-										{#if typeof record[field.source] === 'boolean' || fieldTypes[field.source] === 'bool'}
-											{#if page.page.editable && isCellEditable(field) && !isNavigation}
+										{#if !rowFieldVisible(record, field.source)}
+											<!-- hidden for this row by the page's OnAfterGetRecord trigger -->
+										{:else if typeof record[field.source] === 'boolean' || fieldTypes[field.source] === 'bool'}
+											{#if page.page.editable && isCellEditable(field, record) && !isNavigation}
 												<input type="checkbox" checked={record[field.source]}
 													onclick={async (e) => {
 														e.stopPropagation();

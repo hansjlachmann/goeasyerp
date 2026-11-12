@@ -231,6 +231,20 @@ export function stripInternalFields(record: Record<string, any>): Record<string,
 	return Object.fromEntries(Object.entries(record).filter(([key]) => !key.startsWith('_')));
 }
 
+/** Field states the page's OnAfterGetRecord trigger set for a list row (sent as `_field_states`) */
+export type RowFieldStates = Record<string, { editable?: boolean; visible?: boolean }>;
+
+/** Whether the page's trigger left a field of the row editable (a hidden field is not) */
+export function rowFieldEditable(record: Record<string, any> | undefined, field: string): boolean {
+	const state = (record?._field_states as RowFieldStates | undefined)?.[field];
+	return state?.editable !== false && state?.visible !== false;
+}
+
+/** Whether the page's trigger left a field of the row visible */
+export function rowFieldVisible(record: Record<string, any> | undefined, field: string): boolean {
+	return (record?._field_states as RowFieldStates | undefined)?.[field]?.visible !== false;
+}
+
 /**
  * Check if the user has changed any field of a new record away from the values it was
  * initialized with. Init-supplied defaults are not user edits: a pre-populated row the

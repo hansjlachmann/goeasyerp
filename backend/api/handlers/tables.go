@@ -996,6 +996,11 @@ func (h *TablesHandler) ModifyRecord(c *fiber.Ctx) error {
 	if err := rejectSensitiveFields(table, data); err != nil {
 		return c.Status(400).JSON(apitypes.NewErrorResponse(err.Error()))
 	}
+	// A row saved from a page (page_id): the fields its OnAfterGetRecord made read-only for the
+	// record as stored are not changed
+	if err := dropRowReadOnlyFields(c.QueryInt("page_id", 0), tableName, table, data); err != nil {
+		return c.Status(500).JSON(apitypes.NewErrorResponse(errorMessage(err, language)))
+	}
 
 	// Validate and set each changed field (runs OnValidate triggers for table relations, etc.)
 	if err := validateChangedFields(table, tableName, data); err != nil {

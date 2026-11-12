@@ -68,7 +68,9 @@ func (h *PageTriggersHandler) FieldStates(c *fiber.Ctx) error {
 }
 
 // calculatedValues fills the calculated fields of a list's rows: the page's OnAfterGetRecord
-// triggers run for each row (records are the rows' maps) and their SetValue values join the row
+// triggers run for each row (records are the rows' maps) and their SetValue values join the row;
+// the fields they switched for the row (SetEditable/SetVisible) go with it as RowFieldStatesKey
+// — always, also empty, so a row saved again drops the states it no longer has
 func calculatedValues(pageID int, table string, records []map[string]interface{}, newRecord func() ftables.Table) error {
 	page, err := pages.GetRegistry().GetPage(pageID)
 	if err != nil || !pages.HasRecordTriggers(pageID) || !strings.EqualFold(strings.ReplaceAll(page.Page.SourceTable, " ", "_"), strings.ReplaceAll(table, " ", "_")) {
@@ -84,9 +86,15 @@ func calculatedValues(pageID int, table string, records []map[string]interface{}
 		for field, value := range control.Values() {
 			row[field] = value
 		}
+		row[RowFieldStatesKey] = control.States()
 	}
 	return nil
 }
+
+// RowFieldStatesKey is the key of a list row's field states (the page's OnAfterGetRecord
+// SetEditable/SetVisible for the row); the leading underscore keeps the frontend from sending it
+// back with the row
+const RowFieldStatesKey = "_field_states"
 
 // OpenPage runs the page's OnOpenPage triggers with the page's parameters (body: {"params":
 // {"template": "GENERAL", "batch": "DEFAULT"}}) and returns the parameters as the triggers
@@ -138,4 +146,27 @@ func (h *PageTriggersHandler) OpenPage(c *fiber.Ctx) error {
 		"fixed_filters": filters,
 		"select":        open.Selection(),
 	}))
+}
+
+// dropRowReadOnlyFields leaves out of a row's changes the fields the page's OnAfterGetRecord
+// triggers made read-only (or hid) for the record as it is stored — as the page shows them;
+// rec is that stored record. Nothing when the page is not the table's or has no such trigger.
+func dropRowReadOnlyFields(pageID int, table string, rec ftables.Table, data map[string]interface{}) error {
+	if pageID <= 0 || !pages.HasRecordTriggers(pageID) {
+		return nil
+	}
+	page, err := pages.GetRegistry().GetPage(pageID)
+	if err != nil || !strings.EqualFold(strings.ReplaceAll(page.Page.SourceTable, " ", "_"), strings.ReplaceAll(table, " ", "_")) {
+		return nil
+	}
+	control, err := pages.RunAfterGetRecordControl(pageID, rec)
+	if err != nil {
+		return err
+	}
+	for field, state := range control.States() {
+		if (state.Editable != nil && !*state.Editable) || (state.Visible != nil && !*state.Visible) {
+			delete(data, field)
+		}
+	}
+	return nil
 }

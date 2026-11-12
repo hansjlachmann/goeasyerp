@@ -12,7 +12,9 @@ import {
 	hasUserEdits,
 	shouldInsertNewRecord,
 	stripInternalFields,
-	findSelectedRecord
+	findSelectedRecord,
+	rowFieldEditable,
+	rowFieldVisible
 } from '../recordHelpers';
 
 describe('getRecordId', () => {
@@ -306,5 +308,20 @@ describe('recordKeyText', () => {
 	it('shows options by caption, blanks as quotes, no record as nothing', () => {
 		expect(recordKeyText({ type: 1, code: '' }, ['type', 'code'], {}, { type: { '1': 'Item' } })).toBe("type: Item, code: ''");
 		expect(recordKeyText(undefined, ['no'])).toBe('');
+	});
+});
+
+describe('row field states', () => {
+	const row = { no: 'L1', _field_states: { amount: { editable: false }, note: { visible: false } } };
+	it('follows the page trigger per row', () => {
+		expect(rowFieldEditable(row, 'amount')).toBe(false);
+		expect(rowFieldEditable(row, 'no')).toBe(true);
+		expect(rowFieldVisible(row, 'note')).toBe(false);
+		expect(rowFieldEditable(row, 'note')).toBe(false); // hidden: not editable either
+		expect(rowFieldVisible({ no: 'L2' }, 'note')).toBe(true);
+		expect(rowFieldEditable(undefined, 'no')).toBe(true);
+	});
+	it('is not sent back', () => {
+		expect(stripInternalFields(row)).toEqual({ no: 'L1' });
 	});
 });
