@@ -309,7 +309,7 @@ tables:
       object_type:
         table_data: "Tabelldata"
         report: "Rapport"
-        codeunit: "Kodeenhet"
+        codeunit: "Rutine"
 
   # Job Queue (Table 472)
   job_queue:
@@ -346,7 +346,7 @@ tables:
         weekly: "Ukentlig"
         monthly: "Månedlig"
       object_type_to_run:
-        codeunit: "Kodeenhet"
+        codeunit: "Rutine"
         report: "Rapport"
       notify_on:
         never: "Aldri"
@@ -6194,7 +6194,7 @@ tables:
         page: "Side"
         report: "Rapport"
         dataport: "Dataport"
-        codeunit: "Kodeenhet"
+        codeunit: "Rutine"
   object:
     caption: "Objekt"
     fields:
@@ -6210,7 +6210,7 @@ tables:
         page: "Side"
         report: "Rapport"
         dataport: "Dataport"
-        codeunit: "Kodeenhet"
+        codeunit: "Rutine"
   report_selections:
     caption: "Rapportvalg"
     fields:

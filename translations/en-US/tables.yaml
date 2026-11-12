@@ -309,7 +309,7 @@ tables:
       object_type:
         table_data: "Table Data"
         report: "Report"
-        codeunit: "Codeunit"
+        codeunit: "Routine"
 
   # Job Queue (Table 472)
   job_queue:
@@ -346,7 +346,7 @@ tables:
         weekly: "Weekly"
         monthly: "Monthly"
       object_type_to_run:
-        codeunit: "Codeunit"
+        codeunit: "Routine"
         report: "Report"
       notify_on:
         never: "Never"
@@ -6194,7 +6194,7 @@ tables:
         page: "Page"
         report: "Report"
         dataport: "Dataport"
-        codeunit: "Codeunit"
+        codeunit: "Routine"
   object:
     caption: "Object"
     fields:
@@ -6210,7 +6210,7 @@ tables:
         page: "Page"
         report: "Report"
         dataport: "Dataport"
-        codeunit: "Codeunit"
+        codeunit: "Routine"
   report_selections:
     caption: "Report Selections"
     fields:

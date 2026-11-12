@@ -50,7 +50,7 @@ messages:
   ERR_FIELD_NOT_EXIST: "%1 '%2' does not exist"
   ERR_NO_RECORD_SELECTED: "No record selected"
   ERR_UNKNOWN_OBJECT_TYPE: "Unknown object type: %1"
-  ERR_INVALID_CODEUNIT_ID: "Invalid codeunit ID"
+  ERR_INVALID_CODEUNIT_ID: "Invalid routine ID"
   ERR_FAILED_SAVE_RECORD: "Failed to save record"
   ERR_FAILED_LOAD_CARD_PAGE: "Failed to load card page"
   ERR_FAILED_START_JOB: "Failed to start job"

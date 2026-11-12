@@ -192,7 +192,7 @@ SELECT * FROM "cronus$Payment Terms";
 
 ## Demo Data
 
-Codeunit 901 "Create Demo Data" fills a company with demo data: countries
+Routine 901 "Create Demo Data" fills a company with demo data: countries
 (NO, DK, GB), payment terms, and Norwegian, Danish and English customers with a
 year of customer ledger entries. The data is in `backend/business-logic/demodata/data/*.yaml`.
 

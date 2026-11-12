@@ -59,13 +59,13 @@ func (h *CodeunitsHandler) RunCodeunit(c *fiber.Ctx) error {
 	}
 
 	if req.CodeunitID == 0 {
-		return c.Status(400).JSON(apitypes.NewErrorResponse("Codeunit ID is required"))
+		return c.Status(400).JSON(apitypes.NewErrorResponse("Routine ID is required"))
 	}
 
 	// Get codeunit factory from registry
 	factory, ok := codeunits.Get(req.CodeunitID)
 	if !ok {
-		return c.Status(404).JSON(apitypes.NewErrorResponse("Codeunit not found"))
+		return c.Status(404).JSON(apitypes.NewErrorResponse("Routine not found"))
 	}
 	// Execute permission on the codeunit (classic object permissions)
 	if !sess.CanExecute(session.ObjectCodeunit, req.CodeunitID) {

@@ -93,7 +93,7 @@ func TestJobQueueUser(t *testing.T) {
 	}
 	if denied := newJob("J2", 7); denied.Insert(true) {
 		t.Error("insert without Execute on codeunit 7 was allowed")
-	} else if msg := denied.TriggerError().Error(); !strings.Contains(msg, "READER1") || !strings.Contains(msg, "codeunit 7") {
+	} else if msg := denied.TriggerError().Error(); !strings.Contains(msg, "READER1") || !strings.Contains(msg, "routine 7") {
 		t.Errorf("refusal message %q", msg)
 	}
 	jq.Object_id_to_run = 7

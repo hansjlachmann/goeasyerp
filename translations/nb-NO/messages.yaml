@@ -50,7 +50,7 @@ messages:
   ERR_FIELD_NOT_EXIST: "%1 '%2' finnes ikke"
   ERR_NO_RECORD_SELECTED: "Ingen post valgt"
   ERR_UNKNOWN_OBJECT_TYPE: "Ukjent objekttype: %1"
-  ERR_INVALID_CODEUNIT_ID: "Ugyldig codeunit-ID"
+  ERR_INVALID_CODEUNIT_ID: "Ugyldig rutine-ID"
   ERR_FAILED_SAVE_RECORD: "Kunne ikke lagre post"
   ERR_FAILED_LOAD_CARD_PAGE: "Kunne ikke laste kortside"
   ERR_FAILED_START_JOB: "Kunne ikke starte jobb"

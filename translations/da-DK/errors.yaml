@@ -210,9 +210,9 @@ errors:
 
   # Permissions
   ERR_PERMISSION_DENIED: "Du har ikke tilladelse til at %1 tabel '%2'"
-  ERR_NO_PERMISSION_CODEUNIT: "Du har ikke tilladelse til at køre codeunit %1 %2."
+  ERR_NO_PERMISSION_CODEUNIT: "Du har ikke tilladelse til at køre rutine %1 %2."
   ERR_NO_PERMISSION_REPORT: "Du har ikke tilladelse til at køre rapport %1 %2."
-  ERR_JOB_NO_PERMISSION: "Bruger %1 har ikke tilladelse til at køre codeunit %2."
+  ERR_JOB_NO_PERMISSION: "Bruger %1 har ikke tilladelse til at køre rutine %2."
   ERR_JOB_NO_REPORT_PERMISSION: "Bruger %1 har ikke tilladelse til at køre rapport %2."
 
   # Menu/Pages

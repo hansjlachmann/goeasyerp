@@ -103,11 +103,11 @@ func TestRunEndpointsCheckExecute(t *testing.T) {
 
 	denied := newApp(readerSession(nil))
 	out := postJSON(t, denied, "/api/codeunits/run", `{"codeunit_id":99991}`)
-	if out["success"] != false || !strings.Contains(fmt.Sprint(out["error"]), "permission to run codeunit 99991") {
+	if out["success"] != false || !strings.Contains(fmt.Sprint(out["error"]), "permission to run routine 99991") {
 		t.Errorf("codeunit without Execute: %v", out)
 	}
 	out = postJSON(t, denied, "/api/jobs/start", `{"codeunit_id":99991}`)
-	if out["success"] != false || !strings.Contains(fmt.Sprint(out["error"]), "permission to run codeunit 99991") {
+	if out["success"] != false || !strings.Contains(fmt.Sprint(out["error"]), "permission to run routine 99991") {
 		t.Errorf("job start without Execute: %v", out)
 	}
 	out = postJSON(t, denied, "/api/jobs/start", `{"report_id":`+strconv.Itoa(reports.CreateFiscalYearID)+`,"record":{"starting_date":"2026-01-01"}}`)

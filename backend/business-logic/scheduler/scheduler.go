@@ -241,7 +241,7 @@ func (s *Scheduler) execute(company string, job *gtables.JobQueue) (*jobqueue.Pr
 	}
 	factory, ok := codeunits.Get(job.Object_id_to_run)
 	if !ok {
-		return nil, fmt.Errorf("codeunit %d not found", job.Object_id_to_run)
+		return nil, fmt.Errorf("routine %d not found", job.Object_id_to_run)
 	}
 	cu := factory(s.db, company, s.dbType)
 

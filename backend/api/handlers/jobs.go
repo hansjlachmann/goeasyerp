@@ -79,7 +79,7 @@ func (h *JobsHandler) StartJob(c *fiber.Ctx) error {
 	}
 
 	if req.CodeunitID == 0 && req.ReportID == 0 && req.Function == "" {
-		return c.Status(400).JSON(apitypes.NewErrorResponse("Codeunit ID is required"))
+		return c.Status(400).JSON(apitypes.NewErrorResponse("Routine ID is required"))
 	}
 
 	// Get codeunit factory from registry (a report runs like a codeunit with a dialog)
@@ -96,7 +96,7 @@ func (h *JobsHandler) StartJob(c *fiber.Ctx) error {
 		factory = func(database.Executor, string, database.DBType) fcodeunits.Codeunit { return fn.Codeunit(args) }
 	}
 	if !ok {
-		return c.Status(404).JSON(apitypes.NewErrorResponse("Codeunit not found"))
+		return c.Status(404).JSON(apitypes.NewErrorResponse("Routine not found"))
 	}
 	// Permission to run it: Execute on the codeunit or report, Modify on a function's table
 	if denied := runPermissionError(sess, req.CodeunitID, req.ReportID, req.Function, language); denied != nil {

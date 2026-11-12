@@ -41,7 +41,7 @@ func RunJobQueue(job *gtables.JobQueue) (fcodeunits.Result, error) {
 	}
 	factory, ok := Get(job.Object_id_to_run)
 	if !ok {
-		return fcodeunits.Result{}, fmt.Errorf("codeunit %d not found", job.Object_id_to_run)
+		return fcodeunits.Result{}, fmt.Errorf("routine %d not found", job.Object_id_to_run)
 	}
 	return factory(job.GetDB(), job.GetCompany(), job.GetDBType()).Run(job)
 }
