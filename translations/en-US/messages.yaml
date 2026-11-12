@@ -252,6 +252,7 @@ messages:
   HELP_CARD_FIRST_LAST_RECORD: "First / last record"
   HELP_CARD_FULLSCREEN: "Full screen on / off (card opened over a list)"
   HELP_CARD_ASSIST_EDIT: "Choose a value with the field's … (e.g. another number series)"
+  HELP_CARD_TOGGLE_SECTION: "Open / close the section the cursor is in (opening it puts the cursor on its first field)"
   HELP_CARD_ESCAPE: "Close the card"
   HELP_SEC_LOOKUP: "Lookup and option fields"
   HELP_LOOKUP_OPEN: "Open the list (F4 opens / closes it)"

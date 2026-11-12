@@ -252,6 +252,7 @@ messages:
   HELP_CARD_FIRST_LAST_RECORD: "Første / siste post"
   HELP_CARD_FULLSCREEN: "Fullskjerm av / på (kort åpnet over en liste)"
   HELP_CARD_ASSIST_EDIT: "Velg en verdi med feltets … (f.eks. en annen nummerserie)"
+  HELP_CARD_TOGGLE_SECTION: "Åpne / lukke seksjonen markøren står i (åpnet: markøren til første felt)"
   HELP_CARD_ESCAPE: "Lukk kortet"
   HELP_SEC_LOOKUP: "Oppslags- og alternativfelt"
   HELP_LOOKUP_OPEN: "Åpne listen (F4 åpner / lukker den)"

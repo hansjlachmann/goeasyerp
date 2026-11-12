@@ -10,6 +10,10 @@
 		children?: Snippet;
 		header?: Snippet;
 		actions?: Snippet;
+		// A card page's section: its name (data-section, for the card's keys) and what happens
+		// when the user opens or closes it (click, Enter or Space on the header)
+		section?: string;
+		ontoggle?: (collapsed: boolean) => void;
 	}
 
 	let {
@@ -19,12 +23,15 @@
 		class: className,
 		children,
 		header,
-		actions
+		actions,
+		section,
+		ontoggle
 	}: Props = $props();
 
 	function toggleCollapse() {
 		if (collapsible) {
 			collapsed = !collapsed;
+			ontoggle?.(collapsed);
 		}
 	}
 
@@ -36,15 +43,16 @@
 	}
 </script>
 
-<div class={cn('card', className)}>
+<div class={cn('card', className)} data-section={section}>
 	{#if title || header}
 		<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+		<!-- Not a Tab stop (Tab goes through the fields): clicked, or reached by the card's keys -->
 		<div
 			class="card-header"
 			class:collapsible
 			class:collapsed={collapsible && collapsed}
 			role={collapsible ? 'button' : undefined}
-			tabindex={collapsible ? 0 : undefined}
+			tabindex={collapsible ? -1 : undefined}
 			aria-expanded={collapsible ? !collapsed : undefined}
 			onclick={collapsible ? toggleCollapse : undefined}
 			onkeydown={collapsible ? handleKeydown : undefined}

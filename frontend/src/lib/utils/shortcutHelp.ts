@@ -110,6 +110,7 @@ export const shortcutHelpSections: ShortcutHelpSection[] = [
 			{ keys: ['Ctrl+↑', 'Ctrl+↓'], description: 'HELP_CARD_PREV_NEXT_RECORD' },
 			{ keys: ['Ctrl+Home', 'Ctrl+End'], description: 'HELP_CARD_FIRST_LAST_RECORD' },
 			{ keys: ['Shift+F2'], description: 'HELP_CARD_ASSIST_EDIT' },
+			{ keys: ['Ctrl+Shift+Space'], description: 'HELP_CARD_TOGGLE_SECTION' },
 			{ keys: ['Ctrl+Shift+F12'], description: 'HELP_CARD_FULLSCREEN' },
 			{ keys: ['Esc'], description: 'HELP_CARD_ESCAPE' }
 		]

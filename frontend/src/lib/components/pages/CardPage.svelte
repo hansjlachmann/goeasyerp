@@ -25,6 +25,9 @@
 	import PeriodGrid from './PeriodGrid.svelte';
 	import MatrixGrid from './MatrixGrid.svelte';
 	import { handleFieldEnterKey, getFieldControls, arrowLeavesField, fieldInDirection, focusField, type ArrowDirection } from '$lib/utils/fieldNavigation';
+	import { cardFields, wrapTarget, restoreTarget } from '$lib/utils/cardFocus';
+	import { tick } from 'svelte';
+	import { isModalOpen, isInTopModal } from '../Modal.svelte';
 	import { getJson, setJson } from '$lib/utils/storage';
 	import PageRenderer from './PageRenderer.svelte';
 	import PageFrames from './PageFrames.svelte';
@@ -141,8 +144,8 @@
 	// Tab while the frame itself has the focus (no field yet): to the first field, Shift+Tab to
 	// the last one, in the card's field order (as Enter moves)
 	function handleFrameTab(event: KeyboardEvent) {
-		if (event.key !== 'Tab' || event.target !== cardPageElement || !cardPageElement) return;
-		const fields = getFieldControls(cardPageElement);
+		if (event.key !== 'Tab' || event.target !== cardPageElement || !cardPageElement || !sectionsElement) return;
+		const fields = cardFields(sectionsElement);
 		const target = event.shiftKey ? fields.at(-1) : fields[0];
 		if (target) {
 			event.preventDefault();
@@ -221,11 +224,14 @@
 			// A card to pick a period grid row from (lookup mode): the grid takes the focus
 			initialFocusDone = true;
 		} else if (!initialFocusDone && cardPageElement) {
-			// Otherwise (view mode, or edit mode without a focus field) focus the card page
-			// element so keyboard shortcuts (Esc, Ctrl+E …) work
+			// Otherwise: in edit mode the first field (the cursor starts in a field), in view mode
+			// the card page element so keyboard shortcuts (Esc, Ctrl+E …) work
 			initialFocusDone = true;
+			const startInField = editMode;
 			setTimeout(() => {
-				cardPageElement?.focus();
+				const first = startInField && sectionsElement ? cardFields(sectionsElement)[0] : undefined;
+				if (first) focusField(first);
+				else cardPageElement?.focus();
 			}, 100);
 		}
 	});
@@ -635,9 +641,83 @@
 	// Ctrl+↓ / Ctrl+↑ move the cursor to the next/previous part; Ctrl+Shift+↓/↑ go to the
 	// next/previous record. Handled before the parts' own keys (capture).
 	let lastCardField: HTMLElement | null = null;
+	let lastCardFieldId = ''; // its id (the field's source): found again after the card redraws it
 	function handleFocusIn(e: FocusEvent) {
 		const target = e.target as HTMLElement;
-		if (!target.closest('.subpage-part') && target.matches('input, select, textarea, button')) lastCardField = target;
+		if (!target.closest('.subpage-part') && target.matches('input, select, textarea, button')) {
+			lastCardField = target;
+			if (target.id) lastCardFieldId = target.id;
+		}
+	}
+
+	// The cursor stays in the card: when the focus falls out of it to nowhere (the field it was
+	// in was drawn again after a save, a dialog or dropdown closed), it goes back to the last
+	// field — or, from the lines, to the lines. Not after a mouse click (the user put it there,
+	// or is selecting text) and not while a modal over the card has the keyboard.
+	let lastPointerDown = 0;
+	function handlePointerDown() {
+		lastPointerDown = Date.now();
+	}
+	function handleFocusOut(e: FocusEvent) {
+		if (e.relatedTarget) return; // the focus went somewhere: where the user or a page put it
+		if (Date.now() - lastPointerDown < 500) return;
+		const part = (e.target as HTMLElement).closest<HTMLElement>('.subpage-part');
+		setTimeout(() => restoreFocus(part), 0);
+	}
+	function restoreFocus(part: HTMLElement | null) {
+		const element = cardPageElement;
+		if (!element?.isConnected || !sectionsElement) return;
+		const active = document.activeElement;
+		if (active && active !== document.body) return; // something has it already
+		if (isModalOpen() && !isInTopModal(element)) return;
+		if (part?.isConnected) {
+			const list = part.querySelector<HTMLElement>('.list-page');
+			if (list) {
+				list.focus({ preventScroll: true });
+				return;
+			}
+		}
+		const target = restoreTarget(sectionsElement, lastCardField, lastCardFieldId);
+		(target ?? element).focus({ preventScroll: true });
+	}
+
+	// Tab at the card's ends: the sentinels before and after the sections send the cursor round —
+	// past the last field to the first, before the first to the last (never to the navbar)
+	function handleSentinelFocus(e: FocusEvent, end: 'start' | 'end') {
+		if (!sectionsElement) return;
+		const from = e.relatedTarget as Node | null;
+		const target = wrapTarget(sectionsElement, end, !!from && sectionsElement.contains(from));
+		if (target) focusField(target);
+		else cardPageElement?.focus();
+	}
+
+	// Sections (FastTabs): opening one puts the cursor on its first field; closing the one the
+	// cursor is in leaves it on the section's header. Ctrl+Shift+Space opens/closes the section
+	// the cursor is in.
+	async function sectionToggled(name: string, collapsed: boolean) {
+		await tick();
+		const sectionElement = sectionsElement?.querySelector<HTMLElement>(`[data-section="${CSS.escape(name)}"]`);
+		if (!sectionElement) return;
+		if (!collapsed) {
+			const first = cardFields(sectionElement)[0];
+			if (first) focusField(first);
+			return;
+		}
+		const active = document.activeElement;
+		if (!active || active === document.body || sectionElement.contains(active)) {
+			sectionElement.querySelector<HTMLElement>('.card-header')?.focus();
+		}
+	}
+	function handleSectionKey(e: KeyboardEvent): boolean {
+		if (e.code !== 'Space' || !e.ctrlKey || !e.shiftKey || e.altKey || e.metaKey || e.defaultPrevented) return false;
+		const sectionElement = (e.target as HTMLElement).closest<HTMLElement>('[data-section]');
+		const name = sectionElement?.dataset.section;
+		if (!name) return false;
+		e.preventDefault();
+		const collapsed = !(collapsedSections[name] ?? false);
+		setCollapsed(name, collapsed);
+		void sectionToggled(name, collapsed);
+		return true;
 	}
 	function currentPart(): number {
 		const parts = subpageParts();
@@ -699,9 +779,13 @@
 		if (!element) return;
 		element.addEventListener('keydown', handlePartKeys, true);
 		element.addEventListener('focusin', handleFocusIn);
+		element.addEventListener('focusout', handleFocusOut);
+		document.addEventListener('pointerdown', handlePointerDown, true); // a click anywhere
 		return () => {
 			element.removeEventListener('keydown', handlePartKeys, true);
 			element.removeEventListener('focusin', handleFocusIn);
+			element.removeEventListener('focusout', handleFocusOut);
+			document.removeEventListener('pointerdown', handlePointerDown, true);
 		};
 	});
 
@@ -859,6 +943,9 @@
 		</div>
 	{/if}
 
+	<!-- Tab's turning point before the first field (Shift+Tab wraps to the last one) -->
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+	<span class="focus-sentinel" tabindex="0" aria-hidden="true" onfocus={(e) => handleSentinelFocus(e, 'start')}></span>
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="sections-container"
@@ -867,6 +954,7 @@
 		onkeydown={(e) => {
 			// Enter moves between the card's fields — not in a subpage (its list handles Enter)
 			if ((e.target as HTMLElement).closest('.subpage-part')) return;
+			if (handleSectionKey(e)) return;
 			if (tabIntoLines(e, e.currentTarget as HTMLElement)) return;
 			if (arrowNavigate(e, e.currentTarget as HTMLElement)) return;
 			handleFieldEnterKey(e, e.currentTarget as HTMLElement);
@@ -890,10 +978,11 @@
 				</Button>
 			</div>
 		{:else}
-			{@const allFields = customizedSections().flatMap(s => s.fields)}
 			{#each customizedSections() as section}
 				<Card
 					collapsible
+					section={section.name}
+					ontoggle={(collapsed) => sectionToggled(section.name, collapsed)}
 					bind:collapsed={
 						() => collapsedSections[section.name] ?? false,
 						(v) => setCollapsed(section.name, v)
@@ -966,7 +1055,6 @@
 					<div class="section-fields">
 						{#each section.fields as field (field.source)}
 							{@const fieldEditable = field.editable !== false && fieldStates[field.source]?.editable !== false && editMode && !saveBlocked}
-							{@const fieldTabIndex = allFields.findIndex(f => f.source === field.source) + 1}
 							{#if field.calculated}
 								<!-- A calculated field: the page trigger's value, read-only -->
 								<FieldRenderer
@@ -976,7 +1064,7 @@
 									editable={false}
 									fieldType={fieldTypes[field.source]}
 									fieldCaptions={captions}
-									tabindex={fieldTabIndex}
+									tabindex={0}
 									ondrilldown={(field.drilldown || field.on_drilldown) && !checkIsNewRecord() ? () => openDrilldown(field) : undefined}
 								/>
 							{:else if isBlobType(fieldTypes[field.source])}
@@ -1002,7 +1090,7 @@
 								options={options[field.source]}
 								lookups={lookupFor(lookups, field.source, record)}
 								fieldCaptions={captions}
-								tabindex={fieldTabIndex}
+								tabindex={0}
 								onblur={(e) => handleFieldBlur(field, e)}
 								onassistedit={(field.assist_edit || field.on_lookup) && fieldEditable ? () => handleAssistEdit((field.assist_edit || field.on_lookup)!) : undefined}
 								ondrilldown={(field.drilldown || field.on_drilldown) && !fieldEditable && !checkIsNewRecord() ? () => openDrilldown(field) : undefined}
@@ -1015,6 +1103,9 @@
 			{/each}
 		{/if}
 	</div>
+	<!-- Tab's turning point after the last field (and the last lines): back to the first field -->
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+	<span class="focus-sentinel" tabindex="0" aria-hidden="true" onfocus={(e) => handleSentinelFocus(e, 'end')}></span>
 </div>
 
 <!-- A field's drilldown: the entries behind the value, over the card -->
@@ -1063,6 +1154,16 @@
 	}
 
 
+
+	/* Tab's turning points at the card's ends: focusable, never seen */
+	.focus-sentinel {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		outline: none;
+	}
 
 	.sections-container {
 		@apply flex flex-col gap-2 overflow-y-auto flex-1 min-h-0;
