@@ -115,13 +115,6 @@
 	let openFilters = $state<FixedFilter[]>([]);
 	// The trigger asks the user to pick a record first (a template), or a header field's lookup
 	let pickRequest = $state<{ pageId: number; filters: TableFilter[]; param: string; field: string } | null>(null);
-	// The list's fixed filters: a subpage's link and the OnOpenPage trigger's; new records get them
-	const listFixedFilters = $derived([...fixedFilters, ...openFilters]);
-	const listNewRecordDefaults = $derived({
-		...newRecordDefaults,
-		// a filter expression (a range) gives a new record no value
-		...Object.fromEntries(openFilters.filter((f) => !f.expression).map((f) => [f.field, f.value]))
-	});
 
 	// Runs the page's OnOpenPage trigger; false when the user must pick a record first
 	async function runOpenTrigger(): Promise<boolean> {
@@ -307,6 +300,15 @@
 
 	// State
 	let page: PageDefinition | null = $state(null);
+	// The list's fixed filters: a subpage's link, the page's source table view and the OnOpenPage
+	// trigger's; new records get them
+	const viewFilters = $derived<FixedFilter[]>((page as PageDefinition | null)?.page.source_table_view ?? []);
+	const listFixedFilters = $derived([...fixedFilters, ...viewFilters, ...openFilters]);
+	const listNewRecordDefaults = $derived({
+		...newRecordDefaults,
+		// a filter expression (a range) gives a new record no value
+		...Object.fromEntries([...viewFilters, ...openFilters].filter((f) => !f.expression).map((f) => [f.field, f.value]))
+	});
 
 	// A subpage follows its card's edit mode: read-only lines without New/Edit/Delete while the
 	// card is read-only; while it is in edit mode the card's Edit stands for the lines' Edit
@@ -917,7 +919,7 @@
 		if (!page) return [];
 		try {
 			// In a subpage the pasted lines belong to the card's record: its link values
-			const rows = subpage || openFilters.length > 0 ? records.map((r) => ({ ...r, ...listNewRecordDefaults })) : records;
+			const rows = subpage || openFilters.length > 0 || viewFilters.length > 0 ? records.map((r) => ({ ...r, ...listNewRecordDefaults })) : records;
 			const keys = await api.insertRecords(page.page.source_table, rows);
 			await loadListData();
 			onlineschange?.();

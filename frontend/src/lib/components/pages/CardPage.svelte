@@ -20,7 +20,7 @@
 	import { withReturn } from '$lib/utils/returnUrl';
 	import { toast } from '$lib/stores/toast';
 	import { api } from '$lib/services/api';
-	import { t, ERR, MSG, LIST, CARD } from '$lib/services/i18n.svelte';
+	import { t, ERR, MSG, LIST, CARD, HOME } from '$lib/services/i18n.svelte';
 	import PictureField from './PictureField.svelte';
 	import PeriodGrid from './PeriodGrid.svelte';
 	import MatrixGrid from './MatrixGrid.svelte';
@@ -804,6 +804,7 @@
 						tabindex={-1}
 						onclick={() => runCardAction(action)}
 						disabled={action.enabled === false}
+						title={action.denied ? t(HOME.MENU_NO_PERMISSION) : undefined}
 					/>
 				{/if}
 			{/each}

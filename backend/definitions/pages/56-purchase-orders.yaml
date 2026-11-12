@@ -1,4 +1,4 @@
-# Page 56 Purchase Orders (classic form 56): the purchase order lines (OnOpenPage: Document Type = Order) — the item's Purchases › Orders
+# Page 56 Purchase Orders (classic form 56): the purchase order lines (source table view: Document Type = Order) — the item's Purchases › Orders
 page:
   id: 56
   type: List
@@ -6,6 +6,8 @@ page:
   source_table: Purchase_Line
   caption: Purchase Orders
   editable: false
+  source_table_view: # classic SourceTableView WHERE(Document Type=CONST(Order))
+    - {field: document_type, value: 1}
 
   layout:
     repeater:

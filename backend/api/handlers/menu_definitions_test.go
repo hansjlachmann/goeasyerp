@@ -139,8 +139,64 @@ func TestGetMenuMarksAvailableEntries(t *testing.T) {
 
 	// An entry whose object is not built, and a sub-menu holding only such entries, are greyed out
 	notBuilt := menuEntries([]pages.MenuItem{{Name: "Index", Items: []pages.MenuItem{{Name: "Fixed Assets", RunObject: "report:99999"}}}},
-		i18n.GetInstance(), "en-US")
+		i18n.GetInstance(), "en-US", nil)
 	if notBuilt[0].Enabled || notBuilt[0].Items[0].Enabled {
 		t.Errorf("a sub-menu without anything built is enabled: %+v", notBuilt)
+	}
+}
+
+// Entries and actions the user may not run are greyed out and marked denied: a page whose table
+// the user may not read, a report without Execute, a sub-menu with nothing allowed; New and
+// Delete without Insert/Delete. SUPER, and a user without roles, may run everything.
+func TestDeniedMenuEntriesAndActions(t *testing.T) {
+	clerk := &session.Session{}
+	clerk.SetPermissions(true, false, map[string]session.TablePermission{
+		"CUSTOMER": {Read: true, Modify: true},
+		session.ObjectKey(session.ObjectReport, 101): {Execute: true},
+	})
+	entries := []pages.MenuItem{
+		{Name: "Customers", PageID: 22},
+		{Name: "Items", PageID: 31},
+		{Name: "Reports", Items: []pages.MenuItem{{Name: "Customer - List", RunObject: "report:101"}, {Name: "Chart of Accounts", RunObject: "report:1"}}},
+		{Name: "Activities", Items: []pages.MenuItem{{Name: "Chart of Accounts", RunObject: "report:1"}}},
+	}
+	got := menuEntries(entries, i18n.GetInstance(), "en-US", clerk)
+	if !got[0].Enabled || got[0].Denied || got[1].Enabled || !got[1].Denied ||
+		!got[2].Enabled || !got[2].Items[0].Enabled || got[2].Items[1].Enabled || !got[2].Items[1].Denied || got[3].Enabled {
+		t.Errorf("clerk's menu %+v", got)
+	}
+	for _, sess := range []*session.Session{{IsSuper: true, HasRoles: true}, {}} {
+		for _, e := range menuEntries(entries, i18n.GetInstance(), "en-US", sess) {
+			if !e.Enabled || e.Denied {
+				t.Errorf("%+v: %+v greyed out", sess, e)
+			}
+		}
+	}
+
+	actions := []pages.Action{
+		{Name: "New"}, {Name: "Delete"}, {Name: "Edit"},
+		{Name: "Ledger Entries", RunPage: 25},
+		{Name: "Statistics", RunPage: 151},
+		{Name: "Print", RunObject: "report:1"},
+		{Name: "Functions", Items: []pages.Action{{Name: "Post", RunObject: "codeunit:231"}}},
+		{Name: "Customer", Items: []pages.Action{{Name: "Card", RunPage: 21}, {Name: "Run", RunObject: "codeunit:231"}}},
+	}
+	markDeniedActions(clerk, actions, "Customer")
+	denied := map[string]bool{}
+	for _, a := range actions {
+		denied[a.Name] = a.Denied
+		if a.Denied != (a.Enabled != nil && !*a.Enabled) {
+			t.Errorf("%s: denied %v, enabled %v", a.Name, a.Denied, a.Enabled)
+		}
+	}
+	want := map[string]bool{"New": true, "Delete": true, "Edit": false, "Ledger Entries": true, "Statistics": false,
+		"Print": true, "Functions": true, "Customer": false}
+	for name, d := range want {
+		if denied[name] != d {
+			t.Errorf("%s denied %v, want %v", name, denied[name], d)
+		}
+	}
+	if !actions[7].Items[1].Denied || actions[7].Items[0].Denied {
+		t.Errorf("menu items %+v", actions[7].Items)
 	}
 }

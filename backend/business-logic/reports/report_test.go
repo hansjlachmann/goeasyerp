@@ -263,3 +263,78 @@ func TestReportTransaction(t *testing.T) {
 		t.Errorf("%d records after a run, want 1", n)
 	}
 }
+
+// A request page starts with the values the user last ran the report with (per user and
+// company); values the caller gives win and are not saved over the user's own
+func TestRequestPageSavedValues(t *testing.T) {
+	db := newLedger(t)
+	if err := (&gtables.UserPreferences{}).CreateTableWithDBType(db, "", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	d := fcodeunits.OpenDialogWithID("", "report-saved-values-test")
+	fcodeunits.SetCurrentDialog(d)
+	defer fcodeunits.ClearCurrentDialog()
+	defer fcodeunits.ClearCurrentContext()
+
+	// run answers the request page with values and returns what it started with: the factor
+	// option and the Customer filters as field=expression
+	run := func(user string, opts RunOptions, values map[string]string) (string, string) {
+		t.Helper()
+		fcodeunits.SetCurrentContext(user, user, "c1", "en-US")
+		started := make(chan [2]string, 1)
+		go func() {
+			ev := <-d.Events()
+			fields, _ := ev.Data["fields"].([]fcodeunits.InputField)
+			items, _ := ev.Data["data_items"].([]fcodeunits.RequestDataItem)
+			factor := ""
+			if len(fields) > 0 {
+				factor = fields[0].Default
+			}
+			var filters []string
+			if len(items) > 0 {
+				for _, f := range items[0].Filters {
+					if f.Expression != "" {
+						filters = append(filters, f.Field+"="+f.Expression)
+					}
+				}
+			}
+			started <- [2]string{factor, strings.Join(filters, ",")}
+			for !d.RespondToInput(ev.ConfirmID, values) {
+				time.Sleep(time.Millisecond)
+			}
+		}()
+		opts.RequestPage = true
+		runTrace(t, db, &traceReport{}, opts)
+		s := <-started
+		return s[0], s[1]
+	}
+	mine := map[string]string{"option:factor": "10", "filters:Customer": `[{"field":"no","expression":"C03"},{"field":"city","expression":""}]`}
+	if factor, filters := run("U1", RunOptions{}, mine); factor != "2" || filters != "" {
+		t.Errorf("first run starts with %q %q", factor, filters)
+	}
+	if factor, filters := run("U1", RunOptions{}, mine); factor != "10" || filters != "no=C03" {
+		t.Errorf("second run starts with %q %q, want the saved 10, no=C03", factor, filters)
+	}
+	// run from a record with an option given: those start, and what the user then picks there
+	// does not replace the saved values
+	var bergen gtables.Customer
+	bergen.SetFilter("city", "Bergen")
+	other := map[string]string{"option:factor": "5", "filters:Customer": `[{"field":"city","expression":"Bergen"}]`}
+	if factor, filters := run("U1", RunOptions{Record: &bergen, Options: map[string]string{"factor": "3"}}, other); factor != "3" || filters != "city=Bergen" {
+		t.Errorf("run from a record starts with %q %q", factor, filters)
+	}
+	if factor, filters := run("U1", RunOptions{}, mine); factor != "10" || filters != "no=C03" {
+		t.Errorf("after the record's run: %q %q, want the saved 10, no=C03", factor, filters)
+	}
+	// another user has their own
+	if factor, filters := run("U2", RunOptions{}, mine); factor != "2" || filters != "" {
+		t.Errorf("another user starts with %q %q", factor, filters)
+	}
+	// Cancel saves nothing
+	if factor, _ := run("U2", RunOptions{}, map[string]string{}); factor != "10" {
+		t.Errorf("U2's second run starts with %q", factor)
+	}
+	if factor, _ := run("U2", RunOptions{}, mine); factor != "10" {
+		t.Errorf("after Cancel: %q", factor)
+	}
+}

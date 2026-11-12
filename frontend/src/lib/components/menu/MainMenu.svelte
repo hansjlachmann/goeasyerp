@@ -245,7 +245,7 @@
 					class="entry"
 					class:unavailable={!r.item.enabled}
 					aria-disabled={!r.item.enabled}
-					title={r.item.enabled ? undefined : t(HOME.MENU_NOT_AVAILABLE)}
+					title={r.item.enabled ? undefined : t(r.item.denied ? HOME.MENU_NO_PERMISSION : HOME.MENU_NOT_AVAILABLE)}
 					onclick={() => openResult(r)}
 					onkeydown={(e) => {
 						if (e.key === 'Enter') {
@@ -273,7 +273,7 @@
 						class:unavailable={!row.item.enabled}
 						aria-disabled={!row.item.enabled}
 						aria-expanded={row.submenu ? row.expanded : undefined}
-						title={row.item.enabled ? undefined : t(HOME.MENU_NOT_AVAILABLE)}
+						title={row.item.enabled ? undefined : t(row.item.denied ? HOME.MENU_NO_PERMISSION : HOME.MENU_NOT_AVAILABLE)}
 						style:padding-left="{0.5 + row.depth * 1.25}rem"
 						onclick={() => activate(row)}
 						onkeydown={(e) => {

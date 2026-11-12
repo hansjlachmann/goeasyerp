@@ -6,6 +6,7 @@ import (
 
 	_ "github.com/hansjlachmann/goeasyerp/backend/business-logic/pages"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
@@ -163,6 +164,16 @@ func TestPageDefinitions(t *testing.T) {
 		}
 		if p.Page.Layout.Matrix != nil {
 			checkMatrix(t, id, p.Page.Layout.Matrix, fields, exists)
+		}
+		// The source table view filters stored fields of the source table (a list page's
+		// fixed filters)
+		for _, f := range p.Page.SourceTableView {
+			if !ftables.IsQueryableColumn(rec, f.Field) || f.Value == nil {
+				t.Errorf("page %d: source table view on %q: not a stored field of %s, or no value", id, f.Field, p.Page.SourceTable)
+			}
+		}
+		if len(p.Page.SourceTableView) > 0 && p.Page.Type != "List" {
+			t.Errorf("page %d: a source table view is for list pages", id)
 		}
 		for _, other := range []int{p.Page.CardPageID, p.Page.ListPageID} {
 			if other != 0 && !exists(other) {

@@ -38,15 +38,23 @@ type PageRecord interface {
 //
 // The variable keeps its state after RunModal (it is not cleared); NewPage gives a fresh one.
 type Page struct {
-	id          int
-	filters     []tables.FieldFilter
-	flowFilters []tables.FieldFilter
-	selectKey   string
-	lookupMode  bool
-	pickedKey   string
-	pickedRow   string
-	picked      bool
-	params      map[string]string
+	id      int
+	filters []tables.FieldFilter
+	// fixedFilters: the record's filters of the groups other than 0 — the page keeps them, the
+	// user cannot remove them (code's filter group 2)
+	fixedFilters []tables.FieldFilter
+	flowFilters  []tables.FieldFilter
+	selectKey    string
+	lookupMode   bool
+	pickedKey    string
+	pickedRow    string
+	picked       bool
+	params       map[string]string
+}
+
+// groupFilterRecord is a record that tells its filters per filter group (generated)
+type groupFilterRecord interface {
+	FilterExpressionsByGroup() map[int][]tables.FieldFilter
 }
 
 // flowFilterRecord is a record with FlowFilters (generated): SetTableView passes them on
@@ -59,11 +67,23 @@ func NewPage(pageID int) *Page {
 	return &Page{id: pageID}
 }
 
-// SetTableView applies a record's filters (all filter groups) and FlowFilters to the page
-// (SetTableView): a card page's period grid starts with the FlowFilters (Location Filter,
+// SetTableView applies a record's filters and FlowFilters to the page (SetTableView): the
+// filters of group 0 as the user's (the user changes them), the other groups' as the page's
+// fixed filters (kept; two filters on one field in different groups both apply); a card page's period grid starts with the FlowFilters (Location Filter,
 // Variant Filter, Bin Filter; the Date Filter's end is the period it starts on)
 func (p *Page) SetTableView(rec PageRecord) {
-	p.filters = rec.FilterExpressions()
+	p.filters, p.fixedFilters = rec.FilterExpressions(), nil
+	byGroup, ok := rec.(groupFilterRecord)
+	if ok {
+		p.filters = nil
+		for group, filters := range byGroup.FilterExpressionsByGroup() {
+			if group == 0 {
+				p.filters = filters
+			} else {
+				p.fixedFilters = append(p.fixedFilters, filters...)
+			}
+		}
+	}
 	p.flowFilters = nil
 	ff, ok := rec.(flowFilterRecord)
 	if ok {
@@ -99,11 +119,11 @@ func (p *Page) LookupMode(on bool) {
 // RunModal opens the page over the running codeunit and waits until the user closes it
 // (RunModal). In lookup mode: OK, or picking a record with Enter or a double-click, returns
 // ActionLookupOK; Cancel, the close button or Esc returns ActionLookupCancel. Otherwise the
-// page has no Cancel button: closing it returns ActionOK. Without a dialog (a scheduled run,
-// a codeunit run from a card) it returns ActionLookupCancel / ActionCancel.
+// page has no Cancel button: closing it returns ActionOK. Without a dialog (a scheduled run) it
+// returns ActionLookupCancel / ActionCancel; every run from a page has one.
 func (p *Page) RunModal() Action {
 	p.picked, p.pickedKey, p.pickedRow = false, "", ""
-	answer := codeunits.RunPage(p.id, p.filters, p.flowFilters, p.selectKey, p.lookupMode, p.params)
+	answer := codeunits.RunPageFixed(p.id, p.filters, p.fixedFilters, p.flowFilters, p.selectKey, p.lookupMode, p.params)
 	switch {
 	case p.lookupMode && answer["action"] == "LookupOK":
 		p.picked, p.pickedKey, p.pickedRow = true, answer["key"], answer["row"]

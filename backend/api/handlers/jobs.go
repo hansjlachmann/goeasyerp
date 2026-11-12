@@ -159,103 +159,136 @@ func (h *JobsHandler) StartJob(c *fiber.Ctx) error {
 		}
 	}
 
-	// Check if codeunit uses progress - if not, run synchronously
-	if !codeunit.UsesProgress() {
-		// Set context for sync execution (same goroutine)
-		fcodeunits.SetCurrentContext(userID, userName, company, language)
-		fcodeunits.SetCurrentAccess(sess)
-		fcodeunits.SetCurrentPageParams(req.PageParams)
-		defer fcodeunits.ClearCurrentContext()
-
-		// Run synchronously and return result directly
-		result, err := codeunit.Run(table)
-		if err != nil {
-			return c.Status(500).JSON(apitypes.NewErrorResponse(errorMessage(err, language)))
-		}
-		withOpenPage(&result)
-
-		// Return the result with dialog info if present
-		response := map[string]interface{}{
-			"success": result.Success,
-			"message": result.Message,
-		}
-		if result.Data != nil {
-			response["data"] = result.Data
-		}
-		if result.Dialog != nil {
-			response["dialog"] = result.Dialog
-		}
-		if result.Refresh {
-			response["refresh"] = true
-		}
-		return c.JSON(apitypes.NewSuccessResponse(response))
-	}
-
-	// Codeunit uses progress - run async with SSE
+	// Every run has a dialog, so whatever the code does — a question, StrMenu, a request page,
+	// a page it opens with RunModal — reaches the user (also from a function or codeunit that
+	// does not show progress). A run that does not use progress may still answer in the request
+	// itself: it ends within syncWait without sending the browser anything. Otherwise (it asks
+	// something, opens a page, shows progress or a note, or takes longer) the browser follows
+	// the job by its ID, as for a run with progress.
 	dialog := fcodeunits.OpenDialog("Processing...")
 	jobID := dialog.JobID()
-
-	// Run the codeunit in a goroutine
+	done := make(chan jobOutcome, 1)
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
-				dialog.CloseWithError(fmt.Errorf("panic: %v", r))
+				done <- jobOutcome{err: fmt.Errorf("panic: %v", r)}
 			}
 		}()
-
-		// Set context for async execution (new goroutine)
 		fcodeunits.SetCurrentContext(userID, userName, company, language)
 		fcodeunits.SetCurrentAccess(sess)
 		fcodeunits.SetCurrentPageParams(req.PageParams)
 		defer fcodeunits.ClearCurrentContext()
-
-		// Set dialog in context for the codeunit to use
 		fcodeunits.SetCurrentDialog(dialog)
 		defer fcodeunits.ClearCurrentDialog()
 
 		result, err := codeunit.Run(table)
-		if err != nil {
-			dialog.CloseWithError(err)
-			return
-		}
-
-		withOpenPage(&result)
-		// The page reloads its data afterwards: sent with the result data
-		if result.Refresh {
-			if result.Data == nil {
-				result.Data = map[string]interface{}{}
-			}
-			result.Data["refresh"] = true
-		}
-
-		// Send final result through dialog
-		if !result.Success {
-			// Codeunit reported an error — send it as an error event
-			errMsg := result.Message
-			if result.Dialog != nil {
-				errMsg = result.Dialog.Message
-			}
-			dialog.CloseWithError(fmt.Errorf("%s", errMsg))
-		} else if result.Data != nil {
-			// Close with data (e.g., PDF base64), and the closing message box with it
-			message := result.Message
-			if result.Dialog != nil {
-				message = result.Dialog.Message
-				result.Data["dialog"] = result.Dialog
-			}
-			dialog.CloseWithData(result.Data, message)
-		} else if result.Dialog != nil {
-			// The codeunit's closing message box (Message): the page shows it
-			dialog.CloseWithData(map[string]interface{}{"dialog": result.Dialog}, result.Dialog.Message)
-		} else {
-			dialog.Close()
-		}
+		done <- jobOutcome{result: result, err: err}
 	}()
 
-	// Return job ID immediately
+	if !codeunit.UsesProgress() {
+		select {
+		case outcome := <-done:
+			if !hasActivity(dialog) {
+				dialog.Discard()
+				return syncJobResponse(c, outcome, language)
+			}
+			finishJob(dialog, outcome)
+			return c.JSON(apitypes.NewSuccessResponse(map[string]interface{}{"job_id": jobID}))
+		case <-dialog.Activity():
+		case <-time.After(syncWait):
+		}
+	}
+	go func() {
+		finishJob(dialog, <-done)
+	}()
 	return c.JSON(apitypes.NewSuccessResponse(map[string]interface{}{
 		"job_id": jobID,
 	}))
+}
+
+// syncWait: how long a run without progress may take to answer in the request itself
+const syncWait = 2 * time.Second
+
+// jobOutcome is how a job's run ended
+type jobOutcome struct {
+	result fcodeunits.Result
+	err    error
+}
+
+// hasActivity: the run sent the browser an event before it ended
+func hasActivity(dialog *fcodeunits.Dialog) bool {
+	select {
+	case <-dialog.Activity():
+		return true
+	default:
+		return false
+	}
+}
+
+// syncJobResponse answers a run that ended without showing anything in the request: the
+// result, its message box and data, or the error
+func syncJobResponse(c *fiber.Ctx, outcome jobOutcome, language string) error {
+	if outcome.err != nil {
+		return c.Status(500).JSON(apitypes.NewErrorResponse(errorMessage(outcome.err, language)))
+	}
+	result := outcome.result
+	withOpenPage(&result)
+	response := map[string]interface{}{
+		"success": result.Success,
+		"message": result.Message,
+	}
+	if result.Data != nil {
+		response["data"] = result.Data
+	}
+	if result.Dialog != nil {
+		response["dialog"] = result.Dialog
+	}
+	if result.Refresh {
+		response["refresh"] = true
+	}
+	return c.JSON(apitypes.NewSuccessResponse(response))
+}
+
+// finishJob ends a job the browser follows: its result, message box and data, or the error
+func finishJob(dialog *fcodeunits.Dialog, outcome jobOutcome) {
+	if outcome.err != nil {
+		dialog.CloseWithError(outcome.err)
+		return
+	}
+	result := outcome.result
+	withOpenPage(&result)
+	// The page reloads its data afterwards: sent with the result data
+	if result.Refresh {
+		if result.Data == nil {
+			result.Data = map[string]interface{}{}
+		}
+		result.Data["refresh"] = true
+	}
+	switch {
+	case !result.Success:
+		// Codeunit reported an error — send it as an error event
+		errMsg := result.Message
+		if result.Dialog != nil {
+			errMsg = result.Dialog.Message
+		}
+		dialog.CloseWithError(fmt.Errorf("%s", errMsg))
+	case result.Data != nil:
+		// Close with data (e.g., PDF base64), and the closing message box with it
+		message := result.Message
+		if result.Dialog != nil {
+			message = result.Dialog.Message
+			result.Data["dialog"] = result.Dialog
+		}
+		dialog.CloseWithData(result.Data, message)
+	case result.Dialog != nil:
+		// The codeunit's closing message box (Message): the page shows it
+		dialog.CloseWithData(map[string]interface{}{"dialog": result.Dialog}, result.Dialog.Message)
+	case result.Message != "":
+		// a plain result message (a run without progress shows it as it would in the request)
+		dialog.CloseWithData(nil, result.Message)
+	default:
+		dialog.Close()
+	}
 }
 
 // GetJobEvents streams job progress events via SSE

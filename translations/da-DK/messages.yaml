@@ -108,6 +108,7 @@ messages:
   HOME_SHORTCUTS_LINK: "Vis genvejstasterne"
   HELP_MENU_SEARCH: "Søg i menuen"
   HOME_MENU_NOT_AVAILABLE: "Ikke tilgængelig endnu"
+  HOME_MENU_NO_PERMISSION: "Du har ikke tilladelse til at køre dette"
   HOME_MENU_NO_RESULTS: "Ingen menupunkter fundet"
   HOME_MENU_SEARCH_RESULTS: "Søgeresultater"
   HOME_MENU_SEARCH: "Søg i menuen… (Ctrl+F)"

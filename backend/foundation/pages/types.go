@@ -21,6 +21,11 @@ type PageMetadata struct {
 	// the user leaves the row, not on the first validated field. For pages where the user
 	// types a composite key (e.g. User Members), so no half-entered key is ever saved.
 	DelayedInsert *bool `yaml:"delayed_insert,omitempty" json:"delayed_insert,omitempty"`
+	// SourceTableView (classic SourceTableView WHERE): fixed filters of a list page, in filter
+	// group 2 like an OnOpenPage trigger's SetFilter — the user's filters narrow them and cannot
+	// remove them, new records take the single values. value is a value (an option by its
+	// number), with expression: true a filter expression (`<>0`, `1|2`)
+	SourceTableView []FixedFilter `yaml:"source_table_view,omitempty" json:"source_table_view,omitempty"`
 	// CopyPasteAllowed (CopyPasteAllowed): on list pages, Ctrl+C copies the selected
 	// records and Ctrl+V inserts them (same table; new keys from the list's filters, or
 	// another company)
@@ -306,7 +311,7 @@ type Field struct {
 	// code): a click on the value, or Alt+↓, runs it with the saved record, quietly — the page it
 	// opens and errors show ("table:Sales_Line.ShowReservationEntries")
 	OnDrilldown string `yaml:"on_drilldown,omitempty" json:"on_drilldown,omitempty"`
-	Type     string `yaml:"type,omitempty" json:"-"`
+	Type        string `yaml:"type,omitempty" json:"-"`
 	// CheckBox: a Yes/No FlowFilter above a matrix shown as a check box (checked: the filter
 	// Yes, else none) — a page variable switching the matrix, such as Use Add. Reporting Currency
 	CheckBox bool `yaml:"check_box,omitempty" json:"check_box,omitempty"`
@@ -362,6 +367,10 @@ type Action struct {
 	// Enabled: actions are enabled unless the YAML says enabled: false (a missing value is
 	// omitted from the JSON; a plain bool sent false and disabled such actions and their shortcuts)
 	Enabled *bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	// Denied: set when the page is sent — the user may not run the action (no Execute on its
+	// codeunit or report, no Modify on a function's table, no Read on the table of the page it
+	// opens, no Insert/Delete for New/Delete); it is sent with Enabled false, greyed out
+	Denied bool `yaml:"-" json:"denied,omitempty"`
 	// Items: the action is a menu button (a dropdown) with these menu items; each item is an
 	// action of its own (run_object, run_page, shortcut). run_object can call a registered
 	// function with the current record: "table:Job_Queue_Entry.ShowLineNo" (foundation/functions)
@@ -388,8 +397,9 @@ type MenuGroup struct {
 
 // MenuItem is an entry of a module's menu: it opens a page (PageID), runs a report or codeunit
 // (RunObject "report:93", "codeunit:6"), holds a sub-menu (Items, e.g. Setup, Activities) or is
-// a separator. Enabled is set when the menu is sent: the entry's object exists (a sub-menu:
-// one of its entries is available); an entry without one is shown greyed out (not built yet).
+// a separator. Enabled is set when the menu is sent: the entry's object exists and the user
+// may run it (a sub-menu: one of its entries is available); an entry without one is shown
+// greyed out (not built yet, or Denied).
 type MenuItem struct {
 	Name        string     `yaml:"name,omitempty" json:"name,omitempty"`
 	PageID      int        `yaml:"page_id,omitempty" json:"page_id,omitempty"`
@@ -399,6 +409,9 @@ type MenuItem struct {
 	Description string     `yaml:"description,omitempty" json:"description,omitempty"`
 	Separator   bool       `yaml:"separator,omitempty" json:"separator,omitempty"`
 	Enabled     bool       `yaml:"-" json:"enabled"`
+	// Denied: the entry's object exists but the user may not run it (no Execute on the report
+	// or codeunit, no Read on the page's table) — greyed out like an entry not built yet
+	Denied bool `yaml:"-" json:"denied,omitempty"`
 }
 
 // cloneActions copies actions and their menu items (captions are translated per request)

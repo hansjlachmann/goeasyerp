@@ -10,6 +10,7 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 )
 
 // currentDialogs holds the dialog for each goroutine
@@ -252,7 +253,6 @@ func Error(text string) Result {
 // Confirm shows a confirmation dialog and waits for user response
 // Returns true if user clicks Yes, false if No
 // Like Confirm('Are you sure?')
-// Note: This only works in async codeunits (UsesProgress() = true)
 // In an API request (a table trigger) the question is answered in rounds (questions.go).
 func Confirm(message string) bool {
 	dialog := GetCurrentDialog()
@@ -270,7 +270,6 @@ func Confirm(message string) bool {
 
 // RequestInput shows an input dialog with arbitrary fields and waits for user response
 // Returns a map of field name → value, or nil on cancel/timeout
-// Note: This only works in async codeunits (UsesProgress() = true)
 func RequestInput(title string, fields []InputField) map[string]string {
 	dialog := GetCurrentDialog()
 	if dialog == nil {
@@ -289,13 +288,18 @@ func Hyperlink(url string) {
 
 // RunPage opens a page from a codeunit and waits until the user closes it (see
 // Dialog.RunPage); nil without a dialog (a scheduled run).
-// Note: This only works in async codeunits (UsesProgress() = true)
 func RunPage(pageID int, filters, flowFilters interface{}, selectKey string, lookupMode bool, params map[string]string) map[string]string {
+	return RunPageFixed(pageID, filters, nil, flowFilters, selectKey, lookupMode, params)
+}
+
+// RunPageFixed is RunPage with fixed filters: field and expression, the page keeps them in
+// its filter group 2 (the user's filters narrow them and cannot remove them)
+func RunPageFixed(pageID int, filters interface{}, fixedFilters []ftables.FieldFilter, flowFilters interface{}, selectKey string, lookupMode bool, params map[string]string) map[string]string {
 	dialog := GetCurrentDialog()
 	if dialog == nil {
 		return nil
 	}
-	return dialog.RunPage(pageID, filters, flowFilters, selectKey, lookupMode, params)
+	return dialog.runPage(pageID, filters, fixedFilters, flowFilters, selectKey, lookupMode, params)
 }
 
 // RequestPage shows a report's request page (options and the data items' filters) and waits

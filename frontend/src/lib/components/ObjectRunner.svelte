@@ -44,6 +44,7 @@
 		select?: string;
 		lookupMode: boolean;
 		flowFilters?: import('$lib/types/api').TableFilter[]; // the record's FlowFilters (SetTableView)
+		fixedFilters?: import('$lib/types/api').FixedFilter[]; // its filters of the groups other than 0 (kept)
 		params?: Record<string, string>; // the page's parameters (Page.SetParam)
 		respond: (values: Record<string, string> | null) => void;
 	} | null>(null);
@@ -135,6 +136,7 @@
 							select: (data.select as string) || undefined,
 							lookupMode: data.lookup_mode === true,
 							flowFilters: (data.flow_filters as import('$lib/types/api').TableFilter[]) ?? [],
+							fixedFilters: (data.fixed_filters as import('$lib/types/api').FixedFilter[]) ?? [],
 							params: (data.params as Record<string, string>) ?? undefined,
 							respond
 						};
@@ -178,7 +180,8 @@
 					// The codeunit's closing message box (Message), else a plain notice
 					const finalDialog = (result as { data?: Record<string, unknown> }).data?.dialog as DialogResult | undefined;
 					if (!progressError && finalDialog) dialog = finalDialog;
-					else if (!progressError && !printoutOf((result as { data?: Record<string, unknown> }).data)) toast.success(t(MSG.JOB_COMPLETED));
+					else if (!progressError && !printoutOf((result as { data?: Record<string, unknown> }).data))
+						toast.success((result as { message?: string }).message || t(MSG.JOB_COMPLETED));
 					refresh = true; // an async job may have changed anything
 				}
 				progressOpen = false;
@@ -241,6 +244,7 @@
 					initialSelect={request.select}
 					lookupMode={request.lookupMode}
 					initialFlowFilters={request.flowFilters}
+					fixedFilters={request.fixedFilters}
 					openParams={request.params}
 					onclose={(action, key, _record, row) => {
 						// respond first: {@const request} follows runPage, which is cleared next

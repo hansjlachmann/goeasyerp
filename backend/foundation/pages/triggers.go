@@ -188,10 +188,10 @@ func RunNewRecord(pageID int, rec, xRec any, belowXRec bool) error {
 // FixedFilter is an exact-value filter the user cannot remove (filter group 2): a journal's
 // template and batch
 type FixedFilter struct {
-	Field string      `json:"field"`
-	Value interface{} `json:"value"`
+	Field string      `yaml:"field" json:"field"`
+	Value interface{} `yaml:"value" json:"value"`
 	// Expression: Value is a filter expression (a range: ..2026-10-20, <0), not one value
-	Expression bool `json:"expression,omitempty"`
+	Expression bool `yaml:"expression,omitempty" json:"expression,omitempty"`
 }
 
 // SelectRequest asks the user to pick a record before the page opens (classic RUNMODAL of a

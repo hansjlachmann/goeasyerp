@@ -14,6 +14,7 @@ import (
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 )
 
@@ -83,6 +84,9 @@ func (h *PagesHandler) GetPage(c *fiber.Ctx) error {
 			})
 		}
 	}
+	// Actions the user may not run are greyed out
+	markDeniedActions(sess, pageDef.Page.Actions, pageDef.Page.SourceTable)
+
 	// The table's field properties the pages follow: read-only (editable: false) and the
 	// decimal places shown; the card title's fields
 	tableFields := map[string]ftables.FieldInfo{}
@@ -439,16 +443,16 @@ func (h *PagesHandler) GetMenu(c *fiber.Ctx) error {
 	for i, group := range menuDef.Menu {
 		translated.Menu[i] = group
 		translated.Menu[i].Name = ts.MenuItemCaption(group.Name, language)
-		translated.Menu[i].Items = menuEntries(group.Items, ts, language)
+		translated.Menu[i].Items = menuEntries(group.Items, ts, language, sess)
 	}
 
 	return c.JSON(apitypes.NewSuccessResponse(&translated))
 }
 
 // menuEntries translates a menu's entries (and their sub-menus) and marks those whose page,
-// report or codeunit exists as enabled — a sub-menu when one of its entries is; the others are
-// shown greyed out (not built yet)
-func menuEntries(items []pages.MenuItem, ts *i18n.TranslationService, language string) []pages.MenuItem {
+// report or codeunit exists and the user may run (sess) as enabled — a sub-menu when one of its
+// entries is; the others are shown greyed out (not built yet, or denied)
+func menuEntries(items []pages.MenuItem, ts *i18n.TranslationService, language string, sess *session.Session) []pages.MenuItem {
 	if len(items) == 0 {
 		return nil
 	}
@@ -459,7 +463,7 @@ func menuEntries(items []pages.MenuItem, ts *i18n.TranslationService, language s
 			continue
 		}
 		out[i].Name = ts.MenuItemCaption(item.Name, language)
-		out[i].Items = menuEntries(item.Items, ts, language)
+		out[i].Items = menuEntries(item.Items, ts, language, sess)
 		switch {
 		case len(item.Items) > 0:
 			for _, sub := range out[i].Items {
@@ -471,11 +475,92 @@ func menuEntries(items []pages.MenuItem, ts *i18n.TranslationService, language s
 		case item.PageID > 0:
 			_, err := pages.GetRegistry().GetPage(item.PageID)
 			out[i].Enabled = err == nil
+			out[i].Denied = out[i].Enabled && !pageAllowed(sess, item.PageID)
 		case item.RunObject != "":
 			out[i].Enabled = runObjectExists(item.RunObject)
+			out[i].Denied = out[i].Enabled && !runObjectAllowed(sess, item.RunObject)
+		}
+		if out[i].Denied {
+			out[i].Enabled = false
 		}
 	}
 	return out
+}
+
+// pageAllowed: the user may open the page — read its source table (a page without one, or
+// without a session: yes)
+func pageAllowed(sess *session.Session, pageID int) bool {
+	if sess == nil {
+		return true
+	}
+	page, err := pages.GetRegistry().GetPage(pageID)
+	if err != nil || page.Page.SourceTable == "" {
+		return true
+	}
+	return sess.HasPermission(page.Page.SourceTable, session.PermRead)
+}
+
+// runObjectAllowed: the user may run a run_object — Execute on a codeunit or report
+// ("codeunit:6", "report:93"), a function as the job API checks it ("table:X.F": Modify on X;
+// print functions check their reports when they print); others (a field's codeunit): yes
+func runObjectAllowed(sess *session.Session, runObject string) bool {
+	if sess == nil {
+		return true
+	}
+	kind, rest, ok := strings.Cut(runObject, ":")
+	if !ok {
+		return true
+	}
+	if strings.Contains(rest, ".") {
+		return runPermissionError(sess, 0, 0, runObject, "en-US") == nil
+	}
+	id, err := strconv.Atoi(rest)
+	if err != nil {
+		return true
+	}
+	switch kind {
+	case "codeunit":
+		return sess.CanExecute(session.ObjectCodeunit, id)
+	case "report":
+		return sess.CanExecute(session.ObjectReport, id)
+	}
+	return true
+}
+
+// markDeniedActions marks the page actions (and menu items) the user may not run as denied and
+// disabled: run_object by runObjectAllowed, run_page by pageAllowed, New and Delete by the
+// source table's Insert and Delete permission. A menu button whose items are all denied is
+// denied too.
+func markDeniedActions(sess *session.Session, actions []pages.Action, sourceTable string) {
+	if sess == nil {
+		return
+	}
+	for i := range actions {
+		a := &actions[i]
+		switch {
+		case len(a.Items) > 0:
+			markDeniedActions(sess, a.Items, sourceTable)
+			a.Denied = true
+			for _, item := range a.Items {
+				if !item.Denied {
+					a.Denied = false
+					break
+				}
+			}
+		case a.RunObject != "":
+			a.Denied = !runObjectAllowed(sess, a.RunObject)
+		case a.RunPage > 0:
+			a.Denied = !pageAllowed(sess, a.RunPage)
+		case a.Name == "New" && sourceTable != "":
+			a.Denied = !sess.HasPermission(sourceTable, session.PermInsert)
+		case a.Name == "Delete" && sourceTable != "":
+			a.Denied = !sess.HasPermission(sourceTable, session.PermDelete)
+		}
+		if a.Denied {
+			disabled := false
+			a.Enabled = &disabled
+		}
+	}
 }
 
 // runObjectExists reports whether a menu entry's report or codeunit ("report:93",

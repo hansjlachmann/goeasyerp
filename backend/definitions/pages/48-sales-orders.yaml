@@ -1,4 +1,4 @@
-# Page 48 Sales Orders (classic form 48): the sales order lines (OnOpenPage: Document Type = Order) — the item's Sales › Orders
+# Page 48 Sales Orders (classic form 48): the sales order lines (source table view: Document Type = Order) — the item's Sales › Orders
 page:
   id: 48
   type: List
@@ -6,6 +6,8 @@ page:
   source_table: Sales_Line
   caption: Sales Orders
   editable: false
+  source_table_view: # classic SourceTableView WHERE(Document Type=CONST(Order))
+    - {field: document_type, value: 1}
 
   layout:
     repeater:

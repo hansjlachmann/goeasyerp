@@ -30,6 +30,9 @@ export interface PageMetadata {
 	enable_navigation?: boolean;
 	// DelayedInsert: insert a new list row only when the user leaves the row
 	delayed_insert?: boolean;
+	// SourceTableView: the list's fixed filters (filter group 2: the user's filters narrow them
+	// and cannot remove them; new records take the single values)
+	source_table_view?: import('./api').FixedFilter[];
 	copy_paste_allowed?: boolean; // list Ctrl+C copies the selected records, Ctrl+V pastes them
 	source_table_temporary?: boolean; // the list's rows are filled from the page parameters on every load (Navigate)
 	auto_split_key?: boolean; // a new line between two lines gets the line number between them
@@ -208,6 +211,7 @@ export interface Action {
 	apply_header_fields?: boolean; // the header fields as typed become the page's parameters and the list loads again (Navigate's Find)
 	run_object?: string; // "codeunit:455", "report:93", a function "table:Job_Queue_Entry.ShowLineNo"
 	enabled?: boolean;
+	denied?: boolean; // the user may not run it (sent with enabled false)
 	items?: Action[]; // a menu button: its menu items (each an action of its own)
 	image?: string; // the button's icon (actionIcons.ts names, e.g. "New", "Post"); a bullet by default
 }
@@ -239,7 +243,8 @@ export interface MenuItem {
 	icon?: string;
 	description?: string;
 	separator?: boolean;
-	enabled?: boolean; // false: its object is not built yet (shown greyed out)
+	enabled?: boolean; // false: its object is not built yet, or denied (shown greyed out)
+	denied?: boolean; // the user may not run it
 }
 
 export interface PageResponse {

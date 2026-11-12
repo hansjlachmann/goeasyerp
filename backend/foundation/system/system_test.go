@@ -512,3 +512,37 @@ func TestRunModal(t *testing.T) {
 		t.Error("LookupCancel: GetRecord has nothing")
 	}
 }
+
+// groupRecord tells its filters per filter group (as generated records do)
+type groupRecord struct{ pageRecord }
+
+func (r *groupRecord) FilterExpressionsByGroup() map[int][]tables.FieldFilter {
+	return map[int][]tables.FieldFilter{
+		0: {{Field: "no", Expression: "C02.."}},
+		2: {{Field: "no", Expression: "C01..C05"}, {Field: "city", Expression: "Oslo"}},
+	}
+}
+
+// SetTableView: the filters of group 0 open as the user's, the other groups' as the page's
+// fixed filters — both filters on one field arrive
+func TestRunModalFilterGroups(t *testing.T) {
+	d := codeunits.OpenDialogWithID("", "runmodal-groups-test")
+	codeunits.SetCurrentDialog(d)
+	defer codeunits.ClearCurrentDialog()
+	rec := &groupRecord{pageRecord{key: "C03"}}
+	go func() {
+		ev := <-d.Events()
+		filters, _ := ev.Data["filters"].([]tables.FieldFilter)
+		fixed, _ := ev.Data["fixed_filters"].([]map[string]interface{})
+		if len(filters) != 1 || filters[0].Field != "no" || filters[0].Expression != "C02.." || len(fixed) != 2 ||
+			fixed[0]["field"] != "no" || fixed[0]["value"] != "C01..C05" || fixed[0]["expression"] != true || fixed[1]["field"] != "city" {
+			t.Errorf("filters %+v, fixed %+v", filters, fixed)
+		}
+		for !d.RespondToInput(ev.ConfirmID, map[string]string{"action": "OK"}) {
+			time.Sleep(time.Millisecond)
+		}
+	}()
+	if RunModal(22, rec, false) != ActionOK {
+		t.Error("closed")
+	}
+}

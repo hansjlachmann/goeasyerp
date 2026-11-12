@@ -5,6 +5,7 @@
 	import ActionButton from './ActionButton.svelte';
 	import MenuPanel from './MenuPanel.svelte';
 	import type { Action } from '$lib/types/pages';
+	import { t, HOME } from '$lib/services/i18n.svelte';
 
 	interface Props {
 		action: Action;
@@ -58,7 +59,14 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="action-menu" bind:this={triggerElement} onkeydowncapture={handleTriggerKeydown}>
-	<ActionButton caption={action.caption} image={action.image} {disabled} onclick={() => (open ? close() : openMenu())}>
+	<!-- a menu button whose items the user may not run at all is greyed out (denied) -->
+	<ActionButton
+		caption={action.caption}
+		image={action.image}
+		disabled={disabled || action.enabled === false}
+		title={action.denied ? t(HOME.MENU_NO_PERMISSION) : undefined}
+		onclick={() => (open ? close() : openMenu())}
+	>
 		{#snippet after()}
 			<svg class="menu-arrow" class:open xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />

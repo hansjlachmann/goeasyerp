@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 )
@@ -104,12 +105,43 @@ type Dialog struct {
 	confirmMu      sync.Mutex
 	pendingInput   map[string]chan map[string]string // Map of confirm ID to input response channel
 	inputMu        sync.Mutex
+	// activity is closed by the first event that is not the end (progress, a question, a
+	// request page, a page, a note): the job API then lets the browser follow the job
+	activity     chan struct{}
+	activityOnce sync.Once
+}
+
+// signalActivity marks that the run has shown something to the user (Activity)
+func (d *Dialog) signalActivity() {
+	d.activityOnce.Do(func() {
+		if d.activity != nil {
+			close(d.activity)
+		}
+	})
+}
+
+// Activity is closed once the run sends the browser an event before it ends (progress, a
+// question, a request page, a page it opens, a note): a run that ends without one can answer
+// in the request itself
+func (d *Dialog) Activity() <-chan struct{} {
+	return d.activity
+}
+
+// Discard removes a dialog nobody follows (its run ended without showing anything; the
+// result went back in the request)
+func (d *Dialog) Discard() {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.closed = true
+	d.cancel()
+	jobRegistry.Remove(d.jobID)
 }
 
 // Update sends a progress update for a field
 // field is 1-based (@1@, @2@, etc.)
 // value is typically 0-100 for percentage
 func (d *Dialog) Update(field int, value int) {
+	d.signalActivity()
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -132,6 +164,7 @@ func (d *Dialog) Update(field int, value int) {
 
 // UpdateWithMessage sends a progress update with a message
 func (d *Dialog) UpdateWithMessage(field int, value int, message string) {
+	d.signalActivity()
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -289,6 +322,7 @@ func (d *Dialog) Context() context.Context {
 // Returns true if user clicks Yes, false if No
 // Like Confirm('Are you sure?')
 func (d *Dialog) Confirm(message string) bool {
+	d.signalActivity()
 	d.mu.Lock()
 	if d.closed {
 		d.mu.Unlock()
@@ -342,6 +376,7 @@ func (d *Dialog) Confirm(message string) bool {
 // Hyperlink asks the frontend to open a URL in the user's browser (a new tab); it does not
 // wait for an answer
 func (d *Dialog) Hyperlink(url string) {
+	d.signalActivity()
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -393,6 +428,7 @@ func (d *Dialog) RequestPage(title string, fields []InputField, dataItems []Requ
 }
 
 func (d *Dialog) requestInput(title string, fields []InputField, dataItems []RequestDataItem, optionsCaption string, output string) map[string]string {
+	d.signalActivity()
 	d.mu.Lock()
 	if d.closed {
 		d.mu.Unlock()
@@ -454,6 +490,11 @@ func (d *Dialog) requestInput(title string, fields []InputField, dataItems []Req
 // waits until the user closes it; in lookup mode the answer holds the key of the record the
 // user picked: {"action": "LookupOK", "key": "C01"}. nil on cancel/timeout.
 func (d *Dialog) RunPage(pageID int, filters, flowFilters interface{}, selectKey string, lookupMode bool, params map[string]string) map[string]string {
+	return d.runPage(pageID, filters, nil, flowFilters, selectKey, lookupMode, params)
+}
+
+func (d *Dialog) runPage(pageID int, filters interface{}, fixedFilters []ftables.FieldFilter, flowFilters interface{}, selectKey string, lookupMode bool, params map[string]string) map[string]string {
+	d.signalActivity()
 	d.mu.Lock()
 	if d.closed {
 		d.mu.Unlock()
@@ -485,9 +526,11 @@ func (d *Dialog) RunPage(pageID int, filters, flowFilters interface{}, selectKey
 			"page_id":      pageID,
 			"filters":      filters,
 			"flow_filters": flowFilters,
-			"select":       selectKey,
-			"lookup_mode":  lookupMode,
-			"params":       params,
+			// the fixed filters as the list's fixed filters: expressions in filter group 2
+			"fixed_filters": fixedPageFilters(fixedFilters),
+			"select":        selectKey,
+			"lookup_mode":   lookupMode,
+			"params":        params,
 		},
 	}:
 	case <-d.ctx.Done():
@@ -569,6 +612,7 @@ func OpenDialog(template string) *Dialog {
 		events:   make(chan ProgressEvent, 100), // Buffered channel
 		ctx:      ctx,
 		cancel:   cancel,
+		activity: make(chan struct{}),
 	}
 	jobRegistry.Register(d)
 	return d
@@ -583,7 +627,17 @@ func OpenDialogWithID(template string, jobID string) *Dialog {
 		events:   make(chan ProgressEvent, 100),
 		ctx:      ctx,
 		cancel:   cancel,
+		activity: make(chan struct{}),
 	}
 	jobRegistry.Register(d)
 	return d
+}
+
+// fixedPageFilters are fixed filters as a list page takes them ({field, value, expression})
+func fixedPageFilters(filters []ftables.FieldFilter) []map[string]interface{} {
+	result := []map[string]interface{}{}
+	for _, f := range filters {
+		result = append(result, map[string]interface{}{"field": f.Field, "value": f.Expression, "expression": true})
+	}
+	return result
 }

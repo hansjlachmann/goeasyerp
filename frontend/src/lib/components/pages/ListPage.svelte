@@ -6,7 +6,7 @@
 	import { pageNavigator } from '$lib/utils/pageNavigator';
 	import { toast } from '$lib/stores/toast';
 	import { confirm } from '$lib/stores/confirm';
-	import { t, MSG, ERR, DLG, BTN, LIST } from '$lib/services/i18n.svelte';
+	import { t, MSG, ERR, DLG, BTN, LIST, HOME } from '$lib/services/i18n.svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import ModalCardPage from './ModalCardPage.svelte';
 	import PageRenderer from './PageRenderer.svelte';
@@ -246,6 +246,7 @@
 		select?: string;
 		lookupMode: boolean;
 		flowFilters?: import('$lib/types/api').TableFilter[]; // the record's FlowFilters (SetTableView)
+		fixedFilters?: import('$lib/types/api').FixedFilter[]; // its filters of the groups other than 0 (kept)
 		params?: Record<string, string>; // the page's parameters (Page.SetParam)
 		respond: (values: Record<string, string> | null) => void;
 	} | null>(null);
@@ -769,6 +770,7 @@
 						select: (data.select as string) || undefined,
 						lookupMode: data.lookup_mode === true,
 						flowFilters: (data.flow_filters as import('$lib/types/api').TableFilter[]) ?? [],
+						fixedFilters: (data.fixed_filters as import('$lib/types/api').FixedFilter[]) ?? [],
 						params: (data.params as Record<string, string>) ?? undefined,
 						respond
 					};
@@ -827,7 +829,8 @@
 					dialogData = finalDialog;
 					dialogOpen = true;
 				} else if (!progressError && !printoutOf((result as { data?: Record<string, unknown> }).data)) {
-					toast.success(t(MSG.JOB_COMPLETED));
+					// the result's message (a function without progress that asked or opened a page)
+					toast.success((result as { message?: string }).message || t(MSG.JOB_COMPLETED));
 				}
 				if (!dialogOpen) openPending();
 				// Refresh list data to reflect changes (e.g. new entries, status updates)
@@ -882,6 +885,8 @@
 
 	// Whether an action button can run now (the action bar, the Actions menu, the row menu)
 	function actionDisabled(action: Action): boolean {
+		// an action the user may not run (denied by the server)
+		if (action.enabled === false) return true;
 		// New and Refresh are always enabled
 		if (action.name === 'New' || action.name === 'Refresh') return false;
 
@@ -906,6 +911,7 @@
 	// Whether a menu button's item can run: when it runs something, it needs a record unless it
 	// runs on the list's filters
 	function menuItemDisabled(item: Action): boolean {
+		if (item.enabled === false) return true;
 		return !!(item.run_object || item.run_page || item.run_page_field) && !runsOnListFilters(item.run_object) && !selectedRecord;
 	}
 
@@ -3525,6 +3531,7 @@
 						shortcut={action.shortcut}
 						onclick={() => handleAction(action.name)}
 						disabled={actionDisabled(action)}
+						title={action.denied ? t(HOME.MENU_NO_PERMISSION) : undefined}
 					/>
 					{/if}
 				{/each}
@@ -4263,6 +4270,7 @@
 					initialSelect={request.select}
 					lookupMode={request.lookupMode}
 					initialFlowFilters={request.flowFilters}
+					fixedFilters={request.fixedFilters}
 					openParams={request.params}
 					onclose={(action, key, _record, row) => {
 						// respond first: {@const request} follows runPage, which is cleared next

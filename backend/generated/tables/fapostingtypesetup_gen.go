@@ -2850,23 +2850,54 @@ func (t *FAPostingTypeSetup) Consistent(ok bool) {
 func (t *FAPostingTypeSetup) FilterExpressions() []tables.FieldFilter {
 	var result []tables.FieldFilter
 	for _, f := range t.allFilters() {
-		expr := ""
-		switch {
-		case f.invalidField:
-			continue
-		case f.isExpression:
-			expr = f.filterExpr
-		case f.minValue != nil && f.maxValue != nil && fmt.Sprint(f.minValue) == fmt.Sprint(f.maxValue):
-			expr = fmt.Sprint(f.minValue)
-		case f.minValue != nil && f.maxValue != nil:
-			expr = fmt.Sprintf("%v..%v", f.minValue, f.maxValue)
-		default:
-			continue
+		filter, ok := t.filterExpression(f)
+		if ok {
+			result = append(result, filter)
 		}
-		field := f.fieldName
-		result = append(result, tables.FieldFilter{Field: field, Expression: expr})
 	}
 	return result
+}
+
+// FilterExpressionsByGroup returns the filters of each filter group (as FilterExpressions,
+// sorted by field) — a page opened from code shows group 0 as the user's filters and keeps the
+// other groups fixed, so two filters on one field in different groups both apply
+func (t *FAPostingTypeSetup) FilterExpressionsByGroup() map[int][]tables.FieldFilter {
+	result := map[int][]tables.FieldFilter{}
+	add := func(group int, filters map[string]*fAPostingTypeSetupFilterCondition) {
+		for _, f := range filters {
+			filter, ok := t.filterExpression(f)
+			if ok {
+				result[group] = append(result[group], filter)
+			}
+		}
+		slices.SortFunc(result[group], func(a, b tables.FieldFilter) int { return strings.Compare(a.Field, b.Field) })
+	}
+	add(t.filterGroup, t.filters)
+	for group, filters := range t.otherFilters {
+		if group != t.filterGroup {
+			add(group, filters)
+		}
+	}
+	return result
+}
+
+// filterExpression is a filter as field and expression; false for one that has none
+func (t *FAPostingTypeSetup) filterExpression(f *fAPostingTypeSetupFilterCondition) (tables.FieldFilter, bool) {
+	expr := ""
+	switch {
+	case f.invalidField:
+		return tables.FieldFilter{}, false
+	case f.isExpression:
+		expr = f.filterExpr
+	case f.minValue != nil && f.maxValue != nil && fmt.Sprint(f.minValue) == fmt.Sprint(f.maxValue):
+		expr = fmt.Sprint(f.minValue)
+	case f.minValue != nil && f.maxValue != nil:
+		expr = fmt.Sprintf("%v..%v", f.minValue, f.maxValue)
+	default:
+		return tables.FieldFilter{}, false
+	}
+	field := f.fieldName
+	return tables.FieldFilter{Field: field, Expression: expr}, true
 }
 
 // KeyText returns the primary key of the current record as text, the values joined by ","

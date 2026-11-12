@@ -55,6 +55,7 @@ func Notify(text string) {
 
 // Notify shows a note to the user (an info message, the code goes on)
 func (d *Dialog) Notify(text string) {
+	d.signalActivity()
 	d.mu.Lock()
 	defer d.mu.Unlock()
 

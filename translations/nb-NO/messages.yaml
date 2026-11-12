@@ -108,6 +108,7 @@ messages:
   HOME_SHORTCUTS_LINK: "Vis hurtigtastene"
   HELP_MENU_SEARCH: "Søk i menyen"
   HOME_MENU_NOT_AVAILABLE: "Ikke tilgjengelig ennå"
+  HOME_MENU_NO_PERMISSION: "Du har ikke tillatelse til å kjøre dette"
   HOME_MENU_NO_RESULTS: "Fant ingen menyvalg"
   HOME_MENU_SEARCH_RESULTS: "Søkeresultater"
   HOME_MENU_SEARCH: "Søk i menyen… (Ctrl+F)"

@@ -260,6 +260,14 @@ func Execute(id int, db database.Executor, company string, dbType database.DBTyp
 	for _, o := range def.Options {
 		run.options[o.Name] = o.Default
 	}
+	// The values the user last ran the report with (only when the request page shows), before
+	// OnInitReport and the caller's values, which decide where they set one
+	showRequestPage := opts.RequestPage && fcodeunits.GetCurrentDialog() != nil
+	var saved savedValues
+	if showRequestPage {
+		saved = loadSavedValues(run)
+		applySavedOptions(run, def, saved)
+	}
 	if def.OnInitReport != nil {
 		err := def.OnInitReport(run)
 		if err != nil {
@@ -285,10 +293,19 @@ func Execute(id int, db database.Executor, company string, dbType database.DBTyp
 		}
 	}
 
-	if opts.RequestPage && fcodeunits.GetCurrentDialog() != nil {
+	if showRequestPage {
+		// data items the caller (or OnInitReport) gave starting filters keep them
+		callerFiltered := map[string]bool{}
+		for name, filters := range run.filters {
+			if len(filters) > 0 {
+				callerFiltered[name] = true
+			}
+		}
+		applySavedFilters(run, def, saved)
 		if !requestPage(run, def, layout != nil) {
 			return Result{Cancelled: true}, nil
 		}
+		saveValues(run, def, opts.Options, callerFiltered, saved)
 	}
 	if layout != nil {
 		run.printer, err = newPrinter(run, layout)

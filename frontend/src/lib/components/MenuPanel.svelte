@@ -8,6 +8,7 @@
 	import ActionIcon from './icons/ActionIcon.svelte';
 	import { portal } from '$lib/actions/portal';
 	import type { Action, MenuEntry } from '$lib/types/pages';
+	import { t, HOME } from '$lib/services/i18n.svelte';
 
 	interface Props {
 		actions: MenuEntry[];
@@ -160,6 +161,7 @@
 				style="padding-left: {0.75 + row.level * 1.25}rem"
 				tabindex={i === active ? 0 : -1}
 				disabled={!enabled(row.item)}
+				title={row.item.denied ? t(HOME.MENU_NO_PERMISSION) : undefined}
 				onclick={() => pick(row.item)}
 			>
 				<span class="menu-label"

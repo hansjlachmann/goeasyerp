@@ -108,6 +108,7 @@ messages:
   HOME_SHORTCUTS_LINK: "Show the keyboard shortcuts"
   HELP_MENU_SEARCH: "Search the menu"
   HOME_MENU_NOT_AVAILABLE: "Not available yet"
+  HOME_MENU_NO_PERMISSION: "You do not have permission to run this"
   HOME_MENU_NO_RESULTS: "No menu entries found"
   HOME_MENU_SEARCH_RESULTS: "Search results"
   HOME_MENU_SEARCH: "Search the menu… (Ctrl+F)"
