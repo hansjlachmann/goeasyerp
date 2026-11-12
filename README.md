@@ -9,43 +9,71 @@ The database, its user and the `OPENERP_*` settings keep the technical name `ope
 
 ## Try it on your own computer
 
-Only [Docker Desktop](https://www.docker.com/products/docker-desktop/) is needed (Windows, macOS
-or Linux):
+Only Docker is needed: [Docker Desktop](https://www.docker.com/products/docker-desktop/) on
+Windows or macOS, Docker Engine or Docker Desktop on Linux. Install and upgrade are the same one
+line:
 
-1. Download [`docker-compose.local.yml`](https://raw.githubusercontent.com/hansjlachmann/goeasyerp/main/docker-compose.local.yml)
-   and save it as `docker-compose.yml` in a folder of its own (e.g. `C:\GoEasyERP`).
-2. Open it in a text editor and replace `JWT_SECRET` with any long random text.
-3. In that folder run `docker compose up -d`.
-4. After 2-3 minutes open http://localhost:8000 and create the first user.
+**Windows** (PowerShell, after Docker Desktop shows "Engine running"):
 
-Stop with `docker compose stop`, start again with `docker compose start`. Never run
-`docker compose down -v`: it deletes the database. For a server installation (HTTPS, backups) see
+```powershell
+irm https://raw.githubusercontent.com/hansjlachmann/goeasyerp/main/scripts/goeasyerp.ps1 | iex
+```
+
+**Linux, macOS, WSL**:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/hansjlachmann/goeasyerp/main/scripts/goeasyerp.sh | sh
+```
+
+After 2-3 minutes open http://localhost:8000 and create the first user.
+
+The script works in a folder of its own — `C:\GoEasyERP` on Windows, `~/goeasyerp` elsewhere
+(another one: `$env:GOEASYERP_DIR = 'D:\GoEasyERP'` before the line in PowerShell,
+`… | GOEASYERP_DIR=/srv/goeasyerp sh` in a shell). It checks that Docker runs Linux containers, keeps
+the settings in `.env` (a new installation gets a random `JWT_SECRET`; an installation made by hand
+with an older `docker-compose.yml` keeps its secret, port and address), backs the database up into
+`backups/` when GoEasyERP already runs, downloads the latest `docker-compose.yml` (the old one stays
+as `docker-compose.yml.bak`), and starts GoEasyERP. Run the line again to upgrade.
+
+To read the script before it runs, download it and run the file:
+
+```powershell
+Invoke-WebRequest https://raw.githubusercontent.com/hansjlachmann/goeasyerp/main/scripts/goeasyerp.ps1 -OutFile goeasyerp.ps1
+notepad goeasyerp.ps1
+powershell -ExecutionPolicy Bypass -File goeasyerp.ps1
+```
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/hansjlachmann/goeasyerp/main/scripts/goeasyerp.sh
+less goeasyerp.sh
+sh goeasyerp.sh
+```
+
+Without the script: save
+[`docker-compose.local.yml`](https://raw.githubusercontent.com/hansjlachmann/goeasyerp/main/docker-compose.local.yml)
+as `docker-compose.yml` in a folder of its own, create a file `.env` next to it with the line
+`JWT_SECRET=<any long random text>`, and run `docker compose up -d` in that folder. Upgrade: save
+the new file over it, then `docker compose pull` and `docker compose up -d`.
+
+Stop with `docker compose stop`, start again with `docker compose start` (in the folder). Never run
+`docker compose down -v`: it deletes the database. Keep `JWT_SECRET` in `.env`: it also encrypts
+stored passwords (SMTP Setup). A backup is restored with `docker compose exec -T db pg_restore -U
+openerp -d openerp --clean --if-exists < backups/<file>.dump` (Linux shell; on Windows copy the file in
+with `docker compose cp` first). For a server installation (HTTPS, backups) see
 [docs/operations.md](docs/operations.md).
 
 ### Windows 10/11 with Docker Desktop
 
 Requirements: Windows 10 22H2 or Windows 11 (64-bit), virtualization enabled in the BIOS/UEFI
 (Task Manager → Performance → CPU → "Virtualization: Enabled"), about 4 GB free memory and 10 GB
-disk.
+disk. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) with "Use WSL 2"
+checked, restart when asked and start Docker Desktop until it shows "Engine running", then run the
+PowerShell line above.
 
-1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) with "Use WSL 2"
-   checked, restart when asked and start Docker Desktop until it shows "Engine running".
-2. In PowerShell:
-
-   ```powershell
-   mkdir C:\GoEasyERP; cd C:\GoEasyERP
-   Invoke-WebRequest https://raw.githubusercontent.com/hansjlachmann/goeasyerp/main/docker-compose.local.yml -OutFile docker-compose.yml
-   notepad docker-compose.yml      # replace JWT_SECRET with any long random text, save
-   docker compose up -d
-   ```
-
-3. After 2-3 minutes open http://localhost:8000 and create the first user.
-
-`docker info --format "{{.OSType}}"` must print `linux`; if it prints `windows`, right-click the
-Docker icon in the taskbar and choose "Switch to Linux containers". GoEasyERP starts whenever
-Docker Desktop runs (Settings → General → "Start Docker Desktop when you sign in"). To upgrade,
-download the file again (keep your `JWT_SECRET`), then `docker compose pull` and
-`docker compose up -d` in `C:\GoEasyERP`.
+Docker must run Linux containers (the script checks it): if `docker info --format "{{.OSType}}"`
+prints `windows`, right-click the Docker icon in the taskbar and choose "Switch to Linux
+containers". GoEasyERP starts whenever Docker Desktop runs (Settings → General → "Start Docker
+Desktop when you sign in").
 
 Docker Desktop is free for personal use, education and small businesses (fewer than 250 employees
 and less than USD 10 million annual revenue); larger companies need a paid Docker subscription — or
@@ -60,16 +88,21 @@ version; better for a server several people use):
 # in Ubuntu (wsl --install -d Ubuntu, then restart) or in the Linux VM
 curl -fsSL https://get.docker.com | sudo sh
 sudo usermod -aG docker $USER   # log out and in again
-mkdir ~/goeasyerp && cd ~/goeasyerp
-curl -o docker-compose.yml https://raw.githubusercontent.com/hansjlachmann/goeasyerp/main/docker-compose.local.yml
-nano docker-compose.yml         # replace JWT_SECRET
-docker compose up -d
+curl -fsSL https://raw.githubusercontent.com/hansjlachmann/goeasyerp/main/scripts/goeasyerp.sh | sh
 ```
 
-The file publishes port 8000 on this computer only. For other computers change the line
-`"127.0.0.1:8000:80"` to `"8000:80"`, set `ORIGIN` to `http://<computer name>:8000` and open port
-8000 in the firewall (with Docker Engine in WSL2 Windows also needs a port forwarding to WSL —
-`netsh interface portproxy` —, which a Linux VM does not).
+### Other computers
+
+GoEasyERP answers on this computer only. For other computers set in `.env`:
+
+```
+GOEASYERP_BIND=0.0.0.0
+GOEASYERP_ORIGIN=http://<computer name>:8000
+```
+
+then run `docker compose up -d` in the folder and open port 8000 in the firewall (with Docker Engine
+in WSL2 Windows also needs a port forwarding to WSL — `netsh interface portproxy` —, which a Linux
+VM does not). `GOEASYERP_PORT` changes the port.
 
 ## Project Structure
 

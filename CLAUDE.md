@@ -63,10 +63,11 @@ Commit the regenerated `backend/generated/tables`; CI fails when it is not up to
 docker-compose up                    # Full stack (backend + frontend + postgres + nginx)
 scripts/prod.sh pull && scripts/prod.sh up -d  # Production (settings/secrets in untracked prod.env)
 scripts/backup.sh                    # Production database backup (pg_dump, prunes old automatic dumps)
-docker compose -f docker-compose.local.yml up -d  # One-computer trial (http://localhost:8000; nginx config inline, no certificates; release-please bumps its image versions)
+docker compose -f docker-compose.local.yml up -d  # One-computer trial (http://localhost:8000; nginx config inline, no certificates; release-please bumps its image versions; needs JWT_SECRET in a .env next to it)
+scripts/goeasyerp.sh / scripts/goeasyerp.ps1      # Install/upgrade the one-computer trial (Linux/WSL `curl … | sh`, Windows `irm … | iex`)
 ```
 
-Production operations (upgrade, backup/restore, reboot, ports, passwords): `docs/operations.md`. Server settings and secrets live in the untracked `prod.env` (template `prod.env.example`), never in the tracked `.env` (CI rewrites it with `APP_VERSION`). All prod services have `restart: unless-stopped`; only nginx (80/443) is published to the network — db on `127.0.0.1`, backend/frontend on `PUBLISH_HOST` (default `127.0.0.1`). Never put server addresses or other site details into the repository.
+Production operations (upgrade, backup/restore, reboot, ports, passwords): `docs/operations.md`. One-computer trial: `docker-compose.local.yml` takes its settings from a `.env` next to it (`JWT_SECRET` required, `GOEASYERP_PORT`/`GOEASYERP_BIND`/`GOEASYERP_ORIGIN`), so a new version of the file never loses them; `scripts/goeasyerp.sh` and `scripts/goeasyerp.ps1` (the same steps — keep them in step) check Docker, keep or make `.env` (an older compose file's literal `JWT_SECRET`, port and ORIGIN carried over — the secret also derives the encryption key of stored secrets, so it must never change), back the database up (`pg_dump -Fc` inside the container, copied out), download the compose file, pull, start and wait for `/health`. Both run as one function at the end (piped into `sh`/`iex`; the PowerShell one never calls `exit`) and write `.env` as UTF-8 without BOM. Server settings and secrets live in the untracked `prod.env` (template `prod.env.example`), never in the tracked `.env` (CI rewrites it with `APP_VERSION`). All prod services have `restart: unless-stopped`; only nginx (80/443) is published to the network — db on `127.0.0.1`, backend/frontend on `PUBLISH_HOST` (default `127.0.0.1`). Never put server addresses or other site details into the repository.
 
 ## Architecture
 
