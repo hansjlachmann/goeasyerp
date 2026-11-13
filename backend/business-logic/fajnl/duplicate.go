@@ -37,6 +37,7 @@ type dupLine struct {
 	maintenanceCode                types.Code
 	dimension1Code, dimension2Code types.Code
 	reclassification, indexEntry   bool
+	budgetedFANo                   types.Code
 }
 
 // duplicateFAJnlLine (DuplicateFAJnlLine)
@@ -63,7 +64,7 @@ func (p *FAJnlPostLine) duplicateFAJnlLine(l *gtables.FAJournalLine) error {
 		description: l.Description, amount: l.Amount, salvageValue: l.Salvage_value, quantity: l.Quantity, correction: l.Correction,
 		noOfDeprDays: l.No_of_depreciation_days, deprUntil: l.Depr_until_fa_posting_date, deprAcqCost: l.Depr_acquisition_cost,
 		faPostingGroup: l.Fa_posting_group, maintenanceCode: l.Maintenance_code, dimension1Code: l.Dimension_1_code, dimension2Code: l.Dimension_2_code,
-		reclassification: l.Fa_reclassification_entry, indexEntry: l.Index_entry,
+		reclassification: l.Fa_reclassification_entry, indexEntry: l.Index_entry, budgetedFANo: l.Budgeted_fa_no,
 	})
 }
 
@@ -95,7 +96,7 @@ func (p *FAJnlPostLine) duplicateGenJnlLine(l *gtables.GenJournalLine, faAmount 
 		description: l.Description, amount: faAmount, salvageValue: l.Salvage_value, quantity: l.Quantity, correction: l.Correction,
 		noOfDeprDays: l.No_of_depreciation_days, deprUntil: l.Depr_until_fa_posting_date, deprAcqCost: l.Depr_acquisition_cost,
 		faPostingGroup: l.Posting_group, maintenanceCode: l.Maintenance_code, dimension1Code: l.Dimension_1_code, dimension2Code: l.Dimension_2_code,
-		reclassification: l.Fa_reclassification_entry, indexEntry: l.Index_entry,
+		reclassification: l.Fa_reclassification_entry, indexEntry: l.Index_entry, budgetedFANo: l.Budgeted_fa_no,
 	})
 }
 
@@ -212,6 +213,7 @@ func createDupLine(src ftables.Source, deprBook *gtables.DepreciationBook, excha
 		g.Maintenance_code = l.maintenanceCode
 		g.Dimension_1_code = l.dimension1Code
 		g.Dimension_2_code = l.dimension2Code
+		g.Budgeted_fa_no = l.budgetedFANo
 		g.Fa_reclassification_entry = l.reclassification
 		g.Index_entry = l.indexEntry
 		if err = g.Validate("depreciation_book_code", deprBook.Code); err != nil {
@@ -256,6 +258,7 @@ func createDupLine(src ftables.Source, deprBook *gtables.DepreciationBook, excha
 	f.Maintenance_code = l.maintenanceCode
 	f.Dimension_1_code = l.dimension1Code
 	f.Dimension_2_code = l.dimension2Code
+	f.Budgeted_fa_no = l.budgetedFANo
 	f.Fa_reclassification_entry = l.reclassification
 	f.Index_entry = l.indexEntry
 	if err = f.Validate("depreciation_book_code", deprBook.Code); err != nil {

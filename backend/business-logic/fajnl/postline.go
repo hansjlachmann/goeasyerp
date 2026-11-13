@@ -30,7 +30,9 @@ import (
 // Duplicate in Depreciation Book / Use Duplication List put the line into the other books' journals
 // (codeunit 5640, duplicate.go).
 //
-// Not migrated yet: budgeted assets.
+// A line with Budgeted FA No. marks its entry with the budgeted asset (FA No./Budgeted FA No.) and
+// posts the same amount — and salvage value — reversed to the budgeted asset, so the budget shows
+// what is left of it (SetBudgetAssetNo, PostBudgetAsset).
 type FAJnlPostLine struct {
 	src                    ftables.Source
 	faJnlCheckLine         FAJnlCheckLine
@@ -67,11 +69,11 @@ func (p *FAJnlPostLine) FAJnlPostLine(faJnlLine *gtables.FAJournalLine, checkLin
 	}
 	if faJnlLine.Fa_posting_type == gtables.FAJournalLine_Fa_posting_type.Maintenance {
 		maintenanceLedgEntry := makeMaintenanceLedgEntry(p.src, faJnlLine)
-		return p.maintenanceCode(maintenanceLedgEntry)
+		return p.maintenanceCode(maintenanceLedgEntry, faJnlLine.Budgeted_fa_no, faJnlLine.Amount)
 	}
 	faLedgEntry := makeFALedgEntry(p.src, faJnlLine)
 	return p.code(faLedgEntry, lineValues{salvageValue: faJnlLine.Salvage_value, amount: faJnlLine.Amount, faPostingDate: faJnlLine.Fa_posting_date,
-		deprUntilDate: faJnlLine.Depr_until_fa_posting_date, deprAcqCost: faJnlLine.Depr_acquisition_cost})
+		deprUntilDate: faJnlLine.Depr_until_fa_posting_date, deprAcqCost: faJnlLine.Depr_acquisition_cost, budgetNo: faJnlLine.Budgeted_fa_no})
 }
 
 // GenJnlPostLine posts a general journal line's fixed asset (codeunit 12's PostFixedAsset): the
@@ -95,7 +97,7 @@ func (p *FAJnlPostLine) GenJnlPostLine(genJnlLine *gtables.GenJournalLine, faAmo
 		maintenanceLedgEntry.Tax_amount = taxAmount
 		maintenanceLedgEntry.Transaction_no = nextTransactionNo
 		maintenanceLedgEntry.G_l_entry_no = nextGLEntryNo
-		return p.maintenanceCode(maintenanceLedgEntry)
+		return p.maintenanceCode(maintenanceLedgEntry, genJnlLine.Budgeted_fa_no, faAmount)
 	}
 	faLedgEntry := makeFALedgEntryFromGenJnl(p.src, genJnlLine)
 	faLedgEntry.Amount = faAmount
@@ -103,7 +105,7 @@ func (p *FAJnlPostLine) GenJnlPostLine(genJnlLine *gtables.GenJournalLine, faAmo
 	faLedgEntry.Transaction_no = nextTransactionNo
 	faLedgEntry.G_l_entry_no = nextGLEntryNo
 	return p.code(faLedgEntry, lineValues{salvageValue: genJnlLine.Salvage_value, amount: faAmount, faPostingDate: genJnlLine.Fa_posting_date,
-		deprUntilDate: genJnlLine.Depr_until_fa_posting_date, deprAcqCost: genJnlLine.Depr_acquisition_cost})
+		deprUntilDate: genJnlLine.Depr_until_fa_posting_date, deprAcqCost: genJnlLine.Depr_acquisition_cost, budgetNo: genJnlLine.Budgeted_fa_no})
 }
 
 // GLBuffer is the G/L amounts of the last general journal line (FindFirstGLAcc/GetNextGLAcc)
@@ -122,8 +124,9 @@ type lineValues struct {
 	salvageValue  types.Decimal
 	amount        types.Decimal // Amount2: the line's FA amount
 	faPostingDate types.Date
-	deprUntilDate bool // Depr. until FA Posting Date
-	deprAcqCost   bool // Depr. Acquisition Cost
+	deprUntilDate bool       // Depr. until FA Posting Date
+	deprAcqCost   bool       // Depr. Acquisition Cost
+	budgetNo      types.Code // Budgeted FA No.
 }
 
 func (p *FAJnlPostLine) code(faLedgEntry *gtables.FALedgerEntry, v lineValues) error {
@@ -157,6 +160,12 @@ func (p *FAJnlPostLine) code(faLedgEntry *gtables.FALedgerEntry, v lineValues) e
 	}
 	// DeprLine: a depreciation line without amount only depreciates until its date
 	deprLine := v.amount.IsZero() && faLedgEntry.Fa_posting_type == gtables.FALedgerEntry_Fa_posting_type.Depreciation && v.deprUntilDate
+	if v.budgetNo != "" {
+		err = setBudgetAssetNo(p.src, v.budgetNo, &faLedgEntry.Fa_no_budgeted_fa_no)
+		if err != nil {
+			return err
+		}
+	}
 	if !deprLine {
 		p.glAcc.orgGenJnlLine = true
 		err = p.insertFALedgEntry(faLedgEntry, fa)
@@ -179,9 +188,76 @@ func (p *FAJnlPostLine) code(faLedgEntry *gtables.FALedgerEntry, v lineValues) e
 		}
 	}
 	if v.deprAcqCost {
-		return p.postDeprUntilDate(faLedgEntry, fa, v, true)
+		err = p.postDeprUntilDate(faLedgEntry, fa, v, true)
+		if err != nil {
+			return err
+		}
+	}
+	if v.budgetNo != "" {
+		return p.postBudgetAsset(faLedgEntry, v)
 	}
 	return nil
+}
+
+// setBudgetAssetNo (SetBudgetAssetNo): the entry names the budgeted asset its amount is taken from
+// (FA No./Budgeted FA No.); the asset must be a budgeted asset
+func setBudgetAssetNo(src ftables.Source, budgetNo types.Code, faNoBudgetedFANo *types.Code) error {
+	fa2 := gtables.NewFixedAsset(src)
+	err := fa2.GetOrError(budgetNo)
+	if err != nil {
+		return err
+	}
+	if !fa2.Budgeted_asset {
+		return apperrors.FANotABudgetedAsset(fa2.No.String())
+	}
+	*faNoBudgetedFANo = budgetNo
+	return nil
+}
+
+// budgetedAsset: the budgeted asset of a line (Budgeted FA No.), not blocked or inactive
+func (p *FAJnlPostLine) budgetedAsset(budgetNo types.Code) (*gtables.FixedAsset, error) {
+	fa2 := gtables.NewFixedAsset(p.src)
+	err := fa2.GetOrError(budgetNo)
+	if err != nil {
+		return nil, err
+	}
+	err = fa2.TestField("blocked", false)
+	if err != nil {
+		return nil, err
+	}
+	err = fa2.TestField("inactive", false)
+	if err != nil {
+		return nil, err
+	}
+	return fa2, nil
+}
+
+// postBudgetAsset (PostBudgetAsset): the entry's amount — and an acquisition's salvage value —
+// reversed on the budgeted asset, an automatic entry without G/L that names the asset posted
+// (FA No./Budgeted FA No.)
+func (p *FAJnlPostLine) postBudgetAsset(entry *gtables.FALedgerEntry, v lineValues) error {
+	fa2, err := p.budgetedAsset(v.budgetNo)
+	if err != nil {
+		return err
+	}
+	budgetEntry := gtables.NewFALedgerEntry(p.src)
+	budgetEntry.Copy(entry)
+	budgetEntry.Automatic_entry = true
+	budgetEntry.G_l_entry_no = 0
+	budgetEntry.Fa_no_budgeted_fa_no = entry.Fa_no
+	budgetEntry.Fa_no = v.budgetNo
+	if !v.salvageValue.IsZero() {
+		budgetEntry.Amount = v.salvageValue.Neg()
+		faPostingType2 := budgetEntry.Fa_posting_type
+		budgetEntry.Fa_posting_type = gtables.FALedgerEntry_Fa_posting_type.SalvageValue
+		err = p.insertFALedgEntry(budgetEntry, fa2)
+		if err != nil {
+			return err
+		}
+		budgetEntry.Fa_posting_type = faPostingType2
+	}
+	budgetEntry.Amount = v.amount.Neg()
+	return p.insertFALedgEntry(budgetEntry, fa2)
 }
 
 // postDeprUntilDate (PostDeprUntilDate): the automatic custom 1 and depreciation entries of a
@@ -235,8 +311,9 @@ func (p *FAJnlPostLine) postDeprUntilDate(entry *gtables.FALedgerEntry, fa *gtab
 	return nil
 }
 
-// maintenanceCode (MaintenanceCode): the maintenance entry inserted
-func (p *FAJnlPostLine) maintenanceCode(maintenanceLedgEntry *gtables.MaintenanceLedgerEntry) error {
+// maintenanceCode (MaintenanceCode): the maintenance entry inserted; with a budgeted asset
+// (budgetNo) the entry names it and its amount (amount2) is posted to it reversed
+func (p *FAJnlPostLine) maintenanceCode(maintenanceLedgEntry *gtables.MaintenanceLedgerEntry, budgetNo types.Code, amount2 types.Decimal) error {
 	fa, faDeprBook, err := p.getFA(maintenanceLedgEntry.Fa_no, maintenanceLedgEntry.Depreciation_book_code)
 	if err != nil {
 		return err
@@ -253,10 +330,39 @@ func (p *FAJnlPostLine) maintenanceCode(maintenanceLedgEntry *gtables.Maintenanc
 		}
 		maintenanceLedgEntry.Fa_posting_group = faDeprBook.Fa_posting_group
 	}
+	if budgetNo != "" {
+		err = setBudgetAssetNo(p.src, budgetNo, &maintenanceLedgEntry.Fa_no_budgeted_fa_no)
+		if err != nil {
+			return err
+		}
+	}
 	p.glAcc.orgGenJnlLine = true
 	err = p.insertMaintenance(maintenanceLedgEntry, fa, faDeprBook)
 	p.glAcc.orgGenJnlLine = false
-	return err
+	if err != nil {
+		return err
+	}
+	if budgetNo == "" {
+		return nil
+	}
+	// PostBudgetAsset for a maintenance
+	fa2, err := p.budgetedAsset(budgetNo)
+	if err != nil {
+		return err
+	}
+	faDeprBook2 := gtables.NewFADepreciationBook(p.src)
+	err = faDeprBook2.GetOrError(map[string]interface{}{"fa_no": budgetNo, "depreciation_book_code": maintenanceLedgEntry.Depreciation_book_code})
+	if err != nil {
+		return err
+	}
+	budgetEntry := gtables.NewMaintenanceLedgerEntry(p.src)
+	budgetEntry.Copy(maintenanceLedgEntry)
+	budgetEntry.Automatic_entry = true
+	budgetEntry.G_l_entry_no = 0
+	budgetEntry.Fa_no_budgeted_fa_no = maintenanceLedgEntry.Fa_no
+	budgetEntry.Fa_no = budgetNo
+	budgetEntry.Amount = amount2.Neg()
+	return p.insertMaintenance(budgetEntry, fa2, faDeprBook2)
 }
 
 // getFA: the asset (not blocked or inactive) and its depreciation book
@@ -527,6 +633,9 @@ func (p *FAJnlPostLine) insertMaintenance(entry *gtables.MaintenanceLedgerEntry,
 		return err
 	}
 	entry.Entry_no = p.nextMaintenanceEntryNo
+	if entry.Automatic_entry {
+		adjustMaintenanceLedgEntry(entry, fa)
+	}
 	entry.Amount_lcy = amountLCY(entry.Amount, entry.Fa_exchange_rate)
 	entry.Debit_amount, entry.Credit_amount = setDebitCredit(entry.Amount, entry.Correction)
 	if entry.G_l_entry_no > 0 {
@@ -778,6 +887,22 @@ func adjustFALedgEntry(e *gtables.FALedgerEntry, fa *gtables.FixedAsset) {
 	e.Gen_bus_posting_group = ""
 	e.Gen_prod_posting_group = ""
 	e.Reclassification_entry = false
+	e.Index_entry = false
+}
+
+// adjustMaintenanceLedgEntry is codeunit 5607 FA Automatic Entry's AdjustMaintenanceLedgEntry: an
+// automatic maintenance entry has no quantity (but a budgeted asset's), balancing account, tax or
+// general posting groups
+func adjustMaintenanceLedgEntry(e *gtables.MaintenanceLedgerEntry, fa *gtables.FixedAsset) {
+	if !fa.Budgeted_asset {
+		e.Quantity = types.Decimal{}
+	}
+	e.Bal_account_type = gtables.MaintenanceLedgerEntry_Bal_account_type.GLAccount
+	e.Bal_account_no = ""
+	e.Tax_amount = types.Decimal{}
+	e.Gen_posting_type = gtables.MaintenanceLedgerEntry_Gen_posting_type.Blank
+	e.Gen_bus_posting_group = ""
+	e.Gen_prod_posting_group = ""
 	e.Index_entry = false
 }
 

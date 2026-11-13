@@ -1646,6 +1646,7 @@ func (genJournalLineLogic) OnValidate_Fa_posting_type(rec *gtables.GenJournalLin
 		rec.Depr_acquisition_cost = false
 		rec.Maintenance_code = ""
 		rec.Insurance_no = ""
+		rec.Budgeted_fa_no = ""
 		rec.Duplicate_in_depreciation_book = ""
 		rec.Use_duplication_list = false
 		rec.Fa_reclassification_entry = false
@@ -1701,6 +1702,19 @@ func (genJournalLineLogic) OnValidate_Maintenance_code(rec *gtables.GenJournalLi
 func (genJournalLineLogic) OnValidate_Insurance_no(rec *gtables.GenJournalLine) error {
 	if rec.Insurance_no != "" {
 		return rec.TestField("fa_posting_type", gtables.GenJournalLine_Fa_posting_type.AcquisitionCost)
+	}
+	return nil
+}
+
+// OnValidate_Budgeted_fa_no: the asset the line's amount is taken from is a budgeted asset
+func (genJournalLineLogic) OnValidate_Budgeted_fa_no(rec *gtables.GenJournalLine) error {
+	if rec.Budgeted_fa_no != "" {
+		fa := gtables.NewFixedAsset(rec)
+		err := fa.GetOrError(rec.Budgeted_fa_no)
+		if err != nil {
+			return err
+		}
+		return fa.TestField("budgeted_asset", true)
 	}
 	return nil
 }

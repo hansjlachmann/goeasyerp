@@ -127,3 +127,14 @@ func createTableBuffer(src ftables.Source, header *gtables.DepreciationTableHead
 	}
 	return buffer, nil
 }
+
+// TablePercent (codeunit 5618 GetTablePercent): the percentage the book's depreciation table
+// gives the dates — 0 when the table has no more periods for them
+func TablePercent(src ftables.Source, deprBookCode, deprTableCode types.Code, firstUserDefinedDeprDate, startingDate, endingDate types.Date) (types.Decimal, error) {
+	deprBook := gtables.NewDepreciationBook(src)
+	err := deprBook.GetOrError(deprBookCode)
+	if err != nil {
+		return types.Decimal{}, err
+	}
+	return getTablePercent(src, deprBook, deprTableCode, firstUserDefinedDeprDate, startingDate, endingDate)
+}

@@ -2,8 +2,6 @@ table:
   id: 5621
   name: "FA_Journal_Line"
   description: "FA journal lines (table 5621): fixed asset postings without G/L (books whose G/L integration is off)"
-  # Left out until their objects exist: 31 Budgeted FA No. (budgeted assets), 38/39/41 recurring
-  # (recurring FA journals)
   fields:
     - name: journal_template_name
       no: 1
@@ -231,6 +229,20 @@ table:
       length: 20
       table_relation:
         table: Insurance
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
+
+    - name: budgeted_fa_no
+      no: 31
+      type: types.Code
+      db_name: budgeted_fa_no
+      length: 20
+      table_relation:
+        table: Fixed_Asset
         field: no
         lookup_columns:
           - source: no

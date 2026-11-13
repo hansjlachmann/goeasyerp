@@ -9,9 +9,8 @@ import (
 
 // fAJournalLineLogic is the business logic of table 5621 FA Journal Line: a posting to a fixed
 // asset's depreciation book without G/L (a book whose G/L integration is off for the posting
-// type); posted by codeunit 5632 (package fajnl).
-//
-// Not migrated yet: budgeted assets (Budgeted FA No.), recurring FA journals.
+// type); posted by codeunit 5632 (package fajnl). A line with Budgeted FA No. also posts its
+// amount, reversed, to that budgeted asset.
 type fAJournalLineLogic struct{}
 
 func init() { gtables.RegisterFAJournalLineLogic(fAJournalLineLogic{}) }
@@ -149,6 +148,19 @@ func (fAJournalLineLogic) OnValidate_Insurance_no(rec *gtables.FAJournalLine) er
 		return rec.TestField("fa_posting_type", gtables.FAJournalLine_Fa_posting_type.AcquisitionCost)
 	}
 	return nil
+}
+
+// OnValidate_Budgeted_fa_no: the asset the line's amount is taken from is a budgeted asset
+func (fAJournalLineLogic) OnValidate_Budgeted_fa_no(rec *gtables.FAJournalLine) error {
+	if rec.Budgeted_fa_no == "" {
+		return nil
+	}
+	fa := gtables.NewFixedAsset(rec)
+	err := fa.GetOrError(rec.Budgeted_fa_no)
+	if err != nil {
+		return err
+	}
+	return fa.TestField("budgeted_asset", true)
 }
 
 // OnValidate_Use_duplication_list: not with a book to duplicate in

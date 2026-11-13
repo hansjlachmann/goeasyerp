@@ -1,6 +1,7 @@
 package reports
 
 import (
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/fadepr"
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
@@ -13,7 +14,9 @@ import (
 // net change in the period and — disposed in the period — their disposal, the totals at the ending
 // date and the book value at both dates (codeunit 5626 FA General Report's CalcFAPostedAmount);
 // group totals by class, subclass, location, main asset, dimension 1 or 2; Print per Fixed
-// Asset (PrintDetails). Budget reports are left out (budgeted assets are not migrated).
+// Asset (PrintDetails). A budget report (Budget Report) adds the depreciation codeunit 5615 Budget
+// Depreciation calculates up to the day before the starting date and up to the ending date to the
+// posted depreciation and book value — the depreciation still to come of the budgeted assets.
 //
 // The groups are the data item's group sections, grouped by the value group_head_line (the
 // asset's class, subclass … — the option the user picks; blank without group totals): the group
@@ -49,6 +52,10 @@ type faBookValue struct {
 	startingDate, endingDate types.Date
 	groupTotals              int // 0 none, 1 FA Class, 2 FA Subclass, 3 FA Location, 4 Main Asset, 5 Dimension 1, 6 Dimension 2
 	printDetails             bool
+	budgetReport             bool
+	budgetDepreciation       fadepr.BudgetDepreciation
+	beforeAmount             types.Decimal // the budget's depreciation before the starting date
+	endingAmount             types.Decimal // the budget's depreciation up to the ending date
 	faDeprBook               *gtables.FADepreciationBook
 	acquisitionDate          types.Date
 	disposalDate             types.Date
@@ -95,6 +102,7 @@ func faBookValueOptions() []Option {
 		{Name: "group_totals", Type: "option", Default: "1",
 			Options: []string{"GROUP_NONE", "GROUP_FA_CLASS", "GROUP_FA_SUBCLASS", "GROUP_FA_LOCATION", "GROUP_MAIN_ASSET", "GROUP_DIMENSION_1", "GROUP_DIMENSION_2"}},
 		{Name: "print_per_fixed_asset", Type: "bool", Default: "false"},
+		{Name: "budget_report", Type: "bool", Default: "false"},
 	}
 }
 
@@ -109,6 +117,12 @@ func (r *faBookValue) onPreReport(run *Run) error {
 	r.endingDate = run.OptionDate("ending_date")
 	r.groupTotals = run.OptionInt("group_totals") - 1
 	r.printDetails = run.OptionBool("print_per_fixed_asset")
+	r.budgetReport = run.OptionBool("budget_report")
+	mainHeadLineText := run.Text("TITLE")
+	if r.budgetReport {
+		mainHeadLineText = run.Text("TITLE_BUDGET")
+	}
+	run.SetValue("main_head_line", mainHeadLineText)
 	err = r.validateDates(run)
 	if err != nil {
 		return err
@@ -165,6 +179,15 @@ func (r *faBookValue) faOnAfterGetRecord(fa *gtables.FixedAsset, run *Run) error
 	}
 	if r.skipRecord(fa) {
 		return Skip()
+	}
+	r.beforeAmount = types.Decimal{}
+	r.endingAmount = types.Decimal{}
+	if r.budgetReport {
+		var err error
+		r.beforeAmount, r.endingAmount, err = r.budgetDepreciation.Calculate(run, fa.No, getStartingDate(r.startingDate), r.endingDate, r.deprBookCode)
+		if err != nil {
+			return err
+		}
 	}
 	var amounts faBookValueAmounts
 	for i := 1; i <= faBookValueTypes; i++ {
@@ -227,7 +250,25 @@ func (r *faBookValue) calcFAPostedAmount(run *Run, faNo types.Code, postingType 
 	if faLedgEntry.CalcSums("amount") != nil {
 		return types.Decimal{}
 	}
-	return faLedgEntry.Amount
+	amount := faLedgEntry.Amount
+	// a budget report's depreciation to come (not of the reclassified amounts)
+	if postingType == gtables.FALedgerEntry_Fa_posting_type.Depreciation && !onlyReclassified {
+		switch period {
+		case 0:
+			amount = amount.Add(r.beforeAmount)
+		case 1:
+			amount = amount.Sub(r.beforeAmount).Add(r.endingAmount)
+		}
+	}
+	return amount
+}
+
+// getStartingDate (GetStartingDate): the day before the starting date (blank for the first date)
+func getStartingDate(startingDate types.Date) types.Date {
+	if startingDate.IsZero() {
+		return types.Date{}
+	}
+	return startingDate.AddDays(-1)
 }
 
 // addPostingType (AddPostingType, report 5605): a write-down, appreciation or custom amount

@@ -85,6 +85,7 @@ var layoutFitOptions = map[int]map[string]string{
 	1401: {"bank_account": "B010", "last_check_no": "FIT1000", "test_print": "true"},
 	5605: {"depreciation_book": "COMPANY", "starting_date": "2026-01-01", "ending_date": "2026-10-06"},
 	5606: {"depreciation_book": "COMPANY", "starting_date": "2026-01-01", "ending_date": "2026-10-06"},
+	5607: {"depreciation_book": "COMPANY", "first_depreciation_date": "2026-10-31", "last_depreciation_date": "2027-12-31", "group_totals": "2", "print_per_fixed_asset": "true", "projected_disposal": "true", "print_amounts_per_date": "true", "posted_entries_from": "2026-01-01"},
 }
 
 // layoutFitFilters: the request filters some reports need (Check: one payment journal — the

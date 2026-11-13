@@ -265,3 +265,10 @@ func getErrorDisposal(src ftables.Source, faNo, deprBookCode types.Code, onlyGai
 	}
 	return a, numbers
 }
+
+// CalcGainLoss is codeunit 5605's CalcGainLoss for the reports: the first disposal's 14 amounts
+// (0: the gain or loss with the types in it, 1: without)
+func CalcGainLoss(src ftables.Source, faNo, deprBookCode types.Code) ([14]types.Decimal, error) {
+	a, err := calcGainLoss(src, faNo, deprBookCode)
+	return [14]types.Decimal(a), err
+}

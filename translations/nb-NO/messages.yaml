@@ -457,6 +457,7 @@ messages:
   RECURRING_BOM_JNL_TEMPLATE_DESCRIPTION: "Gjentakelseskladd - stykkliste"
   RECURRING_RES_JNL_TEMPLATE_DESCRIPTION: "Gjentakelseskladd - ressurs"
   RECURRING_FA_JNL_TEMPLATE_DESCRIPTION: "Gjentakelseskladd - anleggsmidler"
+  FA_BUDGET_DECLINING_BALANCE: "Budsjettberegning er ikke utført for anleggsmidler med avskrivningsmetode %1, %2 eller %3."
   GEN_JNL_DEFAULT_BATCH: "Standardkladd"
   GEN_JNL_POST_CONFIRM: "Vil du bokføre kladdelinjene?"
   JNL_POST_PRINT_CONFIRM: "Vil du bokføre kladdelinjene og skrive ut bokføringsrapporten?"

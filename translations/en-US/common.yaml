@@ -481,6 +481,7 @@ common:
     fixed_asset_details: "Fixed Asset - Details"
     fixed_asset_book_value_01: "Fixed Asset - Book Value 01"
     fixed_asset_book_value_02: "Fixed Asset - Book Value 02"
+    fixed_asset_projected_value: "Fixed Asset - Projected Value"
     fixed_asset_register: "Fixed Asset Register"
     account_schedules: "Account Schedules"
     activities: "Activities"

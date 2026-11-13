@@ -10,6 +10,7 @@ func init() {
 	objects.Codeunit(5611, "Calculate Normal Depreciation")
 	objects.Codeunit(5612, "Calculate Custom 1 Depr.")
 	objects.Codeunit(5613, "Calculate Acq. Cost Depr.")
+	objects.Codeunit(5615, "Budget Depreciation")
 	objects.Codeunit(5617, "FA Date Calculation")
 	objects.Codeunit(5618, "Table Depr. Calculation")
 }

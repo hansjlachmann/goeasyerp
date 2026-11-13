@@ -18,8 +18,6 @@ import (
 //     the document no. checked;
 //   - 5623 Insurance Register (the insurance journal's posting report): per register its
 //     coverage ledger entries with their total.
-//
-// Budgeted assets are not part of this application (their checks are left out).
 const (
 	FAJnlTestID          = 5602
 	InsuranceJnlTestID   = 5622
@@ -155,11 +153,13 @@ func (r *faJnlTest) lineOnAfterGetRecord(line *gtables.FAJournalLine, run *Run) 
 		r.addError(run.Text("SETUP_NOT_EXIST", faDeprBook.TableCaption(language), line.Fa_no, line.Depreciation_book_code))
 		faDeprBook.Init()
 	}
-	r.checkFAIntegration(run, line, deprBook)
+	if !fa.Budgeted_asset {
+		r.checkFAIntegration(run, line, deprBook)
+	}
 	if line.Fa_error_entry_no > 0 {
 		r.checkErrorNo(run, line)
 	}
-	r.checkConsistency(run, line, deprBook)
+	r.checkConsistency(run, line, deprBook, fa)
 	return nil
 }
 
@@ -249,6 +249,9 @@ func (r *faJnlTest) checkErrorNo(run *Run, line *gtables.FAJournalLine) {
 	if line.Insurance_no != "" {
 		r.addError(run.Text("NOT_WITH_ERROR_ENTRY", caption("insurance_no"), errorEntryNo))
 	}
+	if line.Budgeted_fa_no != "" {
+		r.addError(run.Text("NOT_WITH_ERROR_ENTRY", caption("budgeted_fa_no"), errorEntryNo))
+	}
 	if line.Recurring_method != gtables.FAJournalLine_Recurring_method.Blank {
 		r.addError(run.Text("NOT_WITH_ERROR_ENTRY", caption("recurring_method"), errorEntryNo))
 	}
@@ -258,8 +261,9 @@ func (r *faJnlTest) checkErrorNo(run *Run, line *gtables.FAJournalLine) {
 }
 
 // checkConsistency (CheckConsistency): the fields the line's FA posting type does not use,
-// insurance integration and the book's Use Same FA+G/L Posting Dates
-func (r *faJnlTest) checkConsistency(run *Run, line *gtables.FAJournalLine, deprBook *gtables.DepreciationBook) {
+// a budgeted asset without Budgeted FA No., insurance integration and the book's Use Same FA+G/L
+// Posting Dates
+func (r *faJnlTest) checkConsistency(run *Run, line *gtables.FAJournalLine, deprBook *gtables.DepreciationBook, fa *gtables.FixedAsset) {
 	language := fcodeunits.CurrentLanguage()
 	caption := func(field string) string { return line.GetFieldCaption(field, language) }
 	postingType := faPostingTypeCaption(line, language)
@@ -291,8 +295,16 @@ func (r *faJnlTest) checkConsistency(run *Run, line *gtables.FAJournalLine, depr
 		line.No_of_depreciation_days != 0 {
 		notTogether("no_of_depreciation_days")
 	}
-	if line.Fa_posting_type == gtables.FAJournalLine_Fa_posting_type.Disposal && line.Fa_reclassification_entry {
-		notTogether("fa_reclassification_entry")
+	if line.Fa_posting_type == gtables.FAJournalLine_Fa_posting_type.Disposal {
+		if line.Fa_reclassification_entry {
+			notTogether("fa_reclassification_entry")
+		}
+		if line.Budgeted_fa_no != "" {
+			notTogether("budgeted_fa_no")
+		}
+	}
+	if fa.Budgeted_asset && line.Budgeted_fa_no != "" {
+		r.addError(run.Text("NOT_WHEN_BUDGETED", caption("budgeted_fa_no"), caption("fa_no"), fa.GetFieldCaption("budgeted_asset", language)))
 	}
 
 	faSetup := gtables.GetFASetup(run)

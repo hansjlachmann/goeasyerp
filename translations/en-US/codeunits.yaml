@@ -298,6 +298,8 @@ codeunits:
     caption: "Calculate Custom 1 Depr."
   "5613":
     caption: "Calculate Acq. Cost Depr."
+  "5615":
+    caption: "Budget Depreciation"
   "5617":
     caption: "FA Date Calculation"
   "5618":

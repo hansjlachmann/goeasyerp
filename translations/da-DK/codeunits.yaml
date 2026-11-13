@@ -298,6 +298,8 @@ codeunits:
     caption: "Beregn bruger 1-afskrivning"
   "5613":
     caption: "Beregn afskrivning af anskaffelsespris"
+  "5615":
+    caption: "Budgetafskrivning"
   "5617":
     caption: "Anlæg – datoberegning"
   "5618":

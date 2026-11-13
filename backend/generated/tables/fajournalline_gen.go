@@ -37,6 +37,7 @@
 //	OnValidate_Dimension_1_code(rec *gtables.FAJournalLine) error
 //	OnValidate_Dimension_2_code(rec *gtables.FAJournalLine) error
 //	OnValidate_Insurance_no(rec *gtables.FAJournalLine) error
+//	OnValidate_Budgeted_fa_no(rec *gtables.FAJournalLine) error
 //	OnValidate_Use_duplication_list(rec *gtables.FAJournalLine) error
 //	OnValidate_Duplicate_in_depreciation_book(rec *gtables.FAJournalLine) error
 //	OnValidate_Fa_reclassification_entry(rec *gtables.FAJournalLine) error
@@ -153,6 +154,7 @@ type FAJournalLine struct {
 	Dimension_1_code               types.Code                    `db:"dimension_1_code"`
 	Dimension_2_code               types.Code                    `db:"dimension_2_code"`
 	Insurance_no                   types.Code                    `db:"insurance_no"`
+	Budgeted_fa_no                 types.Code                    `db:"budgeted_fa_no"`
 	Use_duplication_list           bool                          `db:"use_duplication_list"`
 	Duplicate_in_depreciation_book types.Code                    `db:"duplicate_in_depreciation_book"`
 	Fa_reclassification_entry      bool                          `db:"fa_reclassification_entry"`
@@ -308,6 +310,7 @@ var FAJournalLine_FieldNo = struct {
 	Dimension_1_code               int
 	Dimension_2_code               int
 	Insurance_no                   int
+	Budgeted_fa_no                 int
 	Use_duplication_list           int
 	Duplicate_in_depreciation_book int
 	Fa_reclassification_entry      int
@@ -347,6 +350,7 @@ var FAJournalLine_FieldNo = struct {
 	Dimension_1_code:               27,
 	Dimension_2_code:               28,
 	Insurance_no:                   30,
+	Budgeted_fa_no:                 31,
 	Use_duplication_list:           32,
 	Duplicate_in_depreciation_book: 33,
 	Fa_reclassification_entry:      34,
@@ -417,6 +421,8 @@ func (t *FAJournalLine) FieldNo(fieldName string) int {
 		return 28
 	case "insurance_no":
 		return 30
+	case "budgeted_fa_no":
+		return 31
 	case "use_duplication_list":
 		return 32
 	case "duplicate_in_depreciation_book":
@@ -500,6 +506,8 @@ func (t *FAJournalLine) FieldName(fieldNo int) string {
 		return "dimension_2_code"
 	case 30:
 		return "insurance_no"
+	case 31:
+		return "budgeted_fa_no"
 	case 32:
 		return "use_duplication_list"
 	case 33:
@@ -704,6 +712,9 @@ type (
 	FAJournalLineOnValidate_Insurance_no interface {
 		OnValidate_Insurance_no(rec *FAJournalLine) error
 	}
+	FAJournalLineOnValidate_Budgeted_fa_no interface {
+		OnValidate_Budgeted_fa_no(rec *FAJournalLine) error
+	}
 	FAJournalLineOnValidate_Use_duplication_list interface {
 		OnValidate_Use_duplication_list(rec *FAJournalLine) error
 	}
@@ -820,6 +831,8 @@ func fAJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FAJournalLineOnValidate_Dimension_2_code)
 	case "OnValidate_Insurance_no":
 		_, ok = logic.(FAJournalLineOnValidate_Insurance_no)
+	case "OnValidate_Budgeted_fa_no":
+		_, ok = logic.(FAJournalLineOnValidate_Budgeted_fa_no)
 	case "OnValidate_Use_duplication_list":
 		_, ok = logic.(FAJournalLineOnValidate_Use_duplication_list)
 	case "OnValidate_Duplicate_in_depreciation_book":
@@ -958,6 +971,9 @@ func (t *FAJournalLine) CheckFields() error {
 	if err := tables.CheckMaxLength(FAJournalLineTableName, "insurance_no", string(t.Insurance_no), 20); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(FAJournalLineTableName, "budgeted_fa_no", string(t.Budgeted_fa_no), 20); err != nil {
+		return err
+	}
 	if err := tables.CheckMaxLength(FAJournalLineTableName, "duplicate_in_depreciation_book", string(t.Duplicate_in_depreciation_book), 10); err != nil {
 		return err
 	}
@@ -1030,6 +1046,7 @@ func GetFAJournalLineTableSchema() string {
 		dimension_1_code TEXT(10),
 		dimension_2_code TEXT(10),
 		insurance_no TEXT(20),
+		budgeted_fa_no TEXT(20),
 		use_duplication_list INTEGER,
 		duplicate_in_depreciation_book TEXT(10),
 		fa_reclassification_entry INTEGER,
@@ -1075,6 +1092,7 @@ func GetFAJournalLinePostgresTableSchema() string {
 		dimension_1_code VARCHAR(10),
 		dimension_2_code VARCHAR(10),
 		insurance_no VARCHAR(20),
+		budgeted_fa_no VARCHAR(20),
 		use_duplication_list BOOLEAN,
 		duplicate_in_depreciation_book VARCHAR(10),
 		fa_reclassification_entry BOOLEAN,
@@ -1254,6 +1272,7 @@ func (t *FAJournalLine) StoreOldValues() {
 	t.oldValues["dimension_1_code"] = t.Dimension_1_code
 	t.oldValues["dimension_2_code"] = t.Dimension_2_code
 	t.oldValues["insurance_no"] = t.Insurance_no
+	t.oldValues["budgeted_fa_no"] = t.Budgeted_fa_no
 	t.oldValues["use_duplication_list"] = t.Use_duplication_list
 	t.oldValues["duplicate_in_depreciation_book"] = t.Duplicate_in_depreciation_book
 	t.oldValues["fa_reclassification_entry"] = t.Fa_reclassification_entry
@@ -1359,6 +1378,9 @@ func (t *FAJournalLine) XRec() *FAJournalLine {
 	}
 	if v, ok := t.oldValues["insurance_no"].(types.Code); ok {
 		x.Insurance_no = v
+	}
+	if v, ok := t.oldValues["budgeted_fa_no"].(types.Code); ok {
+		x.Budgeted_fa_no = v
 	}
 	if v, ok := t.oldValues["use_duplication_list"].(bool); ok {
 		x.Use_duplication_list = v
@@ -1499,6 +1521,7 @@ func (t *FAJournalLine) GetByPK(journal_template_name types.Code, journal_batch_
 	var dimension_1_codeNull sql.NullString
 	var dimension_2_codeNull sql.NullString
 	var insurance_noNull sql.NullString
+	var budgeted_fa_noNull sql.NullString
 	var use_duplication_listBool sql.NullBool
 	var duplicate_in_depreciation_bookNull sql.NullString
 	var fa_reclassification_entryBool sql.NullBool
@@ -1519,7 +1542,7 @@ func (t *FAJournalLine) GetByPK(journal_template_name types.Code, journal_batch_
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, dimension_1_code, dimension_2_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, dimension_1_code, dimension_2_code, insurance_no, budgeted_fa_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1553,6 +1576,7 @@ func (t *FAJournalLine) GetByPK(journal_template_name types.Code, journal_batch_
 		&dimension_1_codeNull,
 		&dimension_2_codeNull,
 		&insurance_noNull,
+		&budgeted_fa_noNull,
 		&use_duplication_listBool,
 		&duplicate_in_depreciation_bookNull,
 		&fa_reclassification_entryBool,
@@ -1604,6 +1628,7 @@ func (t *FAJournalLine) GetByPK(journal_template_name types.Code, journal_batch_
 	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
 	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Insurance_no = types.NewCode(insurance_noNull.String)
+	t.Budgeted_fa_no = types.NewCode(budgeted_fa_noNull.String)
 	t.Use_duplication_list = use_duplication_listBool.Bool
 	t.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
 	t.Fa_reclassification_entry = fa_reclassification_entryBool.Bool
@@ -1664,6 +1689,7 @@ func (t *FAJournalLine) Insert(runTrigger bool) bool {
 		t.Dimension_1_code,
 		t.Dimension_2_code,
 		t.Insurance_no,
+		t.Budgeted_fa_no,
 		t.Use_duplication_list,
 		t.Duplicate_in_depreciation_book,
 		t.Fa_reclassification_entry,
@@ -1679,7 +1705,7 @@ func (t *FAJournalLine) Insert(runTrigger bool) bool {
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, dimension_1_code, dimension_2_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, dimension_1_code, dimension_2_code, insurance_no, budgeted_fa_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1744,6 +1770,7 @@ func (t *FAJournalLine) InsertAll(records []*FAJournalLine, runTrigger bool) err
 			r.Dimension_1_code,
 			r.Dimension_2_code,
 			r.Insurance_no,
+			r.Budgeted_fa_no,
 			r.Use_duplication_list,
 			r.Duplicate_in_depreciation_book,
 			r.Fa_reclassification_entry,
@@ -1758,7 +1785,7 @@ func (t *FAJournalLine) InsertAll(records []*FAJournalLine, runTrigger bool) err
 		})
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "depreciation_book_code", "fa_posting_type", "fa_no", "fa_posting_date", "posting_date", "document_type", "document_date", "document_no", "external_document_no", "description", "amount", "debit_amount", "credit_amount", "salvage_value", "quantity", "correction", "no_of_depreciation_days", "depr_until_fa_posting_date", "depr_acquisition_cost", "fa_posting_group", "maintenance_code", "dimension_1_code", "dimension_2_code", "insurance_no", "use_duplication_list", "duplicate_in_depreciation_book", "fa_reclassification_entry", "fa_error_entry_no", "reason_code", "source_code", "index_entry", "posting_no_series", "recurring_method", "expiration_date", "recurring_frequency"}
+	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "depreciation_book_code", "fa_posting_type", "fa_no", "fa_posting_date", "posting_date", "document_type", "document_date", "document_no", "external_document_no", "description", "amount", "debit_amount", "credit_amount", "salvage_value", "quantity", "correction", "no_of_depreciation_days", "depr_until_fa_posting_date", "depr_acquisition_cost", "fa_posting_group", "maintenance_code", "dimension_1_code", "dimension_2_code", "insurance_no", "budgeted_fa_no", "use_duplication_list", "duplicate_in_depreciation_book", "fa_reclassification_entry", "fa_error_entry_no", "reason_code", "source_code", "index_entry", "posting_no_series", "recurring_method", "expiration_date", "recurring_frequency"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1912,6 +1939,10 @@ func (t *FAJournalLine) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "insurance_no = ?")
 			values = append(values, t.Insurance_no)
 		}
+		if t.hasFieldChanged("budgeted_fa_no") {
+			setClauses = append(setClauses, "budgeted_fa_no = ?")
+			values = append(values, t.Budgeted_fa_no)
+		}
 		if t.hasFieldChanged("use_duplication_list") {
 			setClauses = append(setClauses, "use_duplication_list = ?")
 			values = append(values, t.Use_duplication_list)
@@ -2011,6 +2042,8 @@ func (t *FAJournalLine) Modify(runTrigger bool) bool {
 		values = append(values, t.Dimension_2_code)
 		setClauses = append(setClauses, "insurance_no = ?")
 		values = append(values, t.Insurance_no)
+		setClauses = append(setClauses, "budgeted_fa_no = ?")
+		values = append(values, t.Budgeted_fa_no)
 		setClauses = append(setClauses, "use_duplication_list = ?")
 		values = append(values, t.Use_duplication_list)
 		setClauses = append(setClauses, "duplicate_in_depreciation_book = ?")
@@ -2199,6 +2232,10 @@ func (t *FAJournalLine) hasFieldChanged(fieldName string) bool {
 	case "insurance_no":
 		if old, ok := oldValue.(types.Code); ok {
 			return !t.Insurance_no.Equal(old)
+		}
+	case "budgeted_fa_no":
+		if old, ok := oldValue.(types.Code); ok {
+			return !t.Budgeted_fa_no.Equal(old)
 		}
 	case "use_duplication_list":
 		if old, ok := oldValue.(bool); ok {
@@ -2508,6 +2545,8 @@ func (t *FAJournalLine) columnName(fieldName string) (string, bool) {
 		return "dimension_2_code", true
 	case strings.ToLower("insurance_no"):
 		return "insurance_no", true
+	case strings.ToLower("budgeted_fa_no"):
+		return "budgeted_fa_no", true
 	case strings.ToLower("use_duplication_list"):
 		return "use_duplication_list", true
 	case strings.ToLower("duplicate_in_depreciation_book"):
@@ -2917,7 +2956,7 @@ func (t *FAJournalLine) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, dimension_1_code, dimension_2_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, dimension_1_code, dimension_2_code, insurance_no, budgeted_fa_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2947,6 +2986,7 @@ func (t *FAJournalLine) FindFirst() bool {
 	var dimension_1_codeNull sql.NullString
 	var dimension_2_codeNull sql.NullString
 	var insurance_noNull sql.NullString
+	var budgeted_fa_noNull sql.NullString
 	var use_duplication_listBool sql.NullBool
 	var duplicate_in_depreciation_bookNull sql.NullString
 	var fa_reclassification_entryBool sql.NullBool
@@ -2986,6 +3026,7 @@ func (t *FAJournalLine) FindFirst() bool {
 		&dimension_1_codeNull,
 		&dimension_2_codeNull,
 		&insurance_noNull,
+		&budgeted_fa_noNull,
 		&use_duplication_listBool,
 		&duplicate_in_depreciation_bookNull,
 		&fa_reclassification_entryBool,
@@ -3033,6 +3074,7 @@ func (t *FAJournalLine) FindFirst() bool {
 	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
 	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Insurance_no = types.NewCode(insurance_noNull.String)
+	t.Budgeted_fa_no = types.NewCode(budgeted_fa_noNull.String)
 	t.Use_duplication_list = use_duplication_listBool.Bool
 	t.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
 	t.Fa_reclassification_entry = fa_reclassification_entryBool.Bool
@@ -3063,7 +3105,7 @@ func (t *FAJournalLine) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, dimension_1_code, dimension_2_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, dimension_1_code, dimension_2_code, insurance_no, budgeted_fa_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3093,6 +3135,7 @@ func (t *FAJournalLine) FindLast() bool {
 	var dimension_1_codeNull sql.NullString
 	var dimension_2_codeNull sql.NullString
 	var insurance_noNull sql.NullString
+	var budgeted_fa_noNull sql.NullString
 	var use_duplication_listBool sql.NullBool
 	var duplicate_in_depreciation_bookNull sql.NullString
 	var fa_reclassification_entryBool sql.NullBool
@@ -3132,6 +3175,7 @@ func (t *FAJournalLine) FindLast() bool {
 		&dimension_1_codeNull,
 		&dimension_2_codeNull,
 		&insurance_noNull,
+		&budgeted_fa_noNull,
 		&use_duplication_listBool,
 		&duplicate_in_depreciation_bookNull,
 		&fa_reclassification_entryBool,
@@ -3179,6 +3223,7 @@ func (t *FAJournalLine) FindLast() bool {
 	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
 	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 	t.Insurance_no = types.NewCode(insurance_noNull.String)
+	t.Budgeted_fa_no = types.NewCode(budgeted_fa_noNull.String)
 	t.Use_duplication_list = use_duplication_listBool.Bool
 	t.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
 	t.Fa_reclassification_entry = fa_reclassification_entryBool.Bool
@@ -3239,7 +3284,7 @@ func (t *FAJournalLine) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, dimension_1_code, dimension_2_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, dimension_1_code, dimension_2_code, insurance_no, budgeted_fa_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3333,6 +3378,7 @@ func (t *FAJournalLine) Next(steps ...int) bool {
 		var dimension_1_codeNull sql.NullString
 		var dimension_2_codeNull sql.NullString
 		var insurance_noNull sql.NullString
+		var budgeted_fa_noNull sql.NullString
 		var use_duplication_listBool sql.NullBool
 		var duplicate_in_depreciation_bookNull sql.NullString
 		var fa_reclassification_entryBool sql.NullBool
@@ -3372,6 +3418,7 @@ func (t *FAJournalLine) Next(steps ...int) bool {
 			&dimension_1_codeNull,
 			&dimension_2_codeNull,
 			&insurance_noNull,
+			&budgeted_fa_noNull,
 			&use_duplication_listBool,
 			&duplicate_in_depreciation_bookNull,
 			&fa_reclassification_entryBool,
@@ -3418,6 +3465,7 @@ func (t *FAJournalLine) Next(steps ...int) bool {
 		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
 		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		t.Insurance_no = types.NewCode(insurance_noNull.String)
+		t.Budgeted_fa_no = types.NewCode(budgeted_fa_noNull.String)
 		t.Use_duplication_list = use_duplication_listBool.Bool
 		t.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
 		t.Fa_reclassification_entry = fa_reclassification_entryBool.Bool
@@ -3477,7 +3525,7 @@ func (t *FAJournalLine) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, dimension_1_code, dimension_2_code, insurance_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, dimension_1_code, dimension_2_code, insurance_no, budgeted_fa_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -3524,6 +3572,7 @@ func (t *FAJournalLine) FindSetBuffered() bool {
 		var dimension_1_codeNull sql.NullString
 		var dimension_2_codeNull sql.NullString
 		var insurance_noNull sql.NullString
+		var budgeted_fa_noNull sql.NullString
 		var use_duplication_listBool sql.NullBool
 		var duplicate_in_depreciation_bookNull sql.NullString
 		var fa_reclassification_entryBool sql.NullBool
@@ -3563,6 +3612,7 @@ func (t *FAJournalLine) FindSetBuffered() bool {
 			&dimension_1_codeNull,
 			&dimension_2_codeNull,
 			&insurance_noNull,
+			&budgeted_fa_noNull,
 			&use_duplication_listBool,
 			&duplicate_in_depreciation_bookNull,
 			&fa_reclassification_entryBool,
@@ -3607,6 +3657,7 @@ func (t *FAJournalLine) FindSetBuffered() bool {
 		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
 		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
 		record.Insurance_no = types.NewCode(insurance_noNull.String)
+		record.Budgeted_fa_no = types.NewCode(budgeted_fa_noNull.String)
 		record.Use_duplication_list = use_duplication_listBool.Bool
 		record.Duplicate_in_depreciation_book = types.NewCode(duplicate_in_depreciation_bookNull.String)
 		record.Fa_reclassification_entry = fa_reclassification_entryBool.Bool
@@ -3672,6 +3723,7 @@ func (t *FAJournalLine) copyFromBuffered(record *FAJournalLine) {
 	t.Dimension_1_code = record.Dimension_1_code
 	t.Dimension_2_code = record.Dimension_2_code
 	t.Insurance_no = record.Insurance_no
+	t.Budgeted_fa_no = record.Budgeted_fa_no
 	t.Use_duplication_list = record.Use_duplication_list
 	t.Duplicate_in_depreciation_book = record.Duplicate_in_depreciation_book
 	t.Fa_reclassification_entry = record.Fa_reclassification_entry
@@ -4490,6 +4542,28 @@ func (t *FAJournalLine) ValidateField(fieldName string, value interface{}) error
 			}
 		}
 		return nil
+	case "budgeted_fa_no":
+		// Set field value
+		if v, ok := value.(types.Code); ok {
+			t.Budgeted_fa_no = v
+		} else if v, ok := value.(string); ok {
+			t.Budgeted_fa_no = types.NewCode(v)
+		} else {
+			return fmt.Errorf("invalid type for field budgeted_fa_no")
+		}
+		// TableRelation: the value must exist in the related table (before OnValidate)
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "budgeted_fa_no"); err != nil {
+			return err
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(FAJournalLineOnValidate_Budgeted_fa_no); ok {
+				if err := trg.OnValidate_Budgeted_fa_no(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	case "use_duplication_list":
 		// Set field value
 		if v, ok := value.(bool); ok {
@@ -4826,6 +4900,8 @@ func (t *FAJournalLine) FieldValue(no int) (any, bool) {
 		return t.Dimension_2_code, true
 	case 30:
 		return t.Insurance_no, true
+	case 31:
+		return t.Budgeted_fa_no, true
 	case 32:
 		return t.Use_duplication_list, true
 	case 33:
@@ -5044,6 +5120,15 @@ func (t *FAJournalLine) SetFieldValue(no int, value any) bool {
 		}
 		if v, ok := value.(string); ok {
 			t.Insurance_no = types.NewCode(v)
+			return true
+		}
+	case 31:
+		if v, ok := value.(types.Code); ok {
+			t.Budgeted_fa_no = v
+			return true
+		}
+		if v, ok := value.(string); ok {
+			t.Budgeted_fa_no = types.NewCode(v)
 			return true
 		}
 	case 32:
@@ -5705,6 +5790,8 @@ func (t *FAJournalLine) columnValue(column string) (interface{}, bool) {
 		return t.Dimension_2_code, true
 	case "insurance_no":
 		return t.Insurance_no, true
+	case "budgeted_fa_no":
+		return t.Budgeted_fa_no, true
 	case "use_duplication_list":
 		return t.Use_duplication_list, true
 	case "duplicate_in_depreciation_book":
@@ -5813,6 +5900,7 @@ func (t *FAJournalLine) Init() {
 	t.Dimension_1_code = *new(types.Code)
 	t.Dimension_2_code = *new(types.Code)
 	t.Insurance_no = *new(types.Code)
+	t.Budgeted_fa_no = *new(types.Code)
 	t.Use_duplication_list = *new(bool)
 	t.Duplicate_in_depreciation_book = *new(types.Code)
 	t.Fa_reclassification_entry = *new(bool)
@@ -5885,6 +5973,7 @@ func (t *FAJournalLine) ToMap() map[string]interface{} {
 		"dimension_1_code":               t.Dimension_1_code.String(),
 		"dimension_2_code":               t.Dimension_2_code.String(),
 		"insurance_no":                   t.Insurance_no.String(),
+		"budgeted_fa_no":                 t.Budgeted_fa_no.String(),
 		"use_duplication_list":           t.Use_duplication_list,
 		"duplicate_in_depreciation_book": t.Duplicate_in_depreciation_book.String(),
 		"fa_reclassification_entry":      t.Fa_reclassification_entry,
@@ -6109,6 +6198,11 @@ func (t *FAJournalLine) FromMap(data map[string]interface{}) {
 	if v, ok := data["insurance_no"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Insurance_no = types.NewCode(s)
+		}
+	}
+	if v, ok := data["budgeted_fa_no"]; ok && v != nil {
+		if s, ok := v.(string); ok {
+			t.Budgeted_fa_no = types.NewCode(s)
 		}
 	}
 	if v, ok := data["use_duplication_list"]; ok && v != nil {
@@ -6483,6 +6577,16 @@ func (t *FAJournalLine) GetFields() []tables.FieldInfo {
 			FlowField:  false,
 		},
 		{
+			No:         31,
+			Name:       "budgeted_fa_no",
+			Type:       tables.FieldTypeCode,
+			Length:     20,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+		},
+		{
 			No:         32,
 			Name:       "use_duplication_list",
 			Type:       tables.FieldTypeBoolean,
@@ -6716,6 +6820,16 @@ func (t *FAJournalLine) GetTableRelationFields() map[string]tables.TableRelation
 		},
 		"insurance_no": {
 			Table:        "Insurance",
+			Field:        "no",
+			DisplayField: "",
+			LookupColumns: []tables.LookupColumnInfo{
+				{Source: "no", Width: 100},
+				{Source: "description", Width: 250},
+			},
+			SearchTimeout: 0,
+		},
+		"budgeted_fa_no": {
+			Table:        "Fixed_Asset",
 			Field:        "no",
 			DisplayField: "",
 			LookupColumns: []tables.LookupColumnInfo{

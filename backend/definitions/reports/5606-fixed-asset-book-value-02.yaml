@@ -15,7 +15,7 @@ report:
           print_on_every_page: true
           height: 14
           elements:
-            - {text: TITLE, x: 0, y: 0, width: 120, bold: true, size: 10}
+            - {value: main_head_line, x: 0, y: 0, width: 120, bold: true, size: 10}
             - {value: depr_book_text, x: 0, y: 5, width: 120}
             - {value: company_name, x: 0, y: 9, width: 120}
             - {value: today, x: 126, y: 0, width: 60, align: right}

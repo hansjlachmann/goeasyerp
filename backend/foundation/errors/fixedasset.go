@@ -253,6 +253,10 @@ func FACannotBeCanceled(table, entryNo string, value any) *AppError {
 const (
 	ErrFAReclassSameBook       ErrorCode = "ERR_FA_RECLASS_SAME_BOOK"
 	ErrFAReclassBudgeted       ErrorCode = "ERR_FA_RECLASS_BUDGETED"
+	ErrFAMustNotBeBudgeted     ErrorCode = "ERR_FA_MUST_NOT_BE_BUDGETED"
+	ErrFANotWhenBudgeted       ErrorCode = "ERR_FA_NOT_WHEN_BUDGETED"
+	ErrFANotABudgetedAsset     ErrorCode = "ERR_FA_NOT_A_BUDGETED_ASSET"
+	ErrFABudgetCustom1         ErrorCode = "ERR_FA_BUDGET_CUSTOM_1"
 	ErrFAReclassSameAsset      ErrorCode = "ERR_FA_RECLASS_SAME_ASSET"
 	ErrFAReclassDisposed       ErrorCode = "ERR_FA_RECLASS_DISPOSED"
 	ErrFAReclassNoAcqCost      ErrorCode = "ERR_FA_RECLASS_NO_ACQ_COST"
@@ -287,4 +291,25 @@ func FAReclassNoAcqCost(faNo, deprBookCode string) *AppError {
 // FAReclassAmountTooLarge: Reclassify Acq. Cost Amount is above the asset's acquisition cost
 func FAReclassAmountTooLarge(table, faNo, deprBookCode string) *AppError {
 	return &AppError{Code: ErrFAReclassAmountTooLarge, Table: table, Field: "reclassify_acq_cost_amount", Params: []string{faNo, deprBookCode}}
+}
+
+// FAMustNotBeBudgeted: a general journal line's fixed asset (field) must not be a budgeted asset
+func FAMustNotBeBudgeted(table, field string) *AppError {
+	return &AppError{Code: ErrFAMustNotBeBudgeted, Table: table, Field: field}
+}
+
+// FANotWhenBudgeted: a field (Budgeted FA No.) must not be filled in when the line's asset (field2)
+// is a budgeted asset
+func FANotWhenBudgeted(table, field, field2 string) *AppError {
+	return &AppError{Code: ErrFANotWhenBudgeted, Table: table, Field: field, Field2: field2}
+}
+
+// FANotABudgetedAsset: the asset a line's Budgeted FA No. names is not a budgeted asset
+func FANotABudgetedAsset(faNo string) *AppError {
+	return &AppError{Code: ErrFANotABudgetedAsset, Params: []string{faNo}}
+}
+
+// FABudgetCustom1: a budget report cannot calculate a book with Use Custom 1 Depreciation
+func FABudgetCustom1(table, field string) *AppError {
+	return &AppError{Code: ErrFABudgetCustom1, Table: table, Field: field}
 }

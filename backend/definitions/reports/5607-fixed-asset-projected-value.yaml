@@ -1,0 +1,213 @@
+# Report 5607 Fixed Asset - Projected Value: the printed layout (sections per data item, positions
+# in mm from the section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 5607
+  name: Fixed Asset - Projected Value
+  page:
+    size: A4
+    orientation: portrait
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: FixedAsset
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {value: main_head_line, x: 0, y: 0, width: 100, bold: true, size: 10}
+            - {value: depr_book_text, x: 0, y: 5, width: 100}
+            - {value: company_name, x: 0, y: 9, width: 100}
+            - {value: today, x: 126, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 126, y: 4, width: 50, align: right}
+            - {page_no: true, x: 176, y: 4, width: 10, align: right}
+            - {value: user_id, x: 126, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 186, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 13
+          elements:
+            - {value: group_code_name, x: 0, y: 0, width: 60}
+            - {value: fa_no_caption, x: 0, y: 6, width: 14, bold: true}
+            - {value: fa_description_caption, x: 15, y: 6, width: 40, bold: true}
+            - {text: FA_POSTING_DATE, x: 15, y: 3, width: 30, bold: true, wrap: true}
+            - {text: FA_POSTING_TYPE, x: 46, y: 3, width: 30, bold: true, wrap: true}
+            - {text: NO_OF_DEPRECIATION_DAYS, x: 77, y: 3, width: 24, align: right, bold: true, wrap: true}
+            - {text: AMOUNT, x: 102, y: 6, width: 22, align: right, bold: true}
+            - {text: BOOK_VALUE, x: 125, y: 6, width: 22, align: right, bold: true}
+            - {line: true, x: 0, y: 11.5}
+        - type: group_header
+          group: group_head_line
+          print_if: details_and_groups
+          height: 7
+          elements:
+            - {value: group_head_line, x: 0, y: 1.5, width: 100, bold: true}
+        - type: body
+          print_if: print_details
+          height: 6
+          elements:
+            - {field: "no", x: 0, y: 1.5, width: 14, bold: true}
+            - {field: description, x: 15, y: 1.5, width: 100, bold: true}
+        - type: group_footer
+          group: group_head_line
+          height: 5
+          elements:
+            - {value: group_total_text, x: 0, y: 0.5, width: 55, bold: true}
+            - {value: depr_text_2, x: 56, y: 0.5, width: 45, bold: true}
+            - {value: grp_depr, x: 102, y: 0.5, width: 22, align: right, bold: true}
+            - {value: grp_book_value, x: 125, y: 0.5, width: 22, align: right, bold: true}
+        - type: group_footer
+          group: group_head_line
+          print_if: custom_1_and_groups
+          height: 4.2
+          elements:
+            - {value: custom_1_text, x: 15, y: 0, width: 86, bold: true}
+            - {value: grp_custom_1, x: 102, y: 0, width: 22, align: right, bold: true}
+        - type: group_footer
+          group: group_head_line
+          print_if: custom_1_and_groups
+          height: 4.2
+          elements:
+            - {value: depr_custom_1_text, x: 15, y: 0, width: 86, bold: true}
+            - {value: grp_depr_custom_1, x: 102, y: 0, width: 22, align: right, bold: true}
+        - type: group_footer
+          group: group_head_line
+          print_if: projected_disposal
+          height: 8.5
+          elements:
+            - {value: sales_price_fieldname, x: 15, y: 0, width: 86, bold: true}
+            - {value: grp_sales_price, x: 102, y: 0, width: 22, align: right, bold: true}
+            - {value: gain_loss_fieldname, x: 15, y: 4.2, width: 86, bold: true}
+            - {value: grp_gain_loss, x: 102, y: 4.2, width: 22, align: right, bold: true}
+
+    - name: FALedgerEntry
+      sections:
+        - type: body
+          print_if: print_details
+          height: 4.2
+          elements:
+            - {field: fa_no, x: 0, y: 0, width: 14}
+            - {field: fa_posting_date, x: 15, y: 0, width: 30}
+            - {field: fa_posting_type, x: 46, y: 0, width: 30}
+            - {field: no_of_depreciation_days, x: 77, y: 0, width: 24, align: right, blank_zero: true}
+            - {field: amount, x: 102, y: 0, width: 22, align: right}
+            - {value: posted_book_value, x: 125, y: 0, width: 22, align: right}
+            - {text: POSTED_ENTRY, x: 148, y: 0, width: 30}
+
+    - name: ProjectedDepreciation
+      sections:
+        - type: body
+          print_if: print_details
+          height: 4.2
+          elements:
+            - {value: fa_no, x: 0, y: 0, width: 14}
+            - {value: until_date, x: 15, y: 0, width: 30}
+            - {value: depr_text, x: 46, y: 0, width: 30}
+            - {value: number_of_days, x: 77, y: 0, width: 24, align: right}
+            - {value: depr_amount, x: 102, y: 0, width: 22, align: right}
+            - {value: book_value_after_depr, x: 125, y: 0, width: 22, align: right}
+        - type: body
+          print_if: show_custom_1_line
+          height: 4.2
+          elements:
+            - {value: fa_no, x: 0, y: 0, width: 14}
+            - {value: until_date, x: 15, y: 0, width: 30}
+            - {value: custom_1_text, x: 46, y: 0, width: 30}
+            - {value: custom_1_number_of_days, x: 77, y: 0, width: 24, align: right}
+            - {value: custom_1_amount, x: 102, y: 0, width: 22, align: right}
+            - {value: book_value, x: 125, y: 0, width: 22, align: right}
+        - type: footer
+          print_if: print_details
+          height: 4.2
+          elements:
+            - {value: fa_no, x: 0, y: 0, width: 14, bold: true}
+            - {value: fa_description, x: 15, y: 0, width: 40, bold: true}
+            - {value: depr_text_2, x: 56, y: 0, width: 45, bold: true}
+            - {value: asset_depr, x: 102, y: 0, width: 22, align: right, bold: true}
+            - {value: asset_book_value, x: 125, y: 0, width: 22, align: right, bold: true}
+        - type: footer
+          print_if: show_asset_custom_1
+          height: 4.2
+          elements:
+            - {value: custom_1_text, x: 15, y: 0, width: 108, bold: true}
+            - {value: asset_custom_1, x: 125, y: 0, width: 22, align: right, bold: true}
+        - type: footer
+          print_if: show_asset_custom_1
+          height: 4.2
+          elements:
+            - {value: depr_custom_1_text, x: 15, y: 0, width: 108, bold: true}
+            - {value: asset_depr_custom_1, x: 125, y: 0, width: 22, align: right, bold: true}
+        - type: footer
+          print_if: show_asset_disposal
+          height: 12.7
+          elements:
+            - {value: sales_price_fieldname, x: 15, y: 4.2, width: 86, bold: true}
+            - {value: asset_sales_price, x: 102, y: 4.2, width: 22, align: right, bold: true}
+            - {value: gain_loss_fieldname, x: 15, y: 8.5, width: 86, bold: true}
+            - {value: asset_gain_loss, x: 102, y: 8.5, width: 22, align: right, bold: true}
+        - type: footer
+          print_if: print_details
+          height: 4.2
+          elements: []
+
+    - name: ProjectionTotal
+      sections:
+        - type: body
+          height: 6
+          elements:
+            - {line: true, x: 0, y: 0.5}
+            - {text: TOTAL, x: 0, y: 1.5, width: 55, bold: true}
+            - {value: depr_text_2, x: 56, y: 1.5, width: 45, bold: true}
+            - {value: tot_depr, x: 102, y: 1.5, width: 22, align: right, bold: true}
+            - {value: tot_book_value, x: 125, y: 1.5, width: 22, align: right, bold: true}
+        - type: body
+          print_if: use_custom_1
+          height: 4.2
+          elements:
+            - {value: custom_1_text, x: 15, y: 0, width: 86, bold: true}
+            - {value: tot_custom_1, x: 102, y: 0, width: 22, align: right, bold: true}
+        - type: body
+          print_if: use_custom_1
+          height: 4.2
+          elements:
+            - {value: depr_custom_1_text, x: 15, y: 0, width: 86, bold: true}
+            - {value: tot_depr_custom_1, x: 102, y: 0, width: 22, align: right, bold: true}
+        - type: body
+          print_if: projected_disposal
+          height: 8.5
+          elements:
+            - {value: sales_price_fieldname, x: 15, y: 0, width: 86, bold: true}
+            - {value: tot_sales_price, x: 102, y: 0, width: 22, align: right, bold: true}
+            - {value: gain_loss_fieldname, x: 15, y: 4.2, width: 86, bold: true}
+            - {value: tot_gain_loss, x: 102, y: 4.2, width: 22, align: right, bold: true}
+
+    - name: Buffer
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 28
+          elements:
+            - {value: main_head_line, x: 0, y: 0, width: 100, bold: true, size: 10}
+            - {value: depr_book_text, x: 0, y: 5, width: 100}
+            - {value: company_name, x: 0, y: 9, width: 100}
+            - {value: today, x: 126, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 126, y: 4, width: 50, align: right}
+            - {page_no: true, x: 176, y: 4, width: 10, align: right}
+            - {value: user_id, x: 126, y: 8, width: 60, align: right}
+            - {text: PROJECTED_AMOUNTS_PER_DATE, x: 0, y: 16, width: 60, bold: true}
+            - {value: group_code_name_2, x: 0, y: 21, width: 30, bold: true, wrap: true}
+            - {text: FA_POSTING_DATE, x: 31, y: 21, width: 30, bold: true, wrap: true}
+            - {text: DEPRECIATION, x: 62, y: 21, width: 24, align: right, bold: true}
+            - {value: custom_1_text, x: 87, y: 21, width: 24, align: right, bold: true}
+            - {line: true, x: 0, y: 26.5}
+        - type: body
+          height: 4.2
+          elements:
+            - {value: buf_code_name, x: 0, y: 0, width: 30}
+            - {value: buf_fa_posting_date, x: 31, y: 0, width: 30}
+            - {value: buf_depreciation, x: 62, y: 0, width: 24, align: right}
+            - {value: buf_custom_1, x: 87, y: 0, width: 24, align: right, blank_zero: true}

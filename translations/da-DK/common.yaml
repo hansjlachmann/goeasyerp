@@ -481,6 +481,7 @@ common:
     fixed_asset_details: "Anlæg - detaljer"
     fixed_asset_book_value_01: "Anlæg - bogført værdi 01"
     fixed_asset_book_value_02: "Anlæg - bogført værdi 02"
+    fixed_asset_projected_value: "Anlæg - forventet værdi"
     fixed_asset_register: "Anlægsjournal"
     account_schedules: "Kontoskemaer"
     activities: "Aktiviteter"

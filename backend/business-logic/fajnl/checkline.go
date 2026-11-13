@@ -15,9 +15,9 @@ import (
 // FA Setup's Allow FA Posting From/To) and the same as the posting date when the book wants it; a
 // posting type the book posts to the G/L is posted in the general journal, the others in the FA
 // journal; the fields the posting type does not use are blank; a cancelling line (FA Error Entry
-// No.) uses none of the extras.
-//
-// Not migrated yet: budgeted assets.
+// No.) uses none of the extras. A budgeted asset is posted in the FA journal only; a line's
+// Budgeted FA No. (the budgeted asset its amount is taken from) is not for a disposal or a
+// budgeted asset.
 type FAJnlCheckLine struct {
 	allowPostingFrom types.Date
 	allowPostingTo   types.Date
@@ -40,6 +40,7 @@ type faCheck struct {
 	salvageValue         types.Decimal
 	quantity             types.Decimal
 	insuranceNo          types.Code
+	budgetedFANo         types.Code
 	maintenanceCode      types.Code
 	noOfDepreciationDays int
 	reclassification     bool
@@ -74,7 +75,7 @@ func (c *FAJnlCheckLine) CheckFAJnlLine(faJnlLine *gtables.FAJournalLine) error 
 		postingType: faJnlLine.Fa_posting_type, postingTypeValue: faJnlLine.Fa_posting_type,
 		deprUntilFAPostDate: faJnlLine.Depr_until_fa_posting_date, deprAcquisitionCost: faJnlLine.Depr_acquisition_cost,
 		salvageValue: faJnlLine.Salvage_value, quantity: faJnlLine.Quantity,
-		insuranceNo: faJnlLine.Insurance_no, maintenanceCode: faJnlLine.Maintenance_code,
+		insuranceNo: faJnlLine.Insurance_no, budgetedFANo: faJnlLine.Budgeted_fa_no, maintenanceCode: faJnlLine.Maintenance_code,
 		noOfDepreciationDays: faJnlLine.No_of_depreciation_days, reclassification: faJnlLine.Fa_reclassification_entry,
 		errorEntryNo:        faJnlLine.Fa_error_entry_no,
 		duplicateInDeprBook: faJnlLine.Duplicate_in_depreciation_book, useDuplicationList: faJnlLine.Use_duplication_list,
@@ -143,7 +144,7 @@ func (c *FAJnlCheckLine) CheckGenJnlLine(genJnlLine *gtables.GenJournalLine) err
 		postingType: postingType, postingTypeValue: genJnlLine.Fa_posting_type,
 		deprUntilFAPostDate: genJnlLine.Depr_until_fa_posting_date, deprAcquisitionCost: genJnlLine.Depr_acquisition_cost,
 		salvageValue: genJnlLine.Salvage_value, quantity: genJnlLine.Quantity,
-		insuranceNo: genJnlLine.Insurance_no, maintenanceCode: genJnlLine.Maintenance_code,
+		insuranceNo: genJnlLine.Insurance_no, budgetedFANo: genJnlLine.Budgeted_fa_no, maintenanceCode: genJnlLine.Maintenance_code,
 		noOfDepreciationDays: genJnlLine.No_of_depreciation_days, reclassification: genJnlLine.Fa_reclassification_entry,
 		errorEntryNo:        genJnlLine.Fa_error_entry_no,
 		duplicateInDeprBook: genJnlLine.Duplicate_in_depreciation_book, useDuplicationList: genJnlLine.Use_duplication_list,
@@ -189,11 +190,11 @@ func (c *FAJnlCheckLine) checkJnlLine(l *faCheck) error {
 	if err != nil {
 		return err
 	}
-	err = checkFAIntegration(l, deprBook)
+	err = checkFAIntegration(l, deprBook, fa)
 	if err != nil {
 		return err
 	}
-	err = checkConsistency(l, deprBook)
+	err = checkConsistency(l, deprBook, fa)
 	if err != nil {
 		return err
 	}
@@ -235,8 +236,14 @@ func (c *FAJnlCheckLine) checkFAPostingDate(l *faCheck, deprBook *gtables.Deprec
 // checkFAIntegration (CheckFAIntegration): a posting type the book posts to the G/L is posted in
 // the general journal, the others in the FA journal (a salvage value never goes to the G/L); the
 // automatic depreciation of a line (Depr. until FA Posting Date, Depr. Acquisition Cost) follows
-// the book's depreciation integration
-func checkFAIntegration(l *faCheck, deprBook *gtables.DepreciationBook) error {
+// the book's depreciation integration; a budgeted asset is never posted in the general journal
+func checkFAIntegration(l *faCheck, deprBook *gtables.DepreciationBook, fa *gtables.FixedAsset) error {
+	if l.genJnlPosting && fa.Budgeted_asset {
+		return apperrors.FAMustNotBeBudgeted(l.table, "account_no")
+	}
+	if fa.Budgeted_asset {
+		return nil
+	}
 	integrated := glIntegration(deprBook, l.postingType)
 	if integrated && !l.genJnlPosting {
 		return apperrors.FAPostInGenJnl(l.table, "fa_posting_type", l.postingTypeValue)
@@ -261,8 +268,9 @@ func glIntegration(deprBook *gtables.DepreciationBook, postingType gtables.FAJou
 	return tables.DeprBookGLIntegration(deprBook, postingType)
 }
 
-// checkConsistency (CheckConsistency): the fields the posting type does not use are blank
-func checkConsistency(l *faCheck, deprBook *gtables.DepreciationBook) error {
+// checkConsistency (CheckConsistency): the fields the posting type does not use are blank; a
+// budgeted asset takes no Budgeted FA No.
+func checkConsistency(l *faCheck, deprBook *gtables.DepreciationBook, fa *gtables.FixedAsset) error {
 	postingType := l.postingType
 	notTogether := func(field string) error {
 		return apperrors.FANotTogetherWith(l.table, field, "fa_posting_type", l.postingTypeValue)
@@ -292,14 +300,29 @@ func checkConsistency(l *faCheck, deprBook *gtables.DepreciationBook) error {
 		l.noOfDepreciationDays != 0 {
 		return notTogether("no_of_depreciation_days")
 	}
-	if postingType == gtables.FAJournalLine_Fa_posting_type.Disposal && l.reclassification {
-		return notTogether("fa_reclassification_entry")
+	if postingType == gtables.FAJournalLine_Fa_posting_type.Disposal {
+		if l.reclassification {
+			return notTogether("fa_reclassification_entry")
+		}
+		if l.budgetedFANo != "" {
+			return notTogether("budgeted_fa_no")
+		}
+	}
+	faField := "fa_no"
+	if l.genJnlPosting {
+		faField = "account_no"
+	}
+	if fa.Budgeted_asset && l.budgetedFANo != "" {
+		return apperrors.FANotWhenBudgeted(l.table, "budgeted_fa_no", faField)
 	}
 	if postingType == gtables.FAJournalLine_Fa_posting_type.AcquisitionCost && l.insuranceNo != "" {
 		faSetup := gtables.GetFASetup(l.src)
 		if deprBook.Code != faSetup.Insurance_depr_book {
 			return apperrors.FieldMustBeValue(l.table, "insurance_no", "")
 		}
+	}
+	if l.genJnlPosting && fa.Budgeted_asset {
+		return apperrors.FAMustNotBeBudgeted(l.table, "account_no")
 	}
 	return nil
 }
@@ -323,6 +346,8 @@ func checkErrorNo(l *faCheck) error {
 		field = "salvage_value"
 	case l.insuranceNo != "":
 		field = "insurance_no"
+	case l.budgetedFANo != "":
+		field = "budgeted_fa_no"
 	}
 	if field != "" {
 		return apperrors.FANotWithErrorEntry(l.table, field, "fa_error_entry_no")

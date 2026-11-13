@@ -1028,6 +1028,20 @@ table:
           - source: description
             width: 250
 
+    - name: budgeted_fa_no
+      no: 5611
+      type: types.Code
+      db_name: budgeted_fa_no
+      length: 20
+      table_relation:
+        table: Fixed_Asset
+        field: no
+        lookup_columns:
+          - source: no
+            width: 100
+          - source: description
+            width: 250
+
     - name: duplicate_in_depreciation_book
       no: 5612
       type: types.Code

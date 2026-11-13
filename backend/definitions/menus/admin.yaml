@@ -735,6 +735,8 @@ menu:
             run_object: "report:5605"
           - name: "Fixed Asset - Book Value 02"
             run_object: "report:5606"
+          - name: "Fixed Asset - Projected Value"
+            run_object: "report:5607"
           - name: "Fixed Asset Register"
             run_object: "report:5603"
       - name: "FA Registers"

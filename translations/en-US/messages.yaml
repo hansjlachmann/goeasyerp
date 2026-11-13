@@ -457,6 +457,7 @@ messages:
   RECURRING_BOM_JNL_TEMPLATE_DESCRIPTION: "Recurring BOM Journal"
   RECURRING_RES_JNL_TEMPLATE_DESCRIPTION: "Recurring Resource Journal"
   RECURRING_FA_JNL_TEMPLATE_DESCRIPTION: "Recurring Fixed Asset Journal"
+  FA_BUDGET_DECLINING_BALANCE: "Budget calculation has not been done on fixed assets with Depreciation Method %1, %2 or %3."
   GEN_JNL_DEFAULT_BATCH: "Default Journal"
   GEN_JNL_POST_CONFIRM: "Do you want to post the journal lines?"
   JNL_POST_PRINT_CONFIRM: "Do you want to post the journal lines and print the posting report?"
