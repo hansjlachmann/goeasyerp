@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.155](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.154...v0.1.155) (2026-11-13)
+
+
+### Features
+
+* DEMO_DATA fills an empty company at startup; E2E against the API with demo data ([8e8bd54](https://github.com/hansjlachmann/goeasyerp/commit/8e8bd549aaa13b3e6a25885928867742e709fb64))
+
 ## [0.1.154](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.153...v0.1.154) (2026-11-12)
 
 
