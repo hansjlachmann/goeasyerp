@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.156](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.155...v0.1.156) (2026-11-13)
+
+
+### Features
+
+* budgeted fixed assets and report 5607 Fixed Asset - Projected Value ([ddb51da](https://github.com/hansjlachmann/goeasyerp/commit/ddb51da719e234b64573efaf1baa79f6a5938489))
+
+
+### Bug Fixes
+
+* remove an unused field of report 5607 ([b09d47e](https://github.com/hansjlachmann/goeasyerp/commit/b09d47e5afdf230b9e3144cb70f589a0fe223be2))
+
 ## [0.1.155](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.154...v0.1.155) (2026-11-13)
 
 
