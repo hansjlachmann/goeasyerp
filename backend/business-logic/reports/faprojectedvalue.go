@@ -77,7 +77,6 @@ type faProjectedValue struct {
 	custom1NumberOfDays int
 	postedBookValue     types.Decimal // the posted entries' running book value
 	buffer              []*faBufferProjection
-	bufferIndex         int
 }
 
 func (r *faProjectedValue) Definition() *Definition {
