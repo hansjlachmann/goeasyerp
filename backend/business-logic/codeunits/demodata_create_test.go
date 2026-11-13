@@ -141,6 +141,19 @@ func TestDemoDataFillsTheMainMenu(t *testing.T) {
 	if !gtables.NewJobQueue(ftables.DBSource(db, "demo", database.DBTypeSQLite)).Get("DEMO") {
 		t.Error("the second run deleted the job queue")
 	}
+	// The startup setting DEMO_DATA leaves a company with data alone, and refuses a bad size in
+	// an empty one before writing anything
+	created, _, err := CreateDemoDataIfEmpty(db, "demo", database.DBTypeSQLite, "SMALL")
+	if err != nil || created {
+		t.Errorf("DEMO_DATA on a company with data: created %v, %v", created, err)
+	}
+	if err := tables.CreateCompanyTables(db, "empty", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	created, _, err = CreateDemoDataIfEmpty(db, "empty", database.DBTypeSQLite, "TINY")
+	if err == nil || created || !gtables.NewCustomer(ftables.DBSource(db, "empty", database.DBTypeSQLite)).IsEmpty() {
+		t.Errorf("DEMO_DATA=TINY: created %v, %v", created, err)
+	}
 	// lists that show part of a table: the table having records does not fill them
 	salesCrMemo := gtables.NewSalesHeader(ftables.DBSource(db, "demo", database.DBTypeSQLite))
 	salesCrMemo.SetRange("document_type", gtables.SalesHeader_Document_type.CreditMemo)

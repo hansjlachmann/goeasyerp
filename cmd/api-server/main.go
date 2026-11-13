@@ -12,6 +12,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/api"
 	blapps "github.com/hansjlachmann/goeasyerp/backend/business-logic/apps"
+	blcodeunits "github.com/hansjlachmann/goeasyerp/backend/business-logic/codeunits"
 	blmigrations "github.com/hansjlachmann/goeasyerp/backend/business-logic/migrations"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/refusedposting"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/scheduler"
@@ -20,6 +21,7 @@ import (
 	_ "github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/themerepo"
 	fapps "github.com/hansjlachmann/goeasyerp/backend/foundation/apps"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/company"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/objects"
@@ -188,6 +190,20 @@ func main() {
 	}
 	if err := blapps.SyncObjects(db.GetConnection(), secretsDBType); err != nil {
 		log.Printf("WARNING: objects: %v", err)
+	}
+	// DEMO_DATA (the parameter of codeunit 901: SMALL, LARGE, HEAVY, with VAT for a VAT company)
+	// fills the company entered with demo data when it has no customers — test and trial
+	// installations (the E2E tests) start from known data; a company with data is left alone
+	if demoParam := strings.TrimSpace(os.Getenv("DEMO_DATA")); demoParam != "" {
+		fcodeunits.SetCurrentContext("SCHEDULER", "SCHEDULER", companyName, "en-US")
+		created, counts, err := blcodeunits.CreateDemoDataIfEmpty(db.GetConnection(), companyName, secretsDBType, demoParam)
+		fcodeunits.ClearCurrentContext()
+		if err != nil {
+			log.Fatalf("Failed to create demo data (DEMO_DATA=%s): %v", demoParam, err)
+		}
+		if created {
+			fmt.Printf("✓ Demo data created in %s (%s): %d customers, %d vendors\n", companyName, demoParam, counts.Customers, counts.Vendors)
+		}
 	}
 	fmt.Println()
 

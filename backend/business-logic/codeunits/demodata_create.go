@@ -125,8 +125,33 @@ func (c *DemoDataCreate) create(jobQueue *gtables.JobQueue, ts *i18n.Translation
 		}
 	}
 
-	return demodata.Create(c.db, c.company, c.dbType, demodata.Options{Size: size, VAT: vat, Progress: progress, ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost, GenJnlPostLine: openGenJnlPostLine, ProjectJnlPostLine: openProjectJnlPostLine, Journals: true,
-		ReminderIssue: openReminderIssue, FinChrgMemoIssue: openFinChrgMemoIssue, AdjustExchRates: adjustExchRates})
+	return demodata.Create(c.db, c.company, c.dbType, demoDataOptions(size, vat, progress))
+}
+
+// demoDataOptions are the options of a full demo: every posting the demo goes through
+func demoDataOptions(size demodata.Size, vat bool, progress func(int, demodata.Phase)) demodata.Options {
+	return demodata.Options{Size: size, VAT: vat, Progress: progress, ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost, GenJnlPostLine: openGenJnlPostLine, ProjectJnlPostLine: openProjectJnlPostLine, Journals: true,
+		ReminderIssue: openReminderIssue, FinChrgMemoIssue: openFinChrgMemoIssue, AdjustExchRates: adjustExchRates}
+}
+
+// CreateDemoDataIfEmpty fills a company that has no customers with the demo data of codeunit
+// 901 — the startup setting DEMO_DATA (its value is the job parameter: SMALL, LARGE VAT …), so a
+// test or trial installation starts from known data. A company with customers is left as it
+// is (false). Nothing is changed when it fails.
+func CreateDemoDataIfEmpty(db database.Executor, company string, dbType database.DBType, parameter string) (bool, demodata.Counts, error) {
+	cust := gtables.NewCustomer(ftables.DBSource(db, company, dbType))
+	if !cust.IsEmpty() {
+		return false, demodata.Counts{}, nil
+	}
+	size, vat, err := demodata.ParseParameter(parameter)
+	if err != nil {
+		return false, demodata.Counts{}, err
+	}
+	counts, err := demodata.Create(db, company, dbType, demoDataOptions(size, vat, nil))
+	if err != nil {
+		return false, counts, err
+	}
+	return true, counts, nil
 }
 
 // errorMessage translates the demodata errors users can act on.

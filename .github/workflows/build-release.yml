@@ -85,6 +85,23 @@ jobs:
     name: Frontend (SvelteKit)
     runs-on: ubuntu-24.04
 
+    # The E2E tests run against the API server with demo data (DEMO_DATA) on a throwaway
+    # PostgreSQL of the job
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: openerp
+          POSTGRES_DB: e2e
+          POSTGRES_HOST_AUTH_METHOD: trust # a throwaway database of the job, no password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U openerp -d e2e"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     defaults:
       run:
         working-directory: frontend
@@ -119,11 +136,47 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Set up Go (API server for the E2E tests)
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: true
+
+      - name: Start the API server with demo data
+        working-directory: .
+        env:
+          DB_HOST: localhost
+          DB_PORT: '5432'
+          DB_USER: openerp
+          DB_NAME: e2e
+          COMPANY_NAME: cronus
+          PORT: '8080'
+          DEMO_DATA: SMALL
+          JOB_QUEUE_ENABLED: 'false'
+        run: |
+          go build -o "$RUNNER_TEMP/api-server" ./cmd/api-server
+          # a fresh session key and test user password per run (masked in the log)
+          JWT_SECRET=$(openssl rand -hex 32)
+          E2E_PASSWORD=$(openssl rand -hex 12)
+          echo "::add-mask::$E2E_PASSWORD"
+          echo "E2E_PASSWORD=$E2E_PASSWORD" >> "$GITHUB_ENV"
+          JWT_SECRET=$JWT_SECRET nohup "$RUNNER_TEMP/api-server" > "$RUNNER_TEMP/api-server.log" 2>&1 &
+          for i in $(seq 1 120); do
+            curl -sf http://localhost:8080/health > /dev/null && exit 0
+            sleep 5
+          done
+          cat "$RUNNER_TEMP/api-server.log"
+          exit 1
+
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
       - name: Run E2E tests
         run: npm run test:e2e
+
+      - name: API server log
+        if: ${{ failure() }}
+        run: cat "$RUNNER_TEMP/api-server.log"
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
