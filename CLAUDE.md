@@ -685,7 +685,7 @@ Always use this identity for commits — never update git config to anything els
 ## CI Pipeline
 
 GitHub Actions runs on push/PR to main:
-1. Backend: `go vet` + `golangci-lint` + tests with race detection (SQLite, and the PostgreSQL tests against a Postgres service — `TEST_POSTGRES_DSN`; add a `…Postgres` variant for behaviour that depends on the database) + build
+1. Backend: `go vet` + `golangci-lint` + tests with race detection (SQLite, and the PostgreSQL tests against a Postgres service — `TEST_POSTGRES_DSN`; add a `…Postgres` variant for behaviour that depends on the database) + build. `codeunits/vat_checklist_test.go` (`TestVATChecklist`, `…Postgres`) runs the VAT checklist on the VAT demo company with its expected amounts — purchases, general journal, EU 3-party trade, VIES 19/88, the VAT return, the settlement (report 20), unrealized VAT, the payment discount VAT adjustment; the demo's generated G/L history posts VAT on 2330/1440 without tax entries, so the VAT accounts differ from the VAT return by that history's VAT
 2. Frontend: type check + unit tests + build + Playwright E2E — against the API server started on a Postgres service with `DEMO_DATA=SMALL` (about a minute) and a test user created through `POST /api/auth/init` with a password made per run (`E2E_PASSWORD`); specs that need the backend skip without `E2E_PASSWORD` (local `npm run test:e2e` without a backend). Locally: start the API with `DEMO_DATA`, then `E2E_PASSWORD=… VITE_API_URL=http://localhost:<port> npm run test:e2e` (the preview proxies `/api`). `e2e/card-focus.spec.ts` checks the card cursor control on a demo Sales Order.
 3. Release Please on main push
 4. Docker multi-arch build to ghcr.io on release
