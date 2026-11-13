@@ -85,6 +85,10 @@ var layoutFitOptions = map[int]map[string]string{
 	1401: {"bank_account": "B010", "last_check_no": "FIT1000", "test_print": "true"},
 	5605: {"depreciation_book": "COMPANY", "starting_date": "2026-01-01", "ending_date": "2026-10-06"},
 	5606: {"depreciation_book": "COMPANY", "starting_date": "2026-01-01", "ending_date": "2026-10-06"},
+	5600: {"depreciation_book": "COMPANY", "starting_date": "2026-01-01", "ending_date": "2026-12-31", "date_field_1": "3", "date_field_2": "8", "amount_field_1": "2", "period_1": "1", "amount_field_2": "3", "period_2": "2", "amount_field_3": "10", "period_3": "3", "group_totals": "2", "print_per_fixed_asset": "true"},
+	5610: {"depreciation_book": "COMPANY", "starting_date": "2026-01-01", "ending_date": "2026-12-31", "date_field_1": "2", "date_field_2": "8", "amount_field_1": "2", "period_1": "1", "amount_field_2": "3", "period_2": "1", "amount_field_3": "10", "period_3": "2", "group_totals": "2", "print_per_fixed_asset": "true"},
+	5630: {"depreciation_book": "COMPANY", "starting_date": "2026-01-01", "ending_date": "2026-12-31", "period_1": "1", "period_2": "2", "period_3": "3", "group_totals": "2", "print_per_fixed_asset": "true"},
+	5620: {"print_per_insurance_no": "true"},
 	5607: {"depreciation_book": "COMPANY", "first_depreciation_date": "2026-10-31", "last_depreciation_date": "2027-12-31", "group_totals": "2", "print_per_fixed_asset": "true", "projected_disposal": "true", "print_amounts_per_date": "true", "posted_entries_from": "2026-01-01"},
 }
 
@@ -111,7 +115,7 @@ var freeText = map[string]bool{
 
 // brokenAllowed: column headings whose one long compound word (Norwegian, Danish) does not
 // fit its column even at 80 % of the size — the heading prints whole over two lines, broken
-// inside the word. The fixed asset reports' rows are full: a column wide enough for
+// inside the word. The fixed asset and maintenance reports' rows are full: a column wide enough for
 // "Anleggsbokføringskategori" (about 30 mm) over an 18 mm date or category would take it from
 // the amounts.
 var brokenAllowed = map[string]bool{
@@ -120,6 +124,10 @@ var brokenAllowed = map[string]bool{
 	"5604 text:FA_POSTING_DATE":     true,
 	"5604 text:FA_POSTING_CATEGORY": true,
 	"5604 text:G_L_ENTRY_NO":        true,
+	"5633 text:FA_POSTING_DATE":     true,
+	"5633 text:G_L_ENTRY_NO":        true,
+	"5634 text:FA_POSTING_DATE":     true,
+	"5634 text:G_L_ENTRY_NO":        true,
 }
 
 // Every printed report prints the demo data in every language without cutting a text that

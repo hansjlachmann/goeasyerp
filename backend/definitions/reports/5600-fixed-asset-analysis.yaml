@@ -1,0 +1,79 @@
+# Report 5600 Fixed Asset - Analysis: the printed layout (sections per data item, positions in mm from the
+# section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 5600
+  name: Fixed Asset - Analysis
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: FixedAsset
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {value: main_head_line, x: 0, y: 0, width: 120, bold: true, size: 10}
+            - {value: depr_book_text, x: 0, y: 5, width: 120}
+            - {value: company_name, x: 0, y: 9, width: 120}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        # Group Totals: <field>, the column heads (the dates' and amounts' types)
+        - type: header
+          print_on_every_page: true
+          height: 17
+          elements:
+            - {value: group_code_name, x: 0, y: 0, width: 150}
+            - {text: NO, x: 0, y: 11, width: 20, bold: true, print_if: print_details}
+            - {text: DESCRIPTION, x: 21, y: 11, width: 60, bold: true, print_if: print_details}
+            - {value: head_1, x: 82, y: 4, width: 34, bold: true, wrap: true}
+            - {value: head_2, x: 117, y: 4, width: 34, bold: true, wrap: true}
+            - {value: head_3, x: 152, y: 4, width: 34, align: right, bold: true, wrap: true}
+            - {value: head_4, x: 187, y: 4, width: 34, align: right, bold: true, wrap: true}
+            - {value: head_5, x: 222, y: 4, width: 34, align: right, bold: true, wrap: true}
+            - {line: true, x: 0, y: 15}
+        # The group's total (group footer: OnGroupFooter sets the group's amounts)
+        - type: group_footer
+          group: group_head_line
+          height: 6
+          elements:
+            - {value: group_total_text, x: 0, y: 0.5, width: 150, bold: true}
+            - {value: grp_amount_1, x: 152, y: 0.5, width: 34, align: right, bold: true, blank_zero: true}
+            - {value: grp_amount_2, x: 187, y: 0.5, width: 34, align: right, bold: true, blank_zero: true}
+            - {value: grp_amount_3, x: 222, y: 0.5, width: 34, align: right, bold: true, blank_zero: true}
+        # The group's head line (Print per Fixed Asset)
+        - type: group_header
+          group: group_head_line
+          print_if: details_and_groups
+          height: 6
+          elements:
+            - {value: group_head_line, x: 0, y: 1.5, width: 150, bold: true}
+        - type: body
+          print_if: print_details
+          height: 4.2
+          elements:
+            - {field: "no", x: 0, y: 0, width: 20}
+            - {field: description, x: 21, y: 0, width: 60}
+            - {value: date_1, x: 82, y: 0, width: 34}
+            - {value: date_2, x: 117, y: 0, width: 34}
+            - {value: amount_1, x: 152, y: 0, width: 34, align: right, blank_zero: true}
+            - {value: amount_2, x: 187, y: 0, width: 34, align: right, blank_zero: true}
+            - {value: amount_3, x: 222, y: 0, width: 34, align: right, blank_zero: true}
+            - {value: sales_mark, x: 258, y: 0, width: 15}
+        - type: footer
+          height: 8
+          elements:
+            - {line: true, x: 152, y: 1, width: 104}
+            - {text: TOTAL, x: 0, y: 2, width: 150, bold: true}
+            - {value: tot_amount_1, x: 152, y: 2, width: 34, align: right, bold: true, blank_zero: true}
+            - {value: tot_amount_2, x: 187, y: 2, width: 34, align: right, bold: true, blank_zero: true}
+            - {value: tot_amount_3, x: 222, y: 2, width: 34, align: right, bold: true, blank_zero: true}

@@ -1,0 +1,64 @@
+# Report 5624 Insurance - Coverage Details: the printed layout (sections per data item, positions in mm from the
+# section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 5624
+  name: Insurance - Coverage Details
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Insurance
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 120, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 9, width: 120}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 11.5
+          elements:
+            - {text: POSTING_DATE, x: 0, y: 1, width: 18, bold: true, wrap: true}
+            - {text: DOCUMENT_TYPE, x: 19, y: 1, width: 18, bold: true, wrap: true}
+            - {text: DOCUMENT_NO, x: 38, y: 1, width: 24, bold: true, wrap: true}
+            - {text: DESCRIPTION, x: 63, y: 1, width: 39, bold: true}
+            - {text: AMOUNT, x: 103, y: 1, width: 24, align: right, bold: true}
+            - {text: ENTRY_NO, x: 128, y: 1, width: 14, align: right, bold: true, wrap: true}
+            - {text: USER_ID, x: 144, y: 1, width: 22, bold: true}
+            - {text: DISPOSED_FA, x: 167, y: 1, width: 22, bold: true, wrap: true}
+            - {text: FA_NO, x: 190, y: 1, width: 22, bold: true}
+            - {text: FA_DESCRIPTION, x: 213, y: 1, width: 60, bold: true}
+            - {line: true, x: 0, y: 9.5}
+        - type: body
+          height: 7
+          elements:
+            - {field: "no", x: 0, y: 1.5, width: 25, bold: true}
+            - {field: description, x: 26, y: 1.5, width: 120, bold: true}
+
+    - name: InsCoverageLedgerEntry
+      sections:
+        - type: body
+          height: 4.2
+          elements:
+            - {field: posting_date, x: 0, y: 0, width: 18}
+            - {field: document_type, x: 19, y: 0, width: 18}
+            - {field: document_no, x: 38, y: 0, width: 24}
+            - {field: description, x: 63, y: 0, width: 39}
+            - {field: amount, x: 103, y: 0, width: 24, align: right}
+            - {field: entry_no, x: 128, y: 0, width: 14, align: right}
+            - {field: user_id, x: 144, y: 0, width: 22}
+            - {field: disposed_fa, x: 167, y: 0, width: 22}
+            - {field: fa_no, x: 190, y: 0, width: 22}
+            - {field: fa_description, x: 213, y: 0, width: 60}

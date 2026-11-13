@@ -1,0 +1,54 @@
+# Report 5626 Insurance - Uninsured FAs: the printed layout (sections per data item, positions in mm from the
+# section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 5626
+  name: Insurance - Uninsured FAs
+  page:
+    size: A4
+    orientation: portrait
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: FixedAsset
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 120, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 9, width: 120}
+            - {value: today, x: 126, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 126, y: 4, width: 50, align: right}
+            - {page_no: true, x: 176, y: 4, width: 10, align: right}
+            - {value: user_id, x: 126, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 186, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 11
+          elements:
+            - {caption: "no", x: 0, y: 1, width: 20, bold: true}
+            - {caption: description, x: 21, y: 1, width: 70, bold: true}
+            - {text: ACQUISITION_COST, x: 92, y: 1, width: 30, align: right, bold: true, wrap: true}
+            - {text: DEPRECIATION, x: 123, y: 1, width: 30, align: right, bold: true, wrap: true}
+            - {text: BOOK_VALUE, x: 154, y: 1, width: 30, align: right, bold: true, wrap: true}
+            - {line: true, x: 0, y: 9.5}
+        - type: body
+          height: 4.2
+          elements:
+            - {field: "no", x: 0, y: 0, width: 20}
+            - {field: description, x: 21, y: 0, width: 70}
+            - {value: amount_1, x: 92, y: 0, width: 30, align: right}
+            - {value: amount_2, x: 123, y: 0, width: 30, align: right}
+            - {value: amount_3, x: 154, y: 0, width: 30, align: right}
+        - type: footer
+          height: 8
+          elements:
+            - {line: true, x: 92, y: 1, width: 92}
+            - {text: TOTAL, x: 0, y: 2, width: 60, bold: true}
+            - {value: tot_amount_1, x: 92, y: 2, width: 30, align: right, bold: true}
+            - {value: tot_amount_2, x: 123, y: 2, width: 30, align: right, bold: true}
+            - {value: tot_amount_3, x: 154, y: 2, width: 30, align: right, bold: true}

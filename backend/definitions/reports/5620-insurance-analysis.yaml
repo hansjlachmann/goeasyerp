@@ -1,0 +1,59 @@
+# Report 5620 Insurance - Analysis: the printed layout (sections per data item, positions in mm from the
+# section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 5620
+  name: Insurance - Analysis
+  page:
+    size: A4
+    orientation: portrait
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Insurance
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 120, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 9, width: 120}
+            - {value: today, x: 126, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 126, y: 4, width: 50, align: right}
+            - {page_no: true, x: 176, y: 4, width: 10, align: right}
+            - {value: user_id, x: 126, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 186, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 11
+          elements:
+            - {caption: "no", x: 0, y: 1, width: 18, bold: true, wrap: true}
+            - {caption: description, x: 19, y: 1, width: 50, bold: true}
+            - {caption: annual_premium, x: 70, y: 1, width: 26, align: right, bold: true, wrap: true}
+            - {caption: policy_coverage, x: 97, y: 1, width: 26, align: right, bold: true, wrap: true}
+            - {caption: total_value_insured, x: 124, y: 1, width: 26, align: right, bold: true, wrap: true}
+            - {text: OVER_UNDER_INSURED, x: 151, y: 1, width: 26, align: right, bold: true, wrap: true}
+            - {line: true, x: 0, y: 9.5}
+        - type: body
+          print_if: print_details
+          height: 4.2
+          elements:
+            - {field: "no", x: 0, y: 0, width: 18}
+            - {field: description, x: 19, y: 0, width: 50}
+            - {field: annual_premium, x: 70, y: 0, width: 26, align: right}
+            - {field: policy_coverage, x: 97, y: 0, width: 26, align: right}
+            - {field: total_value_insured, x: 124, y: 0, width: 26, align: right}
+            - {value: over_under_insured, x: 151, y: 0, width: 26, align: right}
+            - {value: under_insured, x: 179, y: 0, width: 7}
+        - type: footer
+          height: 8
+          elements:
+            - {line: true, x: 70, y: 1, width: 107}
+            - {text: TOTAL, x: 0, y: 2, width: 60, bold: true}
+            - {value: tot_amount_1, x: 70, y: 2, width: 26, align: right, bold: true, blank_zero: true}
+            - {value: tot_amount_2, x: 97, y: 2, width: 26, align: right, bold: true, blank_zero: true}
+            - {value: tot_amount_3, x: 124, y: 2, width: 26, align: right, bold: true, blank_zero: true}
+            - {value: tot_amount_4, x: 151, y: 2, width: 26, align: right, bold: true, blank_zero: true}

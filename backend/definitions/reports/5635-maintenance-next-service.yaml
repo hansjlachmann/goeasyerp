@@ -1,0 +1,42 @@
+# Report 5635 Maintenance - Next Service: the printed layout (sections per data item, positions in mm from the
+# section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 5635
+  name: Maintenance - Next Service
+  page:
+    size: A4
+    orientation: portrait
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: FixedAsset
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 120, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 9, width: 120}
+            - {value: today, x: 126, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 126, y: 4, width: 50, align: right}
+            - {page_no: true, x: 176, y: 4, width: 10, align: right}
+            - {value: user_id, x: 126, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 186, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 9
+          elements:
+            - {caption: "no", x: 0, y: 1, width: 25, bold: true}
+            - {caption: description, x: 26, y: 1, width: 100, bold: true}
+            - {caption: next_service_date, x: 127, y: 1, width: 40, bold: true}
+            - {line: true, x: 0, y: 7}
+        - type: body
+          height: 4.2
+          elements:
+            - {field: "no", x: 0, y: 0, width: 25}
+            - {field: description, x: 26, y: 0, width: 100}
+            - {field: next_service_date, x: 127, y: 0, width: 40}

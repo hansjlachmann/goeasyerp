@@ -1,0 +1,52 @@
+# Report 5621 Insurance - List: the printed layout (sections per data item, positions in mm from the
+# section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 5621
+  name: Insurance - List
+  page:
+    size: A4
+    orientation: landscape
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: Insurance
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 120, bold: true, size: 10}
+            - {value: company_name, x: 0, y: 9, width: 120}
+            - {value: today, x: 213, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 213, y: 4, width: 50, align: right}
+            - {page_no: true, x: 263, y: 4, width: 10, align: right}
+            - {value: user_id, x: 213, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 273, wrap: true}
+        - type: header
+          print_on_every_page: true
+          height: 11
+          elements:
+            - {caption: "no", x: 0, y: 1, width: 20, bold: true}
+            - {caption: description, x: 21, y: 1, width: 50, bold: true}
+            - {caption: effective_date, x: 72, y: 1, width: 30, bold: true, wrap: true}
+            - {caption: policy_no, x: 103, y: 1, width: 35, bold: true}
+            - {caption: annual_premium, x: 139, y: 1, width: 28, align: right, bold: true, wrap: true}
+            - {caption: policy_coverage, x: 168, y: 1, width: 28, align: right, bold: true, wrap: true}
+            - {caption: insurance_type, x: 199, y: 1, width: 30, bold: true, wrap: true}
+            - {caption: insurance_vendor_no, x: 230, y: 1, width: 43, bold: true, wrap: true}
+            - {line: true, x: 0, y: 9.5}
+        - type: body
+          height: 4.2
+          elements:
+            - {field: "no", x: 0, y: 0, width: 20}
+            - {field: description, x: 21, y: 0, width: 50}
+            - {field: effective_date, x: 72, y: 0, width: 30}
+            - {field: policy_no, x: 103, y: 0, width: 35}
+            - {field: annual_premium, x: 139, y: 0, width: 28, align: right}
+            - {field: policy_coverage, x: 168, y: 0, width: 28, align: right}
+            - {field: insurance_type, x: 199, y: 0, width: 30}
+            - {field: insurance_vendor_no, x: 230, y: 0, width: 43}

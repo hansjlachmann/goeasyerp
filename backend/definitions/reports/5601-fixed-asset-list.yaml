@@ -1,0 +1,169 @@
+# Report 5601 Fixed Asset - List: the printed layout (sections per data item, positions in mm from the
+# section's top left corner inside the margins; see business-logic/reports/layout.go)
+report:
+  id: 5601
+  name: Fixed Asset - List
+  page:
+    size: A4
+    orientation: portrait
+    margins: {top: 12, bottom: 12, left: 12, right: 12}
+  font_size: 8
+  data_items:
+    - name: FixedAsset
+      sections:
+        - type: header
+          print_on_every_page: true
+          height: 14
+          elements:
+            - {text: TITLE, x: 0, y: 0, width: 120, bold: true, size: 10}
+            - {value: depr_book_text, x: 0, y: 5, width: 120}
+            - {value: company_name, x: 0, y: 9, width: 120}
+            - {value: today, x: 126, y: 0, width: 60, align: right}
+            - {text: PAGE, x: 126, y: 4, width: 50, align: right}
+            - {page_no: true, x: 176, y: 4, width: 10, align: right}
+            - {value: user_id, x: 126, y: 8, width: 60, align: right}
+        - type: header
+          print_if: filter_text
+          height: 5
+          elements:
+            - {value: filter_text, x: 0, y: 0, width: 186, wrap: true}
+        - type: body
+          height: 9
+          elements:
+            - {line: true, x: 0, y: 0.5}
+            - {caption: "no", x: 0, y: 1.5, width: 44}
+            - {field: "no", x: 45, y: 1.5, width: 45, bold: true}
+            - {field: description, x: 96, y: 1.5, width: 90, bold: true}
+            - {caption: main_asset_component, x: 0, y: 5.2, width: 44}
+            - {field: main_asset_component, x: 45, y: 5.2, width: 45}
+            - {value: budgeted_asset_fieldname, x: 96, y: 5.2, width: 45, bold: true}
+        - type: body
+          height: 4.2
+          elements:
+            - {caption: serial_no, x: 0, y: 0, width: 44}
+            - {field: serial_no, x: 45, y: 0, width: 45}
+        - type: body
+          print_if: is_component
+          height: 4.2
+          elements:
+            - {value: component_fieldname, x: 0, y: 0, width: 44}
+            - {field: component_of_main_asset, x: 45, y: 0, width: 45}
+        - type: body
+          height: 13
+          elements:
+            - {caption: dimension_1_code, x: 0, y: 0, width: 44}
+            - {field: dimension_1_code, x: 45, y: 0, width: 45}
+            - {caption: dimension_2_code, x: 96, y: 0, width: 44}
+            - {field: dimension_2_code, x: 141, y: 0, width: 45}
+            - {caption: fa_class_code, x: 0, y: 4.2, width: 44}
+            - {field: fa_class_code, x: 45, y: 4.2, width: 45}
+            - {caption: fa_subclass_code, x: 96, y: 4.2, width: 44}
+            - {field: fa_subclass_code, x: 141, y: 4.2, width: 45}
+            - {caption: fa_location_code, x: 0, y: 8.4, width: 44}
+            - {field: fa_location_code, x: 45, y: 8.4, width: 45}
+
+    - name: FADepreciationBook
+      sections:
+        - type: body
+          height: 9
+          elements:
+            - {caption: depreciation_method, x: 0, y: 0, width: 44}
+            - {field: depreciation_method, x: 45, y: 0, width: 45}
+            - {caption: depreciation_starting_date, x: 96, y: 0, width: 44}
+            - {field: depreciation_starting_date, x: 141, y: 0, width: 45}
+            - {caption: fa_posting_group, x: 0, y: 4.2, width: 44}
+            - {field: fa_posting_group, x: 45, y: 4.2, width: 45}
+        - type: body
+          print_if: show_straight_line
+          height: 4.2
+          elements:
+            - {caption: straight_line_percent, x: 0, y: 0, width: 44}
+            - {field: straight_line_percent, x: 45, y: 0, width: 45}
+        - type: body
+          print_if: show_years
+          height: 8.4
+          elements:
+            - {caption: no_of_depreciation_years, x: 0, y: 0, width: 44}
+            - {field: no_of_depreciation_years, x: 45, y: 0, width: 45}
+            - {caption: no_of_depreciation_months, x: 96, y: 0, width: 44}
+            - {field: no_of_depreciation_months, x: 141, y: 0, width: 45}
+            - {caption: depreciation_ending_date, x: 0, y: 4.2, width: 44}
+            - {field: depreciation_ending_date, x: 45, y: 4.2, width: 45}
+        - type: body
+          print_if: show_fixed_amount
+          height: 4.2
+          elements:
+            - {caption: fixed_depr_amount, x: 0, y: 0, width: 44}
+            - {field: fixed_depr_amount, x: 45, y: 0, width: 45}
+        - type: body
+          print_if: show_declining_balance
+          height: 4.2
+          elements:
+            - {caption: declining_balance_percent, x: 0, y: 0, width: 44}
+            - {field: declining_balance_percent, x: 45, y: 0, width: 45}
+        - type: body
+          print_if: show_depr_table
+          height: 4.2
+          elements:
+            - {caption: depreciation_table_code, x: 0, y: 0, width: 44}
+            - {field: depreciation_table_code, x: 45, y: 0, width: 45}
+            - {caption: first_user_defined_depr_date, x: 96, y: 0, width: 44}
+            - {field: first_user_defined_depr_date, x: 141, y: 0, width: 45}
+        - type: body
+          print_if: show_final_rounding
+          height: 4.2
+          elements:
+            - {caption: final_rounding_amount, x: 0, y: 0, width: 44}
+            - {field: final_rounding_amount, x: 45, y: 0, width: 45}
+        - type: body
+          print_if: show_ending_book_value
+          height: 4.2
+          elements:
+            - {caption: ending_book_value, x: 0, y: 0, width: 44}
+            - {field: ending_book_value, x: 45, y: 0, width: 45}
+        - type: body
+          print_if: show_fa_exchange_rate
+          height: 4.2
+          elements:
+            - {caption: fa_exchange_rate, x: 0, y: 0, width: 44}
+            - {field: fa_exchange_rate, x: 45, y: 0, width: 45}
+        - type: body
+          print_if: show_no_ledger_check
+          height: 4.2
+          elements:
+            - {caption: use_fa_ledger_check, x: 0, y: 0, width: 44}
+            - {field: use_fa_ledger_check, x: 45, y: 0, width: 45}
+        - type: body
+          print_if: show_depr_below_zero_percent
+          height: 4.2
+          elements:
+            - {caption: depr_below_zero_percent, x: 0, y: 0, width: 44}
+            - {field: depr_below_zero_percent, x: 45, y: 0, width: 45}
+        - type: body
+          print_if: show_fixed_below_zero
+          height: 4.2
+          elements:
+            - {caption: fixed_depr_amount_below_zero, x: 0, y: 0, width: 44}
+            - {field: fixed_depr_amount_below_zero, x: 45, y: 0, width: 45}
+        - type: body
+          print_if: show_projected_disposal
+          height: 4.2
+          elements:
+            - {caption: projected_proceeds_on_disposal, x: 0, y: 0, width: 44}
+            - {field: projected_proceeds_on_disposal, x: 45, y: 0, width: 45}
+            - {caption: projected_disposal_date, x: 96, y: 0, width: 44}
+            - {field: projected_disposal_date, x: 141, y: 0, width: 45}
+        - type: body
+          print_if: show_custom_1
+          height: 12.6
+          elements:
+            - {caption: depr_starting_date_custom_1, x: 0, y: 0, width: 44}
+            - {field: depr_starting_date_custom_1, x: 45, y: 0, width: 45}
+            - {caption: accum_depr_percent_custom_1, x: 96, y: 0, width: 44}
+            - {field: accum_depr_percent_custom_1, x: 141, y: 0, width: 45}
+            - {caption: depr_this_year_percent_custom_1, x: 0, y: 4.2, width: 44}
+            - {field: depr_this_year_percent_custom_1, x: 45, y: 4.2, width: 45}
+            - {caption: depr_ending_date_custom_1, x: 96, y: 4.2, width: 44}
+            - {field: depr_ending_date_custom_1, x: 141, y: 4.2, width: 45}
+            - {caption: property_class_custom_1, x: 0, y: 8.4, width: 44}
+            - {field: property_class_custom_1, x: 45, y: 8.4, width: 45}
