@@ -39,7 +39,7 @@ services:
       retries: 10
 
   backend:
-    image: ghcr.io/hansjlachmann/goeasyerp/backend:0.1.153 # x-release-please-version
+    image: ghcr.io/hansjlachmann/goeasyerp/backend:0.1.154 # x-release-please-version
     restart: unless-stopped
     environment:
       DB_HOST: db
@@ -49,14 +49,14 @@ services:
       DB_NAME: openerp
       COMPANY_NAME: cronus
       PORT: 8080
-      APP_VERSION: "0.1.153" # x-release-please-version
+      APP_VERSION: "0.1.154" # x-release-please-version
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in the file .env next to docker-compose.yml}
     depends_on:
       db:
         condition: service_healthy
 
   frontend:
-    image: ghcr.io/hansjlachmann/goeasyerp/frontend:0.1.153 # x-release-please-version
+    image: ghcr.io/hansjlachmann/goeasyerp/frontend:0.1.154 # x-release-please-version
     restart: unless-stopped
     environment:
       PORT: 3000

@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.154](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.153...v0.1.154) (2026-11-12)
+
+
+### Features
+
+* cursor control on card pages ([a7721c7](https://github.com/hansjlachmann/goeasyerp/commit/a7721c70fe9f5fd0c7f1c86b82f94451372e99c6))
+* one-line install and upgrade of the one-computer installation ([0de7193](https://github.com/hansjlachmann/goeasyerp/commit/0de71934f638c1b148b04139aa3128089ccd7338))
+* request pages remember values, dialogs from every run, denied actions greyed out, source table views ([7f9d25d](https://github.com/hansjlachmann/goeasyerp/commit/7f9d25da15b5f8de9376c66d91e6b73b47fe17d1))
+* users see the object type codeunit as Routine ([ff58a3f](https://github.com/hansjlachmann/goeasyerp/commit/ff58a3fcef1b5f926866b88591a736c0ac672a26))
+
+
+### Documentation
+
+* migration first, neutralisation as a separate later step ([3fe65e9](https://github.com/hansjlachmann/goeasyerp/commit/3fe65e90318837c6d89987a51fa9e57326628588))
+
 ## [0.1.153](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.152...v0.1.153) (2026-11-11)
 
 
