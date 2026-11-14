@@ -149,7 +149,7 @@ jobs:
           DB_PORT: '5432'
           DB_USER: openerp
           DB_NAME: e2e
-          COMPANY_NAME: cronus
+          COMPANY_NAME: main
           PORT: '8080'
           DEMO_DATA: SMALL
           JOB_QUEUE_ENABLED: 'false'

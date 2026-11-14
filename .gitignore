@@ -64,6 +64,8 @@ Thumbs.db
 
 # Go binaries (project-specific)
 api-server
+!/cmd/api-server/
+# (the line above keeps the server's source directory tracked; the pattern before it is for the binary)
 cmd/api-server/api-server
 tools/tablegen/tablegen
 tools/extmerge/extmerge

@@ -109,7 +109,7 @@ func TestCustomerDeleteWithPeriodsAndRelatedRecords(t *testing.T) {
 	addPeriods(t, db, 2025, 2, types.NewDate(2025, 12, 1))
 
 	cust := gtables.NewCustomer(src)
-	cust.No, cust.Name = "C1", "Fjordkraft AS"
+	cust.No, cust.Name = "C1", "Fjordlys AS"
 	if err := cust.InsertOrError(false); err != nil {
 		t.Fatal(err)
 	}
@@ -120,7 +120,7 @@ func TestCustomerDeleteWithPeriodsAndRelatedRecords(t *testing.T) {
 	}
 	shipTo := gtables.NewShipToAddress(src)
 	shipTo.Customer_no, shipTo.Code = "C1", "MAIN"
-	if err := shipTo.InsertOrError(true); err != nil || shipTo.Name != "Fjordkraft AS" {
+	if err := shipTo.InsertOrError(true); err != nil || shipTo.Name != "Fjordlys AS" {
 		t.Fatalf("ship-to name %q, %v", shipTo.Name, err)
 	}
 	bankAcc := gtables.NewCustomerBankAccount(src)

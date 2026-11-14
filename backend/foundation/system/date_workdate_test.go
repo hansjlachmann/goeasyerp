@@ -17,7 +17,7 @@ func TestWorkDateOfTheUser(t *testing.T) {
 		return codeunits.Regional{WorkDate: d}
 	}
 	defer func() { codeunits.RegionalLoader = nil }()
-	codeunits.SetCurrentContext("HANS", "Hans", "cronus", "nb-NO")
+	codeunits.SetCurrentContext("HANS", "Hans", "main", "nb-NO")
 	defer codeunits.ClearCurrentContext()
 	if WorkDate().String() != "2026-09-05" {
 		t.Errorf("the user's work date: %v", WorkDate())

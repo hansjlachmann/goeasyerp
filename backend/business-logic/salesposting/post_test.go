@@ -420,7 +420,7 @@ func TestPostedDocumentsHistory(t *testing.T) {
 			texts = append(texts, text.Text)
 		}
 		joined := "|" + strings.Join(texts, "|") + "|"
-		if !strings.Contains(joined, "|"+c.no.String()+"|") || !strings.Contains(joined, "|Fjordkraft Interiør AS|") {
+		if !strings.Contains(joined, "|"+c.no.String()+"|") || !strings.Contains(joined, "|Fjordlys Interiør AS|") {
 			t.Errorf("report %d: %s", c.reportID, joined)
 		}
 	}

@@ -38,7 +38,7 @@ func TestPreferencesSaveAndRead(t *testing.T) {
 		return app
 	}
 
-	saved := postJSON(t, appIn("cronus"), "/api/preferences/22/COLUMNS", `{"preference_name":"DEFAULT","preference_data":{"hidden":["city"]}}`)
+	saved := postJSON(t, appIn("main"), "/api/preferences/22/COLUMNS", `{"preference_name":"DEFAULT","preference_data":{"hidden":["city"]}}`)
 	if saved["success"] != true {
 		t.Fatalf("save: %v", saved)
 	}
@@ -52,7 +52,7 @@ func TestPreferencesSaveAndRead(t *testing.T) {
 	}
 
 	// Saving again updates the same preference
-	if r := postJSON(t, appIn("cronus"), "/api/preferences/22/COLUMNS", `{"preference_name":"DEFAULT","preference_data":{"hidden":["phone"]}}`); r["success"] != true {
+	if r := postJSON(t, appIn("main"), "/api/preferences/22/COLUMNS", `{"preference_name":"DEFAULT","preference_data":{"hidden":["phone"]}}`); r["success"] != true {
 		t.Fatalf("update: %v", r)
 	}
 	var rows int
@@ -63,7 +63,7 @@ func TestPreferencesSaveAndRead(t *testing.T) {
 
 	// A preference larger than a layout or preset is refused
 	big := `{"preference_name":"DEFAULT","preference_data":{"x":"` + strings.Repeat("a", maxPreferenceData) + `"}}`
-	if r := postJSON(t, appIn("cronus"), "/api/preferences/22/LAYOUT", big); r["success"] == true {
+	if r := postJSON(t, appIn("main"), "/api/preferences/22/LAYOUT", big); r["success"] == true {
 		t.Errorf("oversized preference saved")
 	}
 }

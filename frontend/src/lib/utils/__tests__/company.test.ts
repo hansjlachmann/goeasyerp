@@ -3,13 +3,13 @@ import { companyLabel, companyLabelFor, filterCompanies, type CompanyInfo } from
 
 const companies: CompanyInfo[] = [
 	{ name: 'demo01', display_name: 'Demo Company 01' },
-	{ name: 'cronus', display_name: '' }
+	{ name: 'acme', display_name: '' }
 ];
 
 describe('company labels', () => {
 	it('shows the display name, else the technical name', () => {
 		expect(companyLabel(companies[0])).toBe('Demo Company 01');
-		expect(companyLabel(companies[1])).toBe('cronus');
+		expect(companyLabel(companies[1])).toBe('acme');
 		expect(companyLabel({ name: 'x', display_name: '   ' })).toBe('x');
 	});
 
@@ -21,7 +21,7 @@ describe('company labels', () => {
 
 	it('filters on display name and technical name, case-insensitive', () => {
 		expect(filterCompanies(companies, 'company 01').map((c) => c.name)).toEqual(['demo01']);
-		expect(filterCompanies(companies, 'CRON').map((c) => c.name)).toEqual(['cronus']);
+		expect(filterCompanies(companies, 'ACM').map((c) => c.name)).toEqual(['acme']);
 		expect(filterCompanies(companies, '  ')).toHaveLength(2);
 	});
 });

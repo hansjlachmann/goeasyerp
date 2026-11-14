@@ -179,12 +179,12 @@ Useful SQLite commands:
 .tables
 
 -- Show table schema
-.schema "cronus$Payment Terms"
+.schema "main$Payment Terms"
 
 -- Show all data with formatting
 .mode column
 .headers on
-SELECT * FROM "cronus$Payment Terms";
+SELECT * FROM "main$Payment Terms";
 
 -- Exit
 .exit

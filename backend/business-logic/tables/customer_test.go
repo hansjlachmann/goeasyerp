@@ -43,8 +43,8 @@ func TestCustomerTriggers(t *testing.T) {
 
 	// Search Name follows the name while it was blank or the old name
 	c = newCust()
-	_ = c.Validate("name", types.Text("Fjordkraft AS"))
-	if c.Search_name != "FJORDKRAFT AS" {
+	_ = c.Validate("name", types.Text("Fjordlys AS"))
+	if c.Search_name != "FJORDLYS AS" {
 		t.Errorf("search name %q", c.Search_name)
 	}
 

@@ -68,7 +68,6 @@ ENV DB_PORT=5432
 ENV DB_USER=openerp
 ENV DB_PASSWORD=openerp
 ENV DB_NAME=openerp
-ENV COMPANY_NAME=cronus
 
 # Run the application
 CMD ["./api-server"]

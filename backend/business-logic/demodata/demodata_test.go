@@ -89,7 +89,7 @@ func TestCreateSmall(t *testing.T) {
 	}
 	var shipTo gtables.ShipToAddress
 	shipTo.InitWithDBType(db, testCompany, database.DBTypeSQLite)
-	if !shipTo.GetByPK(types.Code("C00010"), types.Code("LAGER")) || shipTo.Name != "Fjordkraft Interiør AS" || shipTo.City != "Oslo" {
+	if !shipTo.GetByPK(types.Code("C00010"), types.Code("LAGER")) || shipTo.Name != "Fjordlys Interiør AS" || shipTo.City != "Oslo" {
 		t.Errorf("ship-to address C00010 LAGER: name %q, city %q", shipTo.Name, shipTo.City)
 	}
 	// Vendors with their ledger entries (Balance (LCY) is what is owed: the open invoices),

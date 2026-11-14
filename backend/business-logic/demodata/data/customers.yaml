@@ -1,16 +1,16 @@
 # Demo data: the customers of the SMALL set (the LARGE set starts with these too).
 # Names are invented. UK phone numbers are in the ranges Ofcom reserves for drama
-# and fiction (020 7946 0xxx, 0161 496 0xxx, ...), so they never reach a real line.
+# and fiction (020 7946 0xxx, 0161 496 0xxx, ...), so they never reach a real line;
+# Norway and Denmark have no such range, so their customers have no phone number.
 
 customers:
   # Norway
   - no: C00010
-    name: Fjordkraft Interiør AS
+    name: Fjordlys Interiør AS
     address: Karl Johans gate 21
     post_code: "0159"
     city: Oslo
     country: "NO"
-    phone: +47 22 41 18 30
     payment_terms: 30 DAYS
     credit_limit: 250000
   - no: C00020
@@ -19,7 +19,6 @@ customers:
     post_code: "5003"
     city: Bergen
     country: "NO"
-    phone: +47 55 30 12 40
     payment_terms: 14 DAYS
     credit_limit: 150000
   - no: C00030
@@ -28,7 +27,6 @@ customers:
     post_code: "7011"
     city: Trondheim
     country: "NO"
-    phone: +47 73 52 66 10
     payment_terms: 30 DAYS
     credit_limit: 400000
   - no: C00040
@@ -37,7 +35,6 @@ customers:
     post_code: "4006"
     city: Stavanger
     country: "NO"
-    phone: +47 51 89 23 70
     payment_terms: CM
     credit_limit: 100000
   - no: C00050
@@ -46,7 +43,6 @@ customers:
     post_code: "9008"
     city: Tromsø
     country: "NO"
-    phone: +47 77 61 04 90
     payment_terms: 30 DAYS
     credit_limit: 75000
   - no: C00060
@@ -55,7 +51,6 @@ customers:
     post_code: "1607"
     city: Fredrikstad
     country: "NO"
-    phone: +47 69 31 45 20
     payment_terms: 14 DAYS
     credit_limit: 120000
   - no: C00070
@@ -64,7 +59,6 @@ customers:
     post_code: "4611"
     city: Kristiansand
     country: "NO"
-    phone: +47 38 07 52 80
     payment_terms: COD
     credit_limit: 0
     blocked: true
@@ -76,7 +70,6 @@ customers:
     post_code: "2200"
     city: København N
     country: DK
-    phone: +45 35 37 21 10
     payment_terms: 30 DAYS
     credit_limit: 200000
   - no: C00090
@@ -85,7 +78,6 @@ customers:
     post_code: "8000"
     city: Aarhus C
     country: DK
-    phone: +45 86 12 40 55
     payment_terms: 14 DAYS
     credit_limit: 80000
   - no: C00100
@@ -94,7 +86,6 @@ customers:
     post_code: "5000"
     city: Odense C
     country: DK
-    phone: +45 66 11 23 90
     payment_terms: 30 DAYS
     credit_limit: 150000
   - no: C00110
@@ -103,7 +94,6 @@ customers:
     post_code: "9000"
     city: Aalborg
     country: DK
-    phone: +45 98 13 72 40
     payment_terms: CM
     credit_limit: 300000
   - no: C00120
@@ -112,7 +102,6 @@ customers:
     post_code: "2900"
     city: Hellerup
     country: DK
-    phone: +45 39 62 18 05
     payment_terms: 14 DAYS
     credit_limit: 60000
   - no: C00130
@@ -121,7 +110,6 @@ customers:
     post_code: "6700"
     city: Esbjerg
     country: DK
-    phone: +45 75 12 86 30
     payment_terms: 30 DAYS
     credit_limit: 250000
   - no: C00140
@@ -130,7 +118,6 @@ customers:
     post_code: "4000"
     city: Roskilde
     country: DK
-    phone: +45 46 35 07 20
     payment_terms: COD
     credit_limit: 25000
 

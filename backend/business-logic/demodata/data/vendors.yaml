@@ -8,7 +8,6 @@ vendors:
     post_code: "0159"
     city: Oslo
     country: "NO"
-    phone: +47 22 15 40 00
     payment_terms: 30 DAYS
   - no: V00020
     name: Vestland Emballasje AS
@@ -16,7 +15,6 @@ vendors:
     post_code: "5003"
     city: Bergen
     country: "NO"
-    phone: +47 55 22 81 00
     payment_terms: 30 DAYS
   - no: V00030
     name: Trønder Kontormøbler AS
@@ -24,7 +22,6 @@ vendors:
     post_code: "7011"
     city: Trondheim
     country: "NO"
-    phone: +47 73 82 50 00
     payment_terms: 14 DAYS
   - no: V00040
     name: Rogaland Rekvisita AS
@@ -32,7 +29,6 @@ vendors:
     post_code: "4006"
     city: Stavanger
     country: "NO"
-    phone: +47 51 44 90 00
     payment_terms: 30 DAYS
   - no: V00050
     name: Sørlandet Transport AS
@@ -40,7 +36,6 @@ vendors:
     post_code: "4611"
     city: Kristiansand
     country: "NO"
-    phone: +47 38 10 60 00
     payment_terms: 14 DAYS
   - no: V00060
     name: Danske Kontorartikler A/S
@@ -48,15 +43,13 @@ vendors:
     post_code: "2200"
     city: København N
     country: DK
-    phone: +45 35 36 70 00
     payment_terms: 30 DAYS
   - no: V00070
-    name: Jysk Trykkeri A/S
+    name: Kattegat Tryk A/S
     address: Søren Frichs Vej 38
     post_code: "8000"
     city: Aarhus C
     country: DK
-    phone: +45 86 12 30 00
     payment_terms: CM
   - no: V00080
     name: Midlands Office Supply Ltd
@@ -64,6 +57,6 @@ vendors:
     post_code: "M3"
     city: Manchester
     country: GB
-    phone: +44 161 832 4000
+    phone: +44 161 496 0808
     payment_terms: 30 DAYS
     currency: GBP

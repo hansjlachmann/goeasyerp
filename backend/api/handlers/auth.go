@@ -74,10 +74,10 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.UserRequired().Message("en-US")))
 	}
 
-	// Determine company - use provided company, or default to "cronus"
+	// The company to log in to (the login page sends the one picked; there is no default)
 	company := requestBody.Company
 	if company == "" {
-		company = "cronus"
+		return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.CompanyRequired().Message("en-US")))
 	}
 
 	// Verify company exists
@@ -224,14 +224,9 @@ func (h *AuthHandler) GetCurrentUser(c *fiber.Ctx) error {
 		return c.Status(401).JSON(apitypes.NewErrorResponse(apperrors.NotLoggedIn().Message(language)))
 	}
 
-	// Get full user details
-	company := sess.GetCompany()
-	if company == "" {
-		company = "cronus"
-	}
-
+	// Get full user details (User is a global table: no company)
 	var user gtables.User
-	user.InitWithDBType(h.db, company, h.dbType)
+	user.InitWithDBType(h.db, "", h.dbType)
 
 	if !user.Get(types.NewCode(userID)) {
 		return c.Status(404).JSON(apitypes.NewErrorResponse(apperrors.UserNotFound().Message(language)))
@@ -263,11 +258,9 @@ func (h *AuthHandler) CreateInitialUser(c *fiber.Ctx) error {
 		return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.InvalidRequestBody().Message("en-US")))
 	}
 
-	// Check if any users exist
-	// Use default company "cronus" for user storage
-	company := "cronus"
+	// Check if any users exist (User is a global table: no company)
 	var user gtables.User
-	user.InitWithDBType(h.db, company, h.dbType)
+	user.InitWithDBType(h.db, "", h.dbType)
 	count := user.Count()
 
 	if count > 0 {

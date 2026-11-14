@@ -268,14 +268,14 @@ func TestInsertDuplicateCompositeKey(t *testing.T) {
 	for _, stmt := range []string{
 		`INSERT INTO "User" (user_id, user_name) VALUES ('HANS', 'Hans')`,
 		`INSERT INTO "User_Role" (code, description) VALUES ('READER', 'Reader')`,
-		`INSERT INTO "Company" (name) VALUES ('CRONUS'), ('OTHER')`,
+		`INSERT INTO "Company" (name) VALUES ('ACME'), ('OTHER')`,
 	} {
 		if _, err := db.Exec(stmt); err != nil {
 			t.Fatalf("%s: %v", stmt, err)
 		}
 	}
 
-	first := postJSON(t, app, "/api/tables/User_Member/insert", `{"user_id":"HANS","role_id":"READER","company":"CRONUS"}`)
+	first := postJSON(t, app, "/api/tables/User_Member/insert", `{"user_id":"HANS","role_id":"READER","company":"ACME"}`)
 	if first["success"] != true {
 		t.Fatalf("first insert failed: %v", first["error"])
 	}
@@ -286,12 +286,12 @@ func TestInsertDuplicateCompositeKey(t *testing.T) {
 		t.Errorf("insert for another company failed: %v (must not be treated as a duplicate)", other["error"])
 	}
 
-	dup := postJSON(t, app, "/api/tables/User_Member/insert", `{"user_id":"HANS","role_id":"READER","company":"CRONUS"}`)
+	dup := postJSON(t, app, "/api/tables/User_Member/insert", `{"user_id":"HANS","role_id":"READER","company":"ACME"}`)
 	if dup["success"] != false {
 		t.Fatal("duplicate insert succeeded")
 	}
-	if msg, _ := dup["error"].(string); !strings.Contains(msg, "HANS,READER,CRONUS") {
-		t.Errorf("error = %q, want a duplicate message naming the full key HANS,READER,CRONUS", msg)
+	if msg, _ := dup["error"].(string); !strings.Contains(msg, "HANS,READER,ACME") {
+		t.Errorf("error = %q, want a duplicate message naming the full key HANS,READER,ACME", msg)
 	}
 }
 

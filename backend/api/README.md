@@ -158,7 +158,7 @@ go build -o api-server cmd/api-server/main.go
 
 # Follow prompts:
 # - Enter database path (default: test.db)
-# - Enter company name (default: cronus)
+# - Enter company name (default: the first company; a new database: main)
 
 # Server starts on http://localhost:8080
 ```

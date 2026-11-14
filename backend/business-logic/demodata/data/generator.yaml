@@ -1,12 +1,12 @@
 # Demo data: building blocks for the generated customers of the LARGE set.
-# A name is first + second + legal form, e.g. "Fjord" + "kraft" + " AS".
+# A name is first + second + legal form, e.g. "Fjord" + "data" + " AS".
 # Addresses are street + house number (or number + street with house_number_first).
-# In phone patterns each # becomes a digit.
+# In phone patterns each # becomes a digit (only ranges reserved for fiction; blank: no phone).
 
 countries:
   - country: "NO"
     first: [Fjord, Nord, Vest, Berg, Lys, Skog, Havn, Polar, Elve, Fjell, Sol, Dal, Vik, Nes, Brygge]
-    second: [kraft, data, bygg, mat, tre, møbler, service, handel, transport, design, regnskap, elektro, sjømat, trykk, maskin]
+    second: [lager, data, bygg, mat, tre, møbler, service, handel, transport, design, regnskap, elektro, sjømat, trykk, maskin]
     legal_forms: [" AS", " AS", " AS", " ASA", " ANS"]
     streets: [Storgata, Kirkegata, Kongens gate, Dronningens gate, Strandveien, Industriveien, Havnegata, Torggata, Parkveien, Skolegata]
     cities:
@@ -18,7 +18,7 @@ countries:
       - { city: Tromsø, post_codes: ["9008", "9010"] }
       - { city: Kristiansand, post_codes: ["4611", "4614"] }
       - { city: Ålesund, post_codes: ["6002", "6008"] }
-    phone: "+47 ## ## ## ##"
+    phone: ""   # no number range is reserved for fiction in Norway
 
   - country: DK
     first: [Nørre, Strand, Øster, Kyst, Bølge, Lund, Hav, Sol, Vester, Mølle, Fjord, Skov, Bro, Eng, Klint]
@@ -34,7 +34,7 @@ countries:
       - { city: Esbjerg, post_codes: ["6700"] }
       - { city: Vejle, post_codes: ["7100"] }
       - { city: Roskilde, post_codes: ["4000"] }
-    phone: "+45 ## ## ## ##"
+    phone: ""   # nor in Denmark
 
   - country: GB
     first: [Thames, Pennine, Albion, Mersey, Cotswold, Kingsway, Highgate, Severn, Windsor, Bramble, Tyne, Chiltern, Avon, Mendip, Solent]

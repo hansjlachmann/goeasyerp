@@ -47,7 +47,7 @@ services:
       DB_USER: openerp
       DB_PASSWORD: openerp
       DB_NAME: openerp
-      COMPANY_NAME: cronus
+      COMPANY_NAME: ${COMPANY_NAME:-}
       PORT: 8080
       APP_VERSION: "0.1.158" # x-release-please-version
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in the file .env next to docker-compose.yml}

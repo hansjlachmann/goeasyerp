@@ -225,9 +225,9 @@ func TestUserDeleteRemovesTheirPreferences(t *testing.T) {
 		}
 	}
 
-	// Delete from a session in company CRONUS: preferences still live under company ""
+	// Delete from a session in company ACME: preferences still live under company ""
 	u := &gtables.User{}
-	u.InitWithDBType(db, "CRONUS", database.DBTypeSQLite)
+	u.InitWithDBType(db, "ACME", database.DBTypeSQLite)
 	if !u.Get("HANS") {
 		t.Fatal("user HANS not found")
 	}

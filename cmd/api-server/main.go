@@ -91,7 +91,7 @@ func main() {
 			log.Fatalf("Failed to connect to PostgreSQL: %v", err)
 		}
 
-		companyName = getEnv("COMPANY_NAME", "cronus")
+		companyName = strings.TrimSpace(os.Getenv("COMPANY_NAME"))
 		port = getEnv("PORT", "8080")
 
 		fmt.Printf("✓ Connected to PostgreSQL database: %s\n", config.DBName)
@@ -112,46 +112,34 @@ func main() {
 
 		fmt.Printf("✓ Database opened: %s\n", dbPath)
 
-		fmt.Print("Enter company name (or press Enter for 'cronus'): ")
+		fmt.Printf("Enter company name (or press Enter for the first company, '%s' in a new database): ", defaultCompany)
 		scanner.Scan()
 		companyName = strings.TrimSpace(scanner.Text())
-		if companyName == "" {
-			companyName = "cronus"
-		}
 
 		port = getEnv("PORT", "8080")
 	}
 
 	defer func() { _ = db.CloseDatabase() }()
 
-	// Enter company (auto-create if it doesn't exist in Docker mode)
+	// Enter a company (startupCompany: the one asked for when it exists, else an existing one;
+	// an empty database gets the one asked for or the default, created here)
 	// Use NewManagerWithMigrations to enable versioned migrations
 	companyMgr := company.NewManagerWithMigrations(db, registry, blmigrations.GetAll())
-	if err := companyMgr.EnterCompany(companyName); err != nil {
-		// In Docker mode, auto-create the company if it doesn't exist — only on an empty
-		// database: when other companies exist, COMPANY_NAME was renamed or deleted on
-		// purpose, so enter an existing one instead of creating an empty company again
-		existing, _ := companyMgr.ListCompanies()
-		if dbHost != "" && strings.Contains(err.Error(), "does not exist") && len(existing) > 0 {
-			fmt.Printf("Company '%s' not found; using existing company '%s'\n", companyName, existing[0])
-			companyName = existing[0]
-			if enterErr := companyMgr.EnterCompany(companyName); enterErr != nil {
-				log.Fatalf("Failed to enter company: %v", enterErr)
-			}
-		} else if dbHost != "" && strings.Contains(err.Error(), "does not exist") {
-			fmt.Printf("Company '%s' not found, creating...\n", companyName)
-			if createErr := companyMgr.CreateCompany(companyName); createErr != nil {
-				log.Fatalf("Failed to create company: %v", createErr)
-			}
-			fmt.Printf("✓ Company created: %s\n", companyName)
-
-			// Now enter the newly created company
-			if enterErr := companyMgr.EnterCompany(companyName); enterErr != nil {
-				log.Fatalf("Failed to enter company: %v", enterErr)
-			}
-		} else {
-			log.Fatalf("Failed to enter company: %v", err)
+	existing, _ := companyMgr.ListCompanies() // a new database has no Company table yet: none
+	requested := companyName
+	companyName, createCompany := startupCompany(requested, existing)
+	if requested != "" && companyName != requested {
+		fmt.Printf("Company '%s' not found; using existing company '%s'\n", requested, companyName)
+	}
+	if createCompany {
+		fmt.Printf("Company '%s' not found, creating...\n", companyName)
+		if createErr := companyMgr.CreateCompany(companyName); createErr != nil {
+			log.Fatalf("Failed to create company: %v", createErr)
 		}
+		fmt.Printf("✓ Company created: %s\n", companyName)
+	}
+	if err := companyMgr.EnterCompany(companyName); err != nil {
+		log.Fatalf("Failed to enter company: %v", err)
 	}
 
 	fmt.Printf("✓ Company entered: %s\n", companyName)

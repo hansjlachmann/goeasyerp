@@ -40,7 +40,8 @@ services:
       DB_USER: openerp
       DB_PASSWORD: ${POSTGRES_PASSWORD:-openerp}
       DB_NAME: openerp
-      COMPANY_NAME: cronus
+      # The company the server enters at startup (empty: the first company; a new database: main)
+      COMPANY_NAME: ${COMPANY_NAME:-}
       PORT: 8080
       APP_VERSION: ${APP_VERSION:-latest}
       # Without it every restart logs all users out (random key per start)

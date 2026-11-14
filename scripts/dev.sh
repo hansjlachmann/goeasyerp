@@ -10,7 +10,7 @@
 #
 # Overridable via environment variables:
 #   OPENERP_DB        SQLite database file            (default: dev.db)
-#   OPENERP_COMPANY   company to enter                (default: cronus)
+#   OPENERP_COMPANY   company to enter                (default: main)
 #   OPENERP_USER      initial admin user id           (default: ADMIN)
 #   OPENERP_PASSWORD  initial admin password (>=6)    (default: admin123)
 
@@ -20,7 +20,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 DB="${OPENERP_DB:-dev.db}"
-COMPANY="${OPENERP_COMPANY:-cronus}"
+COMPANY="${OPENERP_COMPANY:-main}"
 ADMIN_USER="${OPENERP_USER:-ADMIN}"
 ADMIN_PASS="${OPENERP_PASSWORD:-admin123}"
 
