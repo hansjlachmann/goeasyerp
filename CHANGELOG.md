@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.157](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.156...v0.1.157) (2026-11-14)
+
+
+### Features
+
+* fixed asset, insurance and maintenance analysis reports ([5721e67](https://github.com/hansjlachmann/goeasyerp/commit/5721e67ab1ab73477b7832a2285da087d80f9eb2))
+
 ## [0.1.156](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.155...v0.1.156) (2026-11-13)
 
 
