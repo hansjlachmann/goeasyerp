@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.158](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.157...v0.1.158) (2026-11-14)
+
+
+### Documentation
+
+* list the theme colours in the frontend README ([7367515](https://github.com/hansjlachmann/goeasyerp/commit/736751557607929bab452381d8ac3bbc48269bc7))
+
 ## [0.1.157](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.156...v0.1.157) (2026-11-14)
 
 
