@@ -219,8 +219,8 @@ Access session state anywhere:
 ### Using Tailwind utility classes:
 
 ```svelte
-<div class="bg-white rounded-lg shadow-sm p-6">
-  <h1 class="text-2xl font-bold text-nav-blue">Title</h1>
+<div class="bg-surface rounded-lg shadow-sm p-6">
+  <h1 class="text-2xl font-bold text-heading">Title</h1>
 </div>
 ```
 
@@ -235,11 +235,14 @@ Access session state anywhere:
 </div>
 ```
 
-### color scheme:
+### Colours:
 
-- `text-nav-blue` - #002050 (dark blue, used for headings)
-- `text-nav-lightblue` - #4472c4 (light blue)
-- `bg-primary-*` - Blue scale (50-900)
+Every colour is a theme variable (`src/app.css`), so it follows the user's theme and dark mode:
+
+- `bg-surface` - panels, cards, dropdowns (never `bg-white`)
+- `text-heading` - headings; `text-fg` - body text
+- `gray-*` - the slate/grey ramp (50-900)
+- `primary-*` / `blue-*` - the accent ramp, amber by default (main actions, highlights)
 
 ## Docker/DevContainer Support
 
