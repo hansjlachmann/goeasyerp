@@ -84,7 +84,6 @@ page:
 
         - source: gen_posting_type
           width: 130
-          visible: false
 
         - source: gen_bus_posting_group
           width: 110
@@ -96,11 +95,9 @@ page:
 
         - source: tax_bus_posting_group
           width: 110
-          visible: false
 
         - source: tax_prod_posting_group
           width: 110
-          visible: false
 
         - source: tax_area_code
           width: 110
