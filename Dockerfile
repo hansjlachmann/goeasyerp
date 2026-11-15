@@ -49,6 +49,9 @@ RUN apk add --no-cache ca-certificates
 # Copy binary from builder
 COPY --from=builder /app/api-server .
 
+# Licence and third-party notices
+COPY --from=builder /app/LICENSE /app/THIRD_PARTY_NOTICES ./
+
 # Copy go.mod as marker for project root detection
 COPY --from=builder /app/go.mod ./go.mod
 
