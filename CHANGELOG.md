@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.1.159](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.158...v0.1.159) (2026-11-15)
+
+
+### Features
+
+* Gen. Posting Type and VAT posting groups shown on the general journals ([7954661](https://github.com/hansjlachmann/goeasyerp/commit/795466152f911c7a3b62da3869fb092735ffa447))
+* new installations start with company main; startup enters an existing company ([7193895](https://github.com/hansjlachmann/goeasyerp/commit/71938954b4e928d6f1c4662db17a1ab405c33c0e))
+* tips for new users ([153a9b1](https://github.com/hansjlachmann/goeasyerp/commit/153a9b1261810db5cacf4f3852bc1c75938d6729))
+* VAT product and business posting groups on the sales and purchase line pages ([5f607be](https://github.com/hansjlachmann/goeasyerp/commit/5f607bed9e2a67d591e6362e6da018394f45fc5b))
+
+
+### Bug Fixes
+
+* list line kept on a click outside, card edit mode from the URL, Customize dialog, VAT columns on Tax Entries ([4a8ae36](https://github.com/hansjlachmann/goeasyerp/commit/4a8ae36ec29f1426c24a1d0ba07034b24ad93102))
+* lookup search on conditional relations (journal account no. of a customer, vendor or bank account) ([cffc944](https://github.com/hansjlachmann/goeasyerp/commit/cffc9449f79d5bef431bb27b143b234f62948c82))
+* record keys with special characters in the record URLs ([efab535](https://github.com/hansjlachmann/goeasyerp/commit/efab535336e496fe85f3f86ff1f521927a14ba3b))
+* tax statement preview period, request page dates, settlement from the tax statement ([e94b5da](https://github.com/hansjlachmann/goeasyerp/commit/e94b5da44701be2005a71ed03f929d67f52b02f2))
+* VAT postings without empty G/L entries, VAT wording, VIES file, dark mode, journal discount columns ([a3adae3](https://github.com/hansjlachmann/goeasyerp/commit/a3adae3af9407ece555d51fd36db13c46e2d8a90))
+
 ## [0.1.158](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.157...v0.1.158) (2026-11-14)
 
 
