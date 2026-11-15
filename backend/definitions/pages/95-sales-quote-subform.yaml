@@ -61,6 +61,11 @@ page:
           visible: false
         - source: tax_group_code
           width: 110
+        - source: tax_bus_posting_group
+          width: 110
+          visible: false
+        - source: tax_prod_posting_group
+          width: 110
         - source: allow_invoice_disc
           width: 120
           visible: false
