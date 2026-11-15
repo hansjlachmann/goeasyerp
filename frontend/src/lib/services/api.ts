@@ -129,7 +129,9 @@ export const api = {
 		const query = new URLSearchParams();
 		if (params.search) query.append('search', params.search);
 		if (params.key) query.append('key', params.key);
-		const response = await fetch(`${lazyUrl}${query.toString() ? '?' + query.toString() : ''}`);
+		// the URL may already carry a query (a conditional relation's variant=…)
+		const separator = lazyUrl.includes('?') ? '&' : '?';
+		const response = await fetch(`${lazyUrl}${query.toString() ? separator + query.toString() : ''}`);
 		return handleApiResponse(response, 'load lookup rows');
 	},
 
