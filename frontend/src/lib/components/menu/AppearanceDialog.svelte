@@ -349,15 +349,27 @@
 	}
 
 	.dialog-title {
-		@apply text-xl font-bold text-heading dark:text-blue-400;
+		@apply text-xl font-bold text-heading;
+	}
+
+	:global(.dark) .dialog-title {
+		@apply text-blue-400;
 	}
 
 	.close-btn {
-		@apply text-2xl leading-none px-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50;
+		@apply text-2xl leading-none px-2 text-gray-500 hover:text-gray-900;
+	}
+
+	:global(.dark) .close-btn {
+		@apply text-gray-400 hover:text-gray-50;
 	}
 
 	.hint {
-		@apply text-sm text-gray-600 dark:text-gray-400 mb-4;
+		@apply text-sm text-gray-600 mb-4;
+	}
+
+	:global(.dark) .hint {
+		@apply text-gray-400;
 	}
 
 	.section-title {
@@ -365,7 +377,11 @@
 	}
 
 	.current-mode {
-		@apply text-sm font-normal text-gray-500 dark:text-gray-400;
+		@apply text-sm font-normal text-gray-500;
+	}
+
+	:global(.dark) .current-mode {
+		@apply text-gray-400;
 	}
 
 	.theme-section {
@@ -379,12 +395,20 @@
 	}
 
 	.theme-card {
-		@apply rounded-lg border-2 border-gray-200 dark:border-gray-700 p-2 text-left transition-colors;
+		@apply rounded-lg border-2 border-gray-200 p-2 text-left transition-colors;
 		@apply hover:border-primary-500 focus-visible:border-primary-500;
 	}
 
+	:global(.dark) .theme-card {
+		@apply border-gray-700;
+	}
+
 	.theme-card.in-use {
-		@apply border-primary-600 dark:border-primary-400;
+		@apply border-primary-600;
+	}
+
+	:global(.dark) .theme-card.in-use {
+		@apply border-primary-400;
 	}
 
 	.theme-card:disabled {
@@ -437,11 +461,19 @@
 	}
 
 	.text-controls label {
-		@apply flex flex-col gap-1 text-sm text-gray-600 dark:text-gray-400;
+		@apply flex flex-col gap-1 text-sm text-gray-600;
+	}
+
+	:global(.dark) .text-controls label {
+		@apply text-gray-400;
 	}
 
 	.text-controls select {
-		@apply px-2 py-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-surface dark:bg-gray-700 text-fg;
+		@apply px-2 py-1.5 text-sm rounded border border-gray-300 bg-surface text-fg;
+	}
+
+	:global(.dark) .text-controls select {
+		@apply border-gray-600 bg-gray-700;
 	}
 
 	.wallpaper-grid {
@@ -451,12 +483,20 @@
 	}
 
 	.wallpaper-option {
-		@apply h-20 rounded border-2 border-gray-200 dark:border-gray-700 overflow-hidden text-sm text-fg;
+		@apply h-20 rounded border-2 border-gray-200 overflow-hidden text-sm text-fg;
 		@apply hover:border-primary-500 focus-visible:border-primary-500;
 	}
 
+	:global(.dark) .wallpaper-option {
+		@apply border-gray-700;
+	}
+
 	.wallpaper-option.selected {
-		@apply border-primary-600 dark:border-primary-400;
+		@apply border-primary-600;
+	}
+
+	:global(.dark) .wallpaper-option.selected {
+		@apply border-primary-400;
 	}
 
 	.wallpaper-option img {
@@ -469,7 +509,11 @@
 	}
 
 	.sliders label {
-		@apply flex flex-col text-sm text-gray-600 dark:text-gray-400 gap-1;
+		@apply flex flex-col text-sm text-gray-600 gap-1;
+	}
+
+	:global(.dark) .sliders label {
+		@apply text-gray-400;
 	}
 
 	.sliders input[type='range'] {
@@ -477,7 +521,11 @@
 	}
 
 	.theme-source {
-		@apply text-xs text-gray-500 dark:text-gray-400 truncate;
+		@apply text-xs text-gray-500 truncate;
+	}
+
+	:global(.dark) .theme-source {
+		@apply text-gray-400;
 	}
 
 	.theme-cell {
@@ -489,15 +537,27 @@
 	}
 
 	.link-btn {
-		@apply text-xs text-primary-600 dark:text-primary-400 hover:underline disabled:opacity-50;
+		@apply text-xs text-primary-600 hover:underline disabled:opacity-50;
+	}
+
+	:global(.dark) .link-btn {
+		@apply text-primary-400;
 	}
 
 	.link-btn.danger {
-		@apply text-red-700 dark:text-red-400;
+		@apply text-red-700;
+	}
+
+	:global(.dark) .link-btn.danger {
+		@apply text-red-400;
 	}
 
 	.install-box {
-		@apply mb-6 p-3 rounded-lg border border-gray-200 dark:border-gray-700;
+		@apply mb-6 p-3 rounded-lg border border-gray-200;
+	}
+
+	:global(.dark) .install-box {
+		@apply border-gray-700;
 	}
 
 	.install-row {
@@ -505,22 +565,42 @@
 	}
 
 	.install-input {
-		@apply flex-1 px-3 py-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-surface dark:bg-gray-700 text-fg;
+		@apply flex-1 px-3 py-1.5 text-sm rounded border border-gray-300 bg-surface text-fg;
+	}
+
+	:global(.dark) .install-input {
+		@apply border-gray-600 bg-gray-700;
 	}
 
 	.install-btn {
-		@apply px-4 py-1.5 text-sm rounded bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50 dark:bg-primary-500 dark:hover:bg-primary-600;
+		@apply px-4 py-1.5 text-sm rounded bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50;
+	}
+
+	:global(.dark) .install-btn {
+		@apply bg-primary-500 hover:bg-primary-600;
 	}
 
 	.install-hint {
-		@apply mt-2 text-xs text-gray-500 dark:text-gray-400;
+		@apply mt-2 text-xs text-gray-500;
+	}
+
+	:global(.dark) .install-hint {
+		@apply text-gray-400;
 	}
 
 	.install-link {
-		@apply inline-block mt-1 text-xs text-primary-600 dark:text-primary-400 hover:underline;
+		@apply inline-block mt-1 text-xs text-primary-600 hover:underline;
+	}
+
+	:global(.dark) .install-link {
+		@apply text-primary-400;
 	}
 
 	.in-use-badge {
-		@apply text-xs font-medium text-primary-600 dark:text-primary-400;
+		@apply text-xs font-medium text-primary-600;
+	}
+
+	:global(.dark) .in-use-badge {
+		@apply text-primary-400;
 	}
 </style>

@@ -110,7 +110,11 @@ func TestIntrastat(t *testing.T) {
 	if !strings.Contains(result.Message, "0") {
 		t.Errorf("Get Entries again: %q", result.Message)
 	}
-	// VIES: a file with its header and total
+	// VIES: a file with its header and total — of a company whose VAT registration number fits
+	// the file's 8 digits (the demo company's Norwegian 9 digits are refused)
+	companyInfo := gtables.GetCompanyInformation(src)
+	companyInfo.Vat_registration_no = "DK11223344"
+	mustOK(t, companyInfo.ModifyOrError(false))
 	result, err = reports.Execute(reports.VIESDeclarationDiskID, db, "demo", database.DBTypeSQLite, reports.RunOptions{})
 	mustOK(t, err)
 	if !strings.Contains(string(result.File), "LIST") || !strings.Contains(string(result.File), "\r\n10") {

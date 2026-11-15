@@ -125,7 +125,11 @@
 	}
 
 	.item-title {
-		@apply text-sm font-semibold text-gray-800 dark:text-gray-200 pt-2;
+		@apply text-sm font-semibold text-gray-800 pt-2;
+	}
+
+	:global(.dark) .item-title {
+		@apply text-gray-200;
 	}
 
 	.filter-row {
@@ -134,20 +138,35 @@
 
 	.filter-field-tag {
 		@apply flex items-center gap-2 text-sm;
-		@apply text-gray-700 dark:text-gray-300;
+		@apply text-gray-700;
+	}
+
+	:global(.dark) .filter-field-tag {
+		@apply text-gray-300;
 	}
 
 	.remove-filter-icon {
-		@apply p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600;
-		@apply text-gray-400 dark:text-gray-500;
+		@apply p-0.5 rounded hover:bg-gray-200;
+		@apply text-gray-400;
+	}
+
+	:global(.dark) .remove-filter-icon {
+		@apply hover:bg-gray-600;
+		@apply text-gray-500;
 	}
 
 	.filter-expression-input {
 		@apply w-full px-3 py-2 text-sm;
-		@apply border border-gray-300 dark:border-gray-600 rounded;
-		@apply bg-surface dark:bg-gray-800;
-		@apply text-gray-900 dark:text-gray-100;
+		@apply border border-gray-300 rounded;
+		@apply bg-surface;
+		@apply text-gray-900;
 		@apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+	}
+
+	:global(.dark) .filter-expression-input {
+		@apply border-gray-600;
+		@apply bg-gray-800;
+		@apply text-gray-100;
 	}
 
 	.add-filter-row {
@@ -156,16 +175,26 @@
 
 	.add-filter-btn {
 		@apply flex items-center gap-2 px-3 py-1.5 text-left;
-		@apply text-sm text-blue-600 dark:text-blue-400;
-		@apply hover:bg-blue-50 dark:hover:bg-blue-900/20;
+		@apply text-sm text-blue-600;
+		@apply hover:bg-blue-50;
 		@apply rounded transition-colors;
+	}
+
+	:global(.dark) .add-filter-btn {
+		@apply text-blue-400;
+		@apply hover:bg-blue-900/20;
 	}
 
 	.field-selector-inline {
 		@apply w-full px-3 py-2 text-sm;
 		@apply border border-blue-500 rounded;
-		@apply bg-surface dark:bg-gray-800;
-		@apply text-gray-900 dark:text-gray-100;
+		@apply bg-surface;
+		@apply text-gray-900;
 		@apply focus:outline-none focus:ring-2 focus:ring-blue-500;
+	}
+
+	:global(.dark) .field-selector-inline {
+		@apply bg-gray-800;
+		@apply text-gray-100;
 	}
 </style>

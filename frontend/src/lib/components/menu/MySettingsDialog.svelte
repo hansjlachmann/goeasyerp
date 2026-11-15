@@ -93,10 +93,18 @@
 		@apply flex items-center justify-between mb-2;
 	}
 	.dialog-title {
-		@apply text-xl font-bold text-heading dark:text-blue-400;
+		@apply text-xl font-bold text-heading;
+	}
+
+	:global(.dark) .dialog-title {
+		@apply text-blue-400;
 	}
 	.close-btn {
-		@apply text-2xl leading-none px-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50;
+		@apply text-2xl leading-none px-2 text-gray-500 hover:text-gray-900;
+	}
+
+	:global(.dark) .close-btn {
+		@apply text-gray-400 hover:text-gray-50;
 	}
 	.settings-grid {
 		display: grid;
@@ -105,11 +113,19 @@
 		align-items: center;
 	}
 	.settings-grid label {
-		@apply text-sm font-medium text-gray-700 dark:text-gray-300;
+		@apply text-sm font-medium text-gray-700;
+	}
+
+	:global(.dark) .settings-grid label {
+		@apply text-gray-300;
 	}
 	.settings-grid select,
 	.my-settings :global(.work-date-input) {
-		@apply w-full py-1.5 px-2 bg-surface border border-gray-300 rounded-md text-fg dark:border-gray-600;
+		@apply w-full py-1.5 px-2 bg-surface border border-gray-300 rounded-md text-fg;
+	}
+
+	:global(.dark) .my-settings :global(.work-date-input) {
+		@apply border-gray-600;
 	}
 	.work-date-row {
 		display: flex;
@@ -117,15 +133,27 @@
 		align-items: center;
 	}
 	.today-btn {
-		@apply px-3 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50;
+		@apply px-3 py-1.5 text-sm rounded-md border border-gray-300 hover:bg-gray-100 disabled:opacity-50;
+	}
+
+	:global(.dark) .today-btn {
+		@apply border-gray-600 hover:bg-gray-700;
 	}
 	.preview {
-		@apply flex gap-4 text-sm px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-700;
+		@apply flex gap-4 text-sm px-3 py-2 rounded-md bg-gray-100;
+	}
+
+	:global(.dark) .preview {
+		@apply bg-gray-700;
 	}
 	.preview-title {
 		@apply font-semibold;
 	}
 	.hint {
-		@apply text-xs text-gray-600 dark:text-gray-400;
+		@apply text-xs text-gray-600;
+	}
+
+	:global(.dark) .hint {
+		@apply text-gray-400;
 	}
 </style>

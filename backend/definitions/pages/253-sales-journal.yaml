@@ -192,6 +192,18 @@ page:
           width: 120
           visible: false
 
+        - source: due_date
+          width: 100
+          visible: false
+
+        - source: pmt_discount_date
+          width: 100
+          visible: false
+
+        - source: payment_discount_percent
+          width: 120
+          visible: false
+
         - source: applies_to_doc_type
           width: 130
 

@@ -176,6 +176,18 @@ page:
           width: 110
           visible: false
 
+        - source: due_date
+          width: 100
+          visible: false
+
+        - source: pmt_discount_date
+          width: 100
+          visible: false
+
+        - source: payment_discount_percent
+          width: 120
+          visible: false
+
         - source: bal_tax_base_amount
           width: 120
           visible: false

@@ -1236,6 +1236,7 @@ reports:
     texts:
       FILE_NAME: "VIES %1.txt"
       DONE: "VIES-oppgaven med %1 kunder ble laget."
+      VAT_REG_NO_TOO_LONG: "Org.nr. %1 i Firmaopplysninger har mer enn 8 sifre: VIES-filen har plass til 8."
   "6":
     caption: "Saldobalanse"
     options:
@@ -1817,6 +1818,8 @@ reports:
       TAX_SETTLEMENT: "Avgiftsoppgjør"
       PURCHASE_SETTLEMENT: "Avgiftsoppgjør kjøp: %1 %2"
       SALES_SETTLEMENT: "Avgiftsoppgjør salg: %1 %2"
+      PURCHASE_VAT_SETTLEMENT: "MVA-oppgjør kjøp: %1 %2"
+      SALES_VAT_SETTLEMENT: "MVA-oppgjør salg: %1 %2"
   "12":
     caption: "Avgiftsoppgave"
     options:

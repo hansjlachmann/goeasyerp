@@ -145,6 +145,17 @@ func (c *vatCheck) gl(accounts, documents string) types.Decimal {
 	return glEntry.Amount.Round(2)
 }
 
+// noZeroGLEntries: a document's postings have no G/L entry of 0 (Full VAT, settlement)
+func (c *vatCheck) noZeroGLEntries(documentNo string) {
+	c.t.Helper()
+	glEntry := gtables.NewGLEntry(c.src)
+	glEntry.SetRange("document_no", types.Code(documentNo))
+	glEntry.SetRange("amount", types.Decimal{})
+	if n := glEntry.Count(); n != 0 {
+		c.t.Errorf("%s: %d G/L entries of 0", documentNo, n)
+	}
+}
+
 // historyVAT: the month's G/L amount on VAT accounts (a filter) of documents without tax
 // entries — the demo's generated G/L history, inserted directly with its VAT on 2330/1440
 func (c *vatCheck) historyVAT(accounts string) types.Decimal {
@@ -352,6 +363,7 @@ func (c *vatCheck) generalJournal() {
 	glEntry.SetRange("gl_account_no", types.Code("1440"))
 	c.must(glEntry.CalcSums("amount"))
 	c.want("import VAT on 1440", glEntry.Amount, vd("2500"))
+	c.noZeroGLEntries(string(documentNo))
 
 	c.postLine(c.glLine("VATCHK-4", "3110", "DOMESTIC", "-125", false))
 	c.want("sale: 3110", c.gl("3110", "VATCHK-4"), vd("-100"))
@@ -512,10 +524,28 @@ func (c *vatCheck) euReports() {
 		c.t.Errorf("VIES 19 does not print the EU 3-party trade amount %s:\n%s", amountText(dk.eu3Party), printed)
 	}
 
+	// VIES 88: the file has room for 8 digits of the company's VAT registration number — a
+	// longer one (the demo company's 9 Norwegian digits) is refused rather than cut
+	_, err = reports.Execute(reports.VIESDeclarationDiskID, c.src.GetDB(), c.src.GetCompany(), c.src.GetDBType(),
+		reports.RunOptions{Filters: filters})
+	if len(strings.Map(func(r rune) rune {
+		if r >= '0' && r <= '9' {
+			return r
+		}
+		return -1
+	}, companyInfo.Vat_registration_no.String())) > 8 && err == nil {
+		c.t.Errorf("VIES 88 wrote a file with the %d-digit VAT Registration No. %s", len(companyInfo.Vat_registration_no), companyInfo.Vat_registration_no)
+	}
+	companyInfo = gtables.GetCompanyInformation(c.src)
+	companyInfo.Vat_registration_no = "DK 11 22 33 44"
+	c.must(companyInfo.ModifyOrError(false))
 	result, err = reports.Execute(reports.VIESDeclarationDiskID, c.src.GetDB(), c.src.GetCompany(), c.src.GetDBType(),
 		reports.RunOptions{Filters: filters})
 	c.must(err)
 	file := string(result.File)
+	if !strings.HasPrefix(file, "0011223344LIST") {
+		c.t.Errorf("VIES 88 header: %q, want the company's 8 digits", strings.SplitN(file, "\r\n", 2)[0])
+	}
 	for custNo, s := range sales {
 		var record string
 		for _, line := range strings.Split(file, "\r\n") {
@@ -698,6 +728,7 @@ func (c *vatCheck) settlement() {
 	_, err = reports.Execute(reports.CalcAndPostTaxSettlementID, c.src.GetDB(), c.src.GetCompany(), c.src.GetDBType(),
 		reports.RunOptions{Output: reports.OutputPDF, Options: options})
 	c.must(err)
+	c.noZeroGLEntries("VATCHK-SET")
 	if _, openAfter := countEntries(); openAfter != 0 {
 		c.t.Errorf("%d VAT entries of the month still open", openAfter)
 	}

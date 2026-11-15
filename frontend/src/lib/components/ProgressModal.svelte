@@ -442,7 +442,11 @@
 	}
 
 	.show-entries {
-		@apply mt-2 text-sm font-medium underline text-blue-600 dark:text-blue-400;
+		@apply mt-2 text-sm font-medium underline text-blue-600;
+	}
+
+	:global(.dark) .show-entries {
+		@apply text-blue-400;
 	}
 
 	:global(.dark) .error-message {
@@ -543,6 +547,10 @@
 
 	/* A request page's options: below the filters, under a heading */
 	.options-title {
-		@apply text-sm font-semibold text-gray-800 dark:text-gray-200 pt-3 mt-2 border-t border-gray-200 dark:border-gray-700;
+		@apply text-sm font-semibold text-gray-800 pt-3 mt-2 border-t border-gray-200;
+	}
+
+	:global(.dark) .options-title {
+		@apply text-gray-200 border-gray-700;
 	}
 </style>

@@ -640,22 +640,39 @@
 	}
 
 	.filter-title {
-		@apply text-lg font-semibold text-heading dark:text-blue-400;
+		@apply text-lg font-semibold text-heading;
+	}
+
+	:global(.dark) .filter-title {
+		@apply text-blue-400;
 	}
 
 	.close-btn {
-		@apply p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700;
-		@apply text-gray-600 dark:text-gray-400;
+		@apply p-1 rounded hover:bg-gray-100;
+		@apply text-gray-600;
 		@apply transition-colors;
+	}
+
+	:global(.dark) .close-btn {
+		@apply hover:bg-gray-700;
+		@apply text-gray-400;
 	}
 
 	/* Views Section */
 	.views-section {
-		@apply mb-6 pb-4 border-b border-gray-200 dark:border-gray-700;
+		@apply mb-6 pb-4 border-b border-gray-200;
+	}
+
+	:global(.dark) .views-section {
+		@apply border-gray-700;
 	}
 
 	.section-title {
-		@apply text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2;
+		@apply text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2;
+	}
+
+	:global(.dark) .section-title {
+		@apply text-gray-400;
 	}
 
 	.view-item-container {
@@ -664,19 +681,33 @@
 
 	.view-item {
 		@apply w-full flex items-center gap-2 px-3 py-2 text-left rounded;
-		@apply text-sm text-blue-600 dark:text-blue-400;
-		@apply hover:bg-blue-50 dark:hover:bg-blue-900/20;
+		@apply text-sm text-blue-600;
+		@apply hover:bg-blue-50;
 		@apply transition-colors;
 	}
 
+	:global(.dark) .view-item {
+		@apply text-blue-400;
+		@apply hover:bg-blue-900/20;
+	}
+
 	.view-item.active {
-		@apply bg-blue-100 dark:bg-blue-900/30 font-medium;
+		@apply bg-blue-100 font-medium;
+	}
+
+	:global(.dark) .view-item.active {
+		@apply bg-blue-900/30;
 	}
 
 	.view-item.new-view {
-		@apply text-gray-600 dark:text-gray-400;
-		@apply border border-dashed border-gray-300 dark:border-gray-600;
+		@apply text-gray-600;
+		@apply border border-dashed border-gray-300;
 		@apply hover:border-blue-400 hover:text-blue-600;
+	}
+
+	:global(.dark) .view-item.new-view {
+		@apply text-gray-400;
+		@apply border-gray-600;
 	}
 
 	.view-name {
@@ -690,16 +721,26 @@
 	.rename-input {
 		@apply w-full px-2 py-1 text-sm;
 		@apply border border-blue-500 rounded;
-		@apply bg-surface dark:bg-gray-800;
-		@apply text-gray-900 dark:text-gray-100;
+		@apply bg-surface;
+		@apply text-gray-900;
 		@apply focus:outline-none focus:ring-2 focus:ring-blue-500;
+	}
+
+	:global(.dark) .rename-input {
+		@apply bg-gray-800;
+		@apply text-gray-100;
 	}
 
 	.preset-menu-btn {
 		@apply p-1 rounded opacity-0;
-		@apply hover:bg-gray-200 dark:hover:bg-gray-600;
-		@apply text-gray-500 dark:text-gray-400;
+		@apply hover:bg-gray-200;
+		@apply text-gray-500;
 		@apply transition-opacity;
+	}
+
+	:global(.dark) .preset-menu-btn {
+		@apply hover:bg-gray-600;
+		@apply text-gray-400;
 	}
 
 	.view-item-container:hover .preset-menu-btn {
@@ -708,21 +749,36 @@
 
 	.preset-menu {
 		@apply absolute right-0 top-full mt-1 z-50;
-		@apply bg-surface dark:bg-gray-800 rounded-md shadow-lg;
-		@apply border border-gray-200 dark:border-gray-700;
+		@apply bg-surface rounded-md shadow-lg;
+		@apply border border-gray-200;
 		@apply py-1 min-w-[150px];
+	}
+
+	:global(.dark) .preset-menu {
+		@apply bg-gray-800;
+		@apply border-gray-700;
 	}
 
 	.preset-menu-item {
 		@apply w-full flex items-center gap-2 px-3 py-2 text-left;
-		@apply text-sm text-gray-700 dark:text-gray-300;
-		@apply hover:bg-gray-100 dark:hover:bg-gray-700;
+		@apply text-sm text-gray-700;
+		@apply hover:bg-gray-100;
 		@apply transition-colors;
 	}
 
+	:global(.dark) .preset-menu-item {
+		@apply text-gray-300;
+		@apply hover:bg-gray-700;
+	}
+
 	.preset-menu-item.delete {
-		@apply text-red-600 dark:text-red-400;
-		@apply hover:bg-red-50 dark:hover:bg-red-900/20;
+		@apply text-red-600;
+		@apply hover:bg-red-50;
+	}
+
+	:global(.dark) .preset-menu-item.delete {
+		@apply text-red-400;
+		@apply hover:bg-red-900/20;
 	}
 
 	/* Filter Section */
@@ -740,7 +796,11 @@
 
 	.filter-field-tag {
 		@apply flex items-center gap-2 text-sm;
-		@apply text-gray-700 dark:text-gray-300;
+		@apply text-gray-700;
+	}
+
+	:global(.dark) .filter-field-tag {
+		@apply text-gray-300;
 	}
 
 	.filter-field-name {
@@ -749,13 +809,22 @@
 
 	.filter-field-name::before {
 		content: '×';
-		@apply text-gray-400 dark:text-gray-500 text-lg;
+		@apply text-gray-400 text-lg;
+	}
+
+	:global(.dark) .filter-field-name::before {
+		@apply text-gray-500;
 	}
 
 	.remove-filter-icon {
-		@apply p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600;
-		@apply text-gray-400 dark:text-gray-500;
+		@apply p-0.5 rounded hover:bg-gray-200;
+		@apply text-gray-400;
 		@apply opacity-0 hover:opacity-100;
+	}
+
+	:global(.dark) .remove-filter-icon {
+		@apply hover:bg-gray-600;
+		@apply text-gray-500;
 	}
 
 	.filter-row:hover .remove-filter-icon {
@@ -764,10 +833,16 @@
 
 	.filter-expression-input {
 		@apply w-full px-3 py-2 text-sm;
-		@apply border border-gray-300 dark:border-gray-600 rounded;
-		@apply bg-surface dark:bg-gray-800;
-		@apply text-gray-900 dark:text-gray-100;
+		@apply border border-gray-300 rounded;
+		@apply bg-surface;
+		@apply text-gray-900;
 		@apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+	}
+
+	:global(.dark) .filter-expression-input {
+		@apply border-gray-600;
+		@apply bg-gray-800;
+		@apply text-gray-100;
 	}
 
 	.add-filter-row {
@@ -776,26 +851,44 @@
 
 	.add-filter-btn {
 		@apply flex items-center gap-2 px-3 py-2 text-left;
-		@apply text-sm text-blue-600 dark:text-blue-400;
-		@apply hover:bg-blue-50 dark:hover:bg-blue-900/20;
+		@apply text-sm text-blue-600;
+		@apply hover:bg-blue-50;
 		@apply rounded transition-colors;
+	}
+
+	:global(.dark) .add-filter-btn {
+		@apply text-blue-400;
+		@apply hover:bg-blue-900/20;
 	}
 
 	.field-selector-inline {
 		@apply w-full px-3 py-2 text-sm;
 		@apply border border-blue-500 rounded;
-		@apply bg-surface dark:bg-gray-800;
-		@apply text-gray-900 dark:text-gray-100;
+		@apply bg-surface;
+		@apply text-gray-900;
 		@apply focus:outline-none focus:ring-2 focus:ring-blue-500;
+	}
+
+	:global(.dark) .field-selector-inline {
+		@apply bg-gray-800;
+		@apply text-gray-100;
 	}
 
 	/* Filter Help */
 	.filter-help {
-		@apply pt-3 border-t border-gray-200 dark:border-gray-700;
+		@apply pt-3 border-t border-gray-200;
+	}
+
+	:global(.dark) .filter-help {
+		@apply border-gray-700;
 	}
 
 	.filter-help code {
-		@apply px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded;
+		@apply px-1 py-0.5 bg-gray-100 rounded;
 		@apply text-xs font-mono;
+	}
+
+	:global(.dark) .filter-help code {
+		@apply bg-gray-700;
 	}
 </style>

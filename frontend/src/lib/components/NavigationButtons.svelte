@@ -62,19 +62,28 @@
 	:global(.edge-nav-btn) {
 		@apply absolute top-1/2 -translate-y-1/2 z-50;
 		@apply w-9 h-9 rounded-full;
-		@apply bg-gray-700 dark:bg-gray-600;
+		@apply bg-gray-700;
 		@apply text-white;
 		@apply flex items-center justify-center;
 		@apply shadow-lg;
 		@apply transition-all duration-200;
-		@apply hover:bg-gray-600 dark:hover:bg-gray-500;
+		@apply hover:bg-gray-600;
 		@apply hover:scale-110;
 		@apply focus:outline-none focus:ring-2 focus:ring-blue-500;
 	}
 
+	:global(.dark) :global(.edge-nav-btn) {
+		@apply bg-gray-600;
+		@apply hover:bg-gray-500;
+	}
+
 	:global(.edge-nav-btn:disabled) {
 		@apply opacity-30 cursor-not-allowed;
-		@apply hover:scale-100 hover:bg-gray-700 dark:hover:bg-gray-600;
+		@apply hover:scale-100 hover:bg-gray-700;
+	}
+
+	:global(.dark) :global(.edge-nav-btn:disabled) {
+		@apply hover:bg-gray-600;
 	}
 
 	:global(.edge-nav-left) {

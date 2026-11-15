@@ -279,11 +279,16 @@ func (r *calcAndPostTaxSettlement) closeOnAfterGetRecord(rec *Integer, run *Run)
 
 	// Balancing entries to tax accounts
 	genJnlLine := r.newSettlementLine(run)
+	// the description names VAT for a VAT setup, sales tax otherwise
+	purchaseText, salesText := "PURCHASE_SETTLEMENT", "SALES_SETTLEMENT"
+	if setup.Tax_calculation_type != gtables.TaxPostingSetup_Tax_calculation_type.SalesTax {
+		purchaseText, salesText = "PURCHASE_VAT_SETTLEMENT", "SALES_VAT_SETTLEMENT"
+	}
 	switch r.group.taxType {
 	case gtables.TaxEntry_Type.Purchase:
-		genJnlLine.Description = types.Text(run.Text("PURCHASE_SETTLEMENT", setup.Tax_bus_posting_group, setup.Tax_prod_posting_group))
+		genJnlLine.Description = types.Text(run.Text(purchaseText, setup.Tax_bus_posting_group, setup.Tax_prod_posting_group))
 	case gtables.TaxEntry_Type.Sale:
-		genJnlLine.Description = types.Text(run.Text("SALES_SETTLEMENT", setup.Tax_bus_posting_group, setup.Tax_prod_posting_group))
+		genJnlLine.Description = types.Text(run.Text(salesText, setup.Tax_bus_posting_group, setup.Tax_prod_posting_group))
 	}
 	genJnlLine.Tax_bus_posting_group = setup.Tax_bus_posting_group
 	genJnlLine.Tax_prod_posting_group = setup.Tax_prod_posting_group

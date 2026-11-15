@@ -3,6 +3,7 @@ package reports
 import (
 	"bytes"
 	"strconv"
+	"strings"
 
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
@@ -84,7 +85,12 @@ func (r *viesDeclarationDisk) groupCustomer(n int) types.Code { return r.groups[
 // taxEntryOnPostDataItem: the file — a record per group with an amount, the total
 func (r *viesDeclarationDisk) taxEntryOnPostDataItem(rec *gtables.TaxEntry, run *Run) error {
 	companyInfo := gtables.GetCompanyInformation(run)
-	vatRegNo := system.ConvertStr(companyInfo.Vat_registration_no.String(), "WwWw", "    ")
+	// the file holds the registration number's 8 digits (no country prefix, spaces or suffix);
+	// a longer number is refused rather than cut
+	vatRegNo := digitsOnly(companyInfo.Vat_registration_no.String())
+	if len(vatRegNo) > 8 {
+		return system.Error(run.Text("VAT_REG_NO_TOO_LONG", companyInfo.Vat_registration_no.String()))
+	}
 	var file bytes.Buffer
 	writeLine := func(text string) { file.WriteString(fixedWidth(text, 80) + "\r\n") }
 	writeLine("00" + fixedWidth(vatRegNo, 8) + "LIST")
@@ -160,4 +166,16 @@ func numeralSign(d types.Decimal) string {
 		return "-"
 	}
 	return "+"
+}
+
+// digitsOnly: the digits of a text (a VAT registration number without its country prefix, spaces
+// and suffix)
+func digitsOnly(text string) string {
+	var digits strings.Builder
+	for _, r := range text {
+		if r >= '0' && r <= '9' {
+			digits.WriteRune(r)
+		}
+	}
+	return digits.String()
 }

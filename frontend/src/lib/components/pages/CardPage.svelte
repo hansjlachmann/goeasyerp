@@ -1182,7 +1182,11 @@
 	}
 
 	.subpage-empty {
-		@apply text-sm text-gray-500 dark:text-gray-400 py-2;
+		@apply text-sm text-gray-500 py-2;
+	}
+
+	:global(.dark) .subpage-empty {
+		@apply text-gray-400;
 	}
 
 	.section-fields {

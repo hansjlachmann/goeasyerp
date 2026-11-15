@@ -4409,11 +4409,14 @@
 
 	.table {
 		@apply w-full border border-gray-200 rounded-lg;
-		@apply dark:border-gray-700;
 		border-collapse: separate;
 		border-spacing: 0;
 		background: transparent;
 		table-layout: fixed;
+	}
+
+	:global(.dark) .table {
+		@apply border-gray-700;
 	}
 
 	.table thead {
@@ -4592,19 +4595,28 @@
 
 	.table tbody tr {
 		@apply border-b border-gray-200 hover:bg-blue-50 transition-colors;
-		@apply dark:border-gray-700 dark:hover:bg-gray-700;
+	}
+
+	:global(.dark) .table tbody tr {
+		@apply border-gray-700 hover:bg-gray-700;
 	}
 
 	/* Zebra striping - alternating row colors, by position in the whole list (the
 	   loaded window starts at any offset) */
 	.table tbody tr.row-even {
 		@apply bg-gray-50;
-		@apply dark:bg-gray-800/50;
+	}
+
+	:global(.dark) .table tbody tr.row-even {
+		@apply bg-gray-800/50;
 	}
 
 	.table tbody tr.row-odd {
 		@apply bg-surface;
-		@apply dark:bg-gray-900;
+	}
+
+	:global(.dark) .table tbody tr.row-odd {
+		@apply bg-gray-900;
 	}
 
 	/* Selected rows: --row-selected (app.css; light: accent-100, dark: a neutral gray lighter

@@ -296,11 +296,27 @@ func (p *GenJnlPostLine) postGLAcc(genJnlLine *gtables.GenJournalLine) error {
 	if err != nil {
 		return err
 	}
+	// A Full VAT line (all of it is VAT, posted on the VAT account by postTax) and a settlement
+	// line of nothing (reverse charge sales: a base, no VAT) have no amount of their own: they
+	// get their tax entry, but no G/L entry of 0
+	if p.glEntry.Amount.IsZero() && p.glEntry.Additional_currency_amount.IsZero() && noOwnGLAmount(genJnlLine) {
+		return p.postTax(genJnlLine)
+	}
 	err = p.insertGLEntry(true)
 	if err != nil {
 		return err
 	}
 	return p.postTax(genJnlLine)
+}
+
+// noOwnGLAmount: a line whose amount is all tax (Full VAT) or a settlement — a G/L entry of 0
+// for it says nothing
+func noOwnGLAmount(genJnlLine *gtables.GenJournalLine) bool {
+	if genJnlLine.Gen_posting_type == gtables.GenJournalLine_Gen_posting_type.Settlement {
+		return true
+	}
+	return genJnlLine.Vat_posting == gtables.GenJournalLine_Vat_posting.AutomaticVATEntry &&
+		genJnlLine.Tax_calculation_type == gtables.GenJournalLine_Tax_calculation_type.FullVAT
 }
 
 // postBankAcc posts a bank account line: its bank account ledger entry, for a manual check its

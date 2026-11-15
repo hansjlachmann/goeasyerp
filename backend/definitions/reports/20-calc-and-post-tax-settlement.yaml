@@ -53,21 +53,21 @@ report:
             - {text: COL_DOCUMENT_NO, x: 24, y: 1, width: 26, bold: true, wrap: true}
             - {text: COL_DOCUMENT_TYPE, x: 51, y: 1, width: 31, bold: true, wrap: true}
             - {text: COL_TYPE, x: 83, y: 1, width: 16, bold: true, wrap: true}
-            - {text: COL_BASE, x: 100, y: 1, width: 24, align: right, bold: true, wrap: true}
-            - {text: COL_AMOUNT, x: 125, y: 1, width: 24, align: right, bold: true, wrap: true}
-            - {text: COL_UNREALIZED_BASE, x: 150, y: 1, width: 22, align: right, bold: true, wrap: true}
-            - {text: COL_UNREALIZED_AMOUNT, x: 173, y: 1, width: 22, align: right, bold: true, wrap: true}
-            - {text: COL_TAX_CALCULATION_TYPE, x: 196, y: 1, width: 24, bold: true, wrap: true}
-            - {text: COL_SELL_TO_BUY_FROM, x: 221, y: 1, width: 22, bold: true, wrap: true}
-            - {text: COL_ENTRY_NO, x: 244, y: 1, width: 12, align: right, bold: true, wrap: true}
-            - {text: COL_USER_ID, x: 257, y: 1, width: 16, bold: true, wrap: true}
+            - {text: COL_BASE, x: 100, y: 1, width: 22, align: right, bold: true, wrap: true}
+            - {text: COL_AMOUNT, x: 123, y: 1, width: 22, align: right, bold: true, wrap: true}
+            - {text: COL_UNREALIZED_BASE, x: 146, y: 1, width: 20, align: right, bold: true, wrap: true}
+            - {text: COL_UNREALIZED_AMOUNT, x: 167, y: 1, width: 20, align: right, bold: true, wrap: true}
+            - {text: COL_TAX_CALCULATION_TYPE, x: 188, y: 1, width: 24, bold: true, wrap: true}
+            - {text: COL_SELL_TO_BUY_FROM, x: 213, y: 1, width: 24, bold: true, wrap: true}
+            - {text: COL_ENTRY_NO, x: 238, y: 1, width: 12, align: right, bold: true, wrap: true}
+            - {text: COL_USER_ID, x: 251, y: 1, width: 19, bold: true, wrap: true}
             - {line: true, x: 0, y: 8.5}
         - type: footer
           height: 6
           elements:
-            - {line: true, x: 100, y: 0.5, width: 49}
+            - {line: true, x: 100, y: 0.5, width: 45}
             - {text: TOTAL, x: 40, y: 1.5, width: 40, bold: true}
-            - {value: tax_amount, x: 125, y: 1.5, width: 24, align: right, bold: true}
+            - {value: tax_amount, x: 123, y: 1.5, width: 22, align: right, bold: true}
 
     - name: Tax_Entry
       sections:
@@ -79,14 +79,14 @@ report:
             - {field: document_no, x: 24, y: 0.5, width: 26}
             - {field: document_type, x: 51, y: 0.5, width: 31}
             - {field: type, x: 83, y: 0.5, width: 16}
-            - {field: base, x: 100, y: 0.5, width: 24, align: right}
-            - {field: amount, x: 125, y: 0.5, width: 24, align: right}
-            - {field: unrealized_base, x: 150, y: 0.5, width: 22, align: right, blank_zero: true}
-            - {field: unrealized_amount, x: 173, y: 0.5, width: 22, align: right, blank_zero: true}
-            - {field: tax_calculation_type, x: 196, y: 0.5, width: 24}
-            - {field: sell_to_buy_from_no, x: 221, y: 0.5, width: 22}
-            - {field: entry_no, x: 244, y: 0.5, width: 12, align: right}
-            - {field: user_id, x: 257, y: 0.5, width: 16}
+            - {field: base, x: 100, y: 0.5, width: 22, align: right}
+            - {field: amount, x: 123, y: 0.5, width: 22, align: right}
+            - {field: unrealized_base, x: 146, y: 0.5, width: 20, align: right, blank_zero: true}
+            - {field: unrealized_amount, x: 167, y: 0.5, width: 20, align: right, blank_zero: true}
+            - {field: tax_calculation_type, x: 188, y: 0.5, width: 24}
+            - {field: sell_to_buy_from_no, x: 213, y: 0.5, width: 24}
+            - {field: entry_no, x: 238, y: 0.5, width: 12, align: right}
+            - {field: user_id, x: 251, y: 0.5, width: 19}
         - type: body
           print_if: use_add_curr
           height: 4.5
@@ -95,14 +95,14 @@ report:
             - {field: document_no, x: 24, y: 0.5, width: 26}
             - {field: document_type, x: 51, y: 0.5, width: 31}
             - {field: type, x: 83, y: 0.5, width: 16}
-            - {field: additional_currency_base, x: 100, y: 0.5, width: 24, align: right}
-            - {field: additional_currency_amount, x: 125, y: 0.5, width: 24, align: right}
-            - {field: add_currency_unrealized_base, x: 150, y: 0.5, width: 22, align: right, blank_zero: true}
-            - {field: add_currency_unrealized_amt, x: 173, y: 0.5, width: 22, align: right, blank_zero: true}
-            - {field: tax_calculation_type, x: 196, y: 0.5, width: 24}
-            - {field: sell_to_buy_from_no, x: 221, y: 0.5, width: 22}
-            - {field: entry_no, x: 244, y: 0.5, width: 12, align: right}
-            - {field: user_id, x: 257, y: 0.5, width: 16}
+            - {field: additional_currency_base, x: 100, y: 0.5, width: 22, align: right}
+            - {field: additional_currency_amount, x: 123, y: 0.5, width: 22, align: right}
+            - {field: add_currency_unrealized_base, x: 146, y: 0.5, width: 20, align: right, blank_zero: true}
+            - {field: add_currency_unrealized_amt, x: 167, y: 0.5, width: 20, align: right, blank_zero: true}
+            - {field: tax_calculation_type, x: 188, y: 0.5, width: 24}
+            - {field: sell_to_buy_from_no, x: 213, y: 0.5, width: 24}
+            - {field: entry_no, x: 238, y: 0.5, width: 12, align: right}
+            - {field: user_id, x: 251, y: 0.5, width: 19}
 
     - name: Close_Tax_Entries
       sections:
@@ -112,10 +112,10 @@ report:
             - {value: posting_date, x: 0, y: 0.5, width: 23, bold: true}
             - {value: document_no, x: 24, y: 0.5, width: 26, bold: true}
             - {text: SETTLEMENT, x: 83, y: 0.5, width: 16, bold: true}
-            - {value: settlement_base, x: 100, y: 0.5, width: 24, align: right, bold: true}
-            - {value: settlement_amount, x: 125, y: 0.5, width: 24, align: right, bold: true}
-            - {value: tax_calculation_type, x: 196, y: 0.5, width: 24, bold: true}
-            - {value: next_tax_entry_no, x: 244, y: 0.5, width: 12, align: right, bold: true}
+            - {value: settlement_base, x: 100, y: 0.5, width: 22, align: right, bold: true}
+            - {value: settlement_amount, x: 123, y: 0.5, width: 22, align: right, bold: true}
+            - {value: tax_calculation_type, x: 188, y: 0.5, width: 24, bold: true}
+            - {value: next_tax_entry_no, x: 238, y: 0.5, width: 12, align: right, bold: true}
         - type: body
           print_if: reversing_entry
           height: 5
@@ -123,4 +123,4 @@ report:
             - {value: posting_date, x: 0, y: 0.5, width: 23, bold: true}
             - {value: document_no, x: 24, y: 0.5, width: 26, bold: true}
             - {text: SETTLEMENT, x: 83, y: 0.5, width: 16, bold: true}
-            - {value: reversing_amount, x: 125, y: 0.5, width: 24, align: right, bold: true}
+            - {value: reversing_amount, x: 123, y: 0.5, width: 22, align: right, bold: true}

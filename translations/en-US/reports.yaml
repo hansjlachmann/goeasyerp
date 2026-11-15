@@ -1236,6 +1236,7 @@ reports:
     texts:
       FILE_NAME: "VIES %1.txt"
       DONE: "The VIES declaration with %1 customers was made."
+      VAT_REG_NO_TOO_LONG: "The VAT Registration No. %1 in Company Information has more than 8 digits: the VIES file has room for 8."
   "6":
     caption: "Trial Balance"
     options:
@@ -1817,6 +1818,8 @@ reports:
       TAX_SETTLEMENT: "Tax Settlement"
       PURCHASE_SETTLEMENT: "Purchase Tax settlement: %1 %2"
       SALES_SETTLEMENT: "Sales Tax settlement: %1 %2"
+      PURCHASE_VAT_SETTLEMENT: "Purchase VAT settlement: %1 %2"
+      SALES_VAT_SETTLEMENT: "Sales VAT settlement: %1 %2"
   "12":
     caption: "Tax Statement"
     options:

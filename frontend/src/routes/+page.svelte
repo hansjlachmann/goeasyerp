@@ -61,6 +61,10 @@
 	}
 
 	.shortcuts-link {
-		@apply text-primary-600 dark:text-primary-400 hover:underline font-medium;
+		@apply text-primary-600 hover:underline font-medium;
+	}
+
+	:global(.dark) .shortcuts-link {
+		@apply text-primary-400;
 	}
 </style>

@@ -1236,6 +1236,7 @@ reports:
     texts:
       FILE_NAME: "VIES %1.txt"
       DONE: "VIES-angivelsen med %1 kunder blev lavet."
+      VAT_REG_NO_TOO_LONG: "SE/CVR-nr. %1 i Virksomhedsoplysninger har mere end 8 cifre: VIES-filen har plads til 8."
   "6":
     caption: "Saldobalance"
     options:
@@ -1817,6 +1818,8 @@ reports:
       TAX_SETTLEMENT: "Afgiftsafregning"
       PURCHASE_SETTLEMENT: "Afgiftsafregning køb: %1 %2"
       SALES_SETTLEMENT: "Afgiftsafregning salg: %1 %2"
+      PURCHASE_VAT_SETTLEMENT: "Momsafregning køb: %1 %2"
+      SALES_VAT_SETTLEMENT: "Momsafregning salg: %1 %2"
   "12":
     caption: "Momsangivelse"
     options:
