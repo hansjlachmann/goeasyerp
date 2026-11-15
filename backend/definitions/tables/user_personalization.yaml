@@ -124,6 +124,15 @@ table:
       caption: Amount Font
       options: ["Text Font", "Monospace"]
 
+    # Tips for new users (the main menu, a new card's number …) are shown unless the user
+    # switched them off (My Settings: Show Tips) — stored as Hide Tips, so a user without a
+    # record and the existing ones see them
+    - name: hide_tips
+      no: 17
+      type: bool
+      db_name: hide_tips
+      caption: Hide Tips
+
   keys:
     - name: Primary
       fields: [user_id]

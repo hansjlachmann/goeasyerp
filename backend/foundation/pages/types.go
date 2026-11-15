@@ -66,6 +66,10 @@ type PageMetadata struct {
 	// AutoKey (populated at request time): the source table's OnInsert assigns a blank key (the
 	// next number of a series) — a new record is saved without one
 	AutoKey bool `yaml:"-" json:"auto_key,omitempty"`
+	// NumberFromSeries (populated at request time, cards of an auto_key table): a new record
+	// gets the next number of its number series when the user leaves the blank No. (the series
+	// the setup names exists and has Default Nos.) — the frontend's tip for it
+	NumberFromSeries bool `yaml:"-" json:"number_from_series,omitempty"`
 	// Posted (populated at request time): the source table is written by posting only (posted:
 	// true — ledger entries, registers); the page starts no new records and has no New/Delete
 	Posted bool `yaml:"-" json:"posted,omitempty"`

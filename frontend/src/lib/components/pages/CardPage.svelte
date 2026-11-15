@@ -9,6 +9,8 @@
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import CustomizeFieldsModal from './CustomizeFieldsModal.svelte';
+	import Tip from '$lib/components/Tip.svelte';
+	import { TIPS } from '$lib/utils/tips';
 	import PlusIcon from '$lib/components/icons/PlusIcon.svelte';
 	import NavigationButtons from '$lib/components/NavigationButtons.svelte';
 	import { shortcuts, createShortcutMap, normalizeShortcut } from '$lib/utils/shortcuts';
@@ -943,6 +945,11 @@
 		</div>
 	{/if}
 
+	<!-- A new record whose No. comes from a number series: how to get it -->
+	{#if page.page.number_from_series && editMode && checkIsNewRecord()}
+		<div class="card-tip"><Tip tip={TIPS.newNumber} /></div>
+	{/if}
+
 	<!-- Tab's turning point before the first field (Shift+Tab wraps to the last one) -->
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 	<span class="focus-sentinel" tabindex="0" aria-hidden="true" onfocus={(e) => handleSentinelFocus(e, 'start')}></span>
@@ -1137,6 +1144,10 @@
 {/if}
 
 <style>
+	.card-tip {
+		@apply mb-3;
+	}
+
 	.drilldown-page {
 		height: 75vh;
 	}

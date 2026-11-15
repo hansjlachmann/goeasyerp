@@ -395,6 +395,7 @@ tables:
       number_format: "Number Format"
       work_date: "Work Date"
       amount_font: "Amount Font"
+      hide_tips: "Hide Tips"
 
     # Option field values
     options:

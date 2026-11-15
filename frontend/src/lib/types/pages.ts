@@ -52,6 +52,7 @@ export interface PageMetadata {
 	posted?: boolean; // written by posting only (ledger entries): no new records, no delete
 	setup_table?: boolean; // a single record with a blank key (setup): the card opens on it
 	auto_key?: boolean; // the table's OnInsert assigns a blank key (a number series): a new record is saved without one
+	number_from_series?: boolean; // a card: a new record gets the next number of its series when the blank No. is left (the tip)
 	has_new_record_triggers?: boolean; // OnNewRecord: new records get values from their neighbour // OnAfterGetRecord: the card asks for the field states of each record
 	flow_fields?: string[]; // computed fields: not searchable on the server
 	sortable_flow_fields?: string[]; // FlowFields lists can sort on (Sum/Count, by their value)

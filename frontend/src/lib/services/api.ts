@@ -624,5 +624,6 @@ export interface MySettings {
 	date_format: string;
 	number_format: string;
 	work_date: string;
+	show_tips?: boolean; // tips for new users (default on)
 	today?: string;
 }

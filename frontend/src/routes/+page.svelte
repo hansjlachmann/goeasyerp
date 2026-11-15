@@ -6,6 +6,8 @@
 	import type { MenuDefinition } from '$lib/types/pages';
 	import { openShortcutHelp } from '$lib/utils/shortcutHelp';
 	import MainMenu from '$lib/components/menu/MainMenu.svelte';
+	import Tip from '$lib/components/Tip.svelte';
+	import { TIPS } from '$lib/utils/tips';
 
 	let menu: MenuDefinition | null = $state(null);
 	let loading = $state(true);
@@ -47,6 +49,7 @@
 		{:else if error}
 			<div class="text-red-500">{error}</div>
 		{:else if menu && menu.menu && menu.menu.length > 0}
+			<div class="menu-tip"><Tip tip={TIPS.mainMenu} /></div>
 			<MainMenu {menu} />
 		{:else}
 			<div class="text-gray-500">{t(MSG.NO_MENU_ITEMS)}</div>
@@ -55,6 +58,10 @@
 </div>
 
 <style>
+	.menu-tip {
+		@apply mb-3 mx-auto max-w-4xl;
+	}
+
 	/* the keyboard tip, close under the description, without a frame */
 	.shortcuts-tip {
 		@apply mt-2 mx-auto max-w-2xl text-sm space-y-1;

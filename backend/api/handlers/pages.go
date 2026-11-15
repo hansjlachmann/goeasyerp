@@ -11,6 +11,7 @@ import (
 	apitypes "github.com/hansjlachmann/goeasyerp/backend/api/types"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
+	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
@@ -93,6 +94,9 @@ func (h *PagesHandler) GetPage(c *fiber.Ctx) error {
 	if factory, ok := gtables.GetTableFactory(pageDef.Page.SourceTable); ok {
 		pageDef.Page.SetupTable = factory().IsSetupTable()
 		pageDef.Page.AutoKey = pages.GetTableMetadata().IsAutoKey(pageDef.Page.SourceTable)
+		if pageDef.Page.AutoKey && pageDef.Page.Type == "Card" {
+			pageDef.Page.NumberFromSeries = newCardGetsNumber(sess, pageID, pageDef.Page.SourceTable)
+		}
 		pageDef.Page.Posted = pages.GetTableMetadata().IsPosted(pageDef.Page.SourceTable)
 		if pageDef.Page.Posted {
 			// posted entries are not entered or deleted on a page (the table API refuses it)
@@ -609,4 +613,31 @@ func markFlowFieldDrilldown(tableMeta *pages.TableMetadata, table string, field 
 	if _, ok := tableMeta.GetFlowField(table, field.Source); ok {
 		field.DrilldownFlowFilters = true
 	}
+}
+
+// newCardGetsNumber: a new record on the card gets the next number of a number series when the
+// user leaves its blank No. — the record as the page starts it (its OnNewRecord triggers: a
+// document's type) and the series its table's setup names for it
+func newCardGetsNumber(sess *session.Session, pageID int, sourceTable string) bool {
+	factory, ok := gtables.GetTableFactory(sourceTable)
+	if !ok || sess.GetDatabase() == nil {
+		return false
+	}
+	newTable := func() ftables.Table {
+		t := factory()
+		t.InitWithDBType(sess.GetConnection(), sess.GetCompany(), sess.GetDatabase().GetDBType())
+		return t
+	}
+	rec := newTable()
+	if pages.HasNewRecordTriggers(pageID) {
+		err := pages.RunNewRecord(pageID, rec, newTable(), false)
+		if err != nil {
+			return false
+		}
+	}
+	src, ok := rec.(ftables.Source)
+	if !ok {
+		return false
+	}
+	return tables.NewRecordGetsNumber(src)
 }

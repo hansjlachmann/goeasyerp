@@ -1,5 +1,6 @@
 <script lang="ts">
-	// My Settings (user menu): the user's date format, number format and work date. Each change
+	// My Settings (user menu): the user's date format, number format and work date, and whether
+	// tips are shown. Each change
 	// is saved at once (the backend keeps them per user; the work date goes back to today at the
 	// next login) and the app shows dates and numbers with them.
 	import Modal from '$components/Modal.svelte';
@@ -82,10 +83,20 @@
 			<span data-preview-number>{previewNumber}</span>
 		</div>
 		<p class="hint">{t(MYSET.ENTRY_HINT)}</p>
+
+		<label class="show-tips">
+			<input type="checkbox" checked={settings.show_tips !== false} disabled={busy} onchange={(e) => save({ show_tips: e.currentTarget.checked })} />
+			<span>{t(MYSET.SHOW_TIPS)}</span>
+		</label>
+		<p class="hint">{t(MYSET.SHOW_TIPS_HINT)}</p>
 	</div>
 </Modal>
 
 <style>
+	.show-tips {
+		@apply flex items-center gap-2 mt-2 cursor-pointer;
+	}
+
 	.my-settings {
 		@apply p-6 flex flex-col gap-3;
 	}

@@ -136,6 +136,15 @@ messages:
   MYSET_LANGUAGE_DEFAULT: "Sprogets standard"
   MYSET_TODAY: "I dag"
   MYSET_PREVIEW: "Eksempel"
+  MYSET_SHOW_TIPS: "Vis tips"
+  MYSET_SHOW_TIPS_HINT: "Korte tips, der hjælper dig i gang, for eksempel i hovedmenuen og på et nyt kort."
+
+  # Tips for new users (utils/tips.ts; My Settings: Show tips)
+  TIP_LABEL: "Tip"
+  TIP_CLOSE: "Luk tippet"
+  TIP_TURN_OFF: "Vis ikke tips"
+  TIP_MAIN_MENU: "Brug piletasterne til at flytte i menuen, og tryk Enter for at åbne menupunktet."
+  TIP_NEW_NUMBER: "Tryk Enter i feltet Nr. for at få det næste nummer."
   DATE_INVALID: "%1 er ikke en gyldig dato."
   DATE_CALENDAR: "Kalender (Alt+↓)"
   DATE_PREV_MONTH: "Forrige måned"

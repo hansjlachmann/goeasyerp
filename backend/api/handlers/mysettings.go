@@ -16,8 +16,8 @@ import (
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
-// My Settings: a user's regional settings — date format, number format, work date — kept in
-// User_Personalization (the options by index, the API by their format text)
+// My Settings: a user's regional settings — date format, number format, work date — and whether
+// tips are shown, kept in User_Personalization (the options by index, the API by their format text)
 
 // dateFormats and numberFormats: the API's names of the options (index = option number;
 // "" = the language's)
@@ -31,6 +31,7 @@ type mySettings struct {
 	DateFormat   *string `json:"date_format,omitempty"`
 	NumberFormat *string `json:"number_format,omitempty"`
 	WorkDate     *string `json:"work_date,omitempty"` // ISO; "" = today
+	ShowTips     *bool   `json:"show_tips,omitempty"` // tips for new users (stored as Hide Tips)
 	Today        string  `json:"today,omitempty"`     // the server's date (GET)
 }
 
@@ -76,10 +77,12 @@ func (h *MySettingsHandler) load(userID string) (*gtables.UserPersonalization, b
 
 func settingsOf(rec *gtables.UserPersonalization) mySettings {
 	str := func(s string) *string { return &s }
+	showTips := !rec.Hide_tips
 	return mySettings{
 		DateFormat:   str(optionName(dateFormats, int(rec.Date_format))),
 		NumberFormat: str(optionName(numberFormats, int(rec.Number_format))),
 		WorkDate:     str(rec.Work_date.String()),
+		ShowTips:     &showTips,
 		Today:        types.Today().String(),
 	}
 }
@@ -132,6 +135,9 @@ func (h *MySettingsHandler) SaveMySettings(c *fiber.Ctx) error {
 			}
 			rec.Work_date = d
 		}
+	}
+	if in.ShowTips != nil {
+		rec.Hide_tips = !*in.ShowTips
 	}
 	var ok bool
 	if exists {

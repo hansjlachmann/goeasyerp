@@ -136,6 +136,15 @@ messages:
   MYSET_LANGUAGE_DEFAULT: "Language default"
   MYSET_TODAY: "Today"
   MYSET_PREVIEW: "Preview"
+  MYSET_SHOW_TIPS: "Show tips"
+  MYSET_SHOW_TIPS_HINT: "Short tips that help you get started, for example in the main menu and on a new card."
+
+  # Tips for new users (utils/tips.ts; My Settings: Show tips)
+  TIP_LABEL: "Tip"
+  TIP_CLOSE: "Close the tip"
+  TIP_TURN_OFF: "Don't show tips"
+  TIP_MAIN_MENU: "Use the arrow keys to move in the menu and press Enter to open the menu item."
+  TIP_NEW_NUMBER: "Press Enter in the No. field to get the next number."
   DATE_INVALID: "%1 is not a valid date."
   DATE_CALENDAR: "Calendar (Alt+↓)"
   DATE_PREV_MONTH: "Previous month"

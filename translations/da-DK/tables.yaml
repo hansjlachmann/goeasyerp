@@ -395,6 +395,7 @@ tables:
       number_format: "Talformat"
       work_date: "Arbejdsdato"
       amount_font: "Skrifttype for beløb"
+      hide_tips: "Skjul tips"
 
     # Option field values
     options:
