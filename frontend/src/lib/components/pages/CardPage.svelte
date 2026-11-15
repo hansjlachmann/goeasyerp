@@ -1128,6 +1128,7 @@
 	<CustomizeFieldsModal
 		open={customizeModalOpen}
 		{page}
+		{captions}
 		customizations={fieldCustomizations}
 		mode="card"
 		onclose={() => customizeModalOpen = false}

@@ -55,15 +55,12 @@ page:
 
         - source: tax_calculation_type
           width: 130
-          visible: false
 
         - source: tax_bus_posting_group
           width: 120
-          visible: false
 
         - source: tax_prod_posting_group
           width: 120
-          visible: false
 
         - source: gen_bus_posting_group
           width: 120

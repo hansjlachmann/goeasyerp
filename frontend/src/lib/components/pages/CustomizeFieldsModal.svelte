@@ -3,6 +3,8 @@
 	import Button from '$lib/components/Button.svelte';
 	import type { PageDefinition, Field } from '$lib/types/pages';
 	import { createDragAndDrop, type DragItem } from '$lib/utils/dragAndDrop.svelte';
+	import { t, BTN, CUSTOMIZE } from '$lib/services/i18n.svelte';
+	import { getFieldCaption } from '$lib/utils/fieldHelpers';
 
 	export interface ItemCustomization {
 		visible: boolean;
@@ -15,11 +17,12 @@
 		page: PageDefinition;
 		customizations: Record<string, ItemCustomization>;
 		mode: 'card' | 'list';
+		captions?: Record<string, string>; // the fields' captions as the page shows them (translated)
 		onclose?: () => void;
 		onsave?: (customizations: Record<string, ItemCustomization>) => void;
 	}
 
-	let { open = false, page, customizations, mode, onclose, onsave }: Props = $props();
+	let { open = false, page, customizations, mode, captions = {}, onclose, onsave }: Props = $props();
 
 	// Local copy of customizations for editing
 	// svelte-ignore state_referenced_locally - synced via $effect below
@@ -128,14 +131,8 @@
 	}
 
 	// UI labels based on mode
-	const title = $derived(
-		mode === 'card' ? `Customize Page: ${page.page.caption}` : `Customize Columns: ${page.page.caption}`
-	);
-	const subtitle = $derived(
-		mode === 'card'
-			? 'Show/hide fields, change sections, and drag to reorder'
-			: 'Show/hide columns and drag to reorder'
-	);
+	const title = $derived(t(mode === 'card' ? CUSTOMIZE.PAGE_TITLE : CUSTOMIZE.COLUMNS_TITLE, page.page.caption));
+	const subtitle = $derived(t(mode === 'card' ? CUSTOMIZE.PAGE_HINT : CUSTOMIZE.COLUMNS_HINT));
 </script>
 
 <Modal {open} {onclose} size="expanded">
@@ -165,7 +162,7 @@
 						ondragend={drag.handleDragEnd}
 					>
 						<!-- Drag handle -->
-						<div class="drag-handle" title="Drag to reorder">
+						<div class="drag-handle" title={t(CUSTOMIZE.DRAG)}>
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
 								<path
 									d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
@@ -184,11 +181,11 @@
 								onclick={(e) => e.stopPropagation()}
 							/>
 							<div class="field-info">
-								<span class="field-name">{item.field.caption || item.field.source}</span>
+								<span class="field-name">{getFieldCaption(item.field.source, captions, item.field.caption)}</span>
 								{#if mode === 'card'}
 									<!-- Card mode: show section dropdown -->
 									<div class="field-meta-row">
-										<span class="field-section-label">Section:</span>
+										<span class="field-section-label">{t(CUSTOMIZE.SECTION)}</span>
 										<select
 											class="section-select"
 											value={currentSection}
@@ -202,11 +199,11 @@
 									</div>
 								{:else if item.field.width}
 									<!-- List mode: show width info -->
-									<span class="field-meta">Width: {item.field.width}px</span>
+									<span class="field-meta">{t(CUSTOMIZE.WIDTH, String(item.field.width))}</span>
 								{/if}
 							</div>
 							{#if item.field.visible === false && !localCustomizations[item.field.source]}
-								<span class="field-badge">Hidden by default</span>
+								<span class="field-badge">{t(CUSTOMIZE.HIDDEN_BY_DEFAULT)}</span>
 							{/if}
 						</label>
 					</div>
@@ -215,10 +212,10 @@
 		</div>
 
 		<div class="customize-footer">
-			<Button variant="secondary" size="sm" onclick={handleReset}>Reset to Defaults</Button>
+			<Button variant="secondary" size="sm" onclick={handleReset}>{t(CUSTOMIZE.RESET)}</Button>
 			<div class="footer-actions">
-				<Button variant="secondary" size="sm" onclick={onclose}>Cancel</Button>
-				<Button variant="primary" size="sm" onclick={handleSave}>Save Customization</Button>
+				<Button variant="secondary" size="sm" onclick={onclose}>{t(BTN.CANCEL)}</Button>
+				<Button variant="primary" size="sm" onclick={handleSave}>{t(CUSTOMIZE.SAVE)}</Button>
 			</div>
 		</div>
 	</div>
@@ -230,21 +227,38 @@
 	}
 
 	.customize-header {
-		@apply px-6 py-4 border-b border-gray-200 dark:border-gray-700;
-		@apply bg-surface dark:bg-gray-800;
+		@apply px-6 py-4 border-b border-gray-200;
+		@apply bg-surface;
+	}
+
+	:global(.dark) .customize-header {
+		@apply border-gray-700;
+		@apply bg-gray-800;
 	}
 
 	.customize-title {
-		@apply text-xl font-bold text-heading dark:text-blue-400;
+		@apply text-xl font-bold text-heading;
+	}
+
+	:global(.dark) .customize-title {
+		@apply text-blue-400;
 	}
 
 	.customize-subtitle {
-		@apply mt-1 text-sm text-gray-600 dark:text-gray-400;
+		@apply mt-1 text-sm text-gray-600;
+	}
+
+	:global(.dark) .customize-subtitle {
+		@apply text-gray-400;
 	}
 
 	.customize-body {
 		@apply flex-1 overflow-y-auto p-6;
-		@apply bg-gray-50 dark:bg-gray-900;
+		@apply bg-gray-50;
+	}
+
+	:global(.dark) .customize-body {
+		@apply bg-gray-900;
 	}
 
 	.fields-list {
@@ -252,10 +266,15 @@
 	}
 
 	.field-item {
-		@apply bg-surface dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700;
-		@apply hover:border-blue-300 dark:hover:border-blue-700 transition-colors;
+		@apply bg-surface rounded-lg border border-gray-200;
+		@apply hover:border-blue-300 transition-colors;
 		@apply flex items-center gap-2;
 		cursor: grab;
+	}
+
+	:global(.dark) .field-item {
+		@apply bg-gray-800 border-gray-700;
+		@apply hover:border-blue-700;
 	}
 
 	.field-item.dragging {
@@ -264,14 +283,23 @@
 	}
 
 	.field-item.drag-over {
-		@apply border-blue-500 dark:border-blue-400 border-2;
-		@apply bg-blue-50 dark:bg-blue-900/20;
+		@apply border-blue-500 border-2;
+		@apply bg-blue-50;
+	}
+
+	:global(.dark) .field-item.drag-over {
+		@apply border-blue-400;
+		@apply bg-blue-900/20;
 	}
 
 	.drag-handle {
-		@apply p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300;
+		@apply p-2 text-gray-400 hover:text-gray-600;
 		@apply cursor-grab;
 		touch-action: none;
+	}
+
+	:global(.dark) .drag-handle {
+		@apply hover:text-gray-300;
 	}
 
 	.field-item.dragging .drag-handle {
@@ -297,11 +325,19 @@
 	}
 
 	.field-name {
-		@apply font-medium text-gray-900 dark:text-gray-100;
+		@apply font-medium text-gray-900;
+	}
+
+	:global(.dark) .field-name {
+		@apply text-gray-100;
 	}
 
 	.field-meta {
-		@apply text-sm text-gray-500 dark:text-gray-400;
+		@apply text-sm text-gray-500;
+	}
+
+	:global(.dark) .field-meta {
+		@apply text-gray-400;
 	}
 
 	.field-meta-row {
@@ -309,25 +345,43 @@
 	}
 
 	.field-section-label {
-		@apply text-sm text-gray-500 dark:text-gray-400;
+		@apply text-sm text-gray-500;
+	}
+
+	:global(.dark) .field-section-label {
+		@apply text-gray-400;
 	}
 
 	.section-select {
-		@apply text-sm px-2 py-1 rounded border border-gray-300 dark:border-gray-600;
-		@apply bg-surface dark:bg-gray-700 text-gray-900 dark:text-gray-100;
+		@apply text-sm px-2 py-1 rounded border border-gray-300;
+		@apply bg-surface text-gray-900;
 		@apply focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
 		@apply cursor-pointer;
 	}
 
+	:global(.dark) .section-select {
+		@apply border-gray-600;
+		@apply bg-gray-700 text-gray-100;
+	}
+
 	.field-badge {
 		@apply px-2 py-1 text-xs rounded-full;
-		@apply bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300;
+		@apply bg-orange-100 text-orange-700;
+	}
+
+	:global(.dark) .field-badge {
+		@apply bg-orange-900 text-orange-300;
 	}
 
 	.customize-footer {
 		@apply flex items-center justify-between px-6 py-4;
-		@apply border-t border-gray-200 dark:border-gray-700;
-		@apply bg-surface dark:bg-gray-800;
+		@apply border-t border-gray-200;
+		@apply bg-surface;
+	}
+
+	:global(.dark) .customize-footer {
+		@apply border-gray-700;
+		@apply bg-gray-800;
 	}
 
 	.footer-actions {

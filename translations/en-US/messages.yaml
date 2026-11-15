@@ -308,6 +308,18 @@ messages:
   LIST_ROW_SELECTED: "Row %1 selected"
   LIST_SELECTED_COUNT: "%1 of %2 selected"
   LIST_ALL_SELECTED: "All %1 selected"
+
+  # Customize dialog (columns of a list, fields of a card)
+  CUSTOMIZE_PAGE_TITLE: "Customize Page: %1"
+  CUSTOMIZE_COLUMNS_TITLE: "Customize Columns: %1"
+  CUSTOMIZE_PAGE_HINT: "Show/hide fields, change sections, and drag to reorder"
+  CUSTOMIZE_COLUMNS_HINT: "Show/hide columns and drag to reorder"
+  CUSTOMIZE_DRAG: "Drag to reorder"
+  CUSTOMIZE_SECTION: "Section:"
+  CUSTOMIZE_WIDTH: "Width: %1 px"
+  CUSTOMIZE_HIDDEN_BY_DEFAULT: "Hidden by default"
+  CUSTOMIZE_RESET: "Reset to Defaults"
+  CUSTOMIZE_SAVE: "Save Customization"
   LIST_CELL_SELECTED: "Cell [%1, %2] (selected)"
   LIST_CELL_EDITING: "Cell [%1, %2] (editing)"
   LIST_SORT_ASC: "Sort Ascending"

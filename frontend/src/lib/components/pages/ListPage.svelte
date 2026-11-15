@@ -2291,6 +2291,27 @@
 		}, 10);
 	}
 
+	// A click outside the list while a cell is selected (not typed in) leaves the row as a move
+	// to another row does: a new row the user filled in is saved — on a DelayedInsert page it
+	// is only inserted when the row is left — and the list goes back to navigation. A click on
+	// something that takes no focus (the page title, empty space) moves no focus, so no blur
+	// tells the list; while a cell is typed in, the input's blur (handleEditingInputBlur) does.
+	$effect(() => {
+		if (!editableActive || typeof document === 'undefined') return;
+		const onPointerDown = (event: PointerEvent) => {
+			if (cellState !== 'cell-selected') return;
+			const table = tableBodyElement?.closest('.table-container');
+			const target = event.target as Node | null;
+			if (!table || !target || table.contains(target)) return;
+			const field = visibleColumns()[currentCellCol];
+			const record = displayRecords[currentCellRow];
+			if (record && field) handleCellBlur(record, currentCellRow, field.source, true);
+			exitToNavigation(false);
+		};
+		document.addEventListener('pointerdown', onPointerDown, true);
+		return () => document.removeEventListener('pointerdown', onPointerDown, true);
+	});
+
 	// The cell cursor outside edit mode: a column of the cursor row (clicked, or moved to with
 	// the arrows, Tab and Enter), or ROW_SELECTOR, the box before the first column — then the
 	// whole row is selected. Ctrl+C copies the cursor cell's value, or the row; Edit / Ctrl+E /
@@ -4216,6 +4237,7 @@
 	<CustomizeFieldsModal
 		open={customizeModalOpen}
 		{page}
+		{captions}
 		customizations={columnCustomizations}
 		mode="list"
 		onclose={() => customizeModalOpen = false}

@@ -12,6 +12,7 @@ export const load: PageLoad = ({ params, url }) => {
 		returnUrl: page.returnUrl,
 		select: page.select,
 		openCard: page.openCard,
-		startNew: page.startNew
+		startNew: page.startNew,
+		edit: page.edit
 	};
 };

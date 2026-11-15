@@ -308,6 +308,18 @@ messages:
   LIST_ROW_SELECTED: "Rad %1 valgt"
   LIST_SELECTED_COUNT: "%1 av %2 merket"
   LIST_ALL_SELECTED: "Alle %1 merket"
+
+  # Customize dialog (columns of a list, fields of a card)
+  CUSTOMIZE_PAGE_TITLE: "Tilpass side: %1"
+  CUSTOMIZE_COLUMNS_TITLE: "Tilpass kolonner: %1"
+  CUSTOMIZE_PAGE_HINT: "Vis eller skjul felt, bytt seksjon og dra for å endre rekkefølgen"
+  CUSTOMIZE_COLUMNS_HINT: "Vis eller skjul kolonner og dra for å endre rekkefølgen"
+  CUSTOMIZE_DRAG: "Dra for å endre rekkefølgen"
+  CUSTOMIZE_SECTION: "Seksjon:"
+  CUSTOMIZE_WIDTH: "Bredde: %1 px"
+  CUSTOMIZE_HIDDEN_BY_DEFAULT: "Skjult som standard"
+  CUSTOMIZE_RESET: "Tilbakestill"
+  CUSTOMIZE_SAVE: "Lagre tilpasning"
   LIST_CELL_SELECTED: "Celle [%1, %2] (valgt)"
   LIST_CELL_EDITING: "Celle [%1, %2] (redigeres)"
   LIST_SORT_ASC: "Sorter stigende"
