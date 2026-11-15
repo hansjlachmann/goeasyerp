@@ -814,7 +814,7 @@
 				filters: cardNavigationQuery?.filters,
 				fixed_filters: cardNavigationQuery?.fixed_filters,
 				page_params: pageParams,
-				...(page.page.source_table_temporary ? { page_id: page.page.id } : {})
+				page_id: page.page.id
 			});
 
 			// For async jobs, keep modal open briefly to show 100%

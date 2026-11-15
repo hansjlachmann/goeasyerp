@@ -1139,7 +1139,7 @@
 				</div>
 			</div>
 		{:else}
-			{#if page.page.header_fields?.length && (openFilters.length > 0 || page.page.source_table_temporary)}
+			{#if page.page.header_fields?.length && (openFilters.length > 0 || page.page.source_table_temporary || !page.page.has_open_trigger)}
 				<!-- Header fields above the list (a journal's Batch Name) -->
 				<div class="page-header-fields">
 					{#each page.page.header_fields as header (header.param)}

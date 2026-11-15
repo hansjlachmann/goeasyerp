@@ -9,6 +9,8 @@
 	import DateInput from './DateInput.svelte';
 	import ErrorDetailsDialog from './ErrorDetailsDialog.svelte';
 	import { readFileBase64 } from '$lib/utils/fileInput';
+	import { apiFieldFilters } from '$lib/utils/flowFilter';
+	import { isDateType } from '$lib/utils/fieldHelpers';
 	import type { ErrorDetails } from '$lib/services/jobs';
 
 	type InputField = RequestInputField;
@@ -157,10 +159,14 @@
 		const result: Record<string, string> = {};
 		for (const [name, value] of Object.entries(inputValues)) result[name] = String(value ?? '');
 		if (output) result._output = output;
-		// Request page filters: per data item the filters that have an expression
+		// Request page filters: per data item the filters that have an expression — dates typed in
+		// the user's format go as ISO (as the list's filter pane sends them)
 		for (const item of inputDataItems) {
-			const filters = (requestFilters[item.name] ?? []).filter((f) => f.expression.trim() !== '');
-			result[`filters:${item.name}`] = JSON.stringify(filters.map((f) => ({ field: f.field, expression: f.expression.trim() })));
+			const filters = (requestFilters[item.name] ?? [])
+				.filter((f) => f.expression.trim() !== '')
+				.map((f) => ({ field: f.field, expression: f.expression.trim() }));
+			const isDateField = (field: string) => isDateType(item.fields.find((f) => f.name === field)?.type);
+			result[`filters:${item.name}`] = JSON.stringify(apiFieldFilters(filters, isDateField, locale));
 		}
 		// OK on a request without fields: an answer that is not empty (empty is Cancel)
 		if (Object.keys(result).length === 0) result._ok = '1';

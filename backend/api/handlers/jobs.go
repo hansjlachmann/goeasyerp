@@ -18,6 +18,7 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/functions"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 )
@@ -148,14 +149,18 @@ func (h *JobsHandler) StartJob(c *fiber.Ctx) error {
 			t.InitWithDBType(h.db, company, h.dbType)
 			return t
 		}
-		if err := applySelection(c, table, req.Selection, newTable, language); err != nil {
-			return c.Status(400).JSON(apitypes.NewErrorResponse(errorMessage(err, language)))
-		}
-		if err := applyFixedFilters(table, req.FixedFilters, language); err != nil {
-			return c.Status(400).JSON(apitypes.NewErrorResponse(errorMessage(err, language)))
-		}
-		if err := applyFieldFilters(table, req.Filters, tableName, language); err != nil {
-			return c.Status(400).JSON(apitypes.NewErrorResponse(errorMessage(err, language)))
+		// The list's selection and filters are on the page's source table: an object that works
+		// on another table (Calc. and Post Tax Settlement on the Tax Statement) starts without them
+		if pageSourceTableIs(req.PageID, tableName) {
+			if err := applySelection(c, table, req.Selection, newTable, language); err != nil {
+				return c.Status(400).JSON(apitypes.NewErrorResponse(errorMessage(err, language)))
+			}
+			if err := applyFixedFilters(table, req.FixedFilters, language); err != nil {
+				return c.Status(400).JSON(apitypes.NewErrorResponse(errorMessage(err, language)))
+			}
+			if err := applyFieldFilters(table, req.Filters, tableName, language); err != nil {
+				return c.Status(400).JSON(apitypes.NewErrorResponse(errorMessage(err, language)))
+			}
 		}
 	}
 
@@ -506,4 +511,17 @@ func withOpenPage(result *fcodeunits.Result) {
 	if len(result.Mark) > 0 {
 		result.Data["mark"] = result.Mark
 	}
+}
+
+// pageSourceTableIs reports whether the page a run starts from (0: not known) has the table as its
+// source table — the list's selection and filters apply only then
+func pageSourceTableIs(pageID int, tableName string) bool {
+	if pageID <= 0 {
+		return true
+	}
+	page, err := pages.GetRegistry().GetPage(pageID)
+	if err != nil {
+		return true
+	}
+	return strings.EqualFold(page.Page.SourceTable, tableName)
 }
