@@ -48,7 +48,13 @@ export interface MatrixRequest {
 function recordUrl(tableName: string, action: 'card' | 'modify' | 'delete', id: string): string {
 	return id === ''
 		? `${API_BASE}/tables/${tableName}/${action}`
-		: `${API_BASE}/tables/${tableName}/${action}/${id}`;
+		: `${API_BASE}/tables/${tableName}/${action}/${recordKeyPath(id)}`;
+}
+
+// A record key in a URL path: each value encoded (a code like 2%8D or A/B), the commas between
+// the values of a composite key kept (the server decodes the path and splits it at them)
+export function recordKeyPath(id: string): string {
+	return encodeURIComponent(id).replace(/%2C/gi, ',');
 }
 
 // Helper to build query string from filters
