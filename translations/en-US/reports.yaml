@@ -127,6 +127,7 @@ reports:
       ENTER_ENDING_DATE: "You must enter the Ending Date."
   shared:
     options:
+      print_comments: "Print Comments"
       use_add_rpt_curr: "Use Additional Reporting Currency"
       starting_date: "Starting Date"
       ending_date: "Ending Date"
@@ -174,6 +175,20 @@ reports:
       retain_maintenance_code: "Retain Maintenance Code"
       retain_quantity: "Retain Totals: Quantity"
     texts:
+      # the sales document printouts (204, 205, 210): comments and the tax in the totals
+      COMMENTS: "Comments"
+      TAX_VAT: "VAT"
+      TAX_VAT_SHORT: "VAT"
+      TAX_SALES_TAX: "Sales Tax"
+      TAX_SALES_TAX_SHORT: "Tax"
+      DOC_PRICE_INCL: "Price Incl. %1"
+      DOC_AMOUNT_INCL: "Amount Incl. %1"
+      DOC_TOTAL_INCL: "Total Incl. %1"
+      DOC_TOTAL_EXCL: "Total Excl. %1"
+      DOC_TAX_INCLUDED: "%1 Included"
+      DOC_INV_DISCOUNT_EXCL: "Invoice Discount Excl. %1"
+      DOC_AMOUNT_SUBJECT_TO: "Amount Subject to %1"
+      DOC_AMOUNT_EXEMPT_FROM: "Amount Exempt from %1"
       # the fixed asset analysis reports: posting and date types (codeunit 5626)
       FA_TYPE_NONE: " "
       FA_ACQUISITION_COST: "Acquisition Cost"

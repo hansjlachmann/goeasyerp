@@ -248,3 +248,53 @@ func TestOrderConfirmationReport(t *testing.T) {
 		t.Errorf("the quote report printed order %s", salesHeader.No)
 	}
 }
+
+// The quote prints its comments (Print Comments), the amounts subject to and exempt from the tax,
+// the customer's language with its formats, and prices including the tax
+func TestSalesQuoteReportCommentsTaxAndLanguage(t *testing.T) {
+	src, salesHeader := quoteCompany(t, 3)
+	comment := gtables.NewSalesCommentLine(src)
+	comment.Document_type = gtables.SalesCommentLine_Document_type.Quote
+	comment.No = "SQ1"
+	comment.Line_no = 10000
+	comment.Comment = "Valid for 30 days"
+	mustOK(t, comment.InsertOrError(false))
+	// the first line has 25 % VAT, the other item line none
+	salesLine := gtables.NewSalesLine(src)
+	mustOK(t, salesLine.GetOrError(map[string]interface{}{"document_type": 0, "document_no": "SQ1", "line_no": 10000}))
+	salesLine.Tax_percent = types.NewDecimalFromInt(25)
+	salesLine.Amount_including_tax = types.MustDecimal("31.25")
+	mustOK(t, salesLine.ModifyOrError(false))
+
+	has := func(texts string, want ...string) {
+		t.Helper()
+		for _, w := range want {
+			if !strings.Contains("|"+texts+"|", "|"+w+"|") {
+				t.Errorf("%q not printed: %s", w, texts)
+			}
+		}
+	}
+	texts := printedTexts(printQuote(t, src, reports.OutputPDF, nil), 1)
+	has(texts, "Comments", "Valid for 30 days",
+		"Unit Price", "Total Price", "Subtotal", "50.00",
+		"Amount Subject to VAT", "25.00", "Amount Exempt from VAT", "VAT", "6.25", "Total", "56.25")
+	texts = printedTexts(printQuote(t, src, reports.OutputPDF, map[string]string{"print_comments": "false"}), 1)
+	if strings.Contains(texts, "Valid for 30 days") {
+		t.Error("comments printed without Print Comments")
+	}
+
+	// The customer's language: Norwegian texts and number format
+	salesHeader.Language_code = "NB-NO"
+	mustOK(t, salesHeader.ModifyOrError(false))
+	texts = printedTexts(printQuote(t, src, reports.OutputPDF, nil), 1)
+	has(texts, "Merknader", "Beløp med MVA", "Beløp fritatt for MVA", "MVA", "6,25", "56,25")
+
+	// Prices including the tax: the line amounts and the totals include it
+	salesHeader.Prices_including_tax = true
+	mustOK(t, salesHeader.ModifyOrError(false))
+	texts = printedTexts(printQuote(t, src, reports.OutputPDF, nil), 1)
+	has(texts, "Pris inkl. MVA", "Beløp inkl. MVA", "31,25", "Totalt inkl. MVA", "56,25", "Herav MVA", "6,25", "Totalt ekskl. MVA", "50,00")
+	if strings.Contains(texts, "Delsum") {
+		t.Errorf("a subtotal without the tax printed with prices including it: %s", texts)
+	}
+}

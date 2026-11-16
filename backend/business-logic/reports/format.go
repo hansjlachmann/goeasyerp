@@ -20,9 +20,38 @@ func formatDate(d types.Date, language string) string {
 	return format.Date(d, language)
 }
 
+// formats is how a printout prints numbers and dates: in the user's language with the user's
+// formats (My Settings), or — a document in its customer's language (Run.SetLanguage) — in that
+// language's own formats
+type formats struct {
+	language string
+	document bool // the document's language: its own formats, not the user's
+}
+
+func (f formats) decimal(d types.Decimal, places string) string {
+	if f.document {
+		return format.DecimalInLanguage(d, places, f.language)
+	}
+	return format.Decimal(d, places, f.language)
+}
+
+func (f formats) date(d types.Date) string {
+	if f.document {
+		return format.DateInLanguage(d, f.language)
+	}
+	return format.Date(d, f.language)
+}
+
 // formatValue prints a report value: texts as they are, numbers and dates in the language,
 // Yes/No
 func formatValue(v interface{}, places string, language string) string {
+	return formats{language: language}.value(v, places)
+}
+
+// value prints a report value: texts as they are, numbers and dates in the formats, Yes/No in
+// the language
+func (f formats) value(v interface{}, places string) string {
+	language := f.language
 	switch value := v.(type) {
 	case nil:
 		return ""
@@ -36,9 +65,9 @@ func formatValue(v interface{}, places string, language string) string {
 		if places == "" {
 			places = "2:2"
 		}
-		return formatDecimal(value, places, language)
+		return f.decimal(value, places)
 	case types.Date:
-		return formatDate(value, language)
+		return f.date(value)
 	case int:
 		return strconv.Itoa(value)
 	case bool:

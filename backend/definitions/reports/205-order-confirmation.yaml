@@ -60,8 +60,8 @@ report:
             - {text: UNIT, x: 22, y: 108, width: 15, bold: true}
             - {text: DESCRIPTION, x: 37, y: 108, width: 76, bold: true}
             - {text: QUANTITY, x: 113, y: 108, width: 20, align: right, bold: true}
-            - {text: UNIT_PRICE, x: 133, y: 108, width: 25, align: right, bold: true}
-            - {text: TOTAL_PRICE, x: 158, y: 108, width: 25, align: right, bold: true}
+            - {value: unit_price_caption, x: 133, y: 108, width: 25, align: right, bold: true}
+            - {value: line_amount_caption, x: 158, y: 108, width: 25, align: right, bold: true}
             - {line: true, x: 0, y: 113}
 
     - name: SalesLine
@@ -70,7 +70,7 @@ report:
           height: 6
           elements:
             - {text: CONTINUED_FROM, x: 37, y: 0, width: 96}
-            - {total_value: amount_excl_inv_disc, x: 158, y: 0, width: 25, align: right}
+            - {total_value: line_amount, x: 158, y: 0, width: 25, align: right}
         - type: body
           height: 4.6
           elements:
@@ -79,7 +79,7 @@ report:
             - {field: description, x: 37, y: 0, width: 75, wrap: true}
             - {field: quantity, x: 113, y: 0, width: 20, align: right, blank_zero: true}
             - {field: unit_price, x: 133, y: 0, width: 25, align: right, blank_zero: true, decimal_places: "2:5"}
-            - {value: amount_excl_inv_disc, x: 158, y: 0, width: 25, align: right, blank_zero: true}
+            - {value: line_amount, x: 158, y: 0, width: 25, align: right, blank_zero: true}
         - type: body
           print_if: description_2
           height: 4.6
@@ -90,18 +90,81 @@ report:
           elements:
             - {line: true, x: 133, y: 1, width: 50}
             - {text: CONTINUED, x: 37, y: 1.5, width: 96}
-            - {total_value: amount_excl_inv_disc, x: 158, y: 1.5, width: 25, align: right}
+            - {total_value: line_amount, x: 158, y: 1.5, width: 25, align: right}
+        # The totals: one section per row, so rows that do not apply leave no gap. Without Prices
+        # Including Tax: subtotal, invoice discount, the amounts subject to / exempt from the tax,
+        # the tax, the total; with it: the total including the tax first, the tax it includes and
+        # the total without it.
         - type: footer
-          height: 26
+          print_unless: prices_incl_tax
+          height: 7.5
           elements:
-            - {line: true, x: 113, y: 2, width: 70}
-            - {text: SUBTOTAL, x: 113, y: 3, width: 45}
+            - {line: true, x: 98, y: 2, width: 85}
+            - {text: SUBTOTAL, x: 98, y: 3, width: 60}
             - {value: subtotal, x: 158, y: 3, width: 25, align: right}
-            - {text: INVOICE_DISCOUNT, x: 113, y: 7.5, width: 45, print_if: invoice_discount}
-            - {value: invoice_discount, x: 158, y: 7.5, width: 25, align: right, print_if: invoice_discount}
-            - {text: SALES_TAX, x: 113, y: 12, width: 45}
-            - {value: tax_amount, x: 158, y: 12, width: 25, align: right}
-            - {line: true, x: 113, y: 17, width: 70}
-            - {text: TOTAL, x: 113, y: 18, width: 30, bold: true}
-            - {value: currency, x: 143, y: 18, width: 15, bold: true}
-            - {value: total, x: 158, y: 18, width: 25, align: right, bold: true}
+        - type: footer
+          print_if: prices_incl_tax
+          height: 7.5
+          elements:
+            - {line: true, x: 98, y: 2, width: 85}
+            - {value: total_incl_tax_caption, x: 98, y: 3, width: 45, bold: true}
+            - {value: currency, x: 143, y: 3, width: 15, bold: true}
+            - {value: total, x: 158, y: 3, width: 25, align: right, bold: true}
+        - type: footer
+          print_if: invoice_discount
+          height: 4.5
+          elements:
+            - {text: INVOICE_DISCOUNT, x: 98, y: 0, width: 60}
+            - {value: invoice_discount, x: 158, y: 0, width: 25, align: right}
+        - type: footer
+          print_if: invoice_discount_excl
+          height: 4.5
+          elements:
+            - {value: invoice_discount_excl_caption, x: 98, y: 0, width: 60}
+            - {value: invoice_discount_excl, x: 158, y: 0, width: 25, align: right}
+        - type: footer
+          print_if: show_tax_base
+          height: 9
+          elements:
+            - {value: amount_subject_caption, x: 98, y: 0, width: 60}
+            - {value: amount_subject, x: 158, y: 0, width: 25, align: right}
+            - {value: amount_exempt_caption, x: 98, y: 4.5, width: 60}
+            - {value: amount_exempt, x: 158, y: 4.5, width: 25, align: right}
+        - type: footer
+          print_unless: prices_incl_tax
+          height: 4.5
+          elements:
+            - {value: tax_caption, x: 98, y: 0, width: 60}
+            - {value: tax_amount, x: 158, y: 0, width: 25, align: right}
+        - type: footer
+          print_if: prices_incl_tax
+          height: 4.5
+          elements:
+            - {value: tax_included_caption, x: 98, y: 0, width: 60}
+            - {value: tax_amount, x: 158, y: 0, width: 25, align: right}
+        - type: footer
+          print_unless: prices_incl_tax
+          height: 6
+          elements:
+            - {line: true, x: 98, y: 0.5, width: 85}
+            - {text: TOTAL, x: 98, y: 1.5, width: 45, bold: true}
+            - {value: currency, x: 143, y: 1.5, width: 15, bold: true}
+            - {value: total, x: 158, y: 1.5, width: 25, align: right, bold: true}
+        - type: footer
+          print_if: prices_incl_tax
+          height: 4.5
+          elements:
+            - {value: total_excl_tax_caption, x: 98, y: 0, width: 60}
+            - {value: total_excl_tax, x: 158, y: 0, width: 25, align: right}
+
+    # The document's comments (Print Comments)
+    - name: SalesCommentLine
+      sections:
+        - type: header
+          height: 10
+          elements:
+            - {text: COMMENTS, x: 0, y: 5, width: 100, bold: true}
+        - type: body
+          height: 4.6
+          elements:
+            - {field: comment, x: 0, y: 0, width: 183, wrap: true}

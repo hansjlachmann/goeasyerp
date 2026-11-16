@@ -1,6 +1,9 @@
 package reports
 
 import (
+	"strings"
+	"unicode/utf8"
+
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/formataddress"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salespost"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salesprinted"
@@ -10,15 +13,20 @@ import (
 )
 
 // salesDocument is the printout of a sales document of one type — report 204 Sales - Quote
-// (salesquote.go), 205 Order Confirmation (orderconfirmation.go): the company (with its logo),
-// the bill-to and ship-to addresses, the document's terms, its lines and totals, in copies; a
-// print that is not a preview counts in the document's No. Printed (codeunit 313). Run from a
-// document it prints that document. Each report has its layout and texts.
+// (salesquote.go), 205 Order Confirmation (orderconfirmation.go), 210 Blanket Sales Order
+// (blanketorders.go): the company (with its logo), the bill-to and ship-to addresses, the
+// document's terms, its lines, totals and comments, in copies; a print that is not a preview
+// counts in the document's No. Printed (codeunit 313). Run from a document it prints that
+// document. Each document prints in its Language Code (the user's language when blank). The
+// totals name the tax as VAT or sales tax by the lines' tax calculation, with the amounts
+// subject to and exempt from it; with Prices Including Tax the prices, line amounts and totals
+// include the tax. Each report has its layout and texts.
 type salesDocument struct {
-	documentType gtables.SalesHeaderDocument_type
-	salesHeader  *gtables.SalesHeader
-	noOfLoops    int
-	printed      int // documents printed
+	documentType  gtables.SalesHeaderDocument_type
+	salesHeader   *gtables.SalesHeader
+	pricesInclTax bool
+	noOfLoops     int
+	printed       int // documents printed
 }
 
 func (r *salesDocument) Definition() *Definition {
@@ -26,6 +34,7 @@ func (r *salesDocument) Definition() *Definition {
 		Options: []Option{
 			{Name: "no_of_copies", Type: "number", Default: "0"},
 			{Name: "print_company_address", Type: "bool", Default: "true"},
+			{Name: "print_comments", Type: "bool", Default: "true"},
 		},
 		ContextTable: gtables.SalesHeaderTableName,
 		OnInitReport: r.onInitReport,
@@ -50,6 +59,11 @@ func (r *salesDocument) Definition() *Definition {
 					Key:              []string{"document_type", "document_no", "line_no"},
 					OnPreDataItem:    Trigger(r.salesLineOnPreDataItem),
 					OnAfterGetRecord: Trigger(r.salesLineOnAfterGetRecord),
+				}, {
+					Name:          "SalesCommentLine",
+					Table:         gtables.SalesCommentLineTableName,
+					Key:           []string{"document_type", "no", "line_no"},
+					OnPreDataItem: Trigger(r.salesCommentLineOnPreDataItem),
 				}},
 			}},
 		}},
@@ -97,6 +111,8 @@ func (r *salesDocument) salesHeaderOnPreDataItem(rec *gtables.SalesHeader, run *
 
 func (r *salesDocument) salesHeaderOnAfterGetRecord(rec *gtables.SalesHeader, run *Run) error {
 	r.salesHeader = rec
+	r.pricesInclTax = rec.Prices_including_tax
+	run.SetLanguage(rec.Language_code.String())
 	billToAddress, err := formataddress.SalesHeaderBillTo(rec)
 	if err != nil {
 		return err
@@ -116,9 +132,18 @@ func (r *salesDocument) salesHeaderOnAfterGetRecord(rec *gtables.SalesHeader, ru
 	}
 	totalSalesLine := totals.TotalSalesLine
 	run.SetValue("subtotal", totalSalesLine.Amount.Add(totalSalesLine.Inv_discount_amount))
-	run.SetValue("invoice_discount", totalSalesLine.Inv_discount_amount.Neg())
+	// the invoice discount is without the tax: printed as such with Prices Including Tax
+	if r.pricesInclTax {
+		run.SetValue("invoice_discount", types.Decimal{})
+		run.SetValue("invoice_discount_excl", totalSalesLine.Inv_discount_amount.Neg())
+	} else {
+		run.SetValue("invoice_discount", totalSalesLine.Inv_discount_amount.Neg())
+		run.SetValue("invoice_discount_excl", types.Decimal{})
+	}
 	run.SetValue("tax_amount", totals.TaxAmount)
 	run.SetValue("total", totalSalesLine.Amount_including_tax)
+	run.SetValue("total_excl_tax", totalSalesLine.Amount)
+	r.setTaxValues(run, rec)
 	setCurrencyValue(run, rec, rec.Currency_code)
 	r.noOfLoops = noOfLoops(run)
 	r.printed++
@@ -163,10 +188,72 @@ func (r *salesDocument) salesLineOnPreDataItem(rec *gtables.SalesLine, run *Run)
 	return nil
 }
 
+// salesLineOnAfterGetRecord: the line's amount before the invoice discount — with Prices
+// Including Tax the amount including the tax (after the invoice discount: the tax is on it)
 func (r *salesDocument) salesLineOnAfterGetRecord(rec *gtables.SalesLine, run *Run) error {
-	run.SetValue("amount_excl_inv_disc", rec.Amount.Add(rec.Inv_discount_amount))
+	if r.pricesInclTax {
+		run.SetValue("line_amount", rec.Amount_including_tax)
+	} else {
+		run.SetValue("line_amount", rec.Amount.Add(rec.Inv_discount_amount))
+	}
 	run.SetValue("description_2", rec.Description_2.String())
 	return nil
+}
+
+// salesCommentLineOnPreDataItem: the document's comments, with Print Comments
+func (r *salesDocument) salesCommentLineOnPreDataItem(rec *gtables.SalesCommentLine, run *Run) error {
+	if !run.OptionBool("print_comments") {
+		return Break()
+	}
+	rec.SetRange("document_type", gtables.SalesCommentLineDocument_type(r.salesHeader.Document_type))
+	rec.SetRange("no", r.salesHeader.No)
+	return nil
+}
+
+// setTaxValues: the captions of the prices, the line amounts and the totals in the document's
+// language, and the amounts subject to and exempt from the tax. The tax is VAT when a line is
+// calculated with VAT, sales tax otherwise. A line is subject to the tax when it has tax; the
+// amounts are after the invoice discount, without the tax. They print with sales tax, and with
+// VAT when part of the document is exempt.
+func (r *salesDocument) setTaxValues(run *Run, salesHeader *gtables.SalesHeader) {
+	salesLine := gtables.NewSalesLine(salesHeader)
+	salesLine.SetRange("document_type", gtables.SalesLineDocument_type(salesHeader.Document_type))
+	salesLine.SetRange("document_no", salesHeader.No)
+	salesLine.SetFilter("type", "<>0")
+	isVAT := false
+	var amountSubject, amountExempt types.Decimal
+	for found := salesLine.FindSet(); found; found = salesLine.Next() {
+		if salesLine.Tax_calculation_type != gtables.SalesLine_Tax_calculation_type.SalesTax {
+			isVAT = true
+		}
+		if salesLine.Amount_including_tax.Equal(salesLine.Amount) {
+			amountExempt = amountExempt.Add(salesLine.Amount)
+		} else {
+			amountSubject = amountSubject.Add(salesLine.Amount)
+		}
+	}
+	taxName, taxShortName := run.Text("TAX_SALES_TAX"), run.Text("TAX_SALES_TAX_SHORT")
+	if isVAT {
+		taxName, taxShortName = run.Text("TAX_VAT"), run.Text("TAX_VAT_SHORT")
+	}
+	run.SetValue("prices_incl_tax", r.pricesInclTax)
+	run.SetValue("tax_caption", upperFirst(taxName))
+	if r.pricesInclTax {
+		run.SetValue("unit_price_caption", run.Text("DOC_PRICE_INCL", taxShortName))
+		run.SetValue("line_amount_caption", run.Text("DOC_AMOUNT_INCL", taxShortName))
+	} else {
+		run.SetValue("unit_price_caption", run.Text("UNIT_PRICE"))
+		run.SetValue("line_amount_caption", run.Text("TOTAL_PRICE"))
+	}
+	run.SetValue("total_incl_tax_caption", run.Text("DOC_TOTAL_INCL", taxName))
+	run.SetValue("total_excl_tax_caption", run.Text("DOC_TOTAL_EXCL", taxName))
+	run.SetValue("tax_included_caption", run.Text("DOC_TAX_INCLUDED", taxName))
+	run.SetValue("invoice_discount_excl_caption", run.Text("DOC_INV_DISCOUNT_EXCL", taxName))
+	run.SetValue("amount_subject_caption", run.Text("DOC_AMOUNT_SUBJECT_TO", taxName))
+	run.SetValue("amount_exempt_caption", run.Text("DOC_AMOUNT_EXEMPT_FROM", taxName))
+	run.SetValue("amount_subject", amountSubject)
+	run.SetValue("amount_exempt", amountExempt)
+	run.SetValue("show_tax_base", !isVAT || !amountExempt.IsZero())
 }
 
 // setTermsValues: the names of the salesperson, the shipment method and the payment terms
@@ -218,4 +305,13 @@ func noOfLoops(run *Run) int {
 		noOfCopies = -noOfCopies
 	}
 	return 1 + noOfCopies
+}
+
+// upperFirst: a text with its first letter in upper case (a tax's name as a caption of its own)
+func upperFirst(text string) string {
+	r, size := utf8.DecodeRuneInString(text)
+	if size == 0 {
+		return text
+	}
+	return strings.ToUpper(string(r)) + text[size:]
 }

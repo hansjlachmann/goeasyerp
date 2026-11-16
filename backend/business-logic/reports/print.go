@@ -8,7 +8,6 @@ import (
 	"slices"
 	"strings"
 
-	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/pdf"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -28,7 +27,6 @@ type printer struct {
 	run        *Run
 	layout     *Layout
 	doc        *pdf.Document
-	language   string
 	y          float64 // where the next section goes
 	pageOpen   bool
 	newPage    bool // the next section starts a new page (NewPage, NewPagePerRecord)
@@ -85,7 +83,7 @@ func newPrinter(run *Run, layout *Layout) (*printer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &printer{run: run, layout: layout, doc: doc, language: fcodeunits.CurrentLanguage()}, nil
+	return &printer{run: run, layout: layout, doc: doc}, nil
 }
 
 // beginItem: a data item starts its loop (nil when its layout prints nothing)
@@ -614,7 +612,7 @@ func (p *printer) text(f *frame, totals *sums, e *Element) string {
 		rec, field := p.reference(f, e.Caption)
 		c, ok := rec.(interface{ GetFieldCaption(string, string) string })
 		if ok {
-			return c.GetFieldCaption(field, p.language)
+			return c.GetFieldCaption(field, p.run.Language())
 		}
 		return field
 	case "field":
@@ -633,7 +631,7 @@ func (p *printer) text(f *frame, totals *sums, e *Element) string {
 		if e.BlankZero && isZero(value) {
 			return ""
 		}
-		return formatValue(value, p.decimalPlaces(e), p.language)
+		return p.run.formats().value(value, p.decimalPlaces(e))
 	case "total":
 		total := totals.fields[e.Total]
 		if e.BlankZero && total.IsZero() {
@@ -648,7 +646,7 @@ func (p *printer) text(f *frame, totals *sums, e *Element) string {
 				places = "2:2"
 			}
 		}
-		return formatDecimal(total, places, p.language)
+		return p.run.formats().decimal(total, places)
 	case "total_value":
 		total := totals.values[e.TotalValue]
 		if e.BlankZero && total.IsZero() {
@@ -658,7 +656,7 @@ func (p *printer) text(f *frame, totals *sums, e *Element) string {
 		if places == "" {
 			places = "2:2"
 		}
-		return formatDecimal(total, places, p.language)
+		return p.run.formats().decimal(total, places)
 	}
 	return ""
 }
@@ -698,7 +696,7 @@ func (p *printer) fieldText(rec interface{}, field string, value interface{}, pl
 		if places == "" {
 			places = "0:5"
 		}
-		return formatDecimal(v, places, p.language)
+		return p.run.formats().decimal(v, places)
 	case optionValue:
 		options, ok := rec.(interface {
 			GetOptionFields() map[string][]string
@@ -715,13 +713,13 @@ func (p *printer) fieldText(rec interface{}, field string, value interface{}, pl
 		if strings.TrimSpace(name) == "" {
 			return ""
 		}
-		caption := options.GetOptionCaption(field, i18n.Key(name), p.language)
+		caption := options.GetOptionCaption(field, i18n.Key(name), p.run.Language())
 		if strings.HasPrefix(caption, "tables.") {
 			return name
 		}
 		return caption
 	}
-	return formatValue(value, places, p.language)
+	return p.run.formats().value(value, places)
 }
 
 // optionValue is an option field's value (its number) as fieldValue gives it

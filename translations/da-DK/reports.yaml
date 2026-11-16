@@ -127,6 +127,7 @@ reports:
       ENTER_ENDING_DATE: "Du skal angive slutdatoen."
   shared:
     options:
+      print_comments: "Udskriv bemærkninger"
       use_add_rpt_curr: "Brug ekstra rapporteringsvaluta"
       starting_date: "Startdato"
       ending_date: "Slutdato"
@@ -174,6 +175,20 @@ reports:
       retain_maintenance_code: "Bevar Vedligeholdelseskode"
       retain_quantity: "Bevar totaler: Antal"
     texts:
+      # the sales document printouts (204, 205, 210): comments and the tax in the totals
+      COMMENTS: "Bemærkninger"
+      TAX_VAT: "moms"
+      TAX_VAT_SHORT: "moms"
+      TAX_SALES_TAX: "salgsafgift"
+      TAX_SALES_TAX_SHORT: "afg."
+      DOC_PRICE_INCL: "Pris inkl. %1"
+      DOC_AMOUNT_INCL: "Beløb inkl. %1"
+      DOC_TOTAL_INCL: "Total inkl. %1"
+      DOC_TOTAL_EXCL: "Total ekskl. %1"
+      DOC_TAX_INCLUDED: "Heraf %1"
+      DOC_INV_DISCOUNT_EXCL: "Fakturarabat ekskl. %1"
+      DOC_AMOUNT_SUBJECT_TO: "Beløb med %1"
+      DOC_AMOUNT_EXEMPT_FROM: "Beløb fritaget for %1"
       # the fixed asset analysis reports: posting and date types (codeunit 5626)
       FA_TYPE_NONE: " "
       FA_ACQUISITION_COST: "Anskaffelsespris"

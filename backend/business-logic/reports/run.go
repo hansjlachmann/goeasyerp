@@ -46,6 +46,9 @@ type Run struct {
 	printouts []Result
 	openPage  *fcodeunits.PageLink
 	refresh   bool
+
+	// language: the language a document prints in (SetLanguage), "" the user's
+	language string
 }
 
 // SetValue sets a value the layout prints (value, lines, image elements; print_if) — the
@@ -194,10 +197,36 @@ func (r *Run) Message(text string, values ...any) {
 	r.message = system.StrSubstNo(text, values...)
 }
 
-// Text returns a translated text of the report (reports.<id>.texts.<key>) in the user's
-// language, filled in with StrSubstNo
+// Text returns a translated text of the report (reports.<id>.texts.<key>) in the report's
+// language (Language), filled in with StrSubstNo
 func (r *Run) Text(key string, values ...any) string {
-	return system.StrSubstNo(translate(r.ID, "texts."+key), values...)
+	return system.StrSubstNo(translate(r.ID, "texts."+key, r.Language()), values...)
+}
+
+// SetLanguage prints what follows in a language (a Language code such as NB-NO, any letter case)
+// — a document in its customer's language: the report's texts, captions, options and Yes/No in
+// the language, dates and amounts in its own formats (not the user's). A blank code, or one the
+// application has no translations for, goes back to the user's language and formats.
+func (r *Run) SetLanguage(languageCode string) {
+	r.language = ""
+	for _, language := range i18n.GetInstance().GetSupportedLanguages() {
+		if strings.EqualFold(language, languageCode) {
+			r.language = language
+		}
+	}
+}
+
+// Language is the language the report prints in: the one SetLanguage set, else the user's
+func (r *Run) Language() string {
+	if r.language != "" {
+		return r.language
+	}
+	return fcodeunits.CurrentLanguage()
+}
+
+// formats: how the report prints numbers and dates (formats)
+func (r *Run) formats() formats {
+	return formats{language: r.Language(), document: r.language != ""}
 }
 
 // RunOptions say how a report runs
@@ -411,7 +440,7 @@ func requestPage(run *Run, def *Definition, printed bool) bool {
 	for _, o := range def.Options {
 		fields = append(fields, fcodeunits.InputField{
 			Name:     "option:" + o.Name,
-			Label:    translate(run.ID, "options."+o.Name),
+			Label:    translate(run.ID, "options."+o.Name, fcodeunits.CurrentLanguage()),
 			Type:     o.Type,
 			Required: o.Required,
 			Default:  run.options[o.Name],
@@ -471,7 +500,7 @@ func requestPage(run *Run, def *Definition, printed bool) bool {
 	if printed {
 		output = PrinterOutput(run, run.ID, OutputPreview)
 	}
-	values := fcodeunits.RequestPage(translate(run.ID, "caption"), fields, items, optionsCaption, output)
+	values := fcodeunits.RequestPage(translate(run.ID, "caption", fcodeunits.CurrentLanguage()), fields, items, optionsCaption, output)
 	if len(values) == 0 {
 		return false
 	}
@@ -729,10 +758,9 @@ func Caption(id int, language string) string {
 	return caption
 }
 
-// translate returns reports.<id>.<key> in the user's language — else reports.shared.<key>, the
+// translate returns reports.<id>.<key> in the language — else reports.shared.<key>, the
 // texts and options several reports share (the date compression reports' request page)
-func translate(id int, key string) string {
-	language := fcodeunits.CurrentLanguage()
+func translate(id int, key string, language string) string {
 	full := fmt.Sprintf("reports.%d.%s", id, key)
 	text := i18n.GetInstance().Translate(full, language)
 	if text == full {

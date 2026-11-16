@@ -38,10 +38,7 @@ var (
 // formatOf is the format used: the language's (en-US for languages without one),
 // with the user's date and number formats of My Settings where set
 func formatOf(language string) numberFormat {
-	f, ok := numberFormats[language]
-	if !ok {
-		f = numberFormats["en-US"]
-	}
+	f := languageFormat(language)
 	regional := fcodeunits.CurrentRegional()
 	layout, ok := regionalDateLayouts[regional.DateFormat]
 	if ok {
@@ -54,9 +51,29 @@ func formatOf(language string) numberFormat {
 	return f
 }
 
+// languageFormat is the language's own format (en-US for languages without one), without the
+// user's
+func languageFormat(language string) numberFormat {
+	f, ok := numberFormats[language]
+	if !ok {
+		f = numberFormats["en-US"]
+	}
+	return f
+}
+
 // Decimal prints a decimal in the language with decimal places "min:max" (blank: 0:5),
 // rounded half away from zero at max
 func Decimal(d types.Decimal, places string, language string) string {
+	return decimal(d, places, formatOf(language))
+}
+
+// DecimalInLanguage prints a decimal as Decimal does, in the language's own format — not the
+// user's (a document printed in its customer's language)
+func DecimalInLanguage(d types.Decimal, places string, language string) string {
+	return decimal(d, places, languageFormat(language))
+}
+
+func decimal(d types.Decimal, places string, f numberFormat) string {
 	min, max := 0, 5
 	minText, maxText, ok := strings.Cut(places, ":")
 	if ok {
@@ -76,7 +93,6 @@ func Decimal(d types.Decimal, places string, language string) string {
 	if strings.Trim(intPart+frac, "0") == "" {
 		sign = ""
 	}
-	f := formatOf(language)
 	var grouped strings.Builder
 	for i, c := range intPart {
 		if i > 0 && (len(intPart)-i)%3 == 0 {
@@ -96,4 +112,13 @@ func Date(d types.Date, language string) string {
 		return ""
 	}
 	return d.Time.Format(formatOf(language).date)
+}
+
+// DateInLanguage prints a date in the language's own format — not the user's (a document printed
+// in its customer's language)
+func DateInLanguage(d types.Date, language string) string {
+	if d.IsZero() {
+		return ""
+	}
+	return d.Time.Format(languageFormat(language).date)
 }
