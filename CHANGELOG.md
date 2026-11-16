@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.160](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.159...v0.1.160) (2026-11-16)
+
+
+### Features
+
+* new Go icon ([af74acf](https://github.com/hansjlachmann/goeasyerp/commit/af74acf7f31deb6b90f4645d357b78ae6e08c117))
+* sales quote, order confirmation and blanket order printouts: comments, tax amounts, customer's language, prices including tax ([2f06910](https://github.com/hansjlachmann/goeasyerp/commit/2f06910cb1edd59533c6373828db1e933becf77c))
+* send documents by e-mail ([a6dac8d](https://github.com/hansjlachmann/goeasyerp/commit/a6dac8db5a37a44f628dd7f76677a2e1d76e6b67))
+
 ## [0.1.159](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.158...v0.1.159) (2026-11-15)
 
 
