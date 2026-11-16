@@ -273,7 +273,7 @@ export interface FieldState {
 export interface RequestInputField {
 	name: string;
 	label: string;
-	type: string; // "text", "number", "date", "option", "bool", "file" (the contents as base64)
+	type: string; // "text", "multiline", "number", "date", "option", "bool", "file" (the contents as base64)
 	required?: boolean;
 	default?: string;
 	options?: string[]; // type "option": the choices; the value is the chosen number (1-based)

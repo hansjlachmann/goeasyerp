@@ -3,6 +3,8 @@ package pages
 import (
 	"strconv"
 
+	// Document E-mail: the Send by E-mail functions of the document pages
+	_ "github.com/hansjlachmann/goeasyerp/backend/business-logic/docmail"
 	// Document-Print and PrintRecords: the Print functions of the document pages
 	_ "github.com/hansjlachmann/goeasyerp/backend/business-logic/docprint"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"

@@ -86,6 +86,8 @@
 	function handleInputKeydown(event: KeyboardEvent) {
 		if (event.defaultPrevented) return; // a field kept the key (a date that is not one)
 		if (event.key === 'Enter') {
+			// a multi-line text takes Enter for a new line (Ctrl+Enter is OK)
+			if (event.target instanceof HTMLTextAreaElement && !event.ctrlKey) return;
 			event.preventDefault();
 			if (inputValid()) handleInputOk(printed ? firstOutput : undefined);
 		} else if (event.key === 'Escape') {
@@ -259,6 +261,20 @@
 			value={inputValues[field.name]}
 			onchange={(iso) => (inputValues[field.name] = iso)}
 		/>
+	</div>
+	{:else if field.type === 'multiline'}
+	<div class="input-field">
+		<label class="input-label" for="input-{field.name}">
+			{field.label}
+			{#if field.required}<span class="required-mark">*</span>{/if}
+		</label>
+		<!-- a text of several lines (an e-mail's message): Enter is a new line -->
+		<textarea
+			id="input-{field.name}"
+			class="input-control input-multiline"
+			rows="8"
+			bind:value={inputValues[field.name]}
+		></textarea>
 	</div>
 	{:else}
 	<div class="input-field">
@@ -522,6 +538,11 @@
 		@apply w-full px-3 py-2 text-sm border border-gray-300 rounded-md;
 		@apply bg-surface text-gray-900;
 		@apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+	}
+
+	.input-multiline {
+		@apply min-w-[28rem] resize-y;
+		font-family: var(--font-sans);
 	}
 
 	:global(.dark) .input-control {

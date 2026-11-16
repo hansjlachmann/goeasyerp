@@ -297,6 +297,7 @@ common:
     line: "Line"
     run: "Run"
     send_test_e_mail: "Send Test E-mail"
+    send_by_e_mail: "Send by E-mail"
     test: "TEST"
     test_line_1: "Test Line 1"
     test_line_2: "Test Line 2"

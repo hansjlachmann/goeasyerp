@@ -102,6 +102,12 @@ page:
       promoted: true
       run_object: table:Sales_Invoice_Header.PrintRecords
 
+    - name: Send by E-mail
+      caption: Send by E-mail
+      image: Email
+      promoted: true
+      run_object: table:Sales_Invoice_Header.EmailRecords
+
     - name: Statistics
       caption: Statistics
       image: Statistics

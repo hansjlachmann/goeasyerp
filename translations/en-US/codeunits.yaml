@@ -268,6 +268,8 @@ codeunits:
     caption: "Posting Preview"
   "907":
     caption: "Job Queue Notifications"
+  "908":
+    caption: "Document E-mail"
   "990":
     caption: "Hello World"
   "991":

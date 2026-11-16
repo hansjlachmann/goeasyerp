@@ -179,6 +179,12 @@ page:
       promoted: true
       run_object: codeunit:229.PrintSalesHeader
 
+    - name: Send by E-mail
+      caption: Send by E-mail
+      image: Email
+      promoted: true
+      run_object: table:Sales_Header.EmailRecords
+
     # an order of the lines' quantities to ship (the blanket order stays)
     - name: Make Order
       caption: Make Order

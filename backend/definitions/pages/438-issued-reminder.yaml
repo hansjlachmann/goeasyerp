@@ -73,6 +73,12 @@ page:
       promoted: true
       run_object: table:Issued_Reminder_Header.PrintRecords
 
+    - name: Send by E-mail
+      caption: Send by E-mail
+      image: Email
+      promoted: true
+      run_object: table:Issued_Reminder_Header.EmailRecords
+
     - name: Customer
       caption: Customer
       image: Customer

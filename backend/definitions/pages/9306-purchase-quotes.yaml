@@ -74,3 +74,9 @@ page:
       image: Print
       promoted: true
       run_object: codeunit:229.PrintPurchHeader
+
+    - name: Send by E-mail
+      caption: Send by E-mail
+      image: Email
+      promoted: true
+      run_object: table:Purchase_Header.EmailRecords
