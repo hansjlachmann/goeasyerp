@@ -12,80 +12,6 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/apps"
 )
 
-// PageDef represents a page definition from YAML
-type PageDef struct {
-	Page Page `yaml:"page"`
-}
-
-// Page represents the page configuration
-type Page struct {
-	ID               int      `yaml:"id"`
-	Type             string   `yaml:"type"`
-	Name             string   `yaml:"name"`
-	SourceTable      string   `yaml:"source_table"`
-	Caption          string   `yaml:"caption"`
-	ListPageID       int      `yaml:"list_page_id,omitempty"`
-	CardPageID       int      `yaml:"card_page_id,omitempty"`
-	EnableNavigation bool     `yaml:"enable_navigation,omitempty"`
-	Editable         bool     `yaml:"editable,omitempty"`
-	FocusField       string   `yaml:"focus_field,omitempty"`
-	Layout           Layout   `yaml:"layout,omitempty"`
-	Actions          []Action `yaml:"actions,omitempty"`
-	Columns          []Column `yaml:"columns,omitempty"`
-}
-
-// Layout represents the page layout
-type Layout struct {
-	Sections []Section `yaml:"sections,omitempty"`
-}
-
-// Section represents a layout section
-type Section struct {
-	Name    string  `yaml:"name"`
-	Caption string  `yaml:"caption,omitempty"`
-	Fields  []Field `yaml:"fields,omitempty"`
-}
-
-// Field represents a field in a section
-type Field struct {
-	Source        string `yaml:"source"`
-	Caption       string `yaml:"caption,omitempty"`
-	Editable      bool   `yaml:"editable,omitempty"`
-	Visible       *bool  `yaml:"visible,omitempty"`
-	Importance    string `yaml:"importance,omitempty"`
-	TableRelation string `yaml:"table_relation,omitempty"`
-}
-
-// Column represents a column in a list page
-type Column struct {
-	Source        string `yaml:"source"`
-	Caption       string `yaml:"caption,omitempty"`
-	Width         int    `yaml:"width,omitempty"`
-	Sortable      bool   `yaml:"sortable,omitempty"`
-	Filterable    bool   `yaml:"filterable,omitempty"`
-	Importance    string `yaml:"importance,omitempty"`
-	TableRelation string `yaml:"table_relation,omitempty"`
-}
-
-// Action represents a page action
-type Action struct {
-	Name      string `yaml:"name"`
-	Caption   string `yaml:"caption,omitempty"`
-	Shortcut  string `yaml:"shortcut,omitempty"`
-	Promoted  bool   `yaml:"promoted,omitempty"`
-	Enabled   *bool  `yaml:"enabled,omitempty"`
-	RunPage   int    `yaml:"run_page,omitempty"`
-	RunObject string `yaml:"run_object,omitempty"`
-}
-
-// PageExtension represents a page extension definition
-type PageExtension struct {
-	Extends int      `yaml:"extends"`
-	Version string   `yaml:"version,omitempty"`
-	Actions []Action `yaml:"actions,omitempty"`
-	Layout  Layout   `yaml:"layout,omitempty"`
-}
-
 // TableExtension represents a table extension definition
 type TableExtension struct {
 	ExtendsTable int                      `yaml:"extends_table"`
@@ -148,7 +74,7 @@ func run(corePath, extensionsPath, outputPath string, verbose bool) error {
 	}
 
 	for _, extPath := range pageExtensions {
-		if err := mergePageExtension(extPath, outputPath, verbose); err != nil {
+		if err := mergePageExtension(extPath, outputPath, ext, verbose); err != nil {
 			return fmt.Errorf("failed to merge page extension %s: %w", extPath, err)
 		}
 	}
@@ -162,6 +88,17 @@ func run(corePath, extensionsPath, outputPath string, verbose bool) error {
 	for _, extPath := range tableExtensions {
 		if err := mergeTableExtension(extPath, outputPath, ext, verbose); err != nil {
 			return fmt.Errorf("failed to merge table extension %s: %w", extPath, err)
+		}
+	}
+
+	// Find and process main menu extensions
+	menuExtensions, err := findExtensions(extensionsPath, "menus", ".extend.yaml")
+	if err != nil {
+		return fmt.Errorf("failed to find menu extensions: %w", err)
+	}
+	for _, extPath := range menuExtensions {
+		if err := mergeMenuExtension(extPath, outputPath, ext, verbose); err != nil {
+			return fmt.Errorf("failed to merge menu extension %s: %w", extPath, err)
 		}
 	}
 
@@ -231,142 +168,6 @@ func findExtensions(basePath, subdir, suffix string) ([]string, error) {
 	})
 
 	return extensions, err
-}
-
-func mergePageExtension(extPath, outputPath string, verbose bool) error {
-	// Read extension file
-	extData, err := os.ReadFile(extPath)
-	if err != nil {
-		return fmt.Errorf("failed to read extension: %w", err)
-	}
-
-	var ext PageExtension
-	if err := yaml.Unmarshal(extData, &ext); err != nil {
-		return fmt.Errorf("failed to parse extension: %w", err)
-	}
-
-	if ext.Extends == 0 {
-		return fmt.Errorf("extension must specify 'extends' field with page ID")
-	}
-
-	// Find core page file
-	corePagePath, err := findCorePageFile(outputPath, ext.Extends)
-	if err != nil {
-		return fmt.Errorf("failed to find core page %d: %w", ext.Extends, err)
-	}
-
-	// Read core page
-	coreData, err := os.ReadFile(corePagePath)
-	if err != nil {
-		return fmt.Errorf("failed to read core page: %w", err)
-	}
-
-	var pageDef PageDef
-	if err := yaml.Unmarshal(coreData, &pageDef); err != nil {
-		return fmt.Errorf("failed to parse core page: %w", err)
-	}
-
-	// Merge extension into page
-	mergePage(&pageDef.Page, &ext)
-
-	// Write merged page
-	mergedData, err := yaml.Marshal(&pageDef)
-	if err != nil {
-		return fmt.Errorf("failed to marshal merged page: %w", err)
-	}
-
-	if err := os.WriteFile(corePagePath, mergedData, 0644); err != nil {
-		return fmt.Errorf("failed to write merged page: %w", err)
-	}
-
-	if verbose {
-		fmt.Printf("Merged page extension: %s -> page %d\n", filepath.Base(extPath), ext.Extends)
-	}
-
-	return nil
-}
-
-func findCorePageFile(outputPath string, pageID int) (string, error) {
-	pagesPath := filepath.Join(outputPath, "pages")
-
-	var found string
-	err := filepath.Walk(pagesPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			return nil
-		}
-		// Match files like "21-customer-card.yaml"
-		name := info.Name()
-		if strings.HasSuffix(name, ".yaml") && !strings.HasSuffix(name, ".extend.yaml") {
-			// Parse the ID from filename
-			parts := strings.SplitN(name, "-", 2)
-			if len(parts) >= 1 {
-				var id int
-				if _, err := fmt.Sscanf(parts[0], "%d", &id); err == nil && id == pageID {
-					found = path
-					return filepath.SkipAll
-				}
-			}
-		}
-		return nil
-	})
-
-	if err != nil && err != filepath.SkipAll {
-		return "", err
-	}
-
-	if found == "" {
-		return "", fmt.Errorf("page with ID %d not found", pageID)
-	}
-
-	return found, nil
-}
-
-func mergePage(page *Page, ext *PageExtension) {
-	// Append actions
-	page.Actions = append(page.Actions, ext.Actions...)
-
-	// Merge layout sections
-	for _, extSection := range ext.Layout.Sections {
-		merged := false
-		for i, pageSection := range page.Layout.Sections {
-			if pageSection.Name == extSection.Name {
-				// Merge fields into existing section
-				page.Layout.Sections[i].Fields = mergeFields(pageSection.Fields, extSection.Fields)
-				merged = true
-				break
-			}
-		}
-		if !merged {
-			// Add as new section
-			page.Layout.Sections = append(page.Layout.Sections, extSection)
-		}
-	}
-}
-
-func mergeFields(existing, new []Field) []Field {
-	result := make([]Field, len(existing))
-	copy(result, existing)
-
-	for _, newField := range new {
-		found := false
-		for i, existingField := range result {
-			if existingField.Source == newField.Source {
-				// Override existing field
-				result[i] = newField
-				found = true
-				break
-			}
-		}
-		if !found {
-			// Add new field
-			result = append(result, newField)
-		}
-	}
-
-	return result
 }
 
 func mergeTableExtension(extPath, outputPath string, ext *apps.App, verbose bool) error {

@@ -1,0 +1,19 @@
+# Customer: the points a customer has collected and the loyalty tier they reached
+extends_table: 18
+fields:
+  - name: lp_loyalty_points
+    no: 50000
+    type: int
+    db_name: lp_loyalty_points
+    caption: Loyalty Points
+    validation: {min: 0}
+
+  - name: lp_tier_code
+    no: 50001
+    type: types.Code
+    db_name: lp_tier_code
+    length: 10
+    caption: Loyalty Tier
+    table_relation:
+      table: LP_Loyalty_Tier
+      field: code

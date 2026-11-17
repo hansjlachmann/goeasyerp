@@ -83,31 +83,55 @@ layout:
 
 ### Page Extension
 
+An app adds to a page; it never changes or removes what the page has. The page is merged as
+it is written (every key kept), and everything added is marked with the app (`app: <id>`).
+
 ```yaml
-extends: <page_id>           # Required: ID of parent page to extend
-version: ">=0.1.9"           # Optional: Compatible core versions
+extends: 21                     # Required: ID of the page to extend
+version: ">=0.1.9"              # Optional: compatible core versions
 
-# Add actions (appended to existing actions)
-actions:
-  - name: Action Name
-    caption: Display Caption
-    shortcut: Ctrl+X         # Optional
-    promoted: true           # Optional
-    run_object: codeunit:ID  # Or run_page: ID
-
-# Extend layout
 layout:
-  sections:
-    - name: Existing Section # Merge into existing section
+  sections:                     # A card's sections
+    - name: General             # An existing section: only fields are added to it
       fields:
-        - source: field_name
-          caption: Caption
-          editable: true
+        - source: lp_loyalty_points
+          after: credit_limit_lcy   # placed after (or before:) a field of the section
+    - name: Loyalty             # A new section
+      caption: Loyalty
+      after: Payments           # placed after (or before:) a section; else at the end
+      fields:
+        - source: lp_tier_code
+  repeater:                     # A list page's columns
+    fields:
+      - source: lp_loyalty_points
+        after: name
+        width: 100
 
-    - name: New Section      # Add new section
-      caption: Section Caption
-      fields:
-        - source: field_name
+actions:
+  - name: Loyalty Tiers         # A button, after (or before:) an action
+    after: Sales
+    run_page: 50000
+  - name: Recalculate Points    # An item of an existing menu button (at any depth)
+    in: Functions
+    run_object: codeunit:50000
+```
+
+### Menu Extension
+
+An app adds entries to a main menu file (`menus/<file>.extend.yaml`) — its own pages,
+reports and routines — into a sub-menu named by its path from the top, or as a new module:
+
+```yaml
+extends: admin.yaml
+items:
+  - in: [Sales, Reports]        # the sub-menu (one name or the path of names)
+    after: Customer - List      # placed after (or before:) an entry; else at the end
+    name: Loyalty Points
+    run_object: report:50000
+  - name: Loyalty               # without in: a new module
+    items:
+      - name: Loyalty Tiers
+        page_id: 50000
 ```
 
 ### Table Extension
@@ -132,11 +156,15 @@ see TODO "Field and object numbering"). A number is never changed or reused.
 
 | Element | Behavior |
 |---------|----------|
-| `actions` | Appended to parent's action list |
-| `layout.sections` (existing name) | Fields merged into that section |
-| `layout.sections` (new name) | Added as new section |
-| `fields` (same source) | Overrides parent field definition |
-| Other properties | Overrides parent value |
+| Card fields, list columns, sections, actions, menu entries | Added — at the end, or `after:` / `before:` an existing one (by field `source` or by `name`) |
+| `in:` on an action | Added to the items of that menu button |
+| An existing section named in `layout.sections` | Only its `fields` are added; its other settings stay |
+| Something with the `source` or `name` of an existing one | Refused: an app adds, it never replaces |
+| Unknown keys in an extension file, an anchor that does not exist | Refused, naming it |
+| Everything added | Marked `app: <id>` |
+
+`scripts/check-extension-fixture.sh` builds the base application with the test app in
+`testdata/apps/loyalty-points` the way an installation's build does (CI runs it).
 
 ## Build Process
 
@@ -165,6 +193,8 @@ my-goeasyerp-extension/
 │   │   └── 18-customer.extend.yaml      # Extend Customer table
 │   ├── pages/
 │   │   └── 21-customer-card.extend.yaml # Extend Customer Card
+│   ├── menus/
+│   │   └── admin.extend.yaml            # Entries in the main menu
 │   └── logic/                           # Go module: business logic (see below)
 │       ├── customer.go                  # Triggers for the Customer fields
 │       └── 50100-custom-report.go       # New codeunit
@@ -233,6 +263,5 @@ Still to build (`TODO.md`, "Extension apps"):
 - **Linking the extension's Go module into the build:** a `go.work` file or a `replace`
   directive pointing at the merged, regenerated base, plus a generated file with a blank
   import per installed extension.
-- **A lossless page merge in `extmerge`:** today it drops page keys it does not know.
 - **Field-name collision rules.**
 - **OnBefore/OnAfter and codeunit events.**

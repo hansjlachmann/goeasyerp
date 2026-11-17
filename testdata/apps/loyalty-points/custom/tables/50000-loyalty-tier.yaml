@@ -1,0 +1,30 @@
+# Loyalty Tier: the tiers a customer moves through by points
+table:
+  id: 50000
+  name: "LP_Loyalty_Tier"
+  description: "Loyalty Tier: a level of the loyalty program"
+  fields:
+    - name: code
+      no: 50000
+      type: types.Code
+      db_name: code
+      length: 10
+      primary_key: true
+      required: true
+
+    - name: description
+      no: 50001
+      type: types.Text
+      db_name: description
+      length: 50
+
+    - name: min_points
+      no: 50002
+      type: int
+      db_name: min_points
+      validation: {min: 0}
+
+  keys:
+    - name: Primary
+      fields: [code]
+      clustered: true

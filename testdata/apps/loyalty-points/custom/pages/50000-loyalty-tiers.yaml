@@ -1,0 +1,17 @@
+page:
+  id: 50000
+  type: List
+  name: Loyalty Tiers
+  source_table: LP_Loyalty_Tier
+  caption: Loyalty Tiers
+  editable: true
+
+  layout:
+    repeater:
+      fields:
+        - source: code
+          width: 100
+        - source: description
+          width: 250
+        - source: min_points
+          width: 100

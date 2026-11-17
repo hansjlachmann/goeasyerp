@@ -1,0 +1,14 @@
+# Customer List: the points as a column after the name, the tiers as a button
+extends: 22
+layout:
+  repeater:
+    fields:
+      - source: lp_loyalty_points
+        after: name
+        width: 100
+actions:
+  - name: Loyalty Tiers
+    caption: Loyalty Tiers
+    after: Sales
+    promoted: true
+    run_page: 50000

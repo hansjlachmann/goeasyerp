@@ -81,6 +81,11 @@ jobs:
       - name: Build
         run: go build -v ./...
 
+      # The base application with the test extension app merged in, as an installation's
+      # build does: extension apps keep building as the base changes
+      - name: Build with the test extension app
+        run: scripts/check-extension-fixture.sh
+
   frontend:
     name: Frontend (SvelteKit)
     runs-on: ubuntu-24.04

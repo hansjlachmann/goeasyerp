@@ -1,0 +1,22 @@
+# Customer Card: the points next to the credit limit, the tier in a section of its own, the
+# tiers from the Customer menu
+extends: 21
+layout:
+  sections:
+    - name: General
+      fields:
+        - source: lp_loyalty_points
+          after: credit_limit_lcy
+          editable: false
+    - name: Loyalty
+      caption: Loyalty
+      after: Payments
+      fields:
+        - source: lp_tier_code
+          editable: true
+actions:
+  - name: Loyalty Tiers
+    caption: Loyalty Tiers
+    in: Customer
+    after: Statistics
+    run_page: 50000

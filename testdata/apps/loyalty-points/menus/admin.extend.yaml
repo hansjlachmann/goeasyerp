@@ -1,0 +1,7 @@
+# The main menu: the tiers under Sales, after Customers
+extends: admin.yaml
+items:
+  - in: Sales
+    after: Customers
+    name: Loyalty Tiers
+    page_id: 50000
