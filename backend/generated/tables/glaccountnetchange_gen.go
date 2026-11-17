@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.GLAccountNetChange) error
 //	OnDelete(rec *gtables.GLAccountNetChange) error
 //	OnRename(rec *gtables.GLAccountNetChange) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.GLAccountNetChange, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_No(rec *gtables.GLAccountNetChange) error
 //	OnValidate_Name(rec *gtables.GLAccountNetChange) error
 //	OnValidate_Net_change_in_jnl(rec *gtables.GLAccountNetChange) error
@@ -25,6 +27,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -243,6 +246,18 @@ type (
 	GLAccountNetChangeOnRename interface {
 		OnRename(rec *GLAccountNetChange) error
 	}
+	GLAccountNetChangeOnBeforeInsert interface {
+		OnBeforeInsert(rec *GLAccountNetChange, handled *bool) error
+	}
+	GLAccountNetChangeOnBeforeModify interface {
+		OnBeforeModify(rec *GLAccountNetChange, handled *bool) error
+	}
+	GLAccountNetChangeOnBeforeDelete interface {
+		OnBeforeDelete(rec *GLAccountNetChange, handled *bool) error
+	}
+	GLAccountNetChangeOnBeforeRename interface {
+		OnBeforeRename(rec *GLAccountNetChange, handled *bool) error
+	}
 	GLAccountNetChangeOnValidate_No interface {
 		OnValidate_No(rec *GLAccountNetChange) error
 	}
@@ -258,18 +273,23 @@ type (
 )
 
 // gLAccountNetChangeLogic is the registered business logic of G_L_Account_Net_Change, in
-// registration order (the base application first, then extensions)
-var gLAccountNetChangeLogic []any
+// registration order (the base application first, then extensions), and
+// gLAccountNetChangeLogicApp the app that registered each ("" the base application)
+var (
+	gLAccountNetChangeLogic    []any
+	gLAccountNetChangeLogicApp []string
+)
 
 // RegisterGLAccountNetChangeLogic adds business logic to G_L_Account_Net_Change: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterGLAccountNetChangeLogic(logic any) {
 	checkLogic(GLAccountNetChangeTableName, "GLAccountNetChange", logic, gLAccountNetChangeTrigger)
 	gLAccountNetChangeLogic = append(gLAccountNetChangeLogic, logic)
+	gLAccountNetChangeLogicApp = append(gLAccountNetChangeLogicApp, extensions.Current())
 }
 
 // gLAccountNetChangeTrigger reports whether name is a trigger of G_L_Account_Net_Change and
@@ -284,6 +304,14 @@ func gLAccountNetChangeTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GLAccountNetChangeOnDelete)
 	case "OnRename":
 		_, ok = logic.(GLAccountNetChangeOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(GLAccountNetChangeOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(GLAccountNetChangeOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(GLAccountNetChangeOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(GLAccountNetChangeOnBeforeRename)
 	case "OnValidate_No":
 		_, ok = logic.(GLAccountNetChangeOnValidate_No)
 	case "OnValidate_Name":
@@ -310,19 +338,32 @@ func (t *GLAccountNetChange) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *GLAccountNetChange) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return gLAccountNetChangeLogic
+	return extensions.EnabledLogic(gLAccountNetChangeLogic, gLAccountNetChangeLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *GLAccountNetChange) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(GLAccountNetChangeOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GLAccountNetChangeOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(GLAccountNetChangeOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -331,10 +372,21 @@ func (t *GLAccountNetChange) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *GLAccountNetChange) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(GLAccountNetChangeOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GLAccountNetChangeOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(GLAccountNetChangeOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -342,7 +394,19 @@ func (t *GLAccountNetChange) runOnModify() error {
 }
 
 func (t *GLAccountNetChange) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GLAccountNetChangeOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(GLAccountNetChangeOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -353,7 +417,19 @@ func (t *GLAccountNetChange) runOnDelete() error {
 }
 
 func (t *GLAccountNetChange) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GLAccountNetChangeOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(GLAccountNetChangeOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

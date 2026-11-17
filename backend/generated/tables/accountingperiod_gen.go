@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.AccountingPeriod) error
 //	OnDelete(rec *gtables.AccountingPeriod) error
 //	OnRename(rec *gtables.AccountingPeriod) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.AccountingPeriod, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Starting_date(rec *gtables.AccountingPeriod) error
 //	OnValidate_Name(rec *gtables.AccountingPeriod) error
 //	OnValidate_New_fiscal_year(rec *gtables.AccountingPeriod) error
@@ -27,6 +29,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -252,6 +255,18 @@ type (
 	AccountingPeriodOnRename interface {
 		OnRename(rec *AccountingPeriod) error
 	}
+	AccountingPeriodOnBeforeInsert interface {
+		OnBeforeInsert(rec *AccountingPeriod, handled *bool) error
+	}
+	AccountingPeriodOnBeforeModify interface {
+		OnBeforeModify(rec *AccountingPeriod, handled *bool) error
+	}
+	AccountingPeriodOnBeforeDelete interface {
+		OnBeforeDelete(rec *AccountingPeriod, handled *bool) error
+	}
+	AccountingPeriodOnBeforeRename interface {
+		OnBeforeRename(rec *AccountingPeriod, handled *bool) error
+	}
 	AccountingPeriodOnValidate_Starting_date interface {
 		OnValidate_Starting_date(rec *AccountingPeriod) error
 	}
@@ -270,18 +285,23 @@ type (
 )
 
 // accountingPeriodLogic is the registered business logic of Accounting_Period, in
-// registration order (the base application first, then extensions)
-var accountingPeriodLogic []any
+// registration order (the base application first, then extensions), and
+// accountingPeriodLogicApp the app that registered each ("" the base application)
+var (
+	accountingPeriodLogic    []any
+	accountingPeriodLogicApp []string
+)
 
 // RegisterAccountingPeriodLogic adds business logic to Accounting_Period: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterAccountingPeriodLogic(logic any) {
 	checkLogic(AccountingPeriodTableName, "AccountingPeriod", logic, accountingPeriodTrigger)
 	accountingPeriodLogic = append(accountingPeriodLogic, logic)
+	accountingPeriodLogicApp = append(accountingPeriodLogicApp, extensions.Current())
 }
 
 // accountingPeriodTrigger reports whether name is a trigger of Accounting_Period and
@@ -296,6 +316,14 @@ func accountingPeriodTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(AccountingPeriodOnDelete)
 	case "OnRename":
 		_, ok = logic.(AccountingPeriodOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(AccountingPeriodOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(AccountingPeriodOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(AccountingPeriodOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(AccountingPeriodOnBeforeRename)
 	case "OnValidate_Starting_date":
 		_, ok = logic.(AccountingPeriodOnValidate_Starting_date)
 	case "OnValidate_Name":
@@ -324,19 +352,32 @@ func (t *AccountingPeriod) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *AccountingPeriod) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return accountingPeriodLogic
+	return extensions.EnabledLogic(accountingPeriodLogic, accountingPeriodLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *AccountingPeriod) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(AccountingPeriodOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(AccountingPeriodOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(AccountingPeriodOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -345,10 +386,21 @@ func (t *AccountingPeriod) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *AccountingPeriod) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(AccountingPeriodOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(AccountingPeriodOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(AccountingPeriodOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -356,7 +408,19 @@ func (t *AccountingPeriod) runOnModify() error {
 }
 
 func (t *AccountingPeriod) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(AccountingPeriodOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(AccountingPeriodOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -367,7 +431,19 @@ func (t *AccountingPeriod) runOnDelete() error {
 }
 
 func (t *AccountingPeriod) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(AccountingPeriodOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(AccountingPeriodOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

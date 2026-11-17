@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ReasonCode) error
 //	OnDelete(rec *gtables.ReasonCode) error
 //	OnRename(rec *gtables.ReasonCode) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ReasonCode, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.ReasonCode) error
 //	OnValidate_Description(rec *gtables.ReasonCode) error
 
@@ -23,6 +25,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -215,27 +218,44 @@ func (t *ReasonCode) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Reason_Code: a business logic type implements the ones it needs
 type (
-	ReasonCodeOnInsert               interface{ OnInsert(rec *ReasonCode) error }
-	ReasonCodeOnModify               interface{ OnModify(rec *ReasonCode) error }
-	ReasonCodeOnDelete               interface{ OnDelete(rec *ReasonCode) error }
-	ReasonCodeOnRename               interface{ OnRename(rec *ReasonCode) error }
+	ReasonCodeOnInsert       interface{ OnInsert(rec *ReasonCode) error }
+	ReasonCodeOnModify       interface{ OnModify(rec *ReasonCode) error }
+	ReasonCodeOnDelete       interface{ OnDelete(rec *ReasonCode) error }
+	ReasonCodeOnRename       interface{ OnRename(rec *ReasonCode) error }
+	ReasonCodeOnBeforeInsert interface {
+		OnBeforeInsert(rec *ReasonCode, handled *bool) error
+	}
+	ReasonCodeOnBeforeModify interface {
+		OnBeforeModify(rec *ReasonCode, handled *bool) error
+	}
+	ReasonCodeOnBeforeDelete interface {
+		OnBeforeDelete(rec *ReasonCode, handled *bool) error
+	}
+	ReasonCodeOnBeforeRename interface {
+		OnBeforeRename(rec *ReasonCode, handled *bool) error
+	}
 	ReasonCodeOnValidate_Code        interface{ OnValidate_Code(rec *ReasonCode) error }
 	ReasonCodeOnValidate_Description interface{ OnValidate_Description(rec *ReasonCode) error }
 )
 
 // reasonCodeLogic is the registered business logic of Reason_Code, in
-// registration order (the base application first, then extensions)
-var reasonCodeLogic []any
+// registration order (the base application first, then extensions), and
+// reasonCodeLogicApp the app that registered each ("" the base application)
+var (
+	reasonCodeLogic    []any
+	reasonCodeLogicApp []string
+)
 
 // RegisterReasonCodeLogic adds business logic to Reason_Code: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterReasonCodeLogic(logic any) {
 	checkLogic(ReasonCodeTableName, "ReasonCode", logic, reasonCodeTrigger)
 	reasonCodeLogic = append(reasonCodeLogic, logic)
+	reasonCodeLogicApp = append(reasonCodeLogicApp, extensions.Current())
 }
 
 // reasonCodeTrigger reports whether name is a trigger of Reason_Code and
@@ -250,6 +270,14 @@ func reasonCodeTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ReasonCodeOnDelete)
 	case "OnRename":
 		_, ok = logic.(ReasonCodeOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ReasonCodeOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ReasonCodeOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ReasonCodeOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ReasonCodeOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(ReasonCodeOnValidate_Code)
 	case "OnValidate_Description":
@@ -272,19 +300,32 @@ func (t *ReasonCode) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ReasonCode) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return reasonCodeLogic
+	return extensions.EnabledLogic(reasonCodeLogic, reasonCodeLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ReasonCode) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ReasonCodeOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReasonCodeOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ReasonCodeOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -293,10 +334,21 @@ func (t *ReasonCode) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ReasonCode) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ReasonCodeOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReasonCodeOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ReasonCodeOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,7 +356,19 @@ func (t *ReasonCode) runOnModify() error {
 }
 
 func (t *ReasonCode) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReasonCodeOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ReasonCodeOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -315,7 +379,19 @@ func (t *ReasonCode) runOnDelete() error {
 }
 
 func (t *ReasonCode) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReasonCodeOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ReasonCodeOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

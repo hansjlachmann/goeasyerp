@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.PostCode) error
 //	OnDelete(rec *gtables.PostCode) error
 //	OnRename(rec *gtables.PostCode) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.PostCode, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.PostCode) error
 //	OnValidate_City(rec *gtables.PostCode) error
 
@@ -23,6 +25,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -215,27 +218,44 @@ func (t *PostCode) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Post_Code: a business logic type implements the ones it needs
 type (
-	PostCodeOnInsert        interface{ OnInsert(rec *PostCode) error }
-	PostCodeOnModify        interface{ OnModify(rec *PostCode) error }
-	PostCodeOnDelete        interface{ OnDelete(rec *PostCode) error }
-	PostCodeOnRename        interface{ OnRename(rec *PostCode) error }
+	PostCodeOnInsert       interface{ OnInsert(rec *PostCode) error }
+	PostCodeOnModify       interface{ OnModify(rec *PostCode) error }
+	PostCodeOnDelete       interface{ OnDelete(rec *PostCode) error }
+	PostCodeOnRename       interface{ OnRename(rec *PostCode) error }
+	PostCodeOnBeforeInsert interface {
+		OnBeforeInsert(rec *PostCode, handled *bool) error
+	}
+	PostCodeOnBeforeModify interface {
+		OnBeforeModify(rec *PostCode, handled *bool) error
+	}
+	PostCodeOnBeforeDelete interface {
+		OnBeforeDelete(rec *PostCode, handled *bool) error
+	}
+	PostCodeOnBeforeRename interface {
+		OnBeforeRename(rec *PostCode, handled *bool) error
+	}
 	PostCodeOnValidate_Code interface{ OnValidate_Code(rec *PostCode) error }
 	PostCodeOnValidate_City interface{ OnValidate_City(rec *PostCode) error }
 )
 
 // postCodeLogic is the registered business logic of Post_Code, in
-// registration order (the base application first, then extensions)
-var postCodeLogic []any
+// registration order (the base application first, then extensions), and
+// postCodeLogicApp the app that registered each ("" the base application)
+var (
+	postCodeLogic    []any
+	postCodeLogicApp []string
+)
 
 // RegisterPostCodeLogic adds business logic to Post_Code: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterPostCodeLogic(logic any) {
 	checkLogic(PostCodeTableName, "PostCode", logic, postCodeTrigger)
 	postCodeLogic = append(postCodeLogic, logic)
+	postCodeLogicApp = append(postCodeLogicApp, extensions.Current())
 }
 
 // postCodeTrigger reports whether name is a trigger of Post_Code and
@@ -250,6 +270,14 @@ func postCodeTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PostCodeOnDelete)
 	case "OnRename":
 		_, ok = logic.(PostCodeOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(PostCodeOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(PostCodeOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(PostCodeOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(PostCodeOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(PostCodeOnValidate_Code)
 	case "OnValidate_City":
@@ -272,19 +300,32 @@ func (t *PostCode) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *PostCode) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return postCodeLogic
+	return extensions.EnabledLogic(postCodeLogic, postCodeLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *PostCode) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PostCodeOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PostCodeOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PostCodeOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -293,10 +334,21 @@ func (t *PostCode) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *PostCode) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PostCodeOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PostCodeOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PostCodeOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,7 +356,19 @@ func (t *PostCode) runOnModify() error {
 }
 
 func (t *PostCode) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PostCodeOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PostCodeOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -315,7 +379,19 @@ func (t *PostCode) runOnDelete() error {
 }
 
 func (t *PostCode) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PostCodeOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PostCodeOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

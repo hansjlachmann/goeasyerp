@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.MainAssetComponent) error
 //	OnDelete(rec *gtables.MainAssetComponent) error
 //	OnRename(rec *gtables.MainAssetComponent) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.MainAssetComponent, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Main_asset_no(rec *gtables.MainAssetComponent) error
 //	OnValidate_Fa_no(rec *gtables.MainAssetComponent) error
 //	OnValidate_Description(rec *gtables.MainAssetComponent) error
@@ -24,6 +26,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -235,6 +238,18 @@ type (
 	MainAssetComponentOnRename interface {
 		OnRename(rec *MainAssetComponent) error
 	}
+	MainAssetComponentOnBeforeInsert interface {
+		OnBeforeInsert(rec *MainAssetComponent, handled *bool) error
+	}
+	MainAssetComponentOnBeforeModify interface {
+		OnBeforeModify(rec *MainAssetComponent, handled *bool) error
+	}
+	MainAssetComponentOnBeforeDelete interface {
+		OnBeforeDelete(rec *MainAssetComponent, handled *bool) error
+	}
+	MainAssetComponentOnBeforeRename interface {
+		OnBeforeRename(rec *MainAssetComponent, handled *bool) error
+	}
 	MainAssetComponentOnValidate_Main_asset_no interface {
 		OnValidate_Main_asset_no(rec *MainAssetComponent) error
 	}
@@ -247,18 +262,23 @@ type (
 )
 
 // mainAssetComponentLogic is the registered business logic of Main_Asset_Component, in
-// registration order (the base application first, then extensions)
-var mainAssetComponentLogic []any
+// registration order (the base application first, then extensions), and
+// mainAssetComponentLogicApp the app that registered each ("" the base application)
+var (
+	mainAssetComponentLogic    []any
+	mainAssetComponentLogicApp []string
+)
 
 // RegisterMainAssetComponentLogic adds business logic to Main_Asset_Component: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterMainAssetComponentLogic(logic any) {
 	checkLogic(MainAssetComponentTableName, "MainAssetComponent", logic, mainAssetComponentTrigger)
 	mainAssetComponentLogic = append(mainAssetComponentLogic, logic)
+	mainAssetComponentLogicApp = append(mainAssetComponentLogicApp, extensions.Current())
 }
 
 // mainAssetComponentTrigger reports whether name is a trigger of Main_Asset_Component and
@@ -273,6 +293,14 @@ func mainAssetComponentTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(MainAssetComponentOnDelete)
 	case "OnRename":
 		_, ok = logic.(MainAssetComponentOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(MainAssetComponentOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(MainAssetComponentOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(MainAssetComponentOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(MainAssetComponentOnBeforeRename)
 	case "OnValidate_Main_asset_no":
 		_, ok = logic.(MainAssetComponentOnValidate_Main_asset_no)
 	case "OnValidate_Fa_no":
@@ -297,19 +325,32 @@ func (t *MainAssetComponent) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *MainAssetComponent) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return mainAssetComponentLogic
+	return extensions.EnabledLogic(mainAssetComponentLogic, mainAssetComponentLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *MainAssetComponent) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(MainAssetComponentOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(MainAssetComponentOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(MainAssetComponentOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -318,10 +359,21 @@ func (t *MainAssetComponent) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *MainAssetComponent) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(MainAssetComponentOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(MainAssetComponentOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(MainAssetComponentOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -329,7 +381,19 @@ func (t *MainAssetComponent) runOnModify() error {
 }
 
 func (t *MainAssetComponent) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(MainAssetComponentOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(MainAssetComponentOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -340,7 +404,19 @@ func (t *MainAssetComponent) runOnDelete() error {
 }
 
 func (t *MainAssetComponent) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(MainAssetComponentOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(MainAssetComponentOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

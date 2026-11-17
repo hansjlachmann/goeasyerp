@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.RefusedPosting) error
 //	OnDelete(rec *gtables.RefusedPosting) error
 //	OnRename(rec *gtables.RefusedPosting) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.RefusedPosting, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Entry_no(rec *gtables.RefusedPosting) error
 //	OnValidate_Refused_at(rec *gtables.RefusedPosting) error
 //	OnValidate_User_id(rec *gtables.RefusedPosting) error
@@ -33,6 +35,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -286,6 +289,18 @@ type (
 	RefusedPostingOnRename interface {
 		OnRename(rec *RefusedPosting) error
 	}
+	RefusedPostingOnBeforeInsert interface {
+		OnBeforeInsert(rec *RefusedPosting, handled *bool) error
+	}
+	RefusedPostingOnBeforeModify interface {
+		OnBeforeModify(rec *RefusedPosting, handled *bool) error
+	}
+	RefusedPostingOnBeforeDelete interface {
+		OnBeforeDelete(rec *RefusedPosting, handled *bool) error
+	}
+	RefusedPostingOnBeforeRename interface {
+		OnBeforeRename(rec *RefusedPosting, handled *bool) error
+	}
 	RefusedPostingOnValidate_Entry_no interface {
 		OnValidate_Entry_no(rec *RefusedPosting) error
 	}
@@ -316,18 +331,23 @@ type (
 )
 
 // refusedPostingLogic is the registered business logic of Refused_Posting, in
-// registration order (the base application first, then extensions)
-var refusedPostingLogic []any
+// registration order (the base application first, then extensions), and
+// refusedPostingLogicApp the app that registered each ("" the base application)
+var (
+	refusedPostingLogic    []any
+	refusedPostingLogicApp []string
+)
 
 // RegisterRefusedPostingLogic adds business logic to Refused_Posting: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterRefusedPostingLogic(logic any) {
 	checkLogic(RefusedPostingTableName, "RefusedPosting", logic, refusedPostingTrigger)
 	refusedPostingLogic = append(refusedPostingLogic, logic)
+	refusedPostingLogicApp = append(refusedPostingLogicApp, extensions.Current())
 }
 
 // refusedPostingTrigger reports whether name is a trigger of Refused_Posting and
@@ -342,6 +362,14 @@ func refusedPostingTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(RefusedPostingOnDelete)
 	case "OnRename":
 		_, ok = logic.(RefusedPostingOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(RefusedPostingOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(RefusedPostingOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(RefusedPostingOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(RefusedPostingOnBeforeRename)
 	case "OnValidate_Entry_no":
 		_, ok = logic.(RefusedPostingOnValidate_Entry_no)
 	case "OnValidate_Refused_at":
@@ -378,19 +406,32 @@ func (t *RefusedPosting) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *RefusedPosting) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return refusedPostingLogic
+	return extensions.EnabledLogic(refusedPostingLogic, refusedPostingLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *RefusedPosting) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(RefusedPostingOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(RefusedPostingOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(RefusedPostingOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -399,10 +440,21 @@ func (t *RefusedPosting) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *RefusedPosting) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(RefusedPostingOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(RefusedPostingOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(RefusedPostingOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -410,7 +462,19 @@ func (t *RefusedPosting) runOnModify() error {
 }
 
 func (t *RefusedPosting) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(RefusedPostingOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(RefusedPostingOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -421,7 +485,19 @@ func (t *RefusedPosting) runOnDelete() error {
 }
 
 func (t *RefusedPosting) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(RefusedPostingOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(RefusedPostingOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

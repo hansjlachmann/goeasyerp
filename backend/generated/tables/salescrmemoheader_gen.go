@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.SalesCrMemoHeader) error
 //	OnDelete(rec *gtables.SalesCrMemoHeader) error
 //	OnRename(rec *gtables.SalesCrMemoHeader) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.SalesCrMemoHeader, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Sell_to_customer_no(rec *gtables.SalesCrMemoHeader) error
 //	OnValidate_No(rec *gtables.SalesCrMemoHeader) error
 //	OnValidate_Bill_to_customer_no(rec *gtables.SalesCrMemoHeader) error
@@ -97,6 +99,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -872,6 +875,18 @@ type (
 	SalesCrMemoHeaderOnRename interface {
 		OnRename(rec *SalesCrMemoHeader) error
 	}
+	SalesCrMemoHeaderOnBeforeInsert interface {
+		OnBeforeInsert(rec *SalesCrMemoHeader, handled *bool) error
+	}
+	SalesCrMemoHeaderOnBeforeModify interface {
+		OnBeforeModify(rec *SalesCrMemoHeader, handled *bool) error
+	}
+	SalesCrMemoHeaderOnBeforeDelete interface {
+		OnBeforeDelete(rec *SalesCrMemoHeader, handled *bool) error
+	}
+	SalesCrMemoHeaderOnBeforeRename interface {
+		OnBeforeRename(rec *SalesCrMemoHeader, handled *bool) error
+	}
 	SalesCrMemoHeaderOnValidate_Sell_to_customer_no interface {
 		OnValidate_Sell_to_customer_no(rec *SalesCrMemoHeader) error
 	}
@@ -1097,18 +1112,23 @@ type (
 )
 
 // salesCrMemoHeaderLogic is the registered business logic of Sales_Cr_Memo_Header, in
-// registration order (the base application first, then extensions)
-var salesCrMemoHeaderLogic []any
+// registration order (the base application first, then extensions), and
+// salesCrMemoHeaderLogicApp the app that registered each ("" the base application)
+var (
+	salesCrMemoHeaderLogic    []any
+	salesCrMemoHeaderLogicApp []string
+)
 
 // RegisterSalesCrMemoHeaderLogic adds business logic to Sales_Cr_Memo_Header: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterSalesCrMemoHeaderLogic(logic any) {
 	checkLogic(SalesCrMemoHeaderTableName, "SalesCrMemoHeader", logic, salesCrMemoHeaderTrigger)
 	salesCrMemoHeaderLogic = append(salesCrMemoHeaderLogic, logic)
+	salesCrMemoHeaderLogicApp = append(salesCrMemoHeaderLogicApp, extensions.Current())
 }
 
 // salesCrMemoHeaderTrigger reports whether name is a trigger of Sales_Cr_Memo_Header and
@@ -1123,6 +1143,14 @@ func salesCrMemoHeaderTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SalesCrMemoHeaderOnDelete)
 	case "OnRename":
 		_, ok = logic.(SalesCrMemoHeaderOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(SalesCrMemoHeaderOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(SalesCrMemoHeaderOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(SalesCrMemoHeaderOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(SalesCrMemoHeaderOnBeforeRename)
 	case "OnValidate_Sell_to_customer_no":
 		_, ok = logic.(SalesCrMemoHeaderOnValidate_Sell_to_customer_no)
 	case "OnValidate_No":
@@ -1289,19 +1317,32 @@ func (t *SalesCrMemoHeader) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *SalesCrMemoHeader) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return salesCrMemoHeaderLogic
+	return extensions.EnabledLogic(salesCrMemoHeaderLogic, salesCrMemoHeaderLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *SalesCrMemoHeader) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(SalesCrMemoHeaderOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalesCrMemoHeaderOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(SalesCrMemoHeaderOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1310,10 +1351,21 @@ func (t *SalesCrMemoHeader) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *SalesCrMemoHeader) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(SalesCrMemoHeaderOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalesCrMemoHeaderOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(SalesCrMemoHeaderOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1321,7 +1373,19 @@ func (t *SalesCrMemoHeader) runOnModify() error {
 }
 
 func (t *SalesCrMemoHeader) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalesCrMemoHeaderOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(SalesCrMemoHeaderOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -1332,7 +1396,19 @@ func (t *SalesCrMemoHeader) runOnDelete() error {
 }
 
 func (t *SalesCrMemoHeader) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalesCrMemoHeaderOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(SalesCrMemoHeaderOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

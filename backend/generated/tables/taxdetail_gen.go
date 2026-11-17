@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.TaxDetail) error
 //	OnDelete(rec *gtables.TaxDetail) error
 //	OnRename(rec *gtables.TaxDetail) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.TaxDetail, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Tax_jurisdiction_code(rec *gtables.TaxDetail) error
 //	OnValidate_Tax_group_code(rec *gtables.TaxDetail) error
 //	OnValidate_Tax_type(rec *gtables.TaxDetail) error
@@ -31,6 +33,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -299,10 +302,22 @@ func (t *TaxDetail) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Tax_Detail: a business logic type implements the ones it needs
 type (
-	TaxDetailOnInsert                         interface{ OnInsert(rec *TaxDetail) error }
-	TaxDetailOnModify                         interface{ OnModify(rec *TaxDetail) error }
-	TaxDetailOnDelete                         interface{ OnDelete(rec *TaxDetail) error }
-	TaxDetailOnRename                         interface{ OnRename(rec *TaxDetail) error }
+	TaxDetailOnInsert       interface{ OnInsert(rec *TaxDetail) error }
+	TaxDetailOnModify       interface{ OnModify(rec *TaxDetail) error }
+	TaxDetailOnDelete       interface{ OnDelete(rec *TaxDetail) error }
+	TaxDetailOnRename       interface{ OnRename(rec *TaxDetail) error }
+	TaxDetailOnBeforeInsert interface {
+		OnBeforeInsert(rec *TaxDetail, handled *bool) error
+	}
+	TaxDetailOnBeforeModify interface {
+		OnBeforeModify(rec *TaxDetail, handled *bool) error
+	}
+	TaxDetailOnBeforeDelete interface {
+		OnBeforeDelete(rec *TaxDetail, handled *bool) error
+	}
+	TaxDetailOnBeforeRename interface {
+		OnBeforeRename(rec *TaxDetail, handled *bool) error
+	}
 	TaxDetailOnValidate_Tax_jurisdiction_code interface{ OnValidate_Tax_jurisdiction_code(rec *TaxDetail) error }
 	TaxDetailOnValidate_Tax_group_code        interface{ OnValidate_Tax_group_code(rec *TaxDetail) error }
 	TaxDetailOnValidate_Tax_type              interface{ OnValidate_Tax_type(rec *TaxDetail) error }
@@ -314,18 +329,23 @@ type (
 )
 
 // taxDetailLogic is the registered business logic of Tax_Detail, in
-// registration order (the base application first, then extensions)
-var taxDetailLogic []any
+// registration order (the base application first, then extensions), and
+// taxDetailLogicApp the app that registered each ("" the base application)
+var (
+	taxDetailLogic    []any
+	taxDetailLogicApp []string
+)
 
 // RegisterTaxDetailLogic adds business logic to Tax_Detail: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterTaxDetailLogic(logic any) {
 	checkLogic(TaxDetailTableName, "TaxDetail", logic, taxDetailTrigger)
 	taxDetailLogic = append(taxDetailLogic, logic)
+	taxDetailLogicApp = append(taxDetailLogicApp, extensions.Current())
 }
 
 // taxDetailTrigger reports whether name is a trigger of Tax_Detail and
@@ -340,6 +360,14 @@ func taxDetailTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(TaxDetailOnDelete)
 	case "OnRename":
 		_, ok = logic.(TaxDetailOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(TaxDetailOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(TaxDetailOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(TaxDetailOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(TaxDetailOnBeforeRename)
 	case "OnValidate_Tax_jurisdiction_code":
 		_, ok = logic.(TaxDetailOnValidate_Tax_jurisdiction_code)
 	case "OnValidate_Tax_group_code":
@@ -374,19 +402,32 @@ func (t *TaxDetail) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *TaxDetail) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return taxDetailLogic
+	return extensions.EnabledLogic(taxDetailLogic, taxDetailLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *TaxDetail) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(TaxDetailOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TaxDetailOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(TaxDetailOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -395,10 +436,21 @@ func (t *TaxDetail) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *TaxDetail) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(TaxDetailOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TaxDetailOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(TaxDetailOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -406,7 +458,19 @@ func (t *TaxDetail) runOnModify() error {
 }
 
 func (t *TaxDetail) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TaxDetailOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(TaxDetailOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -417,7 +481,19 @@ func (t *TaxDetail) runOnDelete() error {
 }
 
 func (t *TaxDetail) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TaxDetailOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(TaxDetailOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

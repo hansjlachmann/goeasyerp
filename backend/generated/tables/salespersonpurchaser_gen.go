@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.SalespersonPurchaser) error
 //	OnDelete(rec *gtables.SalespersonPurchaser) error
 //	OnRename(rec *gtables.SalespersonPurchaser) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.SalespersonPurchaser, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.SalespersonPurchaser) error
 //	OnValidate_Name(rec *gtables.SalespersonPurchaser) error
 //	OnValidate_Commission_percent(rec *gtables.SalespersonPurchaser) error
@@ -24,6 +26,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -235,6 +238,18 @@ type (
 	SalespersonPurchaserOnRename interface {
 		OnRename(rec *SalespersonPurchaser) error
 	}
+	SalespersonPurchaserOnBeforeInsert interface {
+		OnBeforeInsert(rec *SalespersonPurchaser, handled *bool) error
+	}
+	SalespersonPurchaserOnBeforeModify interface {
+		OnBeforeModify(rec *SalespersonPurchaser, handled *bool) error
+	}
+	SalespersonPurchaserOnBeforeDelete interface {
+		OnBeforeDelete(rec *SalespersonPurchaser, handled *bool) error
+	}
+	SalespersonPurchaserOnBeforeRename interface {
+		OnBeforeRename(rec *SalespersonPurchaser, handled *bool) error
+	}
 	SalespersonPurchaserOnValidate_Code interface {
 		OnValidate_Code(rec *SalespersonPurchaser) error
 	}
@@ -247,18 +262,23 @@ type (
 )
 
 // salespersonPurchaserLogic is the registered business logic of Salesperson_Purchaser, in
-// registration order (the base application first, then extensions)
-var salespersonPurchaserLogic []any
+// registration order (the base application first, then extensions), and
+// salespersonPurchaserLogicApp the app that registered each ("" the base application)
+var (
+	salespersonPurchaserLogic    []any
+	salespersonPurchaserLogicApp []string
+)
 
 // RegisterSalespersonPurchaserLogic adds business logic to Salesperson_Purchaser: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterSalespersonPurchaserLogic(logic any) {
 	checkLogic(SalespersonPurchaserTableName, "SalespersonPurchaser", logic, salespersonPurchaserTrigger)
 	salespersonPurchaserLogic = append(salespersonPurchaserLogic, logic)
+	salespersonPurchaserLogicApp = append(salespersonPurchaserLogicApp, extensions.Current())
 }
 
 // salespersonPurchaserTrigger reports whether name is a trigger of Salesperson_Purchaser and
@@ -273,6 +293,14 @@ func salespersonPurchaserTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SalespersonPurchaserOnDelete)
 	case "OnRename":
 		_, ok = logic.(SalespersonPurchaserOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(SalespersonPurchaserOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(SalespersonPurchaserOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(SalespersonPurchaserOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(SalespersonPurchaserOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(SalespersonPurchaserOnValidate_Code)
 	case "OnValidate_Name":
@@ -297,19 +325,32 @@ func (t *SalespersonPurchaser) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *SalespersonPurchaser) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return salespersonPurchaserLogic
+	return extensions.EnabledLogic(salespersonPurchaserLogic, salespersonPurchaserLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *SalespersonPurchaser) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(SalespersonPurchaserOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalespersonPurchaserOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(SalespersonPurchaserOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -318,10 +359,21 @@ func (t *SalespersonPurchaser) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *SalespersonPurchaser) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(SalespersonPurchaserOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalespersonPurchaserOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(SalespersonPurchaserOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -329,7 +381,19 @@ func (t *SalespersonPurchaser) runOnModify() error {
 }
 
 func (t *SalespersonPurchaser) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalespersonPurchaserOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(SalespersonPurchaserOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -340,7 +404,19 @@ func (t *SalespersonPurchaser) runOnDelete() error {
 }
 
 func (t *SalespersonPurchaser) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalespersonPurchaserOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(SalespersonPurchaserOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

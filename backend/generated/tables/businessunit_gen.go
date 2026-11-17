@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.BusinessUnit) error
 //	OnDelete(rec *gtables.BusinessUnit) error
 //	OnRename(rec *gtables.BusinessUnit) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.BusinessUnit, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.BusinessUnit) error
 //	OnValidate_Consolidate(rec *gtables.BusinessUnit) error
 //	OnValidate_Consolidation_pct(rec *gtables.BusinessUnit) error
@@ -36,6 +38,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -312,10 +315,22 @@ func (t *BusinessUnit) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Business_Unit: a business logic type implements the ones it needs
 type (
-	BusinessUnitOnInsert                                interface{ OnInsert(rec *BusinessUnit) error }
-	BusinessUnitOnModify                                interface{ OnModify(rec *BusinessUnit) error }
-	BusinessUnitOnDelete                                interface{ OnDelete(rec *BusinessUnit) error }
-	BusinessUnitOnRename                                interface{ OnRename(rec *BusinessUnit) error }
+	BusinessUnitOnInsert       interface{ OnInsert(rec *BusinessUnit) error }
+	BusinessUnitOnModify       interface{ OnModify(rec *BusinessUnit) error }
+	BusinessUnitOnDelete       interface{ OnDelete(rec *BusinessUnit) error }
+	BusinessUnitOnRename       interface{ OnRename(rec *BusinessUnit) error }
+	BusinessUnitOnBeforeInsert interface {
+		OnBeforeInsert(rec *BusinessUnit, handled *bool) error
+	}
+	BusinessUnitOnBeforeModify interface {
+		OnBeforeModify(rec *BusinessUnit, handled *bool) error
+	}
+	BusinessUnitOnBeforeDelete interface {
+		OnBeforeDelete(rec *BusinessUnit, handled *bool) error
+	}
+	BusinessUnitOnBeforeRename interface {
+		OnBeforeRename(rec *BusinessUnit, handled *bool) error
+	}
 	BusinessUnitOnValidate_Code                         interface{ OnValidate_Code(rec *BusinessUnit) error }
 	BusinessUnitOnValidate_Consolidate                  interface{ OnValidate_Consolidate(rec *BusinessUnit) error }
 	BusinessUnitOnValidate_Consolidation_pct            interface{ OnValidate_Consolidation_pct(rec *BusinessUnit) error }
@@ -333,18 +348,23 @@ type (
 )
 
 // businessUnitLogic is the registered business logic of Business_Unit, in
-// registration order (the base application first, then extensions)
-var businessUnitLogic []any
+// registration order (the base application first, then extensions), and
+// businessUnitLogicApp the app that registered each ("" the base application)
+var (
+	businessUnitLogic    []any
+	businessUnitLogicApp []string
+)
 
 // RegisterBusinessUnitLogic adds business logic to Business_Unit: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterBusinessUnitLogic(logic any) {
 	checkLogic(BusinessUnitTableName, "BusinessUnit", logic, businessUnitTrigger)
 	businessUnitLogic = append(businessUnitLogic, logic)
+	businessUnitLogicApp = append(businessUnitLogicApp, extensions.Current())
 }
 
 // businessUnitTrigger reports whether name is a trigger of Business_Unit and
@@ -359,6 +379,14 @@ func businessUnitTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(BusinessUnitOnDelete)
 	case "OnRename":
 		_, ok = logic.(BusinessUnitOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(BusinessUnitOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(BusinessUnitOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(BusinessUnitOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(BusinessUnitOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(BusinessUnitOnValidate_Code)
 	case "OnValidate_Consolidate":
@@ -405,19 +433,32 @@ func (t *BusinessUnit) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *BusinessUnit) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return businessUnitLogic
+	return extensions.EnabledLogic(businessUnitLogic, businessUnitLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *BusinessUnit) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(BusinessUnitOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BusinessUnitOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(BusinessUnitOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -426,10 +467,21 @@ func (t *BusinessUnit) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *BusinessUnit) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(BusinessUnitOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BusinessUnitOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(BusinessUnitOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -437,7 +489,19 @@ func (t *BusinessUnit) runOnModify() error {
 }
 
 func (t *BusinessUnit) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BusinessUnitOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(BusinessUnitOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -448,7 +512,19 @@ func (t *BusinessUnit) runOnDelete() error {
 }
 
 func (t *BusinessUnit) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BusinessUnitOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(BusinessUnitOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

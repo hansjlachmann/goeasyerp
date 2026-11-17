@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.AccScheduleLine) error
 //	OnDelete(rec *gtables.AccScheduleLine) error
 //	OnRename(rec *gtables.AccScheduleLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.AccScheduleLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Schedule_name(rec *gtables.AccScheduleLine) error
 //	OnValidate_Line_no(rec *gtables.AccScheduleLine) error
 //	OnValidate_Row_no(rec *gtables.AccScheduleLine) error
@@ -32,6 +34,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -463,6 +466,18 @@ type (
 	AccScheduleLineOnRename interface {
 		OnRename(rec *AccScheduleLine) error
 	}
+	AccScheduleLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *AccScheduleLine, handled *bool) error
+	}
+	AccScheduleLineOnBeforeModify interface {
+		OnBeforeModify(rec *AccScheduleLine, handled *bool) error
+	}
+	AccScheduleLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *AccScheduleLine, handled *bool) error
+	}
+	AccScheduleLineOnBeforeRename interface {
+		OnBeforeRename(rec *AccScheduleLine, handled *bool) error
+	}
 	AccScheduleLineOnValidate_Schedule_name interface {
 		OnValidate_Schedule_name(rec *AccScheduleLine) error
 	}
@@ -496,18 +511,23 @@ type (
 )
 
 // accScheduleLineLogic is the registered business logic of Acc_Schedule_Line, in
-// registration order (the base application first, then extensions)
-var accScheduleLineLogic []any
+// registration order (the base application first, then extensions), and
+// accScheduleLineLogicApp the app that registered each ("" the base application)
+var (
+	accScheduleLineLogic    []any
+	accScheduleLineLogicApp []string
+)
 
 // RegisterAccScheduleLineLogic adds business logic to Acc_Schedule_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterAccScheduleLineLogic(logic any) {
 	checkLogic(AccScheduleLineTableName, "AccScheduleLine", logic, accScheduleLineTrigger)
 	accScheduleLineLogic = append(accScheduleLineLogic, logic)
+	accScheduleLineLogicApp = append(accScheduleLineLogicApp, extensions.Current())
 }
 
 // accScheduleLineTrigger reports whether name is a trigger of Acc_Schedule_Line and
@@ -522,6 +542,14 @@ func accScheduleLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(AccScheduleLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(AccScheduleLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(AccScheduleLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(AccScheduleLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(AccScheduleLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(AccScheduleLineOnBeforeRename)
 	case "OnValidate_Schedule_name":
 		_, ok = logic.(AccScheduleLineOnValidate_Schedule_name)
 	case "OnValidate_Line_no":
@@ -560,19 +588,32 @@ func (t *AccScheduleLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *AccScheduleLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return accScheduleLineLogic
+	return extensions.EnabledLogic(accScheduleLineLogic, accScheduleLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *AccScheduleLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(AccScheduleLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(AccScheduleLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(AccScheduleLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -581,10 +622,21 @@ func (t *AccScheduleLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *AccScheduleLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(AccScheduleLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(AccScheduleLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(AccScheduleLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -592,7 +644,19 @@ func (t *AccScheduleLine) runOnModify() error {
 }
 
 func (t *AccScheduleLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(AccScheduleLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(AccScheduleLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -603,7 +667,19 @@ func (t *AccScheduleLine) runOnDelete() error {
 }
 
 func (t *AccScheduleLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(AccScheduleLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(AccScheduleLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.CustItemDiscount) error
 //	OnDelete(rec *gtables.CustItemDiscount) error
 //	OnRename(rec *gtables.CustItemDiscount) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.CustItemDiscount, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Customer_disc_group(rec *gtables.CustItemDiscount) error
 //	OnValidate_Item_discount_group(rec *gtables.CustItemDiscount) error
 //	OnValidate_Discount_percent(rec *gtables.CustItemDiscount) error
@@ -24,6 +26,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -235,6 +238,18 @@ type (
 	CustItemDiscountOnRename interface {
 		OnRename(rec *CustItemDiscount) error
 	}
+	CustItemDiscountOnBeforeInsert interface {
+		OnBeforeInsert(rec *CustItemDiscount, handled *bool) error
+	}
+	CustItemDiscountOnBeforeModify interface {
+		OnBeforeModify(rec *CustItemDiscount, handled *bool) error
+	}
+	CustItemDiscountOnBeforeDelete interface {
+		OnBeforeDelete(rec *CustItemDiscount, handled *bool) error
+	}
+	CustItemDiscountOnBeforeRename interface {
+		OnBeforeRename(rec *CustItemDiscount, handled *bool) error
+	}
 	CustItemDiscountOnValidate_Customer_disc_group interface {
 		OnValidate_Customer_disc_group(rec *CustItemDiscount) error
 	}
@@ -247,18 +262,23 @@ type (
 )
 
 // custItemDiscountLogic is the registered business logic of Cust_Item_Discount, in
-// registration order (the base application first, then extensions)
-var custItemDiscountLogic []any
+// registration order (the base application first, then extensions), and
+// custItemDiscountLogicApp the app that registered each ("" the base application)
+var (
+	custItemDiscountLogic    []any
+	custItemDiscountLogicApp []string
+)
 
 // RegisterCustItemDiscountLogic adds business logic to Cust_Item_Discount: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterCustItemDiscountLogic(logic any) {
 	checkLogic(CustItemDiscountTableName, "CustItemDiscount", logic, custItemDiscountTrigger)
 	custItemDiscountLogic = append(custItemDiscountLogic, logic)
+	custItemDiscountLogicApp = append(custItemDiscountLogicApp, extensions.Current())
 }
 
 // custItemDiscountTrigger reports whether name is a trigger of Cust_Item_Discount and
@@ -273,6 +293,14 @@ func custItemDiscountTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CustItemDiscountOnDelete)
 	case "OnRename":
 		_, ok = logic.(CustItemDiscountOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(CustItemDiscountOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(CustItemDiscountOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(CustItemDiscountOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(CustItemDiscountOnBeforeRename)
 	case "OnValidate_Customer_disc_group":
 		_, ok = logic.(CustItemDiscountOnValidate_Customer_disc_group)
 	case "OnValidate_Item_discount_group":
@@ -297,19 +325,32 @@ func (t *CustItemDiscount) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *CustItemDiscount) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return custItemDiscountLogic
+	return extensions.EnabledLogic(custItemDiscountLogic, custItemDiscountLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *CustItemDiscount) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(CustItemDiscountOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CustItemDiscountOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(CustItemDiscountOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -318,10 +359,21 @@ func (t *CustItemDiscount) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *CustItemDiscount) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(CustItemDiscountOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CustItemDiscountOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(CustItemDiscountOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -329,7 +381,19 @@ func (t *CustItemDiscount) runOnModify() error {
 }
 
 func (t *CustItemDiscount) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CustItemDiscountOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(CustItemDiscountOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -340,7 +404,19 @@ func (t *CustItemDiscount) runOnDelete() error {
 }
 
 func (t *CustItemDiscount) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CustItemDiscountOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(CustItemDiscountOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

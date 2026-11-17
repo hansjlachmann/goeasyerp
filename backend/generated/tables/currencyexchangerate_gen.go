@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.CurrencyExchangeRate) error
 //	OnDelete(rec *gtables.CurrencyExchangeRate) error
 //	OnRename(rec *gtables.CurrencyExchangeRate) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.CurrencyExchangeRate, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Currency_code(rec *gtables.CurrencyExchangeRate) error
 //	OnValidate_Starting_date(rec *gtables.CurrencyExchangeRate) error
 //	OnValidate_Exchange_rate_amount(rec *gtables.CurrencyExchangeRate) error
@@ -30,6 +32,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -312,6 +315,18 @@ type (
 	CurrencyExchangeRateOnRename interface {
 		OnRename(rec *CurrencyExchangeRate) error
 	}
+	CurrencyExchangeRateOnBeforeInsert interface {
+		OnBeforeInsert(rec *CurrencyExchangeRate, handled *bool) error
+	}
+	CurrencyExchangeRateOnBeforeModify interface {
+		OnBeforeModify(rec *CurrencyExchangeRate, handled *bool) error
+	}
+	CurrencyExchangeRateOnBeforeDelete interface {
+		OnBeforeDelete(rec *CurrencyExchangeRate, handled *bool) error
+	}
+	CurrencyExchangeRateOnBeforeRename interface {
+		OnBeforeRename(rec *CurrencyExchangeRate, handled *bool) error
+	}
 	CurrencyExchangeRateOnValidate_Currency_code interface {
 		OnValidate_Currency_code(rec *CurrencyExchangeRate) error
 	}
@@ -339,18 +354,23 @@ type (
 )
 
 // currencyExchangeRateLogic is the registered business logic of Currency_Exchange_Rate, in
-// registration order (the base application first, then extensions)
-var currencyExchangeRateLogic []any
+// registration order (the base application first, then extensions), and
+// currencyExchangeRateLogicApp the app that registered each ("" the base application)
+var (
+	currencyExchangeRateLogic    []any
+	currencyExchangeRateLogicApp []string
+)
 
 // RegisterCurrencyExchangeRateLogic adds business logic to Currency_Exchange_Rate: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterCurrencyExchangeRateLogic(logic any) {
 	checkLogic(CurrencyExchangeRateTableName, "CurrencyExchangeRate", logic, currencyExchangeRateTrigger)
 	currencyExchangeRateLogic = append(currencyExchangeRateLogic, logic)
+	currencyExchangeRateLogicApp = append(currencyExchangeRateLogicApp, extensions.Current())
 }
 
 // currencyExchangeRateTrigger reports whether name is a trigger of Currency_Exchange_Rate and
@@ -365,6 +385,14 @@ func currencyExchangeRateTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CurrencyExchangeRateOnDelete)
 	case "OnRename":
 		_, ok = logic.(CurrencyExchangeRateOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(CurrencyExchangeRateOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(CurrencyExchangeRateOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(CurrencyExchangeRateOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(CurrencyExchangeRateOnBeforeRename)
 	case "OnValidate_Currency_code":
 		_, ok = logic.(CurrencyExchangeRateOnValidate_Currency_code)
 	case "OnValidate_Starting_date":
@@ -399,19 +427,32 @@ func (t *CurrencyExchangeRate) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *CurrencyExchangeRate) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return currencyExchangeRateLogic
+	return extensions.EnabledLogic(currencyExchangeRateLogic, currencyExchangeRateLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *CurrencyExchangeRate) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(CurrencyExchangeRateOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CurrencyExchangeRateOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(CurrencyExchangeRateOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -420,10 +461,21 @@ func (t *CurrencyExchangeRate) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *CurrencyExchangeRate) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(CurrencyExchangeRateOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CurrencyExchangeRateOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(CurrencyExchangeRateOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -431,7 +483,19 @@ func (t *CurrencyExchangeRate) runOnModify() error {
 }
 
 func (t *CurrencyExchangeRate) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CurrencyExchangeRateOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(CurrencyExchangeRateOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -442,7 +506,19 @@ func (t *CurrencyExchangeRate) runOnDelete() error {
 }
 
 func (t *CurrencyExchangeRate) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CurrencyExchangeRateOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(CurrencyExchangeRateOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

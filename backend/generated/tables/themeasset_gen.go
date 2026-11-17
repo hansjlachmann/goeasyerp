@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ThemeAsset) error
 //	OnDelete(rec *gtables.ThemeAsset) error
 //	OnRename(rec *gtables.ThemeAsset) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ThemeAsset, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Theme_code(rec *gtables.ThemeAsset) error
 //	OnValidate_Name(rec *gtables.ThemeAsset) error
 //	OnValidate_Content_type(rec *gtables.ThemeAsset) error
@@ -31,6 +33,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -265,10 +268,22 @@ func (t *ThemeAsset) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Theme_Asset: a business logic type implements the ones it needs
 type (
-	ThemeAssetOnInsert                interface{ OnInsert(rec *ThemeAsset) error }
-	ThemeAssetOnModify                interface{ OnModify(rec *ThemeAsset) error }
-	ThemeAssetOnDelete                interface{ OnDelete(rec *ThemeAsset) error }
-	ThemeAssetOnRename                interface{ OnRename(rec *ThemeAsset) error }
+	ThemeAssetOnInsert       interface{ OnInsert(rec *ThemeAsset) error }
+	ThemeAssetOnModify       interface{ OnModify(rec *ThemeAsset) error }
+	ThemeAssetOnDelete       interface{ OnDelete(rec *ThemeAsset) error }
+	ThemeAssetOnRename       interface{ OnRename(rec *ThemeAsset) error }
+	ThemeAssetOnBeforeInsert interface {
+		OnBeforeInsert(rec *ThemeAsset, handled *bool) error
+	}
+	ThemeAssetOnBeforeModify interface {
+		OnBeforeModify(rec *ThemeAsset, handled *bool) error
+	}
+	ThemeAssetOnBeforeDelete interface {
+		OnBeforeDelete(rec *ThemeAsset, handled *bool) error
+	}
+	ThemeAssetOnBeforeRename interface {
+		OnBeforeRename(rec *ThemeAsset, handled *bool) error
+	}
 	ThemeAssetOnValidate_Theme_code   interface{ OnValidate_Theme_code(rec *ThemeAsset) error }
 	ThemeAssetOnValidate_Name         interface{ OnValidate_Name(rec *ThemeAsset) error }
 	ThemeAssetOnValidate_Content_type interface{ OnValidate_Content_type(rec *ThemeAsset) error }
@@ -280,18 +295,23 @@ type (
 )
 
 // themeAssetLogic is the registered business logic of Theme_Asset, in
-// registration order (the base application first, then extensions)
-var themeAssetLogic []any
+// registration order (the base application first, then extensions), and
+// themeAssetLogicApp the app that registered each ("" the base application)
+var (
+	themeAssetLogic    []any
+	themeAssetLogicApp []string
+)
 
 // RegisterThemeAssetLogic adds business logic to Theme_Asset: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterThemeAssetLogic(logic any) {
 	checkLogic(ThemeAssetTableName, "ThemeAsset", logic, themeAssetTrigger)
 	themeAssetLogic = append(themeAssetLogic, logic)
+	themeAssetLogicApp = append(themeAssetLogicApp, extensions.Current())
 }
 
 // themeAssetTrigger reports whether name is a trigger of Theme_Asset and
@@ -306,6 +326,14 @@ func themeAssetTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ThemeAssetOnDelete)
 	case "OnRename":
 		_, ok = logic.(ThemeAssetOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ThemeAssetOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ThemeAssetOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ThemeAssetOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ThemeAssetOnBeforeRename)
 	case "OnValidate_Theme_code":
 		_, ok = logic.(ThemeAssetOnValidate_Theme_code)
 	case "OnValidate_Name":
@@ -340,19 +368,32 @@ func (t *ThemeAsset) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ThemeAsset) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return themeAssetLogic
+	return extensions.EnabledLogic(themeAssetLogic, themeAssetLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ThemeAsset) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ThemeAssetOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ThemeAssetOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ThemeAssetOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -361,10 +402,21 @@ func (t *ThemeAsset) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ThemeAsset) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ThemeAssetOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ThemeAssetOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ThemeAssetOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -372,7 +424,19 @@ func (t *ThemeAsset) runOnModify() error {
 }
 
 func (t *ThemeAsset) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ThemeAssetOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ThemeAssetOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -383,7 +447,19 @@ func (t *ThemeAsset) runOnDelete() error {
 }
 
 func (t *ThemeAsset) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ThemeAssetOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ThemeAssetOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

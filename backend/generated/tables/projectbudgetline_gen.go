@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ProjectBudgetLine) error
 //	OnDelete(rec *gtables.ProjectBudgetLine) error
 //	OnRename(rec *gtables.ProjectBudgetLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ProjectBudgetLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Project_no(rec *gtables.ProjectBudgetLine) error
 //	OnValidate_Phase_code(rec *gtables.ProjectBudgetLine) error
 //	OnValidate_Task_code(rec *gtables.ProjectBudgetLine) error
@@ -38,6 +40,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -436,6 +439,18 @@ type (
 	ProjectBudgetLineOnRename interface {
 		OnRename(rec *ProjectBudgetLine) error
 	}
+	ProjectBudgetLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *ProjectBudgetLine, handled *bool) error
+	}
+	ProjectBudgetLineOnBeforeModify interface {
+		OnBeforeModify(rec *ProjectBudgetLine, handled *bool) error
+	}
+	ProjectBudgetLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *ProjectBudgetLine, handled *bool) error
+	}
+	ProjectBudgetLineOnBeforeRename interface {
+		OnBeforeRename(rec *ProjectBudgetLine, handled *bool) error
+	}
 	ProjectBudgetLineOnValidate_Project_no interface {
 		OnValidate_Project_no(rec *ProjectBudgetLine) error
 	}
@@ -484,18 +499,23 @@ type (
 )
 
 // projectBudgetLineLogic is the registered business logic of Project_Budget_Line, in
-// registration order (the base application first, then extensions)
-var projectBudgetLineLogic []any
+// registration order (the base application first, then extensions), and
+// projectBudgetLineLogicApp the app that registered each ("" the base application)
+var (
+	projectBudgetLineLogic    []any
+	projectBudgetLineLogicApp []string
+)
 
 // RegisterProjectBudgetLineLogic adds business logic to Project_Budget_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterProjectBudgetLineLogic(logic any) {
 	checkLogic(ProjectBudgetLineTableName, "ProjectBudgetLine", logic, projectBudgetLineTrigger)
 	projectBudgetLineLogic = append(projectBudgetLineLogic, logic)
+	projectBudgetLineLogicApp = append(projectBudgetLineLogicApp, extensions.Current())
 }
 
 // projectBudgetLineTrigger reports whether name is a trigger of Project_Budget_Line and
@@ -510,6 +530,14 @@ func projectBudgetLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ProjectBudgetLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(ProjectBudgetLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ProjectBudgetLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ProjectBudgetLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ProjectBudgetLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ProjectBudgetLineOnBeforeRename)
 	case "OnValidate_Project_no":
 		_, ok = logic.(ProjectBudgetLineOnValidate_Project_no)
 	case "OnValidate_Phase_code":
@@ -558,19 +586,32 @@ func (t *ProjectBudgetLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ProjectBudgetLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return projectBudgetLineLogic
+	return extensions.EnabledLogic(projectBudgetLineLogic, projectBudgetLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ProjectBudgetLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ProjectBudgetLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ProjectBudgetLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ProjectBudgetLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -579,10 +620,21 @@ func (t *ProjectBudgetLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ProjectBudgetLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ProjectBudgetLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ProjectBudgetLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ProjectBudgetLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -590,7 +642,19 @@ func (t *ProjectBudgetLine) runOnModify() error {
 }
 
 func (t *ProjectBudgetLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ProjectBudgetLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ProjectBudgetLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -601,7 +665,19 @@ func (t *ProjectBudgetLine) runOnDelete() error {
 }
 
 func (t *ProjectBudgetLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ProjectBudgetLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ProjectBudgetLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ItemSalesQtyDisc) error
 //	OnDelete(rec *gtables.ItemSalesQtyDisc) error
 //	OnRename(rec *gtables.ItemSalesQtyDisc) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ItemSalesQtyDisc, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.ItemSalesQtyDisc) error
 //	OnValidate_Minimum_quantity(rec *gtables.ItemSalesQtyDisc) error
 //	OnValidate_Discount_percent(rec *gtables.ItemSalesQtyDisc) error
@@ -24,6 +26,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -235,6 +238,18 @@ type (
 	ItemSalesQtyDiscOnRename interface {
 		OnRename(rec *ItemSalesQtyDisc) error
 	}
+	ItemSalesQtyDiscOnBeforeInsert interface {
+		OnBeforeInsert(rec *ItemSalesQtyDisc, handled *bool) error
+	}
+	ItemSalesQtyDiscOnBeforeModify interface {
+		OnBeforeModify(rec *ItemSalesQtyDisc, handled *bool) error
+	}
+	ItemSalesQtyDiscOnBeforeDelete interface {
+		OnBeforeDelete(rec *ItemSalesQtyDisc, handled *bool) error
+	}
+	ItemSalesQtyDiscOnBeforeRename interface {
+		OnBeforeRename(rec *ItemSalesQtyDisc, handled *bool) error
+	}
 	ItemSalesQtyDiscOnValidate_Code interface {
 		OnValidate_Code(rec *ItemSalesQtyDisc) error
 	}
@@ -247,18 +262,23 @@ type (
 )
 
 // itemSalesQtyDiscLogic is the registered business logic of Item_Sales_Qty_Disc, in
-// registration order (the base application first, then extensions)
-var itemSalesQtyDiscLogic []any
+// registration order (the base application first, then extensions), and
+// itemSalesQtyDiscLogicApp the app that registered each ("" the base application)
+var (
+	itemSalesQtyDiscLogic    []any
+	itemSalesQtyDiscLogicApp []string
+)
 
 // RegisterItemSalesQtyDiscLogic adds business logic to Item_Sales_Qty_Disc: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterItemSalesQtyDiscLogic(logic any) {
 	checkLogic(ItemSalesQtyDiscTableName, "ItemSalesQtyDisc", logic, itemSalesQtyDiscTrigger)
 	itemSalesQtyDiscLogic = append(itemSalesQtyDiscLogic, logic)
+	itemSalesQtyDiscLogicApp = append(itemSalesQtyDiscLogicApp, extensions.Current())
 }
 
 // itemSalesQtyDiscTrigger reports whether name is a trigger of Item_Sales_Qty_Disc and
@@ -273,6 +293,14 @@ func itemSalesQtyDiscTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemSalesQtyDiscOnDelete)
 	case "OnRename":
 		_, ok = logic.(ItemSalesQtyDiscOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ItemSalesQtyDiscOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ItemSalesQtyDiscOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ItemSalesQtyDiscOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ItemSalesQtyDiscOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(ItemSalesQtyDiscOnValidate_Code)
 	case "OnValidate_Minimum_quantity":
@@ -297,19 +325,32 @@ func (t *ItemSalesQtyDisc) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ItemSalesQtyDisc) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return itemSalesQtyDiscLogic
+	return extensions.EnabledLogic(itemSalesQtyDiscLogic, itemSalesQtyDiscLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ItemSalesQtyDisc) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ItemSalesQtyDiscOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemSalesQtyDiscOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ItemSalesQtyDiscOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -318,10 +359,21 @@ func (t *ItemSalesQtyDisc) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ItemSalesQtyDisc) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ItemSalesQtyDiscOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemSalesQtyDiscOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ItemSalesQtyDiscOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -329,7 +381,19 @@ func (t *ItemSalesQtyDisc) runOnModify() error {
 }
 
 func (t *ItemSalesQtyDisc) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemSalesQtyDiscOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ItemSalesQtyDiscOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -340,7 +404,19 @@ func (t *ItemSalesQtyDisc) runOnDelete() error {
 }
 
 func (t *ItemSalesQtyDisc) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemSalesQtyDiscOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ItemSalesQtyDiscOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

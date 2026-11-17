@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ReminderLevel) error
 //	OnDelete(rec *gtables.ReminderLevel) error
 //	OnRename(rec *gtables.ReminderLevel) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ReminderLevel, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Reminder_terms_code(rec *gtables.ReminderLevel) error
 //	OnValidate_No(rec *gtables.ReminderLevel) error
 //	OnValidate_Grace_period(rec *gtables.ReminderLevel) error
@@ -28,6 +30,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -260,6 +263,18 @@ type (
 	ReminderLevelOnRename interface {
 		OnRename(rec *ReminderLevel) error
 	}
+	ReminderLevelOnBeforeInsert interface {
+		OnBeforeInsert(rec *ReminderLevel, handled *bool) error
+	}
+	ReminderLevelOnBeforeModify interface {
+		OnBeforeModify(rec *ReminderLevel, handled *bool) error
+	}
+	ReminderLevelOnBeforeDelete interface {
+		OnBeforeDelete(rec *ReminderLevel, handled *bool) error
+	}
+	ReminderLevelOnBeforeRename interface {
+		OnBeforeRename(rec *ReminderLevel, handled *bool) error
+	}
 	ReminderLevelOnValidate_Reminder_terms_code interface {
 		OnValidate_Reminder_terms_code(rec *ReminderLevel) error
 	}
@@ -281,18 +296,23 @@ type (
 )
 
 // reminderLevelLogic is the registered business logic of Reminder_Level, in
-// registration order (the base application first, then extensions)
-var reminderLevelLogic []any
+// registration order (the base application first, then extensions), and
+// reminderLevelLogicApp the app that registered each ("" the base application)
+var (
+	reminderLevelLogic    []any
+	reminderLevelLogicApp []string
+)
 
 // RegisterReminderLevelLogic adds business logic to Reminder_Level: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterReminderLevelLogic(logic any) {
 	checkLogic(ReminderLevelTableName, "ReminderLevel", logic, reminderLevelTrigger)
 	reminderLevelLogic = append(reminderLevelLogic, logic)
+	reminderLevelLogicApp = append(reminderLevelLogicApp, extensions.Current())
 }
 
 // reminderLevelTrigger reports whether name is a trigger of Reminder_Level and
@@ -307,6 +327,14 @@ func reminderLevelTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ReminderLevelOnDelete)
 	case "OnRename":
 		_, ok = logic.(ReminderLevelOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ReminderLevelOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ReminderLevelOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ReminderLevelOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ReminderLevelOnBeforeRename)
 	case "OnValidate_Reminder_terms_code":
 		_, ok = logic.(ReminderLevelOnValidate_Reminder_terms_code)
 	case "OnValidate_No":
@@ -337,19 +365,32 @@ func (t *ReminderLevel) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ReminderLevel) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return reminderLevelLogic
+	return extensions.EnabledLogic(reminderLevelLogic, reminderLevelLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ReminderLevel) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ReminderLevelOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReminderLevelOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ReminderLevelOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -358,10 +399,21 @@ func (t *ReminderLevel) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ReminderLevel) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ReminderLevelOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReminderLevelOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ReminderLevelOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -369,7 +421,19 @@ func (t *ReminderLevel) runOnModify() error {
 }
 
 func (t *ReminderLevel) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReminderLevelOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ReminderLevelOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -380,7 +444,19 @@ func (t *ReminderLevel) runOnDelete() error {
 }
 
 func (t *ReminderLevel) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReminderLevelOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ReminderLevelOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

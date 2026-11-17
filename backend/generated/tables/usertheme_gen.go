@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.UserTheme) error
 //	OnDelete(rec *gtables.UserTheme) error
 //	OnRename(rec *gtables.UserTheme) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.UserTheme, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_User_id(rec *gtables.UserTheme) error
 //	OnValidate_Theme_code(rec *gtables.UserTheme) error
 //	OnValidate_Added_at(rec *gtables.UserTheme) error
@@ -25,6 +27,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -224,28 +227,45 @@ func (t *UserTheme) DeleteOrError(runTrigger bool) error {
 
 // Triggers of User_Theme: a business logic type implements the ones it needs
 type (
-	UserThemeOnInsert              interface{ OnInsert(rec *UserTheme) error }
-	UserThemeOnModify              interface{ OnModify(rec *UserTheme) error }
-	UserThemeOnDelete              interface{ OnDelete(rec *UserTheme) error }
-	UserThemeOnRename              interface{ OnRename(rec *UserTheme) error }
+	UserThemeOnInsert       interface{ OnInsert(rec *UserTheme) error }
+	UserThemeOnModify       interface{ OnModify(rec *UserTheme) error }
+	UserThemeOnDelete       interface{ OnDelete(rec *UserTheme) error }
+	UserThemeOnRename       interface{ OnRename(rec *UserTheme) error }
+	UserThemeOnBeforeInsert interface {
+		OnBeforeInsert(rec *UserTheme, handled *bool) error
+	}
+	UserThemeOnBeforeModify interface {
+		OnBeforeModify(rec *UserTheme, handled *bool) error
+	}
+	UserThemeOnBeforeDelete interface {
+		OnBeforeDelete(rec *UserTheme, handled *bool) error
+	}
+	UserThemeOnBeforeRename interface {
+		OnBeforeRename(rec *UserTheme, handled *bool) error
+	}
 	UserThemeOnValidate_User_id    interface{ OnValidate_User_id(rec *UserTheme) error }
 	UserThemeOnValidate_Theme_code interface{ OnValidate_Theme_code(rec *UserTheme) error }
 	UserThemeOnValidate_Added_at   interface{ OnValidate_Added_at(rec *UserTheme) error }
 )
 
 // userThemeLogic is the registered business logic of User_Theme, in
-// registration order (the base application first, then extensions)
-var userThemeLogic []any
+// registration order (the base application first, then extensions), and
+// userThemeLogicApp the app that registered each ("" the base application)
+var (
+	userThemeLogic    []any
+	userThemeLogicApp []string
+)
 
 // RegisterUserThemeLogic adds business logic to User_Theme: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterUserThemeLogic(logic any) {
 	checkLogic(UserThemeTableName, "UserTheme", logic, userThemeTrigger)
 	userThemeLogic = append(userThemeLogic, logic)
+	userThemeLogicApp = append(userThemeLogicApp, extensions.Current())
 }
 
 // userThemeTrigger reports whether name is a trigger of User_Theme and
@@ -260,6 +280,14 @@ func userThemeTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(UserThemeOnDelete)
 	case "OnRename":
 		_, ok = logic.(UserThemeOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(UserThemeOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(UserThemeOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(UserThemeOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(UserThemeOnBeforeRename)
 	case "OnValidate_User_id":
 		_, ok = logic.(UserThemeOnValidate_User_id)
 	case "OnValidate_Theme_code":
@@ -284,19 +312,32 @@ func (t *UserTheme) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *UserTheme) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return userThemeLogic
+	return extensions.EnabledLogic(userThemeLogic, userThemeLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *UserTheme) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(UserThemeOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UserThemeOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(UserThemeOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -305,10 +346,21 @@ func (t *UserTheme) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *UserTheme) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(UserThemeOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UserThemeOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(UserThemeOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -316,7 +368,19 @@ func (t *UserTheme) runOnModify() error {
 }
 
 func (t *UserTheme) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UserThemeOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(UserThemeOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -327,7 +391,19 @@ func (t *UserTheme) runOnDelete() error {
 }
 
 func (t *UserTheme) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UserThemeOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(UserThemeOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

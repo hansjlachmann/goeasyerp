@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.TaxJurisdiction) error
 //	OnDelete(rec *gtables.TaxJurisdiction) error
 //	OnRename(rec *gtables.TaxJurisdiction) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.TaxJurisdiction, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.TaxJurisdiction) error
 //	OnValidate_Description(rec *gtables.TaxJurisdiction) error
 //	OnValidate_Tax_account_sales(rec *gtables.TaxJurisdiction) error
@@ -33,6 +35,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -366,6 +369,18 @@ type (
 	TaxJurisdictionOnRename interface {
 		OnRename(rec *TaxJurisdiction) error
 	}
+	TaxJurisdictionOnBeforeInsert interface {
+		OnBeforeInsert(rec *TaxJurisdiction, handled *bool) error
+	}
+	TaxJurisdictionOnBeforeModify interface {
+		OnBeforeModify(rec *TaxJurisdiction, handled *bool) error
+	}
+	TaxJurisdictionOnBeforeDelete interface {
+		OnBeforeDelete(rec *TaxJurisdiction, handled *bool) error
+	}
+	TaxJurisdictionOnBeforeRename interface {
+		OnBeforeRename(rec *TaxJurisdiction, handled *bool) error
+	}
 	TaxJurisdictionOnValidate_Code interface {
 		OnValidate_Code(rec *TaxJurisdiction) error
 	}
@@ -405,18 +420,23 @@ type (
 )
 
 // taxJurisdictionLogic is the registered business logic of Tax_Jurisdiction, in
-// registration order (the base application first, then extensions)
-var taxJurisdictionLogic []any
+// registration order (the base application first, then extensions), and
+// taxJurisdictionLogicApp the app that registered each ("" the base application)
+var (
+	taxJurisdictionLogic    []any
+	taxJurisdictionLogicApp []string
+)
 
 // RegisterTaxJurisdictionLogic adds business logic to Tax_Jurisdiction: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterTaxJurisdictionLogic(logic any) {
 	checkLogic(TaxJurisdictionTableName, "TaxJurisdiction", logic, taxJurisdictionTrigger)
 	taxJurisdictionLogic = append(taxJurisdictionLogic, logic)
+	taxJurisdictionLogicApp = append(taxJurisdictionLogicApp, extensions.Current())
 }
 
 // taxJurisdictionTrigger reports whether name is a trigger of Tax_Jurisdiction and
@@ -431,6 +451,14 @@ func taxJurisdictionTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(TaxJurisdictionOnDelete)
 	case "OnRename":
 		_, ok = logic.(TaxJurisdictionOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(TaxJurisdictionOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(TaxJurisdictionOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(TaxJurisdictionOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(TaxJurisdictionOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(TaxJurisdictionOnValidate_Code)
 	case "OnValidate_Description":
@@ -473,19 +501,32 @@ func (t *TaxJurisdiction) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *TaxJurisdiction) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return taxJurisdictionLogic
+	return extensions.EnabledLogic(taxJurisdictionLogic, taxJurisdictionLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *TaxJurisdiction) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(TaxJurisdictionOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TaxJurisdictionOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(TaxJurisdictionOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -494,10 +535,21 @@ func (t *TaxJurisdiction) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *TaxJurisdiction) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(TaxJurisdictionOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TaxJurisdictionOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(TaxJurisdictionOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -505,7 +557,19 @@ func (t *TaxJurisdiction) runOnModify() error {
 }
 
 func (t *TaxJurisdiction) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TaxJurisdictionOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(TaxJurisdictionOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -516,7 +580,19 @@ func (t *TaxJurisdiction) runOnDelete() error {
 }
 
 func (t *TaxJurisdiction) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TaxJurisdictionOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(TaxJurisdictionOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

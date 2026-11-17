@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ExtendedTextLine) error
 //	OnDelete(rec *gtables.ExtendedTextLine) error
 //	OnRename(rec *gtables.ExtendedTextLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ExtendedTextLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Table_name(rec *gtables.ExtendedTextLine) error
 //	OnValidate_No(rec *gtables.ExtendedTextLine) error
 //	OnValidate_Language_code(rec *gtables.ExtendedTextLine) error
@@ -28,6 +30,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -298,6 +301,18 @@ type (
 	ExtendedTextLineOnRename interface {
 		OnRename(rec *ExtendedTextLine) error
 	}
+	ExtendedTextLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *ExtendedTextLine, handled *bool) error
+	}
+	ExtendedTextLineOnBeforeModify interface {
+		OnBeforeModify(rec *ExtendedTextLine, handled *bool) error
+	}
+	ExtendedTextLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *ExtendedTextLine, handled *bool) error
+	}
+	ExtendedTextLineOnBeforeRename interface {
+		OnBeforeRename(rec *ExtendedTextLine, handled *bool) error
+	}
 	ExtendedTextLineOnValidate_Table_name interface {
 		OnValidate_Table_name(rec *ExtendedTextLine) error
 	}
@@ -319,18 +334,23 @@ type (
 )
 
 // extendedTextLineLogic is the registered business logic of Extended_Text_Line, in
-// registration order (the base application first, then extensions)
-var extendedTextLineLogic []any
+// registration order (the base application first, then extensions), and
+// extendedTextLineLogicApp the app that registered each ("" the base application)
+var (
+	extendedTextLineLogic    []any
+	extendedTextLineLogicApp []string
+)
 
 // RegisterExtendedTextLineLogic adds business logic to Extended_Text_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterExtendedTextLineLogic(logic any) {
 	checkLogic(ExtendedTextLineTableName, "ExtendedTextLine", logic, extendedTextLineTrigger)
 	extendedTextLineLogic = append(extendedTextLineLogic, logic)
+	extendedTextLineLogicApp = append(extendedTextLineLogicApp, extensions.Current())
 }
 
 // extendedTextLineTrigger reports whether name is a trigger of Extended_Text_Line and
@@ -345,6 +365,14 @@ func extendedTextLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ExtendedTextLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(ExtendedTextLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ExtendedTextLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ExtendedTextLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ExtendedTextLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ExtendedTextLineOnBeforeRename)
 	case "OnValidate_Table_name":
 		_, ok = logic.(ExtendedTextLineOnValidate_Table_name)
 	case "OnValidate_No":
@@ -375,19 +403,32 @@ func (t *ExtendedTextLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ExtendedTextLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return extendedTextLineLogic
+	return extensions.EnabledLogic(extendedTextLineLogic, extendedTextLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ExtendedTextLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ExtendedTextLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ExtendedTextLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ExtendedTextLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -396,10 +437,21 @@ func (t *ExtendedTextLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ExtendedTextLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ExtendedTextLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ExtendedTextLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ExtendedTextLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -407,7 +459,19 @@ func (t *ExtendedTextLine) runOnModify() error {
 }
 
 func (t *ExtendedTextLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ExtendedTextLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ExtendedTextLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -418,7 +482,19 @@ func (t *ExtendedTextLine) runOnDelete() error {
 }
 
 func (t *ExtendedTextLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ExtendedTextLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ExtendedTextLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

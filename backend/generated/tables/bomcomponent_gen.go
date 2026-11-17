@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.BOMComponent) error
 //	OnDelete(rec *gtables.BOMComponent) error
 //	OnRename(rec *gtables.BOMComponent) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.BOMComponent, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Parent_item_no(rec *gtables.BOMComponent) error
 //	OnValidate_Line_no(rec *gtables.BOMComponent) error
 //	OnValidate_Type(rec *gtables.BOMComponent) error
@@ -36,6 +38,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -356,10 +359,22 @@ func (t *BOMComponent) DeleteOrError(runTrigger bool) error {
 
 // Triggers of BOM_Component: a business logic type implements the ones it needs
 type (
-	BOMComponentOnInsert                        interface{ OnInsert(rec *BOMComponent) error }
-	BOMComponentOnModify                        interface{ OnModify(rec *BOMComponent) error }
-	BOMComponentOnDelete                        interface{ OnDelete(rec *BOMComponent) error }
-	BOMComponentOnRename                        interface{ OnRename(rec *BOMComponent) error }
+	BOMComponentOnInsert       interface{ OnInsert(rec *BOMComponent) error }
+	BOMComponentOnModify       interface{ OnModify(rec *BOMComponent) error }
+	BOMComponentOnDelete       interface{ OnDelete(rec *BOMComponent) error }
+	BOMComponentOnRename       interface{ OnRename(rec *BOMComponent) error }
+	BOMComponentOnBeforeInsert interface {
+		OnBeforeInsert(rec *BOMComponent, handled *bool) error
+	}
+	BOMComponentOnBeforeModify interface {
+		OnBeforeModify(rec *BOMComponent, handled *bool) error
+	}
+	BOMComponentOnBeforeDelete interface {
+		OnBeforeDelete(rec *BOMComponent, handled *bool) error
+	}
+	BOMComponentOnBeforeRename interface {
+		OnBeforeRename(rec *BOMComponent, handled *bool) error
+	}
 	BOMComponentOnValidate_Parent_item_no       interface{ OnValidate_Parent_item_no(rec *BOMComponent) error }
 	BOMComponentOnValidate_Line_no              interface{ OnValidate_Line_no(rec *BOMComponent) error }
 	BOMComponentOnValidate_Type                 interface{ OnValidate_Type(rec *BOMComponent) error }
@@ -377,18 +392,23 @@ type (
 )
 
 // bOMComponentLogic is the registered business logic of BOM_Component, in
-// registration order (the base application first, then extensions)
-var bOMComponentLogic []any
+// registration order (the base application first, then extensions), and
+// bOMComponentLogicApp the app that registered each ("" the base application)
+var (
+	bOMComponentLogic    []any
+	bOMComponentLogicApp []string
+)
 
 // RegisterBOMComponentLogic adds business logic to BOM_Component: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterBOMComponentLogic(logic any) {
 	checkLogic(BOMComponentTableName, "BOMComponent", logic, bOMComponentTrigger)
 	bOMComponentLogic = append(bOMComponentLogic, logic)
+	bOMComponentLogicApp = append(bOMComponentLogicApp, extensions.Current())
 }
 
 // bOMComponentTrigger reports whether name is a trigger of BOM_Component and
@@ -403,6 +423,14 @@ func bOMComponentTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(BOMComponentOnDelete)
 	case "OnRename":
 		_, ok = logic.(BOMComponentOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(BOMComponentOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(BOMComponentOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(BOMComponentOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(BOMComponentOnBeforeRename)
 	case "OnValidate_Parent_item_no":
 		_, ok = logic.(BOMComponentOnValidate_Parent_item_no)
 	case "OnValidate_Line_no":
@@ -449,19 +477,32 @@ func (t *BOMComponent) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *BOMComponent) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return bOMComponentLogic
+	return extensions.EnabledLogic(bOMComponentLogic, bOMComponentLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *BOMComponent) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(BOMComponentOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BOMComponentOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(BOMComponentOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -470,10 +511,21 @@ func (t *BOMComponent) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *BOMComponent) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(BOMComponentOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BOMComponentOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(BOMComponentOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -481,7 +533,19 @@ func (t *BOMComponent) runOnModify() error {
 }
 
 func (t *BOMComponent) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BOMComponentOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(BOMComponentOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -492,7 +556,19 @@ func (t *BOMComponent) runOnDelete() error {
 }
 
 func (t *BOMComponent) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BOMComponentOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(BOMComponentOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

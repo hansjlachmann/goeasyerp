@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.CountryRegion) error
 //	OnDelete(rec *gtables.CountryRegion) error
 //	OnRename(rec *gtables.CountryRegion) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.CountryRegion, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.CountryRegion) error
 //	OnValidate_Name(rec *gtables.CountryRegion) error
 //	OnValidate_Eu_country_code(rec *gtables.CountryRegion) error
@@ -27,6 +29,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -325,6 +328,18 @@ type (
 	CountryRegionOnRename interface {
 		OnRename(rec *CountryRegion) error
 	}
+	CountryRegionOnBeforeInsert interface {
+		OnBeforeInsert(rec *CountryRegion, handled *bool) error
+	}
+	CountryRegionOnBeforeModify interface {
+		OnBeforeModify(rec *CountryRegion, handled *bool) error
+	}
+	CountryRegionOnBeforeDelete interface {
+		OnBeforeDelete(rec *CountryRegion, handled *bool) error
+	}
+	CountryRegionOnBeforeRename interface {
+		OnBeforeRename(rec *CountryRegion, handled *bool) error
+	}
 	CountryRegionOnValidate_Code interface {
 		OnValidate_Code(rec *CountryRegion) error
 	}
@@ -346,18 +361,23 @@ type (
 )
 
 // countryRegionLogic is the registered business logic of Country_Region, in
-// registration order (the base application first, then extensions)
-var countryRegionLogic []any
+// registration order (the base application first, then extensions), and
+// countryRegionLogicApp the app that registered each ("" the base application)
+var (
+	countryRegionLogic    []any
+	countryRegionLogicApp []string
+)
 
 // RegisterCountryRegionLogic adds business logic to Country_Region: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterCountryRegionLogic(logic any) {
 	checkLogic(CountryRegionTableName, "CountryRegion", logic, countryRegionTrigger)
 	countryRegionLogic = append(countryRegionLogic, logic)
+	countryRegionLogicApp = append(countryRegionLogicApp, extensions.Current())
 }
 
 // countryRegionTrigger reports whether name is a trigger of Country_Region and
@@ -372,6 +392,14 @@ func countryRegionTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CountryRegionOnDelete)
 	case "OnRename":
 		_, ok = logic.(CountryRegionOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(CountryRegionOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(CountryRegionOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(CountryRegionOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(CountryRegionOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(CountryRegionOnValidate_Code)
 	case "OnValidate_Name":
@@ -402,19 +430,32 @@ func (t *CountryRegion) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *CountryRegion) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return countryRegionLogic
+	return extensions.EnabledLogic(countryRegionLogic, countryRegionLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *CountryRegion) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(CountryRegionOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CountryRegionOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(CountryRegionOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -423,10 +464,21 @@ func (t *CountryRegion) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *CountryRegion) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(CountryRegionOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CountryRegionOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(CountryRegionOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -434,7 +486,19 @@ func (t *CountryRegion) runOnModify() error {
 }
 
 func (t *CountryRegion) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CountryRegionOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(CountryRegionOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -445,7 +509,19 @@ func (t *CountryRegion) runOnDelete() error {
 }
 
 func (t *CountryRegion) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CountryRegionOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(CountryRegionOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

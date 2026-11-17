@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.SMTPSetup) error
 //	OnDelete(rec *gtables.SMTPSetup) error
 //	OnRename(rec *gtables.SMTPSetup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.SMTPSetup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Primary_key(rec *gtables.SMTPSetup) error
 //	OnValidate_Enabled(rec *gtables.SMTPSetup) error
 //	OnValidate_Smtp_server(rec *gtables.SMTPSetup) error
@@ -30,6 +32,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/secrets"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -258,10 +261,22 @@ func (t *SMTPSetup) DeleteOrError(runTrigger bool) error {
 
 // Triggers of SMTP_Setup: a business logic type implements the ones it needs
 type (
-	SMTPSetupOnInsert                    interface{ OnInsert(rec *SMTPSetup) error }
-	SMTPSetupOnModify                    interface{ OnModify(rec *SMTPSetup) error }
-	SMTPSetupOnDelete                    interface{ OnDelete(rec *SMTPSetup) error }
-	SMTPSetupOnRename                    interface{ OnRename(rec *SMTPSetup) error }
+	SMTPSetupOnInsert       interface{ OnInsert(rec *SMTPSetup) error }
+	SMTPSetupOnModify       interface{ OnModify(rec *SMTPSetup) error }
+	SMTPSetupOnDelete       interface{ OnDelete(rec *SMTPSetup) error }
+	SMTPSetupOnRename       interface{ OnRename(rec *SMTPSetup) error }
+	SMTPSetupOnBeforeInsert interface {
+		OnBeforeInsert(rec *SMTPSetup, handled *bool) error
+	}
+	SMTPSetupOnBeforeModify interface {
+		OnBeforeModify(rec *SMTPSetup, handled *bool) error
+	}
+	SMTPSetupOnBeforeDelete interface {
+		OnBeforeDelete(rec *SMTPSetup, handled *bool) error
+	}
+	SMTPSetupOnBeforeRename interface {
+		OnBeforeRename(rec *SMTPSetup, handled *bool) error
+	}
 	SMTPSetupOnValidate_Primary_key      interface{ OnValidate_Primary_key(rec *SMTPSetup) error }
 	SMTPSetupOnValidate_Enabled          interface{ OnValidate_Enabled(rec *SMTPSetup) error }
 	SMTPSetupOnValidate_Smtp_server      interface{ OnValidate_Smtp_server(rec *SMTPSetup) error }
@@ -272,18 +287,23 @@ type (
 )
 
 // sMTPSetupLogic is the registered business logic of SMTP_Setup, in
-// registration order (the base application first, then extensions)
-var sMTPSetupLogic []any
+// registration order (the base application first, then extensions), and
+// sMTPSetupLogicApp the app that registered each ("" the base application)
+var (
+	sMTPSetupLogic    []any
+	sMTPSetupLogicApp []string
+)
 
 // RegisterSMTPSetupLogic adds business logic to SMTP_Setup: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterSMTPSetupLogic(logic any) {
 	checkLogic(SMTPSetupTableName, "SMTPSetup", logic, sMTPSetupTrigger)
 	sMTPSetupLogic = append(sMTPSetupLogic, logic)
+	sMTPSetupLogicApp = append(sMTPSetupLogicApp, extensions.Current())
 }
 
 // sMTPSetupTrigger reports whether name is a trigger of SMTP_Setup and
@@ -298,6 +318,14 @@ func sMTPSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SMTPSetupOnDelete)
 	case "OnRename":
 		_, ok = logic.(SMTPSetupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(SMTPSetupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(SMTPSetupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(SMTPSetupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(SMTPSetupOnBeforeRename)
 	case "OnValidate_Primary_key":
 		_, ok = logic.(SMTPSetupOnValidate_Primary_key)
 	case "OnValidate_Enabled":
@@ -330,19 +358,32 @@ func (t *SMTPSetup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *SMTPSetup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return sMTPSetupLogic
+	return extensions.EnabledLogic(sMTPSetupLogic, sMTPSetupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *SMTPSetup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(SMTPSetupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SMTPSetupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(SMTPSetupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -351,10 +392,21 @@ func (t *SMTPSetup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *SMTPSetup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(SMTPSetupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SMTPSetupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(SMTPSetupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -362,7 +414,19 @@ func (t *SMTPSetup) runOnModify() error {
 }
 
 func (t *SMTPSetup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SMTPSetupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(SMTPSetupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -373,7 +437,19 @@ func (t *SMTPSetup) runOnDelete() error {
 }
 
 func (t *SMTPSetup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SMTPSetupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(SMTPSetupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.BankAccountStatement) error
 //	OnDelete(rec *gtables.BankAccountStatement) error
 //	OnRename(rec *gtables.BankAccountStatement) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.BankAccountStatement, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Bank_account_no(rec *gtables.BankAccountStatement) error
 //	OnValidate_Statement_no(rec *gtables.BankAccountStatement) error
 //	OnValidate_Statement_ending_balance(rec *gtables.BankAccountStatement) error
@@ -27,6 +29,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -252,6 +255,18 @@ type (
 	BankAccountStatementOnRename interface {
 		OnRename(rec *BankAccountStatement) error
 	}
+	BankAccountStatementOnBeforeInsert interface {
+		OnBeforeInsert(rec *BankAccountStatement, handled *bool) error
+	}
+	BankAccountStatementOnBeforeModify interface {
+		OnBeforeModify(rec *BankAccountStatement, handled *bool) error
+	}
+	BankAccountStatementOnBeforeDelete interface {
+		OnBeforeDelete(rec *BankAccountStatement, handled *bool) error
+	}
+	BankAccountStatementOnBeforeRename interface {
+		OnBeforeRename(rec *BankAccountStatement, handled *bool) error
+	}
 	BankAccountStatementOnValidate_Bank_account_no interface {
 		OnValidate_Bank_account_no(rec *BankAccountStatement) error
 	}
@@ -270,18 +285,23 @@ type (
 )
 
 // bankAccountStatementLogic is the registered business logic of Bank_Account_Statement, in
-// registration order (the base application first, then extensions)
-var bankAccountStatementLogic []any
+// registration order (the base application first, then extensions), and
+// bankAccountStatementLogicApp the app that registered each ("" the base application)
+var (
+	bankAccountStatementLogic    []any
+	bankAccountStatementLogicApp []string
+)
 
 // RegisterBankAccountStatementLogic adds business logic to Bank_Account_Statement: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterBankAccountStatementLogic(logic any) {
 	checkLogic(BankAccountStatementTableName, "BankAccountStatement", logic, bankAccountStatementTrigger)
 	bankAccountStatementLogic = append(bankAccountStatementLogic, logic)
+	bankAccountStatementLogicApp = append(bankAccountStatementLogicApp, extensions.Current())
 }
 
 // bankAccountStatementTrigger reports whether name is a trigger of Bank_Account_Statement and
@@ -296,6 +316,14 @@ func bankAccountStatementTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(BankAccountStatementOnDelete)
 	case "OnRename":
 		_, ok = logic.(BankAccountStatementOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(BankAccountStatementOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(BankAccountStatementOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(BankAccountStatementOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(BankAccountStatementOnBeforeRename)
 	case "OnValidate_Bank_account_no":
 		_, ok = logic.(BankAccountStatementOnValidate_Bank_account_no)
 	case "OnValidate_Statement_no":
@@ -324,19 +352,32 @@ func (t *BankAccountStatement) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *BankAccountStatement) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return bankAccountStatementLogic
+	return extensions.EnabledLogic(bankAccountStatementLogic, bankAccountStatementLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *BankAccountStatement) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(BankAccountStatementOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BankAccountStatementOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(BankAccountStatementOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -345,10 +386,21 @@ func (t *BankAccountStatement) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *BankAccountStatement) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(BankAccountStatementOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BankAccountStatementOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(BankAccountStatementOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -356,7 +408,19 @@ func (t *BankAccountStatement) runOnModify() error {
 }
 
 func (t *BankAccountStatement) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BankAccountStatementOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(BankAccountStatementOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -367,7 +431,19 @@ func (t *BankAccountStatement) runOnDelete() error {
 }
 
 func (t *BankAccountStatement) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BankAccountStatementOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(BankAccountStatementOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

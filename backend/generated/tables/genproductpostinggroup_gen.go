@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.GenProductPostingGroup) error
 //	OnDelete(rec *gtables.GenProductPostingGroup) error
 //	OnRename(rec *gtables.GenProductPostingGroup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.GenProductPostingGroup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.GenProductPostingGroup) error
 //	OnValidate_Description(rec *gtables.GenProductPostingGroup) error
 //	OnValidate_Def_tax_prod_posting_group(rec *gtables.GenProductPostingGroup) error
@@ -25,6 +27,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -243,6 +246,18 @@ type (
 	GenProductPostingGroupOnRename interface {
 		OnRename(rec *GenProductPostingGroup) error
 	}
+	GenProductPostingGroupOnBeforeInsert interface {
+		OnBeforeInsert(rec *GenProductPostingGroup, handled *bool) error
+	}
+	GenProductPostingGroupOnBeforeModify interface {
+		OnBeforeModify(rec *GenProductPostingGroup, handled *bool) error
+	}
+	GenProductPostingGroupOnBeforeDelete interface {
+		OnBeforeDelete(rec *GenProductPostingGroup, handled *bool) error
+	}
+	GenProductPostingGroupOnBeforeRename interface {
+		OnBeforeRename(rec *GenProductPostingGroup, handled *bool) error
+	}
 	GenProductPostingGroupOnValidate_Code interface {
 		OnValidate_Code(rec *GenProductPostingGroup) error
 	}
@@ -258,18 +273,23 @@ type (
 )
 
 // genProductPostingGroupLogic is the registered business logic of Gen_Product_Posting_Group, in
-// registration order (the base application first, then extensions)
-var genProductPostingGroupLogic []any
+// registration order (the base application first, then extensions), and
+// genProductPostingGroupLogicApp the app that registered each ("" the base application)
+var (
+	genProductPostingGroupLogic    []any
+	genProductPostingGroupLogicApp []string
+)
 
 // RegisterGenProductPostingGroupLogic adds business logic to Gen_Product_Posting_Group: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterGenProductPostingGroupLogic(logic any) {
 	checkLogic(GenProductPostingGroupTableName, "GenProductPostingGroup", logic, genProductPostingGroupTrigger)
 	genProductPostingGroupLogic = append(genProductPostingGroupLogic, logic)
+	genProductPostingGroupLogicApp = append(genProductPostingGroupLogicApp, extensions.Current())
 }
 
 // genProductPostingGroupTrigger reports whether name is a trigger of Gen_Product_Posting_Group and
@@ -284,6 +304,14 @@ func genProductPostingGroupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GenProductPostingGroupOnDelete)
 	case "OnRename":
 		_, ok = logic.(GenProductPostingGroupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(GenProductPostingGroupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(GenProductPostingGroupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(GenProductPostingGroupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(GenProductPostingGroupOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(GenProductPostingGroupOnValidate_Code)
 	case "OnValidate_Description":
@@ -310,19 +338,32 @@ func (t *GenProductPostingGroup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *GenProductPostingGroup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return genProductPostingGroupLogic
+	return extensions.EnabledLogic(genProductPostingGroupLogic, genProductPostingGroupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *GenProductPostingGroup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(GenProductPostingGroupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GenProductPostingGroupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(GenProductPostingGroupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -331,10 +372,21 @@ func (t *GenProductPostingGroup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *GenProductPostingGroup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(GenProductPostingGroupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GenProductPostingGroupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(GenProductPostingGroupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -342,7 +394,19 @@ func (t *GenProductPostingGroup) runOnModify() error {
 }
 
 func (t *GenProductPostingGroup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GenProductPostingGroupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(GenProductPostingGroupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -353,7 +417,19 @@ func (t *GenProductPostingGroup) runOnDelete() error {
 }
 
 func (t *GenProductPostingGroup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GenProductPostingGroupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(GenProductPostingGroupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

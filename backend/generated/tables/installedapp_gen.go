@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.InstalledApp) error
 //	OnDelete(rec *gtables.InstalledApp) error
 //	OnRename(rec *gtables.InstalledApp) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.InstalledApp, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_App_id(rec *gtables.InstalledApp) error
 //	OnValidate_Name(rec *gtables.InstalledApp) error
 //	OnValidate_Publisher(rec *gtables.InstalledApp) error
@@ -32,6 +34,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -280,10 +283,22 @@ func (t *InstalledApp) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Installed_App: a business logic type implements the ones it needs
 type (
-	InstalledAppOnInsert                 interface{ OnInsert(rec *InstalledApp) error }
-	InstalledAppOnModify                 interface{ OnModify(rec *InstalledApp) error }
-	InstalledAppOnDelete                 interface{ OnDelete(rec *InstalledApp) error }
-	InstalledAppOnRename                 interface{ OnRename(rec *InstalledApp) error }
+	InstalledAppOnInsert       interface{ OnInsert(rec *InstalledApp) error }
+	InstalledAppOnModify       interface{ OnModify(rec *InstalledApp) error }
+	InstalledAppOnDelete       interface{ OnDelete(rec *InstalledApp) error }
+	InstalledAppOnRename       interface{ OnRename(rec *InstalledApp) error }
+	InstalledAppOnBeforeInsert interface {
+		OnBeforeInsert(rec *InstalledApp, handled *bool) error
+	}
+	InstalledAppOnBeforeModify interface {
+		OnBeforeModify(rec *InstalledApp, handled *bool) error
+	}
+	InstalledAppOnBeforeDelete interface {
+		OnBeforeDelete(rec *InstalledApp, handled *bool) error
+	}
+	InstalledAppOnBeforeRename interface {
+		OnBeforeRename(rec *InstalledApp, handled *bool) error
+	}
 	InstalledAppOnValidate_App_id        interface{ OnValidate_App_id(rec *InstalledApp) error }
 	InstalledAppOnValidate_Name          interface{ OnValidate_Name(rec *InstalledApp) error }
 	InstalledAppOnValidate_Publisher     interface{ OnValidate_Publisher(rec *InstalledApp) error }
@@ -297,18 +312,23 @@ type (
 )
 
 // installedAppLogic is the registered business logic of Installed_App, in
-// registration order (the base application first, then extensions)
-var installedAppLogic []any
+// registration order (the base application first, then extensions), and
+// installedAppLogicApp the app that registered each ("" the base application)
+var (
+	installedAppLogic    []any
+	installedAppLogicApp []string
+)
 
 // RegisterInstalledAppLogic adds business logic to Installed_App: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterInstalledAppLogic(logic any) {
 	checkLogic(InstalledAppTableName, "InstalledApp", logic, installedAppTrigger)
 	installedAppLogic = append(installedAppLogic, logic)
+	installedAppLogicApp = append(installedAppLogicApp, extensions.Current())
 }
 
 // installedAppTrigger reports whether name is a trigger of Installed_App and
@@ -323,6 +343,14 @@ func installedAppTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(InstalledAppOnDelete)
 	case "OnRename":
 		_, ok = logic.(InstalledAppOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(InstalledAppOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(InstalledAppOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(InstalledAppOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(InstalledAppOnBeforeRename)
 	case "OnValidate_App_id":
 		_, ok = logic.(InstalledAppOnValidate_App_id)
 	case "OnValidate_Name":
@@ -361,19 +389,32 @@ func (t *InstalledApp) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *InstalledApp) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return installedAppLogic
+	return extensions.EnabledLogic(installedAppLogic, installedAppLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *InstalledApp) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(InstalledAppOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InstalledAppOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(InstalledAppOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -382,10 +423,21 @@ func (t *InstalledApp) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *InstalledApp) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(InstalledAppOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InstalledAppOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(InstalledAppOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -393,7 +445,19 @@ func (t *InstalledApp) runOnModify() error {
 }
 
 func (t *InstalledApp) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InstalledAppOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(InstalledAppOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -404,7 +468,19 @@ func (t *InstalledApp) runOnDelete() error {
 }
 
 func (t *InstalledApp) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InstalledAppOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(InstalledAppOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

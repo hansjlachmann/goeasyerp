@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ResourceCost) error
 //	OnDelete(rec *gtables.ResourceCost) error
 //	OnRename(rec *gtables.ResourceCost) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ResourceCost, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Type(rec *gtables.ResourceCost) error
 //	OnValidate_Code(rec *gtables.ResourceCost) error
 //	OnValidate_Work_type_code(rec *gtables.ResourceCost) error
@@ -28,6 +30,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -312,10 +315,22 @@ func (t *ResourceCost) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Resource_Cost: a business logic type implements the ones it needs
 type (
-	ResourceCostOnInsert                    interface{ OnInsert(rec *ResourceCost) error }
-	ResourceCostOnModify                    interface{ OnModify(rec *ResourceCost) error }
-	ResourceCostOnDelete                    interface{ OnDelete(rec *ResourceCost) error }
-	ResourceCostOnRename                    interface{ OnRename(rec *ResourceCost) error }
+	ResourceCostOnInsert       interface{ OnInsert(rec *ResourceCost) error }
+	ResourceCostOnModify       interface{ OnModify(rec *ResourceCost) error }
+	ResourceCostOnDelete       interface{ OnDelete(rec *ResourceCost) error }
+	ResourceCostOnRename       interface{ OnRename(rec *ResourceCost) error }
+	ResourceCostOnBeforeInsert interface {
+		OnBeforeInsert(rec *ResourceCost, handled *bool) error
+	}
+	ResourceCostOnBeforeModify interface {
+		OnBeforeModify(rec *ResourceCost, handled *bool) error
+	}
+	ResourceCostOnBeforeDelete interface {
+		OnBeforeDelete(rec *ResourceCost, handled *bool) error
+	}
+	ResourceCostOnBeforeRename interface {
+		OnBeforeRename(rec *ResourceCost, handled *bool) error
+	}
 	ResourceCostOnValidate_Type             interface{ OnValidate_Type(rec *ResourceCost) error }
 	ResourceCostOnValidate_Code             interface{ OnValidate_Code(rec *ResourceCost) error }
 	ResourceCostOnValidate_Work_type_code   interface{ OnValidate_Work_type_code(rec *ResourceCost) error }
@@ -325,18 +340,23 @@ type (
 )
 
 // resourceCostLogic is the registered business logic of Resource_Cost, in
-// registration order (the base application first, then extensions)
-var resourceCostLogic []any
+// registration order (the base application first, then extensions), and
+// resourceCostLogicApp the app that registered each ("" the base application)
+var (
+	resourceCostLogic    []any
+	resourceCostLogicApp []string
+)
 
 // RegisterResourceCostLogic adds business logic to Resource_Cost: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterResourceCostLogic(logic any) {
 	checkLogic(ResourceCostTableName, "ResourceCost", logic, resourceCostTrigger)
 	resourceCostLogic = append(resourceCostLogic, logic)
+	resourceCostLogicApp = append(resourceCostLogicApp, extensions.Current())
 }
 
 // resourceCostTrigger reports whether name is a trigger of Resource_Cost and
@@ -351,6 +371,14 @@ func resourceCostTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ResourceCostOnDelete)
 	case "OnRename":
 		_, ok = logic.(ResourceCostOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ResourceCostOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ResourceCostOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ResourceCostOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ResourceCostOnBeforeRename)
 	case "OnValidate_Type":
 		_, ok = logic.(ResourceCostOnValidate_Type)
 	case "OnValidate_Code":
@@ -381,19 +409,32 @@ func (t *ResourceCost) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ResourceCost) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return resourceCostLogic
+	return extensions.EnabledLogic(resourceCostLogic, resourceCostLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ResourceCost) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ResourceCostOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResourceCostOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ResourceCostOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -402,10 +443,21 @@ func (t *ResourceCost) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ResourceCost) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ResourceCostOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResourceCostOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ResourceCostOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -413,7 +465,19 @@ func (t *ResourceCost) runOnModify() error {
 }
 
 func (t *ResourceCost) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResourceCostOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ResourceCostOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -424,7 +488,19 @@ func (t *ResourceCost) runOnDelete() error {
 }
 
 func (t *ResourceCost) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResourceCostOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ResourceCostOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

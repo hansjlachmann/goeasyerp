@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.FinChargeCommentLine) error
 //	OnDelete(rec *gtables.FinChargeCommentLine) error
 //	OnRename(rec *gtables.FinChargeCommentLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.FinChargeCommentLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Type(rec *gtables.FinChargeCommentLine) error
 //	OnValidate_No(rec *gtables.FinChargeCommentLine) error
 //	OnValidate_Line_no(rec *gtables.FinChargeCommentLine) error
@@ -29,6 +31,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -295,6 +298,18 @@ type (
 	FinChargeCommentLineOnRename interface {
 		OnRename(rec *FinChargeCommentLine) error
 	}
+	FinChargeCommentLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *FinChargeCommentLine, handled *bool) error
+	}
+	FinChargeCommentLineOnBeforeModify interface {
+		OnBeforeModify(rec *FinChargeCommentLine, handled *bool) error
+	}
+	FinChargeCommentLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *FinChargeCommentLine, handled *bool) error
+	}
+	FinChargeCommentLineOnBeforeRename interface {
+		OnBeforeRename(rec *FinChargeCommentLine, handled *bool) error
+	}
 	FinChargeCommentLineOnValidate_Type interface {
 		OnValidate_Type(rec *FinChargeCommentLine) error
 	}
@@ -316,18 +331,23 @@ type (
 )
 
 // finChargeCommentLineLogic is the registered business logic of Fin_Charge_Comment_Line, in
-// registration order (the base application first, then extensions)
-var finChargeCommentLineLogic []any
+// registration order (the base application first, then extensions), and
+// finChargeCommentLineLogicApp the app that registered each ("" the base application)
+var (
+	finChargeCommentLineLogic    []any
+	finChargeCommentLineLogicApp []string
+)
 
 // RegisterFinChargeCommentLineLogic adds business logic to Fin_Charge_Comment_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterFinChargeCommentLineLogic(logic any) {
 	checkLogic(FinChargeCommentLineTableName, "FinChargeCommentLine", logic, finChargeCommentLineTrigger)
 	finChargeCommentLineLogic = append(finChargeCommentLineLogic, logic)
+	finChargeCommentLineLogicApp = append(finChargeCommentLineLogicApp, extensions.Current())
 }
 
 // finChargeCommentLineTrigger reports whether name is a trigger of Fin_Charge_Comment_Line and
@@ -342,6 +362,14 @@ func finChargeCommentLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FinChargeCommentLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(FinChargeCommentLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(FinChargeCommentLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(FinChargeCommentLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(FinChargeCommentLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(FinChargeCommentLineOnBeforeRename)
 	case "OnValidate_Type":
 		_, ok = logic.(FinChargeCommentLineOnValidate_Type)
 	case "OnValidate_No":
@@ -372,19 +400,32 @@ func (t *FinChargeCommentLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *FinChargeCommentLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return finChargeCommentLineLogic
+	return extensions.EnabledLogic(finChargeCommentLineLogic, finChargeCommentLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *FinChargeCommentLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FinChargeCommentLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FinChargeCommentLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FinChargeCommentLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -393,10 +434,21 @@ func (t *FinChargeCommentLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *FinChargeCommentLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FinChargeCommentLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FinChargeCommentLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FinChargeCommentLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -404,7 +456,19 @@ func (t *FinChargeCommentLine) runOnModify() error {
 }
 
 func (t *FinChargeCommentLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FinChargeCommentLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FinChargeCommentLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -415,7 +479,19 @@ func (t *FinChargeCommentLine) runOnDelete() error {
 }
 
 func (t *FinChargeCommentLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FinChargeCommentLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FinChargeCommentLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

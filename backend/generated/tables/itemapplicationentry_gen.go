@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ItemApplicationEntry) error
 //	OnDelete(rec *gtables.ItemApplicationEntry) error
 //	OnRename(rec *gtables.ItemApplicationEntry) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ItemApplicationEntry, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Entry_no(rec *gtables.ItemApplicationEntry) error
 //	OnValidate_Item_ledger_entry_no(rec *gtables.ItemApplicationEntry) error
 //	OnValidate_Applied_to_entry_no(rec *gtables.ItemApplicationEntry) error
@@ -46,6 +48,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -437,6 +440,18 @@ type (
 	ItemApplicationEntryOnRename interface {
 		OnRename(rec *ItemApplicationEntry) error
 	}
+	ItemApplicationEntryOnBeforeInsert interface {
+		OnBeforeInsert(rec *ItemApplicationEntry, handled *bool) error
+	}
+	ItemApplicationEntryOnBeforeModify interface {
+		OnBeforeModify(rec *ItemApplicationEntry, handled *bool) error
+	}
+	ItemApplicationEntryOnBeforeDelete interface {
+		OnBeforeDelete(rec *ItemApplicationEntry, handled *bool) error
+	}
+	ItemApplicationEntryOnBeforeRename interface {
+		OnBeforeRename(rec *ItemApplicationEntry, handled *bool) error
+	}
 	ItemApplicationEntryOnValidate_Entry_no interface {
 		OnValidate_Entry_no(rec *ItemApplicationEntry) error
 	}
@@ -509,18 +524,23 @@ type (
 )
 
 // itemApplicationEntryLogic is the registered business logic of Item_Application_Entry, in
-// registration order (the base application first, then extensions)
-var itemApplicationEntryLogic []any
+// registration order (the base application first, then extensions), and
+// itemApplicationEntryLogicApp the app that registered each ("" the base application)
+var (
+	itemApplicationEntryLogic    []any
+	itemApplicationEntryLogicApp []string
+)
 
 // RegisterItemApplicationEntryLogic adds business logic to Item_Application_Entry: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterItemApplicationEntryLogic(logic any) {
 	checkLogic(ItemApplicationEntryTableName, "ItemApplicationEntry", logic, itemApplicationEntryTrigger)
 	itemApplicationEntryLogic = append(itemApplicationEntryLogic, logic)
+	itemApplicationEntryLogicApp = append(itemApplicationEntryLogicApp, extensions.Current())
 }
 
 // itemApplicationEntryTrigger reports whether name is a trigger of Item_Application_Entry and
@@ -535,6 +555,14 @@ func itemApplicationEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemApplicationEntryOnDelete)
 	case "OnRename":
 		_, ok = logic.(ItemApplicationEntryOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ItemApplicationEntryOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ItemApplicationEntryOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ItemApplicationEntryOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ItemApplicationEntryOnBeforeRename)
 	case "OnValidate_Entry_no":
 		_, ok = logic.(ItemApplicationEntryOnValidate_Entry_no)
 	case "OnValidate_Item_ledger_entry_no":
@@ -599,19 +627,32 @@ func (t *ItemApplicationEntry) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ItemApplicationEntry) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return itemApplicationEntryLogic
+	return extensions.EnabledLogic(itemApplicationEntryLogic, itemApplicationEntryLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ItemApplicationEntry) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ItemApplicationEntryOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemApplicationEntryOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ItemApplicationEntryOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -620,10 +661,21 @@ func (t *ItemApplicationEntry) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ItemApplicationEntry) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ItemApplicationEntryOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemApplicationEntryOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ItemApplicationEntryOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -631,7 +683,19 @@ func (t *ItemApplicationEntry) runOnModify() error {
 }
 
 func (t *ItemApplicationEntry) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemApplicationEntryOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ItemApplicationEntryOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -642,7 +706,19 @@ func (t *ItemApplicationEntry) runOnDelete() error {
 }
 
 func (t *ItemApplicationEntry) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemApplicationEntryOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ItemApplicationEntryOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

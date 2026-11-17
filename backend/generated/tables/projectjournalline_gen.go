@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ProjectJournalLine) error
 //	OnDelete(rec *gtables.ProjectJournalLine) error
 //	OnRename(rec *gtables.ProjectJournalLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ProjectJournalLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Journal_template_name(rec *gtables.ProjectJournalLine) error
 //	OnValidate_Journal_batch_name(rec *gtables.ProjectJournalLine) error
 //	OnValidate_Line_no(rec *gtables.ProjectJournalLine) error
@@ -83,6 +85,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -783,6 +786,18 @@ type (
 	ProjectJournalLineOnRename interface {
 		OnRename(rec *ProjectJournalLine) error
 	}
+	ProjectJournalLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *ProjectJournalLine, handled *bool) error
+	}
+	ProjectJournalLineOnBeforeModify interface {
+		OnBeforeModify(rec *ProjectJournalLine, handled *bool) error
+	}
+	ProjectJournalLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *ProjectJournalLine, handled *bool) error
+	}
+	ProjectJournalLineOnBeforeRename interface {
+		OnBeforeRename(rec *ProjectJournalLine, handled *bool) error
+	}
 	ProjectJournalLineOnValidate_Journal_template_name interface {
 		OnValidate_Journal_template_name(rec *ProjectJournalLine) error
 	}
@@ -966,18 +981,23 @@ type (
 )
 
 // projectJournalLineLogic is the registered business logic of Project_Journal_Line, in
-// registration order (the base application first, then extensions)
-var projectJournalLineLogic []any
+// registration order (the base application first, then extensions), and
+// projectJournalLineLogicApp the app that registered each ("" the base application)
+var (
+	projectJournalLineLogic    []any
+	projectJournalLineLogicApp []string
+)
 
 // RegisterProjectJournalLineLogic adds business logic to Project_Journal_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterProjectJournalLineLogic(logic any) {
 	checkLogic(ProjectJournalLineTableName, "ProjectJournalLine", logic, projectJournalLineTrigger)
 	projectJournalLineLogic = append(projectJournalLineLogic, logic)
+	projectJournalLineLogicApp = append(projectJournalLineLogicApp, extensions.Current())
 }
 
 // projectJournalLineTrigger reports whether name is a trigger of Project_Journal_Line and
@@ -992,6 +1012,14 @@ func projectJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ProjectJournalLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(ProjectJournalLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ProjectJournalLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ProjectJournalLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ProjectJournalLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ProjectJournalLineOnBeforeRename)
 	case "OnValidate_Journal_template_name":
 		_, ok = logic.(ProjectJournalLineOnValidate_Journal_template_name)
 	case "OnValidate_Journal_batch_name":
@@ -1130,19 +1158,32 @@ func (t *ProjectJournalLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ProjectJournalLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return projectJournalLineLogic
+	return extensions.EnabledLogic(projectJournalLineLogic, projectJournalLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ProjectJournalLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ProjectJournalLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ProjectJournalLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ProjectJournalLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1151,10 +1192,21 @@ func (t *ProjectJournalLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ProjectJournalLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ProjectJournalLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ProjectJournalLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ProjectJournalLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1162,7 +1214,19 @@ func (t *ProjectJournalLine) runOnModify() error {
 }
 
 func (t *ProjectJournalLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ProjectJournalLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ProjectJournalLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -1173,7 +1237,19 @@ func (t *ProjectJournalLine) runOnDelete() error {
 }
 
 func (t *ProjectJournalLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ProjectJournalLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ProjectJournalLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

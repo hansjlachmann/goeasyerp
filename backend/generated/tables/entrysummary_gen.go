@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.EntrySummary) error
 //	OnDelete(rec *gtables.EntrySummary) error
 //	OnRename(rec *gtables.EntrySummary) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.EntrySummary, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Entry_no(rec *gtables.EntrySummary) error
 //	OnValidate_Table_id(rec *gtables.EntrySummary) error
 //	OnValidate_Summary_type(rec *gtables.EntrySummary) error
@@ -30,6 +32,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -264,10 +267,22 @@ func (t *EntrySummary) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Entry_Summary: a business logic type implements the ones it needs
 type (
-	EntrySummaryOnInsert                             interface{ OnInsert(rec *EntrySummary) error }
-	EntrySummaryOnModify                             interface{ OnModify(rec *EntrySummary) error }
-	EntrySummaryOnDelete                             interface{ OnDelete(rec *EntrySummary) error }
-	EntrySummaryOnRename                             interface{ OnRename(rec *EntrySummary) error }
+	EntrySummaryOnInsert       interface{ OnInsert(rec *EntrySummary) error }
+	EntrySummaryOnModify       interface{ OnModify(rec *EntrySummary) error }
+	EntrySummaryOnDelete       interface{ OnDelete(rec *EntrySummary) error }
+	EntrySummaryOnRename       interface{ OnRename(rec *EntrySummary) error }
+	EntrySummaryOnBeforeInsert interface {
+		OnBeforeInsert(rec *EntrySummary, handled *bool) error
+	}
+	EntrySummaryOnBeforeModify interface {
+		OnBeforeModify(rec *EntrySummary, handled *bool) error
+	}
+	EntrySummaryOnBeforeDelete interface {
+		OnBeforeDelete(rec *EntrySummary, handled *bool) error
+	}
+	EntrySummaryOnBeforeRename interface {
+		OnBeforeRename(rec *EntrySummary, handled *bool) error
+	}
 	EntrySummaryOnValidate_Entry_no                  interface{ OnValidate_Entry_no(rec *EntrySummary) error }
 	EntrySummaryOnValidate_Table_id                  interface{ OnValidate_Table_id(rec *EntrySummary) error }
 	EntrySummaryOnValidate_Summary_type              interface{ OnValidate_Summary_type(rec *EntrySummary) error }
@@ -279,18 +294,23 @@ type (
 )
 
 // entrySummaryLogic is the registered business logic of Entry_Summary, in
-// registration order (the base application first, then extensions)
-var entrySummaryLogic []any
+// registration order (the base application first, then extensions), and
+// entrySummaryLogicApp the app that registered each ("" the base application)
+var (
+	entrySummaryLogic    []any
+	entrySummaryLogicApp []string
+)
 
 // RegisterEntrySummaryLogic adds business logic to Entry_Summary: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterEntrySummaryLogic(logic any) {
 	checkLogic(EntrySummaryTableName, "EntrySummary", logic, entrySummaryTrigger)
 	entrySummaryLogic = append(entrySummaryLogic, logic)
+	entrySummaryLogicApp = append(entrySummaryLogicApp, extensions.Current())
 }
 
 // entrySummaryTrigger reports whether name is a trigger of Entry_Summary and
@@ -305,6 +325,14 @@ func entrySummaryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(EntrySummaryOnDelete)
 	case "OnRename":
 		_, ok = logic.(EntrySummaryOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(EntrySummaryOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(EntrySummaryOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(EntrySummaryOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(EntrySummaryOnBeforeRename)
 	case "OnValidate_Entry_no":
 		_, ok = logic.(EntrySummaryOnValidate_Entry_no)
 	case "OnValidate_Table_id":
@@ -339,19 +367,32 @@ func (t *EntrySummary) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *EntrySummary) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return entrySummaryLogic
+	return extensions.EnabledLogic(entrySummaryLogic, entrySummaryLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *EntrySummary) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(EntrySummaryOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(EntrySummaryOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(EntrySummaryOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -360,10 +401,21 @@ func (t *EntrySummary) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *EntrySummary) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(EntrySummaryOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(EntrySummaryOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(EntrySummaryOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -371,7 +423,19 @@ func (t *EntrySummary) runOnModify() error {
 }
 
 func (t *EntrySummary) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(EntrySummaryOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(EntrySummaryOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -382,7 +446,19 @@ func (t *EntrySummary) runOnDelete() error {
 }
 
 func (t *EntrySummary) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(EntrySummaryOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(EntrySummaryOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

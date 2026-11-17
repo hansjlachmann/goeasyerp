@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.JobQueueEntry) error
 //	OnDelete(rec *gtables.JobQueueEntry) error
 //	OnRename(rec *gtables.JobQueueEntry) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.JobQueueEntry, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Entry_no(rec *gtables.JobQueueEntry) error
 //	OnValidate_Job_queue_no(rec *gtables.JobQueueEntry) error
 //	OnValidate_Status(rec *gtables.JobQueueEntry) error
@@ -34,6 +36,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -330,6 +333,18 @@ type (
 	JobQueueEntryOnRename interface {
 		OnRename(rec *JobQueueEntry) error
 	}
+	JobQueueEntryOnBeforeInsert interface {
+		OnBeforeInsert(rec *JobQueueEntry, handled *bool) error
+	}
+	JobQueueEntryOnBeforeModify interface {
+		OnBeforeModify(rec *JobQueueEntry, handled *bool) error
+	}
+	JobQueueEntryOnBeforeDelete interface {
+		OnBeforeDelete(rec *JobQueueEntry, handled *bool) error
+	}
+	JobQueueEntryOnBeforeRename interface {
+		OnBeforeRename(rec *JobQueueEntry, handled *bool) error
+	}
 	JobQueueEntryOnValidate_Entry_no interface {
 		OnValidate_Entry_no(rec *JobQueueEntry) error
 	}
@@ -363,18 +378,23 @@ type (
 )
 
 // jobQueueEntryLogic is the registered business logic of Job_Queue_Entry, in
-// registration order (the base application first, then extensions)
-var jobQueueEntryLogic []any
+// registration order (the base application first, then extensions), and
+// jobQueueEntryLogicApp the app that registered each ("" the base application)
+var (
+	jobQueueEntryLogic    []any
+	jobQueueEntryLogicApp []string
+)
 
 // RegisterJobQueueEntryLogic adds business logic to Job_Queue_Entry: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterJobQueueEntryLogic(logic any) {
 	checkLogic(JobQueueEntryTableName, "JobQueueEntry", logic, jobQueueEntryTrigger)
 	jobQueueEntryLogic = append(jobQueueEntryLogic, logic)
+	jobQueueEntryLogicApp = append(jobQueueEntryLogicApp, extensions.Current())
 }
 
 // jobQueueEntryTrigger reports whether name is a trigger of Job_Queue_Entry and
@@ -389,6 +409,14 @@ func jobQueueEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(JobQueueEntryOnDelete)
 	case "OnRename":
 		_, ok = logic.(JobQueueEntryOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(JobQueueEntryOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(JobQueueEntryOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(JobQueueEntryOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(JobQueueEntryOnBeforeRename)
 	case "OnValidate_Entry_no":
 		_, ok = logic.(JobQueueEntryOnValidate_Entry_no)
 	case "OnValidate_Job_queue_no":
@@ -427,19 +455,32 @@ func (t *JobQueueEntry) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *JobQueueEntry) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return jobQueueEntryLogic
+	return extensions.EnabledLogic(jobQueueEntryLogic, jobQueueEntryLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *JobQueueEntry) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(JobQueueEntryOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(JobQueueEntryOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(JobQueueEntryOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -448,10 +489,21 @@ func (t *JobQueueEntry) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *JobQueueEntry) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(JobQueueEntryOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(JobQueueEntryOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(JobQueueEntryOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -459,7 +511,19 @@ func (t *JobQueueEntry) runOnModify() error {
 }
 
 func (t *JobQueueEntry) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(JobQueueEntryOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(JobQueueEntryOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -470,7 +534,19 @@ func (t *JobQueueEntry) runOnDelete() error {
 }
 
 func (t *JobQueueEntry) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(JobQueueEntryOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(JobQueueEntryOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

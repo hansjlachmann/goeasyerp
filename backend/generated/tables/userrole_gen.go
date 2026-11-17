@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.UserRole) error
 //	OnDelete(rec *gtables.UserRole) error
 //	OnRename(rec *gtables.UserRole) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.UserRole, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.UserRole) error
 //	OnValidate_Description(rec *gtables.UserRole) error
 
@@ -23,6 +25,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -215,27 +218,44 @@ func (t *UserRole) DeleteOrError(runTrigger bool) error {
 
 // Triggers of User_Role: a business logic type implements the ones it needs
 type (
-	UserRoleOnInsert               interface{ OnInsert(rec *UserRole) error }
-	UserRoleOnModify               interface{ OnModify(rec *UserRole) error }
-	UserRoleOnDelete               interface{ OnDelete(rec *UserRole) error }
-	UserRoleOnRename               interface{ OnRename(rec *UserRole) error }
+	UserRoleOnInsert       interface{ OnInsert(rec *UserRole) error }
+	UserRoleOnModify       interface{ OnModify(rec *UserRole) error }
+	UserRoleOnDelete       interface{ OnDelete(rec *UserRole) error }
+	UserRoleOnRename       interface{ OnRename(rec *UserRole) error }
+	UserRoleOnBeforeInsert interface {
+		OnBeforeInsert(rec *UserRole, handled *bool) error
+	}
+	UserRoleOnBeforeModify interface {
+		OnBeforeModify(rec *UserRole, handled *bool) error
+	}
+	UserRoleOnBeforeDelete interface {
+		OnBeforeDelete(rec *UserRole, handled *bool) error
+	}
+	UserRoleOnBeforeRename interface {
+		OnBeforeRename(rec *UserRole, handled *bool) error
+	}
 	UserRoleOnValidate_Code        interface{ OnValidate_Code(rec *UserRole) error }
 	UserRoleOnValidate_Description interface{ OnValidate_Description(rec *UserRole) error }
 )
 
 // userRoleLogic is the registered business logic of User_Role, in
-// registration order (the base application first, then extensions)
-var userRoleLogic []any
+// registration order (the base application first, then extensions), and
+// userRoleLogicApp the app that registered each ("" the base application)
+var (
+	userRoleLogic    []any
+	userRoleLogicApp []string
+)
 
 // RegisterUserRoleLogic adds business logic to User_Role: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterUserRoleLogic(logic any) {
 	checkLogic(UserRoleTableName, "UserRole", logic, userRoleTrigger)
 	userRoleLogic = append(userRoleLogic, logic)
+	userRoleLogicApp = append(userRoleLogicApp, extensions.Current())
 }
 
 // userRoleTrigger reports whether name is a trigger of User_Role and
@@ -250,6 +270,14 @@ func userRoleTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(UserRoleOnDelete)
 	case "OnRename":
 		_, ok = logic.(UserRoleOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(UserRoleOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(UserRoleOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(UserRoleOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(UserRoleOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(UserRoleOnValidate_Code)
 	case "OnValidate_Description":
@@ -272,19 +300,32 @@ func (t *UserRole) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *UserRole) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return userRoleLogic
+	return extensions.EnabledLogic(userRoleLogic, userRoleLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *UserRole) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(UserRoleOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UserRoleOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(UserRoleOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -293,10 +334,21 @@ func (t *UserRole) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *UserRole) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(UserRoleOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UserRoleOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(UserRoleOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,7 +356,19 @@ func (t *UserRole) runOnModify() error {
 }
 
 func (t *UserRole) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UserRoleOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(UserRoleOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -315,7 +379,19 @@ func (t *UserRole) runOnDelete() error {
 }
 
 func (t *UserRole) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UserRoleOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(UserRoleOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

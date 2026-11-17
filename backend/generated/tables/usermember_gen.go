@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.UserMember) error
 //	OnDelete(rec *gtables.UserMember) error
 //	OnRename(rec *gtables.UserMember) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.UserMember, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_User_id(rec *gtables.UserMember) error
 //	OnValidate_Role_id(rec *gtables.UserMember) error
 //	OnValidate_Company(rec *gtables.UserMember) error
@@ -24,6 +26,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -223,28 +226,45 @@ func (t *UserMember) DeleteOrError(runTrigger bool) error {
 
 // Triggers of User_Member: a business logic type implements the ones it needs
 type (
-	UserMemberOnInsert           interface{ OnInsert(rec *UserMember) error }
-	UserMemberOnModify           interface{ OnModify(rec *UserMember) error }
-	UserMemberOnDelete           interface{ OnDelete(rec *UserMember) error }
-	UserMemberOnRename           interface{ OnRename(rec *UserMember) error }
+	UserMemberOnInsert       interface{ OnInsert(rec *UserMember) error }
+	UserMemberOnModify       interface{ OnModify(rec *UserMember) error }
+	UserMemberOnDelete       interface{ OnDelete(rec *UserMember) error }
+	UserMemberOnRename       interface{ OnRename(rec *UserMember) error }
+	UserMemberOnBeforeInsert interface {
+		OnBeforeInsert(rec *UserMember, handled *bool) error
+	}
+	UserMemberOnBeforeModify interface {
+		OnBeforeModify(rec *UserMember, handled *bool) error
+	}
+	UserMemberOnBeforeDelete interface {
+		OnBeforeDelete(rec *UserMember, handled *bool) error
+	}
+	UserMemberOnBeforeRename interface {
+		OnBeforeRename(rec *UserMember, handled *bool) error
+	}
 	UserMemberOnValidate_User_id interface{ OnValidate_User_id(rec *UserMember) error }
 	UserMemberOnValidate_Role_id interface{ OnValidate_Role_id(rec *UserMember) error }
 	UserMemberOnValidate_Company interface{ OnValidate_Company(rec *UserMember) error }
 )
 
 // userMemberLogic is the registered business logic of User_Member, in
-// registration order (the base application first, then extensions)
-var userMemberLogic []any
+// registration order (the base application first, then extensions), and
+// userMemberLogicApp the app that registered each ("" the base application)
+var (
+	userMemberLogic    []any
+	userMemberLogicApp []string
+)
 
 // RegisterUserMemberLogic adds business logic to User_Member: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterUserMemberLogic(logic any) {
 	checkLogic(UserMemberTableName, "UserMember", logic, userMemberTrigger)
 	userMemberLogic = append(userMemberLogic, logic)
+	userMemberLogicApp = append(userMemberLogicApp, extensions.Current())
 }
 
 // userMemberTrigger reports whether name is a trigger of User_Member and
@@ -259,6 +279,14 @@ func userMemberTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(UserMemberOnDelete)
 	case "OnRename":
 		_, ok = logic.(UserMemberOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(UserMemberOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(UserMemberOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(UserMemberOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(UserMemberOnBeforeRename)
 	case "OnValidate_User_id":
 		_, ok = logic.(UserMemberOnValidate_User_id)
 	case "OnValidate_Role_id":
@@ -283,19 +311,32 @@ func (t *UserMember) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *UserMember) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return userMemberLogic
+	return extensions.EnabledLogic(userMemberLogic, userMemberLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *UserMember) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(UserMemberOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UserMemberOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(UserMemberOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,10 +345,21 @@ func (t *UserMember) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *UserMember) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(UserMemberOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UserMemberOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(UserMemberOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -315,7 +367,19 @@ func (t *UserMember) runOnModify() error {
 }
 
 func (t *UserMember) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UserMemberOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(UserMemberOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -326,7 +390,19 @@ func (t *UserMember) runOnDelete() error {
 }
 
 func (t *UserMember) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UserMemberOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(UserMemberOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

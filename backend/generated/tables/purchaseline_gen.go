@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.PurchaseLine) error
 //	OnDelete(rec *gtables.PurchaseLine) error
 //	OnRename(rec *gtables.PurchaseLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.PurchaseLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Document_type(rec *gtables.PurchaseLine) error
 //	OnValidate_Buy_from_vendor_no(rec *gtables.PurchaseLine) error
 //	OnValidate_Document_no(rec *gtables.PurchaseLine) error
@@ -121,6 +123,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -1143,10 +1146,22 @@ func (t *PurchaseLine) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Purchase_Line: a business logic type implements the ones it needs
 type (
-	PurchaseLineOnInsert                                  interface{ OnInsert(rec *PurchaseLine) error }
-	PurchaseLineOnModify                                  interface{ OnModify(rec *PurchaseLine) error }
-	PurchaseLineOnDelete                                  interface{ OnDelete(rec *PurchaseLine) error }
-	PurchaseLineOnRename                                  interface{ OnRename(rec *PurchaseLine) error }
+	PurchaseLineOnInsert       interface{ OnInsert(rec *PurchaseLine) error }
+	PurchaseLineOnModify       interface{ OnModify(rec *PurchaseLine) error }
+	PurchaseLineOnDelete       interface{ OnDelete(rec *PurchaseLine) error }
+	PurchaseLineOnRename       interface{ OnRename(rec *PurchaseLine) error }
+	PurchaseLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *PurchaseLine, handled *bool) error
+	}
+	PurchaseLineOnBeforeModify interface {
+		OnBeforeModify(rec *PurchaseLine, handled *bool) error
+	}
+	PurchaseLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *PurchaseLine, handled *bool) error
+	}
+	PurchaseLineOnBeforeRename interface {
+		OnBeforeRename(rec *PurchaseLine, handled *bool) error
+	}
 	PurchaseLineOnValidate_Document_type                  interface{ OnValidate_Document_type(rec *PurchaseLine) error }
 	PurchaseLineOnValidate_Buy_from_vendor_no             interface{ OnValidate_Buy_from_vendor_no(rec *PurchaseLine) error }
 	PurchaseLineOnValidate_Document_no                    interface{ OnValidate_Document_no(rec *PurchaseLine) error }
@@ -1248,18 +1263,23 @@ type (
 )
 
 // purchaseLineLogic is the registered business logic of Purchase_Line, in
-// registration order (the base application first, then extensions)
-var purchaseLineLogic []any
+// registration order (the base application first, then extensions), and
+// purchaseLineLogicApp the app that registered each ("" the base application)
+var (
+	purchaseLineLogic    []any
+	purchaseLineLogicApp []string
+)
 
 // RegisterPurchaseLineLogic adds business logic to Purchase_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterPurchaseLineLogic(logic any) {
 	checkLogic(PurchaseLineTableName, "PurchaseLine", logic, purchaseLineTrigger)
 	purchaseLineLogic = append(purchaseLineLogic, logic)
+	purchaseLineLogicApp = append(purchaseLineLogicApp, extensions.Current())
 }
 
 // purchaseLineTrigger reports whether name is a trigger of Purchase_Line and
@@ -1274,6 +1294,14 @@ func purchaseLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PurchaseLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(PurchaseLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(PurchaseLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(PurchaseLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(PurchaseLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(PurchaseLineOnBeforeRename)
 	case "OnValidate_Document_type":
 		_, ok = logic.(PurchaseLineOnValidate_Document_type)
 	case "OnValidate_Buy_from_vendor_no":
@@ -1488,19 +1516,32 @@ func (t *PurchaseLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *PurchaseLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return purchaseLineLogic
+	return extensions.EnabledLogic(purchaseLineLogic, purchaseLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *PurchaseLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PurchaseLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchaseLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PurchaseLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1509,10 +1550,21 @@ func (t *PurchaseLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *PurchaseLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PurchaseLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchaseLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PurchaseLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1520,7 +1572,19 @@ func (t *PurchaseLine) runOnModify() error {
 }
 
 func (t *PurchaseLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchaseLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PurchaseLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -1531,7 +1595,19 @@ func (t *PurchaseLine) runOnDelete() error {
 }
 
 func (t *PurchaseLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchaseLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PurchaseLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

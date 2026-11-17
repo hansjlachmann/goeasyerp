@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.SalesHeader) error
 //	OnDelete(rec *gtables.SalesHeader) error
 //	OnRename(rec *gtables.SalesHeader) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.SalesHeader, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Document_type(rec *gtables.SalesHeader) error
 //	OnValidate_Sell_to_customer_no(rec *gtables.SalesHeader) error
 //	OnValidate_No(rec *gtables.SalesHeader) error
@@ -113,6 +115,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -1048,10 +1051,22 @@ func (t *SalesHeader) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Sales_Header: a business logic type implements the ones it needs
 type (
-	SalesHeaderOnInsert                             interface{ OnInsert(rec *SalesHeader) error }
-	SalesHeaderOnModify                             interface{ OnModify(rec *SalesHeader) error }
-	SalesHeaderOnDelete                             interface{ OnDelete(rec *SalesHeader) error }
-	SalesHeaderOnRename                             interface{ OnRename(rec *SalesHeader) error }
+	SalesHeaderOnInsert       interface{ OnInsert(rec *SalesHeader) error }
+	SalesHeaderOnModify       interface{ OnModify(rec *SalesHeader) error }
+	SalesHeaderOnDelete       interface{ OnDelete(rec *SalesHeader) error }
+	SalesHeaderOnRename       interface{ OnRename(rec *SalesHeader) error }
+	SalesHeaderOnBeforeInsert interface {
+		OnBeforeInsert(rec *SalesHeader, handled *bool) error
+	}
+	SalesHeaderOnBeforeModify interface {
+		OnBeforeModify(rec *SalesHeader, handled *bool) error
+	}
+	SalesHeaderOnBeforeDelete interface {
+		OnBeforeDelete(rec *SalesHeader, handled *bool) error
+	}
+	SalesHeaderOnBeforeRename interface {
+		OnBeforeRename(rec *SalesHeader, handled *bool) error
+	}
 	SalesHeaderOnValidate_Document_type             interface{ OnValidate_Document_type(rec *SalesHeader) error }
 	SalesHeaderOnValidate_Sell_to_customer_no       interface{ OnValidate_Sell_to_customer_no(rec *SalesHeader) error }
 	SalesHeaderOnValidate_No                        interface{ OnValidate_No(rec *SalesHeader) error }
@@ -1145,18 +1160,23 @@ type (
 )
 
 // salesHeaderLogic is the registered business logic of Sales_Header, in
-// registration order (the base application first, then extensions)
-var salesHeaderLogic []any
+// registration order (the base application first, then extensions), and
+// salesHeaderLogicApp the app that registered each ("" the base application)
+var (
+	salesHeaderLogic    []any
+	salesHeaderLogicApp []string
+)
 
 // RegisterSalesHeaderLogic adds business logic to Sales_Header: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterSalesHeaderLogic(logic any) {
 	checkLogic(SalesHeaderTableName, "SalesHeader", logic, salesHeaderTrigger)
 	salesHeaderLogic = append(salesHeaderLogic, logic)
+	salesHeaderLogicApp = append(salesHeaderLogicApp, extensions.Current())
 }
 
 // salesHeaderTrigger reports whether name is a trigger of Sales_Header and
@@ -1171,6 +1191,14 @@ func salesHeaderTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SalesHeaderOnDelete)
 	case "OnRename":
 		_, ok = logic.(SalesHeaderOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(SalesHeaderOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(SalesHeaderOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(SalesHeaderOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(SalesHeaderOnBeforeRename)
 	case "OnValidate_Document_type":
 		_, ok = logic.(SalesHeaderOnValidate_Document_type)
 	case "OnValidate_Sell_to_customer_no":
@@ -1369,19 +1397,32 @@ func (t *SalesHeader) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *SalesHeader) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return salesHeaderLogic
+	return extensions.EnabledLogic(salesHeaderLogic, salesHeaderLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *SalesHeader) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(SalesHeaderOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalesHeaderOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(SalesHeaderOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1390,10 +1431,21 @@ func (t *SalesHeader) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *SalesHeader) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(SalesHeaderOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalesHeaderOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(SalesHeaderOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1401,7 +1453,19 @@ func (t *SalesHeader) runOnModify() error {
 }
 
 func (t *SalesHeader) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalesHeaderOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(SalesHeaderOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -1412,7 +1476,19 @@ func (t *SalesHeader) runOnDelete() error {
 }
 
 func (t *SalesHeader) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalesHeaderOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(SalesHeaderOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

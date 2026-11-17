@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ItemPurchQtyDisc) error
 //	OnDelete(rec *gtables.ItemPurchQtyDisc) error
 //	OnRename(rec *gtables.ItemPurchQtyDisc) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ItemPurchQtyDisc, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Item_no(rec *gtables.ItemPurchQtyDisc) error
 //	OnValidate_Vendor_no(rec *gtables.ItemPurchQtyDisc) error
 //	OnValidate_Minimum_quantity(rec *gtables.ItemPurchQtyDisc) error
@@ -25,6 +27,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -243,6 +246,18 @@ type (
 	ItemPurchQtyDiscOnRename interface {
 		OnRename(rec *ItemPurchQtyDisc) error
 	}
+	ItemPurchQtyDiscOnBeforeInsert interface {
+		OnBeforeInsert(rec *ItemPurchQtyDisc, handled *bool) error
+	}
+	ItemPurchQtyDiscOnBeforeModify interface {
+		OnBeforeModify(rec *ItemPurchQtyDisc, handled *bool) error
+	}
+	ItemPurchQtyDiscOnBeforeDelete interface {
+		OnBeforeDelete(rec *ItemPurchQtyDisc, handled *bool) error
+	}
+	ItemPurchQtyDiscOnBeforeRename interface {
+		OnBeforeRename(rec *ItemPurchQtyDisc, handled *bool) error
+	}
 	ItemPurchQtyDiscOnValidate_Item_no interface {
 		OnValidate_Item_no(rec *ItemPurchQtyDisc) error
 	}
@@ -258,18 +273,23 @@ type (
 )
 
 // itemPurchQtyDiscLogic is the registered business logic of Item_Purch_Qty_Disc, in
-// registration order (the base application first, then extensions)
-var itemPurchQtyDiscLogic []any
+// registration order (the base application first, then extensions), and
+// itemPurchQtyDiscLogicApp the app that registered each ("" the base application)
+var (
+	itemPurchQtyDiscLogic    []any
+	itemPurchQtyDiscLogicApp []string
+)
 
 // RegisterItemPurchQtyDiscLogic adds business logic to Item_Purch_Qty_Disc: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterItemPurchQtyDiscLogic(logic any) {
 	checkLogic(ItemPurchQtyDiscTableName, "ItemPurchQtyDisc", logic, itemPurchQtyDiscTrigger)
 	itemPurchQtyDiscLogic = append(itemPurchQtyDiscLogic, logic)
+	itemPurchQtyDiscLogicApp = append(itemPurchQtyDiscLogicApp, extensions.Current())
 }
 
 // itemPurchQtyDiscTrigger reports whether name is a trigger of Item_Purch_Qty_Disc and
@@ -284,6 +304,14 @@ func itemPurchQtyDiscTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemPurchQtyDiscOnDelete)
 	case "OnRename":
 		_, ok = logic.(ItemPurchQtyDiscOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ItemPurchQtyDiscOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ItemPurchQtyDiscOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ItemPurchQtyDiscOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ItemPurchQtyDiscOnBeforeRename)
 	case "OnValidate_Item_no":
 		_, ok = logic.(ItemPurchQtyDiscOnValidate_Item_no)
 	case "OnValidate_Vendor_no":
@@ -310,19 +338,32 @@ func (t *ItemPurchQtyDisc) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ItemPurchQtyDisc) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return itemPurchQtyDiscLogic
+	return extensions.EnabledLogic(itemPurchQtyDiscLogic, itemPurchQtyDiscLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ItemPurchQtyDisc) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ItemPurchQtyDiscOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemPurchQtyDiscOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ItemPurchQtyDiscOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -331,10 +372,21 @@ func (t *ItemPurchQtyDisc) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ItemPurchQtyDisc) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ItemPurchQtyDiscOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemPurchQtyDiscOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ItemPurchQtyDiscOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -342,7 +394,19 @@ func (t *ItemPurchQtyDisc) runOnModify() error {
 }
 
 func (t *ItemPurchQtyDisc) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemPurchQtyDiscOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ItemPurchQtyDiscOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -353,7 +417,19 @@ func (t *ItemPurchQtyDisc) runOnDelete() error {
 }
 
 func (t *ItemPurchQtyDisc) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemPurchQtyDiscOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ItemPurchQtyDiscOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

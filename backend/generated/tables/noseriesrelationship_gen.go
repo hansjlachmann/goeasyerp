@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.NoSeriesRelationship) error
 //	OnDelete(rec *gtables.NoSeriesRelationship) error
 //	OnRename(rec *gtables.NoSeriesRelationship) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.NoSeriesRelationship, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.NoSeriesRelationship) error
 //	OnValidate_Series_code(rec *gtables.NoSeriesRelationship) error
 
@@ -23,6 +25,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -243,6 +246,18 @@ type (
 	NoSeriesRelationshipOnRename interface {
 		OnRename(rec *NoSeriesRelationship) error
 	}
+	NoSeriesRelationshipOnBeforeInsert interface {
+		OnBeforeInsert(rec *NoSeriesRelationship, handled *bool) error
+	}
+	NoSeriesRelationshipOnBeforeModify interface {
+		OnBeforeModify(rec *NoSeriesRelationship, handled *bool) error
+	}
+	NoSeriesRelationshipOnBeforeDelete interface {
+		OnBeforeDelete(rec *NoSeriesRelationship, handled *bool) error
+	}
+	NoSeriesRelationshipOnBeforeRename interface {
+		OnBeforeRename(rec *NoSeriesRelationship, handled *bool) error
+	}
 	NoSeriesRelationshipOnValidate_Code interface {
 		OnValidate_Code(rec *NoSeriesRelationship) error
 	}
@@ -252,18 +267,23 @@ type (
 )
 
 // noSeriesRelationshipLogic is the registered business logic of No_Series_Relationship, in
-// registration order (the base application first, then extensions)
-var noSeriesRelationshipLogic []any
+// registration order (the base application first, then extensions), and
+// noSeriesRelationshipLogicApp the app that registered each ("" the base application)
+var (
+	noSeriesRelationshipLogic    []any
+	noSeriesRelationshipLogicApp []string
+)
 
 // RegisterNoSeriesRelationshipLogic adds business logic to No_Series_Relationship: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterNoSeriesRelationshipLogic(logic any) {
 	checkLogic(NoSeriesRelationshipTableName, "NoSeriesRelationship", logic, noSeriesRelationshipTrigger)
 	noSeriesRelationshipLogic = append(noSeriesRelationshipLogic, logic)
+	noSeriesRelationshipLogicApp = append(noSeriesRelationshipLogicApp, extensions.Current())
 }
 
 // noSeriesRelationshipTrigger reports whether name is a trigger of No_Series_Relationship and
@@ -278,6 +298,14 @@ func noSeriesRelationshipTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(NoSeriesRelationshipOnDelete)
 	case "OnRename":
 		_, ok = logic.(NoSeriesRelationshipOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(NoSeriesRelationshipOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(NoSeriesRelationshipOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(NoSeriesRelationshipOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(NoSeriesRelationshipOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(NoSeriesRelationshipOnValidate_Code)
 	case "OnValidate_Series_code":
@@ -300,19 +328,32 @@ func (t *NoSeriesRelationship) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *NoSeriesRelationship) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return noSeriesRelationshipLogic
+	return extensions.EnabledLogic(noSeriesRelationshipLogic, noSeriesRelationshipLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *NoSeriesRelationship) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(NoSeriesRelationshipOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(NoSeriesRelationshipOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(NoSeriesRelationshipOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -321,10 +362,21 @@ func (t *NoSeriesRelationship) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *NoSeriesRelationship) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(NoSeriesRelationshipOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(NoSeriesRelationshipOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(NoSeriesRelationshipOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -332,7 +384,19 @@ func (t *NoSeriesRelationship) runOnModify() error {
 }
 
 func (t *NoSeriesRelationship) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(NoSeriesRelationshipOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(NoSeriesRelationshipOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -343,7 +407,19 @@ func (t *NoSeriesRelationship) runOnDelete() error {
 }
 
 func (t *NoSeriesRelationship) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(NoSeriesRelationshipOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(NoSeriesRelationshipOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

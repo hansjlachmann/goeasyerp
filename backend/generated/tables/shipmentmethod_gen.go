@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ShipmentMethod) error
 //	OnDelete(rec *gtables.ShipmentMethod) error
 //	OnRename(rec *gtables.ShipmentMethod) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ShipmentMethod, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.ShipmentMethod) error
 //	OnValidate_Description(rec *gtables.ShipmentMethod) error
 
@@ -23,6 +25,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -227,6 +230,18 @@ type (
 	ShipmentMethodOnRename interface {
 		OnRename(rec *ShipmentMethod) error
 	}
+	ShipmentMethodOnBeforeInsert interface {
+		OnBeforeInsert(rec *ShipmentMethod, handled *bool) error
+	}
+	ShipmentMethodOnBeforeModify interface {
+		OnBeforeModify(rec *ShipmentMethod, handled *bool) error
+	}
+	ShipmentMethodOnBeforeDelete interface {
+		OnBeforeDelete(rec *ShipmentMethod, handled *bool) error
+	}
+	ShipmentMethodOnBeforeRename interface {
+		OnBeforeRename(rec *ShipmentMethod, handled *bool) error
+	}
 	ShipmentMethodOnValidate_Code interface {
 		OnValidate_Code(rec *ShipmentMethod) error
 	}
@@ -236,18 +251,23 @@ type (
 )
 
 // shipmentMethodLogic is the registered business logic of Shipment_Method, in
-// registration order (the base application first, then extensions)
-var shipmentMethodLogic []any
+// registration order (the base application first, then extensions), and
+// shipmentMethodLogicApp the app that registered each ("" the base application)
+var (
+	shipmentMethodLogic    []any
+	shipmentMethodLogicApp []string
+)
 
 // RegisterShipmentMethodLogic adds business logic to Shipment_Method: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterShipmentMethodLogic(logic any) {
 	checkLogic(ShipmentMethodTableName, "ShipmentMethod", logic, shipmentMethodTrigger)
 	shipmentMethodLogic = append(shipmentMethodLogic, logic)
+	shipmentMethodLogicApp = append(shipmentMethodLogicApp, extensions.Current())
 }
 
 // shipmentMethodTrigger reports whether name is a trigger of Shipment_Method and
@@ -262,6 +282,14 @@ func shipmentMethodTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ShipmentMethodOnDelete)
 	case "OnRename":
 		_, ok = logic.(ShipmentMethodOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ShipmentMethodOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ShipmentMethodOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ShipmentMethodOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ShipmentMethodOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(ShipmentMethodOnValidate_Code)
 	case "OnValidate_Description":
@@ -284,19 +312,32 @@ func (t *ShipmentMethod) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ShipmentMethod) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return shipmentMethodLogic
+	return extensions.EnabledLogic(shipmentMethodLogic, shipmentMethodLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ShipmentMethod) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ShipmentMethodOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ShipmentMethodOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ShipmentMethodOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -305,10 +346,21 @@ func (t *ShipmentMethod) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ShipmentMethod) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ShipmentMethodOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ShipmentMethodOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ShipmentMethodOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -316,7 +368,19 @@ func (t *ShipmentMethod) runOnModify() error {
 }
 
 func (t *ShipmentMethod) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ShipmentMethodOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ShipmentMethodOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -327,7 +391,19 @@ func (t *ShipmentMethod) runOnDelete() error {
 }
 
 func (t *ShipmentMethod) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ShipmentMethodOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ShipmentMethodOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

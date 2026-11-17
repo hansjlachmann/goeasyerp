@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.DepreciationTableLine) error
 //	OnDelete(rec *gtables.DepreciationTableLine) error
 //	OnRename(rec *gtables.DepreciationTableLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.DepreciationTableLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Depreciation_table_code(rec *gtables.DepreciationTableLine) error
 //	OnValidate_Period_no(rec *gtables.DepreciationTableLine) error
 //	OnValidate_Period_depreciation_percent(rec *gtables.DepreciationTableLine) error
@@ -26,6 +28,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -244,6 +247,18 @@ type (
 	DepreciationTableLineOnRename interface {
 		OnRename(rec *DepreciationTableLine) error
 	}
+	DepreciationTableLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *DepreciationTableLine, handled *bool) error
+	}
+	DepreciationTableLineOnBeforeModify interface {
+		OnBeforeModify(rec *DepreciationTableLine, handled *bool) error
+	}
+	DepreciationTableLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *DepreciationTableLine, handled *bool) error
+	}
+	DepreciationTableLineOnBeforeRename interface {
+		OnBeforeRename(rec *DepreciationTableLine, handled *bool) error
+	}
 	DepreciationTableLineOnValidate_Depreciation_table_code interface {
 		OnValidate_Depreciation_table_code(rec *DepreciationTableLine) error
 	}
@@ -259,18 +274,23 @@ type (
 )
 
 // depreciationTableLineLogic is the registered business logic of Depreciation_Table_Line, in
-// registration order (the base application first, then extensions)
-var depreciationTableLineLogic []any
+// registration order (the base application first, then extensions), and
+// depreciationTableLineLogicApp the app that registered each ("" the base application)
+var (
+	depreciationTableLineLogic    []any
+	depreciationTableLineLogicApp []string
+)
 
 // RegisterDepreciationTableLineLogic adds business logic to Depreciation_Table_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterDepreciationTableLineLogic(logic any) {
 	checkLogic(DepreciationTableLineTableName, "DepreciationTableLine", logic, depreciationTableLineTrigger)
 	depreciationTableLineLogic = append(depreciationTableLineLogic, logic)
+	depreciationTableLineLogicApp = append(depreciationTableLineLogicApp, extensions.Current())
 }
 
 // depreciationTableLineTrigger reports whether name is a trigger of Depreciation_Table_Line and
@@ -285,6 +305,14 @@ func depreciationTableLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(DepreciationTableLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(DepreciationTableLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(DepreciationTableLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(DepreciationTableLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(DepreciationTableLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(DepreciationTableLineOnBeforeRename)
 	case "OnValidate_Depreciation_table_code":
 		_, ok = logic.(DepreciationTableLineOnValidate_Depreciation_table_code)
 	case "OnValidate_Period_no":
@@ -311,19 +339,32 @@ func (t *DepreciationTableLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *DepreciationTableLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return depreciationTableLineLogic
+	return extensions.EnabledLogic(depreciationTableLineLogic, depreciationTableLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *DepreciationTableLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(DepreciationTableLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(DepreciationTableLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(DepreciationTableLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -332,10 +373,21 @@ func (t *DepreciationTableLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *DepreciationTableLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(DepreciationTableLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(DepreciationTableLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(DepreciationTableLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -343,7 +395,19 @@ func (t *DepreciationTableLine) runOnModify() error {
 }
 
 func (t *DepreciationTableLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(DepreciationTableLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(DepreciationTableLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -354,7 +418,19 @@ func (t *DepreciationTableLine) runOnDelete() error {
 }
 
 func (t *DepreciationTableLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(DepreciationTableLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(DepreciationTableLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

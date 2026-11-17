@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.Object) error
 //	OnDelete(rec *gtables.Object) error
 //	OnRename(rec *gtables.Object) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.Object, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Type(rec *gtables.Object) error
 //	OnValidate_Id(rec *gtables.Object) error
 //	OnValidate_Name(rec *gtables.Object) error
@@ -26,6 +28,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -282,10 +285,22 @@ func (t *Object) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Object: a business logic type implements the ones it needs
 type (
-	ObjectOnInsert            interface{ OnInsert(rec *Object) error }
-	ObjectOnModify            interface{ OnModify(rec *Object) error }
-	ObjectOnDelete            interface{ OnDelete(rec *Object) error }
-	ObjectOnRename            interface{ OnRename(rec *Object) error }
+	ObjectOnInsert       interface{ OnInsert(rec *Object) error }
+	ObjectOnModify       interface{ OnModify(rec *Object) error }
+	ObjectOnDelete       interface{ OnDelete(rec *Object) error }
+	ObjectOnRename       interface{ OnRename(rec *Object) error }
+	ObjectOnBeforeInsert interface {
+		OnBeforeInsert(rec *Object, handled *bool) error
+	}
+	ObjectOnBeforeModify interface {
+		OnBeforeModify(rec *Object, handled *bool) error
+	}
+	ObjectOnBeforeDelete interface {
+		OnBeforeDelete(rec *Object, handled *bool) error
+	}
+	ObjectOnBeforeRename interface {
+		OnBeforeRename(rec *Object, handled *bool) error
+	}
 	ObjectOnValidate_Type     interface{ OnValidate_Type(rec *Object) error }
 	ObjectOnValidate_Id       interface{ OnValidate_Id(rec *Object) error }
 	ObjectOnValidate_Name     interface{ OnValidate_Name(rec *Object) error }
@@ -293,18 +308,23 @@ type (
 )
 
 // objectLogic is the registered business logic of Object, in
-// registration order (the base application first, then extensions)
-var objectLogic []any
+// registration order (the base application first, then extensions), and
+// objectLogicApp the app that registered each ("" the base application)
+var (
+	objectLogic    []any
+	objectLogicApp []string
+)
 
 // RegisterObjectLogic adds business logic to Object: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterObjectLogic(logic any) {
 	checkLogic(ObjectTableName, "Object", logic, objectTrigger)
 	objectLogic = append(objectLogic, logic)
+	objectLogicApp = append(objectLogicApp, extensions.Current())
 }
 
 // objectTrigger reports whether name is a trigger of Object and
@@ -319,6 +339,14 @@ func objectTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ObjectOnDelete)
 	case "OnRename":
 		_, ok = logic.(ObjectOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ObjectOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ObjectOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ObjectOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ObjectOnBeforeRename)
 	case "OnValidate_Type":
 		_, ok = logic.(ObjectOnValidate_Type)
 	case "OnValidate_Id":
@@ -345,19 +373,32 @@ func (t *Object) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *Object) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return objectLogic
+	return extensions.EnabledLogic(objectLogic, objectLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *Object) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ObjectOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ObjectOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ObjectOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -366,10 +407,21 @@ func (t *Object) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *Object) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ObjectOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ObjectOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ObjectOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -377,7 +429,19 @@ func (t *Object) runOnModify() error {
 }
 
 func (t *Object) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ObjectOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ObjectOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -388,7 +452,19 @@ func (t *Object) runOnDelete() error {
 }
 
 func (t *Object) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ObjectOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ObjectOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

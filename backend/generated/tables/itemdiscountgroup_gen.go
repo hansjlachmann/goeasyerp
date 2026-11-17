@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ItemDiscountGroup) error
 //	OnDelete(rec *gtables.ItemDiscountGroup) error
 //	OnRename(rec *gtables.ItemDiscountGroup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ItemDiscountGroup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.ItemDiscountGroup) error
 //	OnValidate_Description(rec *gtables.ItemDiscountGroup) error
 
@@ -23,6 +25,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -227,6 +230,18 @@ type (
 	ItemDiscountGroupOnRename interface {
 		OnRename(rec *ItemDiscountGroup) error
 	}
+	ItemDiscountGroupOnBeforeInsert interface {
+		OnBeforeInsert(rec *ItemDiscountGroup, handled *bool) error
+	}
+	ItemDiscountGroupOnBeforeModify interface {
+		OnBeforeModify(rec *ItemDiscountGroup, handled *bool) error
+	}
+	ItemDiscountGroupOnBeforeDelete interface {
+		OnBeforeDelete(rec *ItemDiscountGroup, handled *bool) error
+	}
+	ItemDiscountGroupOnBeforeRename interface {
+		OnBeforeRename(rec *ItemDiscountGroup, handled *bool) error
+	}
 	ItemDiscountGroupOnValidate_Code interface {
 		OnValidate_Code(rec *ItemDiscountGroup) error
 	}
@@ -236,18 +251,23 @@ type (
 )
 
 // itemDiscountGroupLogic is the registered business logic of Item_Discount_Group, in
-// registration order (the base application first, then extensions)
-var itemDiscountGroupLogic []any
+// registration order (the base application first, then extensions), and
+// itemDiscountGroupLogicApp the app that registered each ("" the base application)
+var (
+	itemDiscountGroupLogic    []any
+	itemDiscountGroupLogicApp []string
+)
 
 // RegisterItemDiscountGroupLogic adds business logic to Item_Discount_Group: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterItemDiscountGroupLogic(logic any) {
 	checkLogic(ItemDiscountGroupTableName, "ItemDiscountGroup", logic, itemDiscountGroupTrigger)
 	itemDiscountGroupLogic = append(itemDiscountGroupLogic, logic)
+	itemDiscountGroupLogicApp = append(itemDiscountGroupLogicApp, extensions.Current())
 }
 
 // itemDiscountGroupTrigger reports whether name is a trigger of Item_Discount_Group and
@@ -262,6 +282,14 @@ func itemDiscountGroupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemDiscountGroupOnDelete)
 	case "OnRename":
 		_, ok = logic.(ItemDiscountGroupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ItemDiscountGroupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ItemDiscountGroupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ItemDiscountGroupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ItemDiscountGroupOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(ItemDiscountGroupOnValidate_Code)
 	case "OnValidate_Description":
@@ -284,19 +312,32 @@ func (t *ItemDiscountGroup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ItemDiscountGroup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return itemDiscountGroupLogic
+	return extensions.EnabledLogic(itemDiscountGroupLogic, itemDiscountGroupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ItemDiscountGroup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ItemDiscountGroupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemDiscountGroupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ItemDiscountGroupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -305,10 +346,21 @@ func (t *ItemDiscountGroup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ItemDiscountGroup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ItemDiscountGroupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemDiscountGroupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ItemDiscountGroupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -316,7 +368,19 @@ func (t *ItemDiscountGroup) runOnModify() error {
 }
 
 func (t *ItemDiscountGroup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemDiscountGroupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ItemDiscountGroupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -327,7 +391,19 @@ func (t *ItemDiscountGroup) runOnDelete() error {
 }
 
 func (t *ItemDiscountGroup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemDiscountGroupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ItemDiscountGroupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

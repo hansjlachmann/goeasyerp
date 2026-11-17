@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.Menu) error
 //	OnDelete(rec *gtables.Menu) error
 //	OnRename(rec *gtables.Menu) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.Menu, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.Menu) error
 //	OnValidate_Description(rec *gtables.Menu) error
 //	OnValidate_Filename(rec *gtables.Menu) error
@@ -24,6 +26,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -223,28 +226,45 @@ func (t *Menu) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Menu: a business logic type implements the ones it needs
 type (
-	MenuOnInsert               interface{ OnInsert(rec *Menu) error }
-	MenuOnModify               interface{ OnModify(rec *Menu) error }
-	MenuOnDelete               interface{ OnDelete(rec *Menu) error }
-	MenuOnRename               interface{ OnRename(rec *Menu) error }
+	MenuOnInsert       interface{ OnInsert(rec *Menu) error }
+	MenuOnModify       interface{ OnModify(rec *Menu) error }
+	MenuOnDelete       interface{ OnDelete(rec *Menu) error }
+	MenuOnRename       interface{ OnRename(rec *Menu) error }
+	MenuOnBeforeInsert interface {
+		OnBeforeInsert(rec *Menu, handled *bool) error
+	}
+	MenuOnBeforeModify interface {
+		OnBeforeModify(rec *Menu, handled *bool) error
+	}
+	MenuOnBeforeDelete interface {
+		OnBeforeDelete(rec *Menu, handled *bool) error
+	}
+	MenuOnBeforeRename interface {
+		OnBeforeRename(rec *Menu, handled *bool) error
+	}
 	MenuOnValidate_Code        interface{ OnValidate_Code(rec *Menu) error }
 	MenuOnValidate_Description interface{ OnValidate_Description(rec *Menu) error }
 	MenuOnValidate_Filename    interface{ OnValidate_Filename(rec *Menu) error }
 )
 
 // menuLogic is the registered business logic of Menu, in
-// registration order (the base application first, then extensions)
-var menuLogic []any
+// registration order (the base application first, then extensions), and
+// menuLogicApp the app that registered each ("" the base application)
+var (
+	menuLogic    []any
+	menuLogicApp []string
+)
 
 // RegisterMenuLogic adds business logic to Menu: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterMenuLogic(logic any) {
 	checkLogic(MenuTableName, "Menu", logic, menuTrigger)
 	menuLogic = append(menuLogic, logic)
+	menuLogicApp = append(menuLogicApp, extensions.Current())
 }
 
 // menuTrigger reports whether name is a trigger of Menu and
@@ -259,6 +279,14 @@ func menuTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(MenuOnDelete)
 	case "OnRename":
 		_, ok = logic.(MenuOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(MenuOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(MenuOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(MenuOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(MenuOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(MenuOnValidate_Code)
 	case "OnValidate_Description":
@@ -283,19 +311,32 @@ func (t *Menu) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *Menu) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return menuLogic
+	return extensions.EnabledLogic(menuLogic, menuLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *Menu) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(MenuOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(MenuOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(MenuOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,10 +345,21 @@ func (t *Menu) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *Menu) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(MenuOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(MenuOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(MenuOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -315,7 +367,19 @@ func (t *Menu) runOnModify() error {
 }
 
 func (t *Menu) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(MenuOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(MenuOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -326,7 +390,19 @@ func (t *Menu) runOnDelete() error {
 }
 
 func (t *Menu) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(MenuOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(MenuOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

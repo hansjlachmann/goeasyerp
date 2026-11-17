@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.SetupChecklistLine) error
 //	OnDelete(rec *gtables.SetupChecklistLine) error
 //	OnRename(rec *gtables.SetupChecklistLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.SetupChecklistLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Line_no(rec *gtables.SetupChecklistLine) error
 //	OnValidate_Table_id(rec *gtables.SetupChecklistLine) error
 //	OnValidate_Table_name(rec *gtables.SetupChecklistLine) error
@@ -34,6 +36,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -357,6 +360,18 @@ type (
 	SetupChecklistLineOnRename interface {
 		OnRename(rec *SetupChecklistLine) error
 	}
+	SetupChecklistLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *SetupChecklistLine, handled *bool) error
+	}
+	SetupChecklistLineOnBeforeModify interface {
+		OnBeforeModify(rec *SetupChecklistLine, handled *bool) error
+	}
+	SetupChecklistLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *SetupChecklistLine, handled *bool) error
+	}
+	SetupChecklistLineOnBeforeRename interface {
+		OnBeforeRename(rec *SetupChecklistLine, handled *bool) error
+	}
 	SetupChecklistLineOnValidate_Line_no interface {
 		OnValidate_Line_no(rec *SetupChecklistLine) error
 	}
@@ -393,18 +408,23 @@ type (
 )
 
 // setupChecklistLineLogic is the registered business logic of Setup_Checklist_Line, in
-// registration order (the base application first, then extensions)
-var setupChecklistLineLogic []any
+// registration order (the base application first, then extensions), and
+// setupChecklistLineLogicApp the app that registered each ("" the base application)
+var (
+	setupChecklistLineLogic    []any
+	setupChecklistLineLogicApp []string
+)
 
 // RegisterSetupChecklistLineLogic adds business logic to Setup_Checklist_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterSetupChecklistLineLogic(logic any) {
 	checkLogic(SetupChecklistLineTableName, "SetupChecklistLine", logic, setupChecklistLineTrigger)
 	setupChecklistLineLogic = append(setupChecklistLineLogic, logic)
+	setupChecklistLineLogicApp = append(setupChecklistLineLogicApp, extensions.Current())
 }
 
 // setupChecklistLineTrigger reports whether name is a trigger of Setup_Checklist_Line and
@@ -419,6 +439,14 @@ func setupChecklistLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SetupChecklistLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(SetupChecklistLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(SetupChecklistLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(SetupChecklistLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(SetupChecklistLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(SetupChecklistLineOnBeforeRename)
 	case "OnValidate_Line_no":
 		_, ok = logic.(SetupChecklistLineOnValidate_Line_no)
 	case "OnValidate_Table_id":
@@ -459,19 +487,32 @@ func (t *SetupChecklistLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *SetupChecklistLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return setupChecklistLineLogic
+	return extensions.EnabledLogic(setupChecklistLineLogic, setupChecklistLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *SetupChecklistLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(SetupChecklistLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SetupChecklistLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(SetupChecklistLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -480,10 +521,21 @@ func (t *SetupChecklistLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *SetupChecklistLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(SetupChecklistLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SetupChecklistLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(SetupChecklistLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -491,7 +543,19 @@ func (t *SetupChecklistLine) runOnModify() error {
 }
 
 func (t *SetupChecklistLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SetupChecklistLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(SetupChecklistLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -502,7 +566,19 @@ func (t *SetupChecklistLine) runOnDelete() error {
 }
 
 func (t *SetupChecklistLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SetupChecklistLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(SetupChecklistLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.AccSchedColumn) error
 //	OnDelete(rec *gtables.AccSchedColumn) error
 //	OnRename(rec *gtables.AccSchedColumn) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.AccSchedColumn, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Column_layout_name(rec *gtables.AccSchedColumn) error
 //	OnValidate_Line_no(rec *gtables.AccSchedColumn) error
 //	OnValidate_Column_no(rec *gtables.AccSchedColumn) error
@@ -36,6 +38,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -482,6 +485,18 @@ type (
 	AccSchedColumnOnRename interface {
 		OnRename(rec *AccSchedColumn) error
 	}
+	AccSchedColumnOnBeforeInsert interface {
+		OnBeforeInsert(rec *AccSchedColumn, handled *bool) error
+	}
+	AccSchedColumnOnBeforeModify interface {
+		OnBeforeModify(rec *AccSchedColumn, handled *bool) error
+	}
+	AccSchedColumnOnBeforeDelete interface {
+		OnBeforeDelete(rec *AccSchedColumn, handled *bool) error
+	}
+	AccSchedColumnOnBeforeRename interface {
+		OnBeforeRename(rec *AccSchedColumn, handled *bool) error
+	}
 	AccSchedColumnOnValidate_Column_layout_name interface {
 		OnValidate_Column_layout_name(rec *AccSchedColumn) error
 	}
@@ -527,18 +542,23 @@ type (
 )
 
 // accSchedColumnLogic is the registered business logic of Acc_Sched_Column, in
-// registration order (the base application first, then extensions)
-var accSchedColumnLogic []any
+// registration order (the base application first, then extensions), and
+// accSchedColumnLogicApp the app that registered each ("" the base application)
+var (
+	accSchedColumnLogic    []any
+	accSchedColumnLogicApp []string
+)
 
 // RegisterAccSchedColumnLogic adds business logic to Acc_Sched_Column: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterAccSchedColumnLogic(logic any) {
 	checkLogic(AccSchedColumnTableName, "AccSchedColumn", logic, accSchedColumnTrigger)
 	accSchedColumnLogic = append(accSchedColumnLogic, logic)
+	accSchedColumnLogicApp = append(accSchedColumnLogicApp, extensions.Current())
 }
 
 // accSchedColumnTrigger reports whether name is a trigger of Acc_Sched_Column and
@@ -553,6 +573,14 @@ func accSchedColumnTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(AccSchedColumnOnDelete)
 	case "OnRename":
 		_, ok = logic.(AccSchedColumnOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(AccSchedColumnOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(AccSchedColumnOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(AccSchedColumnOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(AccSchedColumnOnBeforeRename)
 	case "OnValidate_Column_layout_name":
 		_, ok = logic.(AccSchedColumnOnValidate_Column_layout_name)
 	case "OnValidate_Line_no":
@@ -599,19 +627,32 @@ func (t *AccSchedColumn) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *AccSchedColumn) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return accSchedColumnLogic
+	return extensions.EnabledLogic(accSchedColumnLogic, accSchedColumnLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *AccSchedColumn) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(AccSchedColumnOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(AccSchedColumnOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(AccSchedColumnOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -620,10 +661,21 @@ func (t *AccSchedColumn) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *AccSchedColumn) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(AccSchedColumnOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(AccSchedColumnOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(AccSchedColumnOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -631,7 +683,19 @@ func (t *AccSchedColumn) runOnModify() error {
 }
 
 func (t *AccSchedColumn) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(AccSchedColumnOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(AccSchedColumnOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -642,7 +706,19 @@ func (t *AccSchedColumn) runOnDelete() error {
 }
 
 func (t *AccSchedColumn) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(AccSchedColumnOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(AccSchedColumnOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

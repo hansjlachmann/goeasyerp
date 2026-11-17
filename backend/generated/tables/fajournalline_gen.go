@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.FAJournalLine) error
 //	OnDelete(rec *gtables.FAJournalLine) error
 //	OnRename(rec *gtables.FAJournalLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.FAJournalLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Journal_template_name(rec *gtables.FAJournalLine) error
 //	OnValidate_Journal_batch_name(rec *gtables.FAJournalLine) error
 //	OnValidate_Line_no(rec *gtables.FAJournalLine) error
@@ -62,6 +64,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -631,6 +634,18 @@ type (
 	FAJournalLineOnRename interface {
 		OnRename(rec *FAJournalLine) error
 	}
+	FAJournalLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *FAJournalLine, handled *bool) error
+	}
+	FAJournalLineOnBeforeModify interface {
+		OnBeforeModify(rec *FAJournalLine, handled *bool) error
+	}
+	FAJournalLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *FAJournalLine, handled *bool) error
+	}
+	FAJournalLineOnBeforeRename interface {
+		OnBeforeRename(rec *FAJournalLine, handled *bool) error
+	}
 	FAJournalLineOnValidate_Journal_template_name interface {
 		OnValidate_Journal_template_name(rec *FAJournalLine) error
 	}
@@ -751,18 +766,23 @@ type (
 )
 
 // fAJournalLineLogic is the registered business logic of FA_Journal_Line, in
-// registration order (the base application first, then extensions)
-var fAJournalLineLogic []any
+// registration order (the base application first, then extensions), and
+// fAJournalLineLogicApp the app that registered each ("" the base application)
+var (
+	fAJournalLineLogic    []any
+	fAJournalLineLogicApp []string
+)
 
 // RegisterFAJournalLineLogic adds business logic to FA_Journal_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterFAJournalLineLogic(logic any) {
 	checkLogic(FAJournalLineTableName, "FAJournalLine", logic, fAJournalLineTrigger)
 	fAJournalLineLogic = append(fAJournalLineLogic, logic)
+	fAJournalLineLogicApp = append(fAJournalLineLogicApp, extensions.Current())
 }
 
 // fAJournalLineTrigger reports whether name is a trigger of FA_Journal_Line and
@@ -777,6 +797,14 @@ func fAJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FAJournalLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(FAJournalLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(FAJournalLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(FAJournalLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(FAJournalLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(FAJournalLineOnBeforeRename)
 	case "OnValidate_Journal_template_name":
 		_, ok = logic.(FAJournalLineOnValidate_Journal_template_name)
 	case "OnValidate_Journal_batch_name":
@@ -873,19 +901,32 @@ func (t *FAJournalLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *FAJournalLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return fAJournalLineLogic
+	return extensions.EnabledLogic(fAJournalLineLogic, fAJournalLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *FAJournalLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FAJournalLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FAJournalLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FAJournalLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -894,10 +935,21 @@ func (t *FAJournalLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *FAJournalLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FAJournalLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FAJournalLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FAJournalLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -905,7 +957,19 @@ func (t *FAJournalLine) runOnModify() error {
 }
 
 func (t *FAJournalLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FAJournalLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FAJournalLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -916,7 +980,19 @@ func (t *FAJournalLine) runOnDelete() error {
 }
 
 func (t *FAJournalLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FAJournalLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FAJournalLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

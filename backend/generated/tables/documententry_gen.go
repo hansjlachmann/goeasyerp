@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.DocumentEntry) error
 //	OnDelete(rec *gtables.DocumentEntry) error
 //	OnRename(rec *gtables.DocumentEntry) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.DocumentEntry, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Table_id(rec *gtables.DocumentEntry) error
 //	OnValidate_No_of_records(rec *gtables.DocumentEntry) error
 //	OnValidate_Document_no(rec *gtables.DocumentEntry) error
@@ -34,6 +36,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -301,6 +304,18 @@ type (
 	DocumentEntryOnRename interface {
 		OnRename(rec *DocumentEntry) error
 	}
+	DocumentEntryOnBeforeInsert interface {
+		OnBeforeInsert(rec *DocumentEntry, handled *bool) error
+	}
+	DocumentEntryOnBeforeModify interface {
+		OnBeforeModify(rec *DocumentEntry, handled *bool) error
+	}
+	DocumentEntryOnBeforeDelete interface {
+		OnBeforeDelete(rec *DocumentEntry, handled *bool) error
+	}
+	DocumentEntryOnBeforeRename interface {
+		OnBeforeRename(rec *DocumentEntry, handled *bool) error
+	}
 	DocumentEntryOnValidate_Table_id interface {
 		OnValidate_Table_id(rec *DocumentEntry) error
 	}
@@ -337,18 +352,23 @@ type (
 )
 
 // documentEntryLogic is the registered business logic of Document_Entry, in
-// registration order (the base application first, then extensions)
-var documentEntryLogic []any
+// registration order (the base application first, then extensions), and
+// documentEntryLogicApp the app that registered each ("" the base application)
+var (
+	documentEntryLogic    []any
+	documentEntryLogicApp []string
+)
 
 // RegisterDocumentEntryLogic adds business logic to Document_Entry: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterDocumentEntryLogic(logic any) {
 	checkLogic(DocumentEntryTableName, "DocumentEntry", logic, documentEntryTrigger)
 	documentEntryLogic = append(documentEntryLogic, logic)
+	documentEntryLogicApp = append(documentEntryLogicApp, extensions.Current())
 }
 
 // documentEntryTrigger reports whether name is a trigger of Document_Entry and
@@ -363,6 +383,14 @@ func documentEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(DocumentEntryOnDelete)
 	case "OnRename":
 		_, ok = logic.(DocumentEntryOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(DocumentEntryOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(DocumentEntryOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(DocumentEntryOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(DocumentEntryOnBeforeRename)
 	case "OnValidate_Table_id":
 		_, ok = logic.(DocumentEntryOnValidate_Table_id)
 	case "OnValidate_No_of_records":
@@ -403,19 +431,32 @@ func (t *DocumentEntry) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *DocumentEntry) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return documentEntryLogic
+	return extensions.EnabledLogic(documentEntryLogic, documentEntryLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *DocumentEntry) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(DocumentEntryOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(DocumentEntryOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(DocumentEntryOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -424,10 +465,21 @@ func (t *DocumentEntry) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *DocumentEntry) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(DocumentEntryOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(DocumentEntryOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(DocumentEntryOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -435,7 +487,19 @@ func (t *DocumentEntry) runOnModify() error {
 }
 
 func (t *DocumentEntry) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(DocumentEntryOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(DocumentEntryOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -446,7 +510,19 @@ func (t *DocumentEntry) runOnDelete() error {
 }
 
 func (t *DocumentEntry) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(DocumentEntryOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(DocumentEntryOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

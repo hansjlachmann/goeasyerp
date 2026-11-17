@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.FAPostingTypeSetup) error
 //	OnDelete(rec *gtables.FAPostingTypeSetup) error
 //	OnRename(rec *gtables.FAPostingTypeSetup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.FAPostingTypeSetup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Fa_posting_type(rec *gtables.FAPostingTypeSetup) error
 //	OnValidate_Depreciation_book_code(rec *gtables.FAPostingTypeSetup) error
 //	OnValidate_Part_of_book_value(rec *gtables.FAPostingTypeSetup) error
@@ -32,6 +34,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -358,6 +361,18 @@ type (
 	FAPostingTypeSetupOnRename interface {
 		OnRename(rec *FAPostingTypeSetup) error
 	}
+	FAPostingTypeSetupOnBeforeInsert interface {
+		OnBeforeInsert(rec *FAPostingTypeSetup, handled *bool) error
+	}
+	FAPostingTypeSetupOnBeforeModify interface {
+		OnBeforeModify(rec *FAPostingTypeSetup, handled *bool) error
+	}
+	FAPostingTypeSetupOnBeforeDelete interface {
+		OnBeforeDelete(rec *FAPostingTypeSetup, handled *bool) error
+	}
+	FAPostingTypeSetupOnBeforeRename interface {
+		OnBeforeRename(rec *FAPostingTypeSetup, handled *bool) error
+	}
 	FAPostingTypeSetupOnValidate_Fa_posting_type interface {
 		OnValidate_Fa_posting_type(rec *FAPostingTypeSetup) error
 	}
@@ -391,18 +406,23 @@ type (
 )
 
 // fAPostingTypeSetupLogic is the registered business logic of FA_Posting_Type_Setup, in
-// registration order (the base application first, then extensions)
-var fAPostingTypeSetupLogic []any
+// registration order (the base application first, then extensions), and
+// fAPostingTypeSetupLogicApp the app that registered each ("" the base application)
+var (
+	fAPostingTypeSetupLogic    []any
+	fAPostingTypeSetupLogicApp []string
+)
 
 // RegisterFAPostingTypeSetupLogic adds business logic to FA_Posting_Type_Setup: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterFAPostingTypeSetupLogic(logic any) {
 	checkLogic(FAPostingTypeSetupTableName, "FAPostingTypeSetup", logic, fAPostingTypeSetupTrigger)
 	fAPostingTypeSetupLogic = append(fAPostingTypeSetupLogic, logic)
+	fAPostingTypeSetupLogicApp = append(fAPostingTypeSetupLogicApp, extensions.Current())
 }
 
 // fAPostingTypeSetupTrigger reports whether name is a trigger of FA_Posting_Type_Setup and
@@ -417,6 +437,14 @@ func fAPostingTypeSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FAPostingTypeSetupOnDelete)
 	case "OnRename":
 		_, ok = logic.(FAPostingTypeSetupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(FAPostingTypeSetupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(FAPostingTypeSetupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(FAPostingTypeSetupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(FAPostingTypeSetupOnBeforeRename)
 	case "OnValidate_Fa_posting_type":
 		_, ok = logic.(FAPostingTypeSetupOnValidate_Fa_posting_type)
 	case "OnValidate_Depreciation_book_code":
@@ -455,19 +483,32 @@ func (t *FAPostingTypeSetup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *FAPostingTypeSetup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return fAPostingTypeSetupLogic
+	return extensions.EnabledLogic(fAPostingTypeSetupLogic, fAPostingTypeSetupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *FAPostingTypeSetup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FAPostingTypeSetupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FAPostingTypeSetupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FAPostingTypeSetupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -476,10 +517,21 @@ func (t *FAPostingTypeSetup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *FAPostingTypeSetup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FAPostingTypeSetupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FAPostingTypeSetupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FAPostingTypeSetupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -487,7 +539,19 @@ func (t *FAPostingTypeSetup) runOnModify() error {
 }
 
 func (t *FAPostingTypeSetup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FAPostingTypeSetupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FAPostingTypeSetupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -498,7 +562,19 @@ func (t *FAPostingTypeSetup) runOnDelete() error {
 }
 
 func (t *FAPostingTypeSetup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FAPostingTypeSetupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FAPostingTypeSetupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

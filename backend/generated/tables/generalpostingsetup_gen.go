@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.GeneralPostingSetup) error
 //	OnDelete(rec *gtables.GeneralPostingSetup) error
 //	OnRename(rec *gtables.GeneralPostingSetup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.GeneralPostingSetup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Gen_bus_posting_group(rec *gtables.GeneralPostingSetup) error
 //	OnValidate_Gen_prod_posting_group(rec *gtables.GeneralPostingSetup) error
 //	OnValidate_Sales_account(rec *gtables.GeneralPostingSetup) error
@@ -37,6 +39,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -339,6 +342,18 @@ type (
 	GeneralPostingSetupOnRename interface {
 		OnRename(rec *GeneralPostingSetup) error
 	}
+	GeneralPostingSetupOnBeforeInsert interface {
+		OnBeforeInsert(rec *GeneralPostingSetup, handled *bool) error
+	}
+	GeneralPostingSetupOnBeforeModify interface {
+		OnBeforeModify(rec *GeneralPostingSetup, handled *bool) error
+	}
+	GeneralPostingSetupOnBeforeDelete interface {
+		OnBeforeDelete(rec *GeneralPostingSetup, handled *bool) error
+	}
+	GeneralPostingSetupOnBeforeRename interface {
+		OnBeforeRename(rec *GeneralPostingSetup, handled *bool) error
+	}
 	GeneralPostingSetupOnValidate_Gen_bus_posting_group interface {
 		OnValidate_Gen_bus_posting_group(rec *GeneralPostingSetup) error
 	}
@@ -390,18 +405,23 @@ type (
 )
 
 // generalPostingSetupLogic is the registered business logic of General_Posting_Setup, in
-// registration order (the base application first, then extensions)
-var generalPostingSetupLogic []any
+// registration order (the base application first, then extensions), and
+// generalPostingSetupLogicApp the app that registered each ("" the base application)
+var (
+	generalPostingSetupLogic    []any
+	generalPostingSetupLogicApp []string
+)
 
 // RegisterGeneralPostingSetupLogic adds business logic to General_Posting_Setup: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterGeneralPostingSetupLogic(logic any) {
 	checkLogic(GeneralPostingSetupTableName, "GeneralPostingSetup", logic, generalPostingSetupTrigger)
 	generalPostingSetupLogic = append(generalPostingSetupLogic, logic)
+	generalPostingSetupLogicApp = append(generalPostingSetupLogicApp, extensions.Current())
 }
 
 // generalPostingSetupTrigger reports whether name is a trigger of General_Posting_Setup and
@@ -416,6 +436,14 @@ func generalPostingSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GeneralPostingSetupOnDelete)
 	case "OnRename":
 		_, ok = logic.(GeneralPostingSetupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(GeneralPostingSetupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(GeneralPostingSetupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(GeneralPostingSetupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(GeneralPostingSetupOnBeforeRename)
 	case "OnValidate_Gen_bus_posting_group":
 		_, ok = logic.(GeneralPostingSetupOnValidate_Gen_bus_posting_group)
 	case "OnValidate_Gen_prod_posting_group":
@@ -466,19 +494,32 @@ func (t *GeneralPostingSetup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *GeneralPostingSetup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return generalPostingSetupLogic
+	return extensions.EnabledLogic(generalPostingSetupLogic, generalPostingSetupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *GeneralPostingSetup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(GeneralPostingSetupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GeneralPostingSetupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(GeneralPostingSetupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -487,10 +528,21 @@ func (t *GeneralPostingSetup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *GeneralPostingSetup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(GeneralPostingSetupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GeneralPostingSetupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(GeneralPostingSetupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -498,7 +550,19 @@ func (t *GeneralPostingSetup) runOnModify() error {
 }
 
 func (t *GeneralPostingSetup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GeneralPostingSetupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(GeneralPostingSetupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -509,7 +573,19 @@ func (t *GeneralPostingSetup) runOnDelete() error {
 }
 
 func (t *GeneralPostingSetup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GeneralPostingSetupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(GeneralPostingSetupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

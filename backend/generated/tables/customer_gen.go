@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.Customer) error
 //	OnDelete(rec *gtables.Customer) error
 //	OnRename(rec *gtables.Customer) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.Customer, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_No(rec *gtables.Customer) error
 //	OnValidate_Name(rec *gtables.Customer) error
 //	OnValidate_Search_name(rec *gtables.Customer) error
@@ -85,6 +87,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -1025,10 +1028,22 @@ func (t *Customer) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Customer: a business logic type implements the ones it needs
 type (
-	CustomerOnInsert                          interface{ OnInsert(rec *Customer) error }
-	CustomerOnModify                          interface{ OnModify(rec *Customer) error }
-	CustomerOnDelete                          interface{ OnDelete(rec *Customer) error }
-	CustomerOnRename                          interface{ OnRename(rec *Customer) error }
+	CustomerOnInsert       interface{ OnInsert(rec *Customer) error }
+	CustomerOnModify       interface{ OnModify(rec *Customer) error }
+	CustomerOnDelete       interface{ OnDelete(rec *Customer) error }
+	CustomerOnRename       interface{ OnRename(rec *Customer) error }
+	CustomerOnBeforeInsert interface {
+		OnBeforeInsert(rec *Customer, handled *bool) error
+	}
+	CustomerOnBeforeModify interface {
+		OnBeforeModify(rec *Customer, handled *bool) error
+	}
+	CustomerOnBeforeDelete interface {
+		OnBeforeDelete(rec *Customer, handled *bool) error
+	}
+	CustomerOnBeforeRename interface {
+		OnBeforeRename(rec *Customer, handled *bool) error
+	}
 	CustomerOnValidate_No                     interface{ OnValidate_No(rec *Customer) error }
 	CustomerOnValidate_Name                   interface{ OnValidate_Name(rec *Customer) error }
 	CustomerOnValidate_Search_name            interface{ OnValidate_Search_name(rec *Customer) error }
@@ -1093,18 +1108,23 @@ type (
 )
 
 // customerLogic is the registered business logic of Customer, in
-// registration order (the base application first, then extensions)
-var customerLogic []any
+// registration order (the base application first, then extensions), and
+// customerLogicApp the app that registered each ("" the base application)
+var (
+	customerLogic    []any
+	customerLogicApp []string
+)
 
 // RegisterCustomerLogic adds business logic to Customer: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterCustomerLogic(logic any) {
 	checkLogic(CustomerTableName, "Customer", logic, customerTrigger)
 	customerLogic = append(customerLogic, logic)
+	customerLogicApp = append(customerLogicApp, extensions.Current())
 }
 
 // customerTrigger reports whether name is a trigger of Customer and
@@ -1119,6 +1139,14 @@ func customerTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CustomerOnDelete)
 	case "OnRename":
 		_, ok = logic.(CustomerOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(CustomerOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(CustomerOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(CustomerOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(CustomerOnBeforeRename)
 	case "OnValidate_No":
 		_, ok = logic.(CustomerOnValidate_No)
 	case "OnValidate_Name":
@@ -1259,19 +1287,32 @@ func (t *Customer) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *Customer) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return customerLogic
+	return extensions.EnabledLogic(customerLogic, customerLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *Customer) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(CustomerOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CustomerOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(CustomerOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1280,10 +1321,21 @@ func (t *Customer) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *Customer) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(CustomerOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CustomerOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(CustomerOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1291,7 +1343,19 @@ func (t *Customer) runOnModify() error {
 }
 
 func (t *Customer) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CustomerOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(CustomerOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -1302,7 +1366,19 @@ func (t *Customer) runOnDelete() error {
 }
 
 func (t *Customer) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CustomerOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(CustomerOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

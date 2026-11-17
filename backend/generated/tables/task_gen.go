@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.Task) error
 //	OnDelete(rec *gtables.Task) error
 //	OnRename(rec *gtables.Task) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.Task, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.Task) error
 //	OnValidate_Search_code(rec *gtables.Task) error
 //	OnValidate_Description(rec *gtables.Task) error
@@ -24,6 +26,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -223,28 +226,45 @@ func (t *Task) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Task: a business logic type implements the ones it needs
 type (
-	TaskOnInsert               interface{ OnInsert(rec *Task) error }
-	TaskOnModify               interface{ OnModify(rec *Task) error }
-	TaskOnDelete               interface{ OnDelete(rec *Task) error }
-	TaskOnRename               interface{ OnRename(rec *Task) error }
+	TaskOnInsert       interface{ OnInsert(rec *Task) error }
+	TaskOnModify       interface{ OnModify(rec *Task) error }
+	TaskOnDelete       interface{ OnDelete(rec *Task) error }
+	TaskOnRename       interface{ OnRename(rec *Task) error }
+	TaskOnBeforeInsert interface {
+		OnBeforeInsert(rec *Task, handled *bool) error
+	}
+	TaskOnBeforeModify interface {
+		OnBeforeModify(rec *Task, handled *bool) error
+	}
+	TaskOnBeforeDelete interface {
+		OnBeforeDelete(rec *Task, handled *bool) error
+	}
+	TaskOnBeforeRename interface {
+		OnBeforeRename(rec *Task, handled *bool) error
+	}
 	TaskOnValidate_Code        interface{ OnValidate_Code(rec *Task) error }
 	TaskOnValidate_Search_code interface{ OnValidate_Search_code(rec *Task) error }
 	TaskOnValidate_Description interface{ OnValidate_Description(rec *Task) error }
 )
 
 // taskLogic is the registered business logic of Task, in
-// registration order (the base application first, then extensions)
-var taskLogic []any
+// registration order (the base application first, then extensions), and
+// taskLogicApp the app that registered each ("" the base application)
+var (
+	taskLogic    []any
+	taskLogicApp []string
+)
 
 // RegisterTaskLogic adds business logic to Task: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterTaskLogic(logic any) {
 	checkLogic(TaskTableName, "Task", logic, taskTrigger)
 	taskLogic = append(taskLogic, logic)
+	taskLogicApp = append(taskLogicApp, extensions.Current())
 }
 
 // taskTrigger reports whether name is a trigger of Task and
@@ -259,6 +279,14 @@ func taskTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(TaskOnDelete)
 	case "OnRename":
 		_, ok = logic.(TaskOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(TaskOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(TaskOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(TaskOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(TaskOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(TaskOnValidate_Code)
 	case "OnValidate_Search_code":
@@ -283,19 +311,32 @@ func (t *Task) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *Task) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return taskLogic
+	return extensions.EnabledLogic(taskLogic, taskLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *Task) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(TaskOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TaskOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(TaskOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,10 +345,21 @@ func (t *Task) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *Task) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(TaskOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TaskOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(TaskOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -315,7 +367,19 @@ func (t *Task) runOnModify() error {
 }
 
 func (t *Task) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TaskOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(TaskOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -326,7 +390,19 @@ func (t *Task) runOnDelete() error {
 }
 
 func (t *Task) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TaskOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(TaskOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

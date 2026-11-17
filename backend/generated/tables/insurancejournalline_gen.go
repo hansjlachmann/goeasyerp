@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.InsuranceJournalLine) error
 //	OnDelete(rec *gtables.InsuranceJournalLine) error
 //	OnRename(rec *gtables.InsuranceJournalLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.InsuranceJournalLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Journal_template_name(rec *gtables.InsuranceJournalLine) error
 //	OnValidate_Journal_batch_name(rec *gtables.InsuranceJournalLine) error
 //	OnValidate_Line_no(rec *gtables.InsuranceJournalLine) error
@@ -42,6 +44,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -403,6 +406,18 @@ type (
 	InsuranceJournalLineOnRename interface {
 		OnRename(rec *InsuranceJournalLine) error
 	}
+	InsuranceJournalLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *InsuranceJournalLine, handled *bool) error
+	}
+	InsuranceJournalLineOnBeforeModify interface {
+		OnBeforeModify(rec *InsuranceJournalLine, handled *bool) error
+	}
+	InsuranceJournalLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *InsuranceJournalLine, handled *bool) error
+	}
+	InsuranceJournalLineOnBeforeRename interface {
+		OnBeforeRename(rec *InsuranceJournalLine, handled *bool) error
+	}
 	InsuranceJournalLineOnValidate_Journal_template_name interface {
 		OnValidate_Journal_template_name(rec *InsuranceJournalLine) error
 	}
@@ -463,18 +478,23 @@ type (
 )
 
 // insuranceJournalLineLogic is the registered business logic of Insurance_Journal_Line, in
-// registration order (the base application first, then extensions)
-var insuranceJournalLineLogic []any
+// registration order (the base application first, then extensions), and
+// insuranceJournalLineLogicApp the app that registered each ("" the base application)
+var (
+	insuranceJournalLineLogic    []any
+	insuranceJournalLineLogicApp []string
+)
 
 // RegisterInsuranceJournalLineLogic adds business logic to Insurance_Journal_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterInsuranceJournalLineLogic(logic any) {
 	checkLogic(InsuranceJournalLineTableName, "InsuranceJournalLine", logic, insuranceJournalLineTrigger)
 	insuranceJournalLineLogic = append(insuranceJournalLineLogic, logic)
+	insuranceJournalLineLogicApp = append(insuranceJournalLineLogicApp, extensions.Current())
 }
 
 // insuranceJournalLineTrigger reports whether name is a trigger of Insurance_Journal_Line and
@@ -489,6 +509,14 @@ func insuranceJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(InsuranceJournalLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(InsuranceJournalLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(InsuranceJournalLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(InsuranceJournalLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(InsuranceJournalLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(InsuranceJournalLineOnBeforeRename)
 	case "OnValidate_Journal_template_name":
 		_, ok = logic.(InsuranceJournalLineOnValidate_Journal_template_name)
 	case "OnValidate_Journal_batch_name":
@@ -545,19 +573,32 @@ func (t *InsuranceJournalLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *InsuranceJournalLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return insuranceJournalLineLogic
+	return extensions.EnabledLogic(insuranceJournalLineLogic, insuranceJournalLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *InsuranceJournalLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(InsuranceJournalLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InsuranceJournalLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(InsuranceJournalLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -566,10 +607,21 @@ func (t *InsuranceJournalLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *InsuranceJournalLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(InsuranceJournalLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InsuranceJournalLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(InsuranceJournalLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -577,7 +629,19 @@ func (t *InsuranceJournalLine) runOnModify() error {
 }
 
 func (t *InsuranceJournalLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InsuranceJournalLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(InsuranceJournalLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -588,7 +652,19 @@ func (t *InsuranceJournalLine) runOnDelete() error {
 }
 
 func (t *InsuranceJournalLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InsuranceJournalLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(InsuranceJournalLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.TariffNumber) error
 //	OnDelete(rec *gtables.TariffNumber) error
 //	OnRename(rec *gtables.TariffNumber) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.TariffNumber, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_No(rec *gtables.TariffNumber) error
 //	OnValidate_Description(rec *gtables.TariffNumber) error
 //	OnValidate_Supplementary_units(rec *gtables.TariffNumber) error
@@ -24,6 +26,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -223,28 +226,45 @@ func (t *TariffNumber) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Tariff_Number: a business logic type implements the ones it needs
 type (
-	TariffNumberOnInsert                       interface{ OnInsert(rec *TariffNumber) error }
-	TariffNumberOnModify                       interface{ OnModify(rec *TariffNumber) error }
-	TariffNumberOnDelete                       interface{ OnDelete(rec *TariffNumber) error }
-	TariffNumberOnRename                       interface{ OnRename(rec *TariffNumber) error }
+	TariffNumberOnInsert       interface{ OnInsert(rec *TariffNumber) error }
+	TariffNumberOnModify       interface{ OnModify(rec *TariffNumber) error }
+	TariffNumberOnDelete       interface{ OnDelete(rec *TariffNumber) error }
+	TariffNumberOnRename       interface{ OnRename(rec *TariffNumber) error }
+	TariffNumberOnBeforeInsert interface {
+		OnBeforeInsert(rec *TariffNumber, handled *bool) error
+	}
+	TariffNumberOnBeforeModify interface {
+		OnBeforeModify(rec *TariffNumber, handled *bool) error
+	}
+	TariffNumberOnBeforeDelete interface {
+		OnBeforeDelete(rec *TariffNumber, handled *bool) error
+	}
+	TariffNumberOnBeforeRename interface {
+		OnBeforeRename(rec *TariffNumber, handled *bool) error
+	}
 	TariffNumberOnValidate_No                  interface{ OnValidate_No(rec *TariffNumber) error }
 	TariffNumberOnValidate_Description         interface{ OnValidate_Description(rec *TariffNumber) error }
 	TariffNumberOnValidate_Supplementary_units interface{ OnValidate_Supplementary_units(rec *TariffNumber) error }
 )
 
 // tariffNumberLogic is the registered business logic of Tariff_Number, in
-// registration order (the base application first, then extensions)
-var tariffNumberLogic []any
+// registration order (the base application first, then extensions), and
+// tariffNumberLogicApp the app that registered each ("" the base application)
+var (
+	tariffNumberLogic    []any
+	tariffNumberLogicApp []string
+)
 
 // RegisterTariffNumberLogic adds business logic to Tariff_Number: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterTariffNumberLogic(logic any) {
 	checkLogic(TariffNumberTableName, "TariffNumber", logic, tariffNumberTrigger)
 	tariffNumberLogic = append(tariffNumberLogic, logic)
+	tariffNumberLogicApp = append(tariffNumberLogicApp, extensions.Current())
 }
 
 // tariffNumberTrigger reports whether name is a trigger of Tariff_Number and
@@ -259,6 +279,14 @@ func tariffNumberTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(TariffNumberOnDelete)
 	case "OnRename":
 		_, ok = logic.(TariffNumberOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(TariffNumberOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(TariffNumberOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(TariffNumberOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(TariffNumberOnBeforeRename)
 	case "OnValidate_No":
 		_, ok = logic.(TariffNumberOnValidate_No)
 	case "OnValidate_Description":
@@ -283,19 +311,32 @@ func (t *TariffNumber) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *TariffNumber) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return tariffNumberLogic
+	return extensions.EnabledLogic(tariffNumberLogic, tariffNumberLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *TariffNumber) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(TariffNumberOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TariffNumberOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(TariffNumberOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,10 +345,21 @@ func (t *TariffNumber) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *TariffNumber) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(TariffNumberOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TariffNumberOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(TariffNumberOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -315,7 +367,19 @@ func (t *TariffNumber) runOnModify() error {
 }
 
 func (t *TariffNumber) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TariffNumberOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(TariffNumberOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -326,7 +390,19 @@ func (t *TariffNumber) runOnDelete() error {
 }
 
 func (t *TariffNumber) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TariffNumberOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(TariffNumberOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

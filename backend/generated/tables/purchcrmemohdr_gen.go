@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.PurchCrMemoHdr) error
 //	OnDelete(rec *gtables.PurchCrMemoHdr) error
 //	OnRename(rec *gtables.PurchCrMemoHdr) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.PurchCrMemoHdr, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Buy_from_vendor_no(rec *gtables.PurchCrMemoHdr) error
 //	OnValidate_No(rec *gtables.PurchCrMemoHdr) error
 //	OnValidate_Pay_to_vendor_no(rec *gtables.PurchCrMemoHdr) error
@@ -94,6 +96,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -848,6 +851,18 @@ type (
 	PurchCrMemoHdrOnRename interface {
 		OnRename(rec *PurchCrMemoHdr) error
 	}
+	PurchCrMemoHdrOnBeforeInsert interface {
+		OnBeforeInsert(rec *PurchCrMemoHdr, handled *bool) error
+	}
+	PurchCrMemoHdrOnBeforeModify interface {
+		OnBeforeModify(rec *PurchCrMemoHdr, handled *bool) error
+	}
+	PurchCrMemoHdrOnBeforeDelete interface {
+		OnBeforeDelete(rec *PurchCrMemoHdr, handled *bool) error
+	}
+	PurchCrMemoHdrOnBeforeRename interface {
+		OnBeforeRename(rec *PurchCrMemoHdr, handled *bool) error
+	}
 	PurchCrMemoHdrOnValidate_Buy_from_vendor_no interface {
 		OnValidate_Buy_from_vendor_no(rec *PurchCrMemoHdr) error
 	}
@@ -1064,18 +1079,23 @@ type (
 )
 
 // purchCrMemoHdrLogic is the registered business logic of Purch_Cr_Memo_Hdr, in
-// registration order (the base application first, then extensions)
-var purchCrMemoHdrLogic []any
+// registration order (the base application first, then extensions), and
+// purchCrMemoHdrLogicApp the app that registered each ("" the base application)
+var (
+	purchCrMemoHdrLogic    []any
+	purchCrMemoHdrLogicApp []string
+)
 
 // RegisterPurchCrMemoHdrLogic adds business logic to Purch_Cr_Memo_Hdr: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterPurchCrMemoHdrLogic(logic any) {
 	checkLogic(PurchCrMemoHdrTableName, "PurchCrMemoHdr", logic, purchCrMemoHdrTrigger)
 	purchCrMemoHdrLogic = append(purchCrMemoHdrLogic, logic)
+	purchCrMemoHdrLogicApp = append(purchCrMemoHdrLogicApp, extensions.Current())
 }
 
 // purchCrMemoHdrTrigger reports whether name is a trigger of Purch_Cr_Memo_Hdr and
@@ -1090,6 +1110,14 @@ func purchCrMemoHdrTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PurchCrMemoHdrOnDelete)
 	case "OnRename":
 		_, ok = logic.(PurchCrMemoHdrOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(PurchCrMemoHdrOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(PurchCrMemoHdrOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(PurchCrMemoHdrOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(PurchCrMemoHdrOnBeforeRename)
 	case "OnValidate_Buy_from_vendor_no":
 		_, ok = logic.(PurchCrMemoHdrOnValidate_Buy_from_vendor_no)
 	case "OnValidate_No":
@@ -1250,19 +1278,32 @@ func (t *PurchCrMemoHdr) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *PurchCrMemoHdr) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return purchCrMemoHdrLogic
+	return extensions.EnabledLogic(purchCrMemoHdrLogic, purchCrMemoHdrLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *PurchCrMemoHdr) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PurchCrMemoHdrOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchCrMemoHdrOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PurchCrMemoHdrOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1271,10 +1312,21 @@ func (t *PurchCrMemoHdr) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *PurchCrMemoHdr) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PurchCrMemoHdrOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchCrMemoHdrOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PurchCrMemoHdrOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1282,7 +1334,19 @@ func (t *PurchCrMemoHdr) runOnModify() error {
 }
 
 func (t *PurchCrMemoHdr) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchCrMemoHdrOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PurchCrMemoHdrOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -1293,7 +1357,19 @@ func (t *PurchCrMemoHdr) runOnDelete() error {
 }
 
 func (t *PurchCrMemoHdr) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchCrMemoHdrOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PurchCrMemoHdrOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

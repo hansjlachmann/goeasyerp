@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.SalesReceivablesSetup) error
 //	OnDelete(rec *gtables.SalesReceivablesSetup) error
 //	OnRename(rec *gtables.SalesReceivablesSetup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.SalesReceivablesSetup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Primary_key(rec *gtables.SalesReceivablesSetup) error
 //	OnValidate_Discount_posting(rec *gtables.SalesReceivablesSetup) error
 //	OnValidate_Line_discount_calculation(rec *gtables.SalesReceivablesSetup) error
@@ -47,6 +49,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -541,6 +544,18 @@ type (
 	SalesReceivablesSetupOnRename interface {
 		OnRename(rec *SalesReceivablesSetup) error
 	}
+	SalesReceivablesSetupOnBeforeInsert interface {
+		OnBeforeInsert(rec *SalesReceivablesSetup, handled *bool) error
+	}
+	SalesReceivablesSetupOnBeforeModify interface {
+		OnBeforeModify(rec *SalesReceivablesSetup, handled *bool) error
+	}
+	SalesReceivablesSetupOnBeforeDelete interface {
+		OnBeforeDelete(rec *SalesReceivablesSetup, handled *bool) error
+	}
+	SalesReceivablesSetupOnBeforeRename interface {
+		OnBeforeRename(rec *SalesReceivablesSetup, handled *bool) error
+	}
 	SalesReceivablesSetupOnValidate_Primary_key interface {
 		OnValidate_Primary_key(rec *SalesReceivablesSetup) error
 	}
@@ -622,18 +637,23 @@ type (
 )
 
 // salesReceivablesSetupLogic is the registered business logic of Sales_Receivables_Setup, in
-// registration order (the base application first, then extensions)
-var salesReceivablesSetupLogic []any
+// registration order (the base application first, then extensions), and
+// salesReceivablesSetupLogicApp the app that registered each ("" the base application)
+var (
+	salesReceivablesSetupLogic    []any
+	salesReceivablesSetupLogicApp []string
+)
 
 // RegisterSalesReceivablesSetupLogic adds business logic to Sales_Receivables_Setup: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterSalesReceivablesSetupLogic(logic any) {
 	checkLogic(SalesReceivablesSetupTableName, "SalesReceivablesSetup", logic, salesReceivablesSetupTrigger)
 	salesReceivablesSetupLogic = append(salesReceivablesSetupLogic, logic)
+	salesReceivablesSetupLogicApp = append(salesReceivablesSetupLogicApp, extensions.Current())
 }
 
 // salesReceivablesSetupTrigger reports whether name is a trigger of Sales_Receivables_Setup and
@@ -648,6 +668,14 @@ func salesReceivablesSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SalesReceivablesSetupOnDelete)
 	case "OnRename":
 		_, ok = logic.(SalesReceivablesSetupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(SalesReceivablesSetupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(SalesReceivablesSetupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(SalesReceivablesSetupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(SalesReceivablesSetupOnBeforeRename)
 	case "OnValidate_Primary_key":
 		_, ok = logic.(SalesReceivablesSetupOnValidate_Primary_key)
 	case "OnValidate_Discount_posting":
@@ -718,19 +746,32 @@ func (t *SalesReceivablesSetup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *SalesReceivablesSetup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return salesReceivablesSetupLogic
+	return extensions.EnabledLogic(salesReceivablesSetupLogic, salesReceivablesSetupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *SalesReceivablesSetup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(SalesReceivablesSetupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalesReceivablesSetupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(SalesReceivablesSetupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -739,10 +780,21 @@ func (t *SalesReceivablesSetup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *SalesReceivablesSetup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(SalesReceivablesSetupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalesReceivablesSetupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(SalesReceivablesSetupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -750,7 +802,19 @@ func (t *SalesReceivablesSetup) runOnModify() error {
 }
 
 func (t *SalesReceivablesSetup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalesReceivablesSetupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(SalesReceivablesSetupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -761,7 +825,19 @@ func (t *SalesReceivablesSetup) runOnDelete() error {
 }
 
 func (t *SalesReceivablesSetup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalesReceivablesSetupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(SalesReceivablesSetupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

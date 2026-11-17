@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.CustInvoiceDisc) error
 //	OnDelete(rec *gtables.CustInvoiceDisc) error
 //	OnRename(rec *gtables.CustInvoiceDisc) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.CustInvoiceDisc, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.CustInvoiceDisc) error
 //	OnValidate_Minimum_amount(rec *gtables.CustInvoiceDisc) error
 //	OnValidate_Discount_percent(rec *gtables.CustInvoiceDisc) error
@@ -26,6 +28,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -251,6 +254,18 @@ type (
 	CustInvoiceDiscOnRename interface {
 		OnRename(rec *CustInvoiceDisc) error
 	}
+	CustInvoiceDiscOnBeforeInsert interface {
+		OnBeforeInsert(rec *CustInvoiceDisc, handled *bool) error
+	}
+	CustInvoiceDiscOnBeforeModify interface {
+		OnBeforeModify(rec *CustInvoiceDisc, handled *bool) error
+	}
+	CustInvoiceDiscOnBeforeDelete interface {
+		OnBeforeDelete(rec *CustInvoiceDisc, handled *bool) error
+	}
+	CustInvoiceDiscOnBeforeRename interface {
+		OnBeforeRename(rec *CustInvoiceDisc, handled *bool) error
+	}
 	CustInvoiceDiscOnValidate_Code interface {
 		OnValidate_Code(rec *CustInvoiceDisc) error
 	}
@@ -269,18 +284,23 @@ type (
 )
 
 // custInvoiceDiscLogic is the registered business logic of Cust_Invoice_Disc, in
-// registration order (the base application first, then extensions)
-var custInvoiceDiscLogic []any
+// registration order (the base application first, then extensions), and
+// custInvoiceDiscLogicApp the app that registered each ("" the base application)
+var (
+	custInvoiceDiscLogic    []any
+	custInvoiceDiscLogicApp []string
+)
 
 // RegisterCustInvoiceDiscLogic adds business logic to Cust_Invoice_Disc: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterCustInvoiceDiscLogic(logic any) {
 	checkLogic(CustInvoiceDiscTableName, "CustInvoiceDisc", logic, custInvoiceDiscTrigger)
 	custInvoiceDiscLogic = append(custInvoiceDiscLogic, logic)
+	custInvoiceDiscLogicApp = append(custInvoiceDiscLogicApp, extensions.Current())
 }
 
 // custInvoiceDiscTrigger reports whether name is a trigger of Cust_Invoice_Disc and
@@ -295,6 +315,14 @@ func custInvoiceDiscTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CustInvoiceDiscOnDelete)
 	case "OnRename":
 		_, ok = logic.(CustInvoiceDiscOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(CustInvoiceDiscOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(CustInvoiceDiscOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(CustInvoiceDiscOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(CustInvoiceDiscOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(CustInvoiceDiscOnValidate_Code)
 	case "OnValidate_Minimum_amount":
@@ -323,19 +351,32 @@ func (t *CustInvoiceDisc) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *CustInvoiceDisc) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return custInvoiceDiscLogic
+	return extensions.EnabledLogic(custInvoiceDiscLogic, custInvoiceDiscLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *CustInvoiceDisc) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(CustInvoiceDiscOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CustInvoiceDiscOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(CustInvoiceDiscOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -344,10 +385,21 @@ func (t *CustInvoiceDisc) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *CustInvoiceDisc) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(CustInvoiceDiscOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CustInvoiceDiscOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(CustInvoiceDiscOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -355,7 +407,19 @@ func (t *CustInvoiceDisc) runOnModify() error {
 }
 
 func (t *CustInvoiceDisc) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CustInvoiceDiscOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(CustInvoiceDiscOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -366,7 +430,19 @@ func (t *CustInvoiceDisc) runOnDelete() error {
 }
 
 func (t *CustInvoiceDisc) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CustInvoiceDiscOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(CustInvoiceDiscOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

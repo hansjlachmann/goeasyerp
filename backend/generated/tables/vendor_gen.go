@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.Vendor) error
 //	OnDelete(rec *gtables.Vendor) error
 //	OnRename(rec *gtables.Vendor) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.Vendor, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_No(rec *gtables.Vendor) error
 //	OnValidate_Name(rec *gtables.Vendor) error
 //	OnValidate_Search_name(rec *gtables.Vendor) error
@@ -70,6 +72,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -897,10 +900,22 @@ func (t *Vendor) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Vendor: a business logic type implements the ones it needs
 type (
-	VendorOnInsert                         interface{ OnInsert(rec *Vendor) error }
-	VendorOnModify                         interface{ OnModify(rec *Vendor) error }
-	VendorOnDelete                         interface{ OnDelete(rec *Vendor) error }
-	VendorOnRename                         interface{ OnRename(rec *Vendor) error }
+	VendorOnInsert       interface{ OnInsert(rec *Vendor) error }
+	VendorOnModify       interface{ OnModify(rec *Vendor) error }
+	VendorOnDelete       interface{ OnDelete(rec *Vendor) error }
+	VendorOnRename       interface{ OnRename(rec *Vendor) error }
+	VendorOnBeforeInsert interface {
+		OnBeforeInsert(rec *Vendor, handled *bool) error
+	}
+	VendorOnBeforeModify interface {
+		OnBeforeModify(rec *Vendor, handled *bool) error
+	}
+	VendorOnBeforeDelete interface {
+		OnBeforeDelete(rec *Vendor, handled *bool) error
+	}
+	VendorOnBeforeRename interface {
+		OnBeforeRename(rec *Vendor, handled *bool) error
+	}
 	VendorOnValidate_No                    interface{ OnValidate_No(rec *Vendor) error }
 	VendorOnValidate_Name                  interface{ OnValidate_Name(rec *Vendor) error }
 	VendorOnValidate_Search_name           interface{ OnValidate_Search_name(rec *Vendor) error }
@@ -950,18 +965,23 @@ type (
 )
 
 // vendorLogic is the registered business logic of Vendor, in
-// registration order (the base application first, then extensions)
-var vendorLogic []any
+// registration order (the base application first, then extensions), and
+// vendorLogicApp the app that registered each ("" the base application)
+var (
+	vendorLogic    []any
+	vendorLogicApp []string
+)
 
 // RegisterVendorLogic adds business logic to Vendor: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterVendorLogic(logic any) {
 	checkLogic(VendorTableName, "Vendor", logic, vendorTrigger)
 	vendorLogic = append(vendorLogic, logic)
+	vendorLogicApp = append(vendorLogicApp, extensions.Current())
 }
 
 // vendorTrigger reports whether name is a trigger of Vendor and
@@ -976,6 +996,14 @@ func vendorTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(VendorOnDelete)
 	case "OnRename":
 		_, ok = logic.(VendorOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(VendorOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(VendorOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(VendorOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(VendorOnBeforeRename)
 	case "OnValidate_No":
 		_, ok = logic.(VendorOnValidate_No)
 	case "OnValidate_Name":
@@ -1086,19 +1114,32 @@ func (t *Vendor) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *Vendor) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return vendorLogic
+	return extensions.EnabledLogic(vendorLogic, vendorLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *Vendor) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(VendorOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(VendorOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(VendorOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1107,10 +1148,21 @@ func (t *Vendor) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *Vendor) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(VendorOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(VendorOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(VendorOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1118,7 +1170,19 @@ func (t *Vendor) runOnModify() error {
 }
 
 func (t *Vendor) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(VendorOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(VendorOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -1129,7 +1193,19 @@ func (t *Vendor) runOnDelete() error {
 }
 
 func (t *Vendor) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(VendorOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(VendorOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

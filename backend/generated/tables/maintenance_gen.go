@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.Maintenance) error
 //	OnDelete(rec *gtables.Maintenance) error
 //	OnRename(rec *gtables.Maintenance) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.Maintenance, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.Maintenance) error
 //	OnValidate_Description(rec *gtables.Maintenance) error
 
@@ -23,6 +25,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -215,27 +218,44 @@ func (t *Maintenance) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Maintenance: a business logic type implements the ones it needs
 type (
-	MaintenanceOnInsert               interface{ OnInsert(rec *Maintenance) error }
-	MaintenanceOnModify               interface{ OnModify(rec *Maintenance) error }
-	MaintenanceOnDelete               interface{ OnDelete(rec *Maintenance) error }
-	MaintenanceOnRename               interface{ OnRename(rec *Maintenance) error }
+	MaintenanceOnInsert       interface{ OnInsert(rec *Maintenance) error }
+	MaintenanceOnModify       interface{ OnModify(rec *Maintenance) error }
+	MaintenanceOnDelete       interface{ OnDelete(rec *Maintenance) error }
+	MaintenanceOnRename       interface{ OnRename(rec *Maintenance) error }
+	MaintenanceOnBeforeInsert interface {
+		OnBeforeInsert(rec *Maintenance, handled *bool) error
+	}
+	MaintenanceOnBeforeModify interface {
+		OnBeforeModify(rec *Maintenance, handled *bool) error
+	}
+	MaintenanceOnBeforeDelete interface {
+		OnBeforeDelete(rec *Maintenance, handled *bool) error
+	}
+	MaintenanceOnBeforeRename interface {
+		OnBeforeRename(rec *Maintenance, handled *bool) error
+	}
 	MaintenanceOnValidate_Code        interface{ OnValidate_Code(rec *Maintenance) error }
 	MaintenanceOnValidate_Description interface{ OnValidate_Description(rec *Maintenance) error }
 )
 
 // maintenanceLogic is the registered business logic of Maintenance, in
-// registration order (the base application first, then extensions)
-var maintenanceLogic []any
+// registration order (the base application first, then extensions), and
+// maintenanceLogicApp the app that registered each ("" the base application)
+var (
+	maintenanceLogic    []any
+	maintenanceLogicApp []string
+)
 
 // RegisterMaintenanceLogic adds business logic to Maintenance: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterMaintenanceLogic(logic any) {
 	checkLogic(MaintenanceTableName, "Maintenance", logic, maintenanceTrigger)
 	maintenanceLogic = append(maintenanceLogic, logic)
+	maintenanceLogicApp = append(maintenanceLogicApp, extensions.Current())
 }
 
 // maintenanceTrigger reports whether name is a trigger of Maintenance and
@@ -250,6 +270,14 @@ func maintenanceTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(MaintenanceOnDelete)
 	case "OnRename":
 		_, ok = logic.(MaintenanceOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(MaintenanceOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(MaintenanceOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(MaintenanceOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(MaintenanceOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(MaintenanceOnValidate_Code)
 	case "OnValidate_Description":
@@ -272,19 +300,32 @@ func (t *Maintenance) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *Maintenance) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return maintenanceLogic
+	return extensions.EnabledLogic(maintenanceLogic, maintenanceLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *Maintenance) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(MaintenanceOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(MaintenanceOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(MaintenanceOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -293,10 +334,21 @@ func (t *Maintenance) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *Maintenance) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(MaintenanceOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(MaintenanceOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(MaintenanceOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,7 +356,19 @@ func (t *Maintenance) runOnModify() error {
 }
 
 func (t *Maintenance) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(MaintenanceOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(MaintenanceOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -315,7 +379,19 @@ func (t *Maintenance) runOnDelete() error {
 }
 
 func (t *Maintenance) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(MaintenanceOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(MaintenanceOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

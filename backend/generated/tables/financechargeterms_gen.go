@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.FinanceChargeTerms) error
 //	OnDelete(rec *gtables.FinanceChargeTerms) error
 //	OnRename(rec *gtables.FinanceChargeTerms) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.FinanceChargeTerms, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.FinanceChargeTerms) error
 //	OnValidate_Interest_rate(rec *gtables.FinanceChargeTerms) error
 //	OnValidate_Minimum_amount_lcy(rec *gtables.FinanceChargeTerms) error
@@ -35,6 +37,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -378,6 +381,18 @@ type (
 	FinanceChargeTermsOnRename interface {
 		OnRename(rec *FinanceChargeTerms) error
 	}
+	FinanceChargeTermsOnBeforeInsert interface {
+		OnBeforeInsert(rec *FinanceChargeTerms, handled *bool) error
+	}
+	FinanceChargeTermsOnBeforeModify interface {
+		OnBeforeModify(rec *FinanceChargeTerms, handled *bool) error
+	}
+	FinanceChargeTermsOnBeforeDelete interface {
+		OnBeforeDelete(rec *FinanceChargeTerms, handled *bool) error
+	}
+	FinanceChargeTermsOnBeforeRename interface {
+		OnBeforeRename(rec *FinanceChargeTerms, handled *bool) error
+	}
 	FinanceChargeTermsOnValidate_Code interface {
 		OnValidate_Code(rec *FinanceChargeTerms) error
 	}
@@ -420,18 +435,23 @@ type (
 )
 
 // financeChargeTermsLogic is the registered business logic of Finance_Charge_Terms, in
-// registration order (the base application first, then extensions)
-var financeChargeTermsLogic []any
+// registration order (the base application first, then extensions), and
+// financeChargeTermsLogicApp the app that registered each ("" the base application)
+var (
+	financeChargeTermsLogic    []any
+	financeChargeTermsLogicApp []string
+)
 
 // RegisterFinanceChargeTermsLogic adds business logic to Finance_Charge_Terms: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterFinanceChargeTermsLogic(logic any) {
 	checkLogic(FinanceChargeTermsTableName, "FinanceChargeTerms", logic, financeChargeTermsTrigger)
 	financeChargeTermsLogic = append(financeChargeTermsLogic, logic)
+	financeChargeTermsLogicApp = append(financeChargeTermsLogicApp, extensions.Current())
 }
 
 // financeChargeTermsTrigger reports whether name is a trigger of Finance_Charge_Terms and
@@ -446,6 +466,14 @@ func financeChargeTermsTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FinanceChargeTermsOnDelete)
 	case "OnRename":
 		_, ok = logic.(FinanceChargeTermsOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(FinanceChargeTermsOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(FinanceChargeTermsOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(FinanceChargeTermsOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(FinanceChargeTermsOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(FinanceChargeTermsOnValidate_Code)
 	case "OnValidate_Interest_rate":
@@ -490,19 +518,32 @@ func (t *FinanceChargeTerms) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *FinanceChargeTerms) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return financeChargeTermsLogic
+	return extensions.EnabledLogic(financeChargeTermsLogic, financeChargeTermsLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *FinanceChargeTerms) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FinanceChargeTermsOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FinanceChargeTermsOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FinanceChargeTermsOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -511,10 +552,21 @@ func (t *FinanceChargeTerms) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *FinanceChargeTerms) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FinanceChargeTermsOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FinanceChargeTermsOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FinanceChargeTermsOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -522,7 +574,19 @@ func (t *FinanceChargeTerms) runOnModify() error {
 }
 
 func (t *FinanceChargeTerms) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FinanceChargeTermsOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FinanceChargeTermsOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -533,7 +597,19 @@ func (t *FinanceChargeTerms) runOnDelete() error {
 }
 
 func (t *FinanceChargeTerms) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FinanceChargeTermsOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FinanceChargeTermsOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

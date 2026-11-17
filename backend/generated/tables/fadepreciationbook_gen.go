@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.FADepreciationBook) error
 //	OnDelete(rec *gtables.FADepreciationBook) error
 //	OnRename(rec *gtables.FADepreciationBook) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.FADepreciationBook, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Fa_no(rec *gtables.FADepreciationBook) error
 //	OnValidate_Depreciation_book_code(rec *gtables.FADepreciationBook) error
 //	OnValidate_Depreciation_method(rec *gtables.FADepreciationBook) error
@@ -64,6 +66,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -769,6 +772,18 @@ type (
 	FADepreciationBookOnRename interface {
 		OnRename(rec *FADepreciationBook) error
 	}
+	FADepreciationBookOnBeforeInsert interface {
+		OnBeforeInsert(rec *FADepreciationBook, handled *bool) error
+	}
+	FADepreciationBookOnBeforeModify interface {
+		OnBeforeModify(rec *FADepreciationBook, handled *bool) error
+	}
+	FADepreciationBookOnBeforeDelete interface {
+		OnBeforeDelete(rec *FADepreciationBook, handled *bool) error
+	}
+	FADepreciationBookOnBeforeRename interface {
+		OnBeforeRename(rec *FADepreciationBook, handled *bool) error
+	}
 	FADepreciationBookOnValidate_Fa_no interface {
 		OnValidate_Fa_no(rec *FADepreciationBook) error
 	}
@@ -898,18 +913,23 @@ type (
 )
 
 // fADepreciationBookLogic is the registered business logic of FA_Depreciation_Book, in
-// registration order (the base application first, then extensions)
-var fADepreciationBookLogic []any
+// registration order (the base application first, then extensions), and
+// fADepreciationBookLogicApp the app that registered each ("" the base application)
+var (
+	fADepreciationBookLogic    []any
+	fADepreciationBookLogicApp []string
+)
 
 // RegisterFADepreciationBookLogic adds business logic to FA_Depreciation_Book: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterFADepreciationBookLogic(logic any) {
 	checkLogic(FADepreciationBookTableName, "FADepreciationBook", logic, fADepreciationBookTrigger)
 	fADepreciationBookLogic = append(fADepreciationBookLogic, logic)
+	fADepreciationBookLogicApp = append(fADepreciationBookLogicApp, extensions.Current())
 }
 
 // fADepreciationBookTrigger reports whether name is a trigger of FA_Depreciation_Book and
@@ -924,6 +944,14 @@ func fADepreciationBookTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FADepreciationBookOnDelete)
 	case "OnRename":
 		_, ok = logic.(FADepreciationBookOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(FADepreciationBookOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(FADepreciationBookOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(FADepreciationBookOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(FADepreciationBookOnBeforeRename)
 	case "OnValidate_Fa_no":
 		_, ok = logic.(FADepreciationBookOnValidate_Fa_no)
 	case "OnValidate_Depreciation_book_code":
@@ -1026,19 +1054,32 @@ func (t *FADepreciationBook) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *FADepreciationBook) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return fADepreciationBookLogic
+	return extensions.EnabledLogic(fADepreciationBookLogic, fADepreciationBookLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *FADepreciationBook) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FADepreciationBookOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FADepreciationBookOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FADepreciationBookOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1047,10 +1088,21 @@ func (t *FADepreciationBook) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *FADepreciationBook) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FADepreciationBookOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FADepreciationBookOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FADepreciationBookOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1058,7 +1110,19 @@ func (t *FADepreciationBook) runOnModify() error {
 }
 
 func (t *FADepreciationBook) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FADepreciationBookOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FADepreciationBookOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -1069,7 +1133,19 @@ func (t *FADepreciationBook) runOnDelete() error {
 }
 
 func (t *FADepreciationBook) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FADepreciationBookOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FADepreciationBookOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

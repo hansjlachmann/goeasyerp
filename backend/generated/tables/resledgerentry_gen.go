@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ResLedgerEntry) error
 //	OnDelete(rec *gtables.ResLedgerEntry) error
 //	OnRename(rec *gtables.ResLedgerEntry) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ResLedgerEntry, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Entry_no(rec *gtables.ResLedgerEntry) error
 //	OnValidate_Entry_type(rec *gtables.ResLedgerEntry) error
 //	OnValidate_Document_no(rec *gtables.ResLedgerEntry) error
@@ -51,6 +53,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -471,6 +474,18 @@ type (
 	ResLedgerEntryOnRename interface {
 		OnRename(rec *ResLedgerEntry) error
 	}
+	ResLedgerEntryOnBeforeInsert interface {
+		OnBeforeInsert(rec *ResLedgerEntry, handled *bool) error
+	}
+	ResLedgerEntryOnBeforeModify interface {
+		OnBeforeModify(rec *ResLedgerEntry, handled *bool) error
+	}
+	ResLedgerEntryOnBeforeDelete interface {
+		OnBeforeDelete(rec *ResLedgerEntry, handled *bool) error
+	}
+	ResLedgerEntryOnBeforeRename interface {
+		OnBeforeRename(rec *ResLedgerEntry, handled *bool) error
+	}
 	ResLedgerEntryOnValidate_Entry_no interface {
 		OnValidate_Entry_no(rec *ResLedgerEntry) error
 	}
@@ -558,18 +573,23 @@ type (
 )
 
 // resLedgerEntryLogic is the registered business logic of Res_Ledger_Entry, in
-// registration order (the base application first, then extensions)
-var resLedgerEntryLogic []any
+// registration order (the base application first, then extensions), and
+// resLedgerEntryLogicApp the app that registered each ("" the base application)
+var (
+	resLedgerEntryLogic    []any
+	resLedgerEntryLogicApp []string
+)
 
 // RegisterResLedgerEntryLogic adds business logic to Res_Ledger_Entry: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterResLedgerEntryLogic(logic any) {
 	checkLogic(ResLedgerEntryTableName, "ResLedgerEntry", logic, resLedgerEntryTrigger)
 	resLedgerEntryLogic = append(resLedgerEntryLogic, logic)
+	resLedgerEntryLogicApp = append(resLedgerEntryLogicApp, extensions.Current())
 }
 
 // resLedgerEntryTrigger reports whether name is a trigger of Res_Ledger_Entry and
@@ -584,6 +604,14 @@ func resLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ResLedgerEntryOnDelete)
 	case "OnRename":
 		_, ok = logic.(ResLedgerEntryOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ResLedgerEntryOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ResLedgerEntryOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ResLedgerEntryOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ResLedgerEntryOnBeforeRename)
 	case "OnValidate_Entry_no":
 		_, ok = logic.(ResLedgerEntryOnValidate_Entry_no)
 	case "OnValidate_Entry_type":
@@ -658,19 +686,32 @@ func (t *ResLedgerEntry) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ResLedgerEntry) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return resLedgerEntryLogic
+	return extensions.EnabledLogic(resLedgerEntryLogic, resLedgerEntryLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ResLedgerEntry) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ResLedgerEntryOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResLedgerEntryOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ResLedgerEntryOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -679,10 +720,21 @@ func (t *ResLedgerEntry) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ResLedgerEntry) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ResLedgerEntryOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResLedgerEntryOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ResLedgerEntryOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -690,7 +742,19 @@ func (t *ResLedgerEntry) runOnModify() error {
 }
 
 func (t *ResLedgerEntry) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResLedgerEntryOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ResLedgerEntryOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -701,7 +765,19 @@ func (t *ResLedgerEntry) runOnDelete() error {
 }
 
 func (t *ResLedgerEntry) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResLedgerEntryOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ResLedgerEntryOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.FAAllocation) error
 //	OnDelete(rec *gtables.FAAllocation) error
 //	OnRename(rec *gtables.FAAllocation) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.FAAllocation, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.FAAllocation) error
 //	OnValidate_Line_no(rec *gtables.FAAllocation) error
 //	OnValidate_Description(rec *gtables.FAAllocation) error
@@ -30,6 +32,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -324,10 +327,22 @@ func (t *FAAllocation) DeleteOrError(runTrigger bool) error {
 
 // Triggers of FA_Allocation: a business logic type implements the ones it needs
 type (
-	FAAllocationOnInsert                      interface{ OnInsert(rec *FAAllocation) error }
-	FAAllocationOnModify                      interface{ OnModify(rec *FAAllocation) error }
-	FAAllocationOnDelete                      interface{ OnDelete(rec *FAAllocation) error }
-	FAAllocationOnRename                      interface{ OnRename(rec *FAAllocation) error }
+	FAAllocationOnInsert       interface{ OnInsert(rec *FAAllocation) error }
+	FAAllocationOnModify       interface{ OnModify(rec *FAAllocation) error }
+	FAAllocationOnDelete       interface{ OnDelete(rec *FAAllocation) error }
+	FAAllocationOnRename       interface{ OnRename(rec *FAAllocation) error }
+	FAAllocationOnBeforeInsert interface {
+		OnBeforeInsert(rec *FAAllocation, handled *bool) error
+	}
+	FAAllocationOnBeforeModify interface {
+		OnBeforeModify(rec *FAAllocation, handled *bool) error
+	}
+	FAAllocationOnBeforeDelete interface {
+		OnBeforeDelete(rec *FAAllocation, handled *bool) error
+	}
+	FAAllocationOnBeforeRename interface {
+		OnBeforeRename(rec *FAAllocation, handled *bool) error
+	}
 	FAAllocationOnValidate_Code               interface{ OnValidate_Code(rec *FAAllocation) error }
 	FAAllocationOnValidate_Line_no            interface{ OnValidate_Line_no(rec *FAAllocation) error }
 	FAAllocationOnValidate_Description        interface{ OnValidate_Description(rec *FAAllocation) error }
@@ -339,18 +354,23 @@ type (
 )
 
 // fAAllocationLogic is the registered business logic of FA_Allocation, in
-// registration order (the base application first, then extensions)
-var fAAllocationLogic []any
+// registration order (the base application first, then extensions), and
+// fAAllocationLogicApp the app that registered each ("" the base application)
+var (
+	fAAllocationLogic    []any
+	fAAllocationLogicApp []string
+)
 
 // RegisterFAAllocationLogic adds business logic to FA_Allocation: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterFAAllocationLogic(logic any) {
 	checkLogic(FAAllocationTableName, "FAAllocation", logic, fAAllocationTrigger)
 	fAAllocationLogic = append(fAAllocationLogic, logic)
+	fAAllocationLogicApp = append(fAAllocationLogicApp, extensions.Current())
 }
 
 // fAAllocationTrigger reports whether name is a trigger of FA_Allocation and
@@ -365,6 +385,14 @@ func fAAllocationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FAAllocationOnDelete)
 	case "OnRename":
 		_, ok = logic.(FAAllocationOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(FAAllocationOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(FAAllocationOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(FAAllocationOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(FAAllocationOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(FAAllocationOnValidate_Code)
 	case "OnValidate_Line_no":
@@ -399,19 +427,32 @@ func (t *FAAllocation) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *FAAllocation) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return fAAllocationLogic
+	return extensions.EnabledLogic(fAAllocationLogic, fAAllocationLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *FAAllocation) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FAAllocationOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FAAllocationOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FAAllocationOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -420,10 +461,21 @@ func (t *FAAllocation) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *FAAllocation) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FAAllocationOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FAAllocationOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FAAllocationOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -431,7 +483,19 @@ func (t *FAAllocation) runOnModify() error {
 }
 
 func (t *FAAllocation) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FAAllocationOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FAAllocationOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -442,7 +506,19 @@ func (t *FAAllocation) runOnDelete() error {
 }
 
 func (t *FAAllocation) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FAAllocationOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FAAllocationOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

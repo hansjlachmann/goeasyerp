@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.FixedAsset) error
 //	OnDelete(rec *gtables.FixedAsset) error
 //	OnRename(rec *gtables.FixedAsset) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.FixedAsset, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_No(rec *gtables.FixedAsset) error
 //	OnValidate_Description(rec *gtables.FixedAsset) error
 //	OnValidate_Search_description(rec *gtables.FixedAsset) error
@@ -48,6 +50,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -462,10 +465,22 @@ func (t *FixedAsset) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Fixed_Asset: a business logic type implements the ones it needs
 type (
-	FixedAssetOnInsert                           interface{ OnInsert(rec *FixedAsset) error }
-	FixedAssetOnModify                           interface{ OnModify(rec *FixedAsset) error }
-	FixedAssetOnDelete                           interface{ OnDelete(rec *FixedAsset) error }
-	FixedAssetOnRename                           interface{ OnRename(rec *FixedAsset) error }
+	FixedAssetOnInsert       interface{ OnInsert(rec *FixedAsset) error }
+	FixedAssetOnModify       interface{ OnModify(rec *FixedAsset) error }
+	FixedAssetOnDelete       interface{ OnDelete(rec *FixedAsset) error }
+	FixedAssetOnRename       interface{ OnRename(rec *FixedAsset) error }
+	FixedAssetOnBeforeInsert interface {
+		OnBeforeInsert(rec *FixedAsset, handled *bool) error
+	}
+	FixedAssetOnBeforeModify interface {
+		OnBeforeModify(rec *FixedAsset, handled *bool) error
+	}
+	FixedAssetOnBeforeDelete interface {
+		OnBeforeDelete(rec *FixedAsset, handled *bool) error
+	}
+	FixedAssetOnBeforeRename interface {
+		OnBeforeRename(rec *FixedAsset, handled *bool) error
+	}
 	FixedAssetOnValidate_No                      interface{ OnValidate_No(rec *FixedAsset) error }
 	FixedAssetOnValidate_Description             interface{ OnValidate_Description(rec *FixedAsset) error }
 	FixedAssetOnValidate_Search_description      interface{ OnValidate_Search_description(rec *FixedAsset) error }
@@ -494,18 +509,23 @@ type (
 )
 
 // fixedAssetLogic is the registered business logic of Fixed_Asset, in
-// registration order (the base application first, then extensions)
-var fixedAssetLogic []any
+// registration order (the base application first, then extensions), and
+// fixedAssetLogicApp the app that registered each ("" the base application)
+var (
+	fixedAssetLogic    []any
+	fixedAssetLogicApp []string
+)
 
 // RegisterFixedAssetLogic adds business logic to Fixed_Asset: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterFixedAssetLogic(logic any) {
 	checkLogic(FixedAssetTableName, "FixedAsset", logic, fixedAssetTrigger)
 	fixedAssetLogic = append(fixedAssetLogic, logic)
+	fixedAssetLogicApp = append(fixedAssetLogicApp, extensions.Current())
 }
 
 // fixedAssetTrigger reports whether name is a trigger of Fixed_Asset and
@@ -520,6 +540,14 @@ func fixedAssetTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FixedAssetOnDelete)
 	case "OnRename":
 		_, ok = logic.(FixedAssetOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(FixedAssetOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(FixedAssetOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(FixedAssetOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(FixedAssetOnBeforeRename)
 	case "OnValidate_No":
 		_, ok = logic.(FixedAssetOnValidate_No)
 	case "OnValidate_Description":
@@ -588,19 +616,32 @@ func (t *FixedAsset) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *FixedAsset) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return fixedAssetLogic
+	return extensions.EnabledLogic(fixedAssetLogic, fixedAssetLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *FixedAsset) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FixedAssetOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FixedAssetOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FixedAssetOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -609,10 +650,21 @@ func (t *FixedAsset) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *FixedAsset) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FixedAssetOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FixedAssetOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FixedAssetOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -620,7 +672,19 @@ func (t *FixedAsset) runOnModify() error {
 }
 
 func (t *FixedAsset) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FixedAssetOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FixedAssetOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -631,7 +695,19 @@ func (t *FixedAsset) runOnDelete() error {
 }
 
 func (t *FixedAsset) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FixedAssetOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FixedAssetOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

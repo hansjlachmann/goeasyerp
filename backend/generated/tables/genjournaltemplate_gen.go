@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.GenJournalTemplate) error
 //	OnDelete(rec *gtables.GenJournalTemplate) error
 //	OnRename(rec *gtables.GenJournalTemplate) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.GenJournalTemplate, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Name(rec *gtables.GenJournalTemplate) error
 //	OnValidate_Description(rec *gtables.GenJournalTemplate) error
 //	OnValidate_Test_report_id(rec *gtables.GenJournalTemplate) error
@@ -37,6 +39,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -408,6 +411,18 @@ type (
 	GenJournalTemplateOnRename interface {
 		OnRename(rec *GenJournalTemplate) error
 	}
+	GenJournalTemplateOnBeforeInsert interface {
+		OnBeforeInsert(rec *GenJournalTemplate, handled *bool) error
+	}
+	GenJournalTemplateOnBeforeModify interface {
+		OnBeforeModify(rec *GenJournalTemplate, handled *bool) error
+	}
+	GenJournalTemplateOnBeforeDelete interface {
+		OnBeforeDelete(rec *GenJournalTemplate, handled *bool) error
+	}
+	GenJournalTemplateOnBeforeRename interface {
+		OnBeforeRename(rec *GenJournalTemplate, handled *bool) error
+	}
 	GenJournalTemplateOnValidate_Name interface {
 		OnValidate_Name(rec *GenJournalTemplate) error
 	}
@@ -456,18 +471,23 @@ type (
 )
 
 // genJournalTemplateLogic is the registered business logic of Gen_Journal_Template, in
-// registration order (the base application first, then extensions)
-var genJournalTemplateLogic []any
+// registration order (the base application first, then extensions), and
+// genJournalTemplateLogicApp the app that registered each ("" the base application)
+var (
+	genJournalTemplateLogic    []any
+	genJournalTemplateLogicApp []string
+)
 
 // RegisterGenJournalTemplateLogic adds business logic to Gen_Journal_Template: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterGenJournalTemplateLogic(logic any) {
 	checkLogic(GenJournalTemplateTableName, "GenJournalTemplate", logic, genJournalTemplateTrigger)
 	genJournalTemplateLogic = append(genJournalTemplateLogic, logic)
+	genJournalTemplateLogicApp = append(genJournalTemplateLogicApp, extensions.Current())
 }
 
 // genJournalTemplateTrigger reports whether name is a trigger of Gen_Journal_Template and
@@ -482,6 +502,14 @@ func genJournalTemplateTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GenJournalTemplateOnDelete)
 	case "OnRename":
 		_, ok = logic.(GenJournalTemplateOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(GenJournalTemplateOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(GenJournalTemplateOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(GenJournalTemplateOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(GenJournalTemplateOnBeforeRename)
 	case "OnValidate_Name":
 		_, ok = logic.(GenJournalTemplateOnValidate_Name)
 	case "OnValidate_Description":
@@ -530,19 +558,32 @@ func (t *GenJournalTemplate) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *GenJournalTemplate) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return genJournalTemplateLogic
+	return extensions.EnabledLogic(genJournalTemplateLogic, genJournalTemplateLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *GenJournalTemplate) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(GenJournalTemplateOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GenJournalTemplateOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(GenJournalTemplateOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -551,10 +592,21 @@ func (t *GenJournalTemplate) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *GenJournalTemplate) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(GenJournalTemplateOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GenJournalTemplateOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(GenJournalTemplateOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -562,7 +614,19 @@ func (t *GenJournalTemplate) runOnModify() error {
 }
 
 func (t *GenJournalTemplate) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GenJournalTemplateOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(GenJournalTemplateOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -573,7 +637,19 @@ func (t *GenJournalTemplate) runOnDelete() error {
 }
 
 func (t *GenJournalTemplate) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GenJournalTemplateOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(GenJournalTemplateOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

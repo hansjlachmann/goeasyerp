@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.Location) error
 //	OnDelete(rec *gtables.Location) error
 //	OnRename(rec *gtables.Location) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.Location, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.Location) error
 //	OnValidate_Name(rec *gtables.Location) error
 
@@ -23,6 +25,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -215,27 +218,44 @@ func (t *Location) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Location: a business logic type implements the ones it needs
 type (
-	LocationOnInsert        interface{ OnInsert(rec *Location) error }
-	LocationOnModify        interface{ OnModify(rec *Location) error }
-	LocationOnDelete        interface{ OnDelete(rec *Location) error }
-	LocationOnRename        interface{ OnRename(rec *Location) error }
+	LocationOnInsert       interface{ OnInsert(rec *Location) error }
+	LocationOnModify       interface{ OnModify(rec *Location) error }
+	LocationOnDelete       interface{ OnDelete(rec *Location) error }
+	LocationOnRename       interface{ OnRename(rec *Location) error }
+	LocationOnBeforeInsert interface {
+		OnBeforeInsert(rec *Location, handled *bool) error
+	}
+	LocationOnBeforeModify interface {
+		OnBeforeModify(rec *Location, handled *bool) error
+	}
+	LocationOnBeforeDelete interface {
+		OnBeforeDelete(rec *Location, handled *bool) error
+	}
+	LocationOnBeforeRename interface {
+		OnBeforeRename(rec *Location, handled *bool) error
+	}
 	LocationOnValidate_Code interface{ OnValidate_Code(rec *Location) error }
 	LocationOnValidate_Name interface{ OnValidate_Name(rec *Location) error }
 )
 
 // locationLogic is the registered business logic of Location, in
-// registration order (the base application first, then extensions)
-var locationLogic []any
+// registration order (the base application first, then extensions), and
+// locationLogicApp the app that registered each ("" the base application)
+var (
+	locationLogic    []any
+	locationLogicApp []string
+)
 
 // RegisterLocationLogic adds business logic to Location: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterLocationLogic(logic any) {
 	checkLogic(LocationTableName, "Location", logic, locationTrigger)
 	locationLogic = append(locationLogic, logic)
+	locationLogicApp = append(locationLogicApp, extensions.Current())
 }
 
 // locationTrigger reports whether name is a trigger of Location and
@@ -250,6 +270,14 @@ func locationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(LocationOnDelete)
 	case "OnRename":
 		_, ok = logic.(LocationOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(LocationOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(LocationOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(LocationOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(LocationOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(LocationOnValidate_Code)
 	case "OnValidate_Name":
@@ -272,19 +300,32 @@ func (t *Location) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *Location) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return locationLogic
+	return extensions.EnabledLogic(locationLogic, locationLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *Location) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(LocationOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(LocationOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(LocationOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -293,10 +334,21 @@ func (t *Location) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *Location) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(LocationOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(LocationOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(LocationOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,7 +356,19 @@ func (t *Location) runOnModify() error {
 }
 
 func (t *Location) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(LocationOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(LocationOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -315,7 +379,19 @@ func (t *Location) runOnDelete() error {
 }
 
 func (t *Location) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(LocationOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(LocationOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

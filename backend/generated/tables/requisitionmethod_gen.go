@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.RequisitionMethod) error
 //	OnDelete(rec *gtables.RequisitionMethod) error
 //	OnRename(rec *gtables.RequisitionMethod) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.RequisitionMethod, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.RequisitionMethod) error
 //	OnValidate_Name(rec *gtables.RequisitionMethod) error
 //	OnValidate_Manufacturing_policy(rec *gtables.RequisitionMethod) error
@@ -27,6 +29,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -329,6 +332,18 @@ type (
 	RequisitionMethodOnRename interface {
 		OnRename(rec *RequisitionMethod) error
 	}
+	RequisitionMethodOnBeforeInsert interface {
+		OnBeforeInsert(rec *RequisitionMethod, handled *bool) error
+	}
+	RequisitionMethodOnBeforeModify interface {
+		OnBeforeModify(rec *RequisitionMethod, handled *bool) error
+	}
+	RequisitionMethodOnBeforeDelete interface {
+		OnBeforeDelete(rec *RequisitionMethod, handled *bool) error
+	}
+	RequisitionMethodOnBeforeRename interface {
+		OnBeforeRename(rec *RequisitionMethod, handled *bool) error
+	}
 	RequisitionMethodOnValidate_Code interface {
 		OnValidate_Code(rec *RequisitionMethod) error
 	}
@@ -350,18 +365,23 @@ type (
 )
 
 // requisitionMethodLogic is the registered business logic of Requisition_Method, in
-// registration order (the base application first, then extensions)
-var requisitionMethodLogic []any
+// registration order (the base application first, then extensions), and
+// requisitionMethodLogicApp the app that registered each ("" the base application)
+var (
+	requisitionMethodLogic    []any
+	requisitionMethodLogicApp []string
+)
 
 // RegisterRequisitionMethodLogic adds business logic to Requisition_Method: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterRequisitionMethodLogic(logic any) {
 	checkLogic(RequisitionMethodTableName, "RequisitionMethod", logic, requisitionMethodTrigger)
 	requisitionMethodLogic = append(requisitionMethodLogic, logic)
+	requisitionMethodLogicApp = append(requisitionMethodLogicApp, extensions.Current())
 }
 
 // requisitionMethodTrigger reports whether name is a trigger of Requisition_Method and
@@ -376,6 +396,14 @@ func requisitionMethodTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(RequisitionMethodOnDelete)
 	case "OnRename":
 		_, ok = logic.(RequisitionMethodOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(RequisitionMethodOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(RequisitionMethodOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(RequisitionMethodOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(RequisitionMethodOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(RequisitionMethodOnValidate_Code)
 	case "OnValidate_Name":
@@ -406,19 +434,32 @@ func (t *RequisitionMethod) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *RequisitionMethod) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return requisitionMethodLogic
+	return extensions.EnabledLogic(requisitionMethodLogic, requisitionMethodLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *RequisitionMethod) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(RequisitionMethodOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(RequisitionMethodOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(RequisitionMethodOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -427,10 +468,21 @@ func (t *RequisitionMethod) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *RequisitionMethod) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(RequisitionMethodOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(RequisitionMethodOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(RequisitionMethodOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -438,7 +490,19 @@ func (t *RequisitionMethod) runOnModify() error {
 }
 
 func (t *RequisitionMethod) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(RequisitionMethodOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(RequisitionMethodOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -449,7 +513,19 @@ func (t *RequisitionMethod) runOnDelete() error {
 }
 
 func (t *RequisitionMethod) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(RequisitionMethodOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(RequisitionMethodOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

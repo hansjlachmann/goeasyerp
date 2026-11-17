@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ReservationSetup) error
 //	OnDelete(rec *gtables.ReservationSetup) error
 //	OnRename(rec *gtables.ReservationSetup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ReservationSetup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Primary_key(rec *gtables.ReservationSetup) error
 //	OnValidate_Track_changes(rec *gtables.ReservationSetup) error
 //	OnValidate_Valid_to_formula(rec *gtables.ReservationSetup) error
@@ -97,6 +99,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -1324,6 +1327,18 @@ type (
 	ReservationSetupOnRename interface {
 		OnRename(rec *ReservationSetup) error
 	}
+	ReservationSetupOnBeforeInsert interface {
+		OnBeforeInsert(rec *ReservationSetup, handled *bool) error
+	}
+	ReservationSetupOnBeforeModify interface {
+		OnBeforeModify(rec *ReservationSetup, handled *bool) error
+	}
+	ReservationSetupOnBeforeDelete interface {
+		OnBeforeDelete(rec *ReservationSetup, handled *bool) error
+	}
+	ReservationSetupOnBeforeRename interface {
+		OnBeforeRename(rec *ReservationSetup, handled *bool) error
+	}
 	ReservationSetupOnValidate_Primary_key interface {
 		OnValidate_Primary_key(rec *ReservationSetup) error
 	}
@@ -1552,18 +1567,23 @@ type (
 )
 
 // reservationSetupLogic is the registered business logic of Reservation_Setup, in
-// registration order (the base application first, then extensions)
-var reservationSetupLogic []any
+// registration order (the base application first, then extensions), and
+// reservationSetupLogicApp the app that registered each ("" the base application)
+var (
+	reservationSetupLogic    []any
+	reservationSetupLogicApp []string
+)
 
 // RegisterReservationSetupLogic adds business logic to Reservation_Setup: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterReservationSetupLogic(logic any) {
 	checkLogic(ReservationSetupTableName, "ReservationSetup", logic, reservationSetupTrigger)
 	reservationSetupLogic = append(reservationSetupLogic, logic)
+	reservationSetupLogicApp = append(reservationSetupLogicApp, extensions.Current())
 }
 
 // reservationSetupTrigger reports whether name is a trigger of Reservation_Setup and
@@ -1578,6 +1598,14 @@ func reservationSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ReservationSetupOnDelete)
 	case "OnRename":
 		_, ok = logic.(ReservationSetupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ReservationSetupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ReservationSetupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ReservationSetupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ReservationSetupOnBeforeRename)
 	case "OnValidate_Primary_key":
 		_, ok = logic.(ReservationSetupOnValidate_Primary_key)
 	case "OnValidate_Track_changes":
@@ -1746,19 +1774,32 @@ func (t *ReservationSetup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ReservationSetup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return reservationSetupLogic
+	return extensions.EnabledLogic(reservationSetupLogic, reservationSetupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ReservationSetup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ReservationSetupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReservationSetupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ReservationSetupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1767,10 +1808,21 @@ func (t *ReservationSetup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ReservationSetup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ReservationSetupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReservationSetupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ReservationSetupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1778,7 +1830,19 @@ func (t *ReservationSetup) runOnModify() error {
 }
 
 func (t *ReservationSetup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReservationSetupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ReservationSetupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -1789,7 +1853,19 @@ func (t *ReservationSetup) runOnDelete() error {
 }
 
 func (t *ReservationSetup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReservationSetupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ReservationSetupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

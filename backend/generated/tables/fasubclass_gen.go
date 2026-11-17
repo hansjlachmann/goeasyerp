@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.FASubclass) error
 //	OnDelete(rec *gtables.FASubclass) error
 //	OnRename(rec *gtables.FASubclass) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.FASubclass, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.FASubclass) error
 //	OnValidate_Name(rec *gtables.FASubclass) error
 
@@ -23,6 +25,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -215,27 +218,44 @@ func (t *FASubclass) DeleteOrError(runTrigger bool) error {
 
 // Triggers of FA_Subclass: a business logic type implements the ones it needs
 type (
-	FASubclassOnInsert        interface{ OnInsert(rec *FASubclass) error }
-	FASubclassOnModify        interface{ OnModify(rec *FASubclass) error }
-	FASubclassOnDelete        interface{ OnDelete(rec *FASubclass) error }
-	FASubclassOnRename        interface{ OnRename(rec *FASubclass) error }
+	FASubclassOnInsert       interface{ OnInsert(rec *FASubclass) error }
+	FASubclassOnModify       interface{ OnModify(rec *FASubclass) error }
+	FASubclassOnDelete       interface{ OnDelete(rec *FASubclass) error }
+	FASubclassOnRename       interface{ OnRename(rec *FASubclass) error }
+	FASubclassOnBeforeInsert interface {
+		OnBeforeInsert(rec *FASubclass, handled *bool) error
+	}
+	FASubclassOnBeforeModify interface {
+		OnBeforeModify(rec *FASubclass, handled *bool) error
+	}
+	FASubclassOnBeforeDelete interface {
+		OnBeforeDelete(rec *FASubclass, handled *bool) error
+	}
+	FASubclassOnBeforeRename interface {
+		OnBeforeRename(rec *FASubclass, handled *bool) error
+	}
 	FASubclassOnValidate_Code interface{ OnValidate_Code(rec *FASubclass) error }
 	FASubclassOnValidate_Name interface{ OnValidate_Name(rec *FASubclass) error }
 )
 
 // fASubclassLogic is the registered business logic of FA_Subclass, in
-// registration order (the base application first, then extensions)
-var fASubclassLogic []any
+// registration order (the base application first, then extensions), and
+// fASubclassLogicApp the app that registered each ("" the base application)
+var (
+	fASubclassLogic    []any
+	fASubclassLogicApp []string
+)
 
 // RegisterFASubclassLogic adds business logic to FA_Subclass: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterFASubclassLogic(logic any) {
 	checkLogic(FASubclassTableName, "FASubclass", logic, fASubclassTrigger)
 	fASubclassLogic = append(fASubclassLogic, logic)
+	fASubclassLogicApp = append(fASubclassLogicApp, extensions.Current())
 }
 
 // fASubclassTrigger reports whether name is a trigger of FA_Subclass and
@@ -250,6 +270,14 @@ func fASubclassTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FASubclassOnDelete)
 	case "OnRename":
 		_, ok = logic.(FASubclassOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(FASubclassOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(FASubclassOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(FASubclassOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(FASubclassOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(FASubclassOnValidate_Code)
 	case "OnValidate_Name":
@@ -272,19 +300,32 @@ func (t *FASubclass) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *FASubclass) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return fASubclassLogic
+	return extensions.EnabledLogic(fASubclassLogic, fASubclassLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *FASubclass) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FASubclassOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FASubclassOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FASubclassOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -293,10 +334,21 @@ func (t *FASubclass) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *FASubclass) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FASubclassOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FASubclassOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FASubclassOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,7 +356,19 @@ func (t *FASubclass) runOnModify() error {
 }
 
 func (t *FASubclass) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FASubclassOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FASubclassOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -315,7 +379,19 @@ func (t *FASubclass) runOnDelete() error {
 }
 
 func (t *FASubclass) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FASubclassOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FASubclassOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

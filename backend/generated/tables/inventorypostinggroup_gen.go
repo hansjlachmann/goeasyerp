@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.InventoryPostingGroup) error
 //	OnDelete(rec *gtables.InventoryPostingGroup) error
 //	OnRename(rec *gtables.InventoryPostingGroup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.InventoryPostingGroup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.InventoryPostingGroup) error
 //	OnValidate_Description(rec *gtables.InventoryPostingGroup) error
 //	OnValidate_Inventory_account(rec *gtables.InventoryPostingGroup) error
@@ -24,6 +26,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -235,6 +238,18 @@ type (
 	InventoryPostingGroupOnRename interface {
 		OnRename(rec *InventoryPostingGroup) error
 	}
+	InventoryPostingGroupOnBeforeInsert interface {
+		OnBeforeInsert(rec *InventoryPostingGroup, handled *bool) error
+	}
+	InventoryPostingGroupOnBeforeModify interface {
+		OnBeforeModify(rec *InventoryPostingGroup, handled *bool) error
+	}
+	InventoryPostingGroupOnBeforeDelete interface {
+		OnBeforeDelete(rec *InventoryPostingGroup, handled *bool) error
+	}
+	InventoryPostingGroupOnBeforeRename interface {
+		OnBeforeRename(rec *InventoryPostingGroup, handled *bool) error
+	}
 	InventoryPostingGroupOnValidate_Code interface {
 		OnValidate_Code(rec *InventoryPostingGroup) error
 	}
@@ -247,18 +262,23 @@ type (
 )
 
 // inventoryPostingGroupLogic is the registered business logic of Inventory_Posting_Group, in
-// registration order (the base application first, then extensions)
-var inventoryPostingGroupLogic []any
+// registration order (the base application first, then extensions), and
+// inventoryPostingGroupLogicApp the app that registered each ("" the base application)
+var (
+	inventoryPostingGroupLogic    []any
+	inventoryPostingGroupLogicApp []string
+)
 
 // RegisterInventoryPostingGroupLogic adds business logic to Inventory_Posting_Group: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterInventoryPostingGroupLogic(logic any) {
 	checkLogic(InventoryPostingGroupTableName, "InventoryPostingGroup", logic, inventoryPostingGroupTrigger)
 	inventoryPostingGroupLogic = append(inventoryPostingGroupLogic, logic)
+	inventoryPostingGroupLogicApp = append(inventoryPostingGroupLogicApp, extensions.Current())
 }
 
 // inventoryPostingGroupTrigger reports whether name is a trigger of Inventory_Posting_Group and
@@ -273,6 +293,14 @@ func inventoryPostingGroupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(InventoryPostingGroupOnDelete)
 	case "OnRename":
 		_, ok = logic.(InventoryPostingGroupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(InventoryPostingGroupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(InventoryPostingGroupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(InventoryPostingGroupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(InventoryPostingGroupOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(InventoryPostingGroupOnValidate_Code)
 	case "OnValidate_Description":
@@ -297,19 +325,32 @@ func (t *InventoryPostingGroup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *InventoryPostingGroup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return inventoryPostingGroupLogic
+	return extensions.EnabledLogic(inventoryPostingGroupLogic, inventoryPostingGroupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *InventoryPostingGroup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(InventoryPostingGroupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InventoryPostingGroupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(InventoryPostingGroupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -318,10 +359,21 @@ func (t *InventoryPostingGroup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *InventoryPostingGroup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(InventoryPostingGroupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InventoryPostingGroupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(InventoryPostingGroupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -329,7 +381,19 @@ func (t *InventoryPostingGroup) runOnModify() error {
 }
 
 func (t *InventoryPostingGroup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InventoryPostingGroupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(InventoryPostingGroupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -340,7 +404,19 @@ func (t *InventoryPostingGroup) runOnDelete() error {
 }
 
 func (t *InventoryPostingGroup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InventoryPostingGroupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(InventoryPostingGroupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

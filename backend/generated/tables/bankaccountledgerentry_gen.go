@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.BankAccountLedgerEntry) error
 //	OnDelete(rec *gtables.BankAccountLedgerEntry) error
 //	OnRename(rec *gtables.BankAccountLedgerEntry) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.BankAccountLedgerEntry, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Entry_no(rec *gtables.BankAccountLedgerEntry) error
 //	OnValidate_Bank_account_no(rec *gtables.BankAccountLedgerEntry) error
 //	OnValidate_Posting_date(rec *gtables.BankAccountLedgerEntry) error
@@ -57,6 +59,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -591,6 +594,18 @@ type (
 	BankAccountLedgerEntryOnRename interface {
 		OnRename(rec *BankAccountLedgerEntry) error
 	}
+	BankAccountLedgerEntryOnBeforeInsert interface {
+		OnBeforeInsert(rec *BankAccountLedgerEntry, handled *bool) error
+	}
+	BankAccountLedgerEntryOnBeforeModify interface {
+		OnBeforeModify(rec *BankAccountLedgerEntry, handled *bool) error
+	}
+	BankAccountLedgerEntryOnBeforeDelete interface {
+		OnBeforeDelete(rec *BankAccountLedgerEntry, handled *bool) error
+	}
+	BankAccountLedgerEntryOnBeforeRename interface {
+		OnBeforeRename(rec *BankAccountLedgerEntry, handled *bool) error
+	}
 	BankAccountLedgerEntryOnValidate_Entry_no interface {
 		OnValidate_Entry_no(rec *BankAccountLedgerEntry) error
 	}
@@ -696,18 +711,23 @@ type (
 )
 
 // bankAccountLedgerEntryLogic is the registered business logic of Bank_Account_Ledger_Entry, in
-// registration order (the base application first, then extensions)
-var bankAccountLedgerEntryLogic []any
+// registration order (the base application first, then extensions), and
+// bankAccountLedgerEntryLogicApp the app that registered each ("" the base application)
+var (
+	bankAccountLedgerEntryLogic    []any
+	bankAccountLedgerEntryLogicApp []string
+)
 
 // RegisterBankAccountLedgerEntryLogic adds business logic to Bank_Account_Ledger_Entry: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterBankAccountLedgerEntryLogic(logic any) {
 	checkLogic(BankAccountLedgerEntryTableName, "BankAccountLedgerEntry", logic, bankAccountLedgerEntryTrigger)
 	bankAccountLedgerEntryLogic = append(bankAccountLedgerEntryLogic, logic)
+	bankAccountLedgerEntryLogicApp = append(bankAccountLedgerEntryLogicApp, extensions.Current())
 }
 
 // bankAccountLedgerEntryTrigger reports whether name is a trigger of Bank_Account_Ledger_Entry and
@@ -722,6 +742,14 @@ func bankAccountLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(BankAccountLedgerEntryOnDelete)
 	case "OnRename":
 		_, ok = logic.(BankAccountLedgerEntryOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(BankAccountLedgerEntryOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(BankAccountLedgerEntryOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(BankAccountLedgerEntryOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(BankAccountLedgerEntryOnBeforeRename)
 	case "OnValidate_Entry_no":
 		_, ok = logic.(BankAccountLedgerEntryOnValidate_Entry_no)
 	case "OnValidate_Bank_account_no":
@@ -808,19 +836,32 @@ func (t *BankAccountLedgerEntry) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *BankAccountLedgerEntry) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return bankAccountLedgerEntryLogic
+	return extensions.EnabledLogic(bankAccountLedgerEntryLogic, bankAccountLedgerEntryLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *BankAccountLedgerEntry) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(BankAccountLedgerEntryOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BankAccountLedgerEntryOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(BankAccountLedgerEntryOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -829,10 +870,21 @@ func (t *BankAccountLedgerEntry) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *BankAccountLedgerEntry) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(BankAccountLedgerEntryOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BankAccountLedgerEntryOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(BankAccountLedgerEntryOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -840,7 +892,19 @@ func (t *BankAccountLedgerEntry) runOnModify() error {
 }
 
 func (t *BankAccountLedgerEntry) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BankAccountLedgerEntryOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(BankAccountLedgerEntryOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -851,7 +915,19 @@ func (t *BankAccountLedgerEntry) runOnDelete() error {
 }
 
 func (t *BankAccountLedgerEntry) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BankAccountLedgerEntryOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(BankAccountLedgerEntryOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ResourceGroup) error
 //	OnDelete(rec *gtables.ResourceGroup) error
 //	OnRename(rec *gtables.ResourceGroup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ResourceGroup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_No(rec *gtables.ResourceGroup) error
 //	OnValidate_Name(rec *gtables.ResourceGroup) error
 
@@ -23,6 +25,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -324,6 +327,18 @@ type (
 	ResourceGroupOnRename interface {
 		OnRename(rec *ResourceGroup) error
 	}
+	ResourceGroupOnBeforeInsert interface {
+		OnBeforeInsert(rec *ResourceGroup, handled *bool) error
+	}
+	ResourceGroupOnBeforeModify interface {
+		OnBeforeModify(rec *ResourceGroup, handled *bool) error
+	}
+	ResourceGroupOnBeforeDelete interface {
+		OnBeforeDelete(rec *ResourceGroup, handled *bool) error
+	}
+	ResourceGroupOnBeforeRename interface {
+		OnBeforeRename(rec *ResourceGroup, handled *bool) error
+	}
 	ResourceGroupOnValidate_No interface {
 		OnValidate_No(rec *ResourceGroup) error
 	}
@@ -333,18 +348,23 @@ type (
 )
 
 // resourceGroupLogic is the registered business logic of Resource_Group, in
-// registration order (the base application first, then extensions)
-var resourceGroupLogic []any
+// registration order (the base application first, then extensions), and
+// resourceGroupLogicApp the app that registered each ("" the base application)
+var (
+	resourceGroupLogic    []any
+	resourceGroupLogicApp []string
+)
 
 // RegisterResourceGroupLogic adds business logic to Resource_Group: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterResourceGroupLogic(logic any) {
 	checkLogic(ResourceGroupTableName, "ResourceGroup", logic, resourceGroupTrigger)
 	resourceGroupLogic = append(resourceGroupLogic, logic)
+	resourceGroupLogicApp = append(resourceGroupLogicApp, extensions.Current())
 }
 
 // resourceGroupTrigger reports whether name is a trigger of Resource_Group and
@@ -359,6 +379,14 @@ func resourceGroupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ResourceGroupOnDelete)
 	case "OnRename":
 		_, ok = logic.(ResourceGroupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ResourceGroupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ResourceGroupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ResourceGroupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ResourceGroupOnBeforeRename)
 	case "OnValidate_No":
 		_, ok = logic.(ResourceGroupOnValidate_No)
 	case "OnValidate_Name":
@@ -381,19 +409,32 @@ func (t *ResourceGroup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ResourceGroup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return resourceGroupLogic
+	return extensions.EnabledLogic(resourceGroupLogic, resourceGroupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ResourceGroup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ResourceGroupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResourceGroupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ResourceGroupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -402,10 +443,21 @@ func (t *ResourceGroup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ResourceGroup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ResourceGroupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResourceGroupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ResourceGroupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -413,7 +465,19 @@ func (t *ResourceGroup) runOnModify() error {
 }
 
 func (t *ResourceGroup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResourceGroupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ResourceGroupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -424,7 +488,19 @@ func (t *ResourceGroup) runOnDelete() error {
 }
 
 func (t *ResourceGroup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResourceGroupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ResourceGroupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

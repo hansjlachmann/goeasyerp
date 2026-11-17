@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.WorkType) error
 //	OnDelete(rec *gtables.WorkType) error
 //	OnRename(rec *gtables.WorkType) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.WorkType, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.WorkType) error
 //	OnValidate_Description(rec *gtables.WorkType) error
 //	OnValidate_Unit_of_measure_code(rec *gtables.WorkType) error
@@ -24,6 +26,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -223,28 +226,45 @@ func (t *WorkType) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Work_Type: a business logic type implements the ones it needs
 type (
-	WorkTypeOnInsert                        interface{ OnInsert(rec *WorkType) error }
-	WorkTypeOnModify                        interface{ OnModify(rec *WorkType) error }
-	WorkTypeOnDelete                        interface{ OnDelete(rec *WorkType) error }
-	WorkTypeOnRename                        interface{ OnRename(rec *WorkType) error }
+	WorkTypeOnInsert       interface{ OnInsert(rec *WorkType) error }
+	WorkTypeOnModify       interface{ OnModify(rec *WorkType) error }
+	WorkTypeOnDelete       interface{ OnDelete(rec *WorkType) error }
+	WorkTypeOnRename       interface{ OnRename(rec *WorkType) error }
+	WorkTypeOnBeforeInsert interface {
+		OnBeforeInsert(rec *WorkType, handled *bool) error
+	}
+	WorkTypeOnBeforeModify interface {
+		OnBeforeModify(rec *WorkType, handled *bool) error
+	}
+	WorkTypeOnBeforeDelete interface {
+		OnBeforeDelete(rec *WorkType, handled *bool) error
+	}
+	WorkTypeOnBeforeRename interface {
+		OnBeforeRename(rec *WorkType, handled *bool) error
+	}
 	WorkTypeOnValidate_Code                 interface{ OnValidate_Code(rec *WorkType) error }
 	WorkTypeOnValidate_Description          interface{ OnValidate_Description(rec *WorkType) error }
 	WorkTypeOnValidate_Unit_of_measure_code interface{ OnValidate_Unit_of_measure_code(rec *WorkType) error }
 )
 
 // workTypeLogic is the registered business logic of Work_Type, in
-// registration order (the base application first, then extensions)
-var workTypeLogic []any
+// registration order (the base application first, then extensions), and
+// workTypeLogicApp the app that registered each ("" the base application)
+var (
+	workTypeLogic    []any
+	workTypeLogicApp []string
+)
 
 // RegisterWorkTypeLogic adds business logic to Work_Type: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterWorkTypeLogic(logic any) {
 	checkLogic(WorkTypeTableName, "WorkType", logic, workTypeTrigger)
 	workTypeLogic = append(workTypeLogic, logic)
+	workTypeLogicApp = append(workTypeLogicApp, extensions.Current())
 }
 
 // workTypeTrigger reports whether name is a trigger of Work_Type and
@@ -259,6 +279,14 @@ func workTypeTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(WorkTypeOnDelete)
 	case "OnRename":
 		_, ok = logic.(WorkTypeOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(WorkTypeOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(WorkTypeOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(WorkTypeOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(WorkTypeOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(WorkTypeOnValidate_Code)
 	case "OnValidate_Description":
@@ -283,19 +311,32 @@ func (t *WorkType) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *WorkType) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return workTypeLogic
+	return extensions.EnabledLogic(workTypeLogic, workTypeLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *WorkType) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(WorkTypeOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(WorkTypeOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(WorkTypeOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,10 +345,21 @@ func (t *WorkType) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *WorkType) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(WorkTypeOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(WorkTypeOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(WorkTypeOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -315,7 +367,19 @@ func (t *WorkType) runOnModify() error {
 }
 
 func (t *WorkType) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(WorkTypeOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(WorkTypeOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -326,7 +390,19 @@ func (t *WorkType) runOnDelete() error {
 }
 
 func (t *WorkType) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(WorkTypeOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(WorkTypeOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

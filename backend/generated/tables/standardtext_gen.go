@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.StandardText) error
 //	OnDelete(rec *gtables.StandardText) error
 //	OnRename(rec *gtables.StandardText) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.StandardText, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.StandardText) error
 //	OnValidate_Description(rec *gtables.StandardText) error
 
@@ -23,6 +25,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -215,27 +218,44 @@ func (t *StandardText) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Standard_Text: a business logic type implements the ones it needs
 type (
-	StandardTextOnInsert               interface{ OnInsert(rec *StandardText) error }
-	StandardTextOnModify               interface{ OnModify(rec *StandardText) error }
-	StandardTextOnDelete               interface{ OnDelete(rec *StandardText) error }
-	StandardTextOnRename               interface{ OnRename(rec *StandardText) error }
+	StandardTextOnInsert       interface{ OnInsert(rec *StandardText) error }
+	StandardTextOnModify       interface{ OnModify(rec *StandardText) error }
+	StandardTextOnDelete       interface{ OnDelete(rec *StandardText) error }
+	StandardTextOnRename       interface{ OnRename(rec *StandardText) error }
+	StandardTextOnBeforeInsert interface {
+		OnBeforeInsert(rec *StandardText, handled *bool) error
+	}
+	StandardTextOnBeforeModify interface {
+		OnBeforeModify(rec *StandardText, handled *bool) error
+	}
+	StandardTextOnBeforeDelete interface {
+		OnBeforeDelete(rec *StandardText, handled *bool) error
+	}
+	StandardTextOnBeforeRename interface {
+		OnBeforeRename(rec *StandardText, handled *bool) error
+	}
 	StandardTextOnValidate_Code        interface{ OnValidate_Code(rec *StandardText) error }
 	StandardTextOnValidate_Description interface{ OnValidate_Description(rec *StandardText) error }
 )
 
 // standardTextLogic is the registered business logic of Standard_Text, in
-// registration order (the base application first, then extensions)
-var standardTextLogic []any
+// registration order (the base application first, then extensions), and
+// standardTextLogicApp the app that registered each ("" the base application)
+var (
+	standardTextLogic    []any
+	standardTextLogicApp []string
+)
 
 // RegisterStandardTextLogic adds business logic to Standard_Text: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterStandardTextLogic(logic any) {
 	checkLogic(StandardTextTableName, "StandardText", logic, standardTextTrigger)
 	standardTextLogic = append(standardTextLogic, logic)
+	standardTextLogicApp = append(standardTextLogicApp, extensions.Current())
 }
 
 // standardTextTrigger reports whether name is a trigger of Standard_Text and
@@ -250,6 +270,14 @@ func standardTextTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(StandardTextOnDelete)
 	case "OnRename":
 		_, ok = logic.(StandardTextOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(StandardTextOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(StandardTextOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(StandardTextOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(StandardTextOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(StandardTextOnValidate_Code)
 	case "OnValidate_Description":
@@ -272,19 +300,32 @@ func (t *StandardText) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *StandardText) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return standardTextLogic
+	return extensions.EnabledLogic(standardTextLogic, standardTextLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *StandardText) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(StandardTextOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(StandardTextOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(StandardTextOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -293,10 +334,21 @@ func (t *StandardText) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *StandardText) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(StandardTextOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(StandardTextOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(StandardTextOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,7 +356,19 @@ func (t *StandardText) runOnModify() error {
 }
 
 func (t *StandardText) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(StandardTextOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(StandardTextOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -315,7 +379,19 @@ func (t *StandardText) runOnDelete() error {
 }
 
 func (t *StandardText) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(StandardTextOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(StandardTextOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.Bin) error
 //	OnDelete(rec *gtables.Bin) error
 //	OnRename(rec *gtables.Bin) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.Bin, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Location_code(rec *gtables.Bin) error
 //	OnValidate_Code(rec *gtables.Bin) error
 //	OnValidate_Description(rec *gtables.Bin) error
@@ -24,6 +26,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -223,28 +226,45 @@ func (t *Bin) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Bin: a business logic type implements the ones it needs
 type (
-	BinOnInsert                 interface{ OnInsert(rec *Bin) error }
-	BinOnModify                 interface{ OnModify(rec *Bin) error }
-	BinOnDelete                 interface{ OnDelete(rec *Bin) error }
-	BinOnRename                 interface{ OnRename(rec *Bin) error }
+	BinOnInsert       interface{ OnInsert(rec *Bin) error }
+	BinOnModify       interface{ OnModify(rec *Bin) error }
+	BinOnDelete       interface{ OnDelete(rec *Bin) error }
+	BinOnRename       interface{ OnRename(rec *Bin) error }
+	BinOnBeforeInsert interface {
+		OnBeforeInsert(rec *Bin, handled *bool) error
+	}
+	BinOnBeforeModify interface {
+		OnBeforeModify(rec *Bin, handled *bool) error
+	}
+	BinOnBeforeDelete interface {
+		OnBeforeDelete(rec *Bin, handled *bool) error
+	}
+	BinOnBeforeRename interface {
+		OnBeforeRename(rec *Bin, handled *bool) error
+	}
 	BinOnValidate_Location_code interface{ OnValidate_Location_code(rec *Bin) error }
 	BinOnValidate_Code          interface{ OnValidate_Code(rec *Bin) error }
 	BinOnValidate_Description   interface{ OnValidate_Description(rec *Bin) error }
 )
 
 // binLogic is the registered business logic of Bin, in
-// registration order (the base application first, then extensions)
-var binLogic []any
+// registration order (the base application first, then extensions), and
+// binLogicApp the app that registered each ("" the base application)
+var (
+	binLogic    []any
+	binLogicApp []string
+)
 
 // RegisterBinLogic adds business logic to Bin: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterBinLogic(logic any) {
 	checkLogic(BinTableName, "Bin", logic, binTrigger)
 	binLogic = append(binLogic, logic)
+	binLogicApp = append(binLogicApp, extensions.Current())
 }
 
 // binTrigger reports whether name is a trigger of Bin and
@@ -259,6 +279,14 @@ func binTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(BinOnDelete)
 	case "OnRename":
 		_, ok = logic.(BinOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(BinOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(BinOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(BinOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(BinOnBeforeRename)
 	case "OnValidate_Location_code":
 		_, ok = logic.(BinOnValidate_Location_code)
 	case "OnValidate_Code":
@@ -283,19 +311,32 @@ func (t *Bin) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *Bin) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return binLogic
+	return extensions.EnabledLogic(binLogic, binLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *Bin) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(BinOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BinOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(BinOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,10 +345,21 @@ func (t *Bin) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *Bin) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(BinOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BinOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(BinOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -315,7 +367,19 @@ func (t *Bin) runOnModify() error {
 }
 
 func (t *Bin) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BinOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(BinOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -326,7 +390,19 @@ func (t *Bin) runOnDelete() error {
 }
 
 func (t *Bin) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BinOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(BinOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

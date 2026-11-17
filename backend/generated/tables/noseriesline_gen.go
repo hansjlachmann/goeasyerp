@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.NoSeriesLine) error
 //	OnDelete(rec *gtables.NoSeriesLine) error
 //	OnRename(rec *gtables.NoSeriesLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.NoSeriesLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Series_code(rec *gtables.NoSeriesLine) error
 //	OnValidate_Line_no(rec *gtables.NoSeriesLine) error
 //	OnValidate_Starting_date(rec *gtables.NoSeriesLine) error
@@ -33,6 +35,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -281,10 +284,22 @@ func (t *NoSeriesLine) DeleteOrError(runTrigger bool) error {
 
 // Triggers of No_Series_Line: a business logic type implements the ones it needs
 type (
-	NoSeriesLineOnInsert                   interface{ OnInsert(rec *NoSeriesLine) error }
-	NoSeriesLineOnModify                   interface{ OnModify(rec *NoSeriesLine) error }
-	NoSeriesLineOnDelete                   interface{ OnDelete(rec *NoSeriesLine) error }
-	NoSeriesLineOnRename                   interface{ OnRename(rec *NoSeriesLine) error }
+	NoSeriesLineOnInsert       interface{ OnInsert(rec *NoSeriesLine) error }
+	NoSeriesLineOnModify       interface{ OnModify(rec *NoSeriesLine) error }
+	NoSeriesLineOnDelete       interface{ OnDelete(rec *NoSeriesLine) error }
+	NoSeriesLineOnRename       interface{ OnRename(rec *NoSeriesLine) error }
+	NoSeriesLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *NoSeriesLine, handled *bool) error
+	}
+	NoSeriesLineOnBeforeModify interface {
+		OnBeforeModify(rec *NoSeriesLine, handled *bool) error
+	}
+	NoSeriesLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *NoSeriesLine, handled *bool) error
+	}
+	NoSeriesLineOnBeforeRename interface {
+		OnBeforeRename(rec *NoSeriesLine, handled *bool) error
+	}
 	NoSeriesLineOnValidate_Series_code     interface{ OnValidate_Series_code(rec *NoSeriesLine) error }
 	NoSeriesLineOnValidate_Line_no         interface{ OnValidate_Line_no(rec *NoSeriesLine) error }
 	NoSeriesLineOnValidate_Starting_date   interface{ OnValidate_Starting_date(rec *NoSeriesLine) error }
@@ -298,18 +313,23 @@ type (
 )
 
 // noSeriesLineLogic is the registered business logic of No_Series_Line, in
-// registration order (the base application first, then extensions)
-var noSeriesLineLogic []any
+// registration order (the base application first, then extensions), and
+// noSeriesLineLogicApp the app that registered each ("" the base application)
+var (
+	noSeriesLineLogic    []any
+	noSeriesLineLogicApp []string
+)
 
 // RegisterNoSeriesLineLogic adds business logic to No_Series_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterNoSeriesLineLogic(logic any) {
 	checkLogic(NoSeriesLineTableName, "NoSeriesLine", logic, noSeriesLineTrigger)
 	noSeriesLineLogic = append(noSeriesLineLogic, logic)
+	noSeriesLineLogicApp = append(noSeriesLineLogicApp, extensions.Current())
 }
 
 // noSeriesLineTrigger reports whether name is a trigger of No_Series_Line and
@@ -324,6 +344,14 @@ func noSeriesLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(NoSeriesLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(NoSeriesLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(NoSeriesLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(NoSeriesLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(NoSeriesLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(NoSeriesLineOnBeforeRename)
 	case "OnValidate_Series_code":
 		_, ok = logic.(NoSeriesLineOnValidate_Series_code)
 	case "OnValidate_Line_no":
@@ -362,19 +390,32 @@ func (t *NoSeriesLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *NoSeriesLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return noSeriesLineLogic
+	return extensions.EnabledLogic(noSeriesLineLogic, noSeriesLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *NoSeriesLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(NoSeriesLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(NoSeriesLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(NoSeriesLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -383,10 +424,21 @@ func (t *NoSeriesLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *NoSeriesLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(NoSeriesLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(NoSeriesLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(NoSeriesLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -394,7 +446,19 @@ func (t *NoSeriesLine) runOnModify() error {
 }
 
 func (t *NoSeriesLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(NoSeriesLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(NoSeriesLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -405,7 +469,19 @@ func (t *NoSeriesLine) runOnDelete() error {
 }
 
 func (t *NoSeriesLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(NoSeriesLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(NoSeriesLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

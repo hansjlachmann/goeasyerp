@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ResCapacityEntry) error
 //	OnDelete(rec *gtables.ResCapacityEntry) error
 //	OnRename(rec *gtables.ResCapacityEntry) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ResCapacityEntry, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Entry_no(rec *gtables.ResCapacityEntry) error
 //	OnValidate_Resource_no(rec *gtables.ResCapacityEntry) error
 //	OnValidate_Resource_group_no(rec *gtables.ResCapacityEntry) error
@@ -28,6 +30,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -253,6 +256,18 @@ type (
 	ResCapacityEntryOnRename interface {
 		OnRename(rec *ResCapacityEntry) error
 	}
+	ResCapacityEntryOnBeforeInsert interface {
+		OnBeforeInsert(rec *ResCapacityEntry, handled *bool) error
+	}
+	ResCapacityEntryOnBeforeModify interface {
+		OnBeforeModify(rec *ResCapacityEntry, handled *bool) error
+	}
+	ResCapacityEntryOnBeforeDelete interface {
+		OnBeforeDelete(rec *ResCapacityEntry, handled *bool) error
+	}
+	ResCapacityEntryOnBeforeRename interface {
+		OnBeforeRename(rec *ResCapacityEntry, handled *bool) error
+	}
 	ResCapacityEntryOnValidate_Entry_no interface {
 		OnValidate_Entry_no(rec *ResCapacityEntry) error
 	}
@@ -271,18 +286,23 @@ type (
 )
 
 // resCapacityEntryLogic is the registered business logic of Res_Capacity_Entry, in
-// registration order (the base application first, then extensions)
-var resCapacityEntryLogic []any
+// registration order (the base application first, then extensions), and
+// resCapacityEntryLogicApp the app that registered each ("" the base application)
+var (
+	resCapacityEntryLogic    []any
+	resCapacityEntryLogicApp []string
+)
 
 // RegisterResCapacityEntryLogic adds business logic to Res_Capacity_Entry: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterResCapacityEntryLogic(logic any) {
 	checkLogic(ResCapacityEntryTableName, "ResCapacityEntry", logic, resCapacityEntryTrigger)
 	resCapacityEntryLogic = append(resCapacityEntryLogic, logic)
+	resCapacityEntryLogicApp = append(resCapacityEntryLogicApp, extensions.Current())
 }
 
 // resCapacityEntryTrigger reports whether name is a trigger of Res_Capacity_Entry and
@@ -297,6 +317,14 @@ func resCapacityEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ResCapacityEntryOnDelete)
 	case "OnRename":
 		_, ok = logic.(ResCapacityEntryOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ResCapacityEntryOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ResCapacityEntryOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ResCapacityEntryOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ResCapacityEntryOnBeforeRename)
 	case "OnValidate_Entry_no":
 		_, ok = logic.(ResCapacityEntryOnValidate_Entry_no)
 	case "OnValidate_Resource_no":
@@ -325,19 +353,32 @@ func (t *ResCapacityEntry) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ResCapacityEntry) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return resCapacityEntryLogic
+	return extensions.EnabledLogic(resCapacityEntryLogic, resCapacityEntryLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ResCapacityEntry) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ResCapacityEntryOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResCapacityEntryOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ResCapacityEntryOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -346,10 +387,21 @@ func (t *ResCapacityEntry) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ResCapacityEntry) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ResCapacityEntryOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResCapacityEntryOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ResCapacityEntryOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -357,7 +409,19 @@ func (t *ResCapacityEntry) runOnModify() error {
 }
 
 func (t *ResCapacityEntry) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResCapacityEntryOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ResCapacityEntryOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -368,7 +432,19 @@ func (t *ResCapacityEntry) runOnDelete() error {
 }
 
 func (t *ResCapacityEntry) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResCapacityEntryOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ResCapacityEntryOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

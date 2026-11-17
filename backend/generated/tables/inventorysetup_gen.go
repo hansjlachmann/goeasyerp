@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.InventorySetup) error
 //	OnDelete(rec *gtables.InventorySetup) error
 //	OnRename(rec *gtables.InventorySetup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.InventorySetup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Primary_key(rec *gtables.InventorySetup) error
 //	OnValidate_Automatic_cost_posting(rec *gtables.InventorySetup) error
 //	OnValidate_Location_mandatory(rec *gtables.InventorySetup) error
@@ -25,6 +27,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -243,6 +246,18 @@ type (
 	InventorySetupOnRename interface {
 		OnRename(rec *InventorySetup) error
 	}
+	InventorySetupOnBeforeInsert interface {
+		OnBeforeInsert(rec *InventorySetup, handled *bool) error
+	}
+	InventorySetupOnBeforeModify interface {
+		OnBeforeModify(rec *InventorySetup, handled *bool) error
+	}
+	InventorySetupOnBeforeDelete interface {
+		OnBeforeDelete(rec *InventorySetup, handled *bool) error
+	}
+	InventorySetupOnBeforeRename interface {
+		OnBeforeRename(rec *InventorySetup, handled *bool) error
+	}
 	InventorySetupOnValidate_Primary_key interface {
 		OnValidate_Primary_key(rec *InventorySetup) error
 	}
@@ -258,18 +273,23 @@ type (
 )
 
 // inventorySetupLogic is the registered business logic of Inventory_Setup, in
-// registration order (the base application first, then extensions)
-var inventorySetupLogic []any
+// registration order (the base application first, then extensions), and
+// inventorySetupLogicApp the app that registered each ("" the base application)
+var (
+	inventorySetupLogic    []any
+	inventorySetupLogicApp []string
+)
 
 // RegisterInventorySetupLogic adds business logic to Inventory_Setup: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterInventorySetupLogic(logic any) {
 	checkLogic(InventorySetupTableName, "InventorySetup", logic, inventorySetupTrigger)
 	inventorySetupLogic = append(inventorySetupLogic, logic)
+	inventorySetupLogicApp = append(inventorySetupLogicApp, extensions.Current())
 }
 
 // inventorySetupTrigger reports whether name is a trigger of Inventory_Setup and
@@ -284,6 +304,14 @@ func inventorySetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(InventorySetupOnDelete)
 	case "OnRename":
 		_, ok = logic.(InventorySetupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(InventorySetupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(InventorySetupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(InventorySetupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(InventorySetupOnBeforeRename)
 	case "OnValidate_Primary_key":
 		_, ok = logic.(InventorySetupOnValidate_Primary_key)
 	case "OnValidate_Automatic_cost_posting":
@@ -310,19 +338,32 @@ func (t *InventorySetup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *InventorySetup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return inventorySetupLogic
+	return extensions.EnabledLogic(inventorySetupLogic, inventorySetupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *InventorySetup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(InventorySetupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InventorySetupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(InventorySetupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -331,10 +372,21 @@ func (t *InventorySetup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *InventorySetup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(InventorySetupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InventorySetupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(InventorySetupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -342,7 +394,19 @@ func (t *InventorySetup) runOnModify() error {
 }
 
 func (t *InventorySetup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InventorySetupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(InventorySetupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -353,7 +417,19 @@ func (t *InventorySetup) runOnDelete() error {
 }
 
 func (t *InventorySetup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InventorySetupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(InventorySetupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

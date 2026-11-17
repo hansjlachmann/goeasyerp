@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ProjectJournalQuantity) error
 //	OnDelete(rec *gtables.ProjectJournalQuantity) error
 //	OnRename(rec *gtables.ProjectJournalQuantity) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ProjectJournalQuantity, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Is_total(rec *gtables.ProjectJournalQuantity) error
 //	OnValidate_Unit_of_measure_code(rec *gtables.ProjectJournalQuantity) error
 //	OnValidate_Line_type(rec *gtables.ProjectJournalQuantity) error
@@ -28,6 +30,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -294,6 +297,18 @@ type (
 	ProjectJournalQuantityOnRename interface {
 		OnRename(rec *ProjectJournalQuantity) error
 	}
+	ProjectJournalQuantityOnBeforeInsert interface {
+		OnBeforeInsert(rec *ProjectJournalQuantity, handled *bool) error
+	}
+	ProjectJournalQuantityOnBeforeModify interface {
+		OnBeforeModify(rec *ProjectJournalQuantity, handled *bool) error
+	}
+	ProjectJournalQuantityOnBeforeDelete interface {
+		OnBeforeDelete(rec *ProjectJournalQuantity, handled *bool) error
+	}
+	ProjectJournalQuantityOnBeforeRename interface {
+		OnBeforeRename(rec *ProjectJournalQuantity, handled *bool) error
+	}
 	ProjectJournalQuantityOnValidate_Is_total interface {
 		OnValidate_Is_total(rec *ProjectJournalQuantity) error
 	}
@@ -315,18 +330,23 @@ type (
 )
 
 // projectJournalQuantityLogic is the registered business logic of Project_Journal_Quantity, in
-// registration order (the base application first, then extensions)
-var projectJournalQuantityLogic []any
+// registration order (the base application first, then extensions), and
+// projectJournalQuantityLogicApp the app that registered each ("" the base application)
+var (
+	projectJournalQuantityLogic    []any
+	projectJournalQuantityLogicApp []string
+)
 
 // RegisterProjectJournalQuantityLogic adds business logic to Project_Journal_Quantity: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterProjectJournalQuantityLogic(logic any) {
 	checkLogic(ProjectJournalQuantityTableName, "ProjectJournalQuantity", logic, projectJournalQuantityTrigger)
 	projectJournalQuantityLogic = append(projectJournalQuantityLogic, logic)
+	projectJournalQuantityLogicApp = append(projectJournalQuantityLogicApp, extensions.Current())
 }
 
 // projectJournalQuantityTrigger reports whether name is a trigger of Project_Journal_Quantity and
@@ -341,6 +361,14 @@ func projectJournalQuantityTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ProjectJournalQuantityOnDelete)
 	case "OnRename":
 		_, ok = logic.(ProjectJournalQuantityOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ProjectJournalQuantityOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ProjectJournalQuantityOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ProjectJournalQuantityOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ProjectJournalQuantityOnBeforeRename)
 	case "OnValidate_Is_total":
 		_, ok = logic.(ProjectJournalQuantityOnValidate_Is_total)
 	case "OnValidate_Unit_of_measure_code":
@@ -371,19 +399,32 @@ func (t *ProjectJournalQuantity) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ProjectJournalQuantity) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return projectJournalQuantityLogic
+	return extensions.EnabledLogic(projectJournalQuantityLogic, projectJournalQuantityLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ProjectJournalQuantity) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ProjectJournalQuantityOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ProjectJournalQuantityOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ProjectJournalQuantityOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -392,10 +433,21 @@ func (t *ProjectJournalQuantity) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ProjectJournalQuantity) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ProjectJournalQuantityOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ProjectJournalQuantityOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ProjectJournalQuantityOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -403,7 +455,19 @@ func (t *ProjectJournalQuantity) runOnModify() error {
 }
 
 func (t *ProjectJournalQuantity) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ProjectJournalQuantityOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ProjectJournalQuantityOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -414,7 +478,19 @@ func (t *ProjectJournalQuantity) runOnDelete() error {
 }
 
 func (t *ProjectJournalQuantity) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ProjectJournalQuantityOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ProjectJournalQuantityOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

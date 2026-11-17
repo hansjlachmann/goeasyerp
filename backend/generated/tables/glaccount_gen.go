@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.GLAccount) error
 //	OnDelete(rec *gtables.GLAccount) error
 //	OnRename(rec *gtables.GLAccount) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.GLAccount, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_No(rec *gtables.GLAccount) error
 //	OnValidate_Name(rec *gtables.GLAccount) error
 //	OnValidate_Search_name(rec *gtables.GLAccount) error
@@ -55,6 +57,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -842,10 +845,22 @@ func (t *GLAccount) DeleteOrError(runTrigger bool) error {
 
 // Triggers of G_L_Account: a business logic type implements the ones it needs
 type (
-	GLAccountOnInsert                              interface{ OnInsert(rec *GLAccount) error }
-	GLAccountOnModify                              interface{ OnModify(rec *GLAccount) error }
-	GLAccountOnDelete                              interface{ OnDelete(rec *GLAccount) error }
-	GLAccountOnRename                              interface{ OnRename(rec *GLAccount) error }
+	GLAccountOnInsert       interface{ OnInsert(rec *GLAccount) error }
+	GLAccountOnModify       interface{ OnModify(rec *GLAccount) error }
+	GLAccountOnDelete       interface{ OnDelete(rec *GLAccount) error }
+	GLAccountOnRename       interface{ OnRename(rec *GLAccount) error }
+	GLAccountOnBeforeInsert interface {
+		OnBeforeInsert(rec *GLAccount, handled *bool) error
+	}
+	GLAccountOnBeforeModify interface {
+		OnBeforeModify(rec *GLAccount, handled *bool) error
+	}
+	GLAccountOnBeforeDelete interface {
+		OnBeforeDelete(rec *GLAccount, handled *bool) error
+	}
+	GLAccountOnBeforeRename interface {
+		OnBeforeRename(rec *GLAccount, handled *bool) error
+	}
 	GLAccountOnValidate_No                         interface{ OnValidate_No(rec *GLAccount) error }
 	GLAccountOnValidate_Name                       interface{ OnValidate_Name(rec *GLAccount) error }
 	GLAccountOnValidate_Search_name                interface{ OnValidate_Search_name(rec *GLAccount) error }
@@ -881,18 +896,23 @@ type (
 )
 
 // gLAccountLogic is the registered business logic of G_L_Account, in
-// registration order (the base application first, then extensions)
-var gLAccountLogic []any
+// registration order (the base application first, then extensions), and
+// gLAccountLogicApp the app that registered each ("" the base application)
+var (
+	gLAccountLogic    []any
+	gLAccountLogicApp []string
+)
 
 // RegisterGLAccountLogic adds business logic to G_L_Account: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterGLAccountLogic(logic any) {
 	checkLogic(GLAccountTableName, "GLAccount", logic, gLAccountTrigger)
 	gLAccountLogic = append(gLAccountLogic, logic)
+	gLAccountLogicApp = append(gLAccountLogicApp, extensions.Current())
 }
 
 // gLAccountTrigger reports whether name is a trigger of G_L_Account and
@@ -907,6 +927,14 @@ func gLAccountTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GLAccountOnDelete)
 	case "OnRename":
 		_, ok = logic.(GLAccountOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(GLAccountOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(GLAccountOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(GLAccountOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(GLAccountOnBeforeRename)
 	case "OnValidate_No":
 		_, ok = logic.(GLAccountOnValidate_No)
 	case "OnValidate_Name":
@@ -989,19 +1017,32 @@ func (t *GLAccount) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *GLAccount) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return gLAccountLogic
+	return extensions.EnabledLogic(gLAccountLogic, gLAccountLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *GLAccount) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(GLAccountOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GLAccountOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(GLAccountOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1010,10 +1051,21 @@ func (t *GLAccount) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *GLAccount) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(GLAccountOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GLAccountOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(GLAccountOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1021,7 +1073,19 @@ func (t *GLAccount) runOnModify() error {
 }
 
 func (t *GLAccount) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GLAccountOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(GLAccountOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -1032,7 +1096,19 @@ func (t *GLAccount) runOnDelete() error {
 }
 
 func (t *GLAccount) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GLAccountOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(GLAccountOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

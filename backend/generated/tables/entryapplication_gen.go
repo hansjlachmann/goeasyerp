@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.EntryApplication) error
 //	OnDelete(rec *gtables.EntryApplication) error
 //	OnRename(rec *gtables.EntryApplication) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.EntryApplication, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Entry_no(rec *gtables.EntryApplication) error
 //	OnValidate_Application_no(rec *gtables.EntryApplication) error
 //	OnValidate_Account_type(rec *gtables.EntryApplication) error
@@ -60,6 +62,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -543,6 +546,18 @@ type (
 	EntryApplicationOnRename interface {
 		OnRename(rec *EntryApplication) error
 	}
+	EntryApplicationOnBeforeInsert interface {
+		OnBeforeInsert(rec *EntryApplication, handled *bool) error
+	}
+	EntryApplicationOnBeforeModify interface {
+		OnBeforeModify(rec *EntryApplication, handled *bool) error
+	}
+	EntryApplicationOnBeforeDelete interface {
+		OnBeforeDelete(rec *EntryApplication, handled *bool) error
+	}
+	EntryApplicationOnBeforeRename interface {
+		OnBeforeRename(rec *EntryApplication, handled *bool) error
+	}
 	EntryApplicationOnValidate_Entry_no interface {
 		OnValidate_Entry_no(rec *EntryApplication) error
 	}
@@ -657,18 +672,23 @@ type (
 )
 
 // entryApplicationLogic is the registered business logic of Entry_Application, in
-// registration order (the base application first, then extensions)
-var entryApplicationLogic []any
+// registration order (the base application first, then extensions), and
+// entryApplicationLogicApp the app that registered each ("" the base application)
+var (
+	entryApplicationLogic    []any
+	entryApplicationLogicApp []string
+)
 
 // RegisterEntryApplicationLogic adds business logic to Entry_Application: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterEntryApplicationLogic(logic any) {
 	checkLogic(EntryApplicationTableName, "EntryApplication", logic, entryApplicationTrigger)
 	entryApplicationLogic = append(entryApplicationLogic, logic)
+	entryApplicationLogicApp = append(entryApplicationLogicApp, extensions.Current())
 }
 
 // entryApplicationTrigger reports whether name is a trigger of Entry_Application and
@@ -683,6 +703,14 @@ func entryApplicationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(EntryApplicationOnDelete)
 	case "OnRename":
 		_, ok = logic.(EntryApplicationOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(EntryApplicationOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(EntryApplicationOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(EntryApplicationOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(EntryApplicationOnBeforeRename)
 	case "OnValidate_Entry_no":
 		_, ok = logic.(EntryApplicationOnValidate_Entry_no)
 	case "OnValidate_Application_no":
@@ -775,19 +803,32 @@ func (t *EntryApplication) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *EntryApplication) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return entryApplicationLogic
+	return extensions.EnabledLogic(entryApplicationLogic, entryApplicationLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *EntryApplication) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(EntryApplicationOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(EntryApplicationOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(EntryApplicationOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -796,10 +837,21 @@ func (t *EntryApplication) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *EntryApplication) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(EntryApplicationOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(EntryApplicationOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(EntryApplicationOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -807,7 +859,19 @@ func (t *EntryApplication) runOnModify() error {
 }
 
 func (t *EntryApplication) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(EntryApplicationOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(EntryApplicationOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -818,7 +882,19 @@ func (t *EntryApplication) runOnDelete() error {
 }
 
 func (t *EntryApplication) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(EntryApplicationOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(EntryApplicationOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

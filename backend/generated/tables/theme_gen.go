@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.Theme) error
 //	OnDelete(rec *gtables.Theme) error
 //	OnRename(rec *gtables.Theme) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.Theme, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.Theme) error
 //	OnValidate_Name(rec *gtables.Theme) error
 //	OnValidate_Mode(rec *gtables.Theme) error
@@ -35,6 +37,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -331,10 +334,22 @@ func (t *Theme) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Theme: a business logic type implements the ones it needs
 type (
-	ThemeOnInsert                interface{ OnInsert(rec *Theme) error }
-	ThemeOnModify                interface{ OnModify(rec *Theme) error }
-	ThemeOnDelete                interface{ OnDelete(rec *Theme) error }
-	ThemeOnRename                interface{ OnRename(rec *Theme) error }
+	ThemeOnInsert       interface{ OnInsert(rec *Theme) error }
+	ThemeOnModify       interface{ OnModify(rec *Theme) error }
+	ThemeOnDelete       interface{ OnDelete(rec *Theme) error }
+	ThemeOnRename       interface{ OnRename(rec *Theme) error }
+	ThemeOnBeforeInsert interface {
+		OnBeforeInsert(rec *Theme, handled *bool) error
+	}
+	ThemeOnBeforeModify interface {
+		OnBeforeModify(rec *Theme, handled *bool) error
+	}
+	ThemeOnBeforeDelete interface {
+		OnBeforeDelete(rec *Theme, handled *bool) error
+	}
+	ThemeOnBeforeRename interface {
+		OnBeforeRename(rec *Theme, handled *bool) error
+	}
 	ThemeOnValidate_Code         interface{ OnValidate_Code(rec *Theme) error }
 	ThemeOnValidate_Name         interface{ OnValidate_Name(rec *Theme) error }
 	ThemeOnValidate_Mode         interface{ OnValidate_Mode(rec *Theme) error }
@@ -350,18 +365,23 @@ type (
 )
 
 // themeLogic is the registered business logic of Theme, in
-// registration order (the base application first, then extensions)
-var themeLogic []any
+// registration order (the base application first, then extensions), and
+// themeLogicApp the app that registered each ("" the base application)
+var (
+	themeLogic    []any
+	themeLogicApp []string
+)
 
 // RegisterThemeLogic adds business logic to Theme: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterThemeLogic(logic any) {
 	checkLogic(ThemeTableName, "Theme", logic, themeTrigger)
 	themeLogic = append(themeLogic, logic)
+	themeLogicApp = append(themeLogicApp, extensions.Current())
 }
 
 // themeTrigger reports whether name is a trigger of Theme and
@@ -376,6 +396,14 @@ func themeTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ThemeOnDelete)
 	case "OnRename":
 		_, ok = logic.(ThemeOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ThemeOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ThemeOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ThemeOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ThemeOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(ThemeOnValidate_Code)
 	case "OnValidate_Name":
@@ -418,19 +446,32 @@ func (t *Theme) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *Theme) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return themeLogic
+	return extensions.EnabledLogic(themeLogic, themeLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *Theme) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ThemeOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ThemeOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ThemeOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -439,10 +480,21 @@ func (t *Theme) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *Theme) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ThemeOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ThemeOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ThemeOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -450,7 +502,19 @@ func (t *Theme) runOnModify() error {
 }
 
 func (t *Theme) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ThemeOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ThemeOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -461,7 +525,19 @@ func (t *Theme) runOnDelete() error {
 }
 
 func (t *Theme) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ThemeOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ThemeOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

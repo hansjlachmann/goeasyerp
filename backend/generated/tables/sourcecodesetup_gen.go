@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.SourceCodeSetup) error
 //	OnDelete(rec *gtables.SourceCodeSetup) error
 //	OnRename(rec *gtables.SourceCodeSetup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.SourceCodeSetup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Primary_key(rec *gtables.SourceCodeSetup) error
 //	OnValidate_Sales(rec *gtables.SourceCodeSetup) error
 //	OnValidate_Purchases(rec *gtables.SourceCodeSetup) error
@@ -64,6 +66,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -555,6 +558,18 @@ type (
 	SourceCodeSetupOnRename interface {
 		OnRename(rec *SourceCodeSetup) error
 	}
+	SourceCodeSetupOnBeforeInsert interface {
+		OnBeforeInsert(rec *SourceCodeSetup, handled *bool) error
+	}
+	SourceCodeSetupOnBeforeModify interface {
+		OnBeforeModify(rec *SourceCodeSetup, handled *bool) error
+	}
+	SourceCodeSetupOnBeforeDelete interface {
+		OnBeforeDelete(rec *SourceCodeSetup, handled *bool) error
+	}
+	SourceCodeSetupOnBeforeRename interface {
+		OnBeforeRename(rec *SourceCodeSetup, handled *bool) error
+	}
 	SourceCodeSetupOnValidate_Primary_key interface {
 		OnValidate_Primary_key(rec *SourceCodeSetup) error
 	}
@@ -687,18 +702,23 @@ type (
 )
 
 // sourceCodeSetupLogic is the registered business logic of Source_Code_Setup, in
-// registration order (the base application first, then extensions)
-var sourceCodeSetupLogic []any
+// registration order (the base application first, then extensions), and
+// sourceCodeSetupLogicApp the app that registered each ("" the base application)
+var (
+	sourceCodeSetupLogic    []any
+	sourceCodeSetupLogicApp []string
+)
 
 // RegisterSourceCodeSetupLogic adds business logic to Source_Code_Setup: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterSourceCodeSetupLogic(logic any) {
 	checkLogic(SourceCodeSetupTableName, "SourceCodeSetup", logic, sourceCodeSetupTrigger)
 	sourceCodeSetupLogic = append(sourceCodeSetupLogic, logic)
+	sourceCodeSetupLogicApp = append(sourceCodeSetupLogicApp, extensions.Current())
 }
 
 // sourceCodeSetupTrigger reports whether name is a trigger of Source_Code_Setup and
@@ -713,6 +733,14 @@ func sourceCodeSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SourceCodeSetupOnDelete)
 	case "OnRename":
 		_, ok = logic.(SourceCodeSetupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(SourceCodeSetupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(SourceCodeSetupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(SourceCodeSetupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(SourceCodeSetupOnBeforeRename)
 	case "OnValidate_Primary_key":
 		_, ok = logic.(SourceCodeSetupOnValidate_Primary_key)
 	case "OnValidate_Sales":
@@ -817,19 +845,32 @@ func (t *SourceCodeSetup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *SourceCodeSetup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return sourceCodeSetupLogic
+	return extensions.EnabledLogic(sourceCodeSetupLogic, sourceCodeSetupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *SourceCodeSetup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(SourceCodeSetupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SourceCodeSetupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(SourceCodeSetupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -838,10 +879,21 @@ func (t *SourceCodeSetup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *SourceCodeSetup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(SourceCodeSetupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SourceCodeSetupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(SourceCodeSetupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -849,7 +901,19 @@ func (t *SourceCodeSetup) runOnModify() error {
 }
 
 func (t *SourceCodeSetup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SourceCodeSetupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(SourceCodeSetupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -860,7 +924,19 @@ func (t *SourceCodeSetup) runOnDelete() error {
 }
 
 func (t *SourceCodeSetup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SourceCodeSetupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(SourceCodeSetupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

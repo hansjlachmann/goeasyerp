@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.IssuedFinChargeMemoHeader) error
 //	OnDelete(rec *gtables.IssuedFinChargeMemoHeader) error
 //	OnRename(rec *gtables.IssuedFinChargeMemoHeader) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.IssuedFinChargeMemoHeader, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_No(rec *gtables.IssuedFinChargeMemoHeader) error
 //	OnValidate_Customer_no(rec *gtables.IssuedFinChargeMemoHeader) error
 //	OnValidate_Name(rec *gtables.IssuedFinChargeMemoHeader) error
@@ -59,6 +61,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -542,6 +545,18 @@ type (
 	IssuedFinChargeMemoHeaderOnRename interface {
 		OnRename(rec *IssuedFinChargeMemoHeader) error
 	}
+	IssuedFinChargeMemoHeaderOnBeforeInsert interface {
+		OnBeforeInsert(rec *IssuedFinChargeMemoHeader, handled *bool) error
+	}
+	IssuedFinChargeMemoHeaderOnBeforeModify interface {
+		OnBeforeModify(rec *IssuedFinChargeMemoHeader, handled *bool) error
+	}
+	IssuedFinChargeMemoHeaderOnBeforeDelete interface {
+		OnBeforeDelete(rec *IssuedFinChargeMemoHeader, handled *bool) error
+	}
+	IssuedFinChargeMemoHeaderOnBeforeRename interface {
+		OnBeforeRename(rec *IssuedFinChargeMemoHeader, handled *bool) error
+	}
 	IssuedFinChargeMemoHeaderOnValidate_No interface {
 		OnValidate_No(rec *IssuedFinChargeMemoHeader) error
 	}
@@ -653,18 +668,23 @@ type (
 )
 
 // issuedFinChargeMemoHeaderLogic is the registered business logic of Issued_Fin_Charge_Memo_Header, in
-// registration order (the base application first, then extensions)
-var issuedFinChargeMemoHeaderLogic []any
+// registration order (the base application first, then extensions), and
+// issuedFinChargeMemoHeaderLogicApp the app that registered each ("" the base application)
+var (
+	issuedFinChargeMemoHeaderLogic    []any
+	issuedFinChargeMemoHeaderLogicApp []string
+)
 
 // RegisterIssuedFinChargeMemoHeaderLogic adds business logic to Issued_Fin_Charge_Memo_Header: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterIssuedFinChargeMemoHeaderLogic(logic any) {
 	checkLogic(IssuedFinChargeMemoHeaderTableName, "IssuedFinChargeMemoHeader", logic, issuedFinChargeMemoHeaderTrigger)
 	issuedFinChargeMemoHeaderLogic = append(issuedFinChargeMemoHeaderLogic, logic)
+	issuedFinChargeMemoHeaderLogicApp = append(issuedFinChargeMemoHeaderLogicApp, extensions.Current())
 }
 
 // issuedFinChargeMemoHeaderTrigger reports whether name is a trigger of Issued_Fin_Charge_Memo_Header and
@@ -679,6 +699,14 @@ func issuedFinChargeMemoHeaderTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(IssuedFinChargeMemoHeaderOnDelete)
 	case "OnRename":
 		_, ok = logic.(IssuedFinChargeMemoHeaderOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(IssuedFinChargeMemoHeaderOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(IssuedFinChargeMemoHeaderOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(IssuedFinChargeMemoHeaderOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(IssuedFinChargeMemoHeaderOnBeforeRename)
 	case "OnValidate_No":
 		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_No)
 	case "OnValidate_Customer_no":
@@ -769,19 +797,32 @@ func (t *IssuedFinChargeMemoHeader) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *IssuedFinChargeMemoHeader) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return issuedFinChargeMemoHeaderLogic
+	return extensions.EnabledLogic(issuedFinChargeMemoHeaderLogic, issuedFinChargeMemoHeaderLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *IssuedFinChargeMemoHeader) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(IssuedFinChargeMemoHeaderOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(IssuedFinChargeMemoHeaderOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(IssuedFinChargeMemoHeaderOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -790,10 +831,21 @@ func (t *IssuedFinChargeMemoHeader) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *IssuedFinChargeMemoHeader) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(IssuedFinChargeMemoHeaderOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(IssuedFinChargeMemoHeaderOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(IssuedFinChargeMemoHeaderOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -801,7 +853,19 @@ func (t *IssuedFinChargeMemoHeader) runOnModify() error {
 }
 
 func (t *IssuedFinChargeMemoHeader) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(IssuedFinChargeMemoHeaderOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(IssuedFinChargeMemoHeaderOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -812,7 +876,19 @@ func (t *IssuedFinChargeMemoHeader) runOnDelete() error {
 }
 
 func (t *IssuedFinChargeMemoHeader) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(IssuedFinChargeMemoHeaderOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(IssuedFinChargeMemoHeaderOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

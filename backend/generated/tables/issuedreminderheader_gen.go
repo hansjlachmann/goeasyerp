@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.IssuedReminderHeader) error
 //	OnDelete(rec *gtables.IssuedReminderHeader) error
 //	OnRename(rec *gtables.IssuedReminderHeader) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.IssuedReminderHeader, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_No(rec *gtables.IssuedReminderHeader) error
 //	OnValidate_Customer_no(rec *gtables.IssuedReminderHeader) error
 //	OnValidate_Name(rec *gtables.IssuedReminderHeader) error
@@ -61,6 +63,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -558,6 +561,18 @@ type (
 	IssuedReminderHeaderOnRename interface {
 		OnRename(rec *IssuedReminderHeader) error
 	}
+	IssuedReminderHeaderOnBeforeInsert interface {
+		OnBeforeInsert(rec *IssuedReminderHeader, handled *bool) error
+	}
+	IssuedReminderHeaderOnBeforeModify interface {
+		OnBeforeModify(rec *IssuedReminderHeader, handled *bool) error
+	}
+	IssuedReminderHeaderOnBeforeDelete interface {
+		OnBeforeDelete(rec *IssuedReminderHeader, handled *bool) error
+	}
+	IssuedReminderHeaderOnBeforeRename interface {
+		OnBeforeRename(rec *IssuedReminderHeader, handled *bool) error
+	}
 	IssuedReminderHeaderOnValidate_No interface {
 		OnValidate_No(rec *IssuedReminderHeader) error
 	}
@@ -675,18 +690,23 @@ type (
 )
 
 // issuedReminderHeaderLogic is the registered business logic of Issued_Reminder_Header, in
-// registration order (the base application first, then extensions)
-var issuedReminderHeaderLogic []any
+// registration order (the base application first, then extensions), and
+// issuedReminderHeaderLogicApp the app that registered each ("" the base application)
+var (
+	issuedReminderHeaderLogic    []any
+	issuedReminderHeaderLogicApp []string
+)
 
 // RegisterIssuedReminderHeaderLogic adds business logic to Issued_Reminder_Header: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterIssuedReminderHeaderLogic(logic any) {
 	checkLogic(IssuedReminderHeaderTableName, "IssuedReminderHeader", logic, issuedReminderHeaderTrigger)
 	issuedReminderHeaderLogic = append(issuedReminderHeaderLogic, logic)
+	issuedReminderHeaderLogicApp = append(issuedReminderHeaderLogicApp, extensions.Current())
 }
 
 // issuedReminderHeaderTrigger reports whether name is a trigger of Issued_Reminder_Header and
@@ -701,6 +721,14 @@ func issuedReminderHeaderTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(IssuedReminderHeaderOnDelete)
 	case "OnRename":
 		_, ok = logic.(IssuedReminderHeaderOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(IssuedReminderHeaderOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(IssuedReminderHeaderOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(IssuedReminderHeaderOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(IssuedReminderHeaderOnBeforeRename)
 	case "OnValidate_No":
 		_, ok = logic.(IssuedReminderHeaderOnValidate_No)
 	case "OnValidate_Customer_no":
@@ -795,19 +823,32 @@ func (t *IssuedReminderHeader) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *IssuedReminderHeader) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return issuedReminderHeaderLogic
+	return extensions.EnabledLogic(issuedReminderHeaderLogic, issuedReminderHeaderLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *IssuedReminderHeader) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(IssuedReminderHeaderOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(IssuedReminderHeaderOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(IssuedReminderHeaderOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -816,10 +857,21 @@ func (t *IssuedReminderHeader) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *IssuedReminderHeader) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(IssuedReminderHeaderOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(IssuedReminderHeaderOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(IssuedReminderHeaderOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -827,7 +879,19 @@ func (t *IssuedReminderHeader) runOnModify() error {
 }
 
 func (t *IssuedReminderHeader) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(IssuedReminderHeaderOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(IssuedReminderHeaderOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -838,7 +902,19 @@ func (t *IssuedReminderHeader) runOnDelete() error {
 }
 
 func (t *IssuedReminderHeader) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(IssuedReminderHeaderOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(IssuedReminderHeaderOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

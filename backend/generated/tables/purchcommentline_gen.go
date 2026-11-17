@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.PurchCommentLine) error
 //	OnDelete(rec *gtables.PurchCommentLine) error
 //	OnRename(rec *gtables.PurchCommentLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.PurchCommentLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Document_type(rec *gtables.PurchCommentLine) error
 //	OnValidate_No(rec *gtables.PurchCommentLine) error
 //	OnValidate_Line_no(rec *gtables.PurchCommentLine) error
@@ -29,6 +31,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -307,6 +310,18 @@ type (
 	PurchCommentLineOnRename interface {
 		OnRename(rec *PurchCommentLine) error
 	}
+	PurchCommentLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *PurchCommentLine, handled *bool) error
+	}
+	PurchCommentLineOnBeforeModify interface {
+		OnBeforeModify(rec *PurchCommentLine, handled *bool) error
+	}
+	PurchCommentLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *PurchCommentLine, handled *bool) error
+	}
+	PurchCommentLineOnBeforeRename interface {
+		OnBeforeRename(rec *PurchCommentLine, handled *bool) error
+	}
 	PurchCommentLineOnValidate_Document_type interface {
 		OnValidate_Document_type(rec *PurchCommentLine) error
 	}
@@ -328,18 +343,23 @@ type (
 )
 
 // purchCommentLineLogic is the registered business logic of Purch_Comment_Line, in
-// registration order (the base application first, then extensions)
-var purchCommentLineLogic []any
+// registration order (the base application first, then extensions), and
+// purchCommentLineLogicApp the app that registered each ("" the base application)
+var (
+	purchCommentLineLogic    []any
+	purchCommentLineLogicApp []string
+)
 
 // RegisterPurchCommentLineLogic adds business logic to Purch_Comment_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterPurchCommentLineLogic(logic any) {
 	checkLogic(PurchCommentLineTableName, "PurchCommentLine", logic, purchCommentLineTrigger)
 	purchCommentLineLogic = append(purchCommentLineLogic, logic)
+	purchCommentLineLogicApp = append(purchCommentLineLogicApp, extensions.Current())
 }
 
 // purchCommentLineTrigger reports whether name is a trigger of Purch_Comment_Line and
@@ -354,6 +374,14 @@ func purchCommentLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PurchCommentLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(PurchCommentLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(PurchCommentLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(PurchCommentLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(PurchCommentLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(PurchCommentLineOnBeforeRename)
 	case "OnValidate_Document_type":
 		_, ok = logic.(PurchCommentLineOnValidate_Document_type)
 	case "OnValidate_No":
@@ -384,19 +412,32 @@ func (t *PurchCommentLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *PurchCommentLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return purchCommentLineLogic
+	return extensions.EnabledLogic(purchCommentLineLogic, purchCommentLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *PurchCommentLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PurchCommentLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchCommentLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PurchCommentLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -405,10 +446,21 @@ func (t *PurchCommentLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *PurchCommentLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PurchCommentLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchCommentLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PurchCommentLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -416,7 +468,19 @@ func (t *PurchCommentLine) runOnModify() error {
 }
 
 func (t *PurchCommentLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchCommentLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PurchCommentLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -427,7 +491,19 @@ func (t *PurchCommentLine) runOnDelete() error {
 }
 
 func (t *PurchCommentLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchCommentLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PurchCommentLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

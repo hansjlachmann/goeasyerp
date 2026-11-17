@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.GLEntry) error
 //	OnDelete(rec *gtables.GLEntry) error
 //	OnRename(rec *gtables.GLEntry) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.GLEntry, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Entry_no(rec *gtables.GLEntry) error
 //	OnValidate_Gl_account_no(rec *gtables.GLEntry) error
 //	OnValidate_Posting_date(rec *gtables.GLEntry) error
@@ -66,6 +68,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -713,10 +716,22 @@ func (t *GLEntry) DeleteOrError(runTrigger bool) error {
 
 // Triggers of G_L_Entry: a business logic type implements the ones it needs
 type (
-	GLEntryOnInsert                              interface{ OnInsert(rec *GLEntry) error }
-	GLEntryOnModify                              interface{ OnModify(rec *GLEntry) error }
-	GLEntryOnDelete                              interface{ OnDelete(rec *GLEntry) error }
-	GLEntryOnRename                              interface{ OnRename(rec *GLEntry) error }
+	GLEntryOnInsert       interface{ OnInsert(rec *GLEntry) error }
+	GLEntryOnModify       interface{ OnModify(rec *GLEntry) error }
+	GLEntryOnDelete       interface{ OnDelete(rec *GLEntry) error }
+	GLEntryOnRename       interface{ OnRename(rec *GLEntry) error }
+	GLEntryOnBeforeInsert interface {
+		OnBeforeInsert(rec *GLEntry, handled *bool) error
+	}
+	GLEntryOnBeforeModify interface {
+		OnBeforeModify(rec *GLEntry, handled *bool) error
+	}
+	GLEntryOnBeforeDelete interface {
+		OnBeforeDelete(rec *GLEntry, handled *bool) error
+	}
+	GLEntryOnBeforeRename interface {
+		OnBeforeRename(rec *GLEntry, handled *bool) error
+	}
 	GLEntryOnValidate_Entry_no                   interface{ OnValidate_Entry_no(rec *GLEntry) error }
 	GLEntryOnValidate_Gl_account_no              interface{ OnValidate_Gl_account_no(rec *GLEntry) error }
 	GLEntryOnValidate_Posting_date               interface{ OnValidate_Posting_date(rec *GLEntry) error }
@@ -763,18 +778,23 @@ type (
 )
 
 // gLEntryLogic is the registered business logic of G_L_Entry, in
-// registration order (the base application first, then extensions)
-var gLEntryLogic []any
+// registration order (the base application first, then extensions), and
+// gLEntryLogicApp the app that registered each ("" the base application)
+var (
+	gLEntryLogic    []any
+	gLEntryLogicApp []string
+)
 
 // RegisterGLEntryLogic adds business logic to G_L_Entry: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterGLEntryLogic(logic any) {
 	checkLogic(GLEntryTableName, "GLEntry", logic, gLEntryTrigger)
 	gLEntryLogic = append(gLEntryLogic, logic)
+	gLEntryLogicApp = append(gLEntryLogicApp, extensions.Current())
 }
 
 // gLEntryTrigger reports whether name is a trigger of G_L_Entry and
@@ -789,6 +809,14 @@ func gLEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GLEntryOnDelete)
 	case "OnRename":
 		_, ok = logic.(GLEntryOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(GLEntryOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(GLEntryOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(GLEntryOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(GLEntryOnBeforeRename)
 	case "OnValidate_Entry_no":
 		_, ok = logic.(GLEntryOnValidate_Entry_no)
 	case "OnValidate_Gl_account_no":
@@ -893,19 +921,32 @@ func (t *GLEntry) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *GLEntry) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return gLEntryLogic
+	return extensions.EnabledLogic(gLEntryLogic, gLEntryLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *GLEntry) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(GLEntryOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GLEntryOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(GLEntryOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -914,10 +955,21 @@ func (t *GLEntry) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *GLEntry) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(GLEntryOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GLEntryOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(GLEntryOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -925,7 +977,19 @@ func (t *GLEntry) runOnModify() error {
 }
 
 func (t *GLEntry) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GLEntryOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(GLEntryOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -936,7 +1000,19 @@ func (t *GLEntry) runOnDelete() error {
 }
 
 func (t *GLEntry) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GLEntryOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(GLEntryOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.BOMJournalLine) error
 //	OnDelete(rec *gtables.BOMJournalLine) error
 //	OnRename(rec *gtables.BOMJournalLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.BOMJournalLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Journal_template_name(rec *gtables.BOMJournalLine) error
 //	OnValidate_Journal_batch_name(rec *gtables.BOMJournalLine) error
 //	OnValidate_Line_no(rec *gtables.BOMJournalLine) error
@@ -54,6 +56,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -525,6 +528,18 @@ type (
 	BOMJournalLineOnRename interface {
 		OnRename(rec *BOMJournalLine) error
 	}
+	BOMJournalLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *BOMJournalLine, handled *bool) error
+	}
+	BOMJournalLineOnBeforeModify interface {
+		OnBeforeModify(rec *BOMJournalLine, handled *bool) error
+	}
+	BOMJournalLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *BOMJournalLine, handled *bool) error
+	}
+	BOMJournalLineOnBeforeRename interface {
+		OnBeforeRename(rec *BOMJournalLine, handled *bool) error
+	}
 	BOMJournalLineOnValidate_Journal_template_name interface {
 		OnValidate_Journal_template_name(rec *BOMJournalLine) error
 	}
@@ -621,18 +636,23 @@ type (
 )
 
 // bOMJournalLineLogic is the registered business logic of BOM_Journal_Line, in
-// registration order (the base application first, then extensions)
-var bOMJournalLineLogic []any
+// registration order (the base application first, then extensions), and
+// bOMJournalLineLogicApp the app that registered each ("" the base application)
+var (
+	bOMJournalLineLogic    []any
+	bOMJournalLineLogicApp []string
+)
 
 // RegisterBOMJournalLineLogic adds business logic to BOM_Journal_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterBOMJournalLineLogic(logic any) {
 	checkLogic(BOMJournalLineTableName, "BOMJournalLine", logic, bOMJournalLineTrigger)
 	bOMJournalLineLogic = append(bOMJournalLineLogic, logic)
+	bOMJournalLineLogicApp = append(bOMJournalLineLogicApp, extensions.Current())
 }
 
 // bOMJournalLineTrigger reports whether name is a trigger of BOM_Journal_Line and
@@ -647,6 +667,14 @@ func bOMJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(BOMJournalLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(BOMJournalLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(BOMJournalLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(BOMJournalLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(BOMJournalLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(BOMJournalLineOnBeforeRename)
 	case "OnValidate_Journal_template_name":
 		_, ok = logic.(BOMJournalLineOnValidate_Journal_template_name)
 	case "OnValidate_Journal_batch_name":
@@ -727,19 +755,32 @@ func (t *BOMJournalLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *BOMJournalLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return bOMJournalLineLogic
+	return extensions.EnabledLogic(bOMJournalLineLogic, bOMJournalLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *BOMJournalLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(BOMJournalLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BOMJournalLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(BOMJournalLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -748,10 +789,21 @@ func (t *BOMJournalLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *BOMJournalLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(BOMJournalLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BOMJournalLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(BOMJournalLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -759,7 +811,19 @@ func (t *BOMJournalLine) runOnModify() error {
 }
 
 func (t *BOMJournalLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BOMJournalLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(BOMJournalLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -770,7 +834,19 @@ func (t *BOMJournalLine) runOnDelete() error {
 }
 
 func (t *BOMJournalLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BOMJournalLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(BOMJournalLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

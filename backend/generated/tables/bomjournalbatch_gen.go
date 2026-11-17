@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.BOMJournalBatch) error
 //	OnDelete(rec *gtables.BOMJournalBatch) error
 //	OnRename(rec *gtables.BOMJournalBatch) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.BOMJournalBatch, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Journal_template_name(rec *gtables.BOMJournalBatch) error
 //	OnValidate_Name(rec *gtables.BOMJournalBatch) error
 //	OnValidate_Description(rec *gtables.BOMJournalBatch) error
@@ -27,6 +29,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -259,6 +262,18 @@ type (
 	BOMJournalBatchOnRename interface {
 		OnRename(rec *BOMJournalBatch) error
 	}
+	BOMJournalBatchOnBeforeInsert interface {
+		OnBeforeInsert(rec *BOMJournalBatch, handled *bool) error
+	}
+	BOMJournalBatchOnBeforeModify interface {
+		OnBeforeModify(rec *BOMJournalBatch, handled *bool) error
+	}
+	BOMJournalBatchOnBeforeDelete interface {
+		OnBeforeDelete(rec *BOMJournalBatch, handled *bool) error
+	}
+	BOMJournalBatchOnBeforeRename interface {
+		OnBeforeRename(rec *BOMJournalBatch, handled *bool) error
+	}
 	BOMJournalBatchOnValidate_Journal_template_name interface {
 		OnValidate_Journal_template_name(rec *BOMJournalBatch) error
 	}
@@ -280,18 +295,23 @@ type (
 )
 
 // bOMJournalBatchLogic is the registered business logic of BOM_Journal_Batch, in
-// registration order (the base application first, then extensions)
-var bOMJournalBatchLogic []any
+// registration order (the base application first, then extensions), and
+// bOMJournalBatchLogicApp the app that registered each ("" the base application)
+var (
+	bOMJournalBatchLogic    []any
+	bOMJournalBatchLogicApp []string
+)
 
 // RegisterBOMJournalBatchLogic adds business logic to BOM_Journal_Batch: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterBOMJournalBatchLogic(logic any) {
 	checkLogic(BOMJournalBatchTableName, "BOMJournalBatch", logic, bOMJournalBatchTrigger)
 	bOMJournalBatchLogic = append(bOMJournalBatchLogic, logic)
+	bOMJournalBatchLogicApp = append(bOMJournalBatchLogicApp, extensions.Current())
 }
 
 // bOMJournalBatchTrigger reports whether name is a trigger of BOM_Journal_Batch and
@@ -306,6 +326,14 @@ func bOMJournalBatchTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(BOMJournalBatchOnDelete)
 	case "OnRename":
 		_, ok = logic.(BOMJournalBatchOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(BOMJournalBatchOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(BOMJournalBatchOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(BOMJournalBatchOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(BOMJournalBatchOnBeforeRename)
 	case "OnValidate_Journal_template_name":
 		_, ok = logic.(BOMJournalBatchOnValidate_Journal_template_name)
 	case "OnValidate_Name":
@@ -336,19 +364,32 @@ func (t *BOMJournalBatch) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *BOMJournalBatch) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return bOMJournalBatchLogic
+	return extensions.EnabledLogic(bOMJournalBatchLogic, bOMJournalBatchLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *BOMJournalBatch) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(BOMJournalBatchOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BOMJournalBatchOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(BOMJournalBatchOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -357,10 +398,21 @@ func (t *BOMJournalBatch) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *BOMJournalBatch) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(BOMJournalBatchOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BOMJournalBatchOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(BOMJournalBatchOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -368,7 +420,19 @@ func (t *BOMJournalBatch) runOnModify() error {
 }
 
 func (t *BOMJournalBatch) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BOMJournalBatchOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(BOMJournalBatchOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -379,7 +443,19 @@ func (t *BOMJournalBatch) runOnDelete() error {
 }
 
 func (t *BOMJournalBatch) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BOMJournalBatchOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(BOMJournalBatchOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

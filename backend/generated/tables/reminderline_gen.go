@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ReminderLine) error
 //	OnDelete(rec *gtables.ReminderLine) error
 //	OnRename(rec *gtables.ReminderLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ReminderLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Reminder_no(rec *gtables.ReminderLine) error
 //	OnValidate_Line_no(rec *gtables.ReminderLine) error
 //	OnValidate_Attached_to_line_no(rec *gtables.ReminderLine) error
@@ -46,6 +48,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -485,10 +488,22 @@ func (t *ReminderLine) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Reminder_Line: a business logic type implements the ones it needs
 type (
-	ReminderLineOnInsert                          interface{ OnInsert(rec *ReminderLine) error }
-	ReminderLineOnModify                          interface{ OnModify(rec *ReminderLine) error }
-	ReminderLineOnDelete                          interface{ OnDelete(rec *ReminderLine) error }
-	ReminderLineOnRename                          interface{ OnRename(rec *ReminderLine) error }
+	ReminderLineOnInsert       interface{ OnInsert(rec *ReminderLine) error }
+	ReminderLineOnModify       interface{ OnModify(rec *ReminderLine) error }
+	ReminderLineOnDelete       interface{ OnDelete(rec *ReminderLine) error }
+	ReminderLineOnRename       interface{ OnRename(rec *ReminderLine) error }
+	ReminderLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *ReminderLine, handled *bool) error
+	}
+	ReminderLineOnBeforeModify interface {
+		OnBeforeModify(rec *ReminderLine, handled *bool) error
+	}
+	ReminderLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *ReminderLine, handled *bool) error
+	}
+	ReminderLineOnBeforeRename interface {
+		OnBeforeRename(rec *ReminderLine, handled *bool) error
+	}
 	ReminderLineOnValidate_Reminder_no            interface{ OnValidate_Reminder_no(rec *ReminderLine) error }
 	ReminderLineOnValidate_Line_no                interface{ OnValidate_Line_no(rec *ReminderLine) error }
 	ReminderLineOnValidate_Attached_to_line_no    interface{ OnValidate_Attached_to_line_no(rec *ReminderLine) error }
@@ -515,18 +530,23 @@ type (
 )
 
 // reminderLineLogic is the registered business logic of Reminder_Line, in
-// registration order (the base application first, then extensions)
-var reminderLineLogic []any
+// registration order (the base application first, then extensions), and
+// reminderLineLogicApp the app that registered each ("" the base application)
+var (
+	reminderLineLogic    []any
+	reminderLineLogicApp []string
+)
 
 // RegisterReminderLineLogic adds business logic to Reminder_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterReminderLineLogic(logic any) {
 	checkLogic(ReminderLineTableName, "ReminderLine", logic, reminderLineTrigger)
 	reminderLineLogic = append(reminderLineLogic, logic)
+	reminderLineLogicApp = append(reminderLineLogicApp, extensions.Current())
 }
 
 // reminderLineTrigger reports whether name is a trigger of Reminder_Line and
@@ -541,6 +561,14 @@ func reminderLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ReminderLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(ReminderLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ReminderLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ReminderLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ReminderLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ReminderLineOnBeforeRename)
 	case "OnValidate_Reminder_no":
 		_, ok = logic.(ReminderLineOnValidate_Reminder_no)
 	case "OnValidate_Line_no":
@@ -605,19 +633,32 @@ func (t *ReminderLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ReminderLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return reminderLineLogic
+	return extensions.EnabledLogic(reminderLineLogic, reminderLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ReminderLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ReminderLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReminderLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ReminderLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -626,10 +667,21 @@ func (t *ReminderLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ReminderLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ReminderLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReminderLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ReminderLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -637,7 +689,19 @@ func (t *ReminderLine) runOnModify() error {
 }
 
 func (t *ReminderLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReminderLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ReminderLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -648,7 +712,19 @@ func (t *ReminderLine) runOnDelete() error {
 }
 
 func (t *ReminderLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReminderLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ReminderLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

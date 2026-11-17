@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.PurchasesPayablesSetup) error
 //	OnDelete(rec *gtables.PurchasesPayablesSetup) error
 //	OnRename(rec *gtables.PurchasesPayablesSetup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.PurchasesPayablesSetup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Primary_key(rec *gtables.PurchasesPayablesSetup) error
 //	OnValidate_Discount_posting(rec *gtables.PurchasesPayablesSetup) error
 //	OnValidate_Receipt_on_invoice(rec *gtables.PurchasesPayablesSetup) error
@@ -40,6 +42,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -429,6 +432,18 @@ type (
 	PurchasesPayablesSetupOnRename interface {
 		OnRename(rec *PurchasesPayablesSetup) error
 	}
+	PurchasesPayablesSetupOnBeforeInsert interface {
+		OnBeforeInsert(rec *PurchasesPayablesSetup, handled *bool) error
+	}
+	PurchasesPayablesSetupOnBeforeModify interface {
+		OnBeforeModify(rec *PurchasesPayablesSetup, handled *bool) error
+	}
+	PurchasesPayablesSetupOnBeforeDelete interface {
+		OnBeforeDelete(rec *PurchasesPayablesSetup, handled *bool) error
+	}
+	PurchasesPayablesSetupOnBeforeRename interface {
+		OnBeforeRename(rec *PurchasesPayablesSetup, handled *bool) error
+	}
 	PurchasesPayablesSetupOnValidate_Primary_key interface {
 		OnValidate_Primary_key(rec *PurchasesPayablesSetup) error
 	}
@@ -489,18 +504,23 @@ type (
 )
 
 // purchasesPayablesSetupLogic is the registered business logic of Purchases_Payables_Setup, in
-// registration order (the base application first, then extensions)
-var purchasesPayablesSetupLogic []any
+// registration order (the base application first, then extensions), and
+// purchasesPayablesSetupLogicApp the app that registered each ("" the base application)
+var (
+	purchasesPayablesSetupLogic    []any
+	purchasesPayablesSetupLogicApp []string
+)
 
 // RegisterPurchasesPayablesSetupLogic adds business logic to Purchases_Payables_Setup: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterPurchasesPayablesSetupLogic(logic any) {
 	checkLogic(PurchasesPayablesSetupTableName, "PurchasesPayablesSetup", logic, purchasesPayablesSetupTrigger)
 	purchasesPayablesSetupLogic = append(purchasesPayablesSetupLogic, logic)
+	purchasesPayablesSetupLogicApp = append(purchasesPayablesSetupLogicApp, extensions.Current())
 }
 
 // purchasesPayablesSetupTrigger reports whether name is a trigger of Purchases_Payables_Setup and
@@ -515,6 +535,14 @@ func purchasesPayablesSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PurchasesPayablesSetupOnDelete)
 	case "OnRename":
 		_, ok = logic.(PurchasesPayablesSetupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(PurchasesPayablesSetupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(PurchasesPayablesSetupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(PurchasesPayablesSetupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(PurchasesPayablesSetupOnBeforeRename)
 	case "OnValidate_Primary_key":
 		_, ok = logic.(PurchasesPayablesSetupOnValidate_Primary_key)
 	case "OnValidate_Discount_posting":
@@ -571,19 +599,32 @@ func (t *PurchasesPayablesSetup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *PurchasesPayablesSetup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return purchasesPayablesSetupLogic
+	return extensions.EnabledLogic(purchasesPayablesSetupLogic, purchasesPayablesSetupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *PurchasesPayablesSetup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PurchasesPayablesSetupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchasesPayablesSetupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PurchasesPayablesSetupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -592,10 +633,21 @@ func (t *PurchasesPayablesSetup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *PurchasesPayablesSetup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PurchasesPayablesSetupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchasesPayablesSetupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PurchasesPayablesSetupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -603,7 +655,19 @@ func (t *PurchasesPayablesSetup) runOnModify() error {
 }
 
 func (t *PurchasesPayablesSetup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchasesPayablesSetupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PurchasesPayablesSetupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -614,7 +678,19 @@ func (t *PurchasesPayablesSetup) runOnDelete() error {
 }
 
 func (t *PurchasesPayablesSetup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchasesPayablesSetupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PurchasesPayablesSetupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

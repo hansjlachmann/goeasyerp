@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.CompanyInformation) error
 //	OnDelete(rec *gtables.CompanyInformation) error
 //	OnRename(rec *gtables.CompanyInformation) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.CompanyInformation, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Primary_key(rec *gtables.CompanyInformation) error
 //	OnValidate_Name(rec *gtables.CompanyInformation) error
 //	OnValidate_Name_2(rec *gtables.CompanyInformation) error
@@ -59,6 +61,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -501,6 +504,18 @@ type (
 	CompanyInformationOnRename interface {
 		OnRename(rec *CompanyInformation) error
 	}
+	CompanyInformationOnBeforeInsert interface {
+		OnBeforeInsert(rec *CompanyInformation, handled *bool) error
+	}
+	CompanyInformationOnBeforeModify interface {
+		OnBeforeModify(rec *CompanyInformation, handled *bool) error
+	}
+	CompanyInformationOnBeforeDelete interface {
+		OnBeforeDelete(rec *CompanyInformation, handled *bool) error
+	}
+	CompanyInformationOnBeforeRename interface {
+		OnBeforeRename(rec *CompanyInformation, handled *bool) error
+	}
 	CompanyInformationOnValidate_Primary_key interface {
 		OnValidate_Primary_key(rec *CompanyInformation) error
 	}
@@ -612,18 +627,23 @@ type (
 )
 
 // companyInformationLogic is the registered business logic of Company_Information, in
-// registration order (the base application first, then extensions)
-var companyInformationLogic []any
+// registration order (the base application first, then extensions), and
+// companyInformationLogicApp the app that registered each ("" the base application)
+var (
+	companyInformationLogic    []any
+	companyInformationLogicApp []string
+)
 
 // RegisterCompanyInformationLogic adds business logic to Company_Information: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterCompanyInformationLogic(logic any) {
 	checkLogic(CompanyInformationTableName, "CompanyInformation", logic, companyInformationTrigger)
 	companyInformationLogic = append(companyInformationLogic, logic)
+	companyInformationLogicApp = append(companyInformationLogicApp, extensions.Current())
 }
 
 // companyInformationTrigger reports whether name is a trigger of Company_Information and
@@ -638,6 +658,14 @@ func companyInformationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CompanyInformationOnDelete)
 	case "OnRename":
 		_, ok = logic.(CompanyInformationOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(CompanyInformationOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(CompanyInformationOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(CompanyInformationOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(CompanyInformationOnBeforeRename)
 	case "OnValidate_Primary_key":
 		_, ok = logic.(CompanyInformationOnValidate_Primary_key)
 	case "OnValidate_Name":
@@ -728,19 +756,32 @@ func (t *CompanyInformation) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *CompanyInformation) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return companyInformationLogic
+	return extensions.EnabledLogic(companyInformationLogic, companyInformationLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *CompanyInformation) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(CompanyInformationOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CompanyInformationOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(CompanyInformationOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -749,10 +790,21 @@ func (t *CompanyInformation) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *CompanyInformation) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(CompanyInformationOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CompanyInformationOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(CompanyInformationOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -760,7 +812,19 @@ func (t *CompanyInformation) runOnModify() error {
 }
 
 func (t *CompanyInformation) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CompanyInformationOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(CompanyInformationOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -771,7 +835,19 @@ func (t *CompanyInformation) runOnDelete() error {
 }
 
 func (t *CompanyInformation) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CompanyInformationOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(CompanyInformationOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.Phase) error
 //	OnDelete(rec *gtables.Phase) error
 //	OnRename(rec *gtables.Phase) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.Phase, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.Phase) error
 //	OnValidate_Search_code(rec *gtables.Phase) error
 //	OnValidate_Description(rec *gtables.Phase) error
@@ -24,6 +26,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -223,28 +226,45 @@ func (t *Phase) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Phase: a business logic type implements the ones it needs
 type (
-	PhaseOnInsert               interface{ OnInsert(rec *Phase) error }
-	PhaseOnModify               interface{ OnModify(rec *Phase) error }
-	PhaseOnDelete               interface{ OnDelete(rec *Phase) error }
-	PhaseOnRename               interface{ OnRename(rec *Phase) error }
+	PhaseOnInsert       interface{ OnInsert(rec *Phase) error }
+	PhaseOnModify       interface{ OnModify(rec *Phase) error }
+	PhaseOnDelete       interface{ OnDelete(rec *Phase) error }
+	PhaseOnRename       interface{ OnRename(rec *Phase) error }
+	PhaseOnBeforeInsert interface {
+		OnBeforeInsert(rec *Phase, handled *bool) error
+	}
+	PhaseOnBeforeModify interface {
+		OnBeforeModify(rec *Phase, handled *bool) error
+	}
+	PhaseOnBeforeDelete interface {
+		OnBeforeDelete(rec *Phase, handled *bool) error
+	}
+	PhaseOnBeforeRename interface {
+		OnBeforeRename(rec *Phase, handled *bool) error
+	}
 	PhaseOnValidate_Code        interface{ OnValidate_Code(rec *Phase) error }
 	PhaseOnValidate_Search_code interface{ OnValidate_Search_code(rec *Phase) error }
 	PhaseOnValidate_Description interface{ OnValidate_Description(rec *Phase) error }
 )
 
 // phaseLogic is the registered business logic of Phase, in
-// registration order (the base application first, then extensions)
-var phaseLogic []any
+// registration order (the base application first, then extensions), and
+// phaseLogicApp the app that registered each ("" the base application)
+var (
+	phaseLogic    []any
+	phaseLogicApp []string
+)
 
 // RegisterPhaseLogic adds business logic to Phase: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterPhaseLogic(logic any) {
 	checkLogic(PhaseTableName, "Phase", logic, phaseTrigger)
 	phaseLogic = append(phaseLogic, logic)
+	phaseLogicApp = append(phaseLogicApp, extensions.Current())
 }
 
 // phaseTrigger reports whether name is a trigger of Phase and
@@ -259,6 +279,14 @@ func phaseTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PhaseOnDelete)
 	case "OnRename":
 		_, ok = logic.(PhaseOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(PhaseOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(PhaseOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(PhaseOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(PhaseOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(PhaseOnValidate_Code)
 	case "OnValidate_Search_code":
@@ -283,19 +311,32 @@ func (t *Phase) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *Phase) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return phaseLogic
+	return extensions.EnabledLogic(phaseLogic, phaseLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *Phase) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PhaseOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PhaseOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PhaseOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,10 +345,21 @@ func (t *Phase) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *Phase) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PhaseOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PhaseOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PhaseOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -315,7 +367,19 @@ func (t *Phase) runOnModify() error {
 }
 
 func (t *Phase) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PhaseOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PhaseOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -326,7 +390,19 @@ func (t *Phase) runOnDelete() error {
 }
 
 func (t *Phase) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PhaseOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PhaseOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

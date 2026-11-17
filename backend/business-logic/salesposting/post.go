@@ -97,7 +97,11 @@ func NewSalesPost(src ftables.Source) *SalesPost {
 func (p *SalesPost) Run(salesHeader *gtables.SalesHeader) error {
 	*p = SalesPost{src: p.src}
 	p.salesHeader = salesHeader
-	err := p.checkAndUpdate()
+	err := OnBeforePost.Publish(&BeforePost{SalesHeader: salesHeader})
+	if err != nil {
+		return err
+	}
+	err = p.checkAndUpdate()
 	if err != nil {
 		return err
 	}
@@ -129,7 +133,11 @@ func (p *SalesPost) Run(salesHeader *gtables.SalesHeader) error {
 			return err
 		}
 	}
-	return p.finalize()
+	err = p.finalize()
+	if err != nil {
+		return err
+	}
+	return OnAfterPost.Publish(&AfterPost{SalesHeader: salesHeader, ShipmentNo: p.ShipmentNo, InvoiceNo: p.InvoiceNo, CrMemoNo: p.CrMemoNo})
 }
 
 // checkAndUpdate: the document can be posted — its type, customer, dates, what it ships and

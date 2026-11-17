@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.CurrencyForFinChargeTerms) error
 //	OnDelete(rec *gtables.CurrencyForFinChargeTerms) error
 //	OnRename(rec *gtables.CurrencyForFinChargeTerms) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.CurrencyForFinChargeTerms, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Fin_charge_terms_code(rec *gtables.CurrencyForFinChargeTerms) error
 //	OnValidate_Currency_code(rec *gtables.CurrencyForFinChargeTerms) error
 //	OnValidate_Additional_fee(rec *gtables.CurrencyForFinChargeTerms) error
@@ -24,6 +26,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -235,6 +238,18 @@ type (
 	CurrencyForFinChargeTermsOnRename interface {
 		OnRename(rec *CurrencyForFinChargeTerms) error
 	}
+	CurrencyForFinChargeTermsOnBeforeInsert interface {
+		OnBeforeInsert(rec *CurrencyForFinChargeTerms, handled *bool) error
+	}
+	CurrencyForFinChargeTermsOnBeforeModify interface {
+		OnBeforeModify(rec *CurrencyForFinChargeTerms, handled *bool) error
+	}
+	CurrencyForFinChargeTermsOnBeforeDelete interface {
+		OnBeforeDelete(rec *CurrencyForFinChargeTerms, handled *bool) error
+	}
+	CurrencyForFinChargeTermsOnBeforeRename interface {
+		OnBeforeRename(rec *CurrencyForFinChargeTerms, handled *bool) error
+	}
 	CurrencyForFinChargeTermsOnValidate_Fin_charge_terms_code interface {
 		OnValidate_Fin_charge_terms_code(rec *CurrencyForFinChargeTerms) error
 	}
@@ -247,18 +262,23 @@ type (
 )
 
 // currencyForFinChargeTermsLogic is the registered business logic of Currency_for_Fin_Charge_Terms, in
-// registration order (the base application first, then extensions)
-var currencyForFinChargeTermsLogic []any
+// registration order (the base application first, then extensions), and
+// currencyForFinChargeTermsLogicApp the app that registered each ("" the base application)
+var (
+	currencyForFinChargeTermsLogic    []any
+	currencyForFinChargeTermsLogicApp []string
+)
 
 // RegisterCurrencyForFinChargeTermsLogic adds business logic to Currency_for_Fin_Charge_Terms: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterCurrencyForFinChargeTermsLogic(logic any) {
 	checkLogic(CurrencyForFinChargeTermsTableName, "CurrencyForFinChargeTerms", logic, currencyForFinChargeTermsTrigger)
 	currencyForFinChargeTermsLogic = append(currencyForFinChargeTermsLogic, logic)
+	currencyForFinChargeTermsLogicApp = append(currencyForFinChargeTermsLogicApp, extensions.Current())
 }
 
 // currencyForFinChargeTermsTrigger reports whether name is a trigger of Currency_for_Fin_Charge_Terms and
@@ -273,6 +293,14 @@ func currencyForFinChargeTermsTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CurrencyForFinChargeTermsOnDelete)
 	case "OnRename":
 		_, ok = logic.(CurrencyForFinChargeTermsOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(CurrencyForFinChargeTermsOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(CurrencyForFinChargeTermsOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(CurrencyForFinChargeTermsOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(CurrencyForFinChargeTermsOnBeforeRename)
 	case "OnValidate_Fin_charge_terms_code":
 		_, ok = logic.(CurrencyForFinChargeTermsOnValidate_Fin_charge_terms_code)
 	case "OnValidate_Currency_code":
@@ -297,19 +325,32 @@ func (t *CurrencyForFinChargeTerms) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *CurrencyForFinChargeTerms) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return currencyForFinChargeTermsLogic
+	return extensions.EnabledLogic(currencyForFinChargeTermsLogic, currencyForFinChargeTermsLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *CurrencyForFinChargeTerms) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(CurrencyForFinChargeTermsOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CurrencyForFinChargeTermsOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(CurrencyForFinChargeTermsOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -318,10 +359,21 @@ func (t *CurrencyForFinChargeTerms) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *CurrencyForFinChargeTerms) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(CurrencyForFinChargeTermsOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CurrencyForFinChargeTermsOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(CurrencyForFinChargeTermsOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -329,7 +381,19 @@ func (t *CurrencyForFinChargeTerms) runOnModify() error {
 }
 
 func (t *CurrencyForFinChargeTerms) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CurrencyForFinChargeTermsOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(CurrencyForFinChargeTermsOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -340,7 +404,19 @@ func (t *CurrencyForFinChargeTerms) runOnDelete() error {
 }
 
 func (t *CurrencyForFinChargeTerms) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(CurrencyForFinChargeTermsOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(CurrencyForFinChargeTermsOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

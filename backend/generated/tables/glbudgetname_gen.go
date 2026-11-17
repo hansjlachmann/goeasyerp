@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.GLBudgetName) error
 //	OnDelete(rec *gtables.GLBudgetName) error
 //	OnRename(rec *gtables.GLBudgetName) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.GLBudgetName, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Name(rec *gtables.GLBudgetName) error
 //	OnValidate_Description(rec *gtables.GLBudgetName) error
 
@@ -23,6 +25,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -215,27 +218,44 @@ func (t *GLBudgetName) DeleteOrError(runTrigger bool) error {
 
 // Triggers of G_L_Budget_Name: a business logic type implements the ones it needs
 type (
-	GLBudgetNameOnInsert               interface{ OnInsert(rec *GLBudgetName) error }
-	GLBudgetNameOnModify               interface{ OnModify(rec *GLBudgetName) error }
-	GLBudgetNameOnDelete               interface{ OnDelete(rec *GLBudgetName) error }
-	GLBudgetNameOnRename               interface{ OnRename(rec *GLBudgetName) error }
+	GLBudgetNameOnInsert       interface{ OnInsert(rec *GLBudgetName) error }
+	GLBudgetNameOnModify       interface{ OnModify(rec *GLBudgetName) error }
+	GLBudgetNameOnDelete       interface{ OnDelete(rec *GLBudgetName) error }
+	GLBudgetNameOnRename       interface{ OnRename(rec *GLBudgetName) error }
+	GLBudgetNameOnBeforeInsert interface {
+		OnBeforeInsert(rec *GLBudgetName, handled *bool) error
+	}
+	GLBudgetNameOnBeforeModify interface {
+		OnBeforeModify(rec *GLBudgetName, handled *bool) error
+	}
+	GLBudgetNameOnBeforeDelete interface {
+		OnBeforeDelete(rec *GLBudgetName, handled *bool) error
+	}
+	GLBudgetNameOnBeforeRename interface {
+		OnBeforeRename(rec *GLBudgetName, handled *bool) error
+	}
 	GLBudgetNameOnValidate_Name        interface{ OnValidate_Name(rec *GLBudgetName) error }
 	GLBudgetNameOnValidate_Description interface{ OnValidate_Description(rec *GLBudgetName) error }
 )
 
 // gLBudgetNameLogic is the registered business logic of G_L_Budget_Name, in
-// registration order (the base application first, then extensions)
-var gLBudgetNameLogic []any
+// registration order (the base application first, then extensions), and
+// gLBudgetNameLogicApp the app that registered each ("" the base application)
+var (
+	gLBudgetNameLogic    []any
+	gLBudgetNameLogicApp []string
+)
 
 // RegisterGLBudgetNameLogic adds business logic to G_L_Budget_Name: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterGLBudgetNameLogic(logic any) {
 	checkLogic(GLBudgetNameTableName, "GLBudgetName", logic, gLBudgetNameTrigger)
 	gLBudgetNameLogic = append(gLBudgetNameLogic, logic)
+	gLBudgetNameLogicApp = append(gLBudgetNameLogicApp, extensions.Current())
 }
 
 // gLBudgetNameTrigger reports whether name is a trigger of G_L_Budget_Name and
@@ -250,6 +270,14 @@ func gLBudgetNameTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GLBudgetNameOnDelete)
 	case "OnRename":
 		_, ok = logic.(GLBudgetNameOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(GLBudgetNameOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(GLBudgetNameOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(GLBudgetNameOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(GLBudgetNameOnBeforeRename)
 	case "OnValidate_Name":
 		_, ok = logic.(GLBudgetNameOnValidate_Name)
 	case "OnValidate_Description":
@@ -272,19 +300,32 @@ func (t *GLBudgetName) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *GLBudgetName) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return gLBudgetNameLogic
+	return extensions.EnabledLogic(gLBudgetNameLogic, gLBudgetNameLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *GLBudgetName) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(GLBudgetNameOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GLBudgetNameOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(GLBudgetNameOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -293,10 +334,21 @@ func (t *GLBudgetName) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *GLBudgetName) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(GLBudgetNameOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GLBudgetNameOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(GLBudgetNameOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,7 +356,19 @@ func (t *GLBudgetName) runOnModify() error {
 }
 
 func (t *GLBudgetName) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GLBudgetNameOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(GLBudgetNameOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -315,7 +379,19 @@ func (t *GLBudgetName) runOnDelete() error {
 }
 
 func (t *GLBudgetName) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GLBudgetNameOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(GLBudgetNameOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

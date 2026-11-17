@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.TaxPostingSetup) error
 //	OnDelete(rec *gtables.TaxPostingSetup) error
 //	OnRename(rec *gtables.TaxPostingSetup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.TaxPostingSetup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Tax_bus_posting_group(rec *gtables.TaxPostingSetup) error
 //	OnValidate_Tax_prod_posting_group(rec *gtables.TaxPostingSetup) error
 //	OnValidate_Tax_calculation_type(rec *gtables.TaxPostingSetup) error
@@ -33,6 +35,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -379,6 +382,18 @@ type (
 	TaxPostingSetupOnRename interface {
 		OnRename(rec *TaxPostingSetup) error
 	}
+	TaxPostingSetupOnBeforeInsert interface {
+		OnBeforeInsert(rec *TaxPostingSetup, handled *bool) error
+	}
+	TaxPostingSetupOnBeforeModify interface {
+		OnBeforeModify(rec *TaxPostingSetup, handled *bool) error
+	}
+	TaxPostingSetupOnBeforeDelete interface {
+		OnBeforeDelete(rec *TaxPostingSetup, handled *bool) error
+	}
+	TaxPostingSetupOnBeforeRename interface {
+		OnBeforeRename(rec *TaxPostingSetup, handled *bool) error
+	}
 	TaxPostingSetupOnValidate_Tax_bus_posting_group interface {
 		OnValidate_Tax_bus_posting_group(rec *TaxPostingSetup) error
 	}
@@ -418,18 +433,23 @@ type (
 )
 
 // taxPostingSetupLogic is the registered business logic of Tax_Posting_Setup, in
-// registration order (the base application first, then extensions)
-var taxPostingSetupLogic []any
+// registration order (the base application first, then extensions), and
+// taxPostingSetupLogicApp the app that registered each ("" the base application)
+var (
+	taxPostingSetupLogic    []any
+	taxPostingSetupLogicApp []string
+)
 
 // RegisterTaxPostingSetupLogic adds business logic to Tax_Posting_Setup: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterTaxPostingSetupLogic(logic any) {
 	checkLogic(TaxPostingSetupTableName, "TaxPostingSetup", logic, taxPostingSetupTrigger)
 	taxPostingSetupLogic = append(taxPostingSetupLogic, logic)
+	taxPostingSetupLogicApp = append(taxPostingSetupLogicApp, extensions.Current())
 }
 
 // taxPostingSetupTrigger reports whether name is a trigger of Tax_Posting_Setup and
@@ -444,6 +464,14 @@ func taxPostingSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(TaxPostingSetupOnDelete)
 	case "OnRename":
 		_, ok = logic.(TaxPostingSetupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(TaxPostingSetupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(TaxPostingSetupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(TaxPostingSetupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(TaxPostingSetupOnBeforeRename)
 	case "OnValidate_Tax_bus_posting_group":
 		_, ok = logic.(TaxPostingSetupOnValidate_Tax_bus_posting_group)
 	case "OnValidate_Tax_prod_posting_group":
@@ -486,19 +514,32 @@ func (t *TaxPostingSetup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *TaxPostingSetup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return taxPostingSetupLogic
+	return extensions.EnabledLogic(taxPostingSetupLogic, taxPostingSetupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *TaxPostingSetup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(TaxPostingSetupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TaxPostingSetupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(TaxPostingSetupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -507,10 +548,21 @@ func (t *TaxPostingSetup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *TaxPostingSetup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(TaxPostingSetupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TaxPostingSetupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(TaxPostingSetupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -518,7 +570,19 @@ func (t *TaxPostingSetup) runOnModify() error {
 }
 
 func (t *TaxPostingSetup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TaxPostingSetupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(TaxPostingSetupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -529,7 +593,19 @@ func (t *TaxPostingSetup) runOnDelete() error {
 }
 
 func (t *TaxPostingSetup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TaxPostingSetupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(TaxPostingSetupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

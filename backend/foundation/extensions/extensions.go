@@ -52,3 +52,49 @@ func Installed() []string {
 	defer mu.Unlock()
 	return append([]string(nil), installed...)
 }
+
+var (
+	enabledMu sync.RWMutex
+	disabled  = map[string]bool{}
+)
+
+// Enabled reports whether an app's code runs: the base application ("") always, an extension
+// app unless it was disabled (SetDisabled)
+func Enabled(appID string) bool {
+	if appID == "" {
+		return true
+	}
+	enabledMu.RLock()
+	defer enabledMu.RUnlock()
+	return !disabled[appID]
+}
+
+// SetDisabled sets the apps whose code does not run (the installed apps switched off); every
+// other app's code runs
+func SetDisabled(appIDs ...string) {
+	set := map[string]bool{}
+	for _, id := range appIDs {
+		set[id] = true
+	}
+	enabledMu.Lock()
+	disabled = set
+	enabledMu.Unlock()
+}
+
+// EnabledLogic returns the registered logic of a table without the logic of disabled apps
+// (apps[i] registered logic[i]); the list itself when no app is disabled
+func EnabledLogic(logic []any, apps []string) []any {
+	enabledMu.RLock()
+	defer enabledMu.RUnlock()
+	if len(disabled) == 0 {
+		return logic
+	}
+	out := make([]any, 0, len(logic))
+	for i, l := range logic {
+		if i < len(apps) && disabled[apps[i]] {
+			continue
+		}
+		out = append(out, l)
+	}
+	return out
+}

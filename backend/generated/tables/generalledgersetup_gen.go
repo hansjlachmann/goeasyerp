@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.GeneralLedgerSetup) error
 //	OnDelete(rec *gtables.GeneralLedgerSetup) error
 //	OnRename(rec *gtables.GeneralLedgerSetup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.GeneralLedgerSetup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Primary_key(rec *gtables.GeneralLedgerSetup) error
 //	OnValidate_Allow_posting_from(rec *gtables.GeneralLedgerSetup) error
 //	OnValidate_Allow_posting_to(rec *gtables.GeneralLedgerSetup) error
@@ -49,6 +51,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -591,6 +594,18 @@ type (
 	GeneralLedgerSetupOnRename interface {
 		OnRename(rec *GeneralLedgerSetup) error
 	}
+	GeneralLedgerSetupOnBeforeInsert interface {
+		OnBeforeInsert(rec *GeneralLedgerSetup, handled *bool) error
+	}
+	GeneralLedgerSetupOnBeforeModify interface {
+		OnBeforeModify(rec *GeneralLedgerSetup, handled *bool) error
+	}
+	GeneralLedgerSetupOnBeforeDelete interface {
+		OnBeforeDelete(rec *GeneralLedgerSetup, handled *bool) error
+	}
+	GeneralLedgerSetupOnBeforeRename interface {
+		OnBeforeRename(rec *GeneralLedgerSetup, handled *bool) error
+	}
 	GeneralLedgerSetupOnValidate_Primary_key interface {
 		OnValidate_Primary_key(rec *GeneralLedgerSetup) error
 	}
@@ -675,18 +690,23 @@ type (
 )
 
 // generalLedgerSetupLogic is the registered business logic of General_Ledger_Setup, in
-// registration order (the base application first, then extensions)
-var generalLedgerSetupLogic []any
+// registration order (the base application first, then extensions), and
+// generalLedgerSetupLogicApp the app that registered each ("" the base application)
+var (
+	generalLedgerSetupLogic    []any
+	generalLedgerSetupLogicApp []string
+)
 
 // RegisterGeneralLedgerSetupLogic adds business logic to General_Ledger_Setup: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterGeneralLedgerSetupLogic(logic any) {
 	checkLogic(GeneralLedgerSetupTableName, "GeneralLedgerSetup", logic, generalLedgerSetupTrigger)
 	generalLedgerSetupLogic = append(generalLedgerSetupLogic, logic)
+	generalLedgerSetupLogicApp = append(generalLedgerSetupLogicApp, extensions.Current())
 }
 
 // generalLedgerSetupTrigger reports whether name is a trigger of General_Ledger_Setup and
@@ -701,6 +721,14 @@ func generalLedgerSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GeneralLedgerSetupOnDelete)
 	case "OnRename":
 		_, ok = logic.(GeneralLedgerSetupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(GeneralLedgerSetupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(GeneralLedgerSetupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(GeneralLedgerSetupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(GeneralLedgerSetupOnBeforeRename)
 	case "OnValidate_Primary_key":
 		_, ok = logic.(GeneralLedgerSetupOnValidate_Primary_key)
 	case "OnValidate_Allow_posting_from":
@@ -773,19 +801,32 @@ func (t *GeneralLedgerSetup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *GeneralLedgerSetup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return generalLedgerSetupLogic
+	return extensions.EnabledLogic(generalLedgerSetupLogic, generalLedgerSetupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *GeneralLedgerSetup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(GeneralLedgerSetupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GeneralLedgerSetupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(GeneralLedgerSetupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -794,10 +835,21 @@ func (t *GeneralLedgerSetup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *GeneralLedgerSetup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(GeneralLedgerSetupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GeneralLedgerSetupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(GeneralLedgerSetupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -805,7 +857,19 @@ func (t *GeneralLedgerSetup) runOnModify() error {
 }
 
 func (t *GeneralLedgerSetup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GeneralLedgerSetupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(GeneralLedgerSetupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -816,7 +880,19 @@ func (t *GeneralLedgerSetup) runOnDelete() error {
 }
 
 func (t *GeneralLedgerSetup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(GeneralLedgerSetupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(GeneralLedgerSetupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

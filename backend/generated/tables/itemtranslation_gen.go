@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ItemTranslation) error
 //	OnDelete(rec *gtables.ItemTranslation) error
 //	OnRename(rec *gtables.ItemTranslation) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ItemTranslation, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Item_no(rec *gtables.ItemTranslation) error
 //	OnValidate_Variant_code(rec *gtables.ItemTranslation) error
 //	OnValidate_Language_code(rec *gtables.ItemTranslation) error
@@ -26,6 +28,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -251,6 +254,18 @@ type (
 	ItemTranslationOnRename interface {
 		OnRename(rec *ItemTranslation) error
 	}
+	ItemTranslationOnBeforeInsert interface {
+		OnBeforeInsert(rec *ItemTranslation, handled *bool) error
+	}
+	ItemTranslationOnBeforeModify interface {
+		OnBeforeModify(rec *ItemTranslation, handled *bool) error
+	}
+	ItemTranslationOnBeforeDelete interface {
+		OnBeforeDelete(rec *ItemTranslation, handled *bool) error
+	}
+	ItemTranslationOnBeforeRename interface {
+		OnBeforeRename(rec *ItemTranslation, handled *bool) error
+	}
 	ItemTranslationOnValidate_Item_no interface {
 		OnValidate_Item_no(rec *ItemTranslation) error
 	}
@@ -269,18 +284,23 @@ type (
 )
 
 // itemTranslationLogic is the registered business logic of Item_Translation, in
-// registration order (the base application first, then extensions)
-var itemTranslationLogic []any
+// registration order (the base application first, then extensions), and
+// itemTranslationLogicApp the app that registered each ("" the base application)
+var (
+	itemTranslationLogic    []any
+	itemTranslationLogicApp []string
+)
 
 // RegisterItemTranslationLogic adds business logic to Item_Translation: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterItemTranslationLogic(logic any) {
 	checkLogic(ItemTranslationTableName, "ItemTranslation", logic, itemTranslationTrigger)
 	itemTranslationLogic = append(itemTranslationLogic, logic)
+	itemTranslationLogicApp = append(itemTranslationLogicApp, extensions.Current())
 }
 
 // itemTranslationTrigger reports whether name is a trigger of Item_Translation and
@@ -295,6 +315,14 @@ func itemTranslationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemTranslationOnDelete)
 	case "OnRename":
 		_, ok = logic.(ItemTranslationOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ItemTranslationOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ItemTranslationOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ItemTranslationOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ItemTranslationOnBeforeRename)
 	case "OnValidate_Item_no":
 		_, ok = logic.(ItemTranslationOnValidate_Item_no)
 	case "OnValidate_Variant_code":
@@ -323,19 +351,32 @@ func (t *ItemTranslation) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ItemTranslation) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return itemTranslationLogic
+	return extensions.EnabledLogic(itemTranslationLogic, itemTranslationLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ItemTranslation) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ItemTranslationOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemTranslationOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ItemTranslationOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -344,10 +385,21 @@ func (t *ItemTranslation) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ItemTranslation) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ItemTranslationOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemTranslationOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ItemTranslationOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -355,7 +407,19 @@ func (t *ItemTranslation) runOnModify() error {
 }
 
 func (t *ItemTranslation) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemTranslationOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ItemTranslationOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -366,7 +430,19 @@ func (t *ItemTranslation) runOnDelete() error {
 }
 
 func (t *ItemTranslation) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ItemTranslationOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ItemTranslationOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

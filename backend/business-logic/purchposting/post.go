@@ -108,7 +108,11 @@ func NewPurchPost(src ftables.Source) *PurchPost {
 func (p *PurchPost) Run(purchHeader *gtables.PurchaseHeader) error {
 	*p = PurchPost{src: p.src}
 	p.purchHeader = purchHeader
-	err := p.checkAndUpdate()
+	err := OnBeforePost.Publish(&BeforePost{PurchHeader: purchHeader})
+	if err != nil {
+		return err
+	}
+	err = p.checkAndUpdate()
 	if err != nil {
 		return err
 	}
@@ -140,7 +144,11 @@ func (p *PurchPost) Run(purchHeader *gtables.PurchaseHeader) error {
 			return err
 		}
 	}
-	return p.finalize()
+	err = p.finalize()
+	if err != nil {
+		return err
+	}
+	return OnAfterPost.Publish(&AfterPost{PurchHeader: purchHeader, ReceiptNo: p.ReceiptNo, InvoiceNo: p.InvoiceNo, CrMemoNo: p.CrMemoNo})
 }
 
 // checkAndUpdate: the document can be posted — its type, vendor, dates, the vendor's document

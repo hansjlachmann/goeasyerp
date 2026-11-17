@@ -292,6 +292,40 @@ func (customerLogic) OnModify(rec *gtables.Customer) error {
 }
 ```
 
+**Before triggers.** Besides `OnInsert`, `OnModify`, `OnDelete`, `OnRename` and
+`OnValidate_<Field>`, a logic type may have `OnBeforeInsert`, `OnBeforeModify`,
+`OnBeforeDelete` and `OnBeforeRename` with the signature `(rec *gtables.<Table>, handled *bool)
+error`. They run before the triggers of that kind; when one sets `*handled = true`, the triggers
+of that kind (the base application's and every app's) are skipped for that record — the
+definition's field checks still run. Use it only to replace base behaviour, sparingly.
+
+**Events.** For logic that is not a table trigger — posting, prices — the base application
+publishes events at chosen points (`backend/foundation/events`), and an app subscribes in its
+`Register`. A subscriber runs inside the publisher's transaction: its error stops the
+operation and nothing of it is saved. The events so far:
+
+| Event | Passes | When |
+|-------|--------|------|
+| `salesposting.OnBeforePost` | `*salesposting.BeforePost` (the sales header) | a sales document is about to be posted — an error refuses it |
+| `salesposting.OnAfterPost` | `*salesposting.AfterPost` (the header, ShipmentNo, InvoiceNo, CrMemoNo) | a sales document was posted |
+| `purchposting.OnBeforePost` | `*purchposting.BeforePost` (the purchase header) | a purchase document is about to be posted — an error refuses it |
+| `purchposting.OnAfterPost` | `*purchposting.AfterPost` (the header, ReceiptNo, InvoiceNo, CrMemoNo) | a purchase document was posted |
+
+```go
+func Register() {
+	salesposting.OnAfterPost.Subscribe(func(e *salesposting.AfterPost) error {
+		if e.InvoiceNo == "" {
+			return nil
+		}
+		// … the posted invoice's customer gets points
+		return nil
+	})
+}
+```
+
+More events are added to the base where an app needs one: ask for it with the point in the
+code and what the app needs to see or change there.
+
 **Linking it into the program.** `extmerge --go-root <base repository>` (the Docker build
 passes it) writes:
 

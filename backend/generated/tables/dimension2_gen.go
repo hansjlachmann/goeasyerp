@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.Dimension2) error
 //	OnDelete(rec *gtables.Dimension2) error
 //	OnRename(rec *gtables.Dimension2) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.Dimension2, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.Dimension2) error
 //	OnValidate_Name(rec *gtables.Dimension2) error
 //	OnValidate_Consolidation_code(rec *gtables.Dimension2) error
@@ -24,6 +26,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -223,28 +226,45 @@ func (t *Dimension2) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Dimension_2: a business logic type implements the ones it needs
 type (
-	Dimension2OnInsert                      interface{ OnInsert(rec *Dimension2) error }
-	Dimension2OnModify                      interface{ OnModify(rec *Dimension2) error }
-	Dimension2OnDelete                      interface{ OnDelete(rec *Dimension2) error }
-	Dimension2OnRename                      interface{ OnRename(rec *Dimension2) error }
+	Dimension2OnInsert       interface{ OnInsert(rec *Dimension2) error }
+	Dimension2OnModify       interface{ OnModify(rec *Dimension2) error }
+	Dimension2OnDelete       interface{ OnDelete(rec *Dimension2) error }
+	Dimension2OnRename       interface{ OnRename(rec *Dimension2) error }
+	Dimension2OnBeforeInsert interface {
+		OnBeforeInsert(rec *Dimension2, handled *bool) error
+	}
+	Dimension2OnBeforeModify interface {
+		OnBeforeModify(rec *Dimension2, handled *bool) error
+	}
+	Dimension2OnBeforeDelete interface {
+		OnBeforeDelete(rec *Dimension2, handled *bool) error
+	}
+	Dimension2OnBeforeRename interface {
+		OnBeforeRename(rec *Dimension2, handled *bool) error
+	}
 	Dimension2OnValidate_Code               interface{ OnValidate_Code(rec *Dimension2) error }
 	Dimension2OnValidate_Name               interface{ OnValidate_Name(rec *Dimension2) error }
 	Dimension2OnValidate_Consolidation_code interface{ OnValidate_Consolidation_code(rec *Dimension2) error }
 )
 
 // dimension2Logic is the registered business logic of Dimension_2, in
-// registration order (the base application first, then extensions)
-var dimension2Logic []any
+// registration order (the base application first, then extensions), and
+// dimension2LogicApp the app that registered each ("" the base application)
+var (
+	dimension2Logic    []any
+	dimension2LogicApp []string
+)
 
 // RegisterDimension2Logic adds business logic to Dimension_2: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterDimension2Logic(logic any) {
 	checkLogic(Dimension2TableName, "Dimension2", logic, dimension2Trigger)
 	dimension2Logic = append(dimension2Logic, logic)
+	dimension2LogicApp = append(dimension2LogicApp, extensions.Current())
 }
 
 // dimension2Trigger reports whether name is a trigger of Dimension_2 and
@@ -259,6 +279,14 @@ func dimension2Trigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(Dimension2OnDelete)
 	case "OnRename":
 		_, ok = logic.(Dimension2OnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(Dimension2OnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(Dimension2OnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(Dimension2OnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(Dimension2OnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(Dimension2OnValidate_Code)
 	case "OnValidate_Name":
@@ -283,19 +311,32 @@ func (t *Dimension2) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *Dimension2) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return dimension2Logic
+	return extensions.EnabledLogic(dimension2Logic, dimension2LogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *Dimension2) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(Dimension2OnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(Dimension2OnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(Dimension2OnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,10 +345,21 @@ func (t *Dimension2) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *Dimension2) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(Dimension2OnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(Dimension2OnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(Dimension2OnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -315,7 +367,19 @@ func (t *Dimension2) runOnModify() error {
 }
 
 func (t *Dimension2) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(Dimension2OnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(Dimension2OnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -326,7 +390,19 @@ func (t *Dimension2) runOnDelete() error {
 }
 
 func (t *Dimension2) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(Dimension2OnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(Dimension2OnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.Territory) error
 //	OnDelete(rec *gtables.Territory) error
 //	OnRename(rec *gtables.Territory) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.Territory, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.Territory) error
 //	OnValidate_Name(rec *gtables.Territory) error
 
@@ -23,6 +25,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -215,27 +218,44 @@ func (t *Territory) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Territory: a business logic type implements the ones it needs
 type (
-	TerritoryOnInsert        interface{ OnInsert(rec *Territory) error }
-	TerritoryOnModify        interface{ OnModify(rec *Territory) error }
-	TerritoryOnDelete        interface{ OnDelete(rec *Territory) error }
-	TerritoryOnRename        interface{ OnRename(rec *Territory) error }
+	TerritoryOnInsert       interface{ OnInsert(rec *Territory) error }
+	TerritoryOnModify       interface{ OnModify(rec *Territory) error }
+	TerritoryOnDelete       interface{ OnDelete(rec *Territory) error }
+	TerritoryOnRename       interface{ OnRename(rec *Territory) error }
+	TerritoryOnBeforeInsert interface {
+		OnBeforeInsert(rec *Territory, handled *bool) error
+	}
+	TerritoryOnBeforeModify interface {
+		OnBeforeModify(rec *Territory, handled *bool) error
+	}
+	TerritoryOnBeforeDelete interface {
+		OnBeforeDelete(rec *Territory, handled *bool) error
+	}
+	TerritoryOnBeforeRename interface {
+		OnBeforeRename(rec *Territory, handled *bool) error
+	}
 	TerritoryOnValidate_Code interface{ OnValidate_Code(rec *Territory) error }
 	TerritoryOnValidate_Name interface{ OnValidate_Name(rec *Territory) error }
 )
 
 // territoryLogic is the registered business logic of Territory, in
-// registration order (the base application first, then extensions)
-var territoryLogic []any
+// registration order (the base application first, then extensions), and
+// territoryLogicApp the app that registered each ("" the base application)
+var (
+	territoryLogic    []any
+	territoryLogicApp []string
+)
 
 // RegisterTerritoryLogic adds business logic to Territory: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterTerritoryLogic(logic any) {
 	checkLogic(TerritoryTableName, "Territory", logic, territoryTrigger)
 	territoryLogic = append(territoryLogic, logic)
+	territoryLogicApp = append(territoryLogicApp, extensions.Current())
 }
 
 // territoryTrigger reports whether name is a trigger of Territory and
@@ -250,6 +270,14 @@ func territoryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(TerritoryOnDelete)
 	case "OnRename":
 		_, ok = logic.(TerritoryOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(TerritoryOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(TerritoryOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(TerritoryOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(TerritoryOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(TerritoryOnValidate_Code)
 	case "OnValidate_Name":
@@ -272,19 +300,32 @@ func (t *Territory) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *Territory) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return territoryLogic
+	return extensions.EnabledLogic(territoryLogic, territoryLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *Territory) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(TerritoryOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TerritoryOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(TerritoryOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -293,10 +334,21 @@ func (t *Territory) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *Territory) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(TerritoryOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TerritoryOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(TerritoryOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,7 +356,19 @@ func (t *Territory) runOnModify() error {
 }
 
 func (t *Territory) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TerritoryOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(TerritoryOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -315,7 +379,19 @@ func (t *Territory) runOnDelete() error {
 }
 
 func (t *Territory) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TerritoryOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(TerritoryOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

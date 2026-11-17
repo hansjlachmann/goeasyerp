@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.FASetup) error
 //	OnDelete(rec *gtables.FASetup) error
 //	OnRename(rec *gtables.FASetup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.FASetup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Primary_key(rec *gtables.FASetup) error
 //	OnValidate_Allow_posting_to_main_assets(rec *gtables.FASetup) error
 //	OnValidate_Default_depr_book(rec *gtables.FASetup) error
@@ -31,6 +33,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -272,10 +275,22 @@ func (t *FASetup) DeleteOrError(runTrigger bool) error {
 
 // Triggers of FA_Setup: a business logic type implements the ones it needs
 type (
-	FASetupOnInsert                                interface{ OnInsert(rec *FASetup) error }
-	FASetupOnModify                                interface{ OnModify(rec *FASetup) error }
-	FASetupOnDelete                                interface{ OnDelete(rec *FASetup) error }
-	FASetupOnRename                                interface{ OnRename(rec *FASetup) error }
+	FASetupOnInsert       interface{ OnInsert(rec *FASetup) error }
+	FASetupOnModify       interface{ OnModify(rec *FASetup) error }
+	FASetupOnDelete       interface{ OnDelete(rec *FASetup) error }
+	FASetupOnRename       interface{ OnRename(rec *FASetup) error }
+	FASetupOnBeforeInsert interface {
+		OnBeforeInsert(rec *FASetup, handled *bool) error
+	}
+	FASetupOnBeforeModify interface {
+		OnBeforeModify(rec *FASetup, handled *bool) error
+	}
+	FASetupOnBeforeDelete interface {
+		OnBeforeDelete(rec *FASetup, handled *bool) error
+	}
+	FASetupOnBeforeRename interface {
+		OnBeforeRename(rec *FASetup, handled *bool) error
+	}
 	FASetupOnValidate_Primary_key                  interface{ OnValidate_Primary_key(rec *FASetup) error }
 	FASetupOnValidate_Allow_posting_to_main_assets interface{ OnValidate_Allow_posting_to_main_assets(rec *FASetup) error }
 	FASetupOnValidate_Default_depr_book            interface{ OnValidate_Default_depr_book(rec *FASetup) error }
@@ -288,18 +303,23 @@ type (
 )
 
 // fASetupLogic is the registered business logic of FA_Setup, in
-// registration order (the base application first, then extensions)
-var fASetupLogic []any
+// registration order (the base application first, then extensions), and
+// fASetupLogicApp the app that registered each ("" the base application)
+var (
+	fASetupLogic    []any
+	fASetupLogicApp []string
+)
 
 // RegisterFASetupLogic adds business logic to FA_Setup: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterFASetupLogic(logic any) {
 	checkLogic(FASetupTableName, "FASetup", logic, fASetupTrigger)
 	fASetupLogic = append(fASetupLogic, logic)
+	fASetupLogicApp = append(fASetupLogicApp, extensions.Current())
 }
 
 // fASetupTrigger reports whether name is a trigger of FA_Setup and
@@ -314,6 +334,14 @@ func fASetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FASetupOnDelete)
 	case "OnRename":
 		_, ok = logic.(FASetupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(FASetupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(FASetupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(FASetupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(FASetupOnBeforeRename)
 	case "OnValidate_Primary_key":
 		_, ok = logic.(FASetupOnValidate_Primary_key)
 	case "OnValidate_Allow_posting_to_main_assets":
@@ -350,19 +378,32 @@ func (t *FASetup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *FASetup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return fASetupLogic
+	return extensions.EnabledLogic(fASetupLogic, fASetupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *FASetup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FASetupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FASetupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FASetupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -371,10 +412,21 @@ func (t *FASetup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *FASetup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FASetupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FASetupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FASetupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -382,7 +434,19 @@ func (t *FASetup) runOnModify() error {
 }
 
 func (t *FASetup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FASetupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FASetupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -393,7 +457,19 @@ func (t *FASetup) runOnDelete() error {
 }
 
 func (t *FASetup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FASetupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FASetupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

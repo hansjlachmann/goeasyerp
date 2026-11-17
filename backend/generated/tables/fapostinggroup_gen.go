@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.FAPostingGroup) error
 //	OnDelete(rec *gtables.FAPostingGroup) error
 //	OnRename(rec *gtables.FAPostingGroup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.FAPostingGroup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.FAPostingGroup) error
 //	OnValidate_Acquisition_cost_account(rec *gtables.FAPostingGroup) error
 //	OnValidate_Accum_depreciation_account(rec *gtables.FAPostingGroup) error
@@ -51,6 +53,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -540,6 +543,18 @@ type (
 	FAPostingGroupOnRename interface {
 		OnRename(rec *FAPostingGroup) error
 	}
+	FAPostingGroupOnBeforeInsert interface {
+		OnBeforeInsert(rec *FAPostingGroup, handled *bool) error
+	}
+	FAPostingGroupOnBeforeModify interface {
+		OnBeforeModify(rec *FAPostingGroup, handled *bool) error
+	}
+	FAPostingGroupOnBeforeDelete interface {
+		OnBeforeDelete(rec *FAPostingGroup, handled *bool) error
+	}
+	FAPostingGroupOnBeforeRename interface {
+		OnBeforeRename(rec *FAPostingGroup, handled *bool) error
+	}
 	FAPostingGroupOnValidate_Code interface {
 		OnValidate_Code(rec *FAPostingGroup) error
 	}
@@ -633,18 +648,23 @@ type (
 )
 
 // fAPostingGroupLogic is the registered business logic of FA_Posting_Group, in
-// registration order (the base application first, then extensions)
-var fAPostingGroupLogic []any
+// registration order (the base application first, then extensions), and
+// fAPostingGroupLogicApp the app that registered each ("" the base application)
+var (
+	fAPostingGroupLogic    []any
+	fAPostingGroupLogicApp []string
+)
 
 // RegisterFAPostingGroupLogic adds business logic to FA_Posting_Group: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterFAPostingGroupLogic(logic any) {
 	checkLogic(FAPostingGroupTableName, "FAPostingGroup", logic, fAPostingGroupTrigger)
 	fAPostingGroupLogic = append(fAPostingGroupLogic, logic)
+	fAPostingGroupLogicApp = append(fAPostingGroupLogicApp, extensions.Current())
 }
 
 // fAPostingGroupTrigger reports whether name is a trigger of FA_Posting_Group and
@@ -659,6 +679,14 @@ func fAPostingGroupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FAPostingGroupOnDelete)
 	case "OnRename":
 		_, ok = logic.(FAPostingGroupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(FAPostingGroupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(FAPostingGroupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(FAPostingGroupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(FAPostingGroupOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(FAPostingGroupOnValidate_Code)
 	case "OnValidate_Acquisition_cost_account":
@@ -737,19 +765,32 @@ func (t *FAPostingGroup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *FAPostingGroup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return fAPostingGroupLogic
+	return extensions.EnabledLogic(fAPostingGroupLogic, fAPostingGroupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *FAPostingGroup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FAPostingGroupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FAPostingGroupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FAPostingGroupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -758,10 +799,21 @@ func (t *FAPostingGroup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *FAPostingGroup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FAPostingGroupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FAPostingGroupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FAPostingGroupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -769,7 +821,19 @@ func (t *FAPostingGroup) runOnModify() error {
 }
 
 func (t *FAPostingGroup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FAPostingGroupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FAPostingGroupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -780,7 +844,19 @@ func (t *FAPostingGroup) runOnDelete() error {
 }
 
 func (t *FAPostingGroup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FAPostingGroupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FAPostingGroupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

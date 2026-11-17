@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.FinanceChargeMemoHeader) error
 //	OnDelete(rec *gtables.FinanceChargeMemoHeader) error
 //	OnRename(rec *gtables.FinanceChargeMemoHeader) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.FinanceChargeMemoHeader, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_No(rec *gtables.FinanceChargeMemoHeader) error
 //	OnValidate_Customer_no(rec *gtables.FinanceChargeMemoHeader) error
 //	OnValidate_Name(rec *gtables.FinanceChargeMemoHeader) error
@@ -55,6 +57,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -517,6 +520,18 @@ type (
 	FinanceChargeMemoHeaderOnRename interface {
 		OnRename(rec *FinanceChargeMemoHeader) error
 	}
+	FinanceChargeMemoHeaderOnBeforeInsert interface {
+		OnBeforeInsert(rec *FinanceChargeMemoHeader, handled *bool) error
+	}
+	FinanceChargeMemoHeaderOnBeforeModify interface {
+		OnBeforeModify(rec *FinanceChargeMemoHeader, handled *bool) error
+	}
+	FinanceChargeMemoHeaderOnBeforeDelete interface {
+		OnBeforeDelete(rec *FinanceChargeMemoHeader, handled *bool) error
+	}
+	FinanceChargeMemoHeaderOnBeforeRename interface {
+		OnBeforeRename(rec *FinanceChargeMemoHeader, handled *bool) error
+	}
 	FinanceChargeMemoHeaderOnValidate_No interface {
 		OnValidate_No(rec *FinanceChargeMemoHeader) error
 	}
@@ -619,18 +634,23 @@ type (
 )
 
 // financeChargeMemoHeaderLogic is the registered business logic of Finance_Charge_Memo_Header, in
-// registration order (the base application first, then extensions)
-var financeChargeMemoHeaderLogic []any
+// registration order (the base application first, then extensions), and
+// financeChargeMemoHeaderLogicApp the app that registered each ("" the base application)
+var (
+	financeChargeMemoHeaderLogic    []any
+	financeChargeMemoHeaderLogicApp []string
+)
 
 // RegisterFinanceChargeMemoHeaderLogic adds business logic to Finance_Charge_Memo_Header: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterFinanceChargeMemoHeaderLogic(logic any) {
 	checkLogic(FinanceChargeMemoHeaderTableName, "FinanceChargeMemoHeader", logic, financeChargeMemoHeaderTrigger)
 	financeChargeMemoHeaderLogic = append(financeChargeMemoHeaderLogic, logic)
+	financeChargeMemoHeaderLogicApp = append(financeChargeMemoHeaderLogicApp, extensions.Current())
 }
 
 // financeChargeMemoHeaderTrigger reports whether name is a trigger of Finance_Charge_Memo_Header and
@@ -645,6 +665,14 @@ func financeChargeMemoHeaderTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FinanceChargeMemoHeaderOnDelete)
 	case "OnRename":
 		_, ok = logic.(FinanceChargeMemoHeaderOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(FinanceChargeMemoHeaderOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(FinanceChargeMemoHeaderOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(FinanceChargeMemoHeaderOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(FinanceChargeMemoHeaderOnBeforeRename)
 	case "OnValidate_No":
 		_, ok = logic.(FinanceChargeMemoHeaderOnValidate_No)
 	case "OnValidate_Customer_no":
@@ -729,19 +757,32 @@ func (t *FinanceChargeMemoHeader) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *FinanceChargeMemoHeader) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return financeChargeMemoHeaderLogic
+	return extensions.EnabledLogic(financeChargeMemoHeaderLogic, financeChargeMemoHeaderLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *FinanceChargeMemoHeader) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FinanceChargeMemoHeaderOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FinanceChargeMemoHeaderOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FinanceChargeMemoHeaderOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -750,10 +791,21 @@ func (t *FinanceChargeMemoHeader) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *FinanceChargeMemoHeader) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(FinanceChargeMemoHeaderOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FinanceChargeMemoHeaderOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(FinanceChargeMemoHeaderOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -761,7 +813,19 @@ func (t *FinanceChargeMemoHeader) runOnModify() error {
 }
 
 func (t *FinanceChargeMemoHeader) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FinanceChargeMemoHeaderOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FinanceChargeMemoHeaderOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -772,7 +836,19 @@ func (t *FinanceChargeMemoHeader) runOnDelete() error {
 }
 
 func (t *FinanceChargeMemoHeader) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(FinanceChargeMemoHeaderOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(FinanceChargeMemoHeaderOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

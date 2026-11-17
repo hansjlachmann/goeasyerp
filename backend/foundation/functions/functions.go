@@ -23,6 +23,7 @@ import (
 	"sync"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 )
 
@@ -233,6 +234,9 @@ type Function struct {
 	// print it) and checks Execute on each report it runs
 	Print bool
 	Fn    Func
+	// App: the extension app that registered the function ("" the base application) — a
+	// disabled app's functions are refused
+	App string
 }
 
 // Option changes how a function is registered
@@ -265,7 +269,7 @@ func key(objectType, object, name string) string {
 // Register adds a function of a table ("table", table name) or a codeunit ("codeunit", its
 // number as text; give the record's table with OnTable)
 func Register(objectType, object, name string, fn Func, opts ...Option) {
-	f := &Function{ObjectType: strings.ToLower(objectType), Object: object, Name: name, Fn: fn}
+	f := &Function{ObjectType: strings.ToLower(objectType), Object: object, Name: name, Fn: fn, App: extensions.Current()}
 	if f.ObjectType == "table" {
 		f.Table = object
 	}

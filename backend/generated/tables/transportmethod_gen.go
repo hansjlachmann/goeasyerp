@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.TransportMethod) error
 //	OnDelete(rec *gtables.TransportMethod) error
 //	OnRename(rec *gtables.TransportMethod) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.TransportMethod, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.TransportMethod) error
 //	OnValidate_Description(rec *gtables.TransportMethod) error
 
@@ -23,6 +25,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -227,6 +230,18 @@ type (
 	TransportMethodOnRename interface {
 		OnRename(rec *TransportMethod) error
 	}
+	TransportMethodOnBeforeInsert interface {
+		OnBeforeInsert(rec *TransportMethod, handled *bool) error
+	}
+	TransportMethodOnBeforeModify interface {
+		OnBeforeModify(rec *TransportMethod, handled *bool) error
+	}
+	TransportMethodOnBeforeDelete interface {
+		OnBeforeDelete(rec *TransportMethod, handled *bool) error
+	}
+	TransportMethodOnBeforeRename interface {
+		OnBeforeRename(rec *TransportMethod, handled *bool) error
+	}
 	TransportMethodOnValidate_Code interface {
 		OnValidate_Code(rec *TransportMethod) error
 	}
@@ -236,18 +251,23 @@ type (
 )
 
 // transportMethodLogic is the registered business logic of Transport_Method, in
-// registration order (the base application first, then extensions)
-var transportMethodLogic []any
+// registration order (the base application first, then extensions), and
+// transportMethodLogicApp the app that registered each ("" the base application)
+var (
+	transportMethodLogic    []any
+	transportMethodLogicApp []string
+)
 
 // RegisterTransportMethodLogic adds business logic to Transport_Method: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterTransportMethodLogic(logic any) {
 	checkLogic(TransportMethodTableName, "TransportMethod", logic, transportMethodTrigger)
 	transportMethodLogic = append(transportMethodLogic, logic)
+	transportMethodLogicApp = append(transportMethodLogicApp, extensions.Current())
 }
 
 // transportMethodTrigger reports whether name is a trigger of Transport_Method and
@@ -262,6 +282,14 @@ func transportMethodTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(TransportMethodOnDelete)
 	case "OnRename":
 		_, ok = logic.(TransportMethodOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(TransportMethodOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(TransportMethodOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(TransportMethodOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(TransportMethodOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(TransportMethodOnValidate_Code)
 	case "OnValidate_Description":
@@ -284,19 +312,32 @@ func (t *TransportMethod) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *TransportMethod) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return transportMethodLogic
+	return extensions.EnabledLogic(transportMethodLogic, transportMethodLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *TransportMethod) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(TransportMethodOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TransportMethodOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(TransportMethodOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -305,10 +346,21 @@ func (t *TransportMethod) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *TransportMethod) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(TransportMethodOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TransportMethodOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(TransportMethodOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -316,7 +368,19 @@ func (t *TransportMethod) runOnModify() error {
 }
 
 func (t *TransportMethod) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TransportMethodOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(TransportMethodOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -327,7 +391,19 @@ func (t *TransportMethod) runOnDelete() error {
 }
 
 func (t *TransportMethod) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(TransportMethodOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(TransportMethodOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

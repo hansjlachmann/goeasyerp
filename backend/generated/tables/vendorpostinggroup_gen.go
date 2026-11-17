@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.VendorPostingGroup) error
 //	OnDelete(rec *gtables.VendorPostingGroup) error
 //	OnRename(rec *gtables.VendorPostingGroup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.VendorPostingGroup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.VendorPostingGroup) error
 //	OnValidate_Payables_account(rec *gtables.VendorPostingGroup) error
 //	OnValidate_Service_charge_acc(rec *gtables.VendorPostingGroup) error
@@ -27,6 +29,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -259,6 +262,18 @@ type (
 	VendorPostingGroupOnRename interface {
 		OnRename(rec *VendorPostingGroup) error
 	}
+	VendorPostingGroupOnBeforeInsert interface {
+		OnBeforeInsert(rec *VendorPostingGroup, handled *bool) error
+	}
+	VendorPostingGroupOnBeforeModify interface {
+		OnBeforeModify(rec *VendorPostingGroup, handled *bool) error
+	}
+	VendorPostingGroupOnBeforeDelete interface {
+		OnBeforeDelete(rec *VendorPostingGroup, handled *bool) error
+	}
+	VendorPostingGroupOnBeforeRename interface {
+		OnBeforeRename(rec *VendorPostingGroup, handled *bool) error
+	}
 	VendorPostingGroupOnValidate_Code interface {
 		OnValidate_Code(rec *VendorPostingGroup) error
 	}
@@ -280,18 +295,23 @@ type (
 )
 
 // vendorPostingGroupLogic is the registered business logic of Vendor_Posting_Group, in
-// registration order (the base application first, then extensions)
-var vendorPostingGroupLogic []any
+// registration order (the base application first, then extensions), and
+// vendorPostingGroupLogicApp the app that registered each ("" the base application)
+var (
+	vendorPostingGroupLogic    []any
+	vendorPostingGroupLogicApp []string
+)
 
 // RegisterVendorPostingGroupLogic adds business logic to Vendor_Posting_Group: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterVendorPostingGroupLogic(logic any) {
 	checkLogic(VendorPostingGroupTableName, "VendorPostingGroup", logic, vendorPostingGroupTrigger)
 	vendorPostingGroupLogic = append(vendorPostingGroupLogic, logic)
+	vendorPostingGroupLogicApp = append(vendorPostingGroupLogicApp, extensions.Current())
 }
 
 // vendorPostingGroupTrigger reports whether name is a trigger of Vendor_Posting_Group and
@@ -306,6 +326,14 @@ func vendorPostingGroupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(VendorPostingGroupOnDelete)
 	case "OnRename":
 		_, ok = logic.(VendorPostingGroupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(VendorPostingGroupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(VendorPostingGroupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(VendorPostingGroupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(VendorPostingGroupOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(VendorPostingGroupOnValidate_Code)
 	case "OnValidate_Payables_account":
@@ -336,19 +364,32 @@ func (t *VendorPostingGroup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *VendorPostingGroup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return vendorPostingGroupLogic
+	return extensions.EnabledLogic(vendorPostingGroupLogic, vendorPostingGroupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *VendorPostingGroup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(VendorPostingGroupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(VendorPostingGroupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(VendorPostingGroupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -357,10 +398,21 @@ func (t *VendorPostingGroup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *VendorPostingGroup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(VendorPostingGroupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(VendorPostingGroupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(VendorPostingGroupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -368,7 +420,19 @@ func (t *VendorPostingGroup) runOnModify() error {
 }
 
 func (t *VendorPostingGroup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(VendorPostingGroupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(VendorPostingGroupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -379,7 +443,19 @@ func (t *VendorPostingGroup) runOnDelete() error {
 }
 
 func (t *VendorPostingGroup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(VendorPostingGroupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(VendorPostingGroupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

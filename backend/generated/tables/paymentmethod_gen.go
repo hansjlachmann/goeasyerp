@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.PaymentMethod) error
 //	OnDelete(rec *gtables.PaymentMethod) error
 //	OnRename(rec *gtables.PaymentMethod) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.PaymentMethod, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.PaymentMethod) error
 //	OnValidate_Description(rec *gtables.PaymentMethod) error
 //	OnValidate_Bal_account_type(rec *gtables.PaymentMethod) error
@@ -25,6 +27,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -277,6 +280,18 @@ type (
 	PaymentMethodOnRename interface {
 		OnRename(rec *PaymentMethod) error
 	}
+	PaymentMethodOnBeforeInsert interface {
+		OnBeforeInsert(rec *PaymentMethod, handled *bool) error
+	}
+	PaymentMethodOnBeforeModify interface {
+		OnBeforeModify(rec *PaymentMethod, handled *bool) error
+	}
+	PaymentMethodOnBeforeDelete interface {
+		OnBeforeDelete(rec *PaymentMethod, handled *bool) error
+	}
+	PaymentMethodOnBeforeRename interface {
+		OnBeforeRename(rec *PaymentMethod, handled *bool) error
+	}
 	PaymentMethodOnValidate_Code interface {
 		OnValidate_Code(rec *PaymentMethod) error
 	}
@@ -292,18 +307,23 @@ type (
 )
 
 // paymentMethodLogic is the registered business logic of Payment_Method, in
-// registration order (the base application first, then extensions)
-var paymentMethodLogic []any
+// registration order (the base application first, then extensions), and
+// paymentMethodLogicApp the app that registered each ("" the base application)
+var (
+	paymentMethodLogic    []any
+	paymentMethodLogicApp []string
+)
 
 // RegisterPaymentMethodLogic adds business logic to Payment_Method: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterPaymentMethodLogic(logic any) {
 	checkLogic(PaymentMethodTableName, "PaymentMethod", logic, paymentMethodTrigger)
 	paymentMethodLogic = append(paymentMethodLogic, logic)
+	paymentMethodLogicApp = append(paymentMethodLogicApp, extensions.Current())
 }
 
 // paymentMethodTrigger reports whether name is a trigger of Payment_Method and
@@ -318,6 +338,14 @@ func paymentMethodTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PaymentMethodOnDelete)
 	case "OnRename":
 		_, ok = logic.(PaymentMethodOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(PaymentMethodOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(PaymentMethodOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(PaymentMethodOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(PaymentMethodOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(PaymentMethodOnValidate_Code)
 	case "OnValidate_Description":
@@ -344,19 +372,32 @@ func (t *PaymentMethod) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *PaymentMethod) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return paymentMethodLogic
+	return extensions.EnabledLogic(paymentMethodLogic, paymentMethodLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *PaymentMethod) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PaymentMethodOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PaymentMethodOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PaymentMethodOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -365,10 +406,21 @@ func (t *PaymentMethod) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *PaymentMethod) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PaymentMethodOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PaymentMethodOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PaymentMethodOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -376,7 +428,19 @@ func (t *PaymentMethod) runOnModify() error {
 }
 
 func (t *PaymentMethod) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PaymentMethodOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PaymentMethodOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -387,7 +451,19 @@ func (t *PaymentMethod) runOnDelete() error {
 }
 
 func (t *PaymentMethod) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PaymentMethodOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PaymentMethodOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

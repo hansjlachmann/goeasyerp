@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.PurchRcptHeader) error
 //	OnDelete(rec *gtables.PurchRcptHeader) error
 //	OnRename(rec *gtables.PurchRcptHeader) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.PurchRcptHeader, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Buy_from_vendor_no(rec *gtables.PurchRcptHeader) error
 //	OnValidate_No(rec *gtables.PurchRcptHeader) error
 //	OnValidate_Pay_to_vendor_no(rec *gtables.PurchRcptHeader) error
@@ -91,6 +93,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -765,6 +768,18 @@ type (
 	PurchRcptHeaderOnRename interface {
 		OnRename(rec *PurchRcptHeader) error
 	}
+	PurchRcptHeaderOnBeforeInsert interface {
+		OnBeforeInsert(rec *PurchRcptHeader, handled *bool) error
+	}
+	PurchRcptHeaderOnBeforeModify interface {
+		OnBeforeModify(rec *PurchRcptHeader, handled *bool) error
+	}
+	PurchRcptHeaderOnBeforeDelete interface {
+		OnBeforeDelete(rec *PurchRcptHeader, handled *bool) error
+	}
+	PurchRcptHeaderOnBeforeRename interface {
+		OnBeforeRename(rec *PurchRcptHeader, handled *bool) error
+	}
 	PurchRcptHeaderOnValidate_Buy_from_vendor_no interface {
 		OnValidate_Buy_from_vendor_no(rec *PurchRcptHeader) error
 	}
@@ -972,18 +987,23 @@ type (
 )
 
 // purchRcptHeaderLogic is the registered business logic of Purch_Rcpt_Header, in
-// registration order (the base application first, then extensions)
-var purchRcptHeaderLogic []any
+// registration order (the base application first, then extensions), and
+// purchRcptHeaderLogicApp the app that registered each ("" the base application)
+var (
+	purchRcptHeaderLogic    []any
+	purchRcptHeaderLogicApp []string
+)
 
 // RegisterPurchRcptHeaderLogic adds business logic to Purch_Rcpt_Header: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterPurchRcptHeaderLogic(logic any) {
 	checkLogic(PurchRcptHeaderTableName, "PurchRcptHeader", logic, purchRcptHeaderTrigger)
 	purchRcptHeaderLogic = append(purchRcptHeaderLogic, logic)
+	purchRcptHeaderLogicApp = append(purchRcptHeaderLogicApp, extensions.Current())
 }
 
 // purchRcptHeaderTrigger reports whether name is a trigger of Purch_Rcpt_Header and
@@ -998,6 +1018,14 @@ func purchRcptHeaderTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PurchRcptHeaderOnDelete)
 	case "OnRename":
 		_, ok = logic.(PurchRcptHeaderOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(PurchRcptHeaderOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(PurchRcptHeaderOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(PurchRcptHeaderOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(PurchRcptHeaderOnBeforeRename)
 	case "OnValidate_Buy_from_vendor_no":
 		_, ok = logic.(PurchRcptHeaderOnValidate_Buy_from_vendor_no)
 	case "OnValidate_No":
@@ -1152,19 +1180,32 @@ func (t *PurchRcptHeader) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *PurchRcptHeader) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return purchRcptHeaderLogic
+	return extensions.EnabledLogic(purchRcptHeaderLogic, purchRcptHeaderLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *PurchRcptHeader) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PurchRcptHeaderOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchRcptHeaderOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PurchRcptHeaderOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1173,10 +1214,21 @@ func (t *PurchRcptHeader) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *PurchRcptHeader) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PurchRcptHeaderOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchRcptHeaderOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PurchRcptHeaderOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1184,7 +1236,19 @@ func (t *PurchRcptHeader) runOnModify() error {
 }
 
 func (t *PurchRcptHeader) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchRcptHeaderOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PurchRcptHeaderOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -1195,7 +1259,19 @@ func (t *PurchRcptHeader) runOnDelete() error {
 }
 
 func (t *PurchRcptHeader) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchRcptHeaderOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PurchRcptHeaderOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

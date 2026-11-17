@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.Permission) error
 //	OnDelete(rec *gtables.Permission) error
 //	OnRename(rec *gtables.Permission) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.Permission, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Role_id(rec *gtables.Permission) error
 //	OnValidate_Table_name(rec *gtables.Permission) error
 //	OnValidate_Can_read(rec *gtables.Permission) error
@@ -31,6 +33,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -308,10 +311,22 @@ func (t *Permission) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Permission: a business logic type implements the ones it needs
 type (
-	PermissionOnInsert               interface{ OnInsert(rec *Permission) error }
-	PermissionOnModify               interface{ OnModify(rec *Permission) error }
-	PermissionOnDelete               interface{ OnDelete(rec *Permission) error }
-	PermissionOnRename               interface{ OnRename(rec *Permission) error }
+	PermissionOnInsert       interface{ OnInsert(rec *Permission) error }
+	PermissionOnModify       interface{ OnModify(rec *Permission) error }
+	PermissionOnDelete       interface{ OnDelete(rec *Permission) error }
+	PermissionOnRename       interface{ OnRename(rec *Permission) error }
+	PermissionOnBeforeInsert interface {
+		OnBeforeInsert(rec *Permission, handled *bool) error
+	}
+	PermissionOnBeforeModify interface {
+		OnBeforeModify(rec *Permission, handled *bool) error
+	}
+	PermissionOnBeforeDelete interface {
+		OnBeforeDelete(rec *Permission, handled *bool) error
+	}
+	PermissionOnBeforeRename interface {
+		OnBeforeRename(rec *Permission, handled *bool) error
+	}
 	PermissionOnValidate_Role_id     interface{ OnValidate_Role_id(rec *Permission) error }
 	PermissionOnValidate_Table_name  interface{ OnValidate_Table_name(rec *Permission) error }
 	PermissionOnValidate_Can_read    interface{ OnValidate_Can_read(rec *Permission) error }
@@ -324,18 +339,23 @@ type (
 )
 
 // permissionLogic is the registered business logic of Permission, in
-// registration order (the base application first, then extensions)
-var permissionLogic []any
+// registration order (the base application first, then extensions), and
+// permissionLogicApp the app that registered each ("" the base application)
+var (
+	permissionLogic    []any
+	permissionLogicApp []string
+)
 
 // RegisterPermissionLogic adds business logic to Permission: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterPermissionLogic(logic any) {
 	checkLogic(PermissionTableName, "Permission", logic, permissionTrigger)
 	permissionLogic = append(permissionLogic, logic)
+	permissionLogicApp = append(permissionLogicApp, extensions.Current())
 }
 
 // permissionTrigger reports whether name is a trigger of Permission and
@@ -350,6 +370,14 @@ func permissionTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PermissionOnDelete)
 	case "OnRename":
 		_, ok = logic.(PermissionOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(PermissionOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(PermissionOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(PermissionOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(PermissionOnBeforeRename)
 	case "OnValidate_Role_id":
 		_, ok = logic.(PermissionOnValidate_Role_id)
 	case "OnValidate_Table_name":
@@ -386,19 +414,32 @@ func (t *Permission) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *Permission) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return permissionLogic
+	return extensions.EnabledLogic(permissionLogic, permissionLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *Permission) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PermissionOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PermissionOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PermissionOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -407,10 +448,21 @@ func (t *Permission) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *Permission) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PermissionOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PermissionOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PermissionOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -418,7 +470,19 @@ func (t *Permission) runOnModify() error {
 }
 
 func (t *Permission) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PermissionOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PermissionOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -429,7 +493,19 @@ func (t *Permission) runOnDelete() error {
 }
 
 func (t *Permission) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PermissionOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PermissionOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

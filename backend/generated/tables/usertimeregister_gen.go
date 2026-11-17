@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.UserTimeRegister) error
 //	OnDelete(rec *gtables.UserTimeRegister) error
 //	OnRename(rec *gtables.UserTimeRegister) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.UserTimeRegister, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_User_id(rec *gtables.UserTimeRegister) error
 //	OnValidate_Date(rec *gtables.UserTimeRegister) error
 //	OnValidate_Minutes(rec *gtables.UserTimeRegister) error
@@ -25,6 +27,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -236,6 +239,18 @@ type (
 	UserTimeRegisterOnRename interface {
 		OnRename(rec *UserTimeRegister) error
 	}
+	UserTimeRegisterOnBeforeInsert interface {
+		OnBeforeInsert(rec *UserTimeRegister, handled *bool) error
+	}
+	UserTimeRegisterOnBeforeModify interface {
+		OnBeforeModify(rec *UserTimeRegister, handled *bool) error
+	}
+	UserTimeRegisterOnBeforeDelete interface {
+		OnBeforeDelete(rec *UserTimeRegister, handled *bool) error
+	}
+	UserTimeRegisterOnBeforeRename interface {
+		OnBeforeRename(rec *UserTimeRegister, handled *bool) error
+	}
 	UserTimeRegisterOnValidate_User_id interface {
 		OnValidate_User_id(rec *UserTimeRegister) error
 	}
@@ -248,18 +263,23 @@ type (
 )
 
 // userTimeRegisterLogic is the registered business logic of User_Time_Register, in
-// registration order (the base application first, then extensions)
-var userTimeRegisterLogic []any
+// registration order (the base application first, then extensions), and
+// userTimeRegisterLogicApp the app that registered each ("" the base application)
+var (
+	userTimeRegisterLogic    []any
+	userTimeRegisterLogicApp []string
+)
 
 // RegisterUserTimeRegisterLogic adds business logic to User_Time_Register: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterUserTimeRegisterLogic(logic any) {
 	checkLogic(UserTimeRegisterTableName, "UserTimeRegister", logic, userTimeRegisterTrigger)
 	userTimeRegisterLogic = append(userTimeRegisterLogic, logic)
+	userTimeRegisterLogicApp = append(userTimeRegisterLogicApp, extensions.Current())
 }
 
 // userTimeRegisterTrigger reports whether name is a trigger of User_Time_Register and
@@ -274,6 +294,14 @@ func userTimeRegisterTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(UserTimeRegisterOnDelete)
 	case "OnRename":
 		_, ok = logic.(UserTimeRegisterOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(UserTimeRegisterOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(UserTimeRegisterOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(UserTimeRegisterOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(UserTimeRegisterOnBeforeRename)
 	case "OnValidate_User_id":
 		_, ok = logic.(UserTimeRegisterOnValidate_User_id)
 	case "OnValidate_Date":
@@ -298,19 +326,32 @@ func (t *UserTimeRegister) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *UserTimeRegister) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return userTimeRegisterLogic
+	return extensions.EnabledLogic(userTimeRegisterLogic, userTimeRegisterLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *UserTimeRegister) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(UserTimeRegisterOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UserTimeRegisterOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(UserTimeRegisterOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -319,10 +360,21 @@ func (t *UserTimeRegister) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *UserTimeRegister) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(UserTimeRegisterOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UserTimeRegisterOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(UserTimeRegisterOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -330,7 +382,19 @@ func (t *UserTimeRegister) runOnModify() error {
 }
 
 func (t *UserTimeRegister) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UserTimeRegisterOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(UserTimeRegisterOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -341,7 +405,19 @@ func (t *UserTimeRegister) runOnDelete() error {
 }
 
 func (t *UserTimeRegister) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UserTimeRegisterOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(UserTimeRegisterOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

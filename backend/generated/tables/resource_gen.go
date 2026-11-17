@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.Resource) error
 //	OnDelete(rec *gtables.Resource) error
 //	OnRename(rec *gtables.Resource) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.Resource, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_No(rec *gtables.Resource) error
 //	OnValidate_Type(rec *gtables.Resource) error
 //	OnValidate_Name(rec *gtables.Resource) error
@@ -57,6 +59,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
@@ -640,10 +643,22 @@ func (t *Resource) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Resource: a business logic type implements the ones it needs
 type (
-	ResourceOnInsert                            interface{ OnInsert(rec *Resource) error }
-	ResourceOnModify                            interface{ OnModify(rec *Resource) error }
-	ResourceOnDelete                            interface{ OnDelete(rec *Resource) error }
-	ResourceOnRename                            interface{ OnRename(rec *Resource) error }
+	ResourceOnInsert       interface{ OnInsert(rec *Resource) error }
+	ResourceOnModify       interface{ OnModify(rec *Resource) error }
+	ResourceOnDelete       interface{ OnDelete(rec *Resource) error }
+	ResourceOnRename       interface{ OnRename(rec *Resource) error }
+	ResourceOnBeforeInsert interface {
+		OnBeforeInsert(rec *Resource, handled *bool) error
+	}
+	ResourceOnBeforeModify interface {
+		OnBeforeModify(rec *Resource, handled *bool) error
+	}
+	ResourceOnBeforeDelete interface {
+		OnBeforeDelete(rec *Resource, handled *bool) error
+	}
+	ResourceOnBeforeRename interface {
+		OnBeforeRename(rec *Resource, handled *bool) error
+	}
 	ResourceOnValidate_No                       interface{ OnValidate_No(rec *Resource) error }
 	ResourceOnValidate_Type                     interface{ OnValidate_Type(rec *Resource) error }
 	ResourceOnValidate_Name                     interface{ OnValidate_Name(rec *Resource) error }
@@ -681,18 +696,23 @@ type (
 )
 
 // resourceLogic is the registered business logic of Resource, in
-// registration order (the base application first, then extensions)
-var resourceLogic []any
+// registration order (the base application first, then extensions), and
+// resourceLogicApp the app that registered each ("" the base application)
+var (
+	resourceLogic    []any
+	resourceLogicApp []string
+)
 
 // RegisterResourceLogic adds business logic to Resource: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterResourceLogic(logic any) {
 	checkLogic(ResourceTableName, "Resource", logic, resourceTrigger)
 	resourceLogic = append(resourceLogic, logic)
+	resourceLogicApp = append(resourceLogicApp, extensions.Current())
 }
 
 // resourceTrigger reports whether name is a trigger of Resource and
@@ -707,6 +727,14 @@ func resourceTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ResourceOnDelete)
 	case "OnRename":
 		_, ok = logic.(ResourceOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ResourceOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ResourceOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ResourceOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ResourceOnBeforeRename)
 	case "OnValidate_No":
 		_, ok = logic.(ResourceOnValidate_No)
 	case "OnValidate_Type":
@@ -793,19 +821,32 @@ func (t *Resource) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *Resource) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return resourceLogic
+	return extensions.EnabledLogic(resourceLogic, resourceLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *Resource) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ResourceOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResourceOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ResourceOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -814,10 +855,21 @@ func (t *Resource) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *Resource) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ResourceOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResourceOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ResourceOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -825,7 +877,19 @@ func (t *Resource) runOnModify() error {
 }
 
 func (t *Resource) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResourceOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ResourceOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -836,7 +900,19 @@ func (t *Resource) runOnDelete() error {
 }
 
 func (t *Resource) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ResourceOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ResourceOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

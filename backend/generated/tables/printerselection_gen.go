@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.PrinterSelection) error
 //	OnDelete(rec *gtables.PrinterSelection) error
 //	OnRename(rec *gtables.PrinterSelection) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.PrinterSelection, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_User_id(rec *gtables.PrinterSelection) error
 //	OnValidate_Report_id(rec *gtables.PrinterSelection) error
 //	OnValidate_Printer_name(rec *gtables.PrinterSelection) error
@@ -25,6 +27,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -280,6 +283,18 @@ type (
 	PrinterSelectionOnRename interface {
 		OnRename(rec *PrinterSelection) error
 	}
+	PrinterSelectionOnBeforeInsert interface {
+		OnBeforeInsert(rec *PrinterSelection, handled *bool) error
+	}
+	PrinterSelectionOnBeforeModify interface {
+		OnBeforeModify(rec *PrinterSelection, handled *bool) error
+	}
+	PrinterSelectionOnBeforeDelete interface {
+		OnBeforeDelete(rec *PrinterSelection, handled *bool) error
+	}
+	PrinterSelectionOnBeforeRename interface {
+		OnBeforeRename(rec *PrinterSelection, handled *bool) error
+	}
 	PrinterSelectionOnValidate_User_id interface {
 		OnValidate_User_id(rec *PrinterSelection) error
 	}
@@ -292,18 +307,23 @@ type (
 )
 
 // printerSelectionLogic is the registered business logic of Printer_Selection, in
-// registration order (the base application first, then extensions)
-var printerSelectionLogic []any
+// registration order (the base application first, then extensions), and
+// printerSelectionLogicApp the app that registered each ("" the base application)
+var (
+	printerSelectionLogic    []any
+	printerSelectionLogicApp []string
+)
 
 // RegisterPrinterSelectionLogic adds business logic to Printer_Selection: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterPrinterSelectionLogic(logic any) {
 	checkLogic(PrinterSelectionTableName, "PrinterSelection", logic, printerSelectionTrigger)
 	printerSelectionLogic = append(printerSelectionLogic, logic)
+	printerSelectionLogicApp = append(printerSelectionLogicApp, extensions.Current())
 }
 
 // printerSelectionTrigger reports whether name is a trigger of Printer_Selection and
@@ -318,6 +338,14 @@ func printerSelectionTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PrinterSelectionOnDelete)
 	case "OnRename":
 		_, ok = logic.(PrinterSelectionOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(PrinterSelectionOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(PrinterSelectionOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(PrinterSelectionOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(PrinterSelectionOnBeforeRename)
 	case "OnValidate_User_id":
 		_, ok = logic.(PrinterSelectionOnValidate_User_id)
 	case "OnValidate_Report_id":
@@ -342,19 +370,32 @@ func (t *PrinterSelection) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *PrinterSelection) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return printerSelectionLogic
+	return extensions.EnabledLogic(printerSelectionLogic, printerSelectionLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *PrinterSelection) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PrinterSelectionOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PrinterSelectionOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PrinterSelectionOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -363,10 +404,21 @@ func (t *PrinterSelection) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *PrinterSelection) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PrinterSelectionOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PrinterSelectionOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PrinterSelectionOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -374,7 +426,19 @@ func (t *PrinterSelection) runOnModify() error {
 }
 
 func (t *PrinterSelection) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PrinterSelectionOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PrinterSelectionOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -385,7 +449,19 @@ func (t *PrinterSelection) runOnDelete() error {
 }
 
 func (t *PrinterSelection) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PrinterSelectionOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PrinterSelectionOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

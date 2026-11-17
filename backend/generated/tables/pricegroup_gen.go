@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.PriceGroup) error
 //	OnDelete(rec *gtables.PriceGroup) error
 //	OnRename(rec *gtables.PriceGroup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.PriceGroup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.PriceGroup) error
 //	OnValidate_Price_includes_tax(rec *gtables.PriceGroup) error
 //	OnValidate_Allow_quantity_disc(rec *gtables.PriceGroup) error
@@ -27,6 +29,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -247,10 +250,22 @@ func (t *PriceGroup) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Price_Group: a business logic type implements the ones it needs
 type (
-	PriceGroupOnInsert                            interface{ OnInsert(rec *PriceGroup) error }
-	PriceGroupOnModify                            interface{ OnModify(rec *PriceGroup) error }
-	PriceGroupOnDelete                            interface{ OnDelete(rec *PriceGroup) error }
-	PriceGroupOnRename                            interface{ OnRename(rec *PriceGroup) error }
+	PriceGroupOnInsert       interface{ OnInsert(rec *PriceGroup) error }
+	PriceGroupOnModify       interface{ OnModify(rec *PriceGroup) error }
+	PriceGroupOnDelete       interface{ OnDelete(rec *PriceGroup) error }
+	PriceGroupOnRename       interface{ OnRename(rec *PriceGroup) error }
+	PriceGroupOnBeforeInsert interface {
+		OnBeforeInsert(rec *PriceGroup, handled *bool) error
+	}
+	PriceGroupOnBeforeModify interface {
+		OnBeforeModify(rec *PriceGroup, handled *bool) error
+	}
+	PriceGroupOnBeforeDelete interface {
+		OnBeforeDelete(rec *PriceGroup, handled *bool) error
+	}
+	PriceGroupOnBeforeRename interface {
+		OnBeforeRename(rec *PriceGroup, handled *bool) error
+	}
 	PriceGroupOnValidate_Code                     interface{ OnValidate_Code(rec *PriceGroup) error }
 	PriceGroupOnValidate_Price_includes_tax       interface{ OnValidate_Price_includes_tax(rec *PriceGroup) error }
 	PriceGroupOnValidate_Allow_quantity_disc      interface{ OnValidate_Allow_quantity_disc(rec *PriceGroup) error }
@@ -260,18 +275,23 @@ type (
 )
 
 // priceGroupLogic is the registered business logic of Price_Group, in
-// registration order (the base application first, then extensions)
-var priceGroupLogic []any
+// registration order (the base application first, then extensions), and
+// priceGroupLogicApp the app that registered each ("" the base application)
+var (
+	priceGroupLogic    []any
+	priceGroupLogicApp []string
+)
 
 // RegisterPriceGroupLogic adds business logic to Price_Group: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterPriceGroupLogic(logic any) {
 	checkLogic(PriceGroupTableName, "PriceGroup", logic, priceGroupTrigger)
 	priceGroupLogic = append(priceGroupLogic, logic)
+	priceGroupLogicApp = append(priceGroupLogicApp, extensions.Current())
 }
 
 // priceGroupTrigger reports whether name is a trigger of Price_Group and
@@ -286,6 +306,14 @@ func priceGroupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PriceGroupOnDelete)
 	case "OnRename":
 		_, ok = logic.(PriceGroupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(PriceGroupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(PriceGroupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(PriceGroupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(PriceGroupOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(PriceGroupOnValidate_Code)
 	case "OnValidate_Price_includes_tax":
@@ -316,19 +344,32 @@ func (t *PriceGroup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *PriceGroup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return priceGroupLogic
+	return extensions.EnabledLogic(priceGroupLogic, priceGroupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *PriceGroup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PriceGroupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PriceGroupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PriceGroupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -337,10 +378,21 @@ func (t *PriceGroup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *PriceGroup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PriceGroupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PriceGroupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PriceGroupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -348,7 +400,19 @@ func (t *PriceGroup) runOnModify() error {
 }
 
 func (t *PriceGroup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PriceGroupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PriceGroupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -359,7 +423,19 @@ func (t *PriceGroup) runOnDelete() error {
 }
 
 func (t *PriceGroup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PriceGroupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PriceGroupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

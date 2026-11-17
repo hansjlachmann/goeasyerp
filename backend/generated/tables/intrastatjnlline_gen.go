@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.IntrastatJnlLine) error
 //	OnDelete(rec *gtables.IntrastatJnlLine) error
 //	OnRename(rec *gtables.IntrastatJnlLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.IntrastatJnlLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Journal_template_name(rec *gtables.IntrastatJnlLine) error
 //	OnValidate_Journal_batch_name(rec *gtables.IntrastatJnlLine) error
 //	OnValidate_Line_no(rec *gtables.IntrastatJnlLine) error
@@ -51,6 +53,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -499,6 +502,18 @@ type (
 	IntrastatJnlLineOnRename interface {
 		OnRename(rec *IntrastatJnlLine) error
 	}
+	IntrastatJnlLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *IntrastatJnlLine, handled *bool) error
+	}
+	IntrastatJnlLineOnBeforeModify interface {
+		OnBeforeModify(rec *IntrastatJnlLine, handled *bool) error
+	}
+	IntrastatJnlLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *IntrastatJnlLine, handled *bool) error
+	}
+	IntrastatJnlLineOnBeforeRename interface {
+		OnBeforeRename(rec *IntrastatJnlLine, handled *bool) error
+	}
 	IntrastatJnlLineOnValidate_Journal_template_name interface {
 		OnValidate_Journal_template_name(rec *IntrastatJnlLine) error
 	}
@@ -586,18 +601,23 @@ type (
 )
 
 // intrastatJnlLineLogic is the registered business logic of Intrastat_Jnl_Line, in
-// registration order (the base application first, then extensions)
-var intrastatJnlLineLogic []any
+// registration order (the base application first, then extensions), and
+// intrastatJnlLineLogicApp the app that registered each ("" the base application)
+var (
+	intrastatJnlLineLogic    []any
+	intrastatJnlLineLogicApp []string
+)
 
 // RegisterIntrastatJnlLineLogic adds business logic to Intrastat_Jnl_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterIntrastatJnlLineLogic(logic any) {
 	checkLogic(IntrastatJnlLineTableName, "IntrastatJnlLine", logic, intrastatJnlLineTrigger)
 	intrastatJnlLineLogic = append(intrastatJnlLineLogic, logic)
+	intrastatJnlLineLogicApp = append(intrastatJnlLineLogicApp, extensions.Current())
 }
 
 // intrastatJnlLineTrigger reports whether name is a trigger of Intrastat_Jnl_Line and
@@ -612,6 +632,14 @@ func intrastatJnlLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(IntrastatJnlLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(IntrastatJnlLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(IntrastatJnlLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(IntrastatJnlLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(IntrastatJnlLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(IntrastatJnlLineOnBeforeRename)
 	case "OnValidate_Journal_template_name":
 		_, ok = logic.(IntrastatJnlLineOnValidate_Journal_template_name)
 	case "OnValidate_Journal_batch_name":
@@ -686,19 +714,32 @@ func (t *IntrastatJnlLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *IntrastatJnlLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return intrastatJnlLineLogic
+	return extensions.EnabledLogic(intrastatJnlLineLogic, intrastatJnlLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *IntrastatJnlLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(IntrastatJnlLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(IntrastatJnlLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(IntrastatJnlLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -707,10 +748,21 @@ func (t *IntrastatJnlLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *IntrastatJnlLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(IntrastatJnlLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(IntrastatJnlLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(IntrastatJnlLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -718,7 +770,19 @@ func (t *IntrastatJnlLine) runOnModify() error {
 }
 
 func (t *IntrastatJnlLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(IntrastatJnlLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(IntrastatJnlLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -729,7 +793,19 @@ func (t *IntrastatJnlLine) runOnDelete() error {
 }
 
 func (t *IntrastatJnlLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(IntrastatJnlLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(IntrastatJnlLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

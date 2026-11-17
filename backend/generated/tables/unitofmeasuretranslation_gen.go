@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.UnitOfMeasureTranslation) error
 //	OnDelete(rec *gtables.UnitOfMeasureTranslation) error
 //	OnRename(rec *gtables.UnitOfMeasureTranslation) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.UnitOfMeasureTranslation, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.UnitOfMeasureTranslation) error
 //	OnValidate_Language_code(rec *gtables.UnitOfMeasureTranslation) error
 //	OnValidate_Description(rec *gtables.UnitOfMeasureTranslation) error
@@ -24,6 +26,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -235,6 +238,18 @@ type (
 	UnitOfMeasureTranslationOnRename interface {
 		OnRename(rec *UnitOfMeasureTranslation) error
 	}
+	UnitOfMeasureTranslationOnBeforeInsert interface {
+		OnBeforeInsert(rec *UnitOfMeasureTranslation, handled *bool) error
+	}
+	UnitOfMeasureTranslationOnBeforeModify interface {
+		OnBeforeModify(rec *UnitOfMeasureTranslation, handled *bool) error
+	}
+	UnitOfMeasureTranslationOnBeforeDelete interface {
+		OnBeforeDelete(rec *UnitOfMeasureTranslation, handled *bool) error
+	}
+	UnitOfMeasureTranslationOnBeforeRename interface {
+		OnBeforeRename(rec *UnitOfMeasureTranslation, handled *bool) error
+	}
 	UnitOfMeasureTranslationOnValidate_Code interface {
 		OnValidate_Code(rec *UnitOfMeasureTranslation) error
 	}
@@ -247,18 +262,23 @@ type (
 )
 
 // unitOfMeasureTranslationLogic is the registered business logic of Unit_of_Measure_Translation, in
-// registration order (the base application first, then extensions)
-var unitOfMeasureTranslationLogic []any
+// registration order (the base application first, then extensions), and
+// unitOfMeasureTranslationLogicApp the app that registered each ("" the base application)
+var (
+	unitOfMeasureTranslationLogic    []any
+	unitOfMeasureTranslationLogicApp []string
+)
 
 // RegisterUnitOfMeasureTranslationLogic adds business logic to Unit_of_Measure_Translation: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterUnitOfMeasureTranslationLogic(logic any) {
 	checkLogic(UnitOfMeasureTranslationTableName, "UnitOfMeasureTranslation", logic, unitOfMeasureTranslationTrigger)
 	unitOfMeasureTranslationLogic = append(unitOfMeasureTranslationLogic, logic)
+	unitOfMeasureTranslationLogicApp = append(unitOfMeasureTranslationLogicApp, extensions.Current())
 }
 
 // unitOfMeasureTranslationTrigger reports whether name is a trigger of Unit_of_Measure_Translation and
@@ -273,6 +293,14 @@ func unitOfMeasureTranslationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(UnitOfMeasureTranslationOnDelete)
 	case "OnRename":
 		_, ok = logic.(UnitOfMeasureTranslationOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(UnitOfMeasureTranslationOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(UnitOfMeasureTranslationOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(UnitOfMeasureTranslationOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(UnitOfMeasureTranslationOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(UnitOfMeasureTranslationOnValidate_Code)
 	case "OnValidate_Language_code":
@@ -297,19 +325,32 @@ func (t *UnitOfMeasureTranslation) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *UnitOfMeasureTranslation) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return unitOfMeasureTranslationLogic
+	return extensions.EnabledLogic(unitOfMeasureTranslationLogic, unitOfMeasureTranslationLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *UnitOfMeasureTranslation) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(UnitOfMeasureTranslationOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UnitOfMeasureTranslationOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(UnitOfMeasureTranslationOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -318,10 +359,21 @@ func (t *UnitOfMeasureTranslation) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *UnitOfMeasureTranslation) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(UnitOfMeasureTranslationOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UnitOfMeasureTranslationOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(UnitOfMeasureTranslationOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -329,7 +381,19 @@ func (t *UnitOfMeasureTranslation) runOnModify() error {
 }
 
 func (t *UnitOfMeasureTranslation) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UnitOfMeasureTranslationOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(UnitOfMeasureTranslationOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -340,7 +404,19 @@ func (t *UnitOfMeasureTranslation) runOnDelete() error {
 }
 
 func (t *UnitOfMeasureTranslation) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(UnitOfMeasureTranslationOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(UnitOfMeasureTranslationOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

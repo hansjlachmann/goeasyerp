@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.Language) error
 //	OnDelete(rec *gtables.Language) error
 //	OnRename(rec *gtables.Language) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.Language, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.Language) error
 //	OnValidate_Name(rec *gtables.Language) error
 //	OnValidate_Translation_key(rec *gtables.Language) error
@@ -24,6 +26,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -223,28 +226,45 @@ func (t *Language) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Language: a business logic type implements the ones it needs
 type (
-	LanguageOnInsert                   interface{ OnInsert(rec *Language) error }
-	LanguageOnModify                   interface{ OnModify(rec *Language) error }
-	LanguageOnDelete                   interface{ OnDelete(rec *Language) error }
-	LanguageOnRename                   interface{ OnRename(rec *Language) error }
+	LanguageOnInsert       interface{ OnInsert(rec *Language) error }
+	LanguageOnModify       interface{ OnModify(rec *Language) error }
+	LanguageOnDelete       interface{ OnDelete(rec *Language) error }
+	LanguageOnRename       interface{ OnRename(rec *Language) error }
+	LanguageOnBeforeInsert interface {
+		OnBeforeInsert(rec *Language, handled *bool) error
+	}
+	LanguageOnBeforeModify interface {
+		OnBeforeModify(rec *Language, handled *bool) error
+	}
+	LanguageOnBeforeDelete interface {
+		OnBeforeDelete(rec *Language, handled *bool) error
+	}
+	LanguageOnBeforeRename interface {
+		OnBeforeRename(rec *Language, handled *bool) error
+	}
 	LanguageOnValidate_Code            interface{ OnValidate_Code(rec *Language) error }
 	LanguageOnValidate_Name            interface{ OnValidate_Name(rec *Language) error }
 	LanguageOnValidate_Translation_key interface{ OnValidate_Translation_key(rec *Language) error }
 )
 
 // languageLogic is the registered business logic of Language, in
-// registration order (the base application first, then extensions)
-var languageLogic []any
+// registration order (the base application first, then extensions), and
+// languageLogicApp the app that registered each ("" the base application)
+var (
+	languageLogic    []any
+	languageLogicApp []string
+)
 
 // RegisterLanguageLogic adds business logic to Language: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterLanguageLogic(logic any) {
 	checkLogic(LanguageTableName, "Language", logic, languageTrigger)
 	languageLogic = append(languageLogic, logic)
+	languageLogicApp = append(languageLogicApp, extensions.Current())
 }
 
 // languageTrigger reports whether name is a trigger of Language and
@@ -259,6 +279,14 @@ func languageTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(LanguageOnDelete)
 	case "OnRename":
 		_, ok = logic.(LanguageOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(LanguageOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(LanguageOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(LanguageOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(LanguageOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(LanguageOnValidate_Code)
 	case "OnValidate_Name":
@@ -283,19 +311,32 @@ func (t *Language) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *Language) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return languageLogic
+	return extensions.EnabledLogic(languageLogic, languageLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *Language) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(LanguageOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(LanguageOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(LanguageOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -304,10 +345,21 @@ func (t *Language) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *Language) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(LanguageOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(LanguageOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(LanguageOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -315,7 +367,19 @@ func (t *Language) runOnModify() error {
 }
 
 func (t *Language) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(LanguageOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(LanguageOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -326,7 +390,19 @@ func (t *Language) runOnDelete() error {
 }
 
 func (t *Language) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(LanguageOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(LanguageOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

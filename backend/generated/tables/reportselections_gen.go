@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ReportSelections) error
 //	OnDelete(rec *gtables.ReportSelections) error
 //	OnRename(rec *gtables.ReportSelections) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ReportSelections, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Usage(rec *gtables.ReportSelections) error
 //	OnValidate_Sequence(rec *gtables.ReportSelections) error
 //	OnValidate_Report_id(rec *gtables.ReportSelections) error
@@ -25,6 +27,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -318,6 +321,18 @@ type (
 	ReportSelectionsOnRename interface {
 		OnRename(rec *ReportSelections) error
 	}
+	ReportSelectionsOnBeforeInsert interface {
+		OnBeforeInsert(rec *ReportSelections, handled *bool) error
+	}
+	ReportSelectionsOnBeforeModify interface {
+		OnBeforeModify(rec *ReportSelections, handled *bool) error
+	}
+	ReportSelectionsOnBeforeDelete interface {
+		OnBeforeDelete(rec *ReportSelections, handled *bool) error
+	}
+	ReportSelectionsOnBeforeRename interface {
+		OnBeforeRename(rec *ReportSelections, handled *bool) error
+	}
 	ReportSelectionsOnValidate_Usage interface {
 		OnValidate_Usage(rec *ReportSelections) error
 	}
@@ -330,18 +345,23 @@ type (
 )
 
 // reportSelectionsLogic is the registered business logic of Report_Selections, in
-// registration order (the base application first, then extensions)
-var reportSelectionsLogic []any
+// registration order (the base application first, then extensions), and
+// reportSelectionsLogicApp the app that registered each ("" the base application)
+var (
+	reportSelectionsLogic    []any
+	reportSelectionsLogicApp []string
+)
 
 // RegisterReportSelectionsLogic adds business logic to Report_Selections: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterReportSelectionsLogic(logic any) {
 	checkLogic(ReportSelectionsTableName, "ReportSelections", logic, reportSelectionsTrigger)
 	reportSelectionsLogic = append(reportSelectionsLogic, logic)
+	reportSelectionsLogicApp = append(reportSelectionsLogicApp, extensions.Current())
 }
 
 // reportSelectionsTrigger reports whether name is a trigger of Report_Selections and
@@ -356,6 +376,14 @@ func reportSelectionsTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ReportSelectionsOnDelete)
 	case "OnRename":
 		_, ok = logic.(ReportSelectionsOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ReportSelectionsOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ReportSelectionsOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ReportSelectionsOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ReportSelectionsOnBeforeRename)
 	case "OnValidate_Usage":
 		_, ok = logic.(ReportSelectionsOnValidate_Usage)
 	case "OnValidate_Sequence":
@@ -380,19 +408,32 @@ func (t *ReportSelections) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ReportSelections) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return reportSelectionsLogic
+	return extensions.EnabledLogic(reportSelectionsLogic, reportSelectionsLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ReportSelections) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ReportSelectionsOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReportSelectionsOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ReportSelectionsOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -401,10 +442,21 @@ func (t *ReportSelections) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ReportSelections) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ReportSelectionsOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReportSelectionsOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ReportSelectionsOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -412,7 +464,19 @@ func (t *ReportSelections) runOnModify() error {
 }
 
 func (t *ReportSelections) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReportSelectionsOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ReportSelectionsOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -423,7 +487,19 @@ func (t *ReportSelections) runOnDelete() error {
 }
 
 func (t *ReportSelections) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReportSelectionsOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ReportSelectionsOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

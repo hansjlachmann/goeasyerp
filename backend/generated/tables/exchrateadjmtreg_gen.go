@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ExchRateAdjmtReg) error
 //	OnDelete(rec *gtables.ExchRateAdjmtReg) error
 //	OnRename(rec *gtables.ExchRateAdjmtReg) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ExchRateAdjmtReg, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_No(rec *gtables.ExchRateAdjmtReg) error
 //	OnValidate_Creation_date(rec *gtables.ExchRateAdjmtReg) error
 //	OnValidate_Account_type(rec *gtables.ExchRateAdjmtReg) error
@@ -34,6 +36,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -339,6 +342,18 @@ type (
 	ExchRateAdjmtRegOnRename interface {
 		OnRename(rec *ExchRateAdjmtReg) error
 	}
+	ExchRateAdjmtRegOnBeforeInsert interface {
+		OnBeforeInsert(rec *ExchRateAdjmtReg, handled *bool) error
+	}
+	ExchRateAdjmtRegOnBeforeModify interface {
+		OnBeforeModify(rec *ExchRateAdjmtReg, handled *bool) error
+	}
+	ExchRateAdjmtRegOnBeforeDelete interface {
+		OnBeforeDelete(rec *ExchRateAdjmtReg, handled *bool) error
+	}
+	ExchRateAdjmtRegOnBeforeRename interface {
+		OnBeforeRename(rec *ExchRateAdjmtReg, handled *bool) error
+	}
 	ExchRateAdjmtRegOnValidate_No interface {
 		OnValidate_No(rec *ExchRateAdjmtReg) error
 	}
@@ -375,18 +390,23 @@ type (
 )
 
 // exchRateAdjmtRegLogic is the registered business logic of Exch_Rate_Adjmt_Reg, in
-// registration order (the base application first, then extensions)
-var exchRateAdjmtRegLogic []any
+// registration order (the base application first, then extensions), and
+// exchRateAdjmtRegLogicApp the app that registered each ("" the base application)
+var (
+	exchRateAdjmtRegLogic    []any
+	exchRateAdjmtRegLogicApp []string
+)
 
 // RegisterExchRateAdjmtRegLogic adds business logic to Exch_Rate_Adjmt_Reg: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterExchRateAdjmtRegLogic(logic any) {
 	checkLogic(ExchRateAdjmtRegTableName, "ExchRateAdjmtReg", logic, exchRateAdjmtRegTrigger)
 	exchRateAdjmtRegLogic = append(exchRateAdjmtRegLogic, logic)
+	exchRateAdjmtRegLogicApp = append(exchRateAdjmtRegLogicApp, extensions.Current())
 }
 
 // exchRateAdjmtRegTrigger reports whether name is a trigger of Exch_Rate_Adjmt_Reg and
@@ -401,6 +421,14 @@ func exchRateAdjmtRegTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ExchRateAdjmtRegOnDelete)
 	case "OnRename":
 		_, ok = logic.(ExchRateAdjmtRegOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ExchRateAdjmtRegOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ExchRateAdjmtRegOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ExchRateAdjmtRegOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ExchRateAdjmtRegOnBeforeRename)
 	case "OnValidate_No":
 		_, ok = logic.(ExchRateAdjmtRegOnValidate_No)
 	case "OnValidate_Creation_date":
@@ -441,19 +469,32 @@ func (t *ExchRateAdjmtReg) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ExchRateAdjmtReg) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return exchRateAdjmtRegLogic
+	return extensions.EnabledLogic(exchRateAdjmtRegLogic, exchRateAdjmtRegLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ExchRateAdjmtReg) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ExchRateAdjmtRegOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ExchRateAdjmtRegOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ExchRateAdjmtRegOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -462,10 +503,21 @@ func (t *ExchRateAdjmtReg) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ExchRateAdjmtReg) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ExchRateAdjmtRegOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ExchRateAdjmtRegOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ExchRateAdjmtRegOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -473,7 +525,19 @@ func (t *ExchRateAdjmtReg) runOnModify() error {
 }
 
 func (t *ExchRateAdjmtReg) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ExchRateAdjmtRegOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ExchRateAdjmtRegOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -484,7 +548,19 @@ func (t *ExchRateAdjmtReg) runOnDelete() error {
 }
 
 func (t *ExchRateAdjmtReg) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ExchRateAdjmtRegOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ExchRateAdjmtRegOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.PurchInvLine) error
 //	OnDelete(rec *gtables.PurchInvLine) error
 //	OnRename(rec *gtables.PurchInvLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.PurchInvLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Buy_from_vendor_no(rec *gtables.PurchInvLine) error
 //	OnValidate_Document_no(rec *gtables.PurchInvLine) error
 //	OnValidate_Line_no(rec *gtables.PurchInvLine) error
@@ -93,6 +95,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -859,10 +862,22 @@ func (t *PurchInvLine) DeleteOrError(runTrigger bool) error {
 
 // Triggers of Purch_Inv_Line: a business logic type implements the ones it needs
 type (
-	PurchInvLineOnInsert                                  interface{ OnInsert(rec *PurchInvLine) error }
-	PurchInvLineOnModify                                  interface{ OnModify(rec *PurchInvLine) error }
-	PurchInvLineOnDelete                                  interface{ OnDelete(rec *PurchInvLine) error }
-	PurchInvLineOnRename                                  interface{ OnRename(rec *PurchInvLine) error }
+	PurchInvLineOnInsert       interface{ OnInsert(rec *PurchInvLine) error }
+	PurchInvLineOnModify       interface{ OnModify(rec *PurchInvLine) error }
+	PurchInvLineOnDelete       interface{ OnDelete(rec *PurchInvLine) error }
+	PurchInvLineOnRename       interface{ OnRename(rec *PurchInvLine) error }
+	PurchInvLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *PurchInvLine, handled *bool) error
+	}
+	PurchInvLineOnBeforeModify interface {
+		OnBeforeModify(rec *PurchInvLine, handled *bool) error
+	}
+	PurchInvLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *PurchInvLine, handled *bool) error
+	}
+	PurchInvLineOnBeforeRename interface {
+		OnBeforeRename(rec *PurchInvLine, handled *bool) error
+	}
 	PurchInvLineOnValidate_Buy_from_vendor_no             interface{ OnValidate_Buy_from_vendor_no(rec *PurchInvLine) error }
 	PurchInvLineOnValidate_Document_no                    interface{ OnValidate_Document_no(rec *PurchInvLine) error }
 	PurchInvLineOnValidate_Line_no                        interface{ OnValidate_Line_no(rec *PurchInvLine) error }
@@ -936,18 +951,23 @@ type (
 )
 
 // purchInvLineLogic is the registered business logic of Purch_Inv_Line, in
-// registration order (the base application first, then extensions)
-var purchInvLineLogic []any
+// registration order (the base application first, then extensions), and
+// purchInvLineLogicApp the app that registered each ("" the base application)
+var (
+	purchInvLineLogic    []any
+	purchInvLineLogicApp []string
+)
 
 // RegisterPurchInvLineLogic adds business logic to Purch_Inv_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterPurchInvLineLogic(logic any) {
 	checkLogic(PurchInvLineTableName, "PurchInvLine", logic, purchInvLineTrigger)
 	purchInvLineLogic = append(purchInvLineLogic, logic)
+	purchInvLineLogicApp = append(purchInvLineLogicApp, extensions.Current())
 }
 
 // purchInvLineTrigger reports whether name is a trigger of Purch_Inv_Line and
@@ -962,6 +982,14 @@ func purchInvLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PurchInvLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(PurchInvLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(PurchInvLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(PurchInvLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(PurchInvLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(PurchInvLineOnBeforeRename)
 	case "OnValidate_Buy_from_vendor_no":
 		_, ok = logic.(PurchInvLineOnValidate_Buy_from_vendor_no)
 	case "OnValidate_Document_no":
@@ -1120,19 +1148,32 @@ func (t *PurchInvLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *PurchInvLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return purchInvLineLogic
+	return extensions.EnabledLogic(purchInvLineLogic, purchInvLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *PurchInvLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PurchInvLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchInvLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PurchInvLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1141,10 +1182,21 @@ func (t *PurchInvLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *PurchInvLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(PurchInvLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchInvLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(PurchInvLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1152,7 +1204,19 @@ func (t *PurchInvLine) runOnModify() error {
 }
 
 func (t *PurchInvLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchInvLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PurchInvLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -1163,7 +1227,19 @@ func (t *PurchInvLine) runOnDelete() error {
 }
 
 func (t *PurchInvLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(PurchInvLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(PurchInvLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

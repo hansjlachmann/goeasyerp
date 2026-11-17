@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.SalesInvoiceLine) error
 //	OnDelete(rec *gtables.SalesInvoiceLine) error
 //	OnRename(rec *gtables.SalesInvoiceLine) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.SalesInvoiceLine, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Sell_to_customer_no(rec *gtables.SalesInvoiceLine) error
 //	OnValidate_Document_no(rec *gtables.SalesInvoiceLine) error
 //	OnValidate_Line_no(rec *gtables.SalesInvoiceLine) error
@@ -89,6 +91,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -809,6 +812,18 @@ type (
 	SalesInvoiceLineOnRename interface {
 		OnRename(rec *SalesInvoiceLine) error
 	}
+	SalesInvoiceLineOnBeforeInsert interface {
+		OnBeforeInsert(rec *SalesInvoiceLine, handled *bool) error
+	}
+	SalesInvoiceLineOnBeforeModify interface {
+		OnBeforeModify(rec *SalesInvoiceLine, handled *bool) error
+	}
+	SalesInvoiceLineOnBeforeDelete interface {
+		OnBeforeDelete(rec *SalesInvoiceLine, handled *bool) error
+	}
+	SalesInvoiceLineOnBeforeRename interface {
+		OnBeforeRename(rec *SalesInvoiceLine, handled *bool) error
+	}
 	SalesInvoiceLineOnValidate_Sell_to_customer_no interface {
 		OnValidate_Sell_to_customer_no(rec *SalesInvoiceLine) error
 	}
@@ -1010,18 +1025,23 @@ type (
 )
 
 // salesInvoiceLineLogic is the registered business logic of Sales_Invoice_Line, in
-// registration order (the base application first, then extensions)
-var salesInvoiceLineLogic []any
+// registration order (the base application first, then extensions), and
+// salesInvoiceLineLogicApp the app that registered each ("" the base application)
+var (
+	salesInvoiceLineLogic    []any
+	salesInvoiceLineLogicApp []string
+)
 
 // RegisterSalesInvoiceLineLogic adds business logic to Sales_Invoice_Line: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterSalesInvoiceLineLogic(logic any) {
 	checkLogic(SalesInvoiceLineTableName, "SalesInvoiceLine", logic, salesInvoiceLineTrigger)
 	salesInvoiceLineLogic = append(salesInvoiceLineLogic, logic)
+	salesInvoiceLineLogicApp = append(salesInvoiceLineLogicApp, extensions.Current())
 }
 
 // salesInvoiceLineTrigger reports whether name is a trigger of Sales_Invoice_Line and
@@ -1036,6 +1056,14 @@ func salesInvoiceLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SalesInvoiceLineOnDelete)
 	case "OnRename":
 		_, ok = logic.(SalesInvoiceLineOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(SalesInvoiceLineOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(SalesInvoiceLineOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(SalesInvoiceLineOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(SalesInvoiceLineOnBeforeRename)
 	case "OnValidate_Sell_to_customer_no":
 		_, ok = logic.(SalesInvoiceLineOnValidate_Sell_to_customer_no)
 	case "OnValidate_Document_no":
@@ -1186,19 +1214,32 @@ func (t *SalesInvoiceLine) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *SalesInvoiceLine) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return salesInvoiceLineLogic
+	return extensions.EnabledLogic(salesInvoiceLineLogic, salesInvoiceLineLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *SalesInvoiceLine) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(SalesInvoiceLineOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalesInvoiceLineOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(SalesInvoiceLineOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1207,10 +1248,21 @@ func (t *SalesInvoiceLine) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *SalesInvoiceLine) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(SalesInvoiceLineOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalesInvoiceLineOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(SalesInvoiceLineOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1218,7 +1270,19 @@ func (t *SalesInvoiceLine) runOnModify() error {
 }
 
 func (t *SalesInvoiceLine) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalesInvoiceLineOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(SalesInvoiceLineOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -1229,7 +1293,19 @@ func (t *SalesInvoiceLine) runOnDelete() error {
 }
 
 func (t *SalesInvoiceLine) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(SalesInvoiceLineOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(SalesInvoiceLineOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

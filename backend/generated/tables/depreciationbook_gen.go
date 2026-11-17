@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.DepreciationBook) error
 //	OnDelete(rec *gtables.DepreciationBook) error
 //	OnRename(rec *gtables.DepreciationBook) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.DepreciationBook, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.DepreciationBook) error
 //	OnValidate_Description(rec *gtables.DepreciationBook) error
 //	OnValidate_G_l_integration_acq_cost(rec *gtables.DepreciationBook) error
@@ -59,6 +61,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -561,6 +564,18 @@ type (
 	DepreciationBookOnRename interface {
 		OnRename(rec *DepreciationBook) error
 	}
+	DepreciationBookOnBeforeInsert interface {
+		OnBeforeInsert(rec *DepreciationBook, handled *bool) error
+	}
+	DepreciationBookOnBeforeModify interface {
+		OnBeforeModify(rec *DepreciationBook, handled *bool) error
+	}
+	DepreciationBookOnBeforeDelete interface {
+		OnBeforeDelete(rec *DepreciationBook, handled *bool) error
+	}
+	DepreciationBookOnBeforeRename interface {
+		OnBeforeRename(rec *DepreciationBook, handled *bool) error
+	}
 	DepreciationBookOnValidate_Code interface {
 		OnValidate_Code(rec *DepreciationBook) error
 	}
@@ -672,18 +687,23 @@ type (
 )
 
 // depreciationBookLogic is the registered business logic of Depreciation_Book, in
-// registration order (the base application first, then extensions)
-var depreciationBookLogic []any
+// registration order (the base application first, then extensions), and
+// depreciationBookLogicApp the app that registered each ("" the base application)
+var (
+	depreciationBookLogic    []any
+	depreciationBookLogicApp []string
+)
 
 // RegisterDepreciationBookLogic adds business logic to Depreciation_Book: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterDepreciationBookLogic(logic any) {
 	checkLogic(DepreciationBookTableName, "DepreciationBook", logic, depreciationBookTrigger)
 	depreciationBookLogic = append(depreciationBookLogic, logic)
+	depreciationBookLogicApp = append(depreciationBookLogicApp, extensions.Current())
 }
 
 // depreciationBookTrigger reports whether name is a trigger of Depreciation_Book and
@@ -698,6 +718,14 @@ func depreciationBookTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(DepreciationBookOnDelete)
 	case "OnRename":
 		_, ok = logic.(DepreciationBookOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(DepreciationBookOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(DepreciationBookOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(DepreciationBookOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(DepreciationBookOnBeforeRename)
 	case "OnValidate_Code":
 		_, ok = logic.(DepreciationBookOnValidate_Code)
 	case "OnValidate_Description":
@@ -788,19 +816,32 @@ func (t *DepreciationBook) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *DepreciationBook) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return depreciationBookLogic
+	return extensions.EnabledLogic(depreciationBookLogic, depreciationBookLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *DepreciationBook) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(DepreciationBookOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(DepreciationBookOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(DepreciationBookOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -809,10 +850,21 @@ func (t *DepreciationBook) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *DepreciationBook) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(DepreciationBookOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(DepreciationBookOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(DepreciationBookOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -820,7 +872,19 @@ func (t *DepreciationBook) runOnModify() error {
 }
 
 func (t *DepreciationBook) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(DepreciationBookOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(DepreciationBookOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -831,7 +895,19 @@ func (t *DepreciationBook) runOnDelete() error {
 }
 
 func (t *DepreciationBook) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(DepreciationBookOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(DepreciationBookOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

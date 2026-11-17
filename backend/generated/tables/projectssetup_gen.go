@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ProjectsSetup) error
 //	OnDelete(rec *gtables.ProjectsSetup) error
 //	OnRename(rec *gtables.ProjectsSetup) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ProjectsSetup, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Primary_key(rec *gtables.ProjectsSetup) error
 //	OnValidate_Project_nos(rec *gtables.ProjectsSetup) error
 
@@ -23,6 +25,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -227,6 +230,18 @@ type (
 	ProjectsSetupOnRename interface {
 		OnRename(rec *ProjectsSetup) error
 	}
+	ProjectsSetupOnBeforeInsert interface {
+		OnBeforeInsert(rec *ProjectsSetup, handled *bool) error
+	}
+	ProjectsSetupOnBeforeModify interface {
+		OnBeforeModify(rec *ProjectsSetup, handled *bool) error
+	}
+	ProjectsSetupOnBeforeDelete interface {
+		OnBeforeDelete(rec *ProjectsSetup, handled *bool) error
+	}
+	ProjectsSetupOnBeforeRename interface {
+		OnBeforeRename(rec *ProjectsSetup, handled *bool) error
+	}
 	ProjectsSetupOnValidate_Primary_key interface {
 		OnValidate_Primary_key(rec *ProjectsSetup) error
 	}
@@ -236,18 +251,23 @@ type (
 )
 
 // projectsSetupLogic is the registered business logic of Projects_Setup, in
-// registration order (the base application first, then extensions)
-var projectsSetupLogic []any
+// registration order (the base application first, then extensions), and
+// projectsSetupLogicApp the app that registered each ("" the base application)
+var (
+	projectsSetupLogic    []any
+	projectsSetupLogicApp []string
+)
 
 // RegisterProjectsSetupLogic adds business logic to Projects_Setup: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterProjectsSetupLogic(logic any) {
 	checkLogic(ProjectsSetupTableName, "ProjectsSetup", logic, projectsSetupTrigger)
 	projectsSetupLogic = append(projectsSetupLogic, logic)
+	projectsSetupLogicApp = append(projectsSetupLogicApp, extensions.Current())
 }
 
 // projectsSetupTrigger reports whether name is a trigger of Projects_Setup and
@@ -262,6 +282,14 @@ func projectsSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ProjectsSetupOnDelete)
 	case "OnRename":
 		_, ok = logic.(ProjectsSetupOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ProjectsSetupOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ProjectsSetupOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ProjectsSetupOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ProjectsSetupOnBeforeRename)
 	case "OnValidate_Primary_key":
 		_, ok = logic.(ProjectsSetupOnValidate_Primary_key)
 	case "OnValidate_Project_nos":
@@ -284,19 +312,32 @@ func (t *ProjectsSetup) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ProjectsSetup) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return projectsSetupLogic
+	return extensions.EnabledLogic(projectsSetupLogic, projectsSetupLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ProjectsSetup) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ProjectsSetupOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ProjectsSetupOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ProjectsSetupOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -305,10 +346,21 @@ func (t *ProjectsSetup) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ProjectsSetup) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ProjectsSetupOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ProjectsSetupOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ProjectsSetupOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -316,7 +368,19 @@ func (t *ProjectsSetup) runOnModify() error {
 }
 
 func (t *ProjectsSetup) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ProjectsSetupOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ProjectsSetupOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -327,7 +391,19 @@ func (t *ProjectsSetup) runOnDelete() error {
 }
 
 func (t *ProjectsSetup) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ProjectsSetupOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ProjectsSetupOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

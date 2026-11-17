@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.InsCoverageLedgerEntry) error
 //	OnDelete(rec *gtables.InsCoverageLedgerEntry) error
 //	OnRename(rec *gtables.InsCoverageLedgerEntry) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.InsCoverageLedgerEntry, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Entry_no(rec *gtables.InsCoverageLedgerEntry) error
 //	OnValidate_Insurance_no(rec *gtables.InsCoverageLedgerEntry) error
 //	OnValidate_Disposed_fa(rec *gtables.InsCoverageLedgerEntry) error
@@ -47,6 +49,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -447,6 +450,18 @@ type (
 	InsCoverageLedgerEntryOnRename interface {
 		OnRename(rec *InsCoverageLedgerEntry) error
 	}
+	InsCoverageLedgerEntryOnBeforeInsert interface {
+		OnBeforeInsert(rec *InsCoverageLedgerEntry, handled *bool) error
+	}
+	InsCoverageLedgerEntryOnBeforeModify interface {
+		OnBeforeModify(rec *InsCoverageLedgerEntry, handled *bool) error
+	}
+	InsCoverageLedgerEntryOnBeforeDelete interface {
+		OnBeforeDelete(rec *InsCoverageLedgerEntry, handled *bool) error
+	}
+	InsCoverageLedgerEntryOnBeforeRename interface {
+		OnBeforeRename(rec *InsCoverageLedgerEntry, handled *bool) error
+	}
 	InsCoverageLedgerEntryOnValidate_Entry_no interface {
 		OnValidate_Entry_no(rec *InsCoverageLedgerEntry) error
 	}
@@ -522,18 +537,23 @@ type (
 )
 
 // insCoverageLedgerEntryLogic is the registered business logic of Ins_Coverage_Ledger_Entry, in
-// registration order (the base application first, then extensions)
-var insCoverageLedgerEntryLogic []any
+// registration order (the base application first, then extensions), and
+// insCoverageLedgerEntryLogicApp the app that registered each ("" the base application)
+var (
+	insCoverageLedgerEntryLogic    []any
+	insCoverageLedgerEntryLogicApp []string
+)
 
 // RegisterInsCoverageLedgerEntryLogic adds business logic to Ins_Coverage_Ledger_Entry: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterInsCoverageLedgerEntryLogic(logic any) {
 	checkLogic(InsCoverageLedgerEntryTableName, "InsCoverageLedgerEntry", logic, insCoverageLedgerEntryTrigger)
 	insCoverageLedgerEntryLogic = append(insCoverageLedgerEntryLogic, logic)
+	insCoverageLedgerEntryLogicApp = append(insCoverageLedgerEntryLogicApp, extensions.Current())
 }
 
 // insCoverageLedgerEntryTrigger reports whether name is a trigger of Ins_Coverage_Ledger_Entry and
@@ -548,6 +568,14 @@ func insCoverageLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(InsCoverageLedgerEntryOnDelete)
 	case "OnRename":
 		_, ok = logic.(InsCoverageLedgerEntryOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(InsCoverageLedgerEntryOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(InsCoverageLedgerEntryOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(InsCoverageLedgerEntryOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(InsCoverageLedgerEntryOnBeforeRename)
 	case "OnValidate_Entry_no":
 		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Entry_no)
 	case "OnValidate_Insurance_no":
@@ -614,19 +642,32 @@ func (t *InsCoverageLedgerEntry) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *InsCoverageLedgerEntry) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return insCoverageLedgerEntryLogic
+	return extensions.EnabledLogic(insCoverageLedgerEntryLogic, insCoverageLedgerEntryLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *InsCoverageLedgerEntry) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(InsCoverageLedgerEntryOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InsCoverageLedgerEntryOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(InsCoverageLedgerEntryOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -635,10 +676,21 @@ func (t *InsCoverageLedgerEntry) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *InsCoverageLedgerEntry) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(InsCoverageLedgerEntryOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InsCoverageLedgerEntryOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(InsCoverageLedgerEntryOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -646,7 +698,19 @@ func (t *InsCoverageLedgerEntry) runOnModify() error {
 }
 
 func (t *InsCoverageLedgerEntry) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InsCoverageLedgerEntryOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(InsCoverageLedgerEntryOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -657,7 +721,19 @@ func (t *InsCoverageLedgerEntry) runOnDelete() error {
 }
 
 func (t *InsCoverageLedgerEntry) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InsCoverageLedgerEntryOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(InsCoverageLedgerEntryOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

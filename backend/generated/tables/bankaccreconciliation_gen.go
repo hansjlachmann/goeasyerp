@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.BankAccReconciliation) error
 //	OnDelete(rec *gtables.BankAccReconciliation) error
 //	OnRename(rec *gtables.BankAccReconciliation) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.BankAccReconciliation, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Bank_account_no(rec *gtables.BankAccReconciliation) error
 //	OnValidate_Statement_no(rec *gtables.BankAccReconciliation) error
 //	OnValidate_Statement_ending_balance(rec *gtables.BankAccReconciliation) error
@@ -27,6 +29,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -252,6 +255,18 @@ type (
 	BankAccReconciliationOnRename interface {
 		OnRename(rec *BankAccReconciliation) error
 	}
+	BankAccReconciliationOnBeforeInsert interface {
+		OnBeforeInsert(rec *BankAccReconciliation, handled *bool) error
+	}
+	BankAccReconciliationOnBeforeModify interface {
+		OnBeforeModify(rec *BankAccReconciliation, handled *bool) error
+	}
+	BankAccReconciliationOnBeforeDelete interface {
+		OnBeforeDelete(rec *BankAccReconciliation, handled *bool) error
+	}
+	BankAccReconciliationOnBeforeRename interface {
+		OnBeforeRename(rec *BankAccReconciliation, handled *bool) error
+	}
 	BankAccReconciliationOnValidate_Bank_account_no interface {
 		OnValidate_Bank_account_no(rec *BankAccReconciliation) error
 	}
@@ -270,18 +285,23 @@ type (
 )
 
 // bankAccReconciliationLogic is the registered business logic of Bank_Acc_Reconciliation, in
-// registration order (the base application first, then extensions)
-var bankAccReconciliationLogic []any
+// registration order (the base application first, then extensions), and
+// bankAccReconciliationLogicApp the app that registered each ("" the base application)
+var (
+	bankAccReconciliationLogic    []any
+	bankAccReconciliationLogicApp []string
+)
 
 // RegisterBankAccReconciliationLogic adds business logic to Bank_Acc_Reconciliation: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterBankAccReconciliationLogic(logic any) {
 	checkLogic(BankAccReconciliationTableName, "BankAccReconciliation", logic, bankAccReconciliationTrigger)
 	bankAccReconciliationLogic = append(bankAccReconciliationLogic, logic)
+	bankAccReconciliationLogicApp = append(bankAccReconciliationLogicApp, extensions.Current())
 }
 
 // bankAccReconciliationTrigger reports whether name is a trigger of Bank_Acc_Reconciliation and
@@ -296,6 +316,14 @@ func bankAccReconciliationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(BankAccReconciliationOnDelete)
 	case "OnRename":
 		_, ok = logic.(BankAccReconciliationOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(BankAccReconciliationOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(BankAccReconciliationOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(BankAccReconciliationOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(BankAccReconciliationOnBeforeRename)
 	case "OnValidate_Bank_account_no":
 		_, ok = logic.(BankAccReconciliationOnValidate_Bank_account_no)
 	case "OnValidate_Statement_no":
@@ -324,19 +352,32 @@ func (t *BankAccReconciliation) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *BankAccReconciliation) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return bankAccReconciliationLogic
+	return extensions.EnabledLogic(bankAccReconciliationLogic, bankAccReconciliationLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *BankAccReconciliation) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(BankAccReconciliationOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BankAccReconciliationOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(BankAccReconciliationOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -345,10 +386,21 @@ func (t *BankAccReconciliation) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *BankAccReconciliation) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(BankAccReconciliationOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BankAccReconciliationOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(BankAccReconciliationOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -356,7 +408,19 @@ func (t *BankAccReconciliation) runOnModify() error {
 }
 
 func (t *BankAccReconciliation) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BankAccReconciliationOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(BankAccReconciliationOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -367,7 +431,19 @@ func (t *BankAccReconciliation) runOnDelete() error {
 }
 
 func (t *BankAccReconciliation) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(BankAccReconciliationOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(BankAccReconciliationOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

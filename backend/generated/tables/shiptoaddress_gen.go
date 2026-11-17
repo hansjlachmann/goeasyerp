@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ShipToAddress) error
 //	OnDelete(rec *gtables.ShipToAddress) error
 //	OnRename(rec *gtables.ShipToAddress) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ShipToAddress, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Customer_no(rec *gtables.ShipToAddress) error
 //	OnValidate_Code(rec *gtables.ShipToAddress) error
 //	OnValidate_Name(rec *gtables.ShipToAddress) error
@@ -46,6 +48,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -404,6 +407,18 @@ type (
 	ShipToAddressOnRename interface {
 		OnRename(rec *ShipToAddress) error
 	}
+	ShipToAddressOnBeforeInsert interface {
+		OnBeforeInsert(rec *ShipToAddress, handled *bool) error
+	}
+	ShipToAddressOnBeforeModify interface {
+		OnBeforeModify(rec *ShipToAddress, handled *bool) error
+	}
+	ShipToAddressOnBeforeDelete interface {
+		OnBeforeDelete(rec *ShipToAddress, handled *bool) error
+	}
+	ShipToAddressOnBeforeRename interface {
+		OnBeforeRename(rec *ShipToAddress, handled *bool) error
+	}
 	ShipToAddressOnValidate_Customer_no interface {
 		OnValidate_Customer_no(rec *ShipToAddress) error
 	}
@@ -479,18 +494,23 @@ type (
 )
 
 // shipToAddressLogic is the registered business logic of Ship_to_Address, in
-// registration order (the base application first, then extensions)
-var shipToAddressLogic []any
+// registration order (the base application first, then extensions), and
+// shipToAddressLogicApp the app that registered each ("" the base application)
+var (
+	shipToAddressLogic    []any
+	shipToAddressLogicApp []string
+)
 
 // RegisterShipToAddressLogic adds business logic to Ship_to_Address: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterShipToAddressLogic(logic any) {
 	checkLogic(ShipToAddressTableName, "ShipToAddress", logic, shipToAddressTrigger)
 	shipToAddressLogic = append(shipToAddressLogic, logic)
+	shipToAddressLogicApp = append(shipToAddressLogicApp, extensions.Current())
 }
 
 // shipToAddressTrigger reports whether name is a trigger of Ship_to_Address and
@@ -505,6 +525,14 @@ func shipToAddressTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ShipToAddressOnDelete)
 	case "OnRename":
 		_, ok = logic.(ShipToAddressOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ShipToAddressOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ShipToAddressOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ShipToAddressOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ShipToAddressOnBeforeRename)
 	case "OnValidate_Customer_no":
 		_, ok = logic.(ShipToAddressOnValidate_Customer_no)
 	case "OnValidate_Code":
@@ -571,19 +599,32 @@ func (t *ShipToAddress) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ShipToAddress) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return shipToAddressLogic
+	return extensions.EnabledLogic(shipToAddressLogic, shipToAddressLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ShipToAddress) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ShipToAddressOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ShipToAddressOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ShipToAddressOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -592,10 +633,21 @@ func (t *ShipToAddress) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ShipToAddress) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ShipToAddressOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ShipToAddressOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ShipToAddressOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -603,7 +655,19 @@ func (t *ShipToAddress) runOnModify() error {
 }
 
 func (t *ShipToAddress) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ShipToAddressOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ShipToAddressOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -614,7 +678,19 @@ func (t *ShipToAddress) runOnDelete() error {
 }
 
 func (t *ShipToAddress) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ShipToAddressOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ShipToAddressOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

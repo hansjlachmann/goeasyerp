@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.ReminderFinChargeEntry) error
 //	OnDelete(rec *gtables.ReminderFinChargeEntry) error
 //	OnRename(rec *gtables.ReminderFinChargeEntry) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.ReminderFinChargeEntry, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Entry_no(rec *gtables.ReminderFinChargeEntry) error
 //	OnValidate_Type(rec *gtables.ReminderFinChargeEntry) error
 //	OnValidate_No(rec *gtables.ReminderFinChargeEntry) error
@@ -37,6 +39,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -393,6 +396,18 @@ type (
 	ReminderFinChargeEntryOnRename interface {
 		OnRename(rec *ReminderFinChargeEntry) error
 	}
+	ReminderFinChargeEntryOnBeforeInsert interface {
+		OnBeforeInsert(rec *ReminderFinChargeEntry, handled *bool) error
+	}
+	ReminderFinChargeEntryOnBeforeModify interface {
+		OnBeforeModify(rec *ReminderFinChargeEntry, handled *bool) error
+	}
+	ReminderFinChargeEntryOnBeforeDelete interface {
+		OnBeforeDelete(rec *ReminderFinChargeEntry, handled *bool) error
+	}
+	ReminderFinChargeEntryOnBeforeRename interface {
+		OnBeforeRename(rec *ReminderFinChargeEntry, handled *bool) error
+	}
 	ReminderFinChargeEntryOnValidate_Entry_no interface {
 		OnValidate_Entry_no(rec *ReminderFinChargeEntry) error
 	}
@@ -438,18 +453,23 @@ type (
 )
 
 // reminderFinChargeEntryLogic is the registered business logic of Reminder_Fin_Charge_Entry, in
-// registration order (the base application first, then extensions)
-var reminderFinChargeEntryLogic []any
+// registration order (the base application first, then extensions), and
+// reminderFinChargeEntryLogicApp the app that registered each ("" the base application)
+var (
+	reminderFinChargeEntryLogic    []any
+	reminderFinChargeEntryLogicApp []string
+)
 
 // RegisterReminderFinChargeEntryLogic adds business logic to Reminder_Fin_Charge_Entry: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterReminderFinChargeEntryLogic(logic any) {
 	checkLogic(ReminderFinChargeEntryTableName, "ReminderFinChargeEntry", logic, reminderFinChargeEntryTrigger)
 	reminderFinChargeEntryLogic = append(reminderFinChargeEntryLogic, logic)
+	reminderFinChargeEntryLogicApp = append(reminderFinChargeEntryLogicApp, extensions.Current())
 }
 
 // reminderFinChargeEntryTrigger reports whether name is a trigger of Reminder_Fin_Charge_Entry and
@@ -464,6 +484,14 @@ func reminderFinChargeEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ReminderFinChargeEntryOnDelete)
 	case "OnRename":
 		_, ok = logic.(ReminderFinChargeEntryOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(ReminderFinChargeEntryOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(ReminderFinChargeEntryOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(ReminderFinChargeEntryOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(ReminderFinChargeEntryOnBeforeRename)
 	case "OnValidate_Entry_no":
 		_, ok = logic.(ReminderFinChargeEntryOnValidate_Entry_no)
 	case "OnValidate_Type":
@@ -510,19 +538,32 @@ func (t *ReminderFinChargeEntry) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *ReminderFinChargeEntry) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return reminderFinChargeEntryLogic
+	return extensions.EnabledLogic(reminderFinChargeEntryLogic, reminderFinChargeEntryLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *ReminderFinChargeEntry) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ReminderFinChargeEntryOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReminderFinChargeEntryOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ReminderFinChargeEntryOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -531,10 +572,21 @@ func (t *ReminderFinChargeEntry) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *ReminderFinChargeEntry) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(ReminderFinChargeEntryOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReminderFinChargeEntryOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(ReminderFinChargeEntryOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -542,7 +594,19 @@ func (t *ReminderFinChargeEntry) runOnModify() error {
 }
 
 func (t *ReminderFinChargeEntry) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReminderFinChargeEntryOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ReminderFinChargeEntryOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -553,7 +617,19 @@ func (t *ReminderFinChargeEntry) runOnDelete() error {
 }
 
 func (t *ReminderFinChargeEntry) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(ReminderFinChargeEntryOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(ReminderFinChargeEntryOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err

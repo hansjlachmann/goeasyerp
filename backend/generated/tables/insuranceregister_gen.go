@@ -10,6 +10,8 @@
 //	OnModify(rec *gtables.InsuranceRegister) error
 //	OnDelete(rec *gtables.InsuranceRegister) error
 //	OnRename(rec *gtables.InsuranceRegister) error  — a primary key field changed (rec.OldValue: xRec)
+//	OnBeforeInsert/OnBeforeModify/OnBeforeDelete/OnBeforeRename(rec *gtables.InsuranceRegister, handled *bool) error
+//	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_No(rec *gtables.InsuranceRegister) error
 //	OnValidate_From_entry_no(rec *gtables.InsuranceRegister) error
 //	OnValidate_To_entry_no(rec *gtables.InsuranceRegister) error
@@ -30,6 +32,7 @@ import (
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/sift"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
@@ -269,6 +272,18 @@ type (
 	InsuranceRegisterOnRename interface {
 		OnRename(rec *InsuranceRegister) error
 	}
+	InsuranceRegisterOnBeforeInsert interface {
+		OnBeforeInsert(rec *InsuranceRegister, handled *bool) error
+	}
+	InsuranceRegisterOnBeforeModify interface {
+		OnBeforeModify(rec *InsuranceRegister, handled *bool) error
+	}
+	InsuranceRegisterOnBeforeDelete interface {
+		OnBeforeDelete(rec *InsuranceRegister, handled *bool) error
+	}
+	InsuranceRegisterOnBeforeRename interface {
+		OnBeforeRename(rec *InsuranceRegister, handled *bool) error
+	}
 	InsuranceRegisterOnValidate_No interface {
 		OnValidate_No(rec *InsuranceRegister) error
 	}
@@ -293,18 +308,23 @@ type (
 )
 
 // insuranceRegisterLogic is the registered business logic of Insurance_Register, in
-// registration order (the base application first, then extensions)
-var insuranceRegisterLogic []any
+// registration order (the base application first, then extensions), and
+// insuranceRegisterLogicApp the app that registered each ("" the base application)
+var (
+	insuranceRegisterLogic    []any
+	insuranceRegisterLogicApp []string
+)
 
 // RegisterInsuranceRegisterLogic adds business logic to Insurance_Register: a value whose methods are
-// triggers (OnInsert, OnModify, OnDelete, OnRename, OnValidate_<Field>). Every registered logic
-// runs, in registration order; the first error stops the operation. Call it from an init
-// function. It panics on a method named like a trigger that the table does not have (a
+// triggers (OnInsert, OnModify, OnDelete, OnRename, OnBefore…, OnValidate_<Field>). Every
+// registered logic of an enabled app runs, in registration order; the first error stops the
+// operation. Call it from an init function (an extension app: from its Register). It panics on a method named like a trigger that the table does not have (a
 // misspelled trigger, or a field renamed or removed in the definition), so the program
 // does not start with a trigger that would never run.
 func RegisterInsuranceRegisterLogic(logic any) {
 	checkLogic(InsuranceRegisterTableName, "InsuranceRegister", logic, insuranceRegisterTrigger)
 	insuranceRegisterLogic = append(insuranceRegisterLogic, logic)
+	insuranceRegisterLogicApp = append(insuranceRegisterLogicApp, extensions.Current())
 }
 
 // insuranceRegisterTrigger reports whether name is a trigger of Insurance_Register and
@@ -319,6 +339,14 @@ func insuranceRegisterTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(InsuranceRegisterOnDelete)
 	case "OnRename":
 		_, ok = logic.(InsuranceRegisterOnRename)
+	case "OnBeforeInsert":
+		_, ok = logic.(InsuranceRegisterOnBeforeInsert)
+	case "OnBeforeModify":
+		_, ok = logic.(InsuranceRegisterOnBeforeModify)
+	case "OnBeforeDelete":
+		_, ok = logic.(InsuranceRegisterOnBeforeDelete)
+	case "OnBeforeRename":
+		_, ok = logic.(InsuranceRegisterOnBeforeRename)
 	case "OnValidate_No":
 		_, ok = logic.(InsuranceRegisterOnValidate_No)
 	case "OnValidate_From_entry_no":
@@ -351,19 +379,32 @@ func (t *InsuranceRegister) SetLogic(logic ...any) {
 	t.logic = logic
 }
 
+// registeredLogic: the business logic that runs — the record's own (SetLogic), else the
+// registered logic of the base application and of the apps that are enabled
 func (t *InsuranceRegister) registeredLogic() []any {
 	if t.logic != nil {
 		return t.logic
 	}
-	return insuranceRegisterLogic
+	return extensions.EnabledLogic(insuranceRegisterLogic, insuranceRegisterLogicApp)
 }
 
 // runOnInsert runs the OnInsert triggers, then the field checks of the definition
 func (t *InsuranceRegister) runOnInsert() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(InsuranceRegisterOnInsert); ok {
-			if err := trg.OnInsert(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InsuranceRegisterOnBeforeInsert); ok {
+			if err := trg.OnBeforeInsert(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(InsuranceRegisterOnInsert); ok {
+				if err := trg.OnInsert(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -372,10 +413,21 @@ func (t *InsuranceRegister) runOnInsert() error {
 
 // runOnModify runs the OnModify triggers, then the field checks of the definition
 func (t *InsuranceRegister) runOnModify() error {
-	for _, l := range t.registeredLogic() {
-		if trg, ok := l.(InsuranceRegisterOnModify); ok {
-			if err := trg.OnModify(t); err != nil {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InsuranceRegisterOnBeforeModify); ok {
+			if err := trg.OnBeforeModify(t, &handled); err != nil {
 				return err
+			}
+		}
+	}
+	if !handled {
+		for _, l := range logic {
+			if trg, ok := l.(InsuranceRegisterOnModify); ok {
+				if err := trg.OnModify(t); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -383,7 +435,19 @@ func (t *InsuranceRegister) runOnModify() error {
 }
 
 func (t *InsuranceRegister) runOnDelete() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InsuranceRegisterOnBeforeDelete); ok {
+			if err := trg.OnBeforeDelete(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(InsuranceRegisterOnDelete); ok {
 			if err := trg.OnDelete(t); err != nil {
 				return err
@@ -394,7 +458,19 @@ func (t *InsuranceRegister) runOnDelete() error {
 }
 
 func (t *InsuranceRegister) runOnRename() error {
-	for _, l := range t.registeredLogic() {
+	logic := t.registeredLogic()
+	handled := false
+	for _, l := range logic {
+		if trg, ok := l.(InsuranceRegisterOnBeforeRename); ok {
+			if err := trg.OnBeforeRename(t, &handled); err != nil {
+				return err
+			}
+		}
+	}
+	if handled {
+		return nil
+	}
+	for _, l := range logic {
 		if trg, ok := l.(InsuranceRegisterOnRename); ok {
 			if err := trg.OnRename(t); err != nil {
 				return err
