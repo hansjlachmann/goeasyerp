@@ -1,6 +1,7 @@
 # The test app's action, section and menu captions
 common:
   actions:
+    reset_points: "Nulstil point"
     loyalty_tiers: "Fordelsniveauer"
   sections:
     loyalty: "Fordelsprogram"

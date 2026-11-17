@@ -1,5 +1,5 @@
 # Customer Card: the points next to the credit limit, the tier in a section of its own, the
-# tiers from the Customer menu
+# tiers and Reset Points (a function the app registers) in the Customer menu
 extends: 21
 layout:
   sections:
@@ -20,3 +20,8 @@ actions:
     in: Customer
     after: Statistics
     run_page: 50000
+  - name: Reset Points
+    caption: Reset Points
+    in: Customer
+    after: Loyalty Tiers
+    run_object: "table:Customer.LpResetPoints"

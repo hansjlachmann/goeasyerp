@@ -112,4 +112,4 @@ openerp-cli
 # Written by extmerge when a build links extension apps (never committed)
 go.work
 go.work.sum
-cmd/api-server/apps_gen.go
+backend/installedapps/apps_gen.go

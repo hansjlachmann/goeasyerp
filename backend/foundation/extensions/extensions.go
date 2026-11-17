@@ -1,7 +1,7 @@
 // Package extensions runs the Go code of the extension apps built into the program. Each app's
 // Go module has a root package with a Register function that registers its business logic
 // (gtables.Register<Table>Logic …); the build generates a call of Install per app
-// (cmd/api-server/apps_gen.go, written by extmerge), in dependency order, after the base
+// (backend/installedapps/apps_gen.go, written by extmerge), in dependency order, after the base
 // application's own logic is registered. While an app's Register runs, Current names it, so
 // what it registers can be told apart from the base application's and other apps'.
 package extensions

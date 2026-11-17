@@ -45,7 +45,7 @@ func main() {
 	flag.StringVar(&opts.output, "output", "", "Path to output merged directory")
 	flag.StringVar(&opts.translations, "translations", "", "Path to the core translations directory (needed when an app has translations)")
 	flag.StringVar(&opts.translationsOutput, "translations-output", "", "Path to output merged translations directory")
-	flag.StringVar(&opts.goRoot, "go-root", "", "The base repository being built: link the apps' Go code (go.work, cmd/api-server/apps_gen.go)")
+	flag.StringVar(&opts.goRoot, "go-root", "", "The base repository being built: link the apps' Go code (go.work, backend/installedapps/apps_gen.go)")
 	flag.BoolVar(&opts.verbose, "verbose", false, "Enable verbose output")
 	flag.Parse()
 

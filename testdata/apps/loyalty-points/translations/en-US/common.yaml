@@ -1,6 +1,7 @@
 # The test app's action, section and menu captions
 common:
   actions:
+    reset_points: "Reset Points"
     loyalty_tiers: "Loyalty Tiers"
   sections:
     loyalty: "Loyalty"

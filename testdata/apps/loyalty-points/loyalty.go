@@ -4,6 +4,8 @@ package loyaltypoints
 
 import (
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/salesposting"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/functions"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
@@ -15,6 +17,17 @@ const pointsPerInvoice = 10
 func Register() {
 	gtables.RegisterCustomerLogic(customerLogic{})
 	salesposting.OnAfterPost.Subscribe(addInvoicePoints)
+	functions.Register("table", gtables.CustomerTableName, "LpResetPoints", functions.For(resetPoints))
+}
+
+// resetPoints: the Customer Card's Reset Points — the customer starts again from 0 points
+func resetPoints(cust *gtables.Customer) (fcodeunits.Result, error) {
+	cust.Lp_loyalty_points = 0
+	err := cust.ModifyOrError(true)
+	if err != nil {
+		return fcodeunits.Result{}, err
+	}
+	return fcodeunits.Result{Success: true, Refresh: true}, nil
 }
 
 // addInvoicePoints: a posted invoice gives the bill-to customer points (inside the posting's

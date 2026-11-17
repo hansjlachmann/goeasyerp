@@ -137,7 +137,7 @@ func TestGoWiring(t *testing.T) {
 	writeFile(t, filepath.Join(dir, "apps", "loyalty", "go.mod"), "module example.com/loyalty\n\ngo 1.24.0\n\nrequire (\n\tgithub.com/hansjlachmann/goeasyerp v0.1.160 // the base\n\tgithub.com/other/x v1.0.0\n)\n")
 	writeFile(t, filepath.Join(dir, "apps", "rewards", "go.mod"), "module example.com/rewards\n\ngo 1.24.0\n\nrequire github.com/hansjlachmann/goeasyerp v0.1.170\n")
 	opts.goRoot = filepath.Join(dir, "repo")
-	if err := os.MkdirAll(filepath.Join(opts.goRoot, "cmd", "api-server"), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(opts.goRoot, "backend", "installedapps"), 0755); err != nil {
 		t.Fatal(err)
 	}
 	if err := merge(opts); err != nil {
@@ -149,7 +149,7 @@ func TestGoWiring(t *testing.T) {
 			t.Errorf("go.work lacks %q:\n%s", want, work)
 		}
 	}
-	gen, _ := os.ReadFile(filepath.Join(opts.goRoot, "cmd", "api-server", "apps_gen.go"))
+	gen, _ := os.ReadFile(filepath.Join(opts.goRoot, "backend", "installedapps", "apps_gen.go"))
 	code := string(gen)
 	lp, rw := strings.Index(code, `extensions.Install("11111111`), strings.Index(code, `extensions.Install("22222222`)
 	if lp < 0 || rw < 0 || lp > rw || !strings.Contains(code, `lp "example.com/loyalty"`) || !strings.Contains(code, "lp.Register") {

@@ -4,7 +4,7 @@
 # tablegen generates the table code again — and checks the result: it builds, every page
 # definition loads with its captions in every language, and the server's installed apps (the
 # base and the test app, in dependency order) cover every object; the app's Go code is linked
-# into the program (go.work, cmd/api-server/apps_gen.go) and its own tests pass. Runs on a copy of the repository (the files git knows, also new ones not
+# into the program (go.work, backend/installedapps/apps_gen.go) and its own tests pass. Runs on a copy of the repository (the files git knows, also new ones not
 # committed yet), so the working tree is never changed. CI runs it; run it locally the same way.
 set -euo pipefail
 
@@ -36,7 +36,7 @@ grep -q 'lp_loyalty_points' backend/definitions/pages/22-customer-list.yaml
 grep -q 'Loyalty Tiers' backend/definitions/menus/admin.yaml
 ls backend/definitions/apps/*.yaml > /dev/null
 ls translations/en-US/lp-tables.yaml > /dev/null
-grep -q 'extensions.Install' cmd/api-server/apps_gen.go
+grep -q 'extensions.Install' backend/installedapps/apps_gen.go
 
 echo "Building..."
 go build ./...

@@ -16,6 +16,7 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
+	_ "github.com/hansjlachmann/goeasyerp/backend/installedapps" // the extension apps' functions (a build with apps)
 )
 
 // Every function a page action or menu item calls (run_object "<type>:<object>.<function>")
