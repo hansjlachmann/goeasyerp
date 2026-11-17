@@ -18,102 +18,166 @@ type TableExtension struct {
 	Fields       []map[string]interface{} `yaml:"fields,omitempty"` // as in a table definition, every key kept
 }
 
+// stringList is a flag that can be given more than once
+type stringList []string
+
+func (l *stringList) String() string     { return strings.Join(*l, ",") }
+func (l *stringList) Set(v string) error { *l = append(*l, v); return nil }
+
+// options of a merge: the base definitions, the apps' directories, where the merged definitions
+// go, and — when an app has translations — the base translations and where the merged ones go
+type options struct {
+	core               string
+	apps               []string
+	output             string
+	translations       string
+	translationsOutput string
+	verbose            bool
+}
+
 func main() {
-	corePath := flag.String("core", "", "Path to the core definitions directory (backend/definitions)")
-	extensionsPath := flag.String("extensions", "", "Path to extensions directory")
-	outputPath := flag.String("output", "", "Path to output merged directory")
-	verbose := flag.Bool("verbose", false, "Enable verbose output")
+	var opts options
+	var extensions stringList
+	appsDir := flag.String("apps", "", "Directory whose subdirectories are extension apps (each with an application.yaml)")
+	flag.StringVar(&opts.core, "core", "", "Path to the core definitions directory (backend/definitions)")
+	flag.Var(&extensions, "extensions", "Path to an extension app's directory (repeat for several apps)")
+	flag.StringVar(&opts.output, "output", "", "Path to output merged directory")
+	flag.StringVar(&opts.translations, "translations", "", "Path to the core translations directory (needed when an app has translations)")
+	flag.StringVar(&opts.translationsOutput, "translations-output", "", "Path to output merged translations directory")
+	flag.BoolVar(&opts.verbose, "verbose", false, "Enable verbose output")
 	flag.Parse()
 
-	if *corePath == "" || *extensionsPath == "" || *outputPath == "" {
-		fmt.Fprintln(os.Stderr, "Usage: extmerge --core <path> --extensions <path> --output <path>")
+	opts.apps = extensions
+	if *appsDir != "" {
+		found, err := appDirectories(*appsDir)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+		opts.apps = append(opts.apps, found...)
+	}
+	if opts.core == "" || len(opts.apps) == 0 || opts.output == "" {
+		fmt.Fprintln(os.Stderr, "Usage: extmerge --core <path> (--extensions <app dir> ... | --apps <dir of apps>) --output <path> [--translations <path> --translations-output <path>]")
 		fmt.Fprintln(os.Stderr, "")
-		fmt.Fprintln(os.Stderr, "Options:")
-		fmt.Fprintln(os.Stderr, "  --core        Path to the core definitions directory (backend/definitions)")
-		fmt.Fprintln(os.Stderr, "  --extensions  Path to extensions directory")
-		fmt.Fprintln(os.Stderr, "  --output      Path to output merged directory")
-		fmt.Fprintln(os.Stderr, "  --verbose     Enable verbose output")
+		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
-	if err := run(*corePath, *extensionsPath, *outputPath, *verbose); err != nil {
+	if err := merge(opts); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
 }
 
+// appDirectories: the subdirectories of dir that hold an application.yaml
+func appDirectories(dir string) ([]string, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	var found []string
+	for _, e := range entries {
+		path := filepath.Join(dir, e.Name())
+		if _, err := os.Stat(filepath.Join(path, "application.yaml")); e.IsDir() && err == nil {
+			found = append(found, path)
+		}
+	}
+	return found, nil
+}
+
+// run merges one extension app (the tests' short form)
 func run(corePath, extensionsPath, outputPath string, verbose bool) error {
-	// The base application and the extension app: each has its own number series, which must
-	// not overlap (backend/foundation/apps)
-	base, err := apps.Load(filepath.Join(corePath, "application.yaml"))
+	return merge(options{core: corePath, apps: []string{extensionsPath}, output: outputPath, verbose: verbose})
+}
+
+// merge merges the extension apps into the base definitions: each app is checked (its own id,
+// number series that overlap no other app's, a prefix, a dependency on the base application),
+// the apps' dependencies are checked and the apps merged in their order (an app after the apps
+// it depends on, so it can extend what they added), and each app's application.yaml is written
+// to apps/<id>.yaml of the merged definitions, where the server reads the installed apps
+func merge(opts options) error {
+	base, err := apps.Load(filepath.Join(opts.core, "application.yaml"))
 	if err != nil {
 		return fmt.Errorf("base application: %w", err)
 	}
-	ext, err := apps.Load(filepath.Join(extensionsPath, "application.yaml"))
-	if err != nil {
-		return fmt.Errorf("the extension needs an application.yaml with its own id and number series: %w", err)
+	dirOf := map[string]string{}
+	var extensions []*apps.App
+	for _, dir := range opts.apps {
+		ext, err := apps.Load(filepath.Join(dir, "application.yaml"))
+		if err != nil {
+			return fmt.Errorf("the extension %s needs an application.yaml with its own id and number series: %w", dir, err)
+		}
+		err = ext.CheckExtension(base)
+		if err != nil {
+			return err
+		}
+		if other, dup := dirOf[ext.ID]; dup {
+			return fmt.Errorf("%s and %s are the same app (id %s)", other, dir, ext.ID)
+		}
+		dirOf[ext.ID] = dir
+		extensions = append(extensions, ext)
 	}
-	if err := apps.CheckOverlap([]*apps.App{base, ext}); err != nil {
+	err = apps.CheckOverlap(append([]*apps.App{base}, extensions...))
+	if err != nil {
+		return err
+	}
+	ordered, err := apps.Order(base, extensions)
+	if err != nil {
 		return err
 	}
 
-	// Ensure output directory exists
-	if err := os.MkdirAll(outputPath, 0755); err != nil {
+	err = os.MkdirAll(opts.output, 0755)
+	if err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
-
-	// Copy core files to output
-	if err := copyDir(corePath, outputPath, verbose); err != nil {
+	err = copyDir(opts.core, opts.output, opts.verbose)
+	if err != nil {
 		return fmt.Errorf("failed to copy core files: %w", err)
 	}
-
-	// Find and process page extensions
-	pageExtensions, err := findExtensions(extensionsPath, "pages", ".extend.yaml")
-	if err != nil {
-		return fmt.Errorf("failed to find page extensions: %w", err)
-	}
-
-	for _, extPath := range pageExtensions {
-		if err := mergePageExtension(extPath, outputPath, ext, verbose); err != nil {
-			return fmt.Errorf("failed to merge page extension %s: %w", extPath, err)
+	for _, ext := range ordered[1:] {
+		err = mergeApp(ext, dirOf[ext.ID], opts.output, opts.verbose)
+		if err != nil {
+			return fmt.Errorf("%s: %w", ext.Name, err)
 		}
 	}
+	return mergeAppTranslations(ordered[1:], dirOf, opts)
+}
 
-	// Find and process table extensions
-	tableExtensions, err := findExtensions(extensionsPath, "tables", ".extend.yaml")
+// mergeApp merges one app: its new tables and pages, then what it adds to existing tables,
+// pages and menus; its application.yaml goes to apps/<id>.yaml
+func mergeApp(ext *apps.App, dir, outputPath string, verbose bool) error {
+	err := copyNewObjects(dir, outputPath, ext, verbose)
 	if err != nil {
-		return fmt.Errorf("failed to find table extensions: %w", err)
-	}
-
-	for _, extPath := range tableExtensions {
-		if err := mergeTableExtension(extPath, outputPath, ext, verbose); err != nil {
-			return fmt.Errorf("failed to merge table extension %s: %w", extPath, err)
-		}
-	}
-
-	// Find and process main menu extensions
-	menuExtensions, err := findExtensions(extensionsPath, "menus", ".extend.yaml")
-	if err != nil {
-		return fmt.Errorf("failed to find menu extensions: %w", err)
-	}
-	for _, extPath := range menuExtensions {
-		if err := mergeMenuExtension(extPath, outputPath, ext, verbose); err != nil {
-			return fmt.Errorf("failed to merge menu extension %s: %w", extPath, err)
-		}
-	}
-
-	// Copy new objects (non-extend files)
-	if err := copyNewObjects(extensionsPath, outputPath, ext, verbose); err != nil {
 		return fmt.Errorf("failed to copy new objects: %w", err)
 	}
-
-	if verbose {
-		fmt.Printf("Merge completed successfully\n")
-		fmt.Printf("  Page extensions merged: %d\n", len(pageExtensions))
-		fmt.Printf("  Table extensions merged: %d\n", len(tableExtensions))
+	steps := []struct {
+		subdir string
+		merge  func(path, out string, ext *apps.App, verbose bool) error
+	}{
+		{"tables", mergeTableExtension},
+		{"pages", mergePageExtension},
+		{"menus", mergeMenuExtension},
 	}
-
-	return nil
+	for _, step := range steps {
+		files, err := findExtensions(dir, step.subdir, ".extend.yaml")
+		if err != nil {
+			return fmt.Errorf("failed to find %s extensions: %w", step.subdir, err)
+		}
+		for _, f := range files {
+			err = step.merge(f, outputPath, ext, verbose)
+			if err != nil {
+				return fmt.Errorf("failed to merge %s: %w", f, err)
+			}
+		}
+	}
+	err = os.MkdirAll(filepath.Join(outputPath, apps.AppsDir), 0755)
+	if err != nil {
+		return err
+	}
+	if verbose {
+		fmt.Printf("Merged app %s %s\n", ext.Name, ext.Version)
+	}
+	return copyFile(filepath.Join(dir, "application.yaml"), filepath.Join(outputPath, apps.AppsDir, ext.ID+".yaml"))
 }
 
 func copyDir(src, dst string, verbose bool) error {
@@ -209,7 +273,7 @@ func mergeTableExtension(extPath, outputPath string, ext *apps.App, verbose bool
 		return fmt.Errorf("core table %d has no table section", extension.ExtendsTable)
 	}
 	fields, _ := table["fields"].([]interface{})
-	if err := checkExtensionFields(fields, extension.Fields, ext); err != nil {
+	if err := checkExtensionFields(fields, extension.Fields, ext, true); err != nil {
 		return fmt.Errorf("table %d: %w", extension.ExtendsTable, err)
 	}
 	for _, f := range extension.Fields {
@@ -295,6 +359,9 @@ func copyNewObjects(extensionsPath, outputPath string, ext *apps.App, verbose bo
 			if table == nil || !ext.ObjectAllowed(apps.Table, id) {
 				return fmt.Errorf("%s: table number %d is outside the object series of %s", name, id, ext.Name)
 			}
+			if tableName := fieldString(table, "name"); !ext.HasPrefix(tableName) {
+				return fmt.Errorf("%s: table %q must start with the app's prefix (%s_…)", name, tableName, strings.ToUpper(ext.Prefix))
+			}
 			table["app"] = ext.ID
 			fields, _ := table["fields"].([]interface{})
 			added := make([]map[string]interface{}, 0, len(fields))
@@ -305,7 +372,7 @@ func copyNewObjects(extensionsPath, outputPath string, ext *apps.App, verbose bo
 				}
 				added = append(added, m)
 			}
-			if err := checkExtensionFields(nil, added, ext); err != nil {
+			if err := checkExtensionFields(nil, added, ext, false); err != nil {
 				return fmt.Errorf("%s: %w", name, err)
 			}
 			for _, m := range added {
@@ -331,7 +398,8 @@ func copyNewObjects(extensionsPath, outputPath string, ext *apps.App, verbose bo
 		err := eachNewYAML(newPagesPath, func(name string, data []byte) error {
 			var def struct {
 				Page struct {
-					ID int `yaml:"id"`
+					ID   int    `yaml:"id"`
+					Name string `yaml:"name"`
 				} `yaml:"page"`
 			}
 			if err := yaml.Unmarshal(data, &def); err != nil {
@@ -339,6 +407,9 @@ func copyNewObjects(extensionsPath, outputPath string, ext *apps.App, verbose bo
 			}
 			if !ext.ObjectAllowed(apps.Page, def.Page.ID) {
 				return fmt.Errorf("%s: page number %d is outside the object series of %s", name, def.Page.ID, ext.Name)
+			}
+			if !ext.HasPrefix(def.Page.Name) {
+				return fmt.Errorf("%s: page %q must start with the app's prefix (%s …)", name, def.Page.Name, strings.ToUpper(ext.Prefix))
 			}
 			if verbose {
 				fmt.Printf("Copying new page: %s\n", name)
@@ -380,8 +451,10 @@ func eachNewYAML(dir string, fn func(name string, data []byte) error) error {
 // checkExtensionFields checks the fields an extension adds to a table: each has a field number
 // in the extension's field series (its application.yaml), and neither its number nor its name
 // (or db_name) is used by the table or another extension field already. Field numbers
-// identify fields (field IDs): two apps must never use the same number.
-func checkExtensionFields(existing []interface{}, added []map[string]interface{}, ext *apps.App) error {
+// identify fields (field IDs): two apps must never use the same number. A field an app adds to
+// a table of another app (prefixed) starts with the app's prefix; the fields of its own tables
+// need none (the table's name has it).
+func checkExtensionFields(existing []interface{}, added []map[string]interface{}, ext *apps.App, prefixed bool) error {
 	numbers, names := map[int]string{}, map[string]bool{}
 	for _, f := range existing {
 		m, ok := f.(map[string]interface{})
@@ -401,6 +474,9 @@ func checkExtensionFields(existing []interface{}, added []map[string]interface{}
 		name := fieldString(f, "name")
 		if name == "" {
 			return fmt.Errorf("an extension field has no name")
+		}
+		if prefixed && !ext.HasPrefix(name) {
+			return fmt.Errorf("extension field %s must start with the app's prefix (%s_…)", name, ext.Prefix)
 		}
 		no, ok := f["no"].(int)
 		if !ok || !ext.FieldAllowed(no) {

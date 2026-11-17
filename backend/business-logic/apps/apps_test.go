@@ -18,13 +18,18 @@ import (
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
-// Every table, page and codeunit of this repository is in the base application's series
+// Every table, page and codeunit is in the series of an installed app (in this repository the
+// base application; built with extension apps also theirs — TestInstalledApps)
 func TestObjectNumbersInBaseApplication(t *testing.T) {
 	base, err := fapps.LoadBase()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := CheckObjectNumbers([]*fapps.App{base}); err != nil {
+	installed, err := fapps.LoadInstalled()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := CheckObjectNumbers(installed); err != nil {
 		t.Fatal(err)
 	}
 	// With smaller series the objects above them are named
@@ -68,6 +73,41 @@ func TestSyncInstalledApps(t *testing.T) {
 	}
 	if n := rec.Count(); n != 1 {
 		t.Errorf("%d rows, want 1", n)
+	}
+
+	// An extension app is listed while it is built in, and its row goes when it is not
+	ext := &fapps.App{ID: "11111111-1111-4111-8111-111111111111", Name: "Loyalty", Version: "1.0.0"}
+	if err := SyncInstalledApps(db, database.DBTypeSQLite, []*fapps.App{base, ext}); err != nil {
+		t.Fatal(err)
+	}
+	if n := rec.Count(); n != 2 {
+		t.Errorf("%d rows with the extension, want 2", n)
+	}
+	if err := SyncInstalledApps(db, database.DBTypeSQLite, []*fapps.App{base}); err != nil {
+		t.Fatal(err)
+	}
+	if n := rec.Count(); n != 1 || !rec.Get(types.NewText(base.ID)) {
+		t.Errorf("%d rows after the extension was removed, want the base's only", n)
+	}
+}
+
+// The installed apps — the base application and the extension apps a build merged into the
+// definitions (scripts/check-extension-fixture.sh runs this with the test app) — load in
+// dependency order, and every object is in one of their series
+func TestInstalledApps(t *testing.T) {
+	installed, err := fapps.LoadInstalled()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := CheckObjectNumbers(installed); err != nil {
+		t.Fatal(err)
+	}
+	base, err := fapps.LoadBase()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if installed[0].ID != base.ID {
+		t.Errorf("the base application is not first: %s", installed[0].Name)
 	}
 }
 

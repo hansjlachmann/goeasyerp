@@ -54,6 +54,12 @@ type App struct {
 	// SystemTables are the system table numbers (2000000000 range), a section of its own
 	SystemTables []Range      `yaml:"system_tables"`
 	Dependencies []Dependency `yaml:"dependencies"`
+	// Prefix: an extension app's own names start with it — the fields it adds to base tables
+	// (lp_loyalty_points), its tables (LP_Loyalty_Tier) and pages (LP Loyalty Tiers) — so two
+	// apps cannot clash by name. Required for an extension app; the base application has none.
+	Prefix string `yaml:"prefix"`
+
+	path string // the file it was read from
 }
 
 var guidPattern = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
@@ -64,7 +70,12 @@ func Load(path string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	return Parse(data)
+	app, err := Parse(data)
+	if err != nil {
+		return nil, err
+	}
+	app.path = path
+	return app, nil
 }
 
 // Parse reads and checks the content of an application.yaml
@@ -108,6 +119,32 @@ func (a *App) check() error {
 		}
 	}
 	return nil
+}
+
+var prefixPattern = regexp.MustCompile(`^[a-z][a-z0-9]{1,9}$`)
+
+// CheckExtension checks what an extension app needs beyond any app: a prefix (2–10 lower case
+// letters and digits, starting with a letter) and a dependency on the base application
+func (a *App) CheckExtension(base *App) error {
+	if !prefixPattern.MatchString(a.Prefix) {
+		return fmt.Errorf("%s: prefix %q must be 2–10 lower case letters and digits, starting with a letter", a.Name, a.Prefix)
+	}
+	for _, d := range a.Dependencies {
+		if d.ID == base.ID {
+			return nil
+		}
+	}
+	return fmt.Errorf("%s: an extension app depends on %s (id %s): add it to its dependencies", a.Name, base.Name, base.ID)
+}
+
+// HasPrefix reports whether a name an extension app gives (a field, table or page name) starts
+// with its prefix and a separator: lp_points, LP_Loyalty_Tier, LP Loyalty Tiers
+func (a *App) HasPrefix(name string) bool {
+	if len(name) <= len(a.Prefix)+1 {
+		return false
+	}
+	sep := name[len(a.Prefix)]
+	return strings.EqualFold(name[:len(a.Prefix)], a.Prefix) && (sep == '_' || sep == ' ')
 }
 
 func inRanges(ranges []Range, n int) bool {
@@ -183,6 +220,139 @@ func rangesText(ranges []Range) string {
 		parts[i] = r.String()
 	}
 	return strings.Join(parts, ", ")
+}
+
+// Order checks the installed apps' dependencies and returns them in the order they are merged
+// and loaded: the base application first, every app after the apps it depends on (apps without
+// a dependency between them in the order given). Refused: a dependency that is not installed,
+// installed in a version below its min_version, or installed under another name than the
+// dependency names, and dependencies in a circle.
+func Order(base *App, extensions []*App) ([]*App, error) {
+	byID := map[string]*App{base.ID: base}
+	for _, a := range extensions {
+		byID[a.ID] = a
+	}
+	for _, a := range extensions {
+		for _, d := range a.Dependencies {
+			dep, ok := byID[d.ID]
+			if !ok {
+				return nil, fmt.Errorf("%s needs %s (id %s%s), which is not installed", a.Name, d.Name, d.ID, versionText(d.MinVersion))
+			}
+			if d.Name != "" && d.Name != dep.Name {
+				return nil, fmt.Errorf("%s depends on %s (id %s), but the app with that id is %s", a.Name, d.Name, d.ID, dep.Name)
+			}
+			if d.MinVersion != "" && CompareVersions(dep.Version, d.MinVersion) < 0 {
+				return nil, fmt.Errorf("%s needs %s version %s or later, %s is installed", a.Name, dep.Name, d.MinVersion, dep.Version)
+			}
+		}
+	}
+
+	ordered := []*App{base}
+	done := map[string]bool{base.ID: true}
+	visiting := map[string]bool{}
+	var visit func(a *App, path []string) error
+	visit = func(a *App, path []string) error {
+		if done[a.ID] {
+			return nil
+		}
+		path = append(path, a.Name)
+		if visiting[a.ID] {
+			return fmt.Errorf("the apps depend on each other in a circle: %s", strings.Join(path, " → "))
+		}
+		visiting[a.ID] = true
+		for _, d := range a.Dependencies {
+			err := visit(byID[d.ID], path)
+			if err != nil {
+				return err
+			}
+		}
+		visiting[a.ID] = false
+		done[a.ID] = true
+		ordered = append(ordered, a)
+		return nil
+	}
+	for _, a := range extensions {
+		err := visit(a, nil)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return ordered, nil
+}
+
+func versionText(v string) string {
+	if v == "" {
+		return ""
+	}
+	return ", version " + v + " or later"
+}
+
+// CompareVersions compares two versions major.minor.patch (a missing part counts as 0, anything
+// after a - or + is left out): -1, 0 or 1
+func CompareVersions(a, b string) int {
+	pa, pb := versionParts(a), versionParts(b)
+	for i := 0; i < 3; i++ {
+		if pa[i] != pb[i] {
+			if pa[i] < pb[i] {
+				return -1
+			}
+			return 1
+		}
+	}
+	return 0
+}
+
+func versionParts(v string) [3]int {
+	var parts [3]int
+	v = strings.TrimPrefix(strings.TrimSpace(v), "v")
+	v, _, _ = strings.Cut(v, "-")
+	v, _, _ = strings.Cut(v, "+")
+	for i, p := range strings.SplitN(v, ".", 3) {
+		n := 0
+		for _, c := range p {
+			if c < '0' || c > '9' {
+				break
+			}
+			n = n*10 + int(c-'0')
+		}
+		parts[i] = n
+	}
+	return parts
+}
+
+// AppsDir is where an installation's build puts the application.yaml of every extension app it
+// merged (<id>.yaml), relative to the definitions directory: the server reads them at startup
+const AppsDir = "apps"
+
+// LoadInstalled reads the base application and the extension apps merged into the definitions
+// (backend/definitions/apps/<id>.yaml) and returns them in dependency order (Order)
+func LoadInstalled() ([]*App, error) {
+	base, err := LoadBase()
+	if err != nil {
+		return nil, err
+	}
+	definitions := filepath.Dir(base.path)
+	files, err := filepath.Glob(filepath.Join(definitions, AppsDir, "*.yaml"))
+	if err != nil {
+		return nil, err
+	}
+	var extensions []*App
+	for _, f := range files {
+		a, err := Load(f)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", filepath.Base(f), err)
+		}
+		err = a.CheckExtension(base)
+		if err != nil {
+			return nil, err
+		}
+		extensions = append(extensions, a)
+	}
+	err = CheckOverlap(append([]*App{base}, extensions...))
+	if err != nil {
+		return nil, err
+	}
+	return Order(base, extensions)
 }
 
 // BasePath is the base application's application.yaml, relative to the project root

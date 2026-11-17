@@ -1,0 +1,12 @@
+# The test app's table and field captions
+tables:
+  lp_loyalty_tier:
+    caption: "Loyalty Tier"
+    fields:
+      code: "Code"
+      description: "Description"
+      min_points: "Minimum Points"
+  customer:
+    fields:
+      lp_loyalty_points: "Loyalty Points"
+      lp_tier_code: "Loyalty Tier"

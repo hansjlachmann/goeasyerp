@@ -1,0 +1,12 @@
+# The test app's table and field captions
+tables:
+  lp_loyalty_tier:
+    caption: "Fordelsnivå"
+    fields:
+      code: "Kode"
+      description: "Beskrivelse"
+      min_points: "Minste antall poeng"
+  customer:
+    fields:
+      lp_loyalty_points: "Bonuspoeng"
+      lp_tier_code: "Fordelsnivå"

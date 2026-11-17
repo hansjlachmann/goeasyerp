@@ -1,0 +1,4 @@
+# The test app's page captions
+pages:
+  lp_loyalty_tiers:
+    caption: "Loyalty Tiers"

@@ -55,17 +55,20 @@ func main() {
 		}
 	}
 
-	// The installed apps (application.yaml): the base application, later extension apps.
-	// Every table, page and codeunit number must be in the series of one of them.
-	baseApp, err := fapps.LoadBase()
+	// The installed apps (application.yaml): the base application and the extension apps the
+	// build merged in (backend/definitions/apps), in dependency order — a missing or too old
+	// dependency stops the start. Every table, page and codeunit number must be in the series
+	// of one of them.
+	installedApps, err := fapps.LoadInstalled()
 	if err != nil {
-		log.Fatalf("Failed to read the base application: %v", err)
+		log.Fatalf("Failed to read the installed apps: %v", err)
 	}
-	installedApps := []*fapps.App{baseApp}
 	if err := blapps.CheckObjectNumbers(installedApps); err != nil {
 		log.Fatalf("%v", err)
 	}
-	fmt.Printf("✓ %s %s\n", baseApp.Name, baseApp.Version)
+	for _, a := range installedApps {
+		fmt.Printf("✓ %s %s\n", a.Name, a.Version)
+	}
 
 	var db *database.Database
 	var companyName string

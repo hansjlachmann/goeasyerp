@@ -23,6 +23,7 @@ application:
   publisher: My Company
   contact: https://example.com
   version: 1.0.0
+  prefix: lp                  # the start of the app's own names (see below)
   number_series:
     objects: [{from: 50000, to: 50999}]
     fields:  [{from: 50000, to: 50999}]   # also the fields it adds to base tables
@@ -35,6 +36,34 @@ application:
 `extmerge` refuses an extension without an `application.yaml`, series that overlap, and
 objects or fields outside the extension's series. At startup the server checks every table,
 page and codeunit against the installed apps and lists them in Installed Apps (page 907).
+
+### Dependencies
+
+Every extension app depends on the base application; it may also depend on other extension
+apps (and then extend their tables and pages and use their objects). A dependency names the
+app's `id`, its `name` and the lowest version it needs (`min_version`). The apps of a build are
+checked together and merged in dependency order — the base first, an app after the apps it
+depends on. Refused, at build time and when the server starts: a dependency that is not part of
+the build, a version below `min_version`, an id whose app has another name, and apps that
+depend on each other in a circle. The merge writes each app's `application.yaml` to
+`backend/definitions/apps/<id>.yaml`; the server reads them at startup.
+
+### Names: the app's prefix
+
+An app's own names start with its `prefix` (2–10 lower case letters and digits) and a
+separator, so two apps cannot clash by name: the fields it adds to tables of the base or of
+another app (`lp_loyalty_points`), its tables (`LP_Loyalty_Tier`) and its pages
+(`LP Loyalty Tiers`). The fields of its own tables need no prefix.
+
+### Texts: translations/<language>/*.yaml
+
+An app's captions and messages are in `translations/<language>/` of its directory, written like
+the base application's (`tables.yaml`: `tables.<table>.caption`, `tables.<table>.fields.<field>`;
+`pages.yaml`; `common.yaml`: `common.actions.<action>`, `common.sections.<section>`,
+`common.menu.<entry>`; `messages.yaml` …), in every language of the base application. They are
+copied next to the base's texts as files of their own (`<prefix>-<file>.yaml`). An app only adds
+texts: a key the base application or another app already has is refused, as is a language the
+base application does not have.
 
 ## Extension Types
 
@@ -148,9 +177,8 @@ fields:                      # Written like the fields of a table definition (ev
 ```
 
 Field numbers identify fields (field IDs): `extmerge` refuses an extension field without a
-number above the base application's 1–999, or with a number or name the table (or another
-extension) already uses. Each extension uses its own number series (planned: `application.yaml`,
-see TODO "Field and object numbering"). A number is never changed or reused.
+number in the app's field series, or with a number or name the table (or another extension)
+already uses, and a field name without the app's prefix. A number is never changed or reused.
 
 ## Merge Rules
 
@@ -171,10 +199,11 @@ see TODO "Field and object numbering"). A number is never changed or reused.
 Extensions are merged at build time using the `extmerge` tool:
 
 ```bash
-# Merge extensions with core
+# Merge extension apps with core (--extensions per app, or --apps for a directory of apps)
 extmerge --core ./backend/definitions \
          --extensions ./extensions \
-         --output ./merged
+         --output ./merged \
+         --translations ./translations --translations-output ./merged-translations
 
 # then generate the table code from the merged definitions
 go generate ./backend/generated/tables

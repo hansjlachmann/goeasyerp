@@ -1,0 +1,8 @@
+# The test app's action, section and menu captions
+common:
+  actions:
+    loyalty_tiers: "Loyalty Tiers"
+  sections:
+    loyalty: "Loyalty"
+  menu:
+    loyalty_tiers: "Loyalty Tiers"

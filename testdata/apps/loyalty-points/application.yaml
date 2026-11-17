@@ -5,6 +5,7 @@ application:
   publisher: GoEasyERP tests
   contact: https://github.com/hansjlachmann/goeasyerp
   version: 1.0.0
+  prefix: lp
   number_series:
     objects: [{from: 50000, to: 50099}]
     fields: [{from: 50000, to: 50099}]

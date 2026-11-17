@@ -3,7 +3,8 @@ FROM golang:1.24-alpine AS builder
 
 # Version passed at build time
 ARG VERSION=dev
-# Optional: path to extensions directory (for child repos)
+# Optional: an extension app's directory (with its application.yaml), or a directory whose
+# subdirectories are extension apps — merged into this build
 ARG EXTENSIONS_PATH=""
 
 WORKDIR /app
@@ -21,15 +22,18 @@ COPY . .
 # Build the extmerge tool
 RUN CGO_ENABLED=0 GOOS=linux go build -o extmerge ./tools/extmerge
 
-# If EXTENSIONS_PATH is provided, merge the extensions' definitions (*.extend.yaml, new
-# tables and pages) into backend/definitions, then generate the table code again from the
-# merged definitions: extension fields become fields of the generated records
+# If EXTENSIONS_PATH is provided, merge the apps (their dependencies checked, in dependency
+# order) into backend/definitions and their texts into translations, then generate the table
+# code again from the merged definitions: extension fields become fields of the generated
+# records, and the server lists the apps under Installed Apps (backend/definitions/apps)
 RUN if [ -n "$EXTENSIONS_PATH" ] && [ -d "$EXTENSIONS_PATH" ]; then \
-      echo "Merging extensions from $EXTENSIONS_PATH..."; \
-      mkdir -p /tmp/merged; \
-      ./extmerge --core ./backend/definitions --extensions "$EXTENSIONS_PATH" --output /tmp/merged --verbose; \
-      rm -rf ./backend/definitions; \
+      echo "Merging extension apps from $EXTENSIONS_PATH..."; \
+      if [ -f "$EXTENSIONS_PATH/application.yaml" ]; then apps="--extensions $EXTENSIONS_PATH"; else apps="--apps $EXTENSIONS_PATH"; fi; \
+      ./extmerge --core ./backend/definitions $apps --output /tmp/merged \
+        --translations ./translations --translations-output /tmp/merged-translations --verbose; \
+      rm -rf ./backend/definitions ./translations; \
       mv /tmp/merged ./backend/definitions; \
+      mv /tmp/merged-translations ./translations; \
       go generate ./backend/generated/tables; \
     else \
       echo "No extensions path provided, using the core definitions"; \

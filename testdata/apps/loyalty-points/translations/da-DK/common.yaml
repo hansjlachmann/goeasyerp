@@ -1,0 +1,8 @@
+# The test app's action, section and menu captions
+common:
+  actions:
+    loyalty_tiers: "Fordelsniveauer"
+  sections:
+    loyalty: "Fordelsprogram"
+  menu:
+    loyalty_tiers: "Fordelsniveauer"

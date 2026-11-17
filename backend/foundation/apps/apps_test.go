@@ -76,3 +76,83 @@ func TestCheckOverlap(t *testing.T) {
 		t.Error("same id twice accepted")
 	}
 }
+
+func testApp(name, id, version string, deps ...Dependency) *App {
+	return &App{ID: id, Name: name, Version: version, Prefix: "x" + name[:1], Dependencies: deps}
+}
+
+// Apps are ordered after the apps they depend on; missing, too old, renamed and circular
+// dependencies are refused
+func TestOrder(t *testing.T) {
+	base := testApp("Base", "b", "0.1.160")
+	onBase := Dependency{ID: "b", Name: "Base", MinVersion: "0.1.100"}
+	loyalty := testApp("Loyalty", "l", "1.2.0", onBase)
+	rewards := testApp("Rewards", "r", "1.0.0", onBase, Dependency{ID: "l", Name: "Loyalty", MinVersion: "1.1"})
+
+	ordered, err := Order(base, []*App{rewards, loyalty})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var names []string
+	for _, a := range ordered {
+		names = append(names, a.Name)
+	}
+	if strings.Join(names, ",") != "Base,Loyalty,Rewards" {
+		t.Errorf("order %v", names)
+	}
+
+	for name, c := range map[string]struct {
+		apps []*App
+		want string
+	}{
+		"missing":      {[]*App{rewards}, "Rewards needs Loyalty (id l, version 1.1 or later), which is not installed"},
+		"too old":      {[]*App{rewards, testApp("Loyalty", "l", "1.0.9", onBase)}, "Rewards needs Loyalty version 1.1 or later, 1.0.9 is installed"},
+		"base too old": {[]*App{testApp("Loyalty", "l", "1", Dependency{ID: "b", MinVersion: "0.2.0"})}, "needs Base version 0.2.0 or later"},
+		"renamed":      {[]*App{rewards, testApp("Points", "l", "2.0.0", onBase)}, "depends on Loyalty (id l), but the app with that id is Points"},
+		"circle": {[]*App{
+			testApp("Aa", "a", "1", onBase, Dependency{ID: "c"}),
+			testApp("Cc", "c", "1", onBase, Dependency{ID: "a"}),
+		}, "in a circle: Aa → Cc → Aa"},
+	} {
+		if _, err := Order(base, c.apps); err == nil || !strings.Contains(err.Error(), c.want) {
+			t.Errorf("%s: err = %v, want %q", name, err, c.want)
+		}
+	}
+}
+
+func TestCompareVersions(t *testing.T) {
+	for _, c := range []struct {
+		a, b string
+		want int
+	}{
+		{"0.1.160", "0.1.97", 1}, {"1.0", "1.0.0", 0}, {"v2.0.1", "2.1.0", -1}, {"1.2.3-beta", "1.2.3", 0},
+	} {
+		if got := CompareVersions(c.a, c.b); got != c.want {
+			t.Errorf("CompareVersions(%s, %s) = %d, want %d", c.a, c.b, got, c.want)
+		}
+	}
+}
+
+// An extension app needs a prefix and a dependency on the base application; its names start
+// with the prefix
+func TestCheckExtension(t *testing.T) {
+	base := testApp("Base", "b", "1")
+	app := &App{Name: "Loyalty", Prefix: "lp", Dependencies: []Dependency{{ID: "b"}}}
+	if err := app.CheckExtension(base); err != nil {
+		t.Error(err)
+	}
+	for _, p := range []string{"", "L", "1lp", "loyaltypoint", "l-p"} {
+		bad := &App{Name: "Loyalty", Prefix: p, Dependencies: app.Dependencies}
+		if err := bad.CheckExtension(base); err == nil {
+			t.Errorf("prefix %q accepted", p)
+		}
+	}
+	if err := (&App{Name: "Loyalty", Prefix: "lp"}).CheckExtension(base); err == nil || !strings.Contains(err.Error(), "depends on Base") {
+		t.Errorf("without the base: %v", err)
+	}
+	for name, want := range map[string]bool{"lp_points": true, "LP_Loyalty_Tier": true, "LP Loyalty Tiers": true, "lpoints": false, "lp_": false, "points": false} {
+		if got := app.HasPrefix(name); got != want {
+			t.Errorf("HasPrefix(%q) = %v", name, got)
+		}
+	}
+}

@@ -69,9 +69,31 @@ func CheckObjectNumbers(installed []*fapps.App) error {
 }
 
 // SyncInstalledApps writes one Installed_App row per installed app (inserted the first time,
-// updated when the app's data changed)
+// updated when the app's data changed) and removes the rows of apps no longer built in
 func SyncInstalledApps(db database.Executor, dbType database.DBType, installed []*fapps.App) error {
 	now := types.NewDateTimeFromTime(time.Now())
+	installedIDs := map[string]bool{}
+	for _, a := range installed {
+		installedIDs[a.ID] = true
+	}
+	var old gtables.InstalledApp
+	old.InitWithDBType(db, "", dbType)
+	var removed []string
+	for found := old.FindSet(); found; found = old.Next() {
+		if !installedIDs[old.App_id.String()] {
+			removed = append(removed, old.App_id.String())
+		}
+	}
+	for _, id := range removed {
+		var rec gtables.InstalledApp
+		rec.InitWithDBType(db, "", dbType)
+		if rec.Get(types.NewText(id)) {
+			err := rec.DeleteOrError(false)
+			if err != nil {
+				return fmt.Errorf("installed app %s: %w", id, err)
+			}
+		}
+	}
 	for _, a := range installed {
 		var rec gtables.InstalledApp
 		rec.InitWithDBType(db, "", dbType)

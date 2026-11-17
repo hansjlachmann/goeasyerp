@@ -1,7 +1,7 @@
 page:
   id: 50000
   type: List
-  name: Loyalty Tiers
+  name: LP Loyalty Tiers
   source_table: LP_Loyalty_Tier
   caption: Loyalty Tiers
   editable: true
