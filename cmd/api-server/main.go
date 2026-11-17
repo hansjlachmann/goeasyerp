@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/api"
 	blapps "github.com/hansjlachmann/goeasyerp/backend/business-logic/apps"
@@ -179,6 +180,18 @@ func main() {
 	if err := blapps.SyncInstalledApps(db.GetConnection(), secretsDBType, installedApps); err != nil {
 		log.Printf("WARNING: installed apps: %v", err)
 	}
+	// The extension apps switched off (Installed Apps): read now, and again every 30 s so every
+	// server follows a switch made on one of them
+	if err := blapps.LoadDisabled(db.GetConnection(), secretsDBType); err != nil {
+		log.Printf("WARNING: disabled apps: %v", err)
+	}
+	go func() {
+		for range time.Tick(30 * time.Second) {
+			if err := blapps.LoadDisabled(db.GetConnection(), secretsDBType); err != nil {
+				log.Printf("WARNING: disabled apps: %v", err)
+			}
+		}
+	}()
 	if err := blapps.SyncObjects(db.GetConnection(), secretsDBType); err != nil {
 		log.Printf("WARNING: objects: %v", err)
 	}

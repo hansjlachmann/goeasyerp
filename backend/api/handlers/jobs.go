@@ -14,9 +14,11 @@ import (
 	apitypes "github.com/hansjlachmann/goeasyerp/backend/api/types"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
+	fapps "github.com/hansjlachmann/goeasyerp/backend/foundation/apps"
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/functions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
@@ -466,6 +468,9 @@ func (h *JobsHandler) CancelJob(c *fiber.Ctx) error {
 // ("table:Customer.AssistEdit") needs Modify on its table, a codeunit function
 // ("codeunit:900.PostLine") Execute on the codeunit
 func runPermissionError(sess *session.Session, codeunitID, reportID int, function, language string) *apperrors.AppError {
+	if !runObjectEnabled(codeunitID, reportID, function) {
+		return apperrors.AppDisabled()
+	}
 	switch {
 	case function != "":
 		if fn, ok := functions.Lookup(function); ok && fn.Print {
@@ -494,6 +499,42 @@ func runPermissionError(sess *session.Session, codeunitID, reportID int, functio
 		}
 	}
 	return nil
+}
+
+// runObjectEnabled: the codeunit, report or function does not belong to a disabled extension
+// app (its number in the app's series; a function as registered by the app, a table or codeunit
+// function also by its object)
+func runObjectEnabled(codeunitID, reportID int, function string) bool {
+	switch {
+	case function != "":
+		fn, ok := functions.Lookup(function)
+		if ok && !extensions.Enabled(fn.App) {
+			return false
+		}
+		kind, rest, _ := strings.Cut(function, ":")
+		object, _, _ := strings.Cut(rest, ".")
+		id, err := strconv.Atoi(object)
+		if kind == "codeunit" && err == nil {
+			return extensions.ObjectEnabled(fapps.Codeunit, id)
+		}
+		if kind == "table" {
+			return tableEnabled(object)
+		}
+		return true
+	case reportID != 0:
+		return extensions.ObjectEnabled(fapps.Report, reportID)
+	default:
+		return extensions.ObjectEnabled(fapps.Codeunit, codeunitID)
+	}
+}
+
+// tableEnabled: the table (by its registry name) does not belong to a disabled extension app
+func tableEnabled(tableName string) bool {
+	factory, ok := gtables.GetTableFactory(tableName)
+	if !ok {
+		return true
+	}
+	return extensions.ObjectEnabled(fapps.Table, factory().GetTableID())
 }
 
 // withOpenPage puts the page a result opens afterwards into its data (open_page), and the

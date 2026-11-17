@@ -22,6 +22,7 @@
 //	OnValidate_System_tables(rec *gtables.InstalledApp) error
 //	OnValidate_Installed_at(rec *gtables.InstalledApp) error
 //	OnValidate_Updated_at(rec *gtables.InstalledApp) error
+//	OnValidate_Disabled(rec *gtables.InstalledApp) error
 
 package tables
 
@@ -55,6 +56,7 @@ type InstalledApp struct {
 	System_tables types.Text     `db:"system_tables"`
 	Installed_at  types.DateTime `db:"installed_at"`
 	Updated_at    types.DateTime `db:"updated_at"`
+	Disabled      bool           `db:"disabled"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -131,6 +133,7 @@ var InstalledApp_FieldNo = struct {
 	System_tables int
 	Installed_at  int
 	Updated_at    int
+	Disabled      int
 }{
 	App_id:        1,
 	Name:          2,
@@ -142,6 +145,7 @@ var InstalledApp_FieldNo = struct {
 	System_tables: 8,
 	Installed_at:  9,
 	Updated_at:    10,
+	Disabled:      11,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -167,6 +171,8 @@ func (t *InstalledApp) FieldNo(fieldName string) int {
 		return 9
 	case "updated_at":
 		return 10
+	case "disabled":
+		return 11
 	}
 	return 0
 }
@@ -194,6 +200,8 @@ func (t *InstalledApp) FieldName(fieldNo int) string {
 		return "installed_at"
 	case 10:
 		return "updated_at"
+	case 11:
+		return "disabled"
 	}
 	return ""
 }
@@ -309,6 +317,7 @@ type (
 	InstalledAppOnValidate_System_tables interface{ OnValidate_System_tables(rec *InstalledApp) error }
 	InstalledAppOnValidate_Installed_at  interface{ OnValidate_Installed_at(rec *InstalledApp) error }
 	InstalledAppOnValidate_Updated_at    interface{ OnValidate_Updated_at(rec *InstalledApp) error }
+	InstalledAppOnValidate_Disabled      interface{ OnValidate_Disabled(rec *InstalledApp) error }
 )
 
 // installedAppLogic is the registered business logic of Installed_App, in
@@ -371,6 +380,8 @@ func installedAppTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(InstalledAppOnValidate_Installed_at)
 	case "OnValidate_Updated_at":
 		_, ok = logic.(InstalledAppOnValidate_Updated_at)
+	case "OnValidate_Disabled":
+		_, ok = logic.(InstalledAppOnValidate_Disabled)
 	default:
 		return false, false
 	}
@@ -556,7 +567,8 @@ func GetInstalledAppTableSchema() string {
 		field_series TEXT(250),
 		system_tables TEXT(250),
 		installed_at TEXT,
-		updated_at TEXT
+		updated_at TEXT,
+		disabled INTEGER
 	`
 }
 
@@ -572,7 +584,8 @@ func GetInstalledAppPostgresTableSchema() string {
 		field_series VARCHAR(250),
 		system_tables VARCHAR(250),
 		installed_at TIMESTAMP,
-		updated_at TIMESTAMP
+		updated_at TIMESTAMP,
+		disabled BOOLEAN
 	`
 }
 
@@ -705,6 +718,7 @@ func (t *InstalledApp) StoreOldValues() {
 	t.oldValues["system_tables"] = t.System_tables
 	t.oldValues["installed_at"] = t.Installed_at
 	t.oldValues["updated_at"] = t.Updated_at
+	t.oldValues["disabled"] = t.Disabled
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -748,6 +762,9 @@ func (t *InstalledApp) XRec() *InstalledApp {
 	}
 	if v, ok := t.oldValues["updated_at"].(types.DateTime); ok {
 		x.Updated_at = v
+	}
+	if v, ok := t.oldValues["disabled"].(bool); ok {
+		x.Disabled = v
 	}
 	return x
 }
@@ -820,6 +837,7 @@ func (t *InstalledApp) GetByPK(app_id types.Text) bool {
 	var system_tablesNull sql.NullString
 	var installed_atNull sql.NullString
 	var updated_atNull sql.NullString
+	var disabledBool sql.NullBool
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -827,7 +845,7 @@ func (t *InstalledApp) GetByPK(app_id types.Text) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at FROM "%s" WHERE 1=1 AND app_id = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled FROM "%s" WHERE 1=1 AND app_id = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -844,6 +862,7 @@ func (t *InstalledApp) GetByPK(app_id types.Text) bool {
 		&system_tablesNull,
 		&installed_atNull,
 		&updated_atNull,
+		&disabledBool,
 	)
 
 	if err != nil {
@@ -867,6 +886,7 @@ func (t *InstalledApp) GetByPK(app_id types.Text) bool {
 	t.System_tables = types.NewText(system_tablesNull.String)
 	t.Installed_at, _ = types.NewDateTimeFromString(installed_atNull.String)
 	t.Updated_at, _ = types.NewDateTimeFromString(updated_atNull.String)
+	t.Disabled = disabledBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -899,11 +919,12 @@ func (t *InstalledApp) Insert(runTrigger bool) bool {
 		t.System_tables,
 		t.Installed_at,
 		t.Updated_at,
+		t.Disabled,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (app_id) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (app_id) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -951,10 +972,11 @@ func (t *InstalledApp) InsertAll(records []*InstalledApp, runTrigger bool) error
 			r.System_tables,
 			r.Installed_at,
 			r.Updated_at,
+			r.Disabled,
 		})
 	}
 	tableName := InstalledAppTableName
-	columns := []string{"app_id", "name", "publisher", "contact", "version", "object_series", "field_series", "system_tables", "installed_at", "updated_at"}
+	columns := []string{"app_id", "name", "publisher", "contact", "version", "object_series", "field_series", "system_tables", "installed_at", "updated_at", "disabled"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1034,6 +1056,10 @@ func (t *InstalledApp) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "updated_at = ?")
 			values = append(values, t.Updated_at)
 		}
+		if t.hasFieldChanged("disabled") {
+			setClauses = append(setClauses, "disabled = ?")
+			values = append(values, t.Disabled)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -1059,6 +1085,8 @@ func (t *InstalledApp) Modify(runTrigger bool) bool {
 		values = append(values, t.Installed_at)
 		setClauses = append(setClauses, "updated_at = ?")
 		values = append(values, t.Updated_at)
+		setClauses = append(setClauses, "disabled = ?")
+		values = append(values, t.Disabled)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -1143,6 +1171,11 @@ func (t *InstalledApp) hasFieldChanged(fieldName string) bool {
 		if old, ok := oldValue.(types.DateTime); ok {
 			return !t.Updated_at.Equal(old)
 		}
+	case "disabled":
+		if old, ok := oldValue.(bool); ok {
+			return t.Disabled != old
+		}
+		return true // Type mismatch, assume changed
 	}
 
 	return false
@@ -1367,6 +1400,8 @@ func (t *InstalledApp) columnName(fieldName string) (string, bool) {
 		return "installed_at", true
 	case strings.ToLower("updated_at"):
 		return "updated_at", true
+	case strings.ToLower("disabled"):
+		return "disabled", true
 	}
 	return "", false
 }
@@ -1520,6 +1555,8 @@ func (t *InstalledApp) isKeyDateColumn(column string) bool {
 // isBoolColumn: a Boolean column
 func (t *InstalledApp) isBoolColumn(column string) bool {
 	switch column {
+	case "disabled":
+		return true
 	}
 	return false
 }
@@ -1724,7 +1761,7 @@ func (t *InstalledApp) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1739,6 +1776,7 @@ func (t *InstalledApp) FindFirst() bool {
 	var system_tablesNull sql.NullString
 	var installed_atNull sql.NullString
 	var updated_atNull sql.NullString
+	var disabledBool sql.NullBool
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&app_idNull,
@@ -1751,6 +1789,7 @@ func (t *InstalledApp) FindFirst() bool {
 		&system_tablesNull,
 		&installed_atNull,
 		&updated_atNull,
+		&disabledBool,
 	)
 
 	if err != nil {
@@ -1772,6 +1811,7 @@ func (t *InstalledApp) FindFirst() bool {
 	t.System_tables = types.NewText(system_tablesNull.String)
 	t.Installed_at, _ = types.NewDateTimeFromString(installed_atNull.String)
 	t.Updated_at, _ = types.NewDateTimeFromString(updated_atNull.String)
+	t.Disabled = disabledBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1792,7 +1832,7 @@ func (t *InstalledApp) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1807,6 +1847,7 @@ func (t *InstalledApp) FindLast() bool {
 	var system_tablesNull sql.NullString
 	var installed_atNull sql.NullString
 	var updated_atNull sql.NullString
+	var disabledBool sql.NullBool
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&app_idNull,
@@ -1819,6 +1860,7 @@ func (t *InstalledApp) FindLast() bool {
 		&system_tablesNull,
 		&installed_atNull,
 		&updated_atNull,
+		&disabledBool,
 	)
 
 	if err != nil {
@@ -1840,6 +1882,7 @@ func (t *InstalledApp) FindLast() bool {
 	t.System_tables = types.NewText(system_tablesNull.String)
 	t.Installed_at, _ = types.NewDateTimeFromString(installed_atNull.String)
 	t.Updated_at, _ = types.NewDateTimeFromString(updated_atNull.String)
+	t.Disabled = disabledBool.Bool
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1890,7 +1933,7 @@ func (t *InstalledApp) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -1969,6 +2012,7 @@ func (t *InstalledApp) Next(steps ...int) bool {
 		var system_tablesNull sql.NullString
 		var installed_atNull sql.NullString
 		var updated_atNull sql.NullString
+		var disabledBool sql.NullBool
 
 		err := t.currentRows.Scan(
 			&app_idNull,
@@ -1981,6 +2025,7 @@ func (t *InstalledApp) Next(steps ...int) bool {
 			&system_tablesNull,
 			&installed_atNull,
 			&updated_atNull,
+			&disabledBool,
 		)
 
 		if err != nil {
@@ -2001,6 +2046,7 @@ func (t *InstalledApp) Next(steps ...int) bool {
 		t.System_tables = types.NewText(system_tablesNull.String)
 		t.Installed_at, _ = types.NewDateTimeFromString(installed_atNull.String)
 		t.Updated_at, _ = types.NewDateTimeFromString(updated_atNull.String)
+		t.Disabled = disabledBool.Bool
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -2050,7 +2096,7 @@ func (t *InstalledApp) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2082,6 +2128,7 @@ func (t *InstalledApp) FindSetBuffered() bool {
 		var system_tablesNull sql.NullString
 		var installed_atNull sql.NullString
 		var updated_atNull sql.NullString
+		var disabledBool sql.NullBool
 
 		err := rows.Scan(
 			&app_idNull,
@@ -2094,6 +2141,7 @@ func (t *InstalledApp) FindSetBuffered() bool {
 			&system_tablesNull,
 			&installed_atNull,
 			&updated_atNull,
+			&disabledBool,
 		)
 
 		if err != nil {
@@ -2112,6 +2160,7 @@ func (t *InstalledApp) FindSetBuffered() bool {
 		record.System_tables = types.NewText(system_tablesNull.String)
 		record.Installed_at, _ = types.NewDateTimeFromString(installed_atNull.String)
 		record.Updated_at, _ = types.NewDateTimeFromString(updated_atNull.String)
+		record.Disabled = disabledBool.Bool
 
 		// Store old values
 		record.StoreOldValues()
@@ -2150,6 +2199,7 @@ func (t *InstalledApp) copyFromBuffered(record *InstalledApp) {
 	t.System_tables = record.System_tables
 	t.Installed_at = record.Installed_at
 	t.Updated_at = record.Updated_at
+	t.Disabled = record.Disabled
 	t.StoreOldValues()
 }
 
@@ -2476,6 +2526,25 @@ func (t *InstalledApp) ValidateField(fieldName string, value interface{}) error 
 			}
 		}
 		return nil
+	case "disabled":
+		// Set field value
+		if v, ok := value.(bool); ok {
+			t.Disabled = v
+		} else if v, ok := value.(string); ok {
+			// Handle string boolean values from JSON/frontend
+			t.Disabled = v == "true" || v == "1"
+		} else {
+			return fmt.Errorf("invalid type for field disabled")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(InstalledAppOnValidate_Disabled); ok {
+				if err := trg.OnValidate_Disabled(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -2508,6 +2577,8 @@ func (t *InstalledApp) FieldValue(no int) (any, bool) {
 		return t.Installed_at, true
 	case 10:
 		return t.Updated_at, true
+	case 11:
+		return t.Disabled, true
 	}
 	return nil, false
 }
@@ -2603,6 +2674,11 @@ func (t *InstalledApp) SetFieldValue(no int, value any) bool {
 	case 10:
 		if v, ok := value.(types.DateTime); ok {
 			t.Updated_at = v
+			return true
+		}
+	case 11:
+		if v, ok := value.(bool); ok {
+			t.Disabled = v
 			return true
 		}
 	}
@@ -3076,6 +3152,8 @@ func (t *InstalledApp) columnValue(column string) (interface{}, bool) {
 		return t.Installed_at, true
 	case "updated_at":
 		return t.Updated_at, true
+	case "disabled":
+		return t.Disabled, true
 	}
 	return nil, false
 }
@@ -3139,6 +3217,7 @@ func (t *InstalledApp) Init() {
 	t.System_tables = *new(types.Text)
 	t.Installed_at = *new(types.DateTime)
 	t.Updated_at = *new(types.DateTime)
+	t.Disabled = *new(bool)
 	t.applyDefaults()
 }
 
@@ -3183,6 +3262,7 @@ func (t *InstalledApp) ToMap() map[string]interface{} {
 		"system_tables": t.System_tables.String(),
 		"installed_at":  t.Installed_at.String(),
 		"updated_at":    t.Updated_at.String(),
+		"disabled":      t.Disabled,
 	}
 }
 
@@ -3236,6 +3316,11 @@ func (t *InstalledApp) FromMap(data map[string]interface{}) {
 	if v, ok := data["updated_at"]; ok && v != nil {
 		if s, ok := v.(string); ok {
 			t.Updated_at, _ = types.NewDateTimeFromString(s)
+		}
+	}
+	if v, ok := data["disabled"]; ok && v != nil {
+		if b, ok := v.(bool); ok {
+			t.Disabled = b
 		}
 	}
 }
@@ -3358,6 +3443,17 @@ func (t *InstalledApp) GetFields() []tables.FieldInfo {
 			Editable:   true,
 			PrimaryKey: false,
 			FlowField:  false,
+		},
+		{
+			No:         11,
+			Name:       "disabled",
+			Type:       tables.FieldTypeBoolean,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+			ReadOnly:   true,
 		},
 	}
 }

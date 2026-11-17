@@ -466,6 +466,13 @@ messages:
   EMAIL_DOC_PURCHASE_QUOTE: "Forespørsel om tilbud"
   EMAIL_DOC_PURCHASE_ORDER: "Innkjøpsordre"
   EMAIL_DOC_BLANKET_PURCHASE_ORDER: "Rammeinnkjøpsordre"
+  # Extension apps: enable/disable (Installed Apps)
+  ERR_APP_SUPER_ONLY: "Bare en SUPER-bruker kan aktivere eller deaktivere apper."
+  ERR_APP_BASE_ALWAYS_ON: "%1 er basisapplikasjonen: den er alltid aktiv."
+  ERR_APP_DEPENDED_ON: "%1 kan ikke deaktiveres: %2 er avhengig av den. Deaktiver %2 først."
+  ERR_APP_DEPENDENCY_DISABLED: "%1 kan ikke aktiveres: den er avhengig av %2, som er deaktivert. Aktiver %2 først."
+  APP_ENABLED: "%1 er aktivert."
+  APP_DISABLED: "%1 er deaktivert. Dataene beholdes; aktiver den igjen for å bruke den."
 
   # Dialog Messages
   DLG_DELETE_RECORD_CONFIRM: "Er du sikker på at du vil slette denne posten?"

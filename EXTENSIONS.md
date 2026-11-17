@@ -37,6 +37,16 @@ application:
 objects or fields outside the extension's series. At startup the server checks every table,
 page and codeunit against the installed apps and lists them in Installed Apps (page 907).
 
+### Enabling and disabling an app
+
+Installed Apps (page 907) has **Disable App** and **Enable App** (SUPER only). A disabled app
+stays built in and keeps its data, but its business logic, event subscribers and field checks
+do not run, the page parts and menu entries it added are left out or greyed out, and its pages,
+reports, routines and functions are refused. The base application cannot be disabled; an app
+cannot be disabled while an enabled app depends on it, nor enabled while an app it depends on is
+disabled. Every server reads the switch again within 30 seconds. Removing an app for good is a
+build without it.
+
 ### Dependencies
 
 Every extension app depends on the base application; it may also depend on other extension

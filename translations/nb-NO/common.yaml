@@ -298,6 +298,8 @@ common:
     run: "Kjør"
     send_test_e_mail: "Send test-e-post"
     send_by_e_mail: "Send som e-post"
+    enable_app: "Aktiver app"
+    disable_app: "Deaktiver app"
     test: "TEST"
     test_line_1: "Test linje 1"
     test_line_2: "Test linje 2"

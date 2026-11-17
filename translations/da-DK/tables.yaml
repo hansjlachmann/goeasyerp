@@ -487,6 +487,7 @@ tables:
       system_tables: "Systemobjektnumre"
       installed_at: "Installeret"
       updated_at: "Opdateret"
+      disabled: "Deaktiveret"
 
   # Currency (Table 4)
   currency:

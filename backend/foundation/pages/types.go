@@ -128,6 +128,9 @@ type Layout struct {
 
 // Section represents a section/group on a Card page
 type Section struct {
+	// App: the extension app that added it (merged by extmerge); "" the base application — a
+	// disabled app's parts are left out of the page and menu sent to the browser
+	App     string  `yaml:"app,omitempty" json:"-"`
 	Name    string  `yaml:"name" json:"name"`
 	Caption string  `yaml:"caption" json:"caption"`
 	Fields  []Field `yaml:"fields" json:"fields"`
@@ -252,6 +255,9 @@ type Repeater struct {
 
 // Field represents a single field on a page
 type Field struct {
+	// App: the extension app that added it (merged by extmerge); "" the base application — a
+	// disabled app's parts are left out of the page and menu sent to the browser
+	App     string `yaml:"app,omitempty" json:"-"`
 	Source  string `yaml:"source" json:"source"`                       // Field name from table
 	Caption string `yaml:"caption,omitempty" json:"caption,omitempty"` // Override caption
 	// CaptionClass: the caption expression of a page field (classic CaptionClass,
@@ -345,6 +351,9 @@ type RunPageFilter struct {
 
 // Action represents a page action/button
 type Action struct {
+	// App: the extension app that added it (merged by extmerge); "" the base application — a
+	// disabled app's parts are left out of the page and menu sent to the browser
+	App      string `yaml:"app,omitempty" json:"-"`
 	Name     string `yaml:"name" json:"name"`
 	Caption  string `yaml:"caption" json:"caption"`
 	Shortcut string `yaml:"shortcut,omitempty" json:"shortcut,omitempty"`
@@ -393,6 +402,9 @@ type MenuDefinition struct {
 // MenuGroup is a module of the main menu (General Ledger, Sales …): its menu
 // entries, or a direct page
 type MenuGroup struct {
+	// App: the extension app that added it (merged by extmerge); "" the base application — a
+	// disabled app's parts are left out of the page and menu sent to the browser
+	App    string     `yaml:"app,omitempty" json:"-"`
 	Name   string     `yaml:"name" json:"name"`
 	Icon   string     `yaml:"icon,omitempty" json:"icon,omitempty"`
 	Items  []MenuItem `yaml:"items,omitempty" json:"items,omitempty"`     // the module's menu
@@ -405,6 +417,9 @@ type MenuGroup struct {
 // may run it (a sub-menu: one of its entries is available); an entry without one is shown
 // greyed out (not built yet, or Denied).
 type MenuItem struct {
+	// App: the extension app that added it (merged by extmerge); "" the base application — a
+	// disabled app's parts are left out of the page and menu sent to the browser
+	App         string     `yaml:"app,omitempty" json:"-"`
 	Name        string     `yaml:"name,omitempty" json:"name,omitempty"`
 	PageID      int        `yaml:"page_id,omitempty" json:"page_id,omitempty"`
 	RunObject   string     `yaml:"run_object,omitempty" json:"run_object,omitempty"`

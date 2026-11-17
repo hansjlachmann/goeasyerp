@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
+	_ "github.com/hansjlachmann/goeasyerp/backend/business-logic/apps" // Installed Apps: Enable/Disable App
 	_ "github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/functions"

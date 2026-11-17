@@ -1352,6 +1352,13 @@ func templateFuncs() template.FuncMap {
 		"sqlType":       getSQLType,
 		"goDefault":     goDefault,
 		"rangeCheck":    rangeCheck,
+		// appChecked: a field an extension app added that has field checks — they run only while
+		// the app is enabled
+		"appChecked": func(f Field) bool {
+			text := f.Type == "types.Code" || f.Type == "types.Text" || f.Type == "string"
+			return f.App != "" && !f.FlowField && !f.Encrypted &&
+				((f.Required && text) || (f.Length > 0 && text) || f.DateFormula || f.Validation != nil)
+		},
 		"sqlRangeCheck": sqlRangeCheck,
 		"readOnly":      func(f Field) bool { return f.Editable != nil && !*f.Editable },
 		"dbFieldName": func(fields []Field, name string) string {
@@ -1867,6 +1874,10 @@ func (t *{{ .StructName }}) runOnRename() error {
 func (t *{{ .StructName }}) CheckFields() error {
 {{- range .Table.Fields }}
 {{- if not (or .FlowField .Encrypted) }}
+{{- if appChecked . }}
+	// {{ .Name }}: a field of an extension app — checked while the app is enabled
+	if extensions.Enabled("{{ .App }}") {
+{{- end }}
 {{- if .Required }}
 	{{- if or (eq .Type "types.Code") (eq .Type "types.Text") }}
 	if err := tables.CheckRequired({{ $.StructName }}TableName, "{{ .Name }}", t.{{ upperFirst .Name }}.IsEmpty()); err != nil {
@@ -1891,6 +1902,9 @@ func (t *{{ .StructName }}) CheckFields() error {
 {{- if .Validation }}
 	if err := {{ rangeCheck $.StructName . }}; err != nil {
 		return err
+	}
+{{- end }}
+{{- if appChecked . }}
 	}
 {{- end }}
 {{- end }}

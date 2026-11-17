@@ -133,6 +133,7 @@ const (
 	// No Execute permission on a codeunit or report (id, name); a scheduled job's user (user, id)
 	ErrNoPermissionCodeunit  ErrorCode = "ERR_NO_PERMISSION_CODEUNIT"
 	ErrNoPermissionReport    ErrorCode = "ERR_NO_PERMISSION_REPORT"
+	ErrAppDisabled           ErrorCode = "ERR_APP_DISABLED"
 	ErrJobNoPermission       ErrorCode = "ERR_JOB_NO_PERMISSION"
 	ErrJobNoReportPermission ErrorCode = "ERR_JOB_NO_REPORT_PERMISSION"
 
@@ -825,6 +826,11 @@ func NoPermissionCodeunit(id int, name string) *AppError {
 // NoPermissionReport: the user may not run the report (no Execute permission)
 func NoPermissionReport(id int, name string) *AppError {
 	return &AppError{Code: ErrNoPermissionReport, Params: []string{fmt.Sprint(id), name}}
+}
+
+// AppDisabled: the object or function belongs to an extension app that is disabled
+func AppDisabled() *AppError {
+	return &AppError{Code: ErrAppDisabled}
 }
 
 // JobNoPermission: a Job Queue entry's user may not run its codeunit

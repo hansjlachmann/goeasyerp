@@ -98,3 +98,25 @@ func EnabledLogic(logic []any, apps []string) []any {
 	}
 	return out
 }
+
+var objectApp func(objectType string, id int) string
+
+// SetObjectApps sets how an object's app is found (by the number series of the installed apps;
+// "" for the base application)
+func SetObjectApps(fn func(objectType string, id int) string) {
+	enabledMu.Lock()
+	objectApp = fn
+	enabledMu.Unlock()
+}
+
+// ObjectEnabled reports whether an object (a table, page, report or codeunit by its number)
+// may run: the base application's always, an extension app's while the app is enabled
+func ObjectEnabled(objectType string, id int) bool {
+	enabledMu.RLock()
+	fn := objectApp
+	enabledMu.RUnlock()
+	if fn == nil {
+		return true
+	}
+	return Enabled(fn(objectType, id))
+}

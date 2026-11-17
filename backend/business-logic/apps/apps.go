@@ -71,6 +71,7 @@ func CheckObjectNumbers(installed []*fapps.App) error {
 // SyncInstalledApps writes one Installed_App row per installed app (inserted the first time,
 // updated when the app's data changed) and removes the rows of apps no longer built in
 func SyncInstalledApps(db database.Executor, dbType database.DBType, installed []*fapps.App) error {
+	setInstalled(installed)
 	now := types.NewDateTimeFromTime(time.Now())
 	installedIDs := map[string]bool{}
 	for _, a := range installed {

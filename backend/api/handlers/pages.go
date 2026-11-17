@@ -12,7 +12,9 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	fapps "github.com/hansjlachmann/goeasyerp/backend/foundation/apps"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
@@ -45,11 +47,17 @@ func (h *PagesHandler) GetPage(c *fiber.Ctx) error {
 	}
 	// The registry's definition is shared by all requests: translate and flag a copy
 	pageDef := shared.Clone()
+	// The parts disabled extension apps added are left out
+	withoutDisabledApps(&pageDef.Page)
 
 	// Get current session for captions
 	sess := getSession(c)
 	if sess == nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(apitypes.NewErrorResponse(apperrors.NoActiveSession().Message("en-US")))
+	}
+	// A page of a disabled extension app is not opened
+	if !extensions.ObjectEnabled(fapps.Page, pageID) {
+		return c.Status(fiber.StatusForbidden).JSON(apitypes.NewErrorResponse(apperrors.AppDisabled().Message(normalizeLanguageCode(sess.GetLanguage()))))
 	}
 
 	// Get table metadata for primary key info
@@ -468,6 +476,13 @@ func menuEntries(items []pages.MenuItem, ts *i18n.TranslationService, language s
 		}
 		out[i].Name = ts.MenuItemCaption(item.Name, language)
 		out[i].Items = menuEntries(item.Items, ts, language, sess)
+		// an entry a disabled app added, or that opens a disabled app's object: greyed out
+		if !menuEntryEnabled(item) {
+			for j := range out[i].Items {
+				out[i].Items[j].Enabled = false
+			}
+			continue
+		}
 		switch {
 		case len(item.Items) > 0:
 			for _, sub := range out[i].Items {
@@ -487,6 +502,73 @@ func menuEntries(items []pages.MenuItem, ts *i18n.TranslationService, language s
 		if out[i].Denied {
 			out[i].Enabled = false
 		}
+	}
+	return out
+}
+
+// menuEntryEnabled: the menu entry was not added by a disabled app, and its page, report or
+// codeunit does not belong to one
+func menuEntryEnabled(item pages.MenuItem) bool {
+	if !extensions.Enabled(item.App) {
+		return false
+	}
+	if item.PageID > 0 && !extensions.ObjectEnabled(fapps.Page, item.PageID) {
+		return false
+	}
+	if item.RunObject != "" {
+		kind, rest, _ := strings.Cut(item.RunObject, ":")
+		id, err := strconv.Atoi(rest)
+		if err == nil && (kind == "report" || kind == "codeunit") {
+			return extensions.ObjectEnabled(kind, id)
+		}
+		if strings.Contains(rest, ".") {
+			return runObjectEnabled(0, 0, item.RunObject)
+		}
+	}
+	return true
+}
+
+// withoutDisabledApps leaves out of a page (a copy: new lists, never the registry's) the
+// sections, fields, list columns and actions a disabled extension app added
+func withoutDisabledApps(page *pages.PageMetadata) {
+	sections := make([]pages.Section, 0, len(page.Layout.Sections))
+	for _, section := range page.Layout.Sections {
+		if !extensions.Enabled(section.App) {
+			continue
+		}
+		section.Fields = enabledFields(section.Fields)
+		sections = append(sections, section)
+	}
+	page.Layout.Sections = sections
+	if page.Layout.Repeater != nil {
+		repeater := *page.Layout.Repeater
+		repeater.Fields = enabledFields(repeater.Fields)
+		page.Layout.Repeater = &repeater
+	}
+	page.Actions = enabledActions(page.Actions)
+}
+
+func enabledFields(fields []pages.Field) []pages.Field {
+	out := make([]pages.Field, 0, len(fields))
+	for _, f := range fields {
+		if extensions.Enabled(f.App) {
+			out = append(out, f)
+		}
+	}
+	return out
+}
+
+func enabledActions(actions []pages.Action) []pages.Action {
+	if actions == nil {
+		return nil
+	}
+	out := make([]pages.Action, 0, len(actions))
+	for _, a := range actions {
+		if !extensions.Enabled(a.App) {
+			continue
+		}
+		a.Items = enabledActions(a.Items)
+		out = append(out, a)
 	}
 	return out
 }

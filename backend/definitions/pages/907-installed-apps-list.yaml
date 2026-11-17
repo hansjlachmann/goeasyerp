@@ -5,7 +5,8 @@ page:
   source_table: Installed_App
   caption: Installed Apps
   # The base application and the extension apps built into this installation, with the
-  # number series each may use (application.yaml). Written at startup, read-only.
+  # number series each may use (application.yaml). Written at startup, read-only; an extension
+  # app can be disabled and enabled again (SUPER only).
 
   layout:
     repeater:
@@ -14,6 +15,9 @@ page:
           width: 240
 
         - source: version
+          width: 90
+
+        - source: disabled
           width: 90
 
         - source: publisher
@@ -40,3 +44,16 @@ page:
 
         - source: updated_at
           width: 170
+
+  actions:
+    - name: Enable App
+      caption: Enable App
+      image: Approve
+      promoted: true
+      run_object: table:Installed_App.EnableApp
+
+    - name: Disable App
+      caption: Disable App
+      image: Cancel
+      promoted: true
+      run_object: table:Installed_App.DisableApp

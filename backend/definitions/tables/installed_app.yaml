@@ -75,6 +75,16 @@ table:
       db_name: updated_at
       caption: Updated At
 
+    # An extension app switched off (Disable on page 907, SUPER only): its business logic,
+    # events, field checks, page parts, menu entries and objects do not run or show; its data
+    # stays. Stored as Disabled so an app is on when the column is added.
+    - name: disabled
+      no: 11
+      type: bool
+      db_name: disabled
+      caption: Disabled
+      editable: false
+
   keys:
     - name: Primary
       fields: [app_id]
