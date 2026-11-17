@@ -1,4 +1,4 @@
-# Handover: the example extension app "Loyalty Points"
+# Handover: the example extension app "Test Extension App"
 
 This document is the complete brief for building GoEasyERP's first real extension app — an
 example other app authors can copy — in a repository of its own. It is written for a developer
@@ -15,8 +15,8 @@ built and tested in the base repository with a small test app; this app is the f
 the way real apps will be — in its own repository, released, installed through the user
 interface — and the example the guide points authors to.
 
-**The app:** customers collect loyalty points from posted sales invoices and lose them with
-credit memos; their loyalty tier follows their points. It touches every kind of extension:
+**The app:** "Test Extension App" — customers collect loyalty points from posted sales invoices
+and lose them with credit memos; their loyalty tier follows their points. It touches every kind of extension:
 fields on a base table, a table and page of its own, fields, a section, a column and buttons on
 base pages, a main menu entry, a page function, a table trigger, a posting event, texts in three
 languages.
@@ -39,22 +39,22 @@ In the base repository, at the release you build against (tag `v0.1.161` or late
 
 ## 3. The repository
 
-- **Name:** `goeasyerp-loyalty` (the owner may choose another). Public. Licence: ask the owner
+- **Name:** `goeasyerp-test-extension-app`. Public. Licence: ask the owner
   (the base is MIT).
 - **Layout** (as in `EXTENSIONS.md` §1): the app in `extensions/` — `application.yaml`,
   `tables/`, `pages/`, `menus/`, `custom/tables/`, `custom/pages/`, `translations/<language>/`,
   `go.mod` and the Go files — plus `README.md` (what the app does, how to install it, how to
   develop it) and `.github/workflows/ci.yml`.
-- **Go module path:** `github.com/<owner>/goeasyerp-loyalty/extensions` (the module is the
+- **Go module path:** `github.com/<owner>/goeasyerp-test-extension-app/extensions` (the module is the
   `extensions/` folder), requiring `github.com/hansjlachmann/goeasyerp` at the base release
   targeted.
 
 ## 4. application.yaml
 
 - `id`: a new GUID, lower case — generate it once and never change it.
-- `name`: `Loyalty Points`; `publisher` and `contact`: ask the owner (contact: a public URL).
+- `name`: `Test Extension App`; `publisher` and `contact`: ask the owner (contact: a public URL).
 - `version`: `1.0.0` for the first release (release tags `v1.0.0` …).
-- `prefix`: `lp`.
+- `prefix`: `tea` (every name the app adds starts with `tea_` / `TEA_` / `TEA `).
 - `number_series`: objects and fields `50100`–`50199` (keep clear of `50000`–`50099`, the base's
   test app).
 - `dependencies`: the base application — `id: 760e20ec-7a66-4e3f-b6e5-83c94db5a4bd`,
@@ -62,13 +62,13 @@ In the base repository, at the release you build against (tag `v0.1.161` or late
 
 ## 5. Functional requirements
 
-**F1 — Loyalty tiers.** A table `LP_Loyalty_Tier` (50100): Code (Code 10, primary key),
-Description (Text 50), Minimum Points (whole number, not below 0). A list page `LP Loyalty Tiers`
+**F1 — Loyalty tiers.** A table `TEA_Loyalty_Tier` (50100): Code (Code 10, primary key),
+Description (Text 50), Minimum Points (whole number, not below 0). A list page `TEA Loyalty Tiers`
 (50100), editable, to maintain them. A customer reaches a tier when its points are at least the
 tier's Minimum Points; the tier with the highest such minimum is the customer's.
 
-**F2 — Customer fields** (table 18): `lp_loyalty_points` (whole number, not below 0, not editable
-by users — set by the app's logic) and `lp_tier_code` (Code 10, relation to `LP_Loyalty_Tier`,
+**F2 — Customer fields** (table 18): `tea_loyalty_points` (whole number, not below 0, not editable
+by users — set by the app's logic) and `tea_tier_code` (Code 10, relation to `TEA_Loyalty_Tier`,
 not editable by users — follows the points).
 
 **F3 — Customer Card (page 21):** Loyalty Points in the General section after Credit Limit
@@ -92,9 +92,9 @@ The change goes through the customer's modify with triggers, so F6 runs. It is p
 posting's transaction: an error undoes the posting.
 
 **F6 — The tier follows the points.** The app's Customer `OnInsert` and `OnModify` set
-`lp_tier_code` from `lp_loyalty_points` (F1; blank when no tier is reached).
+`tea_tier_code` from `tea_loyalty_points` (F1; blank when no tier is reached).
 
-**F7 — Recalculate Points.** A page function `table:Customer.LpRecalculatePoints` (registered by
+**F7 — Recalculate Points.** A page function `table:Customer.TeaRecalculatePoints` (registered by
 the app; the Customer Card's menu item): sets the customer's points from all its posted invoices
 and credit memos (as F5, all at once), saves the customer (F6 runs) and reloads the card
 (`Refresh`), with a message naming the new points.
