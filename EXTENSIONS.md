@@ -216,23 +216,24 @@ docker build --build-arg EXTENSIONS_PATH=./extensions .
 
 ```
 my-goeasyerp-extension/
-├── extensions/
-│   ├── application.yaml                 # The extension app: id, number series, dependencies
+├── extensions/                          # The app's directory (EXTENSIONS_PATH of the build)
+│   ├── application.yaml                 # The extension app: id, prefix, number series, dependencies
 │   ├── tables/
 │   │   └── 18-customer.extend.yaml      # Extend Customer table
 │   ├── pages/
 │   │   └── 21-customer-card.extend.yaml # Extend Customer Card
 │   ├── menus/
 │   │   └── admin.extend.yaml            # Entries in the main menu
-│   └── logic/                           # Go module: business logic (see below)
-│       ├── customer.go                  # Triggers for the Customer fields
-│       └── 50100-custom-report.go       # New codeunit
-├── custom/
-│   ├── tables/
-│   │   └── 50000-inventory.yaml         # New table
-│   └── pages/
-│       └── 50001-inventory-list.yaml    # New page
-├── openerp.yaml                          # Core version config
+│   ├── custom/
+│   │   ├── tables/
+│   │   │   └── 50000-lp-tier.yaml       # New table
+│   │   └── pages/
+│   │       └── 50001-lp-tiers.yaml      # New page
+│   ├── translations/<language>/*.yaml   # The app's texts
+│   ├── go.mod                           # Go module: business logic (see below)
+│   ├── register.go                      # func Register(): registers the logic
+│   └── customer.go                      # Triggers for the Customer fields
+├── openerp.yaml                         # Core version config
 └── .github/workflows/build.yml
 ```
 
@@ -253,44 +254,55 @@ id_ranges:
   codeunits: 50000-50999
 ```
 
-## Extension apps: business logic (planned)
+## Extension apps: business logic
 
-The base application is built so that an extension app can add business logic without
-changing the base code. What already works in the base:
+An app adds business logic without changing the base code:
 
 - **Generated code is derived from the merged definitions.** `backend/generated/tables` is
-  regenerated after the merge, so a field from `customer.extend.yaml` becomes a typed field
+  regenerated after the merge, so a field from `18-customer.extend.yaml` becomes a typed field
   of `gtables.Customer` and gets its own `OnValidate_<Field>` trigger.
 - **Business logic is a list per table.** The base application registers its triggers in
-  `backend/business-logic/tables` (`gtables.RegisterCustomerLogic(customerLogic{})`). An
-  extension registers its own logic type for the same table, and every registered logic runs
-  in registration order (base first). The first error stops the operation.
+  `backend/business-logic/tables` (`gtables.RegisterCustomerLogic(customerLogic{})`). An app
+  registers its own logic type for the same table, and every registered logic runs in
+  registration order — the base first, then the apps in dependency order. The first error
+  stops the operation.
+- **The app's Go code is a Go module** in the app's directory (`go.mod` next to its
+  `application.yaml`). Its go.mod requires the base module at the release it builds on; the
+  module's root package has `func Register()`, which registers its logic.
 
 ```go
-// my-goeasyerp-extension/extensions/logic/customer.go
-package logic
+// loyalty-points/loyalty.go (module example.com/loyaltypoints)
+package loyaltypoints
 
 import gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 
+// Register registers the app's business logic (the build calls it at startup)
+func Register() {
+	gtables.RegisterCustomerLogic(customerLogic{})
+}
+
 type customerLogic struct{}
 
-func init() { gtables.RegisterCustomerLogic(customerLogic{}) }
-
-// Runs after the base application's Customer OnInsert
-func (customerLogic) OnInsert(rec *gtables.Customer) error {
-	if rec.Loyalty_points == 0 {
-		rec.Loyalty_points = 100
+// Runs after the base application's Customer OnModify
+func (customerLogic) OnModify(rec *gtables.Customer) error {
+	if rec.Lp_loyalty_points < 0 {
+		rec.Lp_loyalty_points = 0
 	}
 	return nil
 }
-
-func (customerLogic) OnValidate_Loyalty_points(rec *gtables.Customer) error { … }
 ```
 
-Still to build (`TODO.md`, "Extension apps"):
+**Linking it into the program.** `extmerge --go-root <base repository>` (the Docker build
+passes it) writes:
 
-- **Linking the extension's Go module into the build:** a `go.work` file or a `replace`
-  directive pointing at the merged, regenerated base, plus a generated file with a blank
-  import per installed extension.
-- **Field-name collision rules.**
-- **OnBefore/OnAfter and codeunit events.**
+- `go.work` — the base module and each app's module, with the base release an app requires
+  pointed at the base being built, so the app compiles against the merged definitions'
+  generated tables;
+- `cmd/api-server/apps_gen.go` — `extensions.Install(<app id>, <package>.Register)` per app, in
+  dependency order, after the base application's logic.
+
+Both are build outputs, never committed. `backend/foundation/extensions` keeps which app is
+registering (`Current`) and which apps' code was installed (`Installed`).
+
+The test app `testdata/apps/loyalty-points` has such a module: its `OnModify` sets the
+customer's loyalty tier from the points, and its own test runs against the merged base in CI.

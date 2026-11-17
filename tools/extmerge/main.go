@@ -32,6 +32,7 @@ type options struct {
 	output             string
 	translations       string
 	translationsOutput string
+	goRoot             string // the base repository: go.work and the apps' Go code installation are written there
 	verbose            bool
 }
 
@@ -44,6 +45,7 @@ func main() {
 	flag.StringVar(&opts.output, "output", "", "Path to output merged directory")
 	flag.StringVar(&opts.translations, "translations", "", "Path to the core translations directory (needed when an app has translations)")
 	flag.StringVar(&opts.translationsOutput, "translations-output", "", "Path to output merged translations directory")
+	flag.StringVar(&opts.goRoot, "go-root", "", "The base repository being built: link the apps' Go code (go.work, cmd/api-server/apps_gen.go)")
 	flag.BoolVar(&opts.verbose, "verbose", false, "Enable verbose output")
 	flag.Parse()
 
@@ -126,6 +128,19 @@ func merge(opts options) error {
 		return err
 	}
 
+	// the outputs start empty (a merge run again starts afresh); they are never the inputs
+	for _, out := range [][2]string{{opts.output, opts.core}, {opts.translationsOutput, opts.translations}} {
+		if out[0] == "" {
+			continue
+		}
+		if filepath.Clean(out[0]) == filepath.Clean(out[1]) {
+			return fmt.Errorf("the output %s is the input: give another directory", out[0])
+		}
+		err = os.RemoveAll(out[0])
+		if err != nil {
+			return err
+		}
+	}
 	err = os.MkdirAll(opts.output, 0755)
 	if err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
@@ -140,7 +155,14 @@ func merge(opts options) error {
 			return fmt.Errorf("%s: %w", ext.Name, err)
 		}
 	}
-	return mergeAppTranslations(ordered[1:], dirOf, opts)
+	err = mergeAppTranslations(ordered[1:], dirOf, opts)
+	if err != nil {
+		return err
+	}
+	if opts.goRoot == "" {
+		return nil
+	}
+	return writeGoWiring(ordered[1:], dirOf, opts.goRoot, opts.verbose)
 }
 
 // mergeApp merges one app: its new tables and pages, then what it adds to existing tables,

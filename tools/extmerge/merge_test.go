@@ -128,3 +128,36 @@ func TestMergeTranslations(t *testing.T) {
 		t.Errorf("without translation paths: %v", err)
 	}
 }
+
+// With --go-root the apps that have a Go module are linked in: go.work joins their modules and
+// points the base release they require at the base being built, apps_gen.go installs them in
+// dependency order; an app's go.mod must require the base
+func TestGoWiring(t *testing.T) {
+	dir, opts := twoApps(t, rewardsApp)
+	writeFile(t, filepath.Join(dir, "apps", "loyalty", "go.mod"), "module example.com/loyalty\n\ngo 1.24.0\n\nrequire (\n\tgithub.com/hansjlachmann/goeasyerp v0.1.160 // the base\n\tgithub.com/other/x v1.0.0\n)\n")
+	writeFile(t, filepath.Join(dir, "apps", "rewards", "go.mod"), "module example.com/rewards\n\ngo 1.24.0\n\nrequire github.com/hansjlachmann/goeasyerp v0.1.170\n")
+	opts.goRoot = filepath.Join(dir, "repo")
+	if err := os.MkdirAll(filepath.Join(opts.goRoot, "cmd", "api-server"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := merge(opts); err != nil {
+		t.Fatal(err)
+	}
+	work, _ := os.ReadFile(filepath.Join(opts.goRoot, "go.work"))
+	for _, want := range []string{"\t.\n", filepath.Join(dir, "apps", "loyalty"), "replace github.com/hansjlachmann/goeasyerp v0.1.160 => ./", "replace github.com/hansjlachmann/goeasyerp v0.1.170 => ./"} {
+		if !strings.Contains(string(work), want) {
+			t.Errorf("go.work lacks %q:\n%s", want, work)
+		}
+	}
+	gen, _ := os.ReadFile(filepath.Join(opts.goRoot, "cmd", "api-server", "apps_gen.go"))
+	code := string(gen)
+	lp, rw := strings.Index(code, `extensions.Install("11111111`), strings.Index(code, `extensions.Install("22222222`)
+	if lp < 0 || rw < 0 || lp > rw || !strings.Contains(code, `lp "example.com/loyalty"`) || !strings.Contains(code, "lp.Register") {
+		t.Errorf("apps_gen.go:\n%s", code)
+	}
+
+	writeFile(t, filepath.Join(dir, "apps", "rewards", "go.mod"), "module example.com/rewards\n\ngo 1.24.0\n")
+	if err := merge(opts); err == nil || !strings.Contains(err.Error(), "must require github.com/hansjlachmann/goeasyerp") {
+		t.Errorf("an app not requiring the base: %v", err)
+	}
+}

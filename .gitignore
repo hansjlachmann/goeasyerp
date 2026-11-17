@@ -108,3 +108,8 @@ openerp-cli
 # Local material, never committed
 /reference/
 /*-code-txt/
+
+# Written by extmerge when a build links extension apps (never committed)
+go.work
+go.work.sum
+cmd/api-server/apps_gen.go

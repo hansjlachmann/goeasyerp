@@ -25,12 +25,13 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o extmerge ./tools/extmerge
 # If EXTENSIONS_PATH is provided, merge the apps (their dependencies checked, in dependency
 # order) into backend/definitions and their texts into translations, then generate the table
 # code again from the merged definitions: extension fields become fields of the generated
-# records, and the server lists the apps under Installed Apps (backend/definitions/apps)
+# records, the server lists the apps under Installed Apps (backend/definitions/apps), and the
+# apps' Go modules are linked in (go.work, cmd/api-server/apps_gen.go)
 RUN if [ -n "$EXTENSIONS_PATH" ] && [ -d "$EXTENSIONS_PATH" ]; then \
       echo "Merging extension apps from $EXTENSIONS_PATH..."; \
       if [ -f "$EXTENSIONS_PATH/application.yaml" ]; then apps="--extensions $EXTENSIONS_PATH"; else apps="--apps $EXTENSIONS_PATH"; fi; \
       ./extmerge --core ./backend/definitions $apps --output /tmp/merged \
-        --translations ./translations --translations-output /tmp/merged-translations --verbose; \
+        --translations ./translations --translations-output /tmp/merged-translations --go-root . --verbose; \
       rm -rf ./backend/definitions ./translations; \
       mv /tmp/merged ./backend/definitions; \
       mv /tmp/merged-translations ./translations; \
