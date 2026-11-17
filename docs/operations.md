@@ -85,6 +85,17 @@ nothing tracked is edited on the server.
 **Rollback:** set the previous `APP_VERSION` and `pull` + `up -d`. If a migration changed data in a
 way the old version cannot read, restore the backup taken before the upgrade (see below).
 
+## Extension apps
+
+An installation with extension apps runs its own backend image — the base release with the apps
+compiled in — built by its installation repository (template and steps:
+`deploy/installation-template/README.md`). In `prod.env`, `BACKEND_IMAGE` names that image (the
+frontend image stays the base release's, `APP_VERSION`); the image is private, so log in to the
+registry once with `docker login ghcr.io`. Installing, updating and removing apps: Installed
+Apps → Install App / Uninstall App, Build List → commit `apps.yaml` to the installation
+repository, then `scripts/backup.sh` and `scripts/prod.sh pull && scripts/prod.sh up -d` as for
+an upgrade. Without `BACKEND_IMAGE` the base release's backend image runs.
+
 ## After a host reboot
 
 All services have `restart: unless-stopped`, so they start again with Docker. Check with

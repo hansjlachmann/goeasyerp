@@ -17,6 +17,9 @@ page:
         - source: version
           width: 90
 
+        - source: status
+          width: 150
+
         - source: disabled
           width: 90
 
@@ -36,6 +39,15 @@ page:
           width: 290
           primary_key: true
 
+        - source: source
+          width: 280
+
+        - source: source_ref
+          width: 120
+
+        - source: source_path
+          width: 140
+
         - source: contact
           width: 280
 
@@ -46,6 +58,29 @@ page:
           width: 170
 
   actions:
+    - name: Install App
+      caption: Install App
+      image: Import
+      promoted: true
+      run_object: table:Installed_App.InstallApp
+
+    - name: Uninstall App
+      caption: Uninstall App
+      image: Delete
+      promoted: true
+      run_object: table:Installed_App.UninstallApp
+
+    - name: Cancel Pending
+      caption: Cancel Pending
+      image: Undo
+      run_object: table:Installed_App.CancelPending
+
+    - name: Build List
+      caption: Build List
+      image: Export
+      promoted: true
+      run_object: table:Installed_App.BuildList
+
     - name: Enable App
       caption: Enable App
       image: Approve

@@ -488,6 +488,16 @@ tables:
       installed_at: "Installed At"
       updated_at: "Updated At"
       disabled: "Disabled"
+      status: "Status"
+      source: "Repository"
+      source_ref: "Repository Version"
+      source_path: "Repository Folder"
+      manifest: "Application File"
+    options:
+      status:
+        installed: "Installed"
+        pending_install: "Pending Install"
+        pending_removal: "Pending Removal"
 
   # Currency (Table 4)
   currency:

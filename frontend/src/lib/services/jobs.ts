@@ -290,6 +290,10 @@ export async function startJob(
 			refresh: result.data.refresh === true
 		};
 		callbacks.onSyncResult?.(syncResult);
+		// A file in the result (a processing report's declaration, the build list): downloaded,
+		// as from an async job
+		const file = resultFileOf(syncResult.data as Record<string, unknown> | undefined);
+		if (file) downloadBlob(file.blob, file.filename);
 		return syncResult;
 	}
 }

@@ -27,7 +27,9 @@ services:
       retries: 5
 
   backend:
-    image: ghcr.io/hansjlachmann/goeasyerp/backend:${APP_VERSION:-latest}
+    # With extension apps: the installation's own backend image (BACKEND_IMAGE in prod.env, built
+    # by its installation repository); else the base release's
+    image: ${BACKEND_IMAGE:-ghcr.io/hansjlachmann/goeasyerp/backend:${APP_VERSION:-latest}}
     restart: unless-stopped
     ports:
       # Users go through nginx (80/443). Published on PUBLISH_HOST (default 127.0.0.1) for a

@@ -281,3 +281,21 @@ func (f *Fetcher) get(ctx context.Context, base string, segs []string, accept st
 	}
 	return b, nil
 }
+
+// filePathRe: a file path inside a repository (folders and a file name, no ..)
+var filePathRe = regexp.MustCompile(`^[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$`)
+
+// File downloads one file of a repository at its Ref (a tag, branch or commit) through the
+// GitHub API's contents endpoint — the token goes along, so a private repository the token may
+// read works too; at most max bytes. Used for an extension app's application.yaml.
+func (f *Fetcher) File(ctx context.Context, repo Repo, filePath string, max int64) ([]byte, error) {
+	if !filePathRe.MatchString(filePath) || strings.Contains(filePath, "..") {
+		return nil, fmt.Errorf("invalid file path %q", filePath)
+	}
+	segs := append([]string{"repos", repo.Owner, repo.Name, "contents"}, strings.Split(filePath, "/")...)
+	var query []string
+	if repo.Ref != "" {
+		query = append(query, "ref="+url.QueryEscape(repo.Ref))
+	}
+	return f.get(ctx, f.API, segs, "application/vnd.github.raw", max, query...)
+}

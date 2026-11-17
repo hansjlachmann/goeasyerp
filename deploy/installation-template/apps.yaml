@@ -1,0 +1,5 @@
+# The apps of this installation's next build (Installed Apps → Build List): commit it as
+# apps.yaml to the installation repository, whose workflow builds the image
+base:
+    version: 0.1.160
+apps: []

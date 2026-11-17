@@ -85,6 +85,52 @@ table:
       caption: Disabled
       editable: false
 
+    # Installing and uninstalling (Installed Apps, SUPER only): an app chosen to install is
+    # Pending Install until a build includes it, one chosen to uninstall Pending Removal until a
+    # build leaves it out (the build list, Build List, is what the installation's build reads)
+    - name: status
+      no: 12
+      type: Option
+      db_name: status
+      caption: Status
+      options: ["Installed", "Pending Install", "Pending Removal"]
+      editable: false
+
+    # Where the app's build takes it from: its GitHub repository, the version (tag) and the
+    # folder of its application.yaml
+    - name: source
+      no: 13
+      type: types.Text
+      db_name: source
+      caption: Repository
+      length: 250
+      editable: false
+
+    - name: source_ref
+      no: 14
+      type: types.Text
+      db_name: source_ref
+      caption: Repository Version
+      length: 100
+      editable: false
+
+    - name: source_path
+      no: 15
+      type: types.Text
+      db_name: source_path
+      caption: Repository Folder
+      length: 100
+      editable: false
+
+    # The app's application.yaml as read when it was chosen to install: its dependencies and
+    # number series are checked against it until a build includes the app (never sent to the
+    # browser)
+    - name: manifest
+      no: 16
+      type: "[]byte"
+      db_name: manifest
+      caption: Application File
+
   keys:
     - name: Primary
       fields: [app_id]

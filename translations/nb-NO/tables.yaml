@@ -488,6 +488,16 @@ tables:
       installed_at: "Installert"
       updated_at: "Oppdatert"
       disabled: "Deaktivert"
+      status: "Status"
+      source: "Repository"
+      source_ref: "Repository-versjon"
+      source_path: "Repository-mappe"
+      manifest: "Applikasjonsfil"
+    options:
+      status:
+        installed: "Installert"
+        pending_install: "Venter på installering"
+        pending_removal: "Venter på fjerning"
 
   # Currency (Table 4)
   currency:

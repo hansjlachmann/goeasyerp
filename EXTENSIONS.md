@@ -47,6 +47,29 @@ cannot be disabled while an enabled app depends on it, nor enabled while an app 
 disabled. Every server reads the switch again within 30 seconds. Removing an app for good is a
 build without it.
 
+### Installing, updating and uninstalling an app
+
+An app's code is compiled into the program, so installing one takes a build. Each installation
+with apps has an **installation repository** (template: `deploy/installation-template/`) with
+its build list `apps.yaml` and a GitHub Actions workflow that builds the backend image — the
+base release of the list with its apps — and pushes it; the server runs that image
+(`BACKEND_IMAGE` in `prod.env`, `docs/operations.md`).
+
+On Installed Apps (page 907; SUPER only):
+
+- **Install App** asks for the app's GitHub repository, its version (a tag) and the folder of its
+  `application.yaml`, reads that file from GitHub (through the API; `GITHUB_TOKEN` for private
+  repositories), checks it against the installed apps and those already chosen — its number
+  series, prefix, dependencies and their versions — and shows it as **Pending Install**. A newer
+  version of an installed app is an update.
+- **Uninstall App** marks an app **Pending Removal** (not while another app depends on it); on
+  an app chosen to install and not built yet it takes the choice back, as **Cancel Pending**
+  does for any pending install or removal.
+- **Build List** downloads `apps.yaml` — the base version and the apps of the next build in
+  dependency order, each with its repository, version and folder — to commit to the installation
+  repository. Its workflow builds the image; after `scripts/prod.sh pull && up -d` the server
+  shows the apps as Installed, and removed apps are gone (their data stays).
+
 ### Dependencies
 
 Every extension app depends on the base application; it may also depend on other extension

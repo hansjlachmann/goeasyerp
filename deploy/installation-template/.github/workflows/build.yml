@@ -1,0 +1,80 @@
+# Builds the installation's backend image: the GoEasyERP base release of apps.yaml with the apps
+# it lists compiled in (the base's Dockerfile merges them: EXTENSIONS_PATH), pushed to this
+# repository's package registry as ghcr.io/<owner>/<repository>/backend:<base version>, :latest
+name: Build GoEasyERP with the installation's apps
+
+on:
+  push:
+    paths:
+      - apps.yaml
+      - .github/workflows/build.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the build list
+        uses: actions/checkout@v4
+        with:
+          path: installation
+
+      - name: Read the base version
+        id: list
+        run: |
+          version=$(yq '.base.version' installation/apps.yaml)
+          [ -n "$version" ] && [ "$version" != "null" ] || { echo "apps.yaml has no base.version"; exit 1; }
+          echo "base=$version" >> "$GITHUB_OUTPUT"
+          # package names are lower case
+          echo "image=ghcr.io/${GITHUB_REPOSITORY,,}/backend" >> "$GITHUB_OUTPUT"
+
+      - name: Check out the base release
+        uses: actions/checkout@v4
+        with:
+          repository: hansjlachmann/goeasyerp
+          ref: v${{ steps.list.outputs.base }}
+          path: base
+
+      - name: Check out the apps
+        env:
+          APPS_TOKEN: ${{ secrets.APPS_TOKEN }}
+        run: |
+          mkdir -p base/apps
+          count=$(yq '.apps | length' installation/apps.yaml)
+          for i in $(seq 0 $((count - 1))); do
+            id=$(yq ".apps[$i].id" installation/apps.yaml)
+            repository=$(yq ".apps[$i].repository" installation/apps.yaml)
+            ref=$(yq ".apps[$i].ref" installation/apps.yaml)
+            folder=$(yq ".apps[$i].path // \"\"" installation/apps.yaml)
+            case "$repository" in https://github.com/*) ;; *) echo "app $id: not a GitHub repository: $repository"; exit 1 ;; esac
+            url="$repository"
+            if [ -n "$APPS_TOKEN" ]; then url="https://x-access-token:${APPS_TOKEN}@${repository#https://}"; fi
+            git clone --quiet --depth 1 --branch "$ref" "$url" "app-$i"
+            cp -r "app-$i/${folder:-.}" "base/apps/$id"
+            echo "✓ $(yq ".apps[$i].name" installation/apps.yaml) $(yq ".apps[$i].version" installation/apps.yaml)"
+          done
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the package registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push the backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: base
+          build-args: |
+            VERSION=${{ steps.list.outputs.base }}
+            EXTENSIONS_PATH=apps
+          push: true
+          tags: |
+            ${{ steps.list.outputs.image }}:${{ steps.list.outputs.base }}
+            ${{ steps.list.outputs.image }}:latest

@@ -473,6 +473,19 @@ messages:
   ERR_APP_DEPENDENCY_DISABLED: "%1 kan ikke aktiveres: den er avhengig av %2, som er deaktivert. Aktiver %2 først."
   APP_ENABLED: "%1 er aktivert."
   APP_DISABLED: "%1 er deaktivert. Dataene beholdes; aktiver den igjen for å bruke den."
+  # Extension apps: install/uninstall (Installed Apps)
+  APP_INSTALL_TITLE: "Installer app"
+  APP_INSTALL_REPOSITORY: "Repository (https://github.com/eier/repo)"
+  APP_INSTALL_VERSION: "Versjon (tag)"
+  APP_INSTALL_FOLDER: "Mappe for application.yaml"
+  ERR_APP_REPOSITORY: "Oppgi appens GitHub-repository som https://github.com/eier/repo."
+  ERR_APP_READ: "%1 kunne ikke leses: %2"
+  ERR_APP_INSTALL_REFUSED: "%1 kan ikke installeres: %2"
+  ERR_APP_ALREADY_INSTALLED: "%1 %2 er allerede installert."
+  APP_PENDING_INSTALL: "%1 %2 installeres med neste bygg (Venter på installering). Last ned byggelisten til installasjonsrepositoryet."
+  ERR_APP_UNINSTALL_DEPENDED_ON: "%1 kan ikke avinstalleres: %2 er avhengig av den."
+  APP_PENDING_REMOVAL: "%1 fjernes med neste bygg (Venter på fjerning). Dataene beholdes."
+  ERR_APP_NO_SOURCE: "%1 har ikke noe repository: velg den med Installer app, så bygget vet hvor den hentes fra."
 
   # Dialog Messages
   DLG_DELETE_RECORD_CONFIRM: "Er du sikker på at du vil slette denne posten?"

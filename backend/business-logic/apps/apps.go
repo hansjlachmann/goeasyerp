@@ -69,7 +69,10 @@ func CheckObjectNumbers(installed []*fapps.App) error {
 }
 
 // SyncInstalledApps writes one Installed_App row per installed app (inserted the first time,
-// updated when the app's data changed) and removes the rows of apps no longer built in
+// updated when the app's data changed) and removes the rows of apps no longer built in. An app
+// chosen to install (Pending Install) keeps its row until a build includes it — in the version
+// chosen, it is then Installed; an app built in that was chosen to uninstall stays Pending
+// Removal until a build leaves it out.
 func SyncInstalledApps(db database.Executor, dbType database.DBType, installed []*fapps.App) error {
 	setInstalled(installed)
 	now := types.NewDateTimeFromTime(time.Now())
@@ -81,7 +84,7 @@ func SyncInstalledApps(db database.Executor, dbType database.DBType, installed [
 	old.InitWithDBType(db, "", dbType)
 	var removed []string
 	for found := old.FindSet(); found; found = old.Next() {
-		if !installedIDs[old.App_id.String()] {
+		if !installedIDs[old.App_id.String()] && old.Status != gtables.InstalledApp_Status.PendingInstall {
 			removed = append(removed, old.App_id.String())
 		}
 	}
@@ -104,7 +107,14 @@ func SyncInstalledApps(db database.Executor, dbType database.DBType, installed [
 			rec.App_id = types.NewText(a.ID)
 			rec.Installed_at = now
 		}
+		// an update chosen (Pending Install of another version) waits for its build
+		if exists && rec.Status == gtables.InstalledApp_Status.PendingInstall && rec.Version.String() != a.Version {
+			continue
+		}
 		before := rec.ToMap()
+		if rec.Status == gtables.InstalledApp_Status.PendingInstall {
+			rec.Status = gtables.InstalledApp_Status.Installed
+		}
 		rec.Name = types.NewText(a.Name)
 		rec.Publisher = types.NewText(a.Publisher)
 		rec.Contact = types.NewText(a.Contact)
@@ -129,7 +139,7 @@ func SyncInstalledApps(db database.Executor, dbType database.DBType, installed [
 }
 
 func sameApp(a, b map[string]interface{}) bool {
-	for _, f := range []string{"name", "publisher", "contact", "version", "object_series", "field_series", "system_tables"} {
+	for _, f := range []string{"name", "publisher", "contact", "version", "object_series", "field_series", "system_tables", "status"} {
 		if fmt.Sprint(a[f]) != fmt.Sprint(b[f]) {
 			return false
 		}

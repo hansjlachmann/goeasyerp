@@ -473,6 +473,19 @@ messages:
   ERR_APP_DEPENDENCY_DISABLED: "%1 kan ikke aktiveres: den afhænger af %2, som er deaktiveret. Aktivér %2 først."
   APP_ENABLED: "%1 er aktiveret."
   APP_DISABLED: "%1 er deaktiveret. Dataene bevares; aktivér den igen for at bruge den."
+  # Extension apps: install/uninstall (Installed Apps)
+  APP_INSTALL_TITLE: "Installér app"
+  APP_INSTALL_REPOSITORY: "Repository (https://github.com/ejer/repo)"
+  APP_INSTALL_VERSION: "Version (tag)"
+  APP_INSTALL_FOLDER: "Mappe med application.yaml"
+  ERR_APP_REPOSITORY: "Angiv appens GitHub-repository som https://github.com/ejer/repo."
+  ERR_APP_READ: "%1 kunne ikke læses: %2"
+  ERR_APP_INSTALL_REFUSED: "%1 kan ikke installeres: %2"
+  ERR_APP_ALREADY_INSTALLED: "%1 %2 er allerede installeret."
+  APP_PENDING_INSTALL: "%1 %2 installeres med næste build (Afventer installation). Hent build-listen til installationsrepositoryet."
+  ERR_APP_UNINSTALL_DEPENDED_ON: "%1 kan ikke afinstalleres: %2 afhænger af den."
+  APP_PENDING_REMOVAL: "%1 fjernes med næste build (Afventer fjernelse). Dataene bevares."
+  ERR_APP_NO_SOURCE: "%1 har intet repository: vælg den med Installér app, så buildet ved, hvor den hentes fra."
 
   # Dialog Messages
   DLG_DELETE_RECORD_CONFIRM: "Er du sikker på, at du vil slette denne post?"

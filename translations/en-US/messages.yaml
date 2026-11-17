@@ -473,6 +473,19 @@ messages:
   ERR_APP_DEPENDENCY_DISABLED: "%1 cannot be enabled: it depends on %2, which is disabled. Enable %2 first."
   APP_ENABLED: "%1 is enabled."
   APP_DISABLED: "%1 is disabled. Its data is kept; enable it again to use it."
+  # Extension apps: install/uninstall (Installed Apps)
+  APP_INSTALL_TITLE: "Install App"
+  APP_INSTALL_REPOSITORY: "Repository (https://github.com/owner/repo)"
+  APP_INSTALL_VERSION: "Version (tag)"
+  APP_INSTALL_FOLDER: "Folder of application.yaml"
+  ERR_APP_REPOSITORY: "Give the app's GitHub repository as https://github.com/owner/repo."
+  ERR_APP_READ: "%1 could not be read: %2"
+  ERR_APP_INSTALL_REFUSED: "%1 cannot be installed: %2"
+  ERR_APP_ALREADY_INSTALLED: "%1 %2 is installed already."
+  APP_PENDING_INSTALL: "%1 %2 is installed with the next build (Pending Install). Download the Build List for the installation repository."
+  ERR_APP_UNINSTALL_DEPENDED_ON: "%1 cannot be uninstalled: %2 depends on it."
+  APP_PENDING_REMOVAL: "%1 is removed with the next build (Pending Removal). Its data is kept."
+  ERR_APP_NO_SOURCE: "%1 has no repository: choose it with Install App, so the build knows where to take it from."
 
   # Dialog Messages
   DLG_DELETE_RECORD_CONFIRM: "Are you sure you want to delete this record?"
