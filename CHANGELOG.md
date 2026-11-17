@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.161](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.160...v0.1.161) (2026-11-17)
+
+
+### Features
+
+* extension apps add to pages, list columns, menu buttons and the main menu ([aa30795](https://github.com/hansjlachmann/goeasyerp/commit/aa30795cde5e66c085a84cef1de50c0ed27883d2))
+* extension apps are installed and uninstalled from Installed Apps; an installation repository builds them ([7edfd96](https://github.com/hansjlachmann/goeasyerp/commit/7edfd96f48e55db999c06b52f708ec9eba4d9a71))
+* extension apps can be disabled and enabled again on Installed Apps ([6637773](https://github.com/hansjlachmann/goeasyerp/commit/66377735607bb64bca56d73a3496fca66b29ae4e))
+* extension apps with dependencies, a name prefix and their own texts; the server lists every installed app ([f64257d](https://github.com/hansjlachmann/goeasyerp/commit/f64257d738e2b5fddba70e1b922499be537e5771))
+* extension apps' Go code is built into the program ([7d81630](https://github.com/hansjlachmann/goeasyerp/commit/7d816302a877d643262988be6e3b77113223698e))
+* extension apps' logic knows its app; before-triggers and posting events for apps ([d7b867f](https://github.com/hansjlachmann/goeasyerp/commit/d7b867f1eca1a39b09f3b7acd79deb4a01ea7907))
+
+
+### Documentation
+
+* extension apps guide and the example app's handover; apps' page functions are checked in the merged build ([1575a48](https://github.com/hansjlachmann/goeasyerp/commit/1575a48a3ec7e630e7ce924e59a8a1d44fbb39bd))
+* the example extension app is called Test Extension App (prefix tea) ([e95ea29](https://github.com/hansjlachmann/goeasyerp/commit/e95ea29324c8f84ae6620eb5de85bf8dde4a2eed))
+
 ## [0.1.160](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.159...v0.1.160) (2026-11-16)
 
 
