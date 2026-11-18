@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.162](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.161...v0.1.162) (2026-11-18)
+
+
+### Bug Fixes
+
+* a disabled app's table relation checks no longer run ([2857d91](https://github.com/hansjlachmann/goeasyerp/commit/2857d91ed11fafd35432fa8f946793ab242b2a50))
+
+
+### Documentation
+
+* the example app is published; the handover describes the app as built ([ef78005](https://github.com/hansjlachmann/goeasyerp/commit/ef780056821ab3631e97fb77b82cf6f8cf598d98))
+
+
+### CI/CD
+
+* the installation template builds the backend image for linux/amd64 and linux/arm64 ([f97b647](https://github.com/hansjlachmann/goeasyerp/commit/f97b647361e6c497ef1a6a8b4758b17211c84952))
+
 ## [0.1.161](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.160...v0.1.161) (2026-11-17)
 
 
