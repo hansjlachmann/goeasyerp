@@ -1,179 +1,141 @@
-# Handover: the example extension app "Test Extension App"
+# The example extension app "Test Extension App"
 
-This document is the complete brief for building GoEasyERP's first real extension app — an
-example other app authors can copy — in a repository of its own. It is written for a developer
-(or an AI coding session) starting in that empty repository with no other context: everything
-needed is here or in the files it points to.
+GoEasyERP's first extension app built in a repository of its own — released, installed through
+the user interface, and the example `EXTENSIONS.md` points app authors to:
+`https://github.com/hansjlachmann/goeasyerp-test-extension-app` (release `v1.0.0`). This document
+records what the app is and how it was built, so the next app can follow the same steps.
 
-## 1. What you are building and why
+## 1. What it is and why
 
-GoEasyERP is an ERP system (Go backend, SvelteKit frontend, PostgreSQL), public at
-`https://github.com/hansjlachmann/goeasyerp`. Its base application can be extended by
-**extension apps**: separate repositories that add tables, fields, page parts, menu entries,
-texts and business logic, merged into an installation's build. The extension machinery was
-built and tested in the base repository with a small test app; this app is the first one built
-the way real apps will be — in its own repository, released, installed through the user
-interface — and the example the guide points authors to.
+GoEasyERP's base application can be extended by **extension apps**: separate repositories that add
+tables, fields, page parts, menu entries, texts and business logic, merged into an installation's
+build. The extension machinery was built and tested in the base repository with a small test app
+(`testdata/apps/loyalty-points`); this app is the first one built the way real apps are — in its
+own repository, with its own CI and releases.
 
-**The app:** "Test Extension App" — customers collect loyalty points from posted sales invoices
-and lose them with credit memos; their loyalty tier follows their points. It touches every kind of extension:
-fields on a base table, a table and page of its own, fields, a section, a column and buttons on
-base pages, a main menu entry, a page function, a table trigger, a posting event, texts in three
-languages.
+**The app:** customers belong to a **customer category**. It is deliberately small and has no
+business logic: a table and page of its own, a field on a base table, a field and a column on base
+pages, a main menu entry, texts in three languages. The base's test app shows the parts it leaves
+out (triggers, a page function, a section and buttons on base pages); `EXTENSIONS.md` describes
+them all.
 
 ## 2. Read first
 
-In the base repository, at the release you build against (tag `v0.1.161` or later):
+In the base repository, at the release the app builds against (tag `v0.1.161` or later):
 
 1. **`EXTENSIONS.md`** — the guide to extension apps: every file format, the merge rules, the Go
-   module and `Register`, triggers and events, building, installing, enabling. This brief does not
-   repeat it; follow it.
-2. **`testdata/apps/loyalty-points/`** — the base's own test app: a minimal version of this app
-   (it is merged into the base in the base's CI). Use it as a working reference for the file
-   formats, not as code to copy unchanged: this app is larger and is the one people will read.
-3. **`scripts/check-extension-fixture.sh`** — how the base builds and tests itself with an app;
-   your CI does the same with this app.
-4. For the YAML formats beyond the guide: `backend/definitions/tables/*.yaml` and
-   `backend/definitions/pages/*.yaml` (e.g. `customer.yaml`, `21-customer-card.yaml`,
-   `22-customer-list.yaml`); for Go business-logic style: `backend/business-logic/`.
+   module and `Register`, triggers and events, building, installing, enabling.
+2. **`testdata/apps/loyalty-points/`** — the base's own test app, merged into the base in the
+   base's CI; a working reference for the parts this app does not use.
+3. **`scripts/check-extension-fixture.sh`** — how the base builds and tests itself with an app; the
+   app's CI does the same.
 
 ## 3. The repository
 
-- **Name:** `goeasyerp-test-extension-app`. Public. Licence: ask the owner
-  (the base is MIT).
-- **Layout** (as in `EXTENSIONS.md` §1): the app in `extensions/` — `application.yaml`,
-  `tables/`, `pages/`, `menus/`, `custom/tables/`, `custom/pages/`, `translations/<language>/`,
-  `go.mod` and the Go files — plus `README.md` (what the app does, how to install it, how to
-  develop it) and `.github/workflows/ci.yml`.
-- **Go module path:** `github.com/<owner>/goeasyerp-test-extension-app/extensions` (the module is the
-  `extensions/` folder), requiring `github.com/hansjlachmann/goeasyerp` at the base release
-  targeted.
+- **Name:** `goeasyerp-test-extension-app`, public.
+- **Layout** (`EXTENSIONS.md` §1): the app in `extensions/` — `application.yaml`, `custom/tables/`,
+  `custom/pages/`, `tables/`, `pages/`, `menus/`, `translations/<language>/`, `go.mod`, `app.go`,
+  `app_test.go` — plus `README.md` (what the app adds, installing, disabling, developing),
+  `CHANGELOG.md`, `NOTES.md` (findings for the base's maintainer, §9) and
+  `.github/workflows/ci.yml`.
+- **Go module path:** `github.com/hansjlachmann/goeasyerp-test-extension-app/extensions` (the
+  module is the `extensions/` folder), requiring `github.com/hansjlachmann/goeasyerp`; the build
+  points it at the base being built (`go.work`, written by extmerge).
 
 ## 4. application.yaml
 
-- `id`: a new GUID, lower case — generate it once and never change it.
-- `name`: `Test Extension App`; `publisher` and `contact`: ask the owner (contact: a public URL).
-- `version`: `1.0.0` for the first release (release tags `v1.0.0` …).
+- `id`: `c7c1e38d-51b4-453d-97ad-32fd54456d4b` — never changes.
+- `name`: `Test Extension App`; `publisher`: `hansjlachmann`; `contact`: the repository's URL.
+- `version`: `1.0.0` (release tags `v1.0.0` …).
 - `prefix`: `tea` (every name the app adds starts with `tea_` / `TEA_` / `TEA `).
-- `number_series`: objects and fields `50100`–`50199` (keep clear of `50000`–`50099`, the base's
-  test app).
+- `number_series`: objects and fields `50100`–`50199` (clear of `50000`–`50099`, the base's test
+  app).
 - `dependencies`: the base application — `id: 760e20ec-7a66-4e3f-b6e5-83c94db5a4bd`,
-  `name: GoEasyERP Base Application`, `min_version`: the base release targeted.
+  `name: GoEasyERP Base Application`, `min_version: 0.1.161`.
 
-## 5. Functional requirements
+## 5. What it adds
 
-**F1 — Loyalty tiers.** A table `TEA_Loyalty_Tier` (50100): Code (Code 10, primary key),
-Description (Text 50), Minimum Points (whole number, not below 0). A list page `TEA Loyalty Tiers`
-(50100), editable, to maintain them. A customer reaches a tier when its points are at least the
-tier's Minimum Points; the tier with the highest such minimum is the customer's.
+**F1 — Customer categories.** Table `TEA_Customer_Category` (50100): Code (Code 10, primary key,
+required), Description (Text 50). Editable list page `TEA Customer Categories` (50100), caption
+Customer Categories.
 
-**F2 — Customer fields** (table 18): `tea_loyalty_points` (whole number, not below 0, not editable
-by users — set by the app's logic) and `tea_tier_code` (Code 10, relation to `TEA_Loyalty_Tier`,
-not editable by users — follows the points).
+**F2 — Customer field** (table 18): `tea_customer_category_code` (no. 50100, Code 10, relation to
+`TEA_Customer_Category`).
 
-**F3 — Customer Card (page 21):** Loyalty Points in the General section after Credit Limit
-(LCY); a new section **Loyalty** after Payments with Loyalty Tier; in the card's Customer menu a
-**Loyalty Tiers** item opening page 50100 and a **Recalculate Points** item (F7).
-**Customer List (page 22):** a Loyalty Points column after Name; a **Loyalty Tiers** button.
+**F3 — Pages:** on the Customer Card (21) the field in the General section after Territory Code;
+on the Customer List (22) a column after Name.
 
-**F4 — Main menu:** under Sales, after Customers, an entry **Loyalty Tiers** opening page 50100.
+**F4 — Main menu:** under Sales, after Customers, an entry **Customer Categories** opening page
+50100.
 
-**F5 — Points from posted invoices and credit memos.** Subscribe to the sales posting's
-`salesposting.OnAfterPost`:
+**F5 — Texts** in en-US, nb-NO and da-DK for every caption the app adds (own wording).
 
-- an invoice posted (`InvoiceNo` set): the bill-to customer gets **1 point per whole 10.00 of the
-  invoice's amount excluding tax, in local currency** — the sum of the posted invoice's lines'
-  Amount (`Sales_Invoice_Line`, `document_no` = InvoiceNo), divided by the invoice header's
-  Currency Factor when it has a currency (`Sales_Invoice_Header` `currency_code`/`currency_factor`);
-- a credit memo posted (`CrMemoNo` set): the same calculation on `Sales_Cr_Memo_Line` /
-  `Sales_Cr_Memo_Header` takes points off, never below 0.
+`Register()` in `extensions/app.go` is empty: the app has no business logic.
 
-The change goes through the customer's modify with triggers, so F6 runs. It is part of the
-posting's transaction: an error undoes the posting.
+## 6. Technical rules it follows
 
-**F6 — The tier follows the points.** The app's Customer `OnInsert` and `OnModify` set
-`tea_tier_code` from `tea_loyalty_points` (F1; blank when no tier is reached).
-
-**F7 — Recalculate Points.** A page function `table:Customer.TeaRecalculatePoints` (registered by
-the app; the Customer Card's menu item): sets the customer's points from all its posted invoices
-and credit memos (as F5, all at once), saves the customer (F6 runs) and reloads the card
-(`Refresh`), with a message naming the new points.
-
-**F8 — Texts** in en-US, nb-NO and da-DK for every caption the app adds: its table and fields,
-the Customer fields, its page, the section, the actions, the menu entry, its messages. The
-Norwegian and Danish texts are your own wording (not copied from any other product).
-
-## 6. Technical requirements
-
-- **Only add.** Never change the base repository; everything goes through the extension files and
-  `Register`. If the base lacks something the app needs (an event, a hook), do not work around it
-  — write it up for the base (§9).
-- **Business logic in the backend.** All rules (F5–F7) are Go code in the app; pages only show.
-- **Go style of the base's business logic:** one statement per line — never `if x := f(); cond`
-  (call, then check: `err := f()` / `if err != nil { return err }`); record variables opened from
-  a record (`cust := gtables.NewCustomer(rec)`); loops `for found := rec.FindSet(); found; found =
-  rec.Next() { … }`; `GetOrError` / `ModifyOrError` instead of hand-written not-found errors;
-  every error checked.
-- **Messages to users** come from the app's translations (`messages.yaml` keys, read through the
-  base's i18n), never English strings in Go code.
-- **Tests (Go):** in the app's module, against a database the tests create (the base's
-  `tables.CreateCompanyTables` on SQLite in memory), covering F1/F6 (tier boundaries), F5 (an
-  invoice and a credit memo posted through the base's sales posting — the base's
-  `salesposting` package tests show how to set up a company with posting groups and post a
-  document — points and tier after each, points never below 0), F7, and that nothing runs while
-  the app is disabled (`extensions.SetDisabled`, as the base's test app does).
-- **Public repository:** no hostnames, IP addresses, customer or company names of installations,
-  credentials or tokens in files, commits or issues. Describe behaviour in your own words; do not
-  name other ERP products.
-- **Commits:** Conventional Commits (`feat:`, `fix:` …); a changelog per release.
+- **Only add.** The base repository is never changed by the app; when the base lacks something,
+  it is written up for the base (§9), not worked around.
+- **Business logic in the backend** (none so far); pages only show.
+- **Go style of the base's business logic** for any code it gets: one statement per line (no
+  `if x := f(); cond`), record variables opened from a record, `for found := rec.FindSet(); found;
+  found = rec.Next()`, `GetOrError` / `ModifyOrError`, every error checked; user messages from the
+  app's translations.
+- **Tests (Go)** in the app's module against an in-memory SQLite company
+  (`tables.CreateCompanyTables`): the category table, the Customer field and its relation, and the
+  app disabled (`extensions.SetDisabled`) — data kept, customer still saved.
+- **Public repository:** no installation details, credentials or other products' names;
+  Conventional Commits and a changelog per release.
 
 ## 7. CI — `.github/workflows/ci.yml`
 
 On every push and pull request:
 
-1. Check out this repository and the base repository at the targeted release tag (into
-   `base/`).
-2. Copy `extensions/` into `base/apps/<app id>/` and run, in `base/`: `go run ./tools/extmerge
-   --core backend/definitions --apps apps --output merged --translations translations
+1. Check out the app and the base repository at the targeted release (into `base/`).
+2. Copy `extensions/` into `base/apps/<app id>/`, merge with `go run ./tools/extmerge --core
+   backend/definitions --apps apps --output merged --translations translations
    --translations-output merged-translations --go-root .`, replace `backend/definitions` and
    `translations` with the merged ones, `go generate ./backend/generated/tables`, `go build ./...`.
-3. Run the base's checks of the merged build: `go test ./backend/api/handlers
-   ./backend/business-logic/apps ./backend/foundation/apps ./cmd/api-server` (page definitions,
-   captions in every language, installed apps, the app's code installed).
-4. Run the app's own tests: `cd apps/<app id> && go test ./...` (inside `base/`, so `go.work`
-   joins the app with the merged base).
+3. The base's checks of the merged build: `go test ./backend/api/handlers
+   ./backend/business-logic/apps ./backend/foundation/apps ./cmd/api-server`.
+4. The app's own tests: `cd apps/<app id> && go test ./...` (inside `base/`).
 5. `go vet` and `gofmt` on the app's code.
-
-`scripts/check-extension-fixture.sh` in the base repository is the same sequence for the base's
-test app — follow it.
 
 ## 8. Releasing and installing
 
-- A release is a tag `vX.Y.Z` matching `version` in `application.yaml`, with release notes.
-- To install it in an installation: its installation repository (base:
-  `deploy/installation-template/README.md`) and **Installed Apps → Install App** with this
-  repository's URL, the tag and the folder `extensions`; **Build List** → commit `apps.yaml` →
-  the installation's workflow builds the image → the server pulls and restarts (`EXTENSIONS.md`
-  §10).
-- The README tells an installation's administrator exactly that, plus what the app adds and the
-  setup it needs (create the tiers on page 50100; Recalculate Points once for existing customers).
+- A release is a tag `vX.Y.Z` matching `version` in `application.yaml`, with release notes from
+  `CHANGELOG.md`.
+- Installing: **Installed Apps → Install App** with the repository URL, the tag and the folder
+  `extensions`; **Build List** → commit `apps.yaml` to the installation repository
+  (`deploy/installation-template/README.md`) → its workflow builds the image → the server pulls
+  and restarts (`EXTENSIONS.md` §10). The app's README tells an administrator exactly that.
 
-## 9. When the base needs a change
+## 9. What the base needed
 
-Write it down for the base repository's maintainer instead of patching around it: what the app
-needs, where in the base (file, function, the point in the code), why, and how you would test it.
-Typical: a new event (e.g. at a point the app must react to), a value an event should pass. Keep
-the app working without it where you can, or mark the requirement blocked.
+Findings go into the app's `NOTES.md` for the base's maintainer: what is needed, where in the base,
+why, how to test it.
 
-## 10. Done when
+- **A disabled app's table relation checks still ran** (`ERR_RELATED_NOT_FOUND` for a value that
+  is not a category while the app was disabled). Fixed in the base after 0.1.161: the generated
+  `Validate` checks an app field's relation only while the app is enabled; the base's test app
+  covers it. Once the app requires a base release with the fix, its disabled-app test can check
+  that a missing category is accepted, and the note can be closed.
 
-- [ ] The repository has the layout of §3, `application.yaml` of §4, a README.
-- [ ] F1–F8 are built; texts in all three languages.
-- [ ] CI (§7) passes: the merged build, the base's checks, the app's tests, vet/format.
-- [ ] Tests cover F1/F5/F6/F7 and the disabled app.
-- [ ] Release `v1.0.0` is tagged with release notes.
+## 10. Status
+
+- [x] Repository with the layout of §3, `application.yaml` of §4, README, changelog.
+- [x] F1–F5 built; texts in all three languages.
+- [x] CI (§7) passes.
+- [x] Tests cover the table, the field and the disabled app.
+- [x] Release `v1.0.0` tagged with release notes.
 - [ ] Installed in a test installation through Install App and the installation repository: the
-      Customer Card and List show the points and tier, posting an invoice adds points, a credit memo
-      takes them off, the tier follows, Recalculate Points works, Disable App hides it all and
-      Enable App brings it back.
-- [ ] Anything the base was missing is written up (§9).
+      Customer Card and List show the category, the menu entry opens Customer Categories, Disable
+      App hides it all and Enable App brings it back.
+
+## 11. Ideas for later releases
+
+The original brief was a larger app — **loyalty points**: customers collect points from posted
+sales invoices (a `salesposting.OnAfterPost` subscriber) and lose them with credit memos, a
+loyalty tier table whose tier follows the points (Customer `OnInsert`/`OnModify`), a section and
+buttons on the Customer Card and List, and a **Recalculate Points** page function. Building it
+would show triggers, a posting event and a page function in a real app repository.

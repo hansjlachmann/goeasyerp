@@ -19,7 +19,9 @@ author of an app.
 
 The test app `testdata/apps/loyalty-points` of this repository has every part described here;
 `scripts/check-extension-fixture.sh` builds the base application with it the way an
-installation's build does (CI runs it on every change of the base).
+installation's build does (CI runs it on every change of the base). An app in a repository of
+its own, released and installed as described here, is the Test Extension App,
+`https://github.com/hansjlachmann/goeasyerp-test-extension-app` — copy its layout, CI and README.
 
 ## 1. An app at a glance
 
@@ -319,8 +321,8 @@ On **Installed Apps** (Administration → Installed Apps; SUPER only):
 ## 11. Disabling and enabling
 
 Installed Apps has **Disable App** and **Enable App** (SUPER only). A disabled app stays built in
-and keeps its data, but its business logic, event subscribers and field checks do not run, the
-page parts and menu entries it added are left out or greyed out, and its pages, reports, routines
-and functions are refused. The base application cannot be disabled; an app cannot be disabled
-while an enabled app depends on it, nor enabled while an app it depends on is disabled. Every
-server reads the switch again within 30 seconds.
+and keeps its data, but its business logic, event subscribers and field checks (also the table
+relation checks of its fields) do not run, the page parts and menu entries it added are left out or
+greyed out, and its pages, reports, routines and functions are refused. The base application cannot
+be disabled; an app cannot be disabled while an enabled app depends on it, nor enabled while an app
+it depends on is disabled. Every server reads the switch again within 30 seconds.
