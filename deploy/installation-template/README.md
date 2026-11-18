@@ -24,7 +24,7 @@ with the apps compiled in — and pushes it to the repository's package registry
 2. **Build List** downloads `apps.yaml`: the base version and the apps of the next build, in
    dependency order. Commit it to this repository (replacing the old one).
 3. The workflow runs on the push: it checks out the base release and each app at its version
-   and builds and pushes the image (`<base version>` and `latest` tags). The base's build checks
+   and builds and pushes the image (`<base version>` and `latest` tags) for linux/amd64 and linux/arm64. The base's build checks
    the apps again (dependencies, number series, prefix) and runs nothing when one is refused.
 4. On the server: `scripts/backup.sh`, then `scripts/prod.sh pull && scripts/prod.sh up -d`. At
    startup GoEasyERP shows the apps as Installed (and removed apps are gone; their data stays in
