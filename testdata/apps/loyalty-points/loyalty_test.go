@@ -79,4 +79,12 @@ func TestTierFollowsPoints(t *testing.T) {
 	if !cust.Modify(true) {
 		t.Errorf("the disabled app's field check ran: %v", cust.TriggerError())
 	}
+	// … nor its fields' table relation checks (Validate)
+	if err := cust.Validate("lp_tier_code", types.Code("NOSUCH")); err != nil {
+		t.Errorf("the disabled app's relation check ran: %v", err)
+	}
+	extensions.SetDisabled()
+	if err := cust.Validate("lp_tier_code", types.Code("NOSUCH")); err == nil {
+		t.Error("a tier that does not exist accepted with the app enabled")
+	}
 }

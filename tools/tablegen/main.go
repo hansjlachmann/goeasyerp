@@ -5276,9 +5276,18 @@ func (t *{{ .StructName }}) ValidateField(fieldName string, value interface{}) e
 {{- end }}
 {{- if .TableRelation }}
 		// TableRelation: the value must exist in the related table (before OnValidate)
+{{- if .App }}
+		// — a field of an extension app: checked while the app is enabled
+		if extensions.Enabled("{{ .App }}") {
+			if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "{{ .DBName }}"); err != nil {
+				return err
+			}
+		}
+{{- else }}
 		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "{{ .DBName }}"); err != nil {
 			return err
 		}
+{{- end }}
 {{- end }}
 		// OnValidate trigger of the business logic (OnValidate of the field)
 		for _, l := range t.registeredLogic() {
