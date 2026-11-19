@@ -306,6 +306,7 @@ common:
     build_list: "Build List"
     show_log: "Show Log"
     upload_app: "Upload App"
+    build: "Build"
     build_apps: "Build Apps"
     app_builds: "App Builds"
     app_build_setup: "App Build Setup"

@@ -83,11 +83,32 @@ page:
       image: Undo
       run_object: table:Installed_App.CancelPending
 
-    - name: Build List
-      caption: Build List
-      image: Export
+    # building the program with the planned apps: the installation's own builder (Build Apps,
+    # App Builds) or a CI pipeline (Build List: apps.yaml) — App Build Setup chooses
+    - name: Build
+      caption: Build
+      image: Run
       promoted: true
-      run_object: table:Installed_App.BuildList
+      items:
+        - name: Build Apps
+          caption: Build Apps
+          image: Run
+          run_object: table:Installed_App.BuildApps
+
+        - name: App Builds
+          caption: App Builds
+          image: History
+          run_page: 912
+
+        - name: Build List
+          caption: Build List
+          image: Export
+          run_object: table:Installed_App.BuildList
+
+        - name: App Build Setup
+          caption: App Build Setup
+          image: Setup
+          run_page: 913
 
     - name: Enable App
       caption: Enable App

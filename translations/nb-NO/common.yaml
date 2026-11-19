@@ -306,6 +306,7 @@ common:
     build_list: "Byggeliste"
     show_log: "Vis logg"
     upload_app: "Last opp app"
+    build: "Bygg"
     build_apps: "Bygg apper"
     app_builds: "App-bygg"
     app_build_setup: "Oppsett for app-bygg"

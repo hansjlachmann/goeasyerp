@@ -306,6 +306,7 @@ common:
     build_list: "Build-liste"
     show_log: "Vis log"
     upload_app: "Upload app"
+    build: "Byg"
     build_apps: "Byg apps"
     app_builds: "App-builds"
     app_build_setup: "Opsætning af app-builds"

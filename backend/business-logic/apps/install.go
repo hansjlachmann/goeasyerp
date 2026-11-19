@@ -359,25 +359,49 @@ func builtIn(id string) *fapps.App {
 	return nil
 }
 
-// buildList is the file the installation repository's build reads (apps.yaml)
-type buildList struct {
-	Base struct {
-		Version string `yaml:"version"`
-	} `yaml:"base"`
-	Apps []buildApp `yaml:"apps"`
+// plannedBuild: the build list of the next build — the base version and the planned apps in
+// dependency order, each with its source (a package's SHA-256 from the stored App Package)
+func plannedBuild(src *gtables.InstalledApp) (fapps.BuildList, error) {
+	ts := i18n.GetInstance()
+	lang := fcodeunits.CurrentLanguage()
+	var list fapps.BuildList
+	base, planned, err := plannedApps(src, "")
+	if err != nil {
+		return list, err
+	}
+	ordered, err := fapps.Order(base, planned)
+	if err != nil {
+		return list, err
+	}
+	list.Base.Version = base.Version
+	list.Apps = []fapps.BuildApp{}
+	row := gtables.NewInstalledApp(src)
+	for _, a := range ordered[1:] {
+		if !row.Get(types.NewText(a.ID)) || row.Source == "" {
+			return list, errors.New(ts.MessageWithParams("ERR_APP_NO_SOURCE", lang, a.Name))
+		}
+		app := fapps.BuildApp{ID: a.ID, Name: a.Name, Version: a.Version}
+		if row.Source_type == gtables.InstalledApp_Source_type.Package {
+			pkg := gtables.NewAppPackage(src)
+			if !pkg.Get(map[string]interface{}{"app_id": a.ID, "version": a.Version}) {
+				return list, errors.New(ts.MessageWithParams("ERR_APP_NO_SOURCE", lang, a.Name))
+			}
+			app.Source = fapps.SourcePackage
+			app.PackageSHA256 = pkg.Sha256.String()
+		} else {
+			app.Source = fapps.SourceGit
+			app.Repository = row.Source.String()
+			app.Ref = row.Source_ref.String()
+			app.Path = row.Source_path.String()
+		}
+		list.Apps = append(list.Apps, app)
+	}
+	return list, nil
 }
 
-type buildApp struct {
-	ID         string `yaml:"id"`
-	Name       string `yaml:"name"`
-	Version    string `yaml:"version"`
-	Repository string `yaml:"repository"`
-	Ref        string `yaml:"ref"`
-	Path       string `yaml:"path,omitempty"`
-}
-
-// BuildList gives the list of apps the next build contains (apps.yaml): the base version and
-// the planned apps in dependency order, each with its repository, version and folder
+// BuildList gives the list of apps the next build contains (apps.yaml) for a CI pipeline: the
+// base version and the planned apps in dependency order, each with its repository, version and
+// folder (an uploaded package refused: a pipeline cannot take it)
 func BuildList(rec *gtables.InstalledApp) (fcodeunits.Result, error) {
 	ts := i18n.GetInstance()
 	lang := fcodeunits.CurrentLanguage()
@@ -385,28 +409,15 @@ func BuildList(rec *gtables.InstalledApp) (fcodeunits.Result, error) {
 	if err != nil {
 		return fcodeunits.Result{}, err
 	}
-	base, planned, err := plannedApps(rec, "")
+	list, err := plannedBuild(rec)
 	if err != nil {
 		return fcodeunits.Result{}, err
 	}
-	ordered, err := fapps.Order(base, planned)
-	if err != nil {
-		return fcodeunits.Result{}, err
-	}
-	var list buildList
-	list.Base.Version = base.Version
-	row := gtables.NewInstalledApp(rec)
-	for _, a := range ordered[1:] {
-		if !row.Get(types.NewText(a.ID)) || row.Source == "" {
-			return fcodeunits.Result{}, errors.New(ts.MessageWithParams("ERR_APP_NO_SOURCE", lang, a.Name))
-		}
-		// a pipeline takes apps from their repositories; an uploaded package only the
-		// installation's own builder has
-		if row.Source_type == gtables.InstalledApp_Source_type.Package {
+	for i, a := range list.Apps {
+		if a.Source == fapps.SourcePackage {
 			return fcodeunits.Result{}, errors.New(ts.MessageWithParams("ERR_APP_PACKAGE_NEEDS_LOCAL_BUILDER", lang, a.Name))
 		}
-		list.Apps = append(list.Apps, buildApp{ID: a.ID, Name: a.Name, Version: a.Version,
-			Repository: row.Source.String(), Ref: row.Source_ref.String(), Path: row.Source_path.String()})
+		list.Apps[i].Source = ""
 	}
 	out, err := yaml.Marshal(list)
 	if err != nil {
