@@ -51,6 +51,29 @@ services:
       PORT: 8080
       APP_VERSION: "0.1.162" # x-release-please-version
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in the file .env next to docker-compose.yml}
+      # The builds of the extension apps (Installed Apps → Upload App / Build Apps)
+      APP_BUILDS_DIR: /builds
+    volumes:
+      - app_builds:/builds:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Builds the extension apps in this installation. Started only with the profile apps: put
+  # COMPOSE_PROFILES=apps in .env (a large download — the Go toolchain —, needed only when apps are installed)
+  builder:
+    image: ghcr.io/hansjlachmann/goeasyerp/builder:0.1.162 # x-release-please-version
+    profiles: ["apps"]
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: openerp
+      DB_PASSWORD: openerp
+      DB_NAME: openerp
+      APP_BUILDS_DIR: /builds
+    volumes:
+      - app_builds:/builds
     depends_on:
       db:
         condition: service_healthy
@@ -104,3 +127,4 @@ configs:
 
 volumes:
   postgres_data:
+  app_builds:

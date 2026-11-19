@@ -298,11 +298,20 @@ steps of `scripts/check-extension-fixture.sh` in the base repository.
 
 ## 10. Installing, updating and uninstalling
 
-An app's code is compiled into the program, so installing one takes a build. Each installation
-with apps has an **installation repository** (template: `deploy/installation-template/`) with its
-build list `apps.yaml` and a GitHub Actions workflow that builds the backend image — the base
-release of the list with its apps — and pushes it; the server runs that image (`BACKEND_IMAGE` in
-`prod.env`, `docs/operations.md`).
+An app's code is compiled into the program, so installing one takes a build. **App Build
+Setup** chooses who builds, one or the other:
+
+- **The installation's own builder (Local Builder).** No repository is needed. The builder runs
+  next to the server (`cmd/app-builder`, image `goeasyerp/builder:<version>`). It takes the
+  build list from the database and builds the program with the apps into a volume it shares
+  with the server, and the server restarts by itself on the new program. Each build and its log
+  are listed in App Builds (page 912).
+- **A CI pipeline.** The installation has an **installation repository** (template:
+  `deploy/installation-template/`) with its build list `apps.yaml` and a GitHub Actions workflow
+  that builds and pushes the backend image: the base release of the list with its apps. The
+  server runs that image (`BACKEND_IMAGE` in `prod.env`).
+
+Setting either one up is described in `docs/operations.md`.
 
 On **Installed Apps** (Administration → Installed Apps; SUPER only):
 
@@ -313,7 +322,9 @@ On **Installed Apps** (Administration → Installed Apps; SUPER only):
   installed app is an update.
 - **Uninstall App** marks an app **Pending Removal** (not while another app depends on it).
   **Cancel Pending** takes back a pending install, update or removal.
-- **Build List** downloads `apps.yaml` — the base version and the apps of the next build in
+- **Build → Build Apps** (Local Builder) asks the builder to build the planned apps. When the
+  build is done the server runs it, and the apps show as Installed.
+- **Build → Build List** (CI pipeline) downloads `apps.yaml` — the base version and the apps of the next build in
   dependency order, each with its repository, version and folder — to commit to the installation
   repository. Its workflow builds the image; after `scripts/prod.sh pull && up -d` the server shows
   the apps as Installed, and removed apps are gone (their data stays).

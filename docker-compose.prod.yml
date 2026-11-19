@@ -56,6 +56,32 @@ services:
       # (60/hour without) and the GitHub owners themes may come from (empty: any)
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       THEME_ALLOWED_OWNERS: ${THEME_ALLOWED_OWNERS:-}
+      # The builds of the extension apps by the installation's own builder (App Build Setup:
+      # Builds By = Local Builder): the server runs the newest one of its version
+      APP_BUILDS_DIR: /builds
+    volumes:
+      - app_builds:/builds:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # The installation's own builder of the extension apps (Installed Apps → Upload App / Build
+  # Apps). Started only with the profile apps: COMPOSE_PROFILES=apps in prod.env
+  builder:
+    image: ghcr.io/hansjlachmann/goeasyerp/builder:${APP_VERSION:-latest}
+    profiles: ["apps"]
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: openerp
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-openerp}
+      DB_NAME: openerp
+      APP_BUILDS_DIR: /builds
+      # read access to private app repositories on GitHub (empty: public ones only)
+      APPS_TOKEN: ${APPS_TOKEN:-}
+    volumes:
+      - app_builds:/builds
     depends_on:
       db:
         condition: service_healthy
@@ -86,3 +112,4 @@ services:
 
 volumes:
   postgres_data:
+  app_builds:

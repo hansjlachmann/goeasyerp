@@ -1,5 +1,9 @@
 # GoEasyERP installation repository (template)
 
+An installation can build its apps without a repository of its own, using its own builder
+(App Build Setup: Builds By = Local Builder; `docs/operations.md`, "Extension apps"). This
+template is for installations whose apps are built by a CI pipeline instead.
+
 An installation that runs extension apps has a repository of its own, made from these files
 (a private repository: it names the installation's apps). It holds the installation's build
 list, `apps.yaml`, and a workflow that builds the backend image — the GoEasyERP base release

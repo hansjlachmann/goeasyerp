@@ -87,14 +87,56 @@ way the old version cannot read, restore the backup taken before the upgrade (se
 
 ## Extension apps
 
-An installation with extension apps runs its own backend image — the base release with the apps
-compiled in — built by its installation repository (template and steps:
-`deploy/installation-template/README.md`). In `prod.env`, `BACKEND_IMAGE` names that image (the
-frontend image stays the base release's, `APP_VERSION`); the image is private, so log in to the
-registry once with `docker login ghcr.io`. Installing, updating and removing apps: Installed
-Apps → Install App / Uninstall App, Build List → commit `apps.yaml` to the installation
-repository, then `scripts/backup.sh` and `scripts/prod.sh pull && scripts/prod.sh up -d` as for
-an upgrade. Without `BACKEND_IMAGE` the base release's backend image runs.
+An app's code is compiled into the server program, so installing an app takes a build. **App
+Build Setup** (Installed Apps → Build → App Build Setup) chooses who builds. It is one or the
+other, never both: a pipeline building an older list would drop an app uploaded in the UI.
+
+### Local builder (no repository needed)
+
+The installation builds its apps itself. The build list and the build history are in the
+database, so `scripts/backup.sh` covers them.
+
+1. Start the builder: put `COMPOSE_PROFILES=apps` in `prod.env` (the one-computer trial: in the
+   `.env` next to the compose file), then `scripts/prod.sh pull && scripts/prod.sh up -d`.
+   The builder image is large (the Go toolchain), so it is downloaded only with this profile.
+2. In App Build Setup, set **Builds By** to *Local Builder*, and **Allow Upload** if apps may
+   come as packages.
+3. Choose the apps in Installed Apps:
+   - **Install App** takes a repository and a tag;
+   - **Upload App** takes an app package (`.zip`, `EXTENSIONS.md` §10);
+   - **Uninstall App** removes one.
+4. Run **Build → Build Apps**. The builder builds the program with the apps into the `app_builds`
+   volume. Follow it under **Build → App Builds**, where Show Log gives the builder's output.
+   When the build is done the server restarts by itself on the new program (users are logged
+   out briefly) and the apps show as Installed.
+
+**Upgrading** works as above (`APP_VERSION`, `pull`, `up -d`), and the builder follows the same
+version. A server of a new version finds no build of its apps for that version. It requests one
+and waits in **maintenance** until it is built: the login page says so, and `/health` answers.
+- If that build fails, the maintenance message names the error and
+  `scripts/prod.sh logs builder` shows it.
+- To recover, go back to the previous `APP_VERSION`, or restart the backend to try again.
+- The last three builds stay in the volume.
+
+**Kubernetes:** the same images.
+- A builder Deployment (`ghcr.io/hansjlachmann/goeasyerp/builder:<version>`, the backend's
+  `DB_*` environment, `APP_BUILDS_DIR=/builds`).
+- A PersistentVolumeClaim mounted at `/builds`: read-write by the builder, read-only by the
+  backend, which gets `APP_BUILDS_DIR=/builds` too.
+- With more than one backend replica the claim must be ReadWriteMany.
+- Keep the builder's image tag equal to the backend's.
+
+### CI pipeline (installation repository)
+
+The installation runs its own backend image, built by its installation repository (template
+and steps: `deploy/installation-template/README.md`):
+- In `prod.env`, `BACKEND_IMAGE` names that image. The frontend image stays the base release's
+  (`APP_VERSION`).
+- The image is private, so log in to the registry once with `docker login ghcr.io`.
+- Installing, updating and removing apps: Installed Apps → Install App / Uninstall App, then
+  Build → Build List, then commit `apps.yaml` to the installation repository. After that run
+  `scripts/backup.sh` and `scripts/prod.sh pull && scripts/prod.sh up -d` as for an upgrade.
+- Without `BACKEND_IMAGE` the base release's backend image runs.
 
 ## After a host reboot
 
