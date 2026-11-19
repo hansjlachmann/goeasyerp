@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.164](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.163...v0.1.164) (2026-11-19)
+
+
+### Bug Fixes
+
+* Install App stores the repository's address without the version ([56c10ed](https://github.com/hansjlachmann/goeasyerp/commit/56c10edbb290ff9e02e66ca3748bc79d907d6dbe))
+
 ## [0.1.163](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.162...v0.1.163) (2026-11-19)
 
 
