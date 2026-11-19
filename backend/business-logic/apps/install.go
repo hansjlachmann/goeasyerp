@@ -89,7 +89,10 @@ func InstallApp(rec *gtables.InstalledApp) (fcodeunits.Result, error) {
 	if err != nil {
 		return fcodeunits.Result{}, errors.New(ts.MessageWithParams("ERR_APP_READ", lang, repo.URL()+" ("+repo.Ref+") "+file, err.Error()))
 	}
-	return installManifest(rec, data, repo.URL(), repo.Ref, folder)
+	// the repository's address without the version: the build clones it at the tag (Source Ref)
+	address := repo
+	address.Ref = ""
+	return installManifest(rec, data, address.URL(), repo.Ref, folder)
 }
 
 // UploadApp asks for an app package (a .zip of the app's folder), checks it — the package as
@@ -396,7 +399,7 @@ func buildListOf(src *gtables.InstalledApp, base *fapps.App, planned []*fapps.Ap
 			app.PackageSHA256 = pkg.Sha256.String()
 		} else {
 			app.Source = fapps.SourceGit
-			app.Repository = row.Source.String()
+			app.Repository = repositoryAddress(row.Source.String())
 			app.Ref = row.Source_ref.String()
 			app.Path = row.Source_path.String()
 		}
@@ -435,4 +438,15 @@ func BuildList(rec *gtables.InstalledApp) (fcodeunits.Result, error) {
 		"file":     base64.StdEncoding.EncodeToString(file),
 		"filename": "apps.yaml",
 	}}, nil
+}
+
+// repositoryAddress: a repository's address as git clones it — without a version in the address
+// (Install App of 0.1.163 and before stored https://github.com/owner/repo/tree/<tag>)
+func repositoryAddress(source string) string {
+	repo, err := themes.ParseRepoURL(source)
+	if err != nil {
+		return source
+	}
+	repo.Ref = ""
+	return repo.URL()
 }

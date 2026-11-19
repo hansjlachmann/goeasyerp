@@ -161,3 +161,18 @@ func TestFetchApplicationFile(t *testing.T) {
 		t.Error("a path with .. accepted")
 	}
 }
+
+// The build list gives the repository's address without the version: git clones it at the tag
+// (Install App of 0.1.163 and before stored the address with /tree/<tag>)
+func TestRepositoryAddress(t *testing.T) {
+	for in, want := range map[string]string{
+		"https://github.com/acme/app/tree/v1.0.0": "https://github.com/acme/app",
+		"https://github.com/acme/app":             "https://github.com/acme/app",
+		"https://github.com/acme/app.git":         "https://github.com/acme/app",
+		"package 0123456789ab":                    "package 0123456789ab",
+	} {
+		if got := repositoryAddress(in); got != want {
+			t.Errorf("%s: %s, want %s", in, got, want)
+		}
+	}
+}
