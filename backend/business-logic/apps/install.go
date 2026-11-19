@@ -362,13 +362,19 @@ func builtIn(id string) *fapps.App {
 // plannedBuild: the build list of the next build — the base version and the planned apps in
 // dependency order, each with its source (a package's SHA-256 from the stored App Package)
 func plannedBuild(src *gtables.InstalledApp) (fapps.BuildList, error) {
+	base, planned, err := plannedApps(src, "")
+	if err != nil {
+		return fapps.BuildList{}, err
+	}
+	return buildListOf(src, base, planned)
+}
+
+// buildListOf: the build list of the base and the planned apps, in dependency order, each with
+// its source
+func buildListOf(src *gtables.InstalledApp, base *fapps.App, planned []*fapps.App) (fapps.BuildList, error) {
 	ts := i18n.GetInstance()
 	lang := fcodeunits.CurrentLanguage()
 	var list fapps.BuildList
-	base, planned, err := plannedApps(src, "")
-	if err != nil {
-		return list, err
-	}
 	ordered, err := fapps.Order(base, planned)
 	if err != nil {
 		return list, err

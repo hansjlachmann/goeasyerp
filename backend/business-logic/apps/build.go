@@ -10,6 +10,7 @@ import (
 
 	fapps "github.com/hansjlachmann/goeasyerp/backend/foundation/apps"
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/functions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
@@ -67,17 +68,64 @@ func BuildApps(rec *gtables.InstalledApp) (fcodeunits.Result, error) {
 // RequestBuild records a build request of the planned apps (refused while another build is
 // requested or running)
 func RequestBuild(src *gtables.InstalledApp, trigger gtables.AppBuildTrigger) (*gtables.AppBuild, error) {
-	ts := i18n.GetInstance()
-	lang := fcodeunits.CurrentLanguage()
-	pending := gtables.NewAppBuild(src)
-	pending.SetFilter("status", fmt.Sprintf("%d|%d", gtables.AppBuild_Status.Requested, gtables.AppBuild_Status.Running))
-	if pending.FindFirst() {
-		return nil, errors.New(ts.MessageWithParams("ERR_APP_BUILD_PENDING", lang, fmt.Sprint(pending.Entry_no)))
+	err := refusePending(src)
+	if err != nil {
+		return nil, err
 	}
 	list, err := plannedBuild(src)
 	if err != nil {
 		return nil, err
 	}
+	return insertBuild(src, list, trigger)
+}
+
+// refusePending refuses a request while another build is requested or running
+func refusePending(src *gtables.InstalledApp) error {
+	pending := gtables.NewAppBuild(src)
+	pending.SetFilter("status", fmt.Sprintf("%d|%d", gtables.AppBuild_Status.Requested, gtables.AppBuild_Status.Running))
+	if pending.FindFirst() {
+		lang := fcodeunits.CurrentLanguage()
+		return errors.New(i18n.GetInstance().MessageWithParams("ERR_APP_BUILD_PENDING", lang, fmt.Sprint(pending.Entry_no)))
+	}
+	return nil
+}
+
+// RequestUpgradeBuild: a server of a new version found no bundle of its version while apps are
+// installed (it waits in maintenance) — the apps as installed and chosen, read from their
+// application.yaml in Installed App, are built for this version (Base Upgrade). Nothing when a
+// build is already requested or running.
+func RequestUpgradeBuild(db database.Executor, dbType database.DBType) (*gtables.AppBuild, error) {
+	var src gtables.InstalledApp
+	src.InitWithDBType(db, "", dbType)
+	if refusePending(&src) != nil {
+		return nil, nil
+	}
+	base, err := fapps.LoadBase()
+	if err != nil {
+		return nil, err
+	}
+	var planned []*fapps.App
+	rec := gtables.NewInstalledApp(&src)
+	for found := rec.FindSet(); found; found = rec.Next() {
+		if rec.App_id.String() == base.ID || rec.Status == gtables.InstalledApp_Status.PendingRemoval {
+			continue
+		}
+		app, err := fapps.Parse(rec.Manifest)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", rec.Name, err)
+		}
+		planned = append(planned, app)
+	}
+	list, err := buildListOf(&src, base, planned)
+	if err != nil {
+		return nil, err
+	}
+	return insertBuild(&src, list, gtables.AppBuild_Trigger.BaseUpgrade)
+}
+
+// insertBuild records a build request of the build list
+func insertBuild(src *gtables.InstalledApp, list fapps.BuildList, trigger gtables.AppBuildTrigger) (*gtables.AppBuild, error) {
+	lang := fcodeunits.CurrentLanguage()
 	snapshot, err := json.Marshal(list)
 	if err != nil {
 		return nil, err

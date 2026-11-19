@@ -497,6 +497,8 @@ messages:
   ERR_APP_BUILD_PENDING: "Build %1 er allerede bestilt eller kører: vent på det (App-builds)."
   APP_BUILD_REQUESTED: "Build %1 er bestilt (%2). Installationen skifter selv til det nye program, når det er bygget; følg det i App-builds."
   APP_BUILD_NO_APPS: "ingen udvidelsesapps"
+  APP_MAINTENANCE_BUILDING: "GoEasyERP opdateres til version %1: udvidelsesapps bygges til den. Det tager nogle minutter — prøv igen om lidt."
+  APP_MAINTENANCE_BUILD_FAILED: "GoEasyERP version %1 kan ikke starte: build af udvidelsesapps mislykkedes (%2). En administrator kan læse builderens log, gå tilbage til den forrige version eller genstarte serveren for at prøve igen."
 
   # Dialog Messages
   DLG_DELETE_RECORD_CONFIRM: "Er du sikker på, at du vil slette denne post?"

@@ -186,3 +186,44 @@ func TestBuildApps(t *testing.T) {
 		t.Errorf("a request after a failed build: %v", err)
 	}
 }
+
+// A server of a new version without a bundle requests the build of the apps as installed, read
+// from their application.yaml (Base Upgrade): not apps chosen for removal, and nothing while a
+// build is requested or running
+func TestRequestUpgradeBuild(t *testing.T) {
+	src, base := buildTestDB(t)
+	setBuildSetup(t, src, true, true)
+	onBase := "{id: " + base.ID + "}"
+	for _, a := range []struct{ id, name, prefix, series string }{
+		{"aaaaaaaa-0000-4000-8000-000000000041", "Keep", "kp", "{from: 55000, to: 55099}"},
+		{"aaaaaaaa-0000-4000-8000-000000000042", "Drop", "dp", "{from: 56000, to: 56099}"},
+	} {
+		if _, err := uploadPackage(src, zipOf(t, map[string]string{"application.yaml": string(manifest(a.id, a.name, "1.0.0", a.prefix, a.series, onBase))})); err != nil {
+			t.Fatal(err)
+		}
+	}
+	drop := gtables.NewInstalledApp(src)
+	if !drop.Get(types.NewText("aaaaaaaa-0000-4000-8000-000000000042")) {
+		t.Fatal("Drop")
+	}
+	drop.Status = gtables.InstalledApp_Status.PendingRemoval
+	if err := drop.ModifyOrError(false); err != nil {
+		t.Fatal(err)
+	}
+	db, dbType := src.GetDB(), src.GetDBType()
+	build, err := RequestUpgradeBuild(db, dbType)
+	if err != nil || build == nil {
+		t.Fatalf("%v %v", build, err)
+	}
+	var list fapps.BuildList
+	if err := json.Unmarshal(build.Build_list, &list); err != nil {
+		t.Fatal(err)
+	}
+	if build.Trigger != gtables.AppBuild_Trigger.BaseUpgrade || len(list.Apps) != 1 || list.Apps[0].Name != "Keep" {
+		t.Errorf("build %+v, list %+v", build, list)
+	}
+	again, err := RequestUpgradeBuild(db, dbType)
+	if err != nil || again != nil {
+		t.Errorf("a second request while the first is pending: %v %v", again, err)
+	}
+}

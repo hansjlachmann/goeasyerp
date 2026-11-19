@@ -41,8 +41,12 @@
 					company = companies[0].name;
 				}
 			}
-		} catch (err) {
+		} catch (err: any) {
 			console.error('Failed to load companies:', err);
+			// the server is being updated (its extension apps are built): its message says so
+			if (err?.status === 503 && err.message) {
+				error = err.message;
+			}
 		}
 
 		// Check if we're already logged in
@@ -116,6 +120,9 @@
 				// Valid user, but no User Member entry for this company
 				const selected = companies.find((c) => c.name === company);
 				error = t(ERR.LOGIN_NO_COMPANY_ACCESS, userID.toUpperCase(), selected ? companyLabel(selected) : company);
+			} else if (err.status === 503 && err.message) {
+				// the server is being updated (its extension apps are built)
+				error = err.message;
 			} else {
 				error = t(ERR.GENERIC_RETRY);
 			}

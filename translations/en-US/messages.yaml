@@ -497,6 +497,8 @@ messages:
   ERR_APP_BUILD_PENDING: "Build %1 is requested or running already: wait for it (App Builds)."
   APP_BUILD_REQUESTED: "Build %1 is requested (%2). The installation switches to the new program by itself when it is built; follow it in App Builds."
   APP_BUILD_NO_APPS: "no extension apps"
+  APP_MAINTENANCE_BUILDING: "GoEasyERP is being updated to version %1: its extension apps are being built for it. This takes a few minutes — try again shortly."
+  APP_MAINTENANCE_BUILD_FAILED: "GoEasyERP version %1 cannot start: the build of its extension apps failed (%2). An administrator can read the builder's log, go back to the previous version, or restart the server to try again."
 
   # Dialog Messages
   DLG_DELETE_RECORD_CONFIRM: "Are you sure you want to delete this record?"
