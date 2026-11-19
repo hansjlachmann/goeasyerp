@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.163](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.162...v0.1.163) (2026-11-19)
+
+
+### Features
+
+* app-builder builds the program with the installation's apps ([add72e0](https://github.com/hansjlachmann/goeasyerp/commit/add72e0663d336aee2bdb14b1c37ef2e2b8abf05))
+* Build Apps requests a build of the planned apps from the installation's builder ([eb9f217](https://github.com/hansjlachmann/goeasyerp/commit/eb9f217aff798e23d9a7eb60413cfc45c8ec0caa))
+* tables for building extension apps in the installation ([532f72a](https://github.com/hansjlachmann/goeasyerp/commit/532f72ad4330cd6d2dfd2caaae339fa5e768b824))
+* the compose files run the app builder, and the docs describe both build routes ([723342f](https://github.com/hansjlachmann/goeasyerp/commit/723342ffa7c2f5aa23b4f9d11ca5e1a9c020885a))
+* the server runs the newest app build of its version and switches to new ones ([cb38ff3](https://github.com/hansjlachmann/goeasyerp/commit/cb38ff32bd77aaf80ee9f3f1d0b0fc4cbf579e5c))
+* Upload App installs an extension app from an app package ([58d6fe7](https://github.com/hansjlachmann/goeasyerp/commit/58d6fe794346bcf015ff310aa269bfc7944612e8))
+
+
+### Code Refactoring
+
+* app-builder states which bundle files are optional ([07581c0](https://github.com/hansjlachmann/goeasyerp/commit/07581c00ac8f35b853525284abbbc8d6dfc2276d))
+
 ## [0.1.162](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.161...v0.1.162) (2026-11-18)
 
 
