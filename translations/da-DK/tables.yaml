@@ -493,11 +493,66 @@ tables:
       source_ref: "Repository-version"
       source_path: "Repository-mappe"
       manifest: "Applikationsfil"
+      source_type: "Kildetype"
     options:
       status:
         installed: "Installeret"
         pending_install: "Afventer installation"
         pending_removal: "Afventer fjernelse"
+      source_type:
+        git: "Git"
+        package: "Pakke"
+
+  app_build:
+    caption: "App-build"
+    fields:
+      entry_no: "Løbenr."
+      status: "Status"
+      base_version: "Basisversion"
+      trigger: "Årsag"
+      requested_by: "Bestilt af"
+      requested_at: "Bestilt"
+      started_at: "Startet"
+      finished_at: "Færdig"
+      apps: "Apps"
+      build_list: "Build-liste"
+      log: "Log"
+      binary_sha256: "Program-SHA-256"
+      bundle_path: "Pakkemappe"
+      error_message: "Fejlmeddelelse"
+    options:
+      status:
+        requested: "Bestilt"
+        running: "Kører"
+        succeeded: "Fuldført"
+        failed: "Mislykket"
+        superseded: "Erstattet"
+      trigger:
+        user: "Bruger"
+        base_upgrade: "Opgradering af basis"
+
+  app_package:
+    caption: "App-pakke"
+    fields:
+      app_id: "App-id"
+      version: "Version"
+      name: "Navn"
+      package: "Pakke"
+      sha256: "SHA-256"
+      size: "Størrelse (byte)"
+      uploaded_by: "Uploadet af"
+      uploaded_at: "Uploadet"
+
+  app_build_setup:
+    caption: "Opsætning af app-builds"
+    fields:
+      primary_key: "Primær nøgle"
+      builds_by: "Bygges af"
+      allow_upload: "Tillad upload"
+    options:
+      builds_by:
+        ci_pipeline: "CI-pipeline"
+        local_builder: "Lokal bygger"
 
   # Currency (Table 4)
   currency:

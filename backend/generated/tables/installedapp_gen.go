@@ -28,6 +28,7 @@
 //	OnValidate_Source_ref(rec *gtables.InstalledApp) error
 //	OnValidate_Source_path(rec *gtables.InstalledApp) error
 //	OnValidate_Manifest(rec *gtables.InstalledApp) error
+//	OnValidate_Source_type(rec *gtables.InstalledApp) error
 
 package tables
 
@@ -69,26 +70,44 @@ func (o InstalledAppStatus) IsValid() bool {
 	return o >= 0 && o < 3
 }
 
+// InstalledAppSource_type represents the source_type option field
+type InstalledAppSource_type int
+
+// String returns the text representation of InstalledAppSource_type
+func (o InstalledAppSource_type) String() string {
+	options := []string{"Git", "Package"}
+	if o >= 0 && int(o) < len(options) {
+		return options[o]
+	}
+	return ""
+}
+
+// IsValid checks if the InstalledAppSource_type value is within valid range
+func (o InstalledAppSource_type) IsValid() bool {
+	return o >= 0 && o < 2
+}
+
 // InstalledApp represents Table 2000000153: Installed_App
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterInstalledAppLogic.
 type InstalledApp struct {
-	App_id        types.Text         `db:"app_id,pk"`
-	Name          types.Text         `db:"name"`
-	Publisher     types.Text         `db:"publisher"`
-	Contact       types.Text         `db:"contact"`
-	Version       types.Text         `db:"version"`
-	Object_series types.Text         `db:"object_series"`
-	Field_series  types.Text         `db:"field_series"`
-	System_tables types.Text         `db:"system_tables"`
-	Installed_at  types.DateTime     `db:"installed_at"`
-	Updated_at    types.DateTime     `db:"updated_at"`
-	Disabled      bool               `db:"disabled"`
-	Status        InstalledAppStatus `db:"status"`
-	Source        types.Text         `db:"source"`
-	Source_ref    types.Text         `db:"source_ref"`
-	Source_path   types.Text         `db:"source_path"`
-	Manifest      []byte             `db:"manifest"`
+	App_id        types.Text              `db:"app_id,pk"`
+	Name          types.Text              `db:"name"`
+	Publisher     types.Text              `db:"publisher"`
+	Contact       types.Text              `db:"contact"`
+	Version       types.Text              `db:"version"`
+	Object_series types.Text              `db:"object_series"`
+	Field_series  types.Text              `db:"field_series"`
+	System_tables types.Text              `db:"system_tables"`
+	Installed_at  types.DateTime          `db:"installed_at"`
+	Updated_at    types.DateTime          `db:"updated_at"`
+	Disabled      bool                    `db:"disabled"`
+	Status        InstalledAppStatus      `db:"status"`
+	Source        types.Text              `db:"source"`
+	Source_ref    types.Text              `db:"source_ref"`
+	Source_path   types.Text              `db:"source_path"`
+	Manifest      []byte                  `db:"manifest"`
+	Source_type   InstalledAppSource_type `db:"source_type"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -163,6 +182,15 @@ var InstalledApp_Status = struct {
 	PendingRemoval: 2,
 }
 
+// InstalledApp_Source_type provides named constants for the source_type option field (FieldName.OptionValue syntax)
+var InstalledApp_Source_type = struct {
+	Git     InstalledAppSource_type
+	Package InstalledAppSource_type
+}{
+	Git:     0,
+	Package: 1,
+}
+
 // ========================================
 // Field numbers (field IDs)
 // ========================================
@@ -186,6 +214,7 @@ var InstalledApp_FieldNo = struct {
 	Source_ref    int
 	Source_path   int
 	Manifest      int
+	Source_type   int
 }{
 	App_id:        1,
 	Name:          2,
@@ -203,6 +232,7 @@ var InstalledApp_FieldNo = struct {
 	Source_ref:    14,
 	Source_path:   15,
 	Manifest:      16,
+	Source_type:   17,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -240,6 +270,8 @@ func (t *InstalledApp) FieldNo(fieldName string) int {
 		return 15
 	case "manifest":
 		return 16
+	case "source_type":
+		return 17
 	}
 	return 0
 }
@@ -279,6 +311,8 @@ func (t *InstalledApp) FieldName(fieldNo int) string {
 		return "source_path"
 	case 16:
 		return "manifest"
+	case 17:
+		return "source_type"
 	}
 	return ""
 }
@@ -400,6 +434,7 @@ type (
 	InstalledAppOnValidate_Source_ref    interface{ OnValidate_Source_ref(rec *InstalledApp) error }
 	InstalledAppOnValidate_Source_path   interface{ OnValidate_Source_path(rec *InstalledApp) error }
 	InstalledAppOnValidate_Manifest      interface{ OnValidate_Manifest(rec *InstalledApp) error }
+	InstalledAppOnValidate_Source_type   interface{ OnValidate_Source_type(rec *InstalledApp) error }
 )
 
 // installedAppLogic is the registered business logic of Installed_App, in
@@ -474,6 +509,8 @@ func installedAppTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(InstalledAppOnValidate_Source_path)
 	case "OnValidate_Manifest":
 		_, ok = logic.(InstalledAppOnValidate_Manifest)
+	case "OnValidate_Source_type":
+		_, ok = logic.(InstalledAppOnValidate_Source_type)
 	default:
 		return false, false
 	}
@@ -674,7 +711,8 @@ func GetInstalledAppTableSchema() string {
 		source TEXT(250),
 		source_ref TEXT(100),
 		source_path TEXT(100),
-		manifest BLOB
+		manifest BLOB,
+		source_type INTEGER CHECK (source_type >= 0 AND source_type <= 1)
 	`
 }
 
@@ -696,7 +734,8 @@ func GetInstalledAppPostgresTableSchema() string {
 		source VARCHAR(250),
 		source_ref VARCHAR(100),
 		source_path VARCHAR(100),
-		manifest BYTEA
+		manifest BYTEA,
+		source_type INTEGER CHECK (source_type >= 0 AND source_type <= 1)
 	`
 }
 
@@ -841,6 +880,7 @@ func (t *InstalledApp) StoreOldValues() {
 	t.oldValues["source_ref"] = t.Source_ref
 	t.oldValues["source_path"] = t.Source_path
 	t.oldValues["manifest"] = t.Manifest
+	t.oldValues["source_type"] = t.Source_type
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -902,6 +942,9 @@ func (t *InstalledApp) XRec() *InstalledApp {
 	}
 	if v, ok := t.oldValues["manifest"].([]byte); ok {
 		x.Manifest = v
+	}
+	if v, ok := t.oldValues["source_type"].(InstalledAppSource_type); ok {
+		x.Source_type = v
 	}
 	return x
 }
@@ -980,6 +1023,7 @@ func (t *InstalledApp) GetByPK(app_id types.Text) bool {
 	var source_refNull sql.NullString
 	var source_pathNull sql.NullString
 	var manifestVal []byte
+	var source_typeInt int
 
 	// Collect arguments for query
 	args := []interface{}{
@@ -987,7 +1031,7 @@ func (t *InstalledApp) GetByPK(app_id types.Text) bool {
 	}
 
 	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled, status, source, source_ref, source_path, manifest FROM "%s" WHERE 1=1 AND app_id = ?`, tableName)
+	sqlStr := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled, status, source, source_ref, source_path, manifest, source_type FROM "%s" WHERE 1=1 AND app_id = ?`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1010,6 +1054,7 @@ func (t *InstalledApp) GetByPK(app_id types.Text) bool {
 		&source_refNull,
 		&source_pathNull,
 		&manifestVal,
+		&source_typeInt,
 	)
 
 	if err != nil {
@@ -1039,6 +1084,7 @@ func (t *InstalledApp) GetByPK(app_id types.Text) bool {
 	t.Source_ref = types.NewText(source_refNull.String)
 	t.Source_path = types.NewText(source_pathNull.String)
 	t.Manifest = manifestVal
+	t.Source_type = InstalledAppSource_type(source_typeInt)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -1077,11 +1123,12 @@ func (t *InstalledApp) Insert(runTrigger bool) bool {
 		t.Source_ref,
 		t.Source_path,
 		t.Manifest,
+		t.Source_type,
 	}
 
 	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
 	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled, status, source, source_ref, source_path, manifest) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (app_id) DO NOTHING`, tableName)
+	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled, status, source, source_ref, source_path, manifest, source_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (app_id) DO NOTHING`, tableName)
 
 	// Convert placeholders for PostgreSQL
 	sqlStr = t.convertPlaceholders(sqlStr, len(args))
@@ -1135,10 +1182,11 @@ func (t *InstalledApp) InsertAll(records []*InstalledApp, runTrigger bool) error
 			r.Source_ref,
 			r.Source_path,
 			r.Manifest,
+			r.Source_type,
 		})
 	}
 	tableName := InstalledAppTableName
-	columns := []string{"app_id", "name", "publisher", "contact", "version", "object_series", "field_series", "system_tables", "installed_at", "updated_at", "disabled", "status", "source", "source_ref", "source_path", "manifest"}
+	columns := []string{"app_id", "name", "publisher", "contact", "version", "object_series", "field_series", "system_tables", "installed_at", "updated_at", "disabled", "status", "source", "source_ref", "source_path", "manifest", "source_type"}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
 }
 
@@ -1242,6 +1290,10 @@ func (t *InstalledApp) Modify(runTrigger bool) bool {
 			setClauses = append(setClauses, "manifest = ?")
 			values = append(values, t.Manifest)
 		}
+		if t.hasFieldChanged("source_type") {
+			setClauses = append(setClauses, "source_type = ?")
+			values = append(values, t.Source_type)
+		}
 
 		// If nothing changed, skip update
 		if len(setClauses) == 0 {
@@ -1279,6 +1331,8 @@ func (t *InstalledApp) Modify(runTrigger bool) bool {
 		values = append(values, t.Source_path)
 		setClauses = append(setClauses, "manifest = ?")
 		values = append(values, t.Manifest)
+		setClauses = append(setClauses, "source_type = ?")
+		values = append(values, t.Source_type)
 	}
 
 	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
@@ -1387,6 +1441,10 @@ func (t *InstalledApp) hasFieldChanged(fieldName string) bool {
 	case "manifest":
 		// Skip comparison for BLOB fields (too large, use always modified)
 		return true
+	case "source_type":
+		if old, ok := oldValue.(InstalledAppSource_type); ok {
+			return t.Source_type != old
+		}
 	}
 
 	return false
@@ -1623,6 +1681,8 @@ func (t *InstalledApp) columnName(fieldName string) (string, bool) {
 		return "source_path", true
 	case strings.ToLower("manifest"):
 		return "manifest", true
+	case strings.ToLower("source_type"):
+		return "source_type", true
 	}
 	return "", false
 }
@@ -1982,7 +2042,7 @@ func (t *InstalledApp) FindFirst() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled, status, source, source_ref, source_path, manifest FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled, status, source, source_ref, source_path, manifest, source_type FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2002,6 +2062,7 @@ func (t *InstalledApp) FindFirst() bool {
 	var sourceNull sql.NullString
 	var source_refNull sql.NullString
 	var source_pathNull sql.NullString
+	var source_typeInt int
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&app_idNull,
@@ -2020,6 +2081,7 @@ func (t *InstalledApp) FindFirst() bool {
 		&source_refNull,
 		&source_pathNull,
 		&t.Manifest,
+		&source_typeInt,
 	)
 
 	if err != nil {
@@ -2046,6 +2108,7 @@ func (t *InstalledApp) FindFirst() bool {
 	t.Source = types.NewText(sourceNull.String)
 	t.Source_ref = types.NewText(source_refNull.String)
 	t.Source_path = types.NewText(source_pathNull.String)
+	t.Source_type = InstalledAppSource_type(source_typeInt)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2066,7 +2129,7 @@ func (t *InstalledApp) FindLast() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled, status, source, source_ref, source_path, manifest FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
+	query := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled, status, source, source_ref, source_path, manifest, source_type FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2086,6 +2149,7 @@ func (t *InstalledApp) FindLast() bool {
 	var sourceNull sql.NullString
 	var source_refNull sql.NullString
 	var source_pathNull sql.NullString
+	var source_typeInt int
 
 	err := t.exec().QueryRow(query, args...).Scan(
 		&app_idNull,
@@ -2104,6 +2168,7 @@ func (t *InstalledApp) FindLast() bool {
 		&source_refNull,
 		&source_pathNull,
 		&t.Manifest,
+		&source_typeInt,
 	)
 
 	if err != nil {
@@ -2130,6 +2195,7 @@ func (t *InstalledApp) FindLast() bool {
 	t.Source = types.NewText(sourceNull.String)
 	t.Source_ref = types.NewText(source_refNull.String)
 	t.Source_path = types.NewText(source_pathNull.String)
+	t.Source_type = InstalledAppSource_type(source_typeInt)
 
 	// Store old values for field tracking
 	t.StoreOldValues()
@@ -2180,7 +2246,7 @@ func (t *InstalledApp) FindSet() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled, status, source, source_ref, source_path, manifest FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled, status, source, source_ref, source_path, manifest, source_type FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2264,6 +2330,7 @@ func (t *InstalledApp) Next(steps ...int) bool {
 		var sourceNull sql.NullString
 		var source_refNull sql.NullString
 		var source_pathNull sql.NullString
+		var source_typeInt int
 
 		err := t.currentRows.Scan(
 			&app_idNull,
@@ -2282,6 +2349,7 @@ func (t *InstalledApp) Next(steps ...int) bool {
 			&source_refNull,
 			&source_pathNull,
 			&t.Manifest,
+			&source_typeInt,
 		)
 
 		if err != nil {
@@ -2307,6 +2375,7 @@ func (t *InstalledApp) Next(steps ...int) bool {
 		t.Source = types.NewText(sourceNull.String)
 		t.Source_ref = types.NewText(source_refNull.String)
 		t.Source_path = types.NewText(source_pathNull.String)
+		t.Source_type = InstalledAppSource_type(source_typeInt)
 
 		// Store old values for field tracking
 		t.StoreOldValues()
@@ -2356,7 +2425,7 @@ func (t *InstalledApp) FindSetBuffered() bool {
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled, status, source, source_ref, source_path, manifest FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
+	query := fmt.Sprintf(`SELECT app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled, status, source, source_ref, source_path, manifest, source_type FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
 
 	// Convert placeholders for PostgreSQL
 	query = t.convertPlaceholders(query, len(args))
@@ -2393,6 +2462,7 @@ func (t *InstalledApp) FindSetBuffered() bool {
 		var sourceNull sql.NullString
 		var source_refNull sql.NullString
 		var source_pathNull sql.NullString
+		var source_typeInt int
 
 		err := rows.Scan(
 			&app_idNull,
@@ -2411,6 +2481,7 @@ func (t *InstalledApp) FindSetBuffered() bool {
 			&source_refNull,
 			&source_pathNull,
 			&record.Manifest,
+			&source_typeInt,
 		)
 
 		if err != nil {
@@ -2434,6 +2505,7 @@ func (t *InstalledApp) FindSetBuffered() bool {
 		record.Source = types.NewText(sourceNull.String)
 		record.Source_ref = types.NewText(source_refNull.String)
 		record.Source_path = types.NewText(source_pathNull.String)
+		record.Source_type = InstalledAppSource_type(source_typeInt)
 
 		// Store old values
 		record.StoreOldValues()
@@ -2478,6 +2550,7 @@ func (t *InstalledApp) copyFromBuffered(record *InstalledApp) {
 	t.Source_ref = record.Source_ref
 	t.Source_path = record.Source_path
 	t.Manifest = record.Manifest
+	t.Source_type = record.Source_type
 	t.StoreOldValues()
 }
 
@@ -2956,6 +3029,55 @@ func (t *InstalledApp) ValidateField(fieldName string, value interface{}) error 
 			}
 		}
 		return nil
+	case "source_type":
+		// Set field value
+		// Accept enum type directly
+		if v, ok := value.(InstalledAppSource_type); ok {
+			t.Source_type = v
+			// Accept int (convert to enum)
+		} else if v, ok := value.(int); ok {
+			if v < 0 || v >= 2 {
+				return fmt.Errorf("invalid option value %d for field source_type (valid range: 0-%d)", v, 2-1)
+			}
+			t.Source_type = InstalledAppSource_type(v)
+			// Accept float64 (JSON numbers decode as float64)
+		} else if v, ok := value.(float64); ok {
+			intVal := int(v)
+			if intVal < 0 || intVal >= 2 {
+				return fmt.Errorf("invalid option value %d for field source_type (valid range: 0-%d)", intVal, 2-1)
+			}
+			t.Source_type = InstalledAppSource_type(intVal)
+			// Accept string (lookup in options and convert)
+		} else if v, ok := value.(string); ok {
+			if v == "" {
+				// Empty string defaults to first option (behavior)
+				t.Source_type = 0
+			} else {
+				options := []string{"Git", "Package"}
+				found := false
+				for i, opt := range options {
+					if opt == v {
+						t.Source_type = InstalledAppSource_type(i)
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("invalid option '%s' for field source_type (valid options: %v)", v, options)
+				}
+			}
+		} else {
+			return fmt.Errorf("invalid type for field source_type (expected InstalledAppSource_type, int, or string)")
+		}
+		// OnValidate trigger of the business logic (OnValidate of the field)
+		for _, l := range t.registeredLogic() {
+			if trg, ok := l.(InstalledAppOnValidate_Source_type); ok {
+				if err := trg.OnValidate_Source_type(t); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
 	return fmt.Errorf("field '%s' not found", fieldName)
@@ -3000,6 +3122,8 @@ func (t *InstalledApp) FieldValue(no int) (any, bool) {
 		return t.Source_path, true
 	case 16:
 		return t.Manifest, true
+	case 17:
+		return t.Source_type, true
 	}
 	return nil, false
 }
@@ -3137,6 +3261,11 @@ func (t *InstalledApp) SetFieldValue(no int, value any) bool {
 	case 16:
 		if v, ok := value.([]byte); ok {
 			t.Manifest = v
+			return true
+		}
+	case 17:
+		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
+			t.Source_type = InstalledAppSource_type(i)
 			return true
 		}
 	}
@@ -3622,6 +3751,8 @@ func (t *InstalledApp) columnValue(column string) (interface{}, bool) {
 		return t.Source_path, true
 	case "manifest":
 		return t.Manifest, true
+	case "source_type":
+		return int(t.Source_type), true
 	}
 	return nil, false
 }
@@ -3691,6 +3822,7 @@ func (t *InstalledApp) Init() {
 	t.Source_ref = *new(types.Text)
 	t.Source_path = *new(types.Text)
 	t.Manifest = *new([]byte)
+	t.Source_type = 0
 	t.applyDefaults()
 }
 
@@ -3741,6 +3873,7 @@ func (t *InstalledApp) ToMap() map[string]interface{} {
 		"source_ref":    t.Source_ref.String(),
 		"source_path":   t.Source_path.String(),
 		"manifest":      t.Manifest,
+		"source_type":   int(t.Source_type),
 	}
 }
 
@@ -3834,6 +3967,23 @@ func (t *InstalledApp) FromMap(data map[string]interface{}) {
 		}
 	}
 	if v, ok := data["manifest"]; ok && v != nil {
+	}
+	if v, ok := data["source_type"]; ok && v != nil {
+		switch val := v.(type) {
+		case float64:
+			t.Source_type = InstalledAppSource_type(int(val))
+		case int:
+			t.Source_type = InstalledAppSource_type(val)
+		case string:
+			// Lookup string value in options
+			options := []string{"Git", "Package"}
+			for i, opt := range options {
+				if opt == val {
+					t.Source_type = InstalledAppSource_type(i)
+					break
+				}
+			}
+		}
 	}
 }
 
@@ -4021,6 +4171,17 @@ func (t *InstalledApp) GetFields() []tables.FieldInfo {
 			PrimaryKey: false,
 			FlowField:  false,
 		},
+		{
+			No:         17,
+			Name:       "source_type",
+			Type:       tables.FieldTypeOption,
+			Length:     0,
+			Required:   false,
+			Editable:   true,
+			PrimaryKey: false,
+			FlowField:  false,
+			ReadOnly:   true,
+		},
 	}
 }
 
@@ -4052,7 +4213,8 @@ func (t *InstalledApp) GetFlowFields() []string {
 // GetOptionFields returns Option field names mapped to their option values
 func (t *InstalledApp) GetOptionFields() map[string][]string {
 	return map[string][]string{
-		"status": {"Installed", "Pending Install", "Pending Removal"},
+		"status":      {"Installed", "Pending Install", "Pending Removal"},
+		"source_type": {"Git", "Package"},
 	}
 }
 

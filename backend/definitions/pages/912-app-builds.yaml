@@ -1,0 +1,45 @@
+page:
+  id: 912
+  type: List
+  name: App Builds
+  source_table: App_Build
+  caption: App Builds
+  editable: false   # requested by Build Apps (Installed Apps), written by the builder
+
+  layout:
+    repeater:
+      fields:
+        - source: entry_no
+          width: 80
+        - source: status
+          width: 110
+        - source: base_version
+          width: 100
+        - source: apps
+          width: 320
+        - source: trigger
+          width: 120
+        - source: requested_by
+          width: 120
+        - source: requested_at
+          width: 160
+        - source: started_at
+          width: 160
+        - source: finished_at
+          width: 160
+        - source: error_message
+          width: 320
+        - source: binary_sha256
+          width: 200
+          visible: false
+        - source: bundle_path
+          width: 200
+          visible: false
+
+  actions:
+    # the builder's output
+    - name: Show Log
+      caption: Show Log
+      image: Document
+      promoted: true
+      run_object: table:App_Build.ShowLog

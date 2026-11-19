@@ -131,6 +131,16 @@ table:
       db_name: manifest
       caption: Application File
 
+    # Where the build takes the app from: a Git repository (Source, Source Ref, Source Path) or
+    # an uploaded app package (App Package of the app's id and version)
+    - name: source_type
+      no: 17
+      type: Option
+      db_name: source_type
+      caption: Source Type
+      options: ["Git", "Package"]
+      editable: false
+
   keys:
     - name: Primary
       fields: [app_id]

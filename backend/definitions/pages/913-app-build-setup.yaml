@@ -1,0 +1,23 @@
+page:
+  id: 913
+  type: Card
+  name: App Build Setup
+  source_table: App_Build_Setup
+  caption: App Build Setup
+  editable: true
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: builds_by
+          - source: allow_upload
+
+  actions:
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+      enabled: true

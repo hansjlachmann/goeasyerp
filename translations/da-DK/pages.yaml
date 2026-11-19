@@ -41,6 +41,12 @@ pages:
   installed_apps:
     caption: "Installerede apps"
 
+  app_builds:
+    caption: "App-builds"
+
+  app_build_setup:
+    caption: "Opsætning af app-builds"
+
   # Menu pages
   menus:
     caption: "Menuer"

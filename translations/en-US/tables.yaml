@@ -493,11 +493,66 @@ tables:
       source_ref: "Repository Version"
       source_path: "Repository Folder"
       manifest: "Application File"
+      source_type: "Source Type"
     options:
       status:
         installed: "Installed"
         pending_install: "Pending Install"
         pending_removal: "Pending Removal"
+      source_type:
+        git: "Git"
+        package: "Package"
+
+  app_build:
+    caption: "App Build"
+    fields:
+      entry_no: "Entry No."
+      status: "Status"
+      base_version: "Base Version"
+      trigger: "Trigger"
+      requested_by: "Requested By"
+      requested_at: "Requested At"
+      started_at: "Started At"
+      finished_at: "Finished At"
+      apps: "Apps"
+      build_list: "Build List"
+      log: "Log"
+      binary_sha256: "Program SHA-256"
+      bundle_path: "Bundle Folder"
+      error_message: "Error Message"
+    options:
+      status:
+        requested: "Requested"
+        running: "Running"
+        succeeded: "Succeeded"
+        failed: "Failed"
+        superseded: "Superseded"
+      trigger:
+        user: "User"
+        base_upgrade: "Base Upgrade"
+
+  app_package:
+    caption: "App Package"
+    fields:
+      app_id: "App ID"
+      version: "Version"
+      name: "Name"
+      package: "Package"
+      sha256: "SHA-256"
+      size: "Size (Bytes)"
+      uploaded_by: "Uploaded By"
+      uploaded_at: "Uploaded At"
+
+  app_build_setup:
+    caption: "App Build Setup"
+    fields:
+      primary_key: "Primary Key"
+      builds_by: "Builds By"
+      allow_upload: "Allow Upload"
+    options:
+      builds_by:
+        ci_pipeline: "CI Pipeline"
+        local_builder: "Local Builder"
 
   # Currency (Table 4)
   currency:

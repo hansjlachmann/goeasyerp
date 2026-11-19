@@ -467,7 +467,7 @@ messages:
   EMAIL_DOC_PURCHASE_ORDER: "Købsordre"
   EMAIL_DOC_BLANKET_PURCHASE_ORDER: "Rammekøbsordre"
   # Extension apps: enable/disable (Installed Apps)
-  ERR_APP_SUPER_ONLY: "Kun en SUPER-bruger kan aktivere eller deaktivere apps."
+  ERR_APP_SUPER_ONLY: "Kun en SUPER-bruger kan administrere apps."
   ERR_APP_BASE_ALWAYS_ON: "%1 er basisapplikationen: den er altid aktiv."
   ERR_APP_DEPENDED_ON: "%1 kan ikke deaktiveres: %2 afhænger af den. Deaktivér %2 først."
   ERR_APP_DEPENDENCY_DISABLED: "%1 kan ikke aktiveres: den afhænger af %2, som er deaktiveret. Aktivér %2 først."
@@ -482,10 +482,21 @@ messages:
   ERR_APP_READ: "%1 kunne ikke læses: %2"
   ERR_APP_INSTALL_REFUSED: "%1 kan ikke installeres: %2"
   ERR_APP_ALREADY_INSTALLED: "%1 %2 er allerede installeret."
-  APP_PENDING_INSTALL: "%1 %2 installeres med næste build (Afventer installation). Hent build-listen til installationsrepositoryet."
+  APP_PENDING_INSTALL: "%1 %2 installeres med næste build (Afventer installation): Byg apps, eller build-listen til installationens repository."
   ERR_APP_UNINSTALL_DEPENDED_ON: "%1 kan ikke afinstalleres: %2 afhænger af den."
   APP_PENDING_REMOVAL: "%1 fjernes med næste build (Afventer fjernelse). Dataene bevares."
   ERR_APP_NO_SOURCE: "%1 har intet repository: vælg den med Installér app, så buildet ved, hvor den hentes fra."
+  # Extension apps: upload and build in the installation (Installed Apps, App Builds)
+  ERR_APP_BUILD_NO_LOG: "Dette build har ingen log endnu."
+  APP_UPLOAD_TITLE: "Upload app"
+  APP_UPLOAD_FILE: "App-pakke (.zip)"
+  ERR_APP_UPLOAD_NOT_ALLOWED: "Upload af apps er ikke tilladt i denne installation (Opsætning af app-builds: Tillad upload)."
+  ERR_APP_PACKAGE: "Dette er ikke en app-pakke: %1"
+  ERR_APP_LOCAL_BUILDER_ONLY: "Apps i denne installation bygges af en CI-pipeline: brug Build-liste, eller sæt Bygges af til Lokal bygger i Opsætning af app-builds."
+  ERR_APP_PACKAGE_NEEDS_LOCAL_BUILDER: "%1 blev uploadet som pakke, som en CI-pipeline ikke kan hente: sæt Bygges af til Lokal bygger i Opsætning af app-builds, eller installér appen fra dens repository."
+  ERR_APP_BUILD_PENDING: "Build %1 er allerede bestilt eller kører: vent på det (App-builds)."
+  APP_BUILD_REQUESTED: "Build %1 er bestilt (%2). Installationen skifter selv til det nye program, når det er bygget; følg det i App-builds."
+  APP_BUILD_NO_APPS: "ingen udvidelsesapps"
 
   # Dialog Messages
   DLG_DELETE_RECORD_CONFIRM: "Er du sikker på, at du vil slette denne post?"

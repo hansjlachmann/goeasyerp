@@ -467,7 +467,7 @@ messages:
   EMAIL_DOC_PURCHASE_ORDER: "Innkjøpsordre"
   EMAIL_DOC_BLANKET_PURCHASE_ORDER: "Rammeinnkjøpsordre"
   # Extension apps: enable/disable (Installed Apps)
-  ERR_APP_SUPER_ONLY: "Bare en SUPER-bruker kan aktivere eller deaktivere apper."
+  ERR_APP_SUPER_ONLY: "Bare en SUPER-bruker kan administrere apper."
   ERR_APP_BASE_ALWAYS_ON: "%1 er basisapplikasjonen: den er alltid aktiv."
   ERR_APP_DEPENDED_ON: "%1 kan ikke deaktiveres: %2 er avhengig av den. Deaktiver %2 først."
   ERR_APP_DEPENDENCY_DISABLED: "%1 kan ikke aktiveres: den er avhengig av %2, som er deaktivert. Aktiver %2 først."
@@ -482,10 +482,21 @@ messages:
   ERR_APP_READ: "%1 kunne ikke leses: %2"
   ERR_APP_INSTALL_REFUSED: "%1 kan ikke installeres: %2"
   ERR_APP_ALREADY_INSTALLED: "%1 %2 er allerede installert."
-  APP_PENDING_INSTALL: "%1 %2 installeres med neste bygg (Venter på installering). Last ned byggelisten til installasjonsrepositoryet."
+  APP_PENDING_INSTALL: "%1 %2 installeres med neste bygg (Venter på installering): Bygg apper, eller byggelisten til installasjonens repository."
   ERR_APP_UNINSTALL_DEPENDED_ON: "%1 kan ikke avinstalleres: %2 er avhengig av den."
   APP_PENDING_REMOVAL: "%1 fjernes med neste bygg (Venter på fjerning). Dataene beholdes."
   ERR_APP_NO_SOURCE: "%1 har ikke noe repository: velg den med Installer app, så bygget vet hvor den hentes fra."
+  # Extension apps: upload and build in the installation (Installed Apps, App Builds)
+  ERR_APP_BUILD_NO_LOG: "Dette bygget har ingen logg ennå."
+  APP_UPLOAD_TITLE: "Last opp app"
+  APP_UPLOAD_FILE: "App-pakke (.zip)"
+  ERR_APP_UPLOAD_NOT_ALLOWED: "Opplasting av apper er ikke tillatt i denne installasjonen (Oppsett for app-bygg: Tillat opplasting)."
+  ERR_APP_PACKAGE: "Dette er ikke en app-pakke: %1"
+  ERR_APP_LOCAL_BUILDER_ONLY: "Appene i denne installasjonen bygges av en CI-pipeline: bruk Byggeliste, eller sett Bygges av til Lokal bygger i Oppsett for app-bygg."
+  ERR_APP_PACKAGE_NEEDS_LOCAL_BUILDER: "%1 ble lastet opp som pakke, og en CI-pipeline kan ikke hente den: sett Bygges av til Lokal bygger i Oppsett for app-bygg, eller installer appen fra repositoryet."
+  ERR_APP_BUILD_PENDING: "Bygg %1 er allerede bestilt eller kjører: vent til det er ferdig (App-bygg)."
+  APP_BUILD_REQUESTED: "Bygg %1 er bestilt (%2). Installasjonen bytter selv til det nye programmet når det er bygget; følg med i App-bygg."
+  APP_BUILD_NO_APPS: "ingen utvidelsesapper"
 
   # Dialog Messages
   DLG_DELETE_RECORD_CONFIRM: "Er du sikker på at du vil slette denne posten?"

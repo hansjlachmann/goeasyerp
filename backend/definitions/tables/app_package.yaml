@@ -1,0 +1,69 @@
+table:
+  id: 2000000155
+  name: App_Package
+  caption: App Package
+  description: "App Package: the app packages (a .zip of the app's folder with its application.yaml) uploaded in Installed Apps (Upload App) — the builder takes an uploaded app from here"
+  global: true
+  posted: true               # written by Upload App; the table API does not insert, delete or rename
+  fields:
+    - name: app_id
+      no: 1
+      type: types.Text
+      db_name: app_id
+      primary_key: true
+      length: 36
+      required: true
+
+    - name: version
+      no: 2
+      type: types.Text
+      db_name: version
+      primary_key: true
+      length: 50
+      required: true
+
+    - name: name
+      no: 3
+      type: types.Text
+      db_name: name
+      length: 100
+      editable: false
+
+    # The package as uploaded (checked: one app, no paths outside it, no links, only expected
+    # file types; never sent to the browser)
+    - name: package
+      no: 4
+      type: "[]byte"
+      db_name: package
+      caption: Package
+
+    - name: sha256
+      no: 5
+      type: types.Text
+      db_name: sha256
+      length: 64
+      editable: false
+
+    - name: size
+      no: 6
+      type: int
+      db_name: size
+      editable: false
+
+    - name: uploaded_by
+      no: 7
+      type: types.Code
+      db_name: uploaded_by
+      length: 50
+      editable: false
+
+    - name: uploaded_at
+      no: 8
+      type: types.DateTime
+      db_name: uploaded_at
+      editable: false
+
+  keys:
+    - name: Primary
+      fields: [app_id, version]
+      clustered: true

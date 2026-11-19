@@ -467,7 +467,7 @@ messages:
   EMAIL_DOC_PURCHASE_ORDER: "Purchase Order"
   EMAIL_DOC_BLANKET_PURCHASE_ORDER: "Blanket Purchase Order"
   # Extension apps: enable/disable (Installed Apps)
-  ERR_APP_SUPER_ONLY: "Only a SUPER user can enable or disable apps."
+  ERR_APP_SUPER_ONLY: "Only a SUPER user can manage apps."
   ERR_APP_BASE_ALWAYS_ON: "%1 is the base application: it is always enabled."
   ERR_APP_DEPENDED_ON: "%1 cannot be disabled: %2 depends on it. Disable %2 first."
   ERR_APP_DEPENDENCY_DISABLED: "%1 cannot be enabled: it depends on %2, which is disabled. Enable %2 first."
@@ -482,10 +482,21 @@ messages:
   ERR_APP_READ: "%1 could not be read: %2"
   ERR_APP_INSTALL_REFUSED: "%1 cannot be installed: %2"
   ERR_APP_ALREADY_INSTALLED: "%1 %2 is installed already."
-  APP_PENDING_INSTALL: "%1 %2 is installed with the next build (Pending Install). Download the Build List for the installation repository."
+  APP_PENDING_INSTALL: "%1 %2 is installed with the next build (Pending Install): Build Apps, or the Build List for the installation repository."
   ERR_APP_UNINSTALL_DEPENDED_ON: "%1 cannot be uninstalled: %2 depends on it."
   APP_PENDING_REMOVAL: "%1 is removed with the next build (Pending Removal). Its data is kept."
   ERR_APP_NO_SOURCE: "%1 has no repository: choose it with Install App, so the build knows where to take it from."
+  # Extension apps: upload and build in the installation (Installed Apps, App Builds)
+  ERR_APP_BUILD_NO_LOG: "This build has no log yet."
+  APP_UPLOAD_TITLE: "Upload App"
+  APP_UPLOAD_FILE: "App package (.zip)"
+  ERR_APP_UPLOAD_NOT_ALLOWED: "Uploading apps is not allowed in this installation (App Build Setup: Allow Upload)."
+  ERR_APP_PACKAGE: "This is not an app package: %1"
+  ERR_APP_LOCAL_BUILDER_ONLY: "This installation's apps are built by a CI pipeline: use Build List, or set Builds By to Local Builder in App Build Setup."
+  ERR_APP_PACKAGE_NEEDS_LOCAL_BUILDER: "%1 was uploaded as a package, which a CI pipeline cannot take: set Builds By to Local Builder in App Build Setup, or install the app from its repository."
+  ERR_APP_BUILD_PENDING: "Build %1 is requested or running already: wait for it (App Builds)."
+  APP_BUILD_REQUESTED: "Build %1 is requested (%2). The installation switches to the new program by itself when it is built; follow it in App Builds."
+  APP_BUILD_NO_APPS: "no extension apps"
 
   # Dialog Messages
   DLG_DELETE_RECORD_CONFIRM: "Are you sure you want to delete this record?"

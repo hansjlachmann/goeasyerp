@@ -493,11 +493,66 @@ tables:
       source_ref: "Repository-versjon"
       source_path: "Repository-mappe"
       manifest: "Applikasjonsfil"
+      source_type: "Kildetype"
     options:
       status:
         installed: "Installert"
         pending_install: "Venter på installering"
         pending_removal: "Venter på fjerning"
+      source_type:
+        git: "Git"
+        package: "Pakke"
+
+  app_build:
+    caption: "App-bygg"
+    fields:
+      entry_no: "Løpenr."
+      status: "Status"
+      base_version: "Basisversjon"
+      trigger: "Årsak"
+      requested_by: "Bestilt av"
+      requested_at: "Bestilt"
+      started_at: "Startet"
+      finished_at: "Ferdig"
+      apps: "Apper"
+      build_list: "Byggeliste"
+      log: "Logg"
+      binary_sha256: "Program-SHA-256"
+      bundle_path: "Pakkemappe"
+      error_message: "Feilmelding"
+    options:
+      status:
+        requested: "Bestilt"
+        running: "Kjører"
+        succeeded: "Fullført"
+        failed: "Feilet"
+        superseded: "Erstattet"
+      trigger:
+        user: "Bruker"
+        base_upgrade: "Oppgradering av basis"
+
+  app_package:
+    caption: "App-pakke"
+    fields:
+      app_id: "App-ID"
+      version: "Versjon"
+      name: "Navn"
+      package: "Pakke"
+      sha256: "SHA-256"
+      size: "Størrelse (byte)"
+      uploaded_by: "Lastet opp av"
+      uploaded_at: "Lastet opp"
+
+  app_build_setup:
+    caption: "Oppsett for app-bygg"
+    fields:
+      primary_key: "Primærnøkkel"
+      builds_by: "Bygges av"
+      allow_upload: "Tillat opplasting"
+    options:
+      builds_by:
+        ci_pipeline: "CI-pipeline"
+        local_builder: "Lokal bygger"
 
   # Currency (Table 4)
   currency:

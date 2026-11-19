@@ -1,0 +1,117 @@
+table:
+  id: 2000000154
+  name: App_Build
+  caption: App Build
+  description: "App Build: the builds of the extension apps by the installation's own builder (Builds By = Local Builder) — requested in Installed Apps, built by the builder (cmd/app-builder) into a bundle the backend switches to"
+  global: true
+  posted: true               # written by Build Apps and the builder; the table API does not insert, delete or rename
+  lookup_page_id: 912
+  fields:
+    - name: entry_no
+      no: 1
+      type: int
+      db_name: entry_no
+      primary_key: true
+      required: true
+      auto_increment: true
+
+    - name: status
+      no: 2
+      type: Option
+      db_name: status
+      options: ["Requested", "Running", "Succeeded", "Failed", "Superseded"]
+      editable: false
+
+    # The base version the build is for: a backend of that version runs the bundle
+    - name: base_version
+      no: 3
+      type: types.Text
+      db_name: base_version
+      length: 50
+      editable: false
+
+    # Why the build was requested: a user (Build Apps), or a backend of a new version that found
+    # no bundle for its version (Base Upgrade)
+    - name: trigger
+      no: 4
+      type: Option
+      db_name: trigger
+      options: ["User", "Base Upgrade"]
+      editable: false
+
+    - name: requested_by
+      no: 5
+      type: types.Code
+      db_name: requested_by
+      length: 50
+      editable: false
+
+    - name: requested_at
+      no: 6
+      type: types.DateTime
+      db_name: requested_at
+      editable: false
+
+    - name: started_at
+      no: 7
+      type: types.DateTime
+      db_name: started_at
+      editable: false
+
+    - name: finished_at
+      no: 8
+      type: types.DateTime
+      db_name: finished_at
+      editable: false
+
+    # The apps of the build as text (name version, …)
+    - name: apps
+      no: 9
+      type: types.Text
+      db_name: apps
+      length: 250
+      editable: false
+
+    # The build list as requested (JSON: the base version and every app with its source), so a
+    # build builds what was asked even if the planned apps change meanwhile
+    - name: build_list
+      no: 10
+      type: "[]byte"
+      db_name: build_list
+      caption: Build List
+
+    # The builder's output (Show Log)
+    - name: log
+      no: 11
+      type: "[]byte"
+      db_name: log
+      caption: Log
+
+    # The built program's SHA-256: the backend runs the bundle only when its program matches
+    - name: binary_sha256
+      no: 12
+      type: types.Text
+      db_name: binary_sha256
+      length: 64
+      editable: false
+
+    # The bundle's folder in the builds volume
+    - name: bundle_path
+      no: 13
+      type: types.Text
+      db_name: bundle_path
+      length: 250
+      editable: false
+
+    # A failed build's error (the log has the details)
+    - name: error_message
+      no: 14
+      type: types.Text
+      db_name: error_message
+      length: 250
+      editable: false
+
+  keys:
+    - name: Primary
+      fields: [entry_no]
+      clustered: true
