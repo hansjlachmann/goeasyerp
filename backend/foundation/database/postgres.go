@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"os"
 
 	_ "github.com/lib/pq"
 )
@@ -27,6 +28,31 @@ func DefaultPostgresConfig() *PostgresConfig {
 		DBName:   "openerp",
 		SSLMode:  "disable",
 	}
+}
+
+// PostgresConfigFromEnv: the PostgreSQL settings of the environment (DB_HOST — empty: no
+// PostgreSQL —, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, DB_SSLMODE), as the server and the app
+// builder read them
+func PostgresConfigFromEnv() (*PostgresConfig, bool) {
+	host := os.Getenv("DB_HOST")
+	if host == "" {
+		return nil, false
+	}
+	get := func(key, def string) string {
+		value := os.Getenv(key)
+		if value == "" {
+			return def
+		}
+		return value
+	}
+	return &PostgresConfig{
+		Host:     host,
+		Port:     get("DB_PORT", "5432"),
+		User:     get("DB_USER", "openerp"),
+		Password: get("DB_PASSWORD", "openerp"),
+		DBName:   get("DB_NAME", "openerp"),
+		SSLMode:  get("DB_SSLMODE", "disable"),
+	}, true
 }
 
 // ConnectionString returns the PostgreSQL connection string

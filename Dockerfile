@@ -43,7 +43,34 @@ RUN if [ -n "$EXTENSIONS_PATH" ] && [ -d "$EXTENSIONS_PATH" ]; then \
 # Build the application with version embedded
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/hansjlachmann/goeasyerp/backend/api.Version=${VERSION}" -o api-server ./cmd/api-server
 
-# Runtime stage
+# The installation's own builder of the extension apps (target app-builder, image
+# goeasyerp/builder:<version>; App Build Setup: Builds By = Local Builder): the Go toolchain and
+# this release's source, which cmd/app-builder copies for each build, merges the requested apps
+# into and builds into a bundle in the builds volume. The build cache is filled here, so a build
+# in the installation compiles little more than the apps.
+FROM golang:1.24-alpine AS app-builder
+
+RUN apk add --no-cache git ca-certificates
+
+ENV CGO_ENABLED=0
+WORKDIR /src
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+RUN go build -o /usr/local/bin/app-builder ./cmd/app-builder && \
+    go build -o /dev/null ./cmd/api-server && \
+    go build -o /dev/null ./tools/extmerge && \
+    go build -o /dev/null ./tools/tablegen/main.go
+
+ENV BASE_SOURCE=/src
+ENV APP_BUILDS_DIR=/builds
+
+ENTRYPOINT ["app-builder"]
+
+# Runtime stage (the default target: the last stage)
 FROM alpine:3.21
 
 WORKDIR /app

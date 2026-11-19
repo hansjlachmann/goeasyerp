@@ -221,7 +221,9 @@ jobs:
     # no longer runs npm under QEMU (frontend/Dockerfile), which was what hung.
     # Re-run with "Re-run failed jobs": "Re-run all jobs" runs Release Please again, which then
     # creates no release, so this job is skipped and the images stay missing (0.1.89, 0.1.90).
-    timeout-minutes: 30
+    # (raised from 30 for the app builder image, which compiles the server once more to fill
+    # its build cache)
+    timeout-minutes: 50
     needs: [backend, frontend, release]
     # Only build Docker images when a release is created
     if: needs.release.outputs.release_created == 'true'
@@ -250,6 +252,16 @@ jobs:
           TAGS="$TAGS,ghcr.io/${{ github.repository }}/backend:${{ github.sha }}"
           if [ "${{ needs.release.outputs.release_created }}" == "true" ]; then
             TAGS="$TAGS,ghcr.io/${{ github.repository }}/backend:${{ needs.release.outputs.version }}"
+          fi
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+
+      - name: Determine tags for the app builder
+        id: tags-builder
+        run: |
+          TAGS="ghcr.io/${{ github.repository }}/builder:latest"
+          TAGS="$TAGS,ghcr.io/${{ github.repository }}/builder:${{ github.sha }}"
+          if [ "${{ needs.release.outputs.release_created }}" == "true" ]; then
+            TAGS="$TAGS,ghcr.io/${{ github.repository }}/builder:${{ needs.release.outputs.version }}"
           fi
           echo "tags=$TAGS" >> $GITHUB_OUTPUT
 
@@ -282,6 +294,19 @@ jobs:
           tags: ${{ steps.tags-backend.outputs.tags }}
           build-args: |
             VERSION=${{ steps.version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # the installation's builder of the extension apps (Dockerfile target app-builder)
+      - name: Build and push the app builder
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          target: app-builder
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.tags-builder.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

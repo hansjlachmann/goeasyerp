@@ -79,16 +79,8 @@ func main() {
 
 	// Check if we're in Docker/production mode (env vars set)
 	dbHost := os.Getenv("DB_HOST")
-	if dbHost != "" {
+	if config, ok := database.PostgresConfigFromEnv(); ok {
 		// PostgreSQL mode (Docker/production)
-		config := &database.PostgresConfig{
-			Host:     dbHost,
-			Port:     getEnv("DB_PORT", "5432"),
-			User:     getEnv("DB_USER", "openerp"),
-			Password: getEnv("DB_PASSWORD", "openerp"),
-			DBName:   getEnv("DB_NAME", "openerp"),
-			SSLMode:  getEnv("DB_SSLMODE", "disable"),
-		}
 
 		fmt.Printf("Connecting to PostgreSQL at %s:%s...\n", config.Host, config.Port)
 
