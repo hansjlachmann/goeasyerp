@@ -2,7 +2,9 @@ package apps
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"strings"
@@ -31,6 +33,7 @@ import (
 
 func init() {
 	functions.Register("table", gtables.InstalledAppTableName, "InstallApp", functions.For(InstallApp), functions.WithDialog())
+	functions.Register("table", gtables.InstalledAppTableName, "UploadApp", functions.For(UploadApp), functions.WithDialog())
 	functions.Register("table", gtables.InstalledAppTableName, "UninstallApp", functions.For(UninstallApp))
 	functions.Register("table", gtables.InstalledAppTableName, "CancelPending", functions.For(CancelPending))
 	functions.Register("table", gtables.InstalledAppTableName, "BuildList", functions.For(BuildList))
@@ -89,9 +92,86 @@ func InstallApp(rec *gtables.InstalledApp) (fcodeunits.Result, error) {
 	return installManifest(rec, data, repo.URL(), repo.Ref, folder)
 }
 
+// UploadApp asks for an app package (a .zip of the app's folder), checks it — the package as
+// untrusted input, then the app as Install App does — and records the app as Pending Install
+// with the package stored for the installation's builder (App Build Setup: Allow Upload)
+func UploadApp(rec *gtables.InstalledApp) (fcodeunits.Result, error) {
+	ts := i18n.GetInstance()
+	lang := fcodeunits.CurrentLanguage()
+	err := superOnly(lang)
+	if err != nil {
+		return fcodeunits.Result{}, err
+	}
+	setup := gtables.GetAppBuildSetup(rec)
+	if !setup.Allow_upload {
+		return fcodeunits.Result{}, errors.New(ts.Message("ERR_APP_UPLOAD_NOT_ALLOWED", lang))
+	}
+	values := fcodeunits.RequestInput(ts.Message("APP_UPLOAD_TITLE", lang), []fcodeunits.InputField{
+		{Name: "package", Label: ts.Message("APP_UPLOAD_FILE", lang), Type: "file", Required: true},
+	})
+	if values == nil {
+		return fcodeunits.Result{Success: true}, nil
+	}
+	data, err := base64.StdEncoding.DecodeString(strings.TrimSpace(values["package"]))
+	if err != nil || len(data) == 0 {
+		return fcodeunits.Result{}, errors.New(ts.MessageWithParams("ERR_APP_PACKAGE", lang, "no file"))
+	}
+	return uploadPackage(rec, data)
+}
+
+// uploadPackage checks an app package and records its app as Pending Install from the package
+func uploadPackage(src *gtables.InstalledApp, data []byte) (fcodeunits.Result, error) {
+	ts := i18n.GetInstance()
+	lang := fcodeunits.CurrentLanguage()
+	pkg, err := fapps.ReadPackage(data)
+	if err != nil {
+		return fcodeunits.Result{}, errors.New(ts.MessageWithParams("ERR_APP_PACKAGE", lang, err.Error()))
+	}
+	sum := sha256.Sum256(data)
+	hash := hex.EncodeToString(sum[:])
+	save := func(app *fapps.App) error {
+		pkgRec := gtables.NewAppPackage(src)
+		exists := pkgRec.Get(map[string]interface{}{"app_id": app.ID, "version": app.Version})
+		if !exists {
+			pkgRec.InitRecord()
+			pkgRec.App_id = types.NewText(app.ID)
+			pkgRec.Version = types.NewText(app.Version)
+		}
+		pkgRec.Name = types.NewText(app.Name)
+		pkgRec.Package = data
+		pkgRec.Sha256 = types.NewText(hash)
+		pkgRec.Size = len(data)
+		pkgRec.Uploaded_by = types.NewCode(fcodeunits.CurrentUserID())
+		pkgRec.Uploaded_at = types.NewDateTimeFromTime(time.Now())
+		if exists {
+			return pkgRec.ModifyOrError(false)
+		}
+		return pkgRec.InsertOrError(false)
+	}
+	return installChecked(src, pkg.Manifest, appSource{kind: gtables.InstalledApp_Source_type.Package,
+		source: "package " + hash[:12], ref: pkg.App.Version, save: save})
+}
+
 // installManifest checks an app's application.yaml against the planned apps and records it as
-// Pending Install
+// Pending Install, taken from a Git repository
 func installManifest(src *gtables.InstalledApp, data []byte, source, ref, folder string) (fcodeunits.Result, error) {
+	return installChecked(src, data, appSource{kind: gtables.InstalledApp_Source_type.Git, source: source, ref: ref, folder: folder})
+}
+
+// appSource: where the build takes an app from — a Git repository (source, ref, folder), or a
+// package (save stores it once the app is checked)
+type appSource struct {
+	kind   gtables.InstalledAppSource_type
+	source string
+	ref    string
+	folder string
+	save   func(app *fapps.App) error
+}
+
+// installChecked checks an app's application.yaml against the planned apps and records it as
+// Pending Install with its source
+func installChecked(src *gtables.InstalledApp, data []byte, from appSource) (fcodeunits.Result, error) {
+	source, ref, folder := from.source, from.ref, from.folder
 	ts := i18n.GetInstance()
 	lang := fcodeunits.CurrentLanguage()
 	app, err := fapps.Parse(data)
@@ -128,6 +208,12 @@ func installManifest(src *gtables.InstalledApp, data []byte, source, ref, folder
 		rec.InitRecord()
 		rec.App_id = types.NewText(app.ID)
 	}
+	if from.save != nil {
+		err = from.save(app)
+		if err != nil {
+			return fcodeunits.Result{}, err
+		}
+	}
 	rec.Name = types.NewText(app.Name)
 	rec.Publisher = types.NewText(app.Publisher)
 	rec.Contact = types.NewText(app.Contact)
@@ -139,6 +225,7 @@ func installManifest(src *gtables.InstalledApp, data []byte, source, ref, folder
 	rec.Source = types.NewText(source)
 	rec.Source_ref = types.NewText(ref)
 	rec.Source_path = types.NewText(folder)
+	rec.Source_type = from.kind
 	rec.Manifest = data
 	rec.Updated_at = types.NewDateTimeFromTime(time.Now())
 	if exists {
@@ -312,6 +399,11 @@ func BuildList(rec *gtables.InstalledApp) (fcodeunits.Result, error) {
 	for _, a := range ordered[1:] {
 		if !row.Get(types.NewText(a.ID)) || row.Source == "" {
 			return fcodeunits.Result{}, errors.New(ts.MessageWithParams("ERR_APP_NO_SOURCE", lang, a.Name))
+		}
+		// a pipeline takes apps from their repositories; an uploaded package only the
+		// installation's own builder has
+		if row.Source_type == gtables.InstalledApp_Source_type.Package {
+			return fcodeunits.Result{}, errors.New(ts.MessageWithParams("ERR_APP_PACKAGE_NEEDS_LOCAL_BUILDER", lang, a.Name))
 		}
 		list.Apps = append(list.Apps, buildApp{ID: a.ID, Name: a.Name, Version: a.Version,
 			Repository: row.Source.String(), Ref: row.Source_ref.String(), Path: row.Source_path.String()})

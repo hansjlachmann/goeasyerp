@@ -64,6 +64,14 @@ page:
       promoted: true
       run_object: table:Installed_App.InstallApp
 
+    # an app package (.zip of the app's folder) instead of a repository: built by the
+    # installation's own builder (App Build Setup: Allow Upload)
+    - name: Upload App
+      caption: Upload App
+      image: Import
+      promoted: true
+      run_object: table:Installed_App.UploadApp
+
     - name: Uninstall App
       caption: Uninstall App
       image: Delete

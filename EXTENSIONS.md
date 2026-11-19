@@ -317,6 +317,26 @@ On **Installed Apps** (Administration → Installed Apps; SUPER only):
   dependency order, each with its repository, version and folder — to commit to the installation
   repository. Its workflow builds the image; after `scripts/prod.sh pull && up -d` the server shows
   the apps as Installed, and removed apps are gone (their data stays).
+- **Upload App** takes an **app package** instead of a repository (App Build Setup: Allow Upload).
+  The installation's own builder builds it; a CI pipeline cannot, so Build List refuses a list
+  with an uploaded app.
+
+**App packages.** A package is a `.zip` of the app's folder: its `application.yaml`,
+definitions, Go code and translations. The files go either at the root of the zip or inside one
+top folder, so zipping the `extensions` folder as it is works:
+
+```bash
+cd my-app && zip -r ../my-app-1.0.0.zip extensions
+```
+
+The package is checked as untrusted input:
+- it may be at most 2 MB zipped and 20 MB unpacked;
+- it may only contain `.yaml`, `.yml`, `.go`, `.mod`, `.sum`, `.json`, `.md` and `.txt` files,
+  plus `LICENSE`, `NOTICE` and `README`;
+- links, hidden files and folders, and paths outside the app are refused.
+
+Then its `application.yaml` is checked as Install App checks it. Attach the package to every
+release of the app, next to the tag, so installations without GitHub access can upload it.
 
 ## 11. Disabling and enabling
 
