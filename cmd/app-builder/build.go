@@ -152,7 +152,9 @@ func (b *builder) build(ctx context.Context, no int, list fapps.BuildList, log *
 	}
 	for _, f := range []string{appbundle.BinaryName, "go.mod", "LICENSE", "THIRD_PARTY_NOTICES"} {
 		err = copyFile(filepath.Join(src, f), filepath.Join(tmp, f))
-		if err != nil && !(errors.Is(err, os.ErrNotExist) && f != appbundle.BinaryName && f != "go.mod") {
+		// the licence files are optional; the program and the go.mod marker are not
+		optional := f != appbundle.BinaryName && f != "go.mod"
+		if err != nil && (!errors.Is(err, os.ErrNotExist) || !optional) {
 			return "", err
 		}
 	}
